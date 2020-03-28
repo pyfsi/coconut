@@ -650,17 +650,19 @@
 <li>Add the parent folder of <code>coconut</code> to your Python path.</li>
 </ul>
 <p>For example, with a folder structure like</p>
-<pre><code>/some/absolute/path/
-    coconut/
-        coupling_components/
-        data_structure/
-        ...
-        README.md
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="err">/some/absolute/path/</span>
+<span class="err">    coconut/</span>
+<span class="err">        coupling_components/</span>
+<span class="err">        data_structure/</span>
+<span class="err">        ...</span>
+<span class="err">        README.md</span>
+</code></pre></div>
+
 
 <p><code>coconut</code> can be added to your Python path with:</p>
-<pre><code class="bash">export PYTHONPATH=/some/absolute/path:$PYTHONPATH
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
+</code></pre></div>
+
 
 <p>This line can also be added to you <code>.bashrc</code> file.</p>
 <h2 id="for-developers">For developers</h2>
@@ -675,31 +677,31 @@
 <li>Copy the code below to a bash-script and adapt the parameter <code>absolute_path</code> to the above directory.</li>
 <li>Run bash-script.</li>
 </ul>
-<pre><code class="bash">#!/bin/bash
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
 
-# add absolute path to parent directory of coconut
-absolute_path=/some/absolute/path
+<span class="c1"># add absolute path to parent directory of coconut</span>
+<span class="nv">absolute_path</span><span class="o">=</span>/some/absolute/path
 
-# configure repository
-cd $absolute_path
+<span class="c1"># configure repository</span>
+<span class="nb">cd</span> <span class="nv">$absolute_path</span>
 git clone git@github.com:pyfsi/coconut.git
-cd coconut
+<span class="nb">cd</span> coconut
 git remote add upstream git@github.com:pyfsi/coconut.git
 
-# add coconut to Python path --&gt; put this line also in your .bashrc
-export PYTHONPATH=$absolute_path:$PYTHONPATH
+<span class="c1"># add coconut to Python path --&gt; put this line also in your .bashrc</span>
+<span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$absolute_path</span>:<span class="nv">$PYTHONPATH</span>
 
-# run tests
-cd $absolute_path/coconut/tests
+<span class="c1"># run tests</span>
+<span class="nb">cd</span> <span class="nv">$absolute_path</span>/coconut/tests
 python test_coconut.py
 
-# run an FSI test example
-cd $absolute_path/coconut/test_examples/tube_tube_flow_tube_structure
-chmod 700 setup_tube_flow.sh setup_tube_structure.sh
+<span class="c1"># run an FSI test example</span>
+<span class="nb">cd</span> <span class="nv">$absolute_path</span>/coconut/test_examples/tube_tube_flow_tube_structure
+chmod <span class="m">700</span> setup_tube_flow.sh setup_tube_structure.sh
 ./setup_tube_flow.sh
 ./setup_tube_structure.sh
-python MainKratos.py project_parameters_mapped.json  # &gt; $absolute_path/tube.log
-</code></pre>
+python MainKratos.py project_parameters_mapped.json  <span class="c1"># &gt; $absolute_path/tube.log</span>
+</code></pre></div>
                 
                   
                 
@@ -759,6 +761,8 @@ python MainKratos.py project_parameters_mapped.json  # &gt; $absolute_path/tube.
       <script src="assets/javascripts/application.c33a9706.js"></script>
       
       <script>app.initialize({version:"1.1",url:{base:"."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
     
   </body>

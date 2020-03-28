@@ -662,14 +662,23 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <li><a href="http://www.unics.uni-hannover.de/nhtcapri/mathematics.html">more math symbols</a></li>
 </ul>
 <p>It is also possible to <a href="https://alexanderrodin.com/github-latex-markdown/">render LaTeX equations on-the-run</a> and importing them as images, but that is quite cumbersome.</p>
+<p>NEW: test MathJax.</p>
+<p>some inline math <span><span class="MathJax_Preview">\alhpa + \beta = a^{k+1}_0</span><script type="math/tex">\alhpa + \beta = a^{k+1}_0</script></span></p>
+<p>some other math:</p>
+<div>
+<div class="MathJax_Preview">\alhpa + \beta = a^{k+1}_0</div>
+<script type="math/tex; mode=display">\alhpa + \beta = a^{k+1}_0</script>
+</div>
 <h2 id="creating-a-static-website-with-mkdocs">Creating a static website with MkDocs</h2>
 <p><a href="https://www.mkdocs.org/">MkDocs</a> can be installed using pip: </p>
-<pre><code class="bash">pip install mkdocs
-</code></pre>
+<div class="codehilite"><pre><span></span><code>pip install mkdocs
+</code></pre></div>
+
 
 <p>Furthermore, the <a href="https://squidfunk.github.io/mkdocs-material/">Material</a> theme must be installed:</p>
-<pre><code class="bash">pip install mkdocs-material
-</code></pre>
+<div class="codehilite"><pre><span></span><code>pip install mkdocs-material
+</code></pre></div>
+
 
 <p>Both can be installed locally by adding the argument <code>-t &lt;install_dir&gt;</code>. </p>
 <p>The structure/outline of the website is dictated by the <code>nav</code> variable in <code>mkdocs.yml</code>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
@@ -741,6 +750,8 @@ These files are converted to a static website using <a href="https://www.mkdocs.
       <script src="../assets/javascripts/application.c33a9706.js"></script>
       
       <script>app.initialize({version:"1.1",url:{base:".."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
     
   </body>

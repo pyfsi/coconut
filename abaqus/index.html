@@ -914,23 +914,24 @@ An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or
 my_assembly=my_model.rootAssembly<br />
 my_instance=my_assembly.instances['PART-1-1']
 movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NAME_OF_THE_NODESET', 'MOVINGSURFACE0')</p>
-<pre><code>On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="err">On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:</span>
+</code></pre></div>
+
 
 <p>from step import *
 step1 = my_model.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=1, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=1, minInc=1, maxInc=1, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
 my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distributionType = USER_DEFINED, field = '', magnitude = 1, region=movingSurface0)
 my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)</p>
-<pre><code>
-### Setup for Abaqus output (displacements)
-After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput 
-has to be generated for each surface involved in the fluid-structure interface. 
-To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this hadn’t been done before) 
-and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
-Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput 
-and historyOutput with PRESELECTED variables. 
-This can be done via the GUI or using python lines similar to the following:
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="err">### Setup for Abaqus output (displacements)</span>
+<span class="err">After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput </span>
+<span class="err">has to be generated for each surface involved in the fluid-structure interface. </span>
+<span class="err">To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this hadn’t been done before) </span>
+<span class="err">and to create a fieldOutput per surface containing at least the coordinates and the displacements. </span>
+<span class="err">Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput </span>
+<span class="err">and historyOutput with PRESELECTED variables. </span>
+<span class="err">This can be done via the GUI or using python lines similar to the following:</span>
+</code></pre></div>
+
 
 <p>my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=tubeAssembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
@@ -1009,6 +1010,8 @@ my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT,
       <script src="../assets/javascripts/application.c33a9706.js"></script>
       
       <script>app.initialize({version:"1.1",url:{base:".."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
     
   </body>
