@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components import tools
 
 
 def Create(parameters):
@@ -23,5 +24,5 @@ class ConvergenceCriterionIterationLimit(CoSimulationComponent):
         self.iteration += 1
 
     def IsSatisfied(self):
-        # cs_tools.PrintInfo("Iteration: " + str(self.iteration))
+        # tools.PrintInfo("Iteration: " + str(self.iteration))
         return self.iteration >= self.maximum

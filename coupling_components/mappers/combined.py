@@ -1,9 +1,6 @@
+from coconut.coupling_components import tools
 from coconut.coupling_components.component import CoSimulationComponent
 from coconut.coupling_components.tools import CreateInstance
-from coconut import data_structure
-
-from scipy.spatial import cKDTree
-import numpy as np
 
 
 def Create(parameters):
@@ -83,6 +80,6 @@ class MapperCombined(CoSimulationComponent):
             mapper.OutputSolutionStep()
 
     def PrintInfo(self, indent):
-        cs_tools.Print('\t' * indent, "The component ", self.__class__.__name__, " combining the following mappers:")
+        tools.Print('\t' * indent, "The component ", self.__class__.__name__, " combining the following mappers:")
         for mapper in self.mappers:
             mapper.PrintInfo(indent + 1)

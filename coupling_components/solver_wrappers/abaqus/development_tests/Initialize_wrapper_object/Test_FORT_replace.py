@@ -1,16 +1,5 @@
 import os
-from os.path import join
-import subprocess
-import time
-import numpy as np
-import copy
 
-
-import KratosMultiphysics as KM
-from KratosMultiphysics.CoSimulationApplication.co_simulation_component import CoSimulationComponent
-from KratosMultiphysics.CoSimulationApplication.co_simulation_interface import CoSimulationInterface
-import KratosMultiphysics.CoSimulationApplication.co_simulation_tools as cs_tools
-cs_data_structure = cs_tools.cs_data_structure
 
 def FORT_replace(line, orig, new):
     '''The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limiet

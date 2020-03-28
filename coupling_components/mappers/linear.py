@@ -46,7 +46,6 @@ class MapperLinear(MapperInterpolator):
             get_coeffs = get_coeffs_1d_2d
 
         # calculate coefficients
-        # with cs_tools.quicktimer('coeffs', ms=True):
         iterable = []
         for i_to in range(self.n_to):
             nearest = self.nearest[i_to, :]

@@ -121,7 +121,7 @@ def quicktimer(name=None, t=0, n=0, ms=False):
 
 
     example:
-        with cs_tools.quicktimer('test', ms=True):
+        with tools.quicktimer('test', ms=True):
             a = 1 / 3
     """
     startTime = time.time()

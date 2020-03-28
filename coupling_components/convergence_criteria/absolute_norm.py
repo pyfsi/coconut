@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components import tools
 
 import numpy as np
 
@@ -29,7 +30,7 @@ class ConvergenceCriterionAbsoluteNorm(CoSimulationComponent):
         self.is_updated = True
 
     def IsSatisfied(self):
-        # cs_tools.PrintInfo("Norm: " + str(self.last_norm))
+        # tools.PrintInfo("Norm: " + str(self.last_norm))
         if not self.is_updated:
             return False
         else:

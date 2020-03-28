@@ -1,13 +1,10 @@
-import KratosMultiphysics as KM
-import KratosMultiphysics.KratosUnittest as KratosUnittest
-from KratosMultiphysics.CoSimulationApplication.co_simulation_tools import ImportDataStructure
-import KratosMultiphysics.CoSimulationApplication.co_simulation_tools as cs_tools
+from coconut import data_structure
+from coconut.data_structure import KratosUnittest
+from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
 from copy import deepcopy
-import multiprocessing
 import os
-import subprocess
 
 
 class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
@@ -20,7 +17,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
                                            'test_614_tube2D', 'test_solver_wrapper.json')
-        cs_data_structure = ImportDataStructure(parameter_file_name)
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -199,7 +195,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
                                            'test_614_tube3D', 'test_solver_wrapper.json')
-        cs_data_structure = ImportDataStructure(parameter_file_name)
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())

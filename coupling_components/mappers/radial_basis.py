@@ -28,7 +28,6 @@ class MapperRadialBasis(MapperInterpolator):
         super().Initialize(model_part_from, model_part_to)
 
         # calculate coefficients
-        # with cs_tools.quicktimer('coeffs', ms=True):
         iterable = []
         for i_to in range(self.n_to):
             nearest = self.nearest[i_to, :]

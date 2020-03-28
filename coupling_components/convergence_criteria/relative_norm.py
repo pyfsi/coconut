@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components import tools
 
 import numpy as np
 
@@ -35,7 +36,7 @@ class ConvergenceCriterionRelativeNorm(CoSimulationComponent):
                 raise Exception("Initial norm is too small")
 
     def IsSatisfied(self):
-        # cs_tools.PrintInfo("Norm: " + str(self.last_norm))
+        # tools.PrintInfo("Norm: " + str(self.last_norm))
         if not self.is_initial_norm_set:
             return False
         else:
