@@ -38,7 +38,7 @@ class ModelPart(DataValueContainer):
             RuntimeError("No empty names for modelpart are allowed. Please rename ! ")
 
         self.Name = name
-        self.ProcessInfo = {TIME: 0.0, DELTA_TIME: 0.0}  # empty dictionary
+        # self.ProcessInfo = {TIME: 0.0, DELTA_TIME: 0.0}  # empty dictionary
 
 
     def IsDistributed(self):

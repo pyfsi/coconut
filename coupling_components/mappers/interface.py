@@ -1,7 +1,7 @@
-from KratosMultiphysics.CoSimulationApplication.co_simulation_component import CoSimulationComponent
-import KratosMultiphysics.CoSimulationApplication.co_simulation_tools as cs_tools
-cs_data_structure = cs_tools.cs_data_structure
-import KratosMultiphysics as KM
+from coconut import data_structure
+from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components import tools
+from coconut.coupling_components.tools import CreateInstance
 
 
 def Create(parameters):
@@ -55,10 +55,10 @@ class MapperInterface(CoSimulationComponent):
             mapper.OutputSolutionStep()
 
     def PrintInfo(self, indent):
-        cs_tools.Print('\t' * indent, "The component ", self.__class__.__name__, " has the following mapper(s):")
+        tools.Print('\t' * indent, "The component ", self.__class__.__name__, " has the following mapper(s):")
         for i, mapper in enumerate(self.mappers):
             mapper.PrintInfo(indent + 1)
 
-            cs_tools.Print('\t' * (indent + 2),
+            tools.Print('\t' * (indent + 2),
                            f"which maps ModelPart '{self.keys[i][0]}' to ModelPart '{self.keys[i][1]}'")
 
