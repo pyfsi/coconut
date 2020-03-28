@@ -1,0 +1,68 @@
+# TODO: rewrite; no setup needed :D
+# TODO: make this a MarkDown file
+
+
+# Clone the repository to a directory Kratos, which can be on a local disk or your home directory
+
+git clone https://github.com/pyfsi/Kratos/ Kratos
+cd Kratos
+
+# Configure the upstream repository
+
+git remote add upstream https://github.com/KratosMultiphysics/Kratos/
+
+# Check out one of the following branches:
+# - master (Kratos)
+# - CoCoNuT (UGent)
+
+git checkout CoCoNuT
+
+# Copy the following lines to Kratos/cmake_build/configure.sh, possibly setting the install prefix to another directory
+
+#!/bin/sh
+
+rm -f CMakeCache.txt
+rm -f *.cmake
+rm -rf CMakeFiles\
+
+cmake ../applications/CoSimulationApplication \
+-DCMAKE_INSTALL_PREFIX=/lusers/temp/Kratos \
+-DCO_SIMULATION_APPLICATION_PYTHON=ON                                               
+
+# Load modules
+
+module load GCC/7.3.0-2.30
+module load CMake/3.11.4-GCCcore-7.3.0
+module load Anaconda3-python/5.1.0
+module load PyCharm/2018.1.4
+
+# Install
+
+cd Kratos/cmake_build
+sh configure.sh
+make 
+make install
+
+# Configure Python, possibly with other install prefix
+
+export PYTHONPATH=/lusers/temp/Kratos/:$PYTHONPATH
+
+# Copy Unittest
+
+cp Kratos/kratos/python_scripts/KratosUnittest.py Kratos/KratosMultiphysics/
+
+# Go to source code
+
+cd Kratos/applications/CoSimulationApplication
+
+# Run tests
+
+cd tests
+module load ANSYS_CFD/2019R1
+python3 test_CoSimulationApplication.py --level small
+
+# Run test case
+
+cd test_examples/04_tube/
+python3 MainKratos.py project_parameters_conformal.json
+
