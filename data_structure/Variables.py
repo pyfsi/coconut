@@ -3,16 +3,15 @@ from copy import deepcopy
 
 class Variable(object):
     """
-    Variables are global objects which are a part of the
-    KratosMultiphysics module.
+    Variables are global objects which are a part of
+    coconut.data_structure.
 
     They can be accessed in different ways, see code
     example below:
 
-        import KratosMultiphysics as KM
+        from coconut import data_structure
         var = vars(data_structure)[disp]
-        var = KM.__dict__[disp]
-        var = KM.KratosGlobals.GetVariable(disp)
+        var = data_structure.__dict__[disp]
 
     Variables must be created in the module itself,
     i.e. in the Variables.py file. As far as I know,

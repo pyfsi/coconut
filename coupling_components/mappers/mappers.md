@@ -151,39 +151,55 @@ JSON setting|type|description
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 
 
 Normal radial basis interpolation is done as follows.
-_φ_(_r_) is a radial basis function defined as  
+$\phi(r)$ is a radial basis function defined as  
 
- _φ_(_r_) = (1 − _r_)<sup>4</sup> (1 + 4 _r_) for 0 ≤ _r_ < 1  
- _φ_(_r_) = 0 for 1 ≤ _r_
+
+$$
+\phi(r) = 
+\begin{cases}
+    (1-r)^4 (1 + 4r) \quad &\mathrm{for} \quad 0 \leq r < 1 \\
+    0 &\mathrm{for} \quad 1 \leq r
+\end{cases}
+$$
+
  
-with _r_ a positive distance. Assume that _n_ nearest _from_-points will be used in the interpolation.
-An unknown function _f_(**x**) can then be approximated as the weighted sum of _n_ shifted radial basis functions:
+with $r$ a positive distance. Assume that $n$ nearest _from_-points will be used in the interpolation.
+An unknown function $f(\boldsymbol{x})$ can then be approximated as the weighted sum of $n$ shifted radial basis functions:
 
-_f_(**x**) ≈ Σ<sub>j</sub> _α_<sub>j</sub> _φ_(||**x** − **x**<sub>j</sub>||)
+$$
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+$$
 
-To determine the coefficients _α_<sub>j</sub>, we require that the exact function value is returned at the _n_ _from_-points.
-This gives us _n_ equations
+To determine the coefficients $\alpha_j$, we require that the exact function value is returned at the $n$ _from_-points.
+This gives us $n$ equations
 
-_f_(**x**<sub>i</sub>) = _f_<sub>i</sub> 
-= Σ<sub>j</sub> _α_<sub>j</sub> _φ_(||**x**<sub>i</sub> − **x**<sub>j</sub>||)
+$$
+f(\boldsymbol{x}_i) = f_i = \sum_j \alpha_j \phi(||\boldsymbol{x}_i - \boldsymbol{x}_j||)
+$$
 
 which can be written in matrix form as
 
-**f** = **Φ** · **α**
+$$
+\boldsymbol{f} = \boldsymbol{\Phi} \boldsymbol{\alpha}
+$$
 
-with **f**, **α** ∈ R<sup>n×1</sup>, and **Φ** ∈ R<sup>n×n</sup>. This system can be solved for the weights-vector **α**.
+with $\boldsymbol{f}, \boldsymbol{\alpha} \in \mathbb{R}^{n \times 1}$, and $\boldsymbol{\Phi} \in \mathbb{R}^{n \times n}$. This system can be solved for the weights-vector $\boldsymbol{\alpha}$.
 
-However, in our case, the _from_-point values vector **f** is not known in advance: it contains the values of the `Variable` that will be interpolated. 
+However, in our case, the _from_-point values vector $\boldsymbol{f}$ is not known in advance: it contains the values of the `Variable` that will be interpolated. 
 
 Therefore, the approximation to calculate the interpolatoin in the _to_-point is rewritten as follows:
 
-_f_(**x**<sub>to</sub>) = Σ<sub>j</sub> _α_<sub>j</sub> _φ_(||**x**<sub>to</sub> − **x**<sub>j</sub>||) = **Φ**<sup>T</sup><sub>to</sub> · **α** = **Φ**<sup>T</sup><sub>to</sub> · **Φ**<sup>-1</sup> · **f** = **c**<sup>T</sup> · **f**
+$$
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
+$$
 
-The coefficients vector **c** can now be calculated based only on the coordinates by solving the system
+The coefficients vector $\boldsymbol{c}$ can now be calculated based only on the coordinates by solving the system
 
-**Φ** · **c** = **Φ**<sub>to</sub>.
+$$
+\boldsymbol{\Phi} \ \boldsymbol{c} = \boldsymbol{\Phi}_{to}.
+$$
 
-As every to-point has different nearest neighbours in the _from_-points, the coefficient vector **c** must be calculated for each _to_-point independently. The matrix **Φ** and vector **Φ**<sup>T</sup> must also be calculated for every _to_-point independently.
+As every to-point has different nearest neighbours in the _from_-points, the coefficient vector **c** $\boldsymbol{c}$ must be calculated for each _to_-point independently. The matrix $\boldsymbol{\Phi}$ and vector $\boldsymbol{\Phi}_{to}$ must also be calculated for every _to_-point independently.
 
 
 

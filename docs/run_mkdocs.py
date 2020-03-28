@@ -1,16 +1,32 @@
 import glob
 import os
 import shutil
+from sys import argv
 
 """
 README
 ------
 
-- execute from this directory to update documentation
-- required software:
-    - mkdocs --> install with: pip install mkdocs
-    - material theme --> install with: pip install mkdocs-material
+Execute run_mkdocs.py from this directory to update the documentation. 
+Default behavior is to build the documentation but not deploy it.
+
+Required software:
+    mkdocs            (install with: pip install mkdocs)
+    material theme    (install with: pip install mkdocs-material)
+
+Optional arguments:
+    --deploy        build documentation and deploy on pyfsi.github.io/coconut/, 
+                    this requires admin rights on GitHub
+    --preview X     build documentation and preview webpage of file X.md, 
+                    if X is not supplied, README.md is shown
+                    
+Example:
+    python run_mkdocs.py --preview mappers
 """
+
+if len(argv) > 1:
+    if argv[1] == '--help' or argv[1] == '-h':
+        print('HELP')
 
 # clean docs folder and add coconuts
 shutil.rmtree('docs', ignore_errors=True)
@@ -54,9 +70,21 @@ for filename in filenames:
 for file in unused:
     print(f'WARNING - file "{file}" is not used in mkdocs.yml')
 
-# build static website
-print('\n')
-os.system('mkdocs build --clean')
 
-# deploy website (need admin privileges on GitHub)
-os.system('mkdocs gh-deploy')
+
+# build and deploy website
+if len(argv) > 1:
+    if argv[1] == '--preview':
+        os.system('mkdocs build --clean')
+        cwd = os.getcwd()
+        if len(argv) == 3:
+            cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2], 'index.html &')
+        else:
+            cmd = 'firefox ' + os.path.join(cwd, 'site', 'index.html &')
+        os.system(cmd)
+    elif argv[1] == '--deploy':
+        os.system('mkdocs gh-deploy')
+    else:
+        os.system('mkdocs build')
+else:
+    os.system('mkdocs build')

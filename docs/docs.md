@@ -27,7 +27,7 @@ A note on math in MD. There is no out-of-the-box LaTeX compatibiliy sadly, but b
 
 It is also possible to [render LaTeX equations on-the-run](https://alexanderrodin.com/github-latex-markdown/) and importing them as images, but that is quite cumbersome.
 
-
+Although it is not possible to use MathJax on GitHub, this is possible with MkDocs by using the [Arithmatex](Arithmatex) MD extension (see this overview of [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/)). 
 
 
 ## Creating a static website with MkDocs
@@ -53,6 +53,8 @@ The complete process to create the documentation website is automated by `run_mk
 *   Deploy website on GitHub Pages using `mkdocs gh-deploy`.
 
 To activate the website, the user must have administrator privileges in the repository. 
+
+**TODO**: explain how site can be previewed without publishing it on GitHub Pages.
 
 
 [1]:    https://www.mkdocs.org/
