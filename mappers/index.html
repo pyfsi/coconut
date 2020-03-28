@@ -1082,17 +1082,17 @@ This transformer can be initialized in both directions. </p>
 \end{cases}
 </script>
 </div>
-<div>
-<div class="MathJax_Preview">\phi(r) = (1-r)^4 (1 + 4r) \mathrm{for} 0 \leq r &lt; 1</div>
-<script type="math/tex; mode=display">\phi(r) = (1-r)^4 (1 + 4r) \mathrm{for} 0 \leq r < 1</script>
-</div>
-<div>
-<div class="MathJax_Preview">\phi(r) = 0 \mathrm{for} 1 \leq r</div>
-<script type="math/tex; mode=display">\phi(r) = 0 \mathrm{for} 1 \leq r</script>
-</div>
-<p>with <em>r</em> a positive distance. Assume that <em>n</em> nearest <em>from</em>-points will be used in the interpolation.
-An unknown function <em>f</em>(<strong>x</strong>) can then be approximated as the weighted sum of <em>n</em> shifted radial basis functions:</p>
+<p>with <em>r</em> <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> a positive distance. Assume that <em>n</em> <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> nearest <em>from</em>-points will be used in the interpolation.
+An unknown function <em>f</em>(<strong>x</strong>) <span><span class="MathJax_Preview">f(x)</span><script type="math/tex">f(x)</script></span> can then be approximated as the weighted sum of <em>n</em> <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> shifted radial basis functions:</p>
 <p><em>f</em>(<strong>x</strong>) ≈ Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong> − <strong>x</strong><sub>j</sub>||)</p>
+<div>
+<div class="MathJax_Preview">
+f(\boldsymbol{x}) = \Sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+</div>
+<script type="math/tex; mode=display">
+f(\boldsymbol{x}) = \Sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+</script>
+</div>
 <p>To determine the coefficients <em>α</em><sub>j</sub>, we require that the exact function value is returned at the <em>n</em> <em>from</em>-points.
 This gives us <em>n</em> equations</p>
 <p><em>f</em>(<strong>x</strong><sub>i</sub>) = <em>f</em><sub>i</sub> 
