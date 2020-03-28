@@ -1,0 +1,1149 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="site_description">
+      
+      
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-4.6.3">
+    
+    
+      
+        <title>Mappers - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.adb8469c.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.a8b3c06d.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#4caf50">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.86422ebf.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="green" data-md-color-accent="green">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#mappers" tabindex="0" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="CoCoNuT" aria-label="CoCoNuT" class="md-header-nav__button md-logo">
+          
+            <img alt="logo" src="../images/logo.png" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              CoCoNuT
+            </span>
+            <span class="md-header-nav__topic">
+              
+                Mappers
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" aria-label="search" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+        
+
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  <li class="md-tabs__item">
+    
+      <a href=".." class="md-tabs__link">
+        Guide to the documentation
+      </a>
+    
+  </li>
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../fluent/" class="md-tabs__link">
+          SolverWrappers
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../test_examples/" class="md-tabs__link">
+          TestExamples
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="./" class="md-tabs__link md-tabs__link--active">
+          Varia
+        </a>
+      
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+      
+      <main class="md-main" role="main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="CoCoNuT" class="md-nav__button md-logo">
+      
+        <img alt="logo" src="../images/logo.png" width="48" height="48">
+      
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Guide to the documentation" class="md-nav__link">
+      Guide to the documentation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+    
+    <label class="md-nav__link" for="nav-2">
+      SolverWrappers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        SolverWrappers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
+      SolverWrapperFluent
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../python_solvers/" title="Pure Python SolverWrappers" class="md-nav__link">
+      Pure Python SolverWrappers
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+    
+    <label class="md-nav__link" for="nav-3">
+      TestExamples
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        TestExamples
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../test_examples/" title="Test Examples" class="md-nav__link">
+      Test Examples
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2">
+    
+    <label class="md-nav__link" for="nav-3-2">
+      Tube
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-3-2">
+        Tube
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent2D_abaqus2D/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent2D_tube_structure/" title="Fluent 2D - Python" class="md-nav__link">
+      Fluent 2D - Python
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3D_abaqus3D/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
+      Fluent 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_abaqus2D/" title="Python - Abaqus 2D" class="md-nav__link">
+      Python - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_structure/" title="Python - Python" class="md-nav__link">
+      Python - Python
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_structure_inert/" title="Python - Python inert" class="md-nav__link">
+      Python - Python inert
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+    
+    <label class="md-nav__link" for="nav-4">
+      Varia
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Varia
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Mappers
+      </label>
+    
+    <a href="./" title="Mappers" class="md-nav__link md-nav__link--active">
+      Mappers
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general-concepts" class="md-nav__link">
+    General concepts
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hierarchy-of-mapping-related-objects" class="md-nav__link">
+    Hierarchy of mapping-related objects
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpolators-and-transformers" class="md-nav__link">
+    Interpolators and transformers
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-special-mappers" class="md-nav__link">
+    Overview of special mappers
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapperinterface" class="md-nav__link">
+    MapperInterface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mappercombined" class="md-nav__link">
+    MapperCombined
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-transformers" class="md-nav__link">
+    Overview of transformers
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapperpermutation" class="md-nav__link">
+    MapperPermutation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperaxisymmetric2dto3d" class="md-nav__link">
+    MapperAxisymmetric2DTo3D
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperaxisymmetric3dto2d" class="md-nav__link">
+    MapperAxisymmetric3DTo2D
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-interpolators" class="md-nav__link">
+    Overview of interpolators
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapperinterpolator" class="md-nav__link">
+    MapperInterpolator
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mappernearest" class="md-nav__link">
+    MapperNearest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperlinear" class="md-nav__link">
+    MapperLinear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperradialbasis" class="md-nav__link">
+    MapperRadialBasis
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../pykratos/" title="Pykratos" class="md-nav__link">
+      Pykratos
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general-concepts" class="md-nav__link">
+    General concepts
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hierarchy-of-mapping-related-objects" class="md-nav__link">
+    Hierarchy of mapping-related objects
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interpolators-and-transformers" class="md-nav__link">
+    Interpolators and transformers
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-special-mappers" class="md-nav__link">
+    Overview of special mappers
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapperinterface" class="md-nav__link">
+    MapperInterface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mappercombined" class="md-nav__link">
+    MapperCombined
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-transformers" class="md-nav__link">
+    Overview of transformers
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapperpermutation" class="md-nav__link">
+    MapperPermutation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperaxisymmetric2dto3d" class="md-nav__link">
+    MapperAxisymmetric2DTo3D
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperaxisymmetric3dto2d" class="md-nav__link">
+    MapperAxisymmetric3DTo2D
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-interpolators" class="md-nav__link">
+    Overview of interpolators
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mapperinterpolator" class="md-nav__link">
+    MapperInterpolator
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mappernearest" class="md-nav__link">
+    MapperNearest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperlinear" class="md-nav__link">
+    MapperLinear
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperradialbasis" class="md-nav__link">
+    MapperRadialBasis
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="mappers">Mappers</h1>
+<h2 id="general-concepts">General concepts</h2>
+<h3 id="hierarchy-of-mapping-related-objects">Hierarchy of mapping-related objects</h3>
+<p>CoCoNuT interacts with the mappers through the <code>SolverWrapperMapped</code> object: this wrapper behaves like every other <code>SolverWrapper</code> as far as the other components are concerned. 
+It contains 3 main components: a <code>Mapper</code> for the input, a real <code>SolverWrapper</code> and a <code>Mapper</code> for the output. The mappers are initialized through the <code>SetInterfaceInput</code> and <code>SetInterfaceOutput</code> methods respectively, by providing them with the <code>CoSimulationInterface</code> objects that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
+<p>The two mappers in the <code>SolverWrapperMapped</code> object are also of a special type: they work on the level of <code>CoSimulationInterface</code> objects. They are some sort of mapper-wrapper around the actual mappers which work on <code>ModelPart</code> level.
+Currently only one such mapper is available, aptly called <code>MapperInterface</code>.</p>
+<p>At the lowest level, mappers interpolate historical variables between two <code>ModelPart</code> objects, based on the coordinates of the nodes. Interpolation is always done from the <em>from</em>-<code>ModelPart</code> to the <em>to</em>-<code>ModelPart</code>.
+These mappers can be chained together in a <code>MapperCombined</code> object, creating in fact another layer of mapping. So many layers! Like an onion!</p>
+<h3 id="interpolators-and-transformers">Interpolators and transformers</h3>
+<p>The <code>ModelPart</code>-level mappers have two main methods: <code>Initialize</code> and <code>__call__</code>. </p>
+<p>The <code>Initialize</code> method performs one-time expensive operations, namely nearest-neighbour search and calculation of the interpolation coefficients. The initialization is done based on the original coordinates <code>X0</code>, <code>Y0</code> and <code>Z0</code>.</p>
+<p>The <code>__call__</code> method is used for the actual mapping. It takes two tuples as arguments (<em>from</em> and <em>to</em> respectively), each tuple containing the <code>ModelPart</code> and the <code>Variable</code> to be used in the interpolation. This method returns nothing: the interpolation is done in-place in the <code>ModelPart</code> objects.</p>
+<p>There are two types of <code>ModelPart</code>-level mappers: interpolators and transformers. They can be distinguished by their boolean <code>interpolator</code> attribute (see <code>__init__</code>). </p>
+<p>For interpolators, <code>Initialize</code> gets two <code>ModelPart</code> objects (<em>from</em> and <em>to</em>), and returns nothing. These mappers do the real interpolation. Currently <code>MapperNearest</code>, <code>MapperLinear</code> and <code>MapperRadialBasis</code> are available.</p>
+<p>For transformers, <code>Initialize</code> gets only one <code>ModelPart</code> (from either the <em>from</em> or <em>to</em> side, depending on the transformation), and returns the other <code>ModelPart</code>. Currently <code>MapperPermutation</code>, <code>MapperAxisymmetric2DTo3D</code> and <code>MapperAxisymmetric3DTo2D</code> are available.</p>
+<p>A transformer can never be used by itself, it must always be combined with an interpolator: the reason is that interpolators use information coming from two sides, which is exactly what the <code>SolverWrapperMapped</code> and <code>MapperInterface</code> objects want. To chain together multiple mappers, the <code>MapperCombined</code> is used: it contains always 1 interpolator and 0 or more transformers, on either side of the interpolator.</p>
+<h2 id="overview-of-special-mappers">Overview of special mappers</h2>
+<h3 id="mapperinterface">MapperInterface</h3>
+<p>Special mapper-class that maps on the level of <code>CoSimulationInterface</code> objects. 
+It takes two <code>CoSimulationInterface</code> objects, 
+and maps the <code>ModelPart</code> objects to each other in order of appearance, all using the same <code>ModelPart</code> mapper.</p>
+<p>To use different interpolation for the different <code>ModelPart</code> objects or even for different historical variables, a new <code>CoSimulationInterface</code> mapper must be written. </p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>type</code></td>
+<td align="center">str</td>
+<td><code>ModelPart</code> mapper to be used</td>
+</tr>
+<tr>
+<td align="right"><code>settings</code></td>
+<td align="center">dict</td>
+<td>all the settings for the <code>ModelPart</code> mapper specified in <code>type</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mappercombined">MapperCombined</h3>
+<p>The <code>MapperCombined</code> is used to chain together multiple mappers. It contains always 1 interpolator and 0 or more transformers, on either side of the interpolator. If transformers are present, <em>intermediate</em> <code>ModelPart</code> objects are created during initialization. This is done by working <em>inwards</em> towards the interpolator. This means that transformers upstream of the interpolator, are initialized based on the <em>from</em> <code>ModelPart</code> (input), while downstream transformers are initialized based on the <em>to</em> <code>ModelPart</code> (output). 
+Some transformers can only be initialized in one direction, e.g. for <code>MapperAxisymmetric3DTo2D</code>, the 2D <em>to</em> <code>ModelPart</code> must be supplied, therefore it must be downstream of the interpolator. </p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>mappers</code></td>
+<td align="center">list</td>
+<td>an ordered list of all the <code>ModelPart</code> mappers to be used</td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview-of-transformers">Overview of transformers</h2>
+<h3 id="mapperpermutation">MapperPermutation</h3>
+<p>Permutates the coordinates and the vector variables according to the given <code>permutation</code>. 
+This transformer can be initialized in both directions. </p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>permutation</code></td>
+<td align="center">list</td>
+<td>a permutation of the list [0, 1, 2]</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapperaxisymmetric2dto3d">MapperAxisymmetric2DTo3D</h3>
+<p>Transforms from a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the <em>forward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>upstream</em> of the interpolator in a <code>MapperCombined</code>.</p>
+<p>The 3D <code>ModelPart</code> is returned by the initialization. <code>n_tangential</code> specifies the number of <code>Node</code> objects in the tangential (circumferential) direction. For each <code>Node</code> in the 2D <code>ModelPart</code>, <code>n_tangential</code> ones are created in the 3D <code>ModelPart</code>. The code knows which directions are axial, radial and tangential thanks to the input parameters <code>direction_axial</code> and <code>direction_radial</code>. </p>
+<p>It is not possible to change the axial direction between 2D and 3D: a separate <code>MapperPermutation</code> should be added for that purpose. </p>
+<p>Scalar variables are simply mapped from the 2D <code>Node</code> to all corresponding 3D ones. For vector variables, the axial component is simply mapped, the radial component is rotated. The tangential component (e.g. swirl) cannot be taken into account.</p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>direction_axial</code></td>
+<td align="center">string</td>
+<td>must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the symmetry axis</td>
+</tr>
+<tr>
+<td align="right"><code>direction_radial</code></td>
+<td align="center">string</td>
+<td>must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the second (radial) axis in 2D</td>
+</tr>
+<tr>
+<td align="right"><code>n_tangential</code></td>
+<td align="center">int</td>
+<td>must be ≥ 6</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapperaxisymmetric3dto2d">MapperAxisymmetric3DTo2D</h3>
+<p>Transforms from a 3D geometry to a 2D axisymmetric geometry. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the <code>MapperInterpolator</code> in a <code>MapperCombined</code>.</p>
+<p>For scalar variables, the circumferential average is taken for each 2D <code>Node</code>. For vector variables too, taking into account the correct radial direction in each 3D <code>Node</code>.  Again, swirl cannot be taken into account: if a tangential component is present in 3D, it is not mapped to 2D. </p>
+<p>For more information and JSON settings, see <code>MapperAxisymmetric2DTo3D</code> which is very similar.</p>
+<h2 id="overview-of-interpolators">Overview of interpolators</h2>
+<h3 id="mapperinterpolator">MapperInterpolator</h3>
+<p>Base-class for all interpolators (currently <code>MapperNearest</code>, <code>MapperLinear</code> and <code>MapperRadialBasis</code>). </p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>directions</code></td>
+<td align="center">list</td>
+<td>list of coordinate directions, maximum three entries, may contain <code>"X"</code>, <code>"Y"</code>, <code>"Z"</code></td>
+</tr>
+<tr>
+<td align="right"><code>balanced_tree</code></td>
+<td align="center">bool</td>
+<td>if <code>true</code>, create balanced <code>cKDTree</code>, which is more stable, but takes longer to build; set to <code>true</code> if the tree is giving problems (which I don't expect)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Initialize</code>-method should be called in all child-classes. It does the following:
+-   read and store the coordinates from the <em>from</em> and <em>to</em> <code>ModelPart</code> objects
+-   check if the bounding boxes of the <em>from</em> and <em>to</em> <code>ModelPart</code> objects are more or less overlapping
+-   do an efficient nearest neighbour search using <code>scipy.spatial.cKDTree</code>
+-   check if the <em>from</em> <code>ModelPart</code> does not contain duplicate nodes (i.e. same coordinates)</p>
+<p>The <code>__call__</code>-method should not be overridden in the child-classes. It maps historical variables based on neighbours and coefficients determined in <code>Initialize</code>. Historical variables of type <code>Double</code> and type <code>Array</code> can be mapped (the latter is just the application of the former for each vector component).</p>
+<h3 id="mappernearest">MapperNearest</h3>
+<p>Child-class of <code>MapperInterpolator</code>, does not require additional settings. Does simple nearest-neighbour mapping.</p>
+<h3 id="mapperlinear">MapperLinear</h3>
+<p>Child-class of <code>MapperInterpolator</code>, additional settings:</p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>parallel</code></td>
+<td align="center">bool</td>
+<td>if <code>true</code>, use <code>multiprocessing</code> to parallellize loop that calculates coefficients</td>
+</tr>
+</tbody>
+</table>
+<p>The kind of linear mapping depends on the number of coordinate directions, as given in the <code>directions</code> setting.</p>
+<p><strong>1D</strong> - If the <em>to</em>-point lies between the 2 nearest <em>from</em>-points, linear interpolation is done. Else, nearest neighbour interpolation is done.</p>
+<p><strong>2D</strong> - The <em>to</em>-point is first projected on the line through the 2 nearest <em>from</em>-points. If the projected point lies between the <em>from</em>-points, linear interpolation is done. Else, nearest neighbour interpolation is done.</p>
+<p><strong>3D</strong> - The <em>to</em>-point is first projected on the plane through the 3 nearest <em>from</em>-points. If the triangle consinsting of those 3 points is <em>deprecated</em> (colinear points), the 2D-methodology is followed. Else, if the projected point lies inside the triangle, barycentric interpolation is done. If it lies outside the triangle, the 2D-methodology is followed.</p>
+<h3 id="mapperradialbasis">MapperRadialBasis</h3>
+<p>Child-class of <code>MapperInterpolator</code>, additional settings:</p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>parallel</code></td>
+<td align="center">bool</td>
+<td>if <code>true</code>, use <code>multiprocessing</code> to parallellize loop that calculates coefficients</td>
+</tr>
+</tbody>
+</table>
+<p>Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using <code>scipy.spatial.distance</code>. </p>
+<p>Normal radial basis interpolation is done as follows.
+<em>φ</em>(<em>r</em>) is a radial basis function defined as  </p>
+<p><em>φ</em>(<em>r</em>) = (1 − <em>r</em>)<sup>4</sup> (1 + 4 <em>r</em>) for 0 ≤ <em>r</em> &lt; 1<br />
+<em>φ</em>(<em>r</em>) = 0 for 1 ≤ <em>r</em></p>
+<p>with <em>r</em> a positive distance. Assume that <em>n</em> nearest <em>from</em>-points will be used in the interpolation.
+An unknown function <em>f</em>(<strong>x</strong>) can then be approximated as the weighted sum of <em>n</em> shifted radial basis functions:</p>
+<p><em>f</em>(<strong>x</strong>) ≈ Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong> − <strong>x</strong><sub>j</sub>||)</p>
+<p>To determine the coefficients <em>α</em><sub>j</sub>, we require that the exact function value is returned at the <em>n</em> <em>from</em>-points.
+This gives us <em>n</em> equations</p>
+<p><em>f</em>(<strong>x</strong><sub>i</sub>) = <em>f</em><sub>i</sub> 
+= Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong><sub>i</sub> − <strong>x</strong><sub>j</sub>||)</p>
+<p>which can be written in matrix form as</p>
+<p><strong>f</strong> = <strong>Φ</strong> · <strong>α</strong></p>
+<p>with <strong>f</strong>, <strong>α</strong> ∈ R<sup>n×1</sup>, and <strong>Φ</strong> ∈ R<sup>n×n</sup>. This system can be solved for the weights-vector <strong>α</strong>.</p>
+<p>However, in our case, the <em>from</em>-point values vector <strong>f</strong> is not known in advance: it contains the values of the <code>Variable</code> that will be interpolated. </p>
+<p>Therefore, the approximation to calculate the interpolatoin in the <em>to</em>-point is rewritten as follows:</p>
+<p><em>f</em>(<strong>x</strong><sub>to</sub>) = Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong><sub>to</sub> − <strong>x</strong><sub>j</sub>||) = <strong>Φ</strong><sup>T</sup><sub>to</sub> · <strong>α</strong> = <strong>Φ</strong><sup>T</sup><sub>to</sub> · <strong>Φ</strong><sup>-1</sup> · <strong>f</strong> = <strong>c</strong><sup>T</sup> · <strong>f</strong></p>
+<p>The coefficients vector <strong>c</strong> can now be calculated based only on the coordinates by solving the system</p>
+<p><strong>Φ</strong> · <strong>c</strong> = <strong>Φ</strong><sub>to</sub>.</p>
+<p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <strong>c</strong> must be calculated for each <em>to</em>-point independently. The matrix <strong>Φ</strong> and vector <strong>Φ</strong><sup>T</sup> must also be calculated for every <em>to</em>-point independently.</p>
+                
+                  
+                
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../tube_tube_flow_tube_structure_inert/" title="Python - Python inert" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Python - Python inert
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../pykratos/" title="Pykratos" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Pykratos
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="https://www.mkdocs.org" target="_blank" rel="noopener">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.c33a9706.js"></script>
+      
+      <script>app.initialize({version:"1.1",url:{base:".."}})</script>
+      
+    
+  </body>
+</html>

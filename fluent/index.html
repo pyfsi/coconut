@@ -1,0 +1,930 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="site_description">
+      
+      
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-4.6.3">
+    
+    
+      
+        <title>SolverWrapperFluent - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.adb8469c.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.a8b3c06d.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#4caf50">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.86422ebf.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="green" data-md-color-accent="green">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#solverwrapperfluent" tabindex="0" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="CoCoNuT" aria-label="CoCoNuT" class="md-header-nav__button md-logo">
+          
+            <img alt="logo" src="../images/logo.png" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              CoCoNuT
+            </span>
+            <span class="md-header-nav__topic">
+              
+                SolverWrapperFluent
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" aria-label="search" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+        
+
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  <li class="md-tabs__item">
+    
+      <a href=".." class="md-tabs__link">
+        Guide to the documentation
+      </a>
+    
+  </li>
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="./" class="md-tabs__link md-tabs__link--active">
+          SolverWrappers
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../test_examples/" class="md-tabs__link">
+          TestExamples
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../mappers/" class="md-tabs__link">
+          Varia
+        </a>
+      
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+      
+      <main class="md-main" role="main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="CoCoNuT" class="md-nav__button md-logo">
+      
+        <img alt="logo" src="../images/logo.png" width="48" height="48">
+      
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Guide to the documentation" class="md-nav__link">
+      Guide to the documentation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      SolverWrappers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        SolverWrappers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        SolverWrapperFluent
+      </label>
+    
+    <a href="./" title="SolverWrapperFluent" class="md-nav__link md-nav__link--active">
+      SolverWrapperFluent
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-operation" class="md-nav__link">
+    Overview of operation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-__init__-method" class="md-nav__link">
+    The __init__ method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-created-during-simulation" class="md-nav__link">
+    Files created during simulation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-new-case" class="md-nav__link">
+    Setting up a new case
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-specific-documentation" class="md-nav__link">
+    Version specific documentation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2019r1-193" class="md-nav__link">
+    2019R1 (19.3)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../python_solvers/" title="Pure Python SolverWrappers" class="md-nav__link">
+      Pure Python SolverWrappers
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+    
+    <label class="md-nav__link" for="nav-3">
+      TestExamples
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        TestExamples
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../test_examples/" title="Test Examples" class="md-nav__link">
+      Test Examples
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2">
+    
+    <label class="md-nav__link" for="nav-3-2">
+      Tube
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-3-2">
+        Tube
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent2D_abaqus2D/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent2D_tube_structure/" title="Fluent 2D - Python" class="md-nav__link">
+      Fluent 2D - Python
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3D_abaqus3D/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
+      Fluent 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_abaqus2D/" title="Python - Abaqus 2D" class="md-nav__link">
+      Python - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_structure/" title="Python - Python" class="md-nav__link">
+      Python - Python
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_structure_inert/" title="Python - Python inert" class="md-nav__link">
+      Python - Python inert
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Varia
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Varia
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../mappers/" title="Mappers" class="md-nav__link">
+      Mappers
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../pykratos/" title="Pykratos" class="md-nav__link">
+      Pykratos
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-operation" class="md-nav__link">
+    Overview of operation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-__init__-method" class="md-nav__link">
+    The __init__ method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-created-during-simulation" class="md-nav__link">
+    Files created during simulation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-new-case" class="md-nav__link">
+    Setting up a new case
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-specific-documentation" class="md-nav__link">
+    Version specific documentation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2019r1-193" class="md-nav__link">
+    2019R1 (19.3)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="solverwrapperfluent">SolverWrapperFluent</h1>
+<p>This is the documentation for all Fluent SolverWrappers.
+Currently only FSI simulations are supported, no other multiphysics problems. Also, inviscid flows are not supported yet.</p>
+<h2 id="parameters">Parameters</h2>
+<p>This section describes the Parameters in the JSON file, listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>case_file</code></td>
+<td align="center">string</td>
+<td>Name of the case file. It must be present in the folder <code>working_directory</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>cores</code></td>
+<td align="center">int</td>
+<td>Number of processor cores to use when running Fluent (tested only on single node so far).</td>
+</tr>
+<tr>
+<td align="right"><code>dimensions</code></td>
+<td align="center">int</td>
+<td>Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D.</td>
+</tr>
+<tr>
+<td align="right"><code>delta_t</code></td>
+<td align="center">double</td>
+<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher CoSimulationObject.</td>
+</tr>
+<tr>
+<td align="right"><code>flow_iterations</code></td>
+<td align="center">int</td>
+<td>Number of non-linear iterations in Fluent per coupling iteration.</td>
+</tr>
+<tr>
+<td align="right"><code>fluent_gui</code></td>
+<td align="center">bool</td>
+<td>Set to <code>true</code> to run Fluent with the graphical interface.</td>
+</tr>
+<tr>
+<td align="right"><code>hybrid_initialization</code></td>
+<td align="center">bool</td>
+<td>If <code>true</code>, the hybrid initialization is used in Fluent before the first timestep. If <code>false</code>, the standard initialization is used, which requires that adequate reference values have been set in advance by the user in the <code>case_file</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_input</code></td>
+<td align="center">dict</td>
+<td>Keys are names of ModelParts for Fluent nodes. Each name must be the concatenation of an entry from thread_names and '_nodes'. The values are (lists of) names of Variables.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_output</code></td>
+<td align="center">dict</td>
+<td>Analogous to <code>interface_input</code>, but for Fluent faces ('_faces').</td>
+</tr>
+<tr>
+<td align="right"><code>max_nodes_per_face</code></td>
+<td align="center">int</td>
+<td>The parameter is used to construct unique IDs for faces, based on unique IDs of nodes. It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.</td>
+</tr>
+<tr>
+<td align="right"><code>save_iterations</code></td>
+<td align="center">int</td>
+<td>Number of timesteps between consecutive saves of the Fluent case and data files.</td>
+</tr>
+<tr>
+<td align="right"><code>thread_names</code></td>
+<td align="center">list</td>
+<td>List with Fluent names of the surface threads on the interface. IS THE ORDER IMPORTANT? TODO</td>
+</tr>
+<tr>
+<td align="right"><code>timestep_start</code></td>
+<td align="center">int</td>
+<td>Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the <code>case_file</code>, else the code looks for the relevant case and data files. This parameter is usually specified in a higher CoSimulationObject.</td>
+</tr>
+<tr>
+<td align="right"><code>unsteady</code></td>
+<td align="center">bool</td>
+<td><code>true</code> for transient FSI, <code>false</code> for steady FSI.</td>
+</tr>
+<tr>
+<td align="right"><code>working_directory</code></td>
+<td align="center">string</td>
+<td>Absolute path to the working directory or relative path w.r.t the current directory.</td>
+</tr>
+</tbody>
+</table>
+<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher CoSimulationObject. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p>If different parameters are used with different Fluent versions, this should be specified both in this section and in the version specific documentation section.</p>
+<h2 id="overview-of-operation">Overview of operation</h2>
+<p>The solver wrapper consists of 3 files (with X the Fluent version, e.g. 2019R1):
+-   X.py: defines the SolverWrapperFluentX class
+-   X.jou: Fluent journal file to interactively run the FSI simulation, written in Scheme
+-   X.c: Fluent UDF file that implements additional functionality used in Fluent, written in C</p>
+<h3 id="the-__init__-method">The <code>__init__</code> method</h3>
+<p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summery, so that SolverWrapperFluentX can link the interface thread names (specified in <code>thread_names</code>) to thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelPart</code> objects are created, based on data written by Fluent in timestep 0. After a restart, this same data must be found, i.e. if that file is removed from the <code>working_directory</code>, the simulation cannot be restarted. If the simulation was restarted, the coordinates <code>X</code>, <code>Y</code>, <code>Z</code> in the <code>Node</code> objects are updated to the current values. Finally, the <code>CoSimulationInteface</code> objects are made.</p>
+<h3 id="files-created-during-simulation">Files created during simulation</h3>
+<p>In the file conventions, <code>A</code> is the timestep number and <code>B</code> the Fluent thread ID.</p>
+<ul>
+<li>Fluent case and data files are saved as files of the form <code>case_timestepA.cas</code> and <code>case_timestepA.dat</code>.</li>
+<li>Current node and face coordinates are passed from Fluent to Python with files of the form <code>nodes_timestepA_threadB.dat</code> and <code>faces_timestepA_threadB.dat</code>. </li>
+<li>The new node coordinates are passed from Python to Fluent with files of the form <code>nodes_update_timestepA_threadB</code>.</li>
+<li>Pressure and tractions are passed from Fluent to Python with files of the form <code>pressure_traction_timestepA_threadB.dat</code>.</li>
+<li>Files with extension <code>.coco</code> are used to pass messages between Python and Fluent (via the journal). </li>
+</ul>
+<h2 id="setting-up-a-new-case">Setting up a new case</h2>
+<p>Following items should be set up and saved in the <code>case_file</code> (this list may be non-exhaustive):</p>
+<ul>
+<li>additional UDFs must be configured</li>
+<li>steady/unsteady (should match with the <code>unsteady</code> parameter)</li>
+<li>2D, 3D or axisymmetric (should match with the <code>dimensions</code> parameter)</li>
+<li>dynamic mesh for all zones, except the FSI interfaces</li>
+<li>boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria</li>
+<li>if <code>hybrid_initialization</code> is <code>false</code>, then default should be set for standard initialization</li>
+</ul>
+<p>Following items are done after starting the FSI simulation, and must therefore not be included in the <code>case_file</code>:</p>
+<ul>
+<li>dynamic mesh for the FSI interfaces (which are defined in <code>thread_names</code>)</li>
+<li>the timestep (<code>delta_t</code>) </li>
+<li>initialization</li>
+</ul>
+<h2 id="version-specific-documentation">Version specific documentation</h2>
+<h3 id="2019r1-193">2019R1 (19.3)</h3>
+<p>This is currently the only version, so this section is still empty.</p>
+                
+                  
+                
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href=".." title="Guide to the documentation" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Guide to the documentation
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                SolverWrapperAbaqus
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="https://www.mkdocs.org" target="_blank" rel="noopener">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.c33a9706.js"></script>
+      
+      <script>app.initialize({version:"1.1",url:{base:".."}})</script>
+      
+    
+  </body>
+</html>
