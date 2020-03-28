@@ -1,5 +1,5 @@
 site_name: CoCoNuT
-repo_url: https://github.com/pyfsi/Kratos/tree/CoCoNuT/applications/CoSimulationApplication
+repo_url: https://github.com/pyfsi/coconut
 edit_uri: ''
 site_description: site_description
 theme:
@@ -12,7 +12,7 @@ theme:
         primary: 'green'
         accent: 'green'
 nav:
-    - index.md
+    - README.md
     - SolverWrappers:
         - fluent.md
         - abaqus.md
@@ -29,3 +29,4 @@ nav:
     - Varia:
         - mappers.md
         - pykratos.md
+        - docs.md

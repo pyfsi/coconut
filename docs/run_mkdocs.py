@@ -13,7 +13,7 @@ README
 """
 
 # clean docs folder and add coconuts
-shutil.rmtree('docs')
+shutil.rmtree('docs', ignore_errors=True)
 
 os.mkdir('docs')
 os.mkdir('docs/images')

@@ -12,7 +12,7 @@ Installation:
 -   Unzip to a folder `coconut`.
 -   Add the parent folder of `coconut` to your Python path.
 
-For example, with a folder structure like:
+For example, with a folder structure like
 ```
 /some/absolute/path/
     coconut/
@@ -40,7 +40,7 @@ Requirements:
 Installation:
 
 -   Choose or create a directory to install CoCoNuT.
--   Copy the code below to a bash-script and adapt the parameter `absolute path` to the above directory.
+-   Copy the code below to a bash-script and adapt the parameter `absolute_path` to the above directory.
 -   Run bash-script.
 
 ```bash
