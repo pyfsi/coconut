@@ -1063,9 +1063,7 @@ This transformer can be initialized in both directions. </p>
 </table>
 <p>Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using <code>scipy.spatial.distance</code>. </p>
 <p>Normal radial basis interpolation is done as follows.
-<em>φ</em>(<em>r</em>) <span><span class="MathJax_Preview">\phi(r)</span><script type="math/tex">\phi(r)</script></span> is a radial basis function defined as  </p>
-<p><em>φ</em>(<em>r</em>) = (1 − <em>r</em>)<sup>4</sup> (1 + 4 <em>r</em>) for 0 ≤ <em>r</em> &lt; 1<br />
-<em>φ</em>(<em>r</em>) = 0 for 1 ≤ <em>r</em></p>
+<span><span class="MathJax_Preview">\phi(r)</span><script type="math/tex">\phi(r)</script></span> is a radial basis function defined as  </p>
 <div>
 <div class="MathJax_Preview">
 \phi(r) = 
@@ -1082,30 +1080,56 @@ This transformer can be initialized in both directions. </p>
 \end{cases}
 </script>
 </div>
-<p>with <em>r</em> <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> a positive distance. Assume that <em>n</em> <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> nearest <em>from</em>-points will be used in the interpolation.
-An unknown function <em>f</em>(<strong>x</strong>) <span><span class="MathJax_Preview">f(x)</span><script type="math/tex">f(x)</script></span> can then be approximated as the weighted sum of <em>n</em> <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> shifted radial basis functions:</p>
-<p><em>f</em>(<strong>x</strong>) ≈ Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong> − <strong>x</strong><sub>j</sub>||)</p>
+<p>with <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> a positive distance. Assume that <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> nearest <em>from</em>-points will be used in the interpolation.
+An unknown function <span><span class="MathJax_Preview">f(\boldsymbol{x})</span><script type="math/tex">f(\boldsymbol{x})</script></span> can then be approximated as the weighted sum of <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> shifted radial basis functions:</p>
 <div>
 <div class="MathJax_Preview">
-f(\boldsymbol{x}) = \Sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
 </div>
 <script type="math/tex; mode=display">
-f(\boldsymbol{x}) = \Sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
 </script>
 </div>
-<p>To determine the coefficients <em>α</em><sub>j</sub> <span><span class="MathJax_Preview">\alpha_j</span><script type="math/tex">\alpha_j</script></span>, we require that the exact function value is returned at the <em>n</em> <em>from</em>-points.
-This gives us <em>n</em> equations</p>
-<p><em>f</em>(<strong>x</strong><sub>i</sub>) = <em>f</em><sub>i</sub> 
-= Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong><sub>i</sub> − <strong>x</strong><sub>j</sub>||)</p>
+<p>To determine the coefficients <span><span class="MathJax_Preview">\alpha_j</span><script type="math/tex">\alpha_j</script></span>, we require that the exact function value is returned at the <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> <em>from</em>-points.
+This gives us <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> equations</p>
+<div>
+<div class="MathJax_Preview">
+f(\boldsymbol{x}_i) = f_i = \sum_j \alpha_j \phi(||\boldsymbol{x}_i - \boldsymbol{x}_j||)
+</div>
+<script type="math/tex; mode=display">
+f(\boldsymbol{x}_i) = f_i = \sum_j \alpha_j \phi(||\boldsymbol{x}_i - \boldsymbol{x}_j||)
+</script>
+</div>
 <p>which can be written in matrix form as</p>
-<p><strong>f</strong> = <strong>Φ</strong> · <strong>α</strong></p>
-<p>with <strong>f</strong>, <strong>α</strong> ∈ R<sup>n×1</sup>, and <strong>Φ</strong> ∈ R<sup>n×n</sup>. This system can be solved for the weights-vector <strong>α</strong>.</p>
-<p>However, in our case, the <em>from</em>-point values vector <strong>f</strong> is not known in advance: it contains the values of the <code>Variable</code> that will be interpolated. </p>
+<div>
+<div class="MathJax_Preview">
+\boldsymbol{f} = \boldsymbol{\Phi} \boldsymbol{\alpha}
+</div>
+<script type="math/tex; mode=display">
+\boldsymbol{f} = \boldsymbol{\Phi} \boldsymbol{\alpha}
+</script>
+</div>
+<p>with <span><span class="MathJax_Preview">\boldsymbol{f}, \boldsymbol{\alpha} \in \mathbb{R}^{n \times 1}</span><script type="math/tex">\boldsymbol{f}, \boldsymbol{\alpha} \in \mathbb{R}^{n \times 1}</script></span>, and <span><span class="MathJax_Preview">\boldsymbol{\Phi} \in \mathbb{R}^{n \times n}</span><script type="math/tex">\boldsymbol{\Phi} \in \mathbb{R}^{n \times n}</script></span>. This system can be solved for the weights-vector <span><span class="MathJax_Preview">\boldsymbol{\alpha}</span><script type="math/tex">\boldsymbol{\alpha}</script></span>.</p>
+<p>However, in our case, the <em>from</em>-point values vector <span><span class="MathJax_Preview">\boldsymbol{f}</span><script type="math/tex">\boldsymbol{f}</script></span> is not known in advance: it contains the values of the <code>Variable</code> that will be interpolated. </p>
 <p>Therefore, the approximation to calculate the interpolatoin in the <em>to</em>-point is rewritten as follows:</p>
-<p><em>f</em>(<strong>x</strong><sub>to</sub>) = Σ<sub>j</sub> <em>α</em><sub>j</sub> <em>φ</em>(||<strong>x</strong><sub>to</sub> − <strong>x</strong><sub>j</sub>||) = <strong>Φ</strong><sup>T</sup><sub>to</sub> · <strong>α</strong> = <strong>Φ</strong><sup>T</sup><sub>to</sub> · <strong>Φ</strong><sup>-1</sup> · <strong>f</strong> = <strong>c</strong><sup>T</sup> · <strong>f</strong></p>
-<p>The coefficients vector <strong>c</strong> can now be calculated based only on the coordinates by solving the system</p>
-<p><strong>Φ</strong> · <strong>c</strong> = <strong>Φ</strong><sub>to</sub>.</p>
-<p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <strong>c</strong> must be calculated for each <em>to</em>-point independently. The matrix <strong>Φ</strong> and vector <strong>Φ</strong><sup>T</sup> must also be calculated for every <em>to</em>-point independently.</p>
+<div>
+<div class="MathJax_Preview">
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
+</div>
+<script type="math/tex; mode=display">
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
+</script>
+</div>
+<p>The coefficients vector <span><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> can now be calculated based only on the coordinates by solving the system</p>
+<div>
+<div class="MathJax_Preview">
+\boldsymbol{\Phi} \ \boldsymbol{c} = \boldsymbol{\Phi}_{to}.
+</div>
+<script type="math/tex; mode=display">
+\boldsymbol{\Phi} \ \boldsymbol{c} = \boldsymbol{\Phi}_{to}.
+</script>
+</div>
+<p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <strong>c</strong> <span><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> must be calculated for each <em>to</em>-point independently. The matrix <span><span class="MathJax_Preview">\boldsymbol{\Phi}</span><script type="math/tex">\boldsymbol{\Phi}</script></span> and vector <span><span class="MathJax_Preview">\boldsymbol{\Phi}_{to}</span><script type="math/tex">\boldsymbol{\Phi}_{to}</script></span> must also be calculated for every <em>to</em>-point independently.</p>
                 
                   
                 

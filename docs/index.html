@@ -662,14 +662,7 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <li><a href="http://www.unics.uni-hannover.de/nhtcapri/mathematics.html">more math symbols</a></li>
 </ul>
 <p>It is also possible to <a href="https://alexanderrodin.com/github-latex-markdown/">render LaTeX equations on-the-run</a> and importing them as images, but that is quite cumbersome.</p>
-<p>TODO: add paragraph about MathJax!</p>
-<p>some inline math <span><span class="MathJax_Preview">\alpha + \beta = a^{k+1}_0</span><script type="math/tex">\alpha + \beta = a^{k+1}_0</script></span></p>
-<p>some other math:</p>
-<div>
-<div class="MathJax_Preview">\alpha + \beta = a^{k+1}_0</div>
-<script type="math/tex; mode=display">\alpha + \beta = a^{k+1}_0</script>
-</div>
-<p>TODO: explain how site can be previed without publishing it on GitHub Pages</p>
+<p>Although it is not possible to use MathJax on GitHub, this is possible with MkDocs by using the <a href="Arithmatex">Arithmatex</a> MD extension (see this overview of <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a>). </p>
 <h2 id="creating-a-static-website-with-mkdocs">Creating a static website with MkDocs</h2>
 <p><a href="https://www.mkdocs.org/">MkDocs</a> can be installed using pip: </p>
 <div class="codehilite"><pre><span></span><code>pip install mkdocs
@@ -692,6 +685,7 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <li>Deploy website on GitHub Pages using <code>mkdocs gh-deploy</code>.</li>
 </ul>
 <p>To activate the website, the user must have administrator privileges in the repository. </p>
+<p><strong>TODO</strong>: explain how site can be previewed without publishing it on GitHub Pages.</p>
                 
                   
                 
