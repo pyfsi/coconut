@@ -16,18 +16,14 @@ Some important rules for writing MD files for this documentation website:
 *   The name of the file must be unique: use names like `fluent.md` or `test_examples.md`, not `readme.md`.
 *   Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names `example.md` with a proper link. 
 
-A note on math in MD. There is no out-of-the-box LaTeX compatibiliy sadly, but basic equations can be typeset directly in HTML if necessary. Some usefull symbols:
+For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. $E = m c^2$), block-style equations in double dolar signs, e.g.
 
-*   lowercase Greek: αβγδεζηϑθικλμνξοπρστυφϕχψω
-*   uppercase Greek: ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ
-*   super and subscripts: `<sup></sup>` and `<sub></sub>`
-*   operators: + - − · / × √ ∘ ∗
-*   other symbols: ∂ Δ	∑ ≤ ≥ ∈
-*   [more math symbols](http://www.unics.uni-hannover.de/nhtcapri/mathematics.html)
+$$
+e^{i \pi} + 1 = 0.
+$$
 
-It is also possible to [render LaTeX equations on-the-run](https://alexanderrodin.com/github-latex-markdown/) and importing them as images, but that is quite cumbersome.
+LaTeX expressions will **not** be rendered on GitHub, but only on the documentation website. For the latter, the MD extension [Arithmatex](Arithmatex) is used to render the expressions with MathJax. Note that [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/) is a little more restrictive than a real LaTeX installation. 
 
-Although it is not possible to use MathJax on GitHub, this is possible with MkDocs by using the [Arithmatex](Arithmatex) MD extension (see this overview of [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/)). 
 
 
 ## Creating a static website with MkDocs
@@ -40,7 +36,12 @@ Furthermore, the [Material](https://squidfunk.github.io/mkdocs-material/) theme 
 ```bash
 pip install mkdocs-material
 ```
-Both can be installed locally by adding the argument `-t <install_dir>`. 
+To render LaTeX equations, the [PyMdown](https://squidfunk.github.io/mkdocs-material/extensions/pymdown/) MD extensions must be installed:
+```bash
+pip install pymdown-extensions
+```
+
+All can be installed locally by adding the argument `-t <install_dir>`. 
 
 The structure/outline of the website is dictated by the `nav` variable in `mkdocs.yml`. This is the only variable that must be adjusted when new MD files are added to the code.
 
@@ -50,11 +51,18 @@ The complete process to create the documentation website is automated by `run_mk
 *   Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.
 *   Check if each MD file is mentioned in `mkdocs.yml`. If a file is not mentioned, a warning is given.
 *   Build static HTML website using `mkdocs build`. 
-*   Deploy website on GitHub Pages using `mkdocs gh-deploy`.
 
-To activate the website, the user must have administrator privileges in the repository. 
+The behavior of `run_mkdocs.py` can be altered by adding an extra command line argument. 
 
-**TODO**: explain how site can be previewed without publishing it on GitHub Pages.
+```bash
+python run_mkdocs.py --deploy
+```
+deploys the website on GitHub Pages using `mkdocs gh-deploy`. This requires administrator privileges in the repository, otherwise GitHub will ignore the changes. 
+
+```bash
+python run_mkdocs.py --preview example
+```
+opens a preview of the website in Firefox, showing the webpage corresponding to the file `example.md`. This can be used to check MD and LaTeX syntax. 
 
 
 [1]:    https://www.mkdocs.org/

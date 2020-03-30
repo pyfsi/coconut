@@ -33,5 +33,5 @@ nav:
             - Python - Python inert: tube_tube_flow_tube_structure_inert.md
     - Varia:
         - mappers.md
-        - pykratos.md
+        - data_structure.md
         - docs.md
