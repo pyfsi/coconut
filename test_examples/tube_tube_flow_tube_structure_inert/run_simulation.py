@@ -1,7 +1,6 @@
 from coconut import data_structure
 from coconut.coupling_components.analysis import Analysis
 
-
 if __name__ == '__main__':
     from sys import argv
 
@@ -9,7 +8,7 @@ if __name__ == '__main__':
     if len(argv) != 2:
         err_msg = 'Wrong number of input arguments!\n'
         err_msg += 'Use this script in the following way:\n'
-        err_msg += '    "python MainKratos.py <cosim-parameter-file>.json"\n'
+        err_msg += '    "python run_simulation.py <cosim-parameter-file>.json"\n'
         raise Exception(err_msg)
 
     # Import data structure

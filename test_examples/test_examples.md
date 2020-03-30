@@ -8,11 +8,11 @@ Currently all these examples calculate the flow in a flexible tube.
 
 This section describes the different folders and files which are provided.
 
-- MainKratos.py: Main file which has to be run with a parameterfile as argument
+- run_simulation.py: Main file which has to be run with a parameterfile as argument
 - project_parameters_X.json: Parameter file in json format
 - setup_X: Setup folder containing all files for setting up solver X
 - setup_X.sh: Bash file which has to be run to set up solver X
-- readme.md: A description of the specific example
+- X.md: A description of the specific example
 
 When the setup files are run, working directories are created which have to match the ones specified in the parameter file.
 These folder are expandable and are deleted when the setup files are (re)run.
