@@ -1,6 +1,6 @@
 from coconut import data_structure
-from coconut.coupling_components.component import CoSimulationComponent
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.component import Component
+from coconut.coupling_components.interface import Interface
 from coconut.coupling_components import tools
 
 import os
@@ -19,7 +19,7 @@ import re
 def Create(parameters):
     return SolverWrapperAbaqus614(parameters)
 
-class SolverWrapperAbaqus614(CoSimulationComponent):
+class SolverWrapperAbaqus614(Component):
     def __init__(self, parameters):
         super().__init__()
         # settings
@@ -470,9 +470,9 @@ class SolverWrapperAbaqus614(CoSimulationComponent):
 
             # self.write_Nodes_test()  # This should be commented out in the final code
 
-        # create CoSimulationInterfaces
-        self.interface_input = CoSimulationInterface(self.model, self.settings['interface_input'])
-        self.interface_output = CoSimulationInterface(self.model, self.settings['interface_output'])
+        # create Interfaces
+        self.interface_input = Interface(self.model, self.settings['interface_input'])
+        self.interface_output = Interface(self.model, self.settings['interface_output'])
 
         # create Variables
         self.pressure = vars(data_structure)['PRESSURE']

@@ -1,11 +1,11 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.interface import Interface
 
 import numpy as np
 import os
 
-class TestCoSimulationInterface(KratosUnittest.TestCase):
+class TestInterface(KratosUnittest.TestCase):
     def test_cosimulation_interface(self):
         parameter_file_name = "test_parameters.json"
 
@@ -43,9 +43,9 @@ class TestCoSimulationInterface(KratosUnittest.TestCase):
                 node_id += 1
             counter += 1
 
-        # create CoSimulationInterfaces from Parameters
-        interface_a = CoSimulationInterface(model, par['interface_a'])
-        interface_b = CoSimulationInterface(model, par['interface_b'])
+        # create Interfaces from Parameters
+        interface_a = Interface(model, par['interface_a'])
+        interface_b = Interface(model, par['interface_b'])
 
         # initialize some values in Nodes ***
         for node in model_parts['mp_1'].Nodes:
@@ -121,7 +121,7 @@ class TestCoSimulationInterface(KratosUnittest.TestCase):
 
         # print output of test
         if False:
-            print('\nTestCoSimulationInterface successful.\n')
+            print('\nTestInterface successful.\n')
             self.assertTrue(False)
 
 

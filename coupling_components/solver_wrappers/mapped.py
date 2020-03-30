@@ -1,5 +1,5 @@
 from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut.coupling_components import tools
 
 
@@ -7,7 +7,7 @@ def Create(parameters):
     return SolverWrapperMapped(parameters)
 
 
-class SolverWrapperMapped(CoSimulationComponent):
+class SolverWrapperMapped(Component):
     def __init__(self, parameters):
         super().__init__()
 

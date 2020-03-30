@@ -1,6 +1,6 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.interface import Interface
 
 import os
 

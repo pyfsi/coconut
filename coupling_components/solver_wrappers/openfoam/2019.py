@@ -1,11 +1,11 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 
 
 def Create(parameters):
     return SolverWrapperOpenFOAM2019(parameters)
 
 
-class SolverWrapperOpenFOAM2019(CoSimulationComponent):
+class SolverWrapperOpenFOAM2019(Component):
     def __init__(self, parameters):
         super().__init__()
 

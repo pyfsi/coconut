@@ -2,7 +2,7 @@ from coconut import data_structure
 from coconut.coupling_components.tools import CreateInstance
 
 
-class CoSimulationAnalysis:
+class Analysis:
     def __init__(self, parameters):
         self.parameters = parameters
         self.settings = parameters["settings"]
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     with open(parameter_file_name, 'r') as parameter_file:
         parameters = data_structure.Parameters(parameter_file.read())
 
-    simulation = CoSimulationAnalysis(parameters)
+    simulation = Analysis(parameters)
     simulation.Run()

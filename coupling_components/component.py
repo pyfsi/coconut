@@ -1,7 +1,7 @@
 from coconut.coupling_components import tools
 
 
-class CoSimulationComponent(object):
+class Component(object):
     def __init__(self):
         self.initialized = False
         self.initialized_solution_step = False

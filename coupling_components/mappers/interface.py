@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut.coupling_components import tools
 from coconut.coupling_components.tools import CreateInstance
 
@@ -9,7 +9,7 @@ def Create(parameters):
 
 
 # Class MapperInterface: Interface interpolation with same interpolator type for all modelparts and variables.
-class MapperInterface(CoSimulationComponent):
+class MapperInterface(Component):
     def __init__(self, parameters):
         super().__init__()
 

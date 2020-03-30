@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut import data_structure
 
 import numpy as np
@@ -10,7 +10,7 @@ def Create(parameters):
 
 
 # Class MapperAxisymmetric2DTo3D: map 2D axisymmetric to 3D.
-class MapperAxisymmetric2DTo3D(CoSimulationComponent):
+class MapperAxisymmetric2DTo3D(Component):
     def __init__(self, parameters):
         super().__init__()
 

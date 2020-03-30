@@ -1,6 +1,6 @@
 from coconut.coupling_components import tools
 from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 
 import numpy as np
 import time
@@ -10,7 +10,7 @@ def Create(parameters):
     return CoupledSolverGaussSeidel(parameters)
 
 
-class CoupledSolverGaussSeidel(CoSimulationComponent):
+class CoupledSolverGaussSeidel(Component):
     def __init__(self, parameters):
         super().__init__()
 

@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 
 
 def Create(parameters):
@@ -7,7 +7,7 @@ def Create(parameters):
 
 # Class Predictor: Base class for extrapolation based on the last two (linear), three (quadratic) or four (cubic) time steps,
 # assuming constant time step size.
-class Predictor(CoSimulationComponent):
+class Predictor(Component):
     def __init__(self, _unused):
         super().__init__()
 

@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 
 from scipy.spatial import cKDTree
 import numpy as np
@@ -9,7 +9,7 @@ def Create(parameters):
 
 
 # Class MapperInterpolator: base class for interpolators.
-class MapperInterpolator(CoSimulationComponent):
+class MapperInterpolator(Component):
     def __init__(self, parameters):
         super().__init__()
 

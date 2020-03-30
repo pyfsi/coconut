@@ -7,9 +7,9 @@
 ### Hierarchy of mapping-related objects
 
 CoCoNuT interacts with the mappers through the `SolverWrapperMapped` object: this wrapper behaves like every other `SolverWrapper` as far as the other components are concerned. 
-It contains 3 main components: a `Mapper` for the input, a real `SolverWrapper` and a `Mapper` for the output. The mappers are initialized through the `SetInterfaceInput` and `SetInterfaceOutput` methods respectively, by providing them with the `CoSimulationInterface` objects that will be respectively the input and output of the `SolverWrapperMapped` object.
+It contains 3 main components: a `Mapper` for the input, a real `SolverWrapper` and a `Mapper` for the output. The mappers are initialized through the `SetInterfaceInput` and `SetInterfaceOutput` methods respectively, by providing them with the `Interface` objects that will be respectively the input and output of the `SolverWrapperMapped` object.
 
-The two mappers in the `SolverWrapperMapped` object are also of a special type: they work on the level of `CoSimulationInterface` objects. They are some sort of mapper-wrapper around the actual mappers which work on `ModelPart` level.
+The two mappers in the `SolverWrapperMapped` object are also of a special type: they work on the level of `Interface` objects. They are some sort of mapper-wrapper around the actual mappers which work on `ModelPart` level.
 Currently only one such mapper is available, aptly called `MapperInterface`.
 
 At the lowest level, mappers interpolate historical variables between two `ModelPart` objects, based on the coordinates of the nodes. Interpolation is always done from the _from_-`ModelPart` to the _to_-`ModelPart`.
@@ -38,11 +38,11 @@ A transformer can never be used by itself, it must always be combined with an in
 
 ### MapperInterface
 
-Special mapper-class that maps on the level of `CoSimulationInterface` objects. 
-It takes two `CoSimulationInterface` objects, 
+Special mapper-class that maps on the level of `Interface` objects. 
+It takes two `Interface` objects, 
 and maps the `ModelPart` objects to each other in order of appearance, all using the same `ModelPart` mapper.
 
-To use different interpolation for the different `ModelPart` objects or even for different historical variables, a new `CoSimulationInterface` mapper must be written. 
+To use different interpolation for the different `ModelPart` objects or even for different historical variables, a new `Interface` mapper must be written. 
 
 JSON setting|type|description
 ------:|:----:|-----------

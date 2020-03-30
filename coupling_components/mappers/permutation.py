@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut import data_structure
 
 import numpy as np
@@ -10,7 +10,7 @@ def Create(parameters):
 
 
 # Class MapperPermutation: Permutation of coordinates.
-class MapperPermutation(CoSimulationComponent):
+class MapperPermutation(Component):
     def __init__(self, parameters):
         """
         This is not an interpolator, but a transformer.

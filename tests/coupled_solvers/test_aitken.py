@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.interface import Interface
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class TestCoupledSolverAITKEN(KratosUnittest.TestCase):
         step = 0
         for node in model_part.Nodes:
             node.SetSolutionStepValue(variable, step, x)
-        interface = CoSimulationInterface(model, interface_settings)
+        interface = Interface(model, interface_settings)
 
         parameter_file_name = "coupled_solvers/test_aitken.json"
         with open(parameter_file_name, 'r') as parameter_file:

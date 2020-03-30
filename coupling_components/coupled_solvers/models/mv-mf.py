@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut.coupling_components import tools
 
 import numpy as np
@@ -9,7 +9,7 @@ def Create(parameters):
     return ModelMV(parameters)
 
 
-class ModelMV(CoSimulationComponent):
+class ModelMV(Component):
     def __init__(self, parameters):
         super().__init__()
 
@@ -19,7 +19,7 @@ class ModelMV(CoSimulationComponent):
 
         self.size_in = None
         self.size_out = None
-        self.out = None  # CoSimulationInterface of output
+        self.out = None  # Interface of output
         self.added = False
         self.rref = None
         self.xtref = None

@@ -1,5 +1,5 @@
 from coconut.coupling_components import tools
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut.coupling_components.tools import CreateInstance
 
 
@@ -8,7 +8,7 @@ def Create(parameters):
 
 
 # Class MapperCombined
-class MapperCombined(CoSimulationComponent):
+class MapperCombined(Component):
     def __init__(self, parameters):
         """
         This mapper combines 1 interpolator mapper

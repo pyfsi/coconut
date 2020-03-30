@@ -34,7 +34,7 @@ from coconut.tests.solver_wrappers.fluent.test_2019R1 import TestSolverWrapperFl
 
 from coconut.tests.data_structure.test_parameters import TestPyKratosParameters
 from coconut.tests.data_structure.test_variables import TestPyKratosVariables
-from coconut.tests.data_structure.test_cosimulation_interface import TestCoSimulationInterface
+from coconut.tests.data_structure.test_cosimulation_interface import TestInterface
 
 
 def AssembleTestSuites():
@@ -88,7 +88,7 @@ def AssembleTestSuites():
 
     smallSuite.addTest(TestPyKratosParameters("test_pykratos_parameters"))
     smallSuite.addTest(TestPyKratosVariables("test_pykratos_variables"))
-    smallSuite.addTest(TestCoSimulationInterface("test_cosimulation_interface"))
+    smallSuite.addTest(TestInterface("test_cosimulation_interface"))
 
     nightlySuite = suites['nightly']  # These tests are executed in the nightly build
     nightlySuite.addTests(smallSuite)

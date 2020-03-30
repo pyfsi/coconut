@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.analysis import CoSimulationAnalysis
+from coconut.coupling_components.analysis import Analysis
 
 
 if __name__ == '__main__':
@@ -19,5 +19,5 @@ if __name__ == '__main__':
     with open(parameter_file_name, 'r') as parameter_file:
         parameters = data_structure.Parameters(parameter_file.read())
 
-    simulation = CoSimulationAnalysis(parameters)
+    simulation = Analysis(parameters)
     simulation.Run()

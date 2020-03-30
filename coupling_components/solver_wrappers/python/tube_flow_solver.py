@@ -1,6 +1,6 @@
 from coconut import data_structure
-from coconut.coupling_components.component import CoSimulationComponent
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.component import Component
+from coconut.coupling_components.interface import Interface
 
 import numpy as np
 import os.path as path
@@ -11,7 +11,7 @@ def Create(parameters):
     return SolverWrapperTubeFlow(parameters)
 
 
-class SolverWrapperTubeFlow(CoSimulationComponent):
+class SolverWrapperTubeFlow(Component):
     Al = 4  # Number of terms below diagonal in matrix
     Au = 4  # Number of terms above diagonal in matrix
 
@@ -106,8 +106,8 @@ class SolverWrapperTubeFlow(CoSimulationComponent):
             node.SetSolutionStepValue(self.variable_trac, step, self.trac[0, :].tolist())
 
         # Interfaces
-        self.interface_input = CoSimulationInterface(self.model, self.settings["interface_input"])
-        self.interface_output = CoSimulationInterface(self.model, self.settings["interface_output"])
+        self.interface_input = Interface(self.model, self.settings["interface_input"])
+        self.interface_output = Interface(self.model, self.settings["interface_output"])
 
         # Debug
         self.debug = False  # Set on true to save solution of each time step

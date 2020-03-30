@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.interface import Interface
 
 
 class TestPredictor(KratosUnittest.TestCase):
@@ -27,7 +27,7 @@ class TestPredictor(KratosUnittest.TestCase):
         step = 0
         for node in model_part.Nodes:
             node.SetSolutionStepValue(variable, step, a0)
-        interface = CoSimulationInterface(model, interface_settings)
+        interface = Interface(model, interface_settings)
 
         # Create predictor
         parameter_file_name = "predictors/test_cubic.json"

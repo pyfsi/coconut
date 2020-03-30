@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.interface import Interface
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class TestPredictorQuadratic(KratosUnittest.TestCase):
         step = 0
         for node in model_part.Nodes:
             node.SetSolutionStepValue(variable, step, a0)
-        interface = CoSimulationInterface(model, interface_settings)
+        interface = Interface(model, interface_settings)
 
         # Create predictor
         parameter_file_name = "predictors/test_quadratic.json"
@@ -43,7 +43,7 @@ class TestPredictorQuadratic(KratosUnittest.TestCase):
         # Test predictor: first prediction needs to be equal to initialized value
         predictor_quadratic.InitializeSolutionStep()
         prediction = predictor_quadratic.Predict(interface)
-        self.assertIsInstance(prediction, CoSimulationInterface)
+        self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.GetNumpyArray()
         for i in range(m):
             self.assertAlmostEqual(p1, prediction_as_array[i])
@@ -55,7 +55,7 @@ class TestPredictorQuadratic(KratosUnittest.TestCase):
         # Test predictor: second prediction needs to be linear
         predictor_quadratic.InitializeSolutionStep()
         prediction = predictor_quadratic.Predict(interface)
-        self.assertIsInstance(prediction, CoSimulationInterface)
+        self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.GetNumpyArray()
         for i in range(m):
             self.assertAlmostEqual(p2, prediction_as_array[i])
@@ -67,7 +67,7 @@ class TestPredictorQuadratic(KratosUnittest.TestCase):
         # Test predictor: third prediction needs to be quadratic
         predictor_quadratic.InitializeSolutionStep()
         prediction = predictor_quadratic.Predict(interface)
-        self.assertIsInstance(prediction, CoSimulationInterface)
+        self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.GetNumpyArray()
         for i in range(m):
             self.assertAlmostEqual(p3, prediction_as_array[i])

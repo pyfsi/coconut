@@ -1,6 +1,6 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.interface import CoSimulationInterface
+from coconut.coupling_components.interface import Interface
 from coconut.coupling_components.tools import CreateInstance
 
 
@@ -25,7 +25,7 @@ class TestConvergenceCriterionRelativeNorm(KratosUnittest.TestCase):
         step = 0
         for node in model_part.Nodes:
             node.SetSolutionStepValue(variable, step, a0)
-        interface = CoSimulationInterface(model, interface_settings)
+        interface = Interface(model, interface_settings)
 
         parameter_file_name = "convergence_criteria/test_relative_norm.json"
         with open(parameter_file_name, 'r') as parameter_file:

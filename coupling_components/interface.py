@@ -4,8 +4,8 @@ import numpy as np
 import copy
 
 
-# Class CoSimulationInterface: Holds the different ModelParts of the interface.
-class CoSimulationInterface(object):
+# Class Interface: Holds the different ModelParts of the interface.
+class Interface(object):
     """
     When copying a CosimulationInterface object, its proper
     deepcopy method must be used (self.deepcopy()). If they are
@@ -102,7 +102,7 @@ class CoSimulationInterface(object):
         simple Model, not if it contains nested ModelParts!
 
         It is not allowed to use the copy.deepcopy() for copying
-        CoSimulationInterface objects.
+        Interface objects.
         The reason is that the __hist_variables (AREA, PRESSURE, ...)
         are also copied. However, these are global variables, so
         when they're copied, their address changes which gives problems.
@@ -136,7 +136,7 @@ class CoSimulationInterface(object):
 
     def __add__(self, other):
         result = self.deepcopy()
-        if isinstance(other, CoSimulationInterface):
+        if isinstance(other, Interface):
             result.SetNumpyArray(self.GetNumpyArray() + other.GetNumpyArray())
         elif isinstance(other, (int, float, np.integer, np.floating)):
             result.SetNumpyArray(self.GetNumpyArray() + other)
@@ -149,7 +149,7 @@ class CoSimulationInterface(object):
 
     def __sub__(self, other):
         result = self.deepcopy()
-        if isinstance(other, CoSimulationInterface):
+        if isinstance(other, Interface):
             result.SetNumpyArray(self.GetNumpyArray() - other.GetNumpyArray())
         elif isinstance(other, (int, float, np.integer, np.floating)):
             result.SetNumpyArray(self.GetNumpyArray() - other)
@@ -162,7 +162,7 @@ class CoSimulationInterface(object):
 
     def __mul__(self, other):
         result = self.deepcopy()
-        if isinstance(other, CoSimulationInterface):
+        if isinstance(other, Interface):
             result.SetNumpyArray(self.GetNumpyArray() * other.GetNumpyArray())
         elif isinstance(other, (int, float, np.integer, np.floating)):
             result.SetNumpyArray(self.GetNumpyArray() * other)

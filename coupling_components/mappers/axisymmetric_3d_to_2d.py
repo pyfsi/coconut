@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut import data_structure
 
 import numpy as np
@@ -10,7 +10,7 @@ def Create(parameters):
 
 
 # Class MapperAxisymmetric3DTo2D: map 3D to 2D axisymmetric.
-class MapperAxisymmetric3DTo2D(CoSimulationComponent):
+class MapperAxisymmetric3DTo2D(Component):
     def __init__(self, parameters):
         """
         - should there be both forward and backward initializations? no...

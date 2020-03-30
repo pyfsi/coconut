@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import CoSimulationComponent
+from coconut.coupling_components.component import Component
 from coconut.coupling_components import tools
 
 import numpy as np
@@ -8,7 +8,7 @@ def Create(parameters):
     return ConvergenceCriterionAbsoluteNorm(parameters)
 
 
-class ConvergenceCriterionAbsoluteNorm(CoSimulationComponent):
+class ConvergenceCriterionAbsoluteNorm(Component):
     def __init__(self, parameters):
         super().__init__()
 
