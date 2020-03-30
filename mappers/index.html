@@ -682,8 +682,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../pykratos/" title="Pykratos" class="md-nav__link">
-      Pykratos
+    <a href="../data_structure/" title="Data structure" class="md-nav__link">
+      Data structure
     </a>
   </li>
 
@@ -875,8 +875,8 @@
 <h2 id="general-concepts">General concepts</h2>
 <h3 id="hierarchy-of-mapping-related-objects">Hierarchy of mapping-related objects</h3>
 <p>CoCoNuT interacts with the mappers through the <code>SolverWrapperMapped</code> object: this wrapper behaves like every other <code>SolverWrapper</code> as far as the other components are concerned. 
-It contains 3 main components: a <code>Mapper</code> for the input, a real <code>SolverWrapper</code> and a <code>Mapper</code> for the output. The mappers are initialized through the <code>SetInterfaceInput</code> and <code>SetInterfaceOutput</code> methods respectively, by providing them with the <code>CoSimulationInterface</code> objects that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
-<p>The two mappers in the <code>SolverWrapperMapped</code> object are also of a special type: they work on the level of <code>CoSimulationInterface</code> objects. They are some sort of mapper-wrapper around the actual mappers which work on <code>ModelPart</code> level.
+It contains 3 main components: a <code>Mapper</code> for the input, a real <code>SolverWrapper</code> and a <code>Mapper</code> for the output. The mappers are initialized through the <code>SetInterfaceInput</code> and <code>SetInterfaceOutput</code> methods respectively, by providing them with the <code>Interface</code> objects that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
+<p>The two mappers in the <code>SolverWrapperMapped</code> object are also of a special type: they work on the level of <code>Interface</code> objects. They are some sort of mapper-wrapper around the actual mappers which work on <code>ModelPart</code> level.
 Currently only one such mapper is available, aptly called <code>MapperInterface</code>.</p>
 <p>At the lowest level, mappers interpolate historical variables between two <code>ModelPart</code> objects, based on the coordinates of the nodes. Interpolation is always done from the <em>from</em>-<code>ModelPart</code> to the <em>to</em>-<code>ModelPart</code>.
 These mappers can be chained together in a <code>MapperCombined</code> object, creating in fact another layer of mapping. So many layers! Like an onion!</p>
@@ -890,10 +890,10 @@ These mappers can be chained together in a <code>MapperCombined</code> object, c
 <p>A transformer can never be used by itself, it must always be combined with an interpolator: the reason is that interpolators use information coming from two sides, which is exactly what the <code>SolverWrapperMapped</code> and <code>MapperInterface</code> objects want. To chain together multiple mappers, the <code>MapperCombined</code> is used: it contains always 1 interpolator and 0 or more transformers, on either side of the interpolator.</p>
 <h2 id="overview-of-special-mappers">Overview of special mappers</h2>
 <h3 id="mapperinterface">MapperInterface</h3>
-<p>Special mapper-class that maps on the level of <code>CoSimulationInterface</code> objects. 
-It takes two <code>CoSimulationInterface</code> objects, 
+<p>Special mapper-class that maps on the level of <code>Interface</code> objects. 
+It takes two <code>Interface</code> objects, 
 and maps the <code>ModelPart</code> objects to each other in order of appearance, all using the same <code>ModelPart</code> mapper.</p>
-<p>To use different interpolation for the different <code>ModelPart</code> objects or even for different historical variables, a new <code>CoSimulationInterface</code> mapper must be written. </p>
+<p>To use different interpolation for the different <code>ModelPart</code> objects or even for different historical variables, a new <code>Interface</code> mapper must be written. </p>
 <table>
 <thead>
 <tr>
@@ -1166,13 +1166,13 @@ f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbo
           </a>
         
         
-          <a href="../pykratos/" title="Pykratos" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../data_structure/" title="Data structure" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Pykratos
+                Data structure
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

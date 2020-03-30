@@ -522,8 +522,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../pykratos/" title="Pykratos" class="md-nav__link">
-      Pykratos
+    <a href="../data_structure/" title="Data structure" class="md-nav__link">
+      Data structure
     </a>
   </li>
 
@@ -652,17 +652,16 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <li>The name of the file must be unique: use names like <code>fluent.md</code> or <code>test_examples.md</code>, not <code>readme.md</code>.</li>
 <li>Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names <code>example.md</code> with a proper link. </li>
 </ul>
-<p>A note on math in MD. There is no out-of-the-box LaTeX compatibiliy sadly, but basic equations can be typeset directly in HTML if necessary. Some usefull symbols:</p>
-<ul>
-<li>lowercase Greek: αβγδεζηϑθικλμνξοπρστυφϕχψω</li>
-<li>uppercase Greek: ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ</li>
-<li>super and subscripts: <code>&lt;sup&gt;&lt;/sup&gt;</code> and <code>&lt;sub&gt;&lt;/sub&gt;</code></li>
-<li>operators: + - − · / × √ ∘ ∗</li>
-<li>other symbols: ∂ Δ  ∑ ≤ ≥ ∈</li>
-<li><a href="http://www.unics.uni-hannover.de/nhtcapri/mathematics.html">more math symbols</a></li>
-</ul>
-<p>It is also possible to <a href="https://alexanderrodin.com/github-latex-markdown/">render LaTeX equations on-the-run</a> and importing them as images, but that is quite cumbersome.</p>
-<p>Although it is not possible to use MathJax on GitHub, this is possible with MkDocs by using the <a href="Arithmatex">Arithmatex</a> MD extension (see this overview of <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a>). </p>
+<p>For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. <span><span class="MathJax_Preview">E = m c^2</span><script type="math/tex">E = m c^2</script></span>), block-style equations in double dolar signs, e.g.</p>
+<div>
+<div class="MathJax_Preview">
+e^{i \pi} + 1 = 0.
+</div>
+<script type="math/tex; mode=display">
+e^{i \pi} + 1 = 0.
+</script>
+</div>
+<p>LaTeX expressions will <strong>not</strong> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="Arithmatex">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
 <h2 id="creating-a-static-website-with-mkdocs">Creating a static website with MkDocs</h2>
 <p><a href="https://www.mkdocs.org/">MkDocs</a> can be installed using pip: </p>
 <div class="codehilite"><pre><span></span><code>pip install mkdocs
@@ -674,7 +673,12 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 </code></pre></div>
 
 
-<p>Both can be installed locally by adding the argument <code>-t &lt;install_dir&gt;</code>. </p>
+<p>To render LaTeX equations, the <a href="https://squidfunk.github.io/mkdocs-material/extensions/pymdown/">PyMdown</a> MD extensions must be installed:</p>
+<div class="codehilite"><pre><span></span><code>pip install pymdown-extensions
+</code></pre></div>
+
+
+<p>All can be installed locally by adding the argument <code>-t &lt;install_dir&gt;</code>. </p>
 <p>The structure/outline of the website is dictated by the <code>nav</code> variable in <code>mkdocs.yml</code>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
 <p>The complete process to create the documentation website is automated by <code>run_mkdocs.py</code>. This does the following things:</p>
 <ul>
@@ -682,10 +686,18 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <li>Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.</li>
 <li>Check if each MD file is mentioned in <code>mkdocs.yml</code>. If a file is not mentioned, a warning is given.</li>
 <li>Build static HTML website using <code>mkdocs build</code>. </li>
-<li>Deploy website on GitHub Pages using <code>mkdocs gh-deploy</code>.</li>
 </ul>
-<p>To activate the website, the user must have administrator privileges in the repository. </p>
-<p><strong>TODO</strong>: explain how site can be previewed without publishing it on GitHub Pages.</p>
+<p>The behavior of <code>run_mkdocs.py</code> can be altered by adding an extra command line argument. </p>
+<div class="codehilite"><pre><span></span><code>python run_mkdocs.py --deploy
+</code></pre></div>
+
+
+<p>deploys the website on GitHub Pages using <code>mkdocs gh-deploy</code>. This requires administrator privileges in the repository, otherwise GitHub will ignore the changes. </p>
+<div class="codehilite"><pre><span></span><code>python run_mkdocs.py --preview example
+</code></pre></div>
+
+
+<p>opens a preview of the website in Firefox, showing the webpage corresponding to the file <code>example.md</code>. This can be used to check MD and LaTeX syntax. </p>
                 
                   
                 
@@ -707,7 +719,7 @@ These files are converted to a static website using <a href="https://www.mkdocs.
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../pykratos/" title="Pykratos" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../data_structure/" title="Data structure" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -716,7 +728,7 @@ These files are converted to a static website using <a href="https://www.mkdocs.
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Pykratos
+                Data structure
               </span>
             </div>
           </a>
