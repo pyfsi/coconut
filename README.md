@@ -4,7 +4,7 @@
 
 Requirements:
 
--   Python 3.6+
+-   Python 3.6+ (Anaconda 2019.03+ recommended)
 
 Installation:
 
@@ -34,7 +34,7 @@ This line can also be added to your `.bashrc` file.
 
 Requirements:
 
--   Python 3.6+
+-   Python 3.6+ (Anaconda 2019.03+ recommended)
 -   Git
 
 Installation:
