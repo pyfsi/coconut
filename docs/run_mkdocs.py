@@ -24,11 +24,12 @@ Example:
     python run_mkdocs.py --preview mappers
 """
 
-if len(argv) > 1:
-    if argv[1] == '--help' or argv[1] == '-h':
-        print('HELP')
+# check directory
+if os.getcwd() != os.path.dirname(os.path.realpath(__file__)):
+    raise SystemError('execute run_mkdcos.py from its directory')
 
 # clean docs folder and add coconuts
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 shutil.rmtree('docs', ignore_errors=True)
 
 os.mkdir('docs')
