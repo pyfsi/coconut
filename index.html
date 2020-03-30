@@ -675,14 +675,20 @@
 <ul>
 <li>Choose or create a directory to install CoCoNuT. </li>
 <li>Move to this directory. </li>
-<li>Execute the following git command to clone the repository.</li>
-</ul>
-<div class="codehilite"><pre><span></span><code>git clone git@github.com:pyfsi/coconut.git
-</code></pre></div>
-
-
+<li>
+<p>Clone the GitHub repository with SSH or HTTPS by executing one of the following commands. The choice depends on your git configuration.</p>
 <ul>
-<li>Move to the <code>coconut</code> directory. </li>
+<li>With SSH:</li>
+</ul>
+<p><code>git clone git@github.com:pyfsi/coconut.git</code></p>
+<ul>
+<li>With HTTPS</li>
+</ul>
+<p><code>git clone https://github.com/pyfsi/coconut.git</code></p>
+</li>
+<li>
+<p>Move to the <code>coconut</code> directory. </p>
+</li>
 <li>Run <code>run_coconut_tests.sh</code> to see if the installation works.</li>
 </ul>
 <div class="codehilite"><pre><span></span><code>sh run_coconut_tests.sh
