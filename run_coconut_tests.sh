@@ -12,4 +12,4 @@ cd $COCONUT_INSTALLATION_PATH/coconut/test_examples/tube_tube_flow_tube_structur
 chmod 700 setup_tube_flow.sh setup_tube_structure.sh
 ./setup_tube_flow.sh
 ./setup_tube_structure.sh
-python3 MainKratos.py project_parameters_mapped.json
+python3 run_simulation.py project_parameters_mapped.json > run.log

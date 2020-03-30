@@ -25,7 +25,7 @@ For example, with a folder structure like
 ```bash
 export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 ```
-This line can also be added to you `.bashrc` file.
+This line can also be added to your `.bashrc` file.
 
 
 
@@ -39,13 +39,14 @@ Requirements:
 
 Installation:
 
--   Choose or create a directory to install CoCoNuT.
+-   Choose or create a directory to install CoCoNuT. 
+-   Move to this directory. 
 -   Execute the following git command to clone the repository.
 
 ```bash
 git clone git@github.com:pyfsi/coconut.git
-
 ```
+-   Move to the `coconut` directory. 
 -   Run `run_coconut_tests.sh` to see if the installation works.
 
 ```bash
@@ -66,7 +67,7 @@ For example, with a folder structure like
 ```bash
 export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 ```
-This line can also be added to you `.bashrc` file.
+This line can also be added to your `.bashrc` file.
 
 
 
