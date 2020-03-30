@@ -664,7 +664,7 @@
 </code></pre></div>
 
 
-<p>This line can also be added to you <code>.bashrc</code> file.</p>
+<p>This line can also be added to your <code>.bashrc</code> file.</p>
 <h2 id="for-developers">For developers</h2>
 <p>Requirements:</p>
 <ul>
@@ -673,35 +673,41 @@
 </ul>
 <p>Installation:</p>
 <ul>
-<li>Choose or create a directory to install CoCoNuT.</li>
-<li>Copy the code below to a bash-script and adapt the parameter <code>absolute_path</code> to the above directory.</li>
-<li>Run bash-script.</li>
+<li>Choose or create a directory to install CoCoNuT. </li>
+<li>Move to this directory. </li>
+<li>Execute the following git command to clone the repository.</li>
 </ul>
-<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
-
-<span class="c1"># add absolute path to parent directory of coconut</span>
-<span class="nv">absolute_path</span><span class="o">=</span>/some/absolute/path
-
-<span class="c1"># configure repository</span>
-<span class="nb">cd</span> <span class="nv">$absolute_path</span>
-git clone git@github.com:pyfsi/coconut.git
-<span class="nb">cd</span> coconut
-git remote add upstream git@github.com:pyfsi/coconut.git
-
-<span class="c1"># add coconut to Python path --&gt; put this line also in your .bashrc</span>
-<span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$absolute_path</span>:<span class="nv">$PYTHONPATH</span>
-
-<span class="c1"># run tests</span>
-<span class="nb">cd</span> <span class="nv">$absolute_path</span>/coconut/tests
-python test_coconut.py
-
-<span class="c1"># run an FSI test example</span>
-<span class="nb">cd</span> <span class="nv">$absolute_path</span>/coconut/test_examples/tube_tube_flow_tube_structure
-chmod <span class="m">700</span> setup_tube_flow.sh setup_tube_structure.sh
-./setup_tube_flow.sh
-./setup_tube_structure.sh
-python MainKratos.py project_parameters_mapped.json  <span class="c1"># &gt; $absolute_path/tube.log</span>
+<div class="codehilite"><pre><span></span><code>git clone git@github.com:pyfsi/coconut.git
 </code></pre></div>
+
+
+<ul>
+<li>Move to the <code>coconut</code> directory. </li>
+<li>Run <code>run_coconut_tests.sh</code> to see if the installation works.</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>sh run_coconut_tests.sh
+</code></pre></div>
+
+
+<ul>
+<li>Add the parent folder of <code>coconut</code> to your Python path.</li>
+</ul>
+<p>For example, with a folder structure like</p>
+<div class="codehilite"><pre><span></span><code><span class="err">/some/absolute/path/</span>
+<span class="err">    coconut/</span>
+<span class="err">        coupling_components/</span>
+<span class="err">        data_structure/</span>
+<span class="err">        ...</span>
+<span class="err">        README.md</span>
+</code></pre></div>
+
+
+<p><code>coconut</code> can be added to your Python path with:</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
+</code></pre></div>
+
+
+<p>This line can also be added to your <code>.bashrc</code> file.</p>
                 
                   
                 
