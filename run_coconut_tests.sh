@@ -13,3 +13,6 @@ chmod 700 setup_tube_flow.sh setup_tube_structure.sh
 ./setup_tube_flow.sh
 ./setup_tube_structure.sh
 python3 run_simulation.py project_parameters_mapped.json > run.log
+
+# installation successful
+echo "CoCoNuT installation successful."
