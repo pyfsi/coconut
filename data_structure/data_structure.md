@@ -7,3 +7,6 @@ For the python-only version, Kratos is replaced by pyKratos, which is a python v
 In order to install the python-version, please follow the instructions in [configure_py_co_sim.sh](https://github.com/KratosMultiphysics/Kratos/blob/master/applications/CoSimulationApplication/custom_data_structure/configure_py_co_sim.sh). For this **no compilation** is required.
 
 The tests can be executed by running `python test_CoSimulationApplication.py` in the folder `tests`
+
+
+**TODO: this old file must be adapted to give correct credit to Kratos for the data structure**
