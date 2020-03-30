@@ -3,8 +3,6 @@ import os.path
 import time
 from contextlib import contextmanager
 
-cs_data_structure = None
-
 
 # CreateInstance: Creates an instance of a given class based on a settings dictionary
 #

@@ -1,0 +1,64 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : CoCoNuT_pimpleFoam
+Date   : Mar 27 2020
+Time   : 16:57:34
+Host   : "cfdclu55.ugent.be"
+PID    : 181796
+Case   : /cfdfile2/data/fm/laurent/git-repository/kratos/applications/CoSimulationApplication/tests/solver_wrappers/openfoam/test_41_pipeCyclic
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0.1
+
+Selecting dynamicFvMesh dynamicMotionSolverFvMesh
+Selecting motion solver: displacementLaplacian
+Selecting motion diffusion: quadratic
+Selecting motion diffusion: inverseDistance
+AMI: Creating addressing and weights between 1300 source faces and 250 target faces
+AMI: Patch source sum(weights) min/max/average = 1, 1, 1
+AMI: Patch target sum(weights) min/max/average = 1, 1, 1
+
+PIMPLE: no residual control data found. Calculations will employ 4 corrector loops
+
+Reading field p
+
+Reading field U
+
+Using dynamicCode for patch inlet on field U at line 3730 in "/cfdfile2/data/fm/laurent/git-repository/kratos/applications/CoSimulationApplication/tests/solver_wrappers/openfoam/test_41_pipeCyclic/0.1/U.boundaryField.inlet"
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type RAS
+Selecting RAS turbulence model realizableKE
+realizableKECoeffs
+{
+    Cmu             0.09;
+    A0              4;
+    C2              1.9;
+    sigmak          1;
+    sigmaEps        1.2;
+}
+
+No MRF models present
+
+Reading/calculating face velocity Uf
+
+No finite volume options present
+
+Courant Number mean: 0.673384 max: 4.4664
+wallShearStress wallShearStress_walls:
+    processing wall patches: 
+        walls
+
