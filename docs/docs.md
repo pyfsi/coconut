@@ -41,7 +41,11 @@ To render LaTeX equations, the [PyMdown](https://squidfunk.github.io/mkdocs-mate
 pip install pymdown-extensions
 ```
 
-All can be installed locally by adding the argument `-t <install_dir>`. 
+All three can be installed locally by adding the argument `-t /some/absolute/path`. In that case, two lines must be added to your `.bashrc`: 
+```bash
+export PYTHONPATH=/some/absolute/path:$PYTHONPATH
+export PATH=/some/absolute/path/bin:$PATH
+```
 
 The structure/outline of the website is dictated by the `nav` variable in `mkdocs.yml`. This is the only variable that must be adjusted when new MD files are added to the code.
 
