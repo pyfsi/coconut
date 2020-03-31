@@ -28,8 +28,8 @@ from coconut.tests.predictors.test_quadratic import TestPredictorQuadratic
 from coconut.tests.predictors.test_cubic import TestPredictorCubic
 
 from coconut.tests.solver_wrappers.python.test_tube_flow_solver import TestSolverWrapperTubeFlowSolver
+from coconut.tests.solver_wrappers.python.test_tube_ringmodel_solver import TestSolverWrapperTubeRingmodelSolver
 from coconut.tests.solver_wrappers.python.test_tube_structure_solver import TestSolverWrapperTubeStructureSolver
-from coconut.tests.solver_wrappers.python.test_tube_structure_solver_inert import TestSolverWrapperTubeStructureSolverInert
 from coconut.tests.solver_wrappers.fluent.test_2019R1 import TestSolverWrapperFluent2019R1
 
 from coconut.tests.data_structure.test_parameters import TestPyKratosParameters
@@ -82,8 +82,8 @@ def AssembleTestSuites():
     smallSuite.addTest(TestPredictorCubic("test_predictor_cubic"))
 
     smallSuite.addTest(TestSolverWrapperTubeFlowSolver("test_solver_wrapper_tube_flow_solver"))
+    smallSuite.addTest(TestSolverWrapperTubeRingmodelSolver("test_solver_wrapper_tube_ringmodel_solver"))
     smallSuite.addTest(TestSolverWrapperTubeStructureSolver("test_solver_wrapper_tube_structure_solver"))
-    smallSuite.addTest(TestSolverWrapperTubeStructureSolverInert("test_solver_wrapper_tube_structure_solver_inert"))
     # smallSuite.addTest(TestSolverWrapperFluent2019R1("test_solver_wrapper_fluent_2019R1"))  # duration ~500s
 
     smallSuite.addTest(TestPyKratosParameters("test_pykratos_parameters"))

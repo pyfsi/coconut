@@ -4,6 +4,7 @@ from coconut.coupling_components.interface import Interface
 
 import numpy as np
 import os.path as path
+from scipy.linalg import solve_banded
 
 
 def Create(parameters):
@@ -11,6 +12,9 @@ def Create(parameters):
 
 
 class SolverWrapperTubeStructure(Component):
+    Al = 2  # Number of terms below diagonal in matrix
+    Au = 2  # Number of terms above diagonal in matrix
+
     def __init__(self, parameters):
         super().__init__()
 
@@ -25,14 +29,20 @@ class SolverWrapperTubeStructure(Component):
 
         # Settings
         l = self.settings["l"].GetDouble()  # Length
-        self.d = self.settings["d"].GetDouble()  # Diameter
+        d = self.settings["d"].GetDouble()  # Diameter
+        self.rreference = d / 2.0  # Reference radius of cross section
         self.rhof = self.settings["rhof"].GetDouble()  # Fluid density
 
         self.preference = self.settings["preference"].GetDouble() if self.settings.Has("preference") else 0.0  # Reference pressure
 
         e = self.settings["e"].GetDouble()  # Young's modulus of structure
-        h = self.settings["h"].GetDouble()  # Thickness of structure
-        self.cmk2 = (e * h) / (self.rhof * self.d)  # Wave speed squared
+        nu = self.settings["nu"].GetDouble()  # Poisson's ratio
+        self.h = self.settings["h"].GetDouble()  # Thickness of structure
+        self.rhos = self.settings["rhos"].GetDouble()  # Structure density
+        self.cmk2 = (e * self.h) / (self.rhof * d)  # Wave speed squared
+        self.b1 = (self.h * e) / (1 - nu ** 2) * (self.h ** 2) / 12
+        self.b2 = self.b1 * (2 * nu) / self.rreference ** 2
+        self.b3 = (self.h * e) / (1 - nu ** 2) * 1 / self.rreference ** 2
 
         self.m = self.settings["m"].GetInt()  # Number of segments
         self.dz = l / self.m  # Segment length
@@ -41,15 +51,30 @@ class SolverWrapperTubeStructure(Component):
 
         self.k = 0  # Iteration
         self.n = 0  # Time step (no restart implemented)
+        self.dt = self.settings["delta_t"].GetDouble()  # Time step size
+
+        self.gamma = self.settings["gamma"].GetDouble()  # Newmark parameter: gamma >= 1/2
+        self.beta = self.settings["beta"].GetDouble()  # Newmark parameter: beta >= 1/4 * (1/2 + gamma) ^ 2
+        if not self.gamma >= 0.5 or not self.beta >= 0.25 * (0.5 + self.gamma) ** 2:
+            raise Exception("Inadequate Newmark parameteres")
 
         # Initialization
-        self.areference = np.pi * self.d ** 2 / 4  # Reference area of cross section
-        self.p = np.ones(self.m) * self.preference  # Kinematic pressure
+        self.areference = np.pi * self.rreference ** 2  # Reference area of cross section
+        self.p = np.ones(self.m) * self.preference  # Pressure
         self.a = np.ones(self.m) * self.areference  # Area of cross section
-        self.c02 = self.cmk2 - self.preference / 2.0  # Wave speed squared with reference pressure
+        self.r = np.ones(self.m + 4) * self.rreference  # Radius of cross section
+        self.rn = np.array(self.r)  # Previous radius of cross section
+
+        self.rdot = np.zeros(self.m)  # First derivative of the radius with respect to time in current timestep
+        self.rddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in current timestep
+        self.rndot = np.zeros(self.m)  # First derivative of the radius with respect to time in previous timestep
+        self.rnddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in previous timestep
 
         self.disp = np.zeros((self.m, 3))  # Displacement
         self.trac = np.zeros((self.m, 3))  # Traction (always zero)
+
+        self.conditioning = ((self.rhos * self.h) / (self.beta * self.dt ** 2) + 6.0 * self.b1 / self.dz ** 4
+                             + 2.0 * self.b2 / self.dz ** 2 + self.b3)  # Factor for conditioning Jacobian
 
         # ModelParts
         self.variable_pres = vars(data_structure)["PRESSURE"]
@@ -61,7 +86,7 @@ class SolverWrapperTubeStructure(Component):
         self.model_part.AddNodalSolutionStepVariable(self.variable_disp)
         self.model_part.AddNodalSolutionStepVariable(self.variable_trac)
         for i in range(len(self.z)):
-            self.model_part.CreateNewNode(i, 0.0, self.d / 2, self.z[i])
+            self.model_part.CreateNewNode(i, 0.0, self.rreference, self.z[i])
         step = 0
         for node in self.model_part.Nodes:
             node.SetSolutionStepValue(self.variable_pres, step, self.p[0])
@@ -84,19 +109,25 @@ class SolverWrapperTubeStructure(Component):
 
         self.k = 0
         self.n += 1
+        self.rn = np.array(self.r)
+        self.rndot = np.array(self.rdot)
+        self.rnddot = np.array(self.rddot)
 
     def SolveSolutionStep(self, interface_input):
         # Input
         input = interface_input.GetNumpyArray()
-        self.p = input[:self.m] / self.rhof  # Kinematic pressure
+        self.p = input[:self.m]
         self.trac = input[self.m:].reshape(-1, 3)
         self.interface_input.SetNumpyArray(input)
 
-        # Independent rings model
-        for i in range(len(self.p)):
-            if self.p[i] > 2.0 * self.c02 + self.preference:
-                raise ValueError("Unphysical pressure")
-        self.a = self.areference * (2.0 / (2.0 + (self.preference - self.p) / self.c02)) ** 2
+        # Solve system
+        f = self.GetResidual()
+        residual0 = np.linalg.norm(f)
+        if residual0:
+            j = self.GetJacobian()
+            b = -f
+            x = solve_banded((self.Al, self.Au), j, b)
+            self.r += x
 
         self.k += 1
         if self.debug:
@@ -106,13 +137,18 @@ class SolverWrapperTubeStructure(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-        # Output
-        self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.d / 2
+        # Output does not contain boundary conditions
+        self.a = self.r[2:self.m + 2] ** 2 * np.pi
+        self.disp[:, 1] = self.r[2:self.m + 2] - self.rreference
         self.interface_output.SetNumpyArray(self.disp.flatten())
         return self.interface_output.deepcopy()
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
+
+        self.rddot = ((self.r[2:self.m + 2] - self.rn[2:self.m + 2]) / (self.beta * self.dt ** 2)
+                      - self.rndot / (self.beta * self.dt) - self.rnddot * (1 / (2 * self.beta) - 1))
+        self.rdot = self.rndot + self.dt * (1 - self.gamma) * self.rnddot + self.dt * self.gamma * self.rddot
 
     def Finalize(self):
         super().Finalize()
@@ -136,3 +172,37 @@ class SolverWrapperTubeStructure(Component):
 
     def SetInterfaceOutput(self):
         raise Exception("This solver wrapper provides no mapping.")
+
+    def GetResidual(self):
+        f = np.zeros(self.m + 4)
+        f[0] = (self.r[0] - self.rreference) * self.conditioning
+        f[1] = (self.r[1] - self.rreference) * self.conditioning
+        f[2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.r[2: self.m + 2]
+                           + self.b1 / self.dz ** 4 * (self.r[4:self.m + 4] - 4.0 * self.r[3:self.m + 3]
+                                                       + 6.0 * self.r[2:self.m + 2] - 4.0 * self.r[1:self.m + 1]
+                                                       + self.r[0:self.m])
+                           - self.b2 / self.dz ** 2 * (self.r[3:self.m + 3] - 2.0 * self.r[2:self.m + 2]
+                                                       + self.r[1:self.m + 1])
+                           + self.b3 * (self.r[2:self.m + 2] - self.rreference)
+                           - (self.p - self.preference)
+                           - self.rhos * self.h * (self.rn[2:self.m + 2] / (self.beta * self.dt ** 2)
+                                                   + self.rndot / (self.beta * self.dt)
+                                                   + self.rnddot * (1.0 / (2.0 * self.beta) - 1.0)))
+        f[self.m + 2] = (self.r[self.m + 2] - self.rreference) * self.conditioning
+        f[self.m + 3] = (self.r[self.m + 3] - self.rreference) * self.conditioning
+        return f
+
+    def GetJacobian(self):
+        j = np.zeros((self.Al + self.Au + 1, self.m + 4))
+        j[self.Au + 0 - 0, 0] = 1.0 * self.conditioning  # [0, 0]
+        j[self.Au + 1 - 1, 1] = 1.0 * self.conditioning  # [1, 1]
+        j[self.Au + 2, 0:self.m] = self.b1 / self.dz ** 4  # [i, (i - 2)]
+        j[self.Au + 1, 1:self.m + 1] = - 4.0 * self.b1 / self.dz ** 4 - self.b2 / self.dz ** 2  # [i, (i - 1)]
+        j[self.Au + 0, 2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2)
+                                        + 6.0 * self.b1 / self.dz ** 4 + 2.0 * self.b2 / self.dz ** 2
+                                        + self.b3)  # [i, i]
+        j[self.Au - 1, 3:self.m + 3] = - 4.0 * self.b1 / self.dz ** 4 - self.b2 / self.dz ** 2  # [i, (i + 1)]
+        j[self.Au - 2, 4:self.m + 4] = self.b1 / self.dz ** 4  # [i, (i + 2)]
+        j[self.Au + (self.m + 2) - (self.m + 2), self.m + 2] = 1.0 * self.conditioning  # [m + 2, m + 2]
+        j[self.Au + (self.m + 3) - (self.m + 3), self.m + 3] = 1.0 * self.conditioning  # [m + 3, m + 3]
+        return j

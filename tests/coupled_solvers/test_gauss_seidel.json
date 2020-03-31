@@ -52,7 +52,7 @@
             }
         },
         {
-            "type" : "solver_wrappers.python.tube_structure_solver",
+            "type" : "solver_wrappers.python.tube_ringmodel_solver",
             "settings" :
             {
                 "working_directory" : "coupled_solvers/CSM",
