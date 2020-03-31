@@ -3,10 +3,7 @@
 # README: run this script to setup case
 
 # clean working directory
-if [ -d ./CFD ]
-then
-    rm -rf ./CFD
-fi
+rm -rf ./CFD
 mkdir ./CFD
 
 # copy setup files

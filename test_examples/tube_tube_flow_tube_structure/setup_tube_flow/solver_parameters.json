@@ -5,14 +5,15 @@
   "ureference": 1.0,
   "inlet_boundary":
   {
-    "variable": "velocity",
-    "type": 1,
-    "amplitude": 0.1,
-    "period": 1.0
+    "variable": "pressure",
+    "type": 2,
+    "reference": 0.0,
+    "amplitude": 1333.2,
+    "period": 0.003
   },
   "outlet_boundary":
   {
-    "type": 1
+    "type": 0
   },
   "e": 300000.0,
   "h": 0.001,

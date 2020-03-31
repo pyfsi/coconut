@@ -1,7 +1,7 @@
 # Tube case with TubeFlow and TubeStructure
 
-This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
-This done by using Python solvers TubeFlow and TubeStructure.
+This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a sinusoidal velocity is specified at the inlet.
+This done by using Python solvers TubeFlow and TubeRingmodel.
 
 ## Coupling algorithm
 
@@ -29,8 +29,10 @@ The loads, in fact are only pressure for this 1D case, are calculated in the cel
 The axial direction is along the z-axis,
 the radial direction along the y-axis.
 
-The structure solver is the Python solver TubeStructure, which implements a 1D model of the tube wall,
+The structure solver is the Python solver TubeRingmodel, which implements a 1D model of the tube wall,
 with 100 elements on the fluid-structure interface.
+It differs from the Python solver TubeStructure as the no inertia is considered.
+The tube is regarded as consisting out of 100 independent rings.
 The parameters for this model are specified in the setup folder by the file `solver_parameter.json`.
 The loads, which in fact only pressure for this 1D case, are applied on the cell centers.
 The displacements are calculated in the cell centers as well.
@@ -39,9 +41,9 @@ The axial direction is along the z-axis,
 the radial direction along the y-axis.
 
 The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
-As both solver has the 100 cells on the fluid-structure interface, no interpolation is required
-and the parameter file `project_parameters_conformal.json` can be used.
-
-A parameter file `project_parameters_mapped.json` is also provided,
-which can be used i the number of cells `m` is set differently in the two solvers.
-Then, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.
+In contrast, the difference of the points where loads and displacements are applied or calculated,
+require the use of interpolation mappers.
+Therefore, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.
+A parameter file `project_parameters_conformal.json` is also provided.
+This parameter file performs no interpolation.
+It should be verified that the number of cells `m` are the same in both solvers before using it.

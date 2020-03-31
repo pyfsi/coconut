@@ -1,4 +1,4 @@
-# Test Examples
+# TestExamples
 
 This documentation describes the different test examples.
 Currently all these examples calculate the flow in a flexible tube.
@@ -17,11 +17,19 @@ This section describes the different folders and files which are provided.
 When the setup files are run, working directories are created which have to match the ones specified in the parameter file.
 These folder are expandable and are deleted when the setup files are (re)run.
 
+## Project Parameters
+
+The parameter file `project_parameters_X.json` contains two dictionaries. 
+The first is `settings` in which the number of time steps for which the calculation is run is specified.
+The second is `coupled_solver` in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solvers.
+
 ## Running a case
 
-In order to run a test example, the case have to be made ready by running the setup files for both solvers.
-Then, the calculation is started by running MainKratos.py with the parameter file as argument.
+In order to run a test example, first, the setup files have to be run to create the working directories.
+Then, the calculation is started by running run_simulation.py with the parameter file as argument.
 
 ## Debug files
-The folder `test_examples` also contains a folder `debug_files` with files for debug purposes. In order to use those,
-the debug boolean `self.debug` has to be `True` in the corresponding solver wrappers.
+
+The folder `test_examples` also contains a folder `debug_files` containing scripts for debug purposes.
+These files might need some adjustements to work. 
+In order to use them, the debug boolean `self.debug` has to be `True` in the code of the corresponding solver wrappers.

@@ -1,7 +1,7 @@
 {
     "settings" :
     {
-        "number_of_timesteps": 100
+        "number_of_timesteps": 20
     },
     "coupled_solver" :
     {
@@ -72,7 +72,7 @@
                 "settings": {
                     "solver_wrapper" :
                     {
-                        "type" : "solver_wrappers.python.tube_structure_solver_inert",
+                        "type" : "solver_wrappers.python.tube_ringmodel_solver",
                         "settings" :
                         {
                             "working_directory" : "CSM",

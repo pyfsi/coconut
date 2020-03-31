@@ -3,10 +3,7 @@
 # README: run this script to remove old data and setup case
 
 # clean working directory
-if [ -d ./CFD ] 
-then
-    rm -rf ./CFD 
-fi
+rm -rf ./CFD
 
 # create new CFD folder
 cp -r setup_fluent CFD

@@ -3,10 +3,7 @@
 # README: run this script to setup case
 
 # clean working directory
-if [ -d ./CSM ]
-then
-    rm -rf ./CSM
-fi
+rm -rf ./CSM
 mkdir ./CSM
 
 # copy setup files
