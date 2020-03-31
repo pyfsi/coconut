@@ -60,7 +60,8 @@ The Abaqus solver wrapper is configured to start from an input file which contai
 
 ### General
 The base-file needs to be of the “.inp” type, this is an “input file for Abaqus”. “.inp-files” are created via Abaqus by, after configuration, creating a “job” and requesting a “write input” for that job. These files can be opened in Abaqus by using “file > import > model”.
-The base-file has to contain all necessary information about the structural model, which includes:
+The base-file has to contain all necessary information about the structural model, which includes:  
+
  - Geometry
  - Mesh
  - Material properties
@@ -68,7 +69,7 @@ The base-file has to contain all necessary information about the structural mode
  - Surfaces where external loads need to be applied
  - Additional loads not dependent on the flow solver
  
- Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.
+Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.
  
 ### Setup for Abaqus input (loads)
 Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a “surface” should be created in the assembly. 
@@ -77,7 +78,8 @@ For example MOVINGSURFACE0 is associated with the first item in `surfaceIDs` and
 An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus):  
  
 ```python
-my_model=mdb.models['Model-1']* 
+from makeSurface import *
+my_model=mdb.models['Model-1']
 my_assembly=my_model.rootAssembly  
 my_instance=my_assembly.instances['PART-1-1']
 movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NAME_OF_THE_NODESET', 'MOVINGSURFACE0')
