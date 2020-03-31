@@ -419,6 +419,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#setup-for-abaqus-output-displacements" class="md-nav__link">
+    Setup for Abaqus output (displacements)
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -727,6 +734,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#setup-for-abaqus-output-displacements" class="md-nav__link">
+    Setup for Abaqus output (displacements)
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -897,46 +911,49 @@ Subcycling within the structural solver is possible.</p>
 <br><br>Creation of the base-file is not considered a part of the solver wrapper functionality as it is case-specific. However, in order for the solver wrapper to work, the base-file has to comply with certain general conditions. This section aims at informing the user about the requirements for the base-file.</p>
 <h3 id="general">General</h3>
 <p>The base-file needs to be of the “.inp” type, this is an “input file for Abaqus”. “.inp-files” are created via Abaqus by, after configuration, creating a “job” and requesting a “write input” for that job. These files can be opened in Abaqus by using “file &gt; import &gt; model”.
-The base-file has to contain all necessary information about the structural model, which includes:
- - Geometry
- - Mesh
- - Material properties
- - Boundary conditions
- - Surfaces where external loads need to be applied
- - Additional loads not dependent on the flow solver</p>
+The base-file has to contain all necessary information about the structural model, which includes:  </p>
+<ul>
+<li>Geometry</li>
+<li>Mesh</li>
+<li>Material properties</li>
+<li>Boundary conditions</li>
+<li>Surfaces where external loads need to be applied</li>
+<li>Additional loads not dependent on the flow solver</li>
+</ul>
 <p>Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.</p>
 <h3 id="setup-for-abaqus-input-loads">Setup for Abaqus input (loads)</h3>
 <p>Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a “surface” should be created in the assembly. 
 These surfaces can for example be created from geometry or by creating a “node set” containing all the nodes on the surface and then calling the “SurfaceFromNodeSet” function which can be found in the makeSurface.py file in the <code>Extra directory</code>. The name of the surface has to be MOVINGSURFACE followed by an integer. The integer of the surface has to correspond with the index of that specific surface in the <code>surfaceIDs</code> parameter (index starts from 0). 
 For example MOVINGSURFACE0 is associated with the first item in <code>surfaceIDs</code> and MOVINGSURFACE1 would be associated with the second item in <code>surfaceIDs</code>. 
-An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus): 
-```my_model=mdb.models['Model-1']* 
-my_assembly=my_model.rootAssembly<br />
-my_instance=my_assembly.instances['PART-1-1']
-movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NAME_OF_THE_NODESET', 'MOVINGSURFACE0')</p>
-<div class="codehilite"><pre><span></span><code><span class="err">On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:</span>
+An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus):  </p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">makeSurface</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">my_model</span><span class="o">=</span><span class="n">mdb</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;Model-1&#39;</span><span class="p">]</span>
+<span class="n">my_assembly</span><span class="o">=</span><span class="n">my_model</span><span class="o">.</span><span class="n">rootAssembly</span>  
+<span class="n">my_instance</span><span class="o">=</span><span class="n">my_assembly</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="s1">&#39;PART-1-1&#39;</span><span class="p">]</span>
+<span class="n">movingSurface0</span> <span class="o">=</span> <span class="n">SurfaceFromNodeSet</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="n">my_instance</span><span class="p">,</span> <span class="s1">&#39;NAME_OF_THE_NODESET&#39;</span><span class="p">,</span> <span class="s1">&#39;MOVINGSURFACE0&#39;</span><span class="p">)</span>
 </code></pre></div>
 
 
-<p>from step import *
-step1 = my_model.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=1, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=1, minInc=1, maxInc=1, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
-my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distributionType = USER_DEFINED, field = '', magnitude = 1, region=movingSurface0)
-my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)</p>
-<div class="codehilite"><pre><span></span><code><span class="err">### Setup for Abaqus output (displacements)</span>
-<span class="err">After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput </span>
-<span class="err">has to be generated for each surface involved in the fluid-structure interface. </span>
-<span class="err">To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this hadn’t been done before) </span>
-<span class="err">and to create a fieldOutput per surface containing at least the coordinates and the displacements. </span>
-<span class="err">Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput </span>
-<span class="err">and historyOutput with PRESELECTED variables. </span>
-<span class="err">This can be done via the GUI or using python lines similar to the following:</span>
+<p>On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:  </p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">step</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">step1</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">ImplicitDynamicsStep</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">previous</span><span class="o">=</span><span class="s1">&#39;Initial&#39;</span><span class="p">,</span> <span class="n">timePeriod</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nlgeom</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">maxNumInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">haftol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initialInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">RAMP</span><span class="p">,</span> <span class="n">noStop</span><span class="o">=</span><span class="n">OFF</span><span class="p">,</span> <span class="n">nohaf</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">initialConditions</span><span class="o">=</span><span class="n">OFF</span><span class="p">,</span> <span class="n">timeIncrementationMethod</span><span class="o">=</span><span class="n">FIXED</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">QUASI_STATIC</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">Pressure</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;DistributedPressure&#39;</span><span class="p">,</span> <span class="n">createStepName</span> <span class="o">=</span> <span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">distributionType</span> <span class="o">=</span> <span class="n">USER_DEFINED</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">magnitude</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">movingSurface0</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">SurfaceTraction</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;DistributedShear&#39;</span><span class="p">,</span> <span class="n">createStepName</span> <span class="o">=</span> <span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">region</span> <span class="o">=</span> <span class="n">movingSurface0</span><span class="p">,</span> <span class="n">magnitude</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">traction</span> <span class="o">=</span> <span class="n">GENERAL</span><span class="p">,</span> <span class="n">directionVector</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> <span class="n">distributionType</span> <span class="o">=</span> <span class="n">USER_DEFINED</span><span class="p">)</span>
 </code></pre></div>
 
 
-<p>my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=tubeAssembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
-my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
-my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='H-Output-1', variables=PRESELECT)
-```</p>
+<h3 id="setup-for-abaqus-output-displacements">Setup for Abaqus output (displacements)</h3>
+<p>After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput 
+has to be generated for each surface involved in the fluid-structure interface. 
+To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this hadn’t been done before) 
+and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
+Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput 
+and historyOutput with PRESELECTED variables. 
+This can be done via the GUI or using python lines similar to the following:  </p>
+<div class="codehilite"><pre><span></span><code><span class="n">my_model</span><span class="o">.</span><span class="n">FieldOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;F-Output-1&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">tubeAssembly</span><span class="o">.</span><span class="n">sets</span><span class="p">[</span><span class="s1">&#39;NAME_OF_THE_NODE_SET&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;COORD&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">))</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">FieldOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;F-Output-2&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">PRESELECT</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">HistoryOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;H-Output-1&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">PRESELECT</span><span class="p">)</span>
+</code></pre></div>
                 
                   
                 
