@@ -74,14 +74,18 @@ The base-file has to contain all necessary information about the structural mode
 Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a “surface” should be created in the assembly. 
 These surfaces can for example be created from geometry or by creating a “node set” containing all the nodes on the surface and then calling the “SurfaceFromNodeSet” function which can be found in the makeSurface.py file in the `Extra directory`. The name of the surface has to be MOVINGSURFACE followed by an integer. The integer of the surface has to correspond with the index of that specific surface in the `surfaceIDs` parameter (index starts from 0). 
 For example MOVINGSURFACE0 is associated with the first item in `surfaceIDs` and MOVINGSURFACE1 would be associated with the second item in `surfaceIDs`. 
-An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus): 
-```my_model=mdb.models['Model-1']* 
+An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus):  
+ 
+```python
+my_model=mdb.models['Model-1']* 
 my_assembly=my_model.rootAssembly  
 my_instance=my_assembly.instances['PART-1-1']
 movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NAME_OF_THE_NODESET', 'MOVINGSURFACE0')
-```
-On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:
-```
+```  
+
+On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:  
+
+```python
 from step import *
 step1 = my_model.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=1, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=1, minInc=1, maxInc=1, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
 my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distributionType = USER_DEFINED, field = '', magnitude = 1, region=movingSurface0)
@@ -95,9 +99,10 @@ To do so it is best to create node sets in the assembly containing all structura
 and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
 Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput 
 and historyOutput with PRESELECTED variables. 
-This can be done via the GUI or using python lines similar to the following:
-```
+This can be done via the GUI or using python lines similar to the following:  
+
+```python   
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=tubeAssembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
 my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='H-Output-1', variables=PRESELECT)
-```
+```  
