@@ -61,7 +61,7 @@ The behavior of `run_mkdocs.py` can be altered by adding an extra command line a
 ```bash
 python run_mkdocs.py --deploy
 ```
-deploys the website on GitHub Pages using `mkdocs gh-deploy`. This requires administrator privileges in the repository, otherwise GitHub will ignore the changes. 
+deploys the website on GitHub Pages using `mkdocs gh-deploy`. 
 
 ```bash
 python run_mkdocs.py --preview example
