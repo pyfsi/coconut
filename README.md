@@ -27,7 +27,9 @@ export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 ```
 This line can also be added to your `.bashrc` file.
 
+Documentation:
 
+All documentation is grouped on the [CoCoNut website][https://pyfsi.github.io/coconut/].
 
 
 ## For developers
@@ -82,8 +84,13 @@ export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 
 This line can also be added to your `.bashrc` file.
 
+Documentation:
+
+All documentation is grouped on the [CoCoNut website][https://pyfsi.github.io/coconut/].
 
 
 
 
 
+
+[https://pyfsi.github.io/coconut/]: https://pyfsi.github.io/coconut/
