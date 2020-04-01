@@ -44,6 +44,7 @@ the radial direction along the x-axis.
 The difference in reference frames and number of cells on the fluid-structure interface, 
 but also the difference in dimensions require the use of mappers,
 In the structure solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
-Thereafter, a radial basis mapper is used to interpolate in the x- and y-direction from the 100 cell centers of Fluent to the 150 load points in Abaqus.
+Thereafter, a radial basis mapper is used to interpolate in the x-, y- and z-direction 
+from the loads coming from Fluent to a temporary 3D interface corresponding to Abaqus.
 Finally a mapper is added to go from 3D to 2D.
 For the output the same is done in the opposite order: first going from 2D to 3D, then interpolating and finally flipping the axes.

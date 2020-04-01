@@ -88,14 +88,14 @@
                             "arraysize": 10e5,
                             "surfaces": 1,
                             "ramp": 0,
-                            "surfaceIDs": ["WALLOUTSIDE"],
+                            "surfaceIDs": ["BEAMINSIDEMOVING"],
                             "interface_input":
                             {
-                                "WALLOUTSIDE_load_points": ["PRESSURE", "TRACTION"]
+                                "BEAMINSIDEMOVING_load_points": ["PRESSURE", "TRACTION"]
                             },
                             "interface_output":
                             {
-                                "WALLOUTSIDE_nodes": "DISPLACEMENT"
+                                "BEAMINSIDEMOVING_nodes": "DISPLACEMENT"
                             },
                             "mp_mode": "THREADS",
                             "input_file": "Base.inp",
@@ -124,7 +124,7 @@
                                         "settings" :
                                         {
                                             "balanced_tree" : false,
-                                            "directions" : ["X", "Y"],
+                                            "directions" : ["X", "Y", "Z"],
                                             "parallel" : true
                                         }
                                     },
@@ -165,7 +165,7 @@
                                         "settings" :
                                         {
                                             "balanced_tree" : false,
-                                            "directions" : ["X", "Y"],
+                                            "directions" : ["X", "Y", "Z"],
                                             "parallel" : true
                                         }
                                     },

@@ -79,16 +79,13 @@
                             "arraysize": 10e5,
                             "surfaces": 1,
                             "ramp": 0,
-                            "surfaceIDs": [
-                                "BEAMINSIDEMOVING"
-                            ],
-                            "interface_input": {
-                                "BEAMINSIDEMOVING_load_points": [
-                                    "PRESSURE",
-                                    "TRACTION"
-                                ]
+                            "surfaceIDs": ["BEAMINSIDEMOVING"],
+                            "interface_input":
+                            {
+                                "BEAMINSIDEMOVING_load_points": ["PRESSURE","TRACTION"]
                             },
-                            "interface_output": {
+                            "interface_output":
+                            {
                                 "BEAMINSIDEMOVING_nodes": "DISPLACEMENT"
                             },
                             "mp_mode": "THREADS",
