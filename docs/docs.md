@@ -30,7 +30,8 @@ External images can be included with their URL. Adding locally stored images is 
 
 ![example image](images/lachend_kakske.png "diefstal in Oostende")
 
-
+Only image formats specified in `run_mkdocs.py` are copied to the website; missing extensions can be added. 
+Images from all `coconut` subdirectories called `images` are copied to the website, so care must be taken that `images` is not used in e.g. the output of the test examples.
 
 
 ## Creating a static website with MkDocs
