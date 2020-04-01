@@ -15,6 +15,8 @@ They are calculated in the center of each of the `m` cells.
 
 There is one flow solver (TubeFlow) and two structure solvers, one with inertia (TubeStructure) and one without (TubeRingmodel).
 
+### Settings
+
 The following parameters, listed in alphabetical order, need to be provided in the JSON parameter file 
 as `setttings` of the solver wrapper.
 
@@ -57,7 +59,8 @@ For more information about the implementation this solver refer to .
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in the `solver_parameters.json` file in the `working_directoyr`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name `solver_parameters.json`.
+This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the structural solver.
 
 parameter|type|description
@@ -122,7 +125,8 @@ For more information about the implementation this solver refer to .
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in the `solver_parameters.json` file in the `working_directoyr`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name `solver_parameters.json`.
+This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
 parameter|type|description
@@ -168,7 +172,7 @@ For more information about the implementation this solver refer to .
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in the `solver_parameters.json` file in the `working_directoyr`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name `solver_parameters.json`.This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
 parameter|type|description
