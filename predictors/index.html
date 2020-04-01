@@ -38,7 +38,7 @@
     
     
       
-        <title>Guide to the documentation - CoCoNuT</title>
+        <title>Predictors - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#guide-to-the-documentation" tabindex="0" class="md-skip">
+      <a href="#predictors" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                Guide to the documentation
+                Predictors
               
             </span>
           
@@ -234,7 +234,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../data_structure/" class="md-tabs__link md-tabs__link--active">
+        <a href="../data_structure/" class="md-tabs__link">
           Varia
         </a>
       
@@ -301,10 +301,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
     
     <label class="md-nav__link" for="nav-2">
       Components
@@ -368,11 +370,70 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../predictors/" title="Predictors" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Predictors
+      </label>
+    
+    <a href="./" title="Predictors" class="md-nav__link md-nav__link--active">
       Predictors
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#linear" class="md-nav__link">
+    Linear
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#legacy" class="md-nav__link">
+    Legacy
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadratic" class="md-nav__link">
+    Quadratic
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cubic" class="md-nav__link">
+    Cubic
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -613,12 +674,10 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+  <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
     
     <label class="md-nav__link" for="nav-4">
       Varia
@@ -646,56 +705,11 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-      
-    
-    
-      <label class="md-nav__link md-nav__link--active" for="__toc">
-        Guide to the documentation
-      </label>
-    
-    <a href="./" title="Guide to the documentation" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../docs/" title="Guide to the documentation" class="md-nav__link">
       Guide to the documentation
     </a>
-    
-      
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#documentation-in-markdown" class="md-nav__link">
-    Documentation in MarkDown
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#creating-a-static-website-with-mkdocs" class="md-nav__link">
-    Creating a static website with MkDocs
-  </a>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
-  
-</nav>
-    
   </li>
 
         
@@ -725,15 +739,29 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#documentation-in-markdown" class="md-nav__link">
-    Documentation in MarkDown
+  <a href="#linear" class="md-nav__link">
+    Linear
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#creating-a-static-website-with-mkdocs" class="md-nav__link">
-    Creating a static website with MkDocs
+  <a href="#legacy" class="md-nav__link">
+    Legacy
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quadratic" class="md-nav__link">
+    Quadratic
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cubic" class="md-nav__link">
+    Cubic
   </a>
   
 </li>
@@ -755,68 +783,40 @@
               
                 
                 
-                <h1 id="guide-to-the-documentation">Guide to the documentation</h1>
-<p>This website is a collection of all MarkDown (MD) files found in the CoSimulationApplication folder and its subfolders.
-These files are converted to a static website using <a href="https://www.mkdocs.org/">MkDocs</a>, based on the outline defined in the <code>mkdocs.yml</code> file.</p>
-<h2 id="documentation-in-markdown">Documentation in MarkDown</h2>
-<p>MD files are easy to write and read in raw form, and can easily be converted to HTML for nicer rendering. It is easy to learn, see e.g. this <a href="https://www.markdowntutorial.com/">tutorial</a>. Several flavors of MD exist, which differ only in some details. GitHub has its own <a href="https://github.github.com/gfm/">GitHub Flavored Markdown (GFM)</a>, which is used to render MD documents found in repositories on the run. PyCharm comes with an automatic rendering tool built in, and I assume many other IDE's too. </p>
-<p>The MD documents for the CoCoNuT documentation must be written in the <a href="https://python-markdown.github.io/">Python-Markdown</a> flavor, because they are processed by <a href="https://www.mkdocs.org/">MkDocs</a>. This flavor stays very close to the <a href="reference implementation">reference implementation</a> of MD. Pay attention to lists: they should be indented with 4 spaces (contrary to GFM). </p>
-<p>Some important rules for writing MD files for this documentation website:</p>
-<ul>
-<li>The name of the file must be unique: use names like <code>fluent.md</code> or <code>test_examples.md</code>, not <code>readme.md</code>.</li>
-<li>Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names <code>example.md</code> with a proper link. </li>
-</ul>
-<p>For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. <span><span class="MathJax_Preview">E = m c^2</span><script type="math/tex">E = m c^2</script></span>), block-style equations in double dolar signs, e.g.</p>
-<div>
-<div class="MathJax_Preview">
-e^{i \pi} + 1 = 0.
-</div>
-<script type="math/tex; mode=display">
-e^{i \pi} + 1 = 0.
-</script>
-</div>
-<p>LaTeX expressions will <strong>not</strong> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="Arithmatex">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
-<h2 id="creating-a-static-website-with-mkdocs">Creating a static website with MkDocs</h2>
-<p><a href="https://www.mkdocs.org/">MkDocs</a> can be installed using pip: </p>
-<div class="codehilite"><pre><span></span><code>pip install mkdocs
-</code></pre></div>
-
-
-<p>Furthermore, the <a href="https://squidfunk.github.io/mkdocs-material/">Material</a> theme must be installed:</p>
-<div class="codehilite"><pre><span></span><code>pip install mkdocs-material
-</code></pre></div>
-
-
-<p>To render LaTeX equations, the <a href="https://squidfunk.github.io/mkdocs-material/extensions/pymdown/">PyMdown</a> MD extensions must be installed:</p>
-<div class="codehilite"><pre><span></span><code>pip install pymdown-extensions
-</code></pre></div>
-
-
-<p>All three can be installed locally by adding the argument <code>-t /some/absolute/path</code>. In that case, two lines must be added to your <code>.bashrc</code>: </p>
-<div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
-<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span>/some/absolute/path/bin:<span class="nv">$PATH</span>
-</code></pre></div>
-
-
-<p>The structure/outline of the website is dictated by the <code>nav</code> variable in <code>mkdocs.yml</code>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
-<p>The complete process to create the documentation website is automated by <code>run_mkdocs.py</code>. This does the following things:</p>
-<ul>
-<li>Copy all MD files in the CoSimulationApplication folder and its subfolders to folder <code>docs</code>. </li>
-<li>Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.</li>
-<li>Check if each MD file is mentioned in <code>mkdocs.yml</code>. If a file is not mentioned, a warning is given.</li>
-<li>Build static HTML website using <code>mkdocs build</code>. </li>
-</ul>
-<p>The behavior of <code>run_mkdocs.py</code> can be altered by adding an extra command line argument. </p>
-<div class="codehilite"><pre><span></span><code>python run_mkdocs.py --deploy
-</code></pre></div>
-
-
-<p>deploys the website on GitHub Pages using <code>mkdocs gh-deploy</code>. </p>
-<div class="codehilite"><pre><span></span><code>python run_mkdocs.py --preview example
-</code></pre></div>
-
-
-<p>opens a preview of the website in Firefox, showing the webpage corresponding to the file <code>example.md</code>. This can be used to check MD and LaTeX syntax. </p>
+                <h1 id="predictors">Predictors</h1>
+<p>This documentation describes the available predictors.
+A predictor is used to determine the initial guess in each time step by extrapolating the solution from previous time steps.
+The different predictors differ in the number of previous iterations they take into account 
+and the polynomial degree that is used.</p>
+<h2 id="linear">Linear</h2>
+<p>This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
+using a linear extrapolation as follows
+$$
+x^{n+1}=2x^{n}-1x^{n-1}.
+$$
+If no two previous solutions are available, the solution from the last time step is used.</p>
+<h2 id="legacy">Legacy</h2>
+<p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
+using a linear extrapolation as follows
+$$
+x^{n+1}=\frac{5}{2}x^{n}-2x^{n-1}+\frac{1}{2}x^{n-2}.
+$$
+If no three previous solutions are available, the predictor <code>linear</code> is used.
+This predictor is called <code>legacy</code> as it corresponds to the 2nd order extrapolator in the coupling code Tango.</p>
+<h2 id="quadratic">Quadratic</h2>
+<p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
+using a quadratic extrapolation as follows
+$$
+x^{n+1}=3x^{n}-3x^{n-1}+1x^{n-2}.
+$$
+If no three previous solutions are available, the predictor <code>linear</code> is used.</p>
+<h2 id="cubic">Cubic</h2>
+<p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
+using a cubic extrapolation as follows
+$$
+x^{n+1}=4x^{n}-6x^{n-1}+4x^{n-2}-1x^{n-3}.
+$$
+If no four previous solutions are available, the predictor <code>quadratic</code> is used.</p>
                 
                   
                 
@@ -838,7 +838,7 @@ e^{i \pi} + 1 = 0.
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../data_structure/" title="Data structure" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../models/" title="Models" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -847,11 +847,25 @@ e^{i \pi} + 1 = 0.
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Data structure
+                Models
               </span>
             </div>
           </a>
         
+        
+          <a href="../convergence_criteria/" title="ConvergenceCriteria" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                ConvergenceCriteria
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>

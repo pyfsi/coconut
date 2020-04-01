@@ -38,7 +38,7 @@
     
     
       
-        <title>Fluent 2D - Python - CoCoNuT</title>
+        <title>CoupledSolvers - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#description-of-fluent_pipe_structure" tabindex="0" class="md-skip">
+      <a href="#coupledsolvers" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                Fluent 2D - Python
+                CoupledSolvers
               
             </span>
           
@@ -200,13 +200,19 @@
         
   
   
+    
+    
+  
+  
     <li class="md-tabs__item">
       
-        <a href="../fluent/" class="md-tabs__link">
-          SolverWrappers
+        <a href="./" class="md-tabs__link md-tabs__link--active">
+          Components
         </a>
       
     </li>
+  
+
   
 
       
@@ -215,7 +221,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../test_examples/" class="md-tabs__link md-tabs__link--active">
+        <a href="../test_examples/" class="md-tabs__link">
           TestExamples
         </a>
       
@@ -228,7 +234,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../mappers/" class="md-tabs__link">
+        <a href="../data_structure/" class="md-tabs__link">
           Varia
         </a>
       
@@ -295,16 +301,177 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
     
     <label class="md-nav__link" for="nav-2">
-      SolverWrappers
+      Components
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
+        Components
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1" checked>
+    
+    <label class="md-nav__link" for="nav-2-1">
+      CoupledSolvers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-1">
+        CoupledSolvers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        CoupledSolvers
+      </label>
+    
+    <a href="./" title="CoupledSolvers" class="md-nav__link md-nav__link--active">
+      CoupledSolvers
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#gauss-seidel" class="md-nav__link">
+    Gauss-Seidel
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relaxation" class="md-nav__link">
+    Relaxation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aitken" class="md-nav__link">
+    Aitken
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iqn-i" class="md-nav__link">
+    IQN-I
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ibqn" class="md-nav__link">
+    IBQN
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../models/" title="Models" class="md-nav__link">
+      Models
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../predictors/" title="Predictors" class="md-nav__link">
+      Predictors
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../convergence_criteria/" title="ConvergenceCriteria" class="md-nav__link">
+      ConvergenceCriteria
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4">
+    
+    <label class="md-nav__link" for="nav-2-4">
+      SolverWrappers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-4">
         SolverWrappers
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -340,8 +507,25 @@
 
 
   <li class="md-nav__item">
-    <a href="../python_solvers/" title="Pure Python SolverWrappers" class="md-nav__link">
-      Pure Python SolverWrappers
+    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
+      SolverWrapperPython
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../mappers/" title="Mappers" class="md-nav__link">
+      Mappers
     </a>
   </li>
 
@@ -355,12 +539,10 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+  <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
     
     <label class="md-nav__link" for="nav-3">
       TestExamples
@@ -378,8 +560,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_examples/" title="Test Examples" class="md-nav__link">
-      Test Examples
+    <a href="../test_examples/" title="TestExample" class="md-nav__link">
+      TestExample
     </a>
   </li>
 
@@ -388,12 +570,10 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+  <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2">
     
     <label class="md-nav__link" for="nav-3-2">
       Tube
@@ -411,7 +591,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tube_fluent2D_abaqus2D/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+    <a href="../tube_fluent2d_abaqus2d/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
       Fluent 2D - Abaqus 2D
     </a>
   </li>
@@ -421,49 +601,11 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-      
-    
-    
-      <label class="md-nav__link md-nav__link--active" for="__toc">
-        Fluent 2D - Python
-      </label>
-    
-    <a href="./" title="Fluent 2D - Python" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../tube_fluent2d_tube_structure/" title="Fluent 2D - Python" class="md-nav__link">
       Fluent 2D - Python
     </a>
-    
-      
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#solvers" class="md-nav__link">
-    Solvers
-  </a>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
-  
-</nav>
-    
   </li>
 
         
@@ -473,7 +615,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tube_fluent3D_abaqus3D/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
+    <a href="../tube_fluent3d_abaqus3d/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
       Fluent 3D - Abaqus 3D
     </a>
   </li>
@@ -485,8 +627,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tube_tube_flow_abaqus2D/" title="Python - Abaqus 2D" class="md-nav__link">
-      Python - Abaqus 2D
+    <a href="../tube_fluent3d_abaqus2d/" title="Fluent 3D - Abaqus 2D" class="md-nav__link">
+      Fluent 3D - Abaqus 2D
     </a>
   </li>
 
@@ -497,8 +639,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tube_tube_flow_tube_structure/" title="Python - Python" class="md-nav__link">
-      Python - Python
+    <a href="../tube_tube_flow_abaqus2d/" title="Python TubeFlow - Abaqus 2D" class="md-nav__link">
+      Python TubeFlow - Abaqus 2D
     </a>
   </li>
 
@@ -509,8 +651,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tube_tube_flow_tube_structure_inert/" title="Python - Python inert" class="md-nav__link">
-      Python - Python inert
+    <a href="../tube_tube_flow_tube_ringmodel/" title="Python TubeFlow - Python TubeRingmodel" class="md-nav__link">
+      Python TubeFlow - Python TubeRingmodel
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_structure/" title="Python TubeFlow - Python TubeStructre" class="md-nav__link">
+      Python TubeFlow - Python TubeStructre
     </a>
   </li>
 
@@ -543,18 +697,6 @@
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../mappers/" title="Mappers" class="md-nav__link">
-      Mappers
-    </a>
-  </li>
-
         
           
           
@@ -606,8 +748,36 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#solvers" class="md-nav__link">
-    Solvers
+  <a href="#gauss-seidel" class="md-nav__link">
+    Gauss-Seidel
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relaxation" class="md-nav__link">
+    Relaxation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aitken" class="md-nav__link">
+    Aitken
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iqn-i" class="md-nav__link">
+    IQN-I
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ibqn" class="md-nav__link">
+    IBQN
   </a>
   
 </li>
@@ -629,14 +799,46 @@
               
                 
                 
-                <h1 id="description-of-fluent_pipe_structure">Description of fluent_pipe_structure</h1>
-<p>This documentation describes the test example fluent_pipe_structure.</p>
-<h2 id="solvers">Solvers</h2>
-<p>The flow solver is fluent, used to solve an axisymmetric representation of a tube. The axial direction is along the X-axis,
-the radial direction along the Y-axis.</p>
-<p>The structure solver is the 2D pipe_structure_inert solver. The axial direction is along the Z-axis,
-the radial direction along the Y-axis.</p>
-<p>A permutation mapper is introduced between the solvers, to match the coordinate frames.</p>
+                <h1 id="coupledsolvers">CoupledSolvers</h1>
+<p>This documentation describes the coupled solvers which are available.
+A coupled solver refers to a coupling algortihm used to couple the two solvers.
+Some coupled solvers implement one or more models.
+All coupled solvers inherit from <code>gauss_seidel</code>.</p>
+<p>In the parameter JSON file, the dictionnary <code>coupled_solver</code> holds the dictionnaries <code>type</code> and <code>settings</code>,
+but also <code>predictor</code>, <code>convergence_criterion</code> and <code>solver_wrappers</code>.</p>
+<h2 id="gauss-seidel">Gauss-Seidel</h2>
+<p>The following parameters, listed in alphabetical order, need to be specified in the <code>solver_parameters.json</code> file in the <code>working_directoyr</code>.
+Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>axial_offset</code></td>
+<td align="center">double</td>
+<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>d</code></td>
+<td align="center">double</td>
+<td>Nominal diameter of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>e</code></td>
+<td align="center">double</td>
+<td>Modulus of elasticity of the tube wall.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="relaxation">Relaxation</h2>
+<h2 id="aitken">Aitken</h2>
+<h2 id="iqn-i">IQN-I</h2>
+<h2 id="ibqn">IBQN</h2>
                 
                   
                 
@@ -658,7 +860,7 @@ the radial direction along the Y-axis.</p>
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../tube_fluent2D_abaqus2D/" title="Fluent 2D - Abaqus 2D" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href=".." title="CoCoNuT installation" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -667,19 +869,19 @@ the radial direction along the Y-axis.</p>
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Fluent 2D - Abaqus 2D
+                CoCoNuT installation
               </span>
             </div>
           </a>
         
         
-          <a href="../tube_fluent3D_abaqus3D/" title="Fluent 3D - Abaqus 3D" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../models/" title="Models" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Fluent 3D - Abaqus 3D
+                Models
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

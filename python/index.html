@@ -1,0 +1,1384 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="site_description">
+      
+      
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-4.6.3">
+    
+    
+      
+        <title>SolverWrapperPython - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.adb8469c.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.a8b3c06d.css">
+      
+      
+        
+        
+        <meta name="theme-color" content="#4caf50">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.86422ebf.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="green" data-md-color-accent="green">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#solverwrapperpython" tabindex="0" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="CoCoNuT" aria-label="CoCoNuT" class="md-header-nav__button md-logo">
+          
+            <img alt="logo" src="../images/logo.png" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              CoCoNuT
+            </span>
+            <span class="md-header-nav__topic">
+              
+                SolverWrapperPython
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" aria-label="search" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+        
+
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  <li class="md-tabs__item">
+    
+      <a href=".." class="md-tabs__link">
+        CoCoNuT installation
+      </a>
+    
+  </li>
+
+      
+        
+  
+  
+    
+    
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../coupled_solvers/" class="md-tabs__link">
+          Components
+        </a>
+      
+    </li>
+  
+
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../test_examples/" class="md-tabs__link">
+          TestExamples
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../data_structure/" class="md-tabs__link">
+          Varia
+        </a>
+      
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+      
+      <main class="md-main" role="main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="CoCoNuT" class="md-nav__button md-logo">
+      
+        <img alt="logo" src="../images/logo.png" width="48" height="48">
+      
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="CoCoNuT installation" class="md-nav__link">
+      CoCoNuT installation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      Components
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        Components
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1">
+    
+    <label class="md-nav__link" for="nav-2-1">
+      CoupledSolvers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-1">
+        CoupledSolvers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../coupled_solvers/" title="CoupledSolvers" class="md-nav__link">
+      CoupledSolvers
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../models/" title="Models" class="md-nav__link">
+      Models
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../predictors/" title="Predictors" class="md-nav__link">
+      Predictors
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../convergence_criteria/" title="ConvergenceCriteria" class="md-nav__link">
+      ConvergenceCriteria
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4" checked>
+    
+    <label class="md-nav__link" for="nav-2-4">
+      SolverWrappers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-4">
+        SolverWrappers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
+      SolverWrapperFluent
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        SolverWrapperPython
+      </label>
+    
+    <a href="./" title="SolverWrapperPython" class="md-nav__link md-nav__link--active">
+      SolverWrapperPython
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tube" class="md-nav__link">
+    Tube
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tubeflow" class="md-nav__link">
+    TubeFlow
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solver-parameters" class="md-nav__link">
+    Solver parameters
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inlet-boundary" class="md-nav__link">
+    Inlet Boundary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#outlet-boundary" class="md-nav__link">
+    Outlet Boundary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuberingmodel" class="md-nav__link">
+    TubeRingModel
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solver-parameters_1" class="md-nav__link">
+    Solver parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tubestructure" class="md-nav__link">
+    TubeStructure
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solver-parameters_2" class="md-nav__link">
+    Solver parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../mappers/" title="Mappers" class="md-nav__link">
+      Mappers
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+    
+    <label class="md-nav__link" for="nav-3">
+      TestExamples
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        TestExamples
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../test_examples/" title="TestExample" class="md-nav__link">
+      TestExample
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2">
+    
+    <label class="md-nav__link" for="nav-3-2">
+      Tube
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-3-2">
+        Tube
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent2d_abaqus2d/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent2d_tube_structure/" title="Fluent 2D - Python" class="md-nav__link">
+      Fluent 2D - Python
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_abaqus3d/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
+      Fluent 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_abaqus2d/" title="Fluent 3D - Abaqus 2D" class="md-nav__link">
+      Fluent 3D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_abaqus2d/" title="Python TubeFlow - Abaqus 2D" class="md-nav__link">
+      Python TubeFlow - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_ringmodel/" title="Python TubeFlow - Python TubeRingmodel" class="md-nav__link">
+      Python TubeFlow - Python TubeRingmodel
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_tube_flow_tube_structure/" title="Python TubeFlow - Python TubeStructre" class="md-nav__link">
+      Python TubeFlow - Python TubeStructre
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Varia
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Varia
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../data_structure/" title="Data structure" class="md-nav__link">
+      Data structure
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../docs/" title="Guide to the documentation" class="md-nav__link">
+      Guide to the documentation
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tube" class="md-nav__link">
+    Tube
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tubeflow" class="md-nav__link">
+    TubeFlow
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solver-parameters" class="md-nav__link">
+    Solver parameters
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inlet-boundary" class="md-nav__link">
+    Inlet Boundary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#outlet-boundary" class="md-nav__link">
+    Outlet Boundary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuberingmodel" class="md-nav__link">
+    TubeRingModel
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solver-parameters_1" class="md-nav__link">
+    Solver parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tubestructure" class="md-nav__link">
+    TubeStructure
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solver-parameters_2" class="md-nav__link">
+    Solver parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="solverwrapperpython">SolverWrapperPython</h1>
+<p>This is the documentation for all Python SolverWrappers.
+Currently only solvers exist for the 1D calculation of a straight flexible tube.</p>
+<h2 id="tube">Tube</h2>
+<p>There are three tube solvers for a straight tube with circular cross-section.
+The axial direction is along the z-axis.
+All of them are 1D solvers.
+This means the tube is divided in <code>m</code> intervals in the axial z-direction
+and only variations in that direction are taken into account.
+In other words, all variables are uniform over a cross-section.
+They are calculated in the center of each of the <code>m</code> cells.</p>
+<p>There is one flow solver (TubeFlow) and two structure solvers, one with inertia (TubeStructure) and one without (TubeRingmodel).</p>
+<p>The following parameters, listed in alphabetical order, need to be provided in the JSON parameter file 
+as <code>setttings</code> of the solver wrapper.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>delta_t</code></td>
+<td align="center">double</td>
+<td>Fixed time step size in flow solver. This parameter is usually specified in a higher Component.</td>
+</tr>
+<tr>
+<td align="right"><code>input_file</code></td>
+<td align="center">string</td>
+<td>Name of the input file, which must be present in the folder <code>working_directory</code>. The file contains all parameters required for the solver, in JSON-format.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_input</code></td>
+<td align="center">dict</td>
+<td>Keys are names of ModelParts. The values are (lists of) names of Variables. <br>For a flow solver:<code>"DISPLACEMENT"</code>. <br>For a structure solver:<code>["PRESSURE","TRACTION"]</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_output</code></td>
+<td align="center">dict</td>
+<td>Analogous to <code>interface_input</code>, but for the flow solver output. <br>For a flow solver:<code>["PRESSURE","TRACTION"]</code>. <br>For a structure solver:<code>"DISPLACEMENT"</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>working_directory</code></td>
+<td align="center">string</td>
+<td>Absolute path to the working directory or relative path w.r.t the current directory.</td>
+</tr>
+</tbody>
+</table>
+<p><code>delta_t</code> is a necessary parameter, but is usually defined in a higher Component. However, it can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If it is defined both in higher Component and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p>If no intepolation is applied, the names of the ModelParts of both flow and structure solver need to be the same.</p>
+<p>There is no parameter <code>timestep_start</code>, as currently, restart is not implemented in this solver wrapper.</p>
+<h3 id="tubeflow">TubeFlow</h3>
+<p>This flow solver calculates the flow inside a 1D straight and flexible tube.
+The required input is the radial displacement of the tube wall.
+The resulting output is the pressure on the tube wall.</p>
+<p>From the radial displacements the area of each cross-section is calculated.
+The flow is governed by the continuity and momentum equation
+$$
+\frac{\partial a}{\partial t}+\frac{\partial av}{\partial z}=0
+$$
+$$
+\frac{\partial av}{\partial t}+\frac{\partial av^2}{\partial z}+\frac{1}{\rho_f}\left(\frac{\partial ap}{\partial z}-p\frac{\partial a}{\partial z}\right)=0
+$$
+with <span><span class="MathJax_Preview">a=\pi r^2</span><script type="math/tex">a=\pi r^2</script></span> the cross-sectional area of the tube and <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> the inner radius.
+Furthermore, <span><span class="MathJax_Preview">t</span><script type="math/tex">t</script></span> is the time, <span><span class="MathJax_Preview">v</span><script type="math/tex">v</script></span> the velocity along the axis of the tube, <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> the pressure and <span><span class="MathJax_Preview">\rho_f</span><script type="math/tex">\rho_f</script></span> the density of the fluid.
+Add the start and end of the tube the boundary conditions have to be applied.
+Discretizing these equations results in a system of linear algebraic equations which can be solved for the pressure and velocity
+by performing Newton-Raphson iterations.
+Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.</p>
+<p>For more information about the implementation this solver refer to .</p>
+<h4 id="solver-parameters">Solver parameters</h4>
+<p>The following parameters, listed in alphabetical order, need to be specified in the <code>solver_parameters.json</code> file in the <code>working_directoyr</code>.
+Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the structural solver.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>axial_offset</code></td>
+<td align="center">double</td>
+<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>d</code></td>
+<td align="center">double</td>
+<td>Nominal diameter of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>e</code></td>
+<td align="center">double</td>
+<td>Modulus of elasticity of the tube wall.</td>
+</tr>
+<tr>
+<td align="right"><code>h</code></td>
+<td align="center">double</td>
+<td>Thickness of tube wall.</td>
+</tr>
+<tr>
+<td align="right"><code>inlet_boundary</code></td>
+<td align="center">dict</td>
+<td>Dictionary containing all information with respect to the inlet boundary condition.</td>
+</tr>
+<tr>
+<td align="right"><code>l</code></td>
+<td align="center">double</td>
+<td>Length of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>m</code></td>
+<td align="center">int</td>
+<td>Number of cells for discretization. The values are calculated in the cell centers.</td>
+</tr>
+<tr>
+<td align="right"><code>newtonmax</code></td>
+<td align="center">double</td>
+<td>Maximum number of Newton-Raphson iterations for the flow solver calculation.</td>
+</tr>
+<tr>
+<td align="right"><code>newtontol</code></td>
+<td align="center">double</td>
+<td>Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.</td>
+</tr>
+<tr>
+<td align="right"><code>outlet_boundary</code></td>
+<td align="center">dict</td>
+<td>Dictionary containing all information with respect to the outlet boundary condition.</td>
+</tr>
+<tr>
+<td align="right"><code>preference</code></td>
+<td align="center">double</td>
+<td>(optional) Reference pressure. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>ureference</code></td>
+<td align="center">double</td>
+<td>Reference velocity.</td>
+</tr>
+<tr>
+<td align="right"><code>rhof</code></td>
+<td align="center">double</td>
+<td>Density of the fluid.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="inlet-boundary">Inlet Boundary</h5>
+<p>This section describes all parameters that need to be specified in the dictionary <code>inlet_boundary</code>, listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>amplitude</code></td>
+<td align="center">double</td>
+<td>Amplitude of the inlet boundary condition.</td>
+</tr>
+<tr>
+<td align="right"><code>period</code></td>
+<td align="center">double</td>
+<td>Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition.</td>
+</tr>
+<tr>
+<td align="right"><code>reference</code></td>
+<td align="center">double</td>
+<td>(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. <code>ureference</code> or <code>preference</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>type</code></td>
+<td align="center">int</td>
+<td>Type of inlet boundary condition. <br>If 1, a sine wave is used with amplitude, reference and period as specified. <br>If 2, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If 3, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.</td>
+</tr>
+<tr>
+<td align="right"><code>variable</code></td>
+<td align="center">string</td>
+<td>Variable upon which the inlet boundary condition is definded, either 'pressure' or 'velocity'.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="outlet-boundary">Outlet Boundary</h5>
+<p>This section describes all parameters that need to be specified in the dictionary <code>outlet_boundary</code>, listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>type</code></td>
+<td align="center">int</td>
+<td>Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. <br>If other, a fixed value equal to the reference pressure is applied.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tuberingmodel">TubeRingModel</h3>
+<p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
+The tube is regarded as made up of independent rings.
+The required input is the pressure on the tube wall.
+The resulting output is the radial displacement.</p>
+<p>The behaviour of the elastic tube wall is described by a Hookean relation,
+which results in the following equation
+$$
+a=a_0\left(\frac{p_0-2c^2_{MK}}{p_0-2c^2_{MK}}\right)^2
+$$
+with <span><span class="MathJax_Preview">a=\pi r^2</span><script type="math/tex">a=\pi r^2</script></span> the cross-sectional area of the tube and <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> the inner radius.
+Furthermore, <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> the pressure, <span><span class="MathJax_Preview">p_0</span><script type="math/tex">p_0</script></span> the reference pressure, <span><span class="MathJax_Preview">\rho_f</span><script type="math/tex">\rho_f</script></span> the density of the fluid
+and <span><span class="MathJax_Preview">c^2_{MK}</span><script type="math/tex">c^2_{MK}</script></span> the Moens-Korteweg wave speed given by
+$$
+c^2_{MK}=\sqrt{\frac{Eh}{2\rho_f r_0}}
+$$
+Here, <span><span class="MathJax_Preview">E</span><script type="math/tex">E</script></span> is the modulus of elasticity, <span><span class="MathJax_Preview">h</span><script type="math/tex">h</script></span> the thickness of the tube wall and <span><span class="MathJax_Preview">r_0</span><script type="math/tex">r_0</script></span> the reference radius.
+No boundary conditions are required.
+Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.</p>
+<p>For more information about the implementation this solver refer to .</p>
+<h4 id="solver-parameters_1">Solver parameters</h4>
+<p>The following parameters, listed in alphabetical order, need to be specified in the <code>solver_parameters.json</code> file in the <code>working_directoyr</code>.
+Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>axial_offset</code></td>
+<td align="center">double</td>
+<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>d</code></td>
+<td align="center">double</td>
+<td>Nominal diameter of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>e</code></td>
+<td align="center">double</td>
+<td>Modulus of elasticity of the tube wall.</td>
+</tr>
+<tr>
+<td align="right"><code>h</code></td>
+<td align="center">double</td>
+<td>Thickness of tube wall.</td>
+</tr>
+<tr>
+<td align="right"><code>l</code></td>
+<td align="center">double</td>
+<td>Length of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>m</code></td>
+<td align="center">int</td>
+<td>Number of cells for discretization. The values are calculated in the cell centers.</td>
+</tr>
+<tr>
+<td align="right"><code>preference</code></td>
+<td align="center">double</td>
+<td>(optional) Reference pressure. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>rhof</code></td>
+<td align="center">double</td>
+<td>Density of the fluid.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tubestructure">TubeStructure</h3>
+<p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
+In this model inertia is taken into account, but still only radial displacements are considered.
+The required input is the pressure on the tube wall.
+The resulting output is the radial displacement.</p>
+<p>The deformation of the tube in the radial direction is determined by
+$$
+    \rho_s h\frac{\partial^2 r}{\partial t^2}+b_1\frac{\partial^4 r}{\partial z^4}-b_2\frac{\partial^2 r}{\partial z^2}+b_3(r-r_o)=p-p_o
+$$
+with <span><span class="MathJax_Preview">\rho_s</span><script type="math/tex">\rho_s</script></span> the solid density and <span><span class="MathJax_Preview">h</span><script type="math/tex">h</script></span> the thickness of the tube's wall.
+Further, <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is the inner radius, <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> pressure and <span><span class="MathJax_Preview">t</span><script type="math/tex">t</script></span> time. The variables <span><span class="MathJax_Preview">r_0</span><script type="math/tex">r_0</script></span> and <span><span class="MathJax_Preview">p_0</span><script type="math/tex">p_0</script></span> are a reference radius and pressure, respectively.
+The tube is considered clamped at both ends.
+The parameters <span><span class="MathJax_Preview">b_1</span><script type="math/tex">b_1</script></span> and <span><span class="MathJax_Preview">b_2</span><script type="math/tex">b_2</script></span> (<span><span class="MathJax_Preview">b_1, b_2 \ge 0</span><script type="math/tex">b_1, b_2 \ge 0</script></span>) account for the inner action of the bending and the axial tension in the wall, while the parameter <span><span class="MathJax_Preview">b_3</span><script type="math/tex">b_3</script></span> accounts for the circumferential stress in the tube wall.
+For a thin-walled tube that is clamped in the axial direction, they are defined as
+$$
+    b_1=\frac{hE}{1-\nu^2}\frac{h^2}{12} 
+    \textrm{, }
+    b_2=\frac{hE}{1-\nu^2}\frac{h^2}{12}\frac{2\nu}{r_o^2}
+    \textrm{ and }
+    b_3=\frac{hE}{1-\nu^2}\frac{1}{r_o^2}+\frac{hE}{1-\nu^2}\frac{h^2}{12}\frac{1}{r_o^4}
+$$
+with <span><span class="MathJax_Preview">E</span><script type="math/tex">E</script></span> the Young's modulus and <span><span class="MathJax_Preview">\nu</span><script type="math/tex">\nu</script></span> Poisson's coefficient.
+The second term of <span><span class="MathJax_Preview">b_3</span><script type="math/tex">b_3</script></span> is considered small compared to the first one because <span><span class="MathJax_Preview">h\ll r_o</span><script type="math/tex">h\ll r_o</script></span> and is thus neglected.
+Discretizing these equations results in a system of linear algebraic equations whit a Jacobian that does not depend on the pressure.
+The system can be solved for the radius in one step.</p>
+<p>For more information about the implementation this solver refer to .</p>
+<h4 id="solver-parameters_2">Solver parameters</h4>
+<p>The following parameters, listed in alphabetical order, need to be specified in the <code>solver_parameters.json</code> file in the <code>working_directoyr</code>.
+Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>axial_offset</code></td>
+<td align="center">double</td>
+<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>beta</code></td>
+<td align="center">double</td>
+<td>Newmark parameter <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span></td>
+</tr>
+<tr>
+<td align="right"><code>d</code></td>
+<td align="center">double</td>
+<td>Nominal diameter of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>e</code></td>
+<td align="center">double</td>
+<td>Modulus of elasticity of the tube wall.</td>
+</tr>
+<tr>
+<td align="right"><code>h</code></td>
+<td align="center">double</td>
+<td>Thickness of tube wall.</td>
+</tr>
+<tr>
+<td align="right"><code>gamma</code></td>
+<td align="center">double</td>
+<td>Newmark parameter <span><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span>.</td>
+</tr>
+<tr>
+<td align="right"><code>l</code></td>
+<td align="center">double</td>
+<td>Length of the tube.</td>
+</tr>
+<tr>
+<td align="right"><code>m</code></td>
+<td align="center">int</td>
+<td>Number of cells for discretization. The values are calculated in the cell centers.</td>
+</tr>
+<tr>
+<td align="right"><code>nu</code></td>
+<td align="center">double</td>
+<td>Poisson's ratio.</td>
+</tr>
+<tr>
+<td align="right"><code>preference</code></td>
+<td align="center">double</td>
+<td>(optional) Reference pressure. If not provided, the value of this parameter is 0.</td>
+</tr>
+<tr>
+<td align="right"><code>rhof</code></td>
+<td align="center">double</td>
+<td>Density of the fluid.</td>
+</tr>
+<tr>
+<td align="right"><code>rhos</code></td>
+<td align="center">double</td>
+<td>Density of the tube wall.</td>
+</tr>
+</tbody>
+</table>
+<p>The equations are discretized in time with the Newmark method.
+These require two Newmark parameters <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> and <span><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> which result in an un-conditionally stable integration scheme if
+$$
+\gamma\geq\frac{1}{2} 
+\textrm{ and }
+\beta\geq\frac{1}{4}\left(\frac{1}{2}+\gamma\right)^2.
+$$</p>
+                
+                  
+                
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                SolverWrapperAbaqus
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../mappers/" title="Mappers" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Mappers
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="https://www.mkdocs.org" target="_blank" rel="noopener">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.c33a9706.js"></script>
+      
+      <script>app.initialize({version:"1.1",url:{base:".."}})</script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>
