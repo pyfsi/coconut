@@ -16,6 +16,7 @@ Some important rules for writing MD files for this documentation website:
 *   The name of the file must be unique: use names like `fluent.md` or `test_examples.md`, not `readme.md`.
 *   Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names `example.md` with a proper link. 
 
+### Math
 For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. $E = m c^2$), block-style equations in double dolar signs, e.g.
 
 $$
@@ -23,6 +24,12 @@ e^{i \pi} + 1 = 0.
 $$
 
 LaTeX expressions will **not** be rendered on GitHub, but only on the documentation website. For the latter, the MD extension [Arithmatex](Arithmatex) is used to render the expressions with MathJax. Note that [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/) is a little more restrictive than a real LaTeX installation. 
+
+### Images
+External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory `images` next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. For example:
+
+![example image](images/lachend_kakske.png "diefstal in Oostende")
+
 
 
 
