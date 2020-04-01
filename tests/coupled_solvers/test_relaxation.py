@@ -3,7 +3,7 @@ from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.tools import CreateInstance
 
 
-class TestCoupledSolverGaussSeidel(KratosUnittest.TestCase):
+class TestCoupledSolverRelaxation(KratosUnittest.TestCase):
 
     def assertArrayAlmostEqual(self, a1, a2):
         ls1 = list(a1)
@@ -17,8 +17,8 @@ class TestCoupledSolverGaussSeidel(KratosUnittest.TestCase):
     def assertArrayEqual(self, a1, a2):
         self.assertEqual(list(a1), list(a2))
 
-    def test_coupled_solver_gauss_seidel(self):
-        parameter_file_name = "coupled_solvers/test_gauss_seidel.json"
+    def test_coupled_solver_relaxation(self):
+        parameter_file_name = "coupled_solvers/test_relaxation.json"
         with open(parameter_file_name, 'r') as parameter_file:
             settings = data_structure.Parameters(parameter_file.read())
 
@@ -42,6 +42,7 @@ class TestCoupledSolverGaussSeidel(KratosUnittest.TestCase):
         coupled_solver.OutputSolutionStep()
 
         coupled_solver.Finalize()
+
 
 if __name__ == '__main__':
     KratosUnittest.main()

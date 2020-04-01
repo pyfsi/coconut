@@ -1,7 +1,8 @@
 from coconut.data_structure import KratosUnittest
 
-from coconut.tests.coupled_solvers.test_gauss_seidel import TestCoupledSolverGAUSSSEIDEL
-from coconut.tests.coupled_solvers.test_aitken import TestCoupledSolverAITKEN
+from coconut.tests.coupled_solvers.test_gauss_seidel import TestCoupledSolverGaussSeidel
+from coconut.tests.coupled_solvers.test_relaxation import TestCoupledSolverRelaxation
+from coconut.tests.coupled_solvers.test_aitken import TestCoupledSolverAitken
 from coconut.tests.coupled_solvers.test_iqni import TestCoupledSolverIQNI
 from coconut.tests.coupled_solvers.test_ibqn import TestCoupledSolverIBQN
 from coconut.tests.coupled_solvers.models.test_ls import TestModelLS
@@ -55,8 +56,9 @@ def AssembleTestSuites():
 
     smallSuite = suites['small']  # These tests are executed by the continuous integration tool
 
-    smallSuite.addTest(TestCoupledSolverGAUSSSEIDEL("test_coupled_solver_gauss_seidel"))
-    smallSuite.addTest(TestCoupledSolverAITKEN("test_coupled_solver_aitken"))
+    smallSuite.addTest(TestCoupledSolverGaussSeidel("test_coupled_solver_gauss_seidel"))
+    smallSuite.addTest(TestCoupledSolverRelaxation("test_coupled_solver_relaxation"))
+    smallSuite.addTest(TestCoupledSolverAitken("test_coupled_solver_aitken"))
     smallSuite.addTest(TestCoupledSolverIQNI("test_coupled_solver_iqni"))
     smallSuite.addTest(TestCoupledSolverIBQN("test_coupled_solver_ibqn"))
     smallSuite.addTest(TestModelLS("test_model_ls"))
