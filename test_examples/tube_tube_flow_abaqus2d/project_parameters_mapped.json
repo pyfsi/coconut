@@ -69,10 +69,13 @@
             },
             {
                 "type": "solver_wrappers.mapped",
-                "settings": {
-                    "solver_wrapper" : {
+                "settings":
+                {
+                    "solver_wrapper" :
+                    {
                         "type": "solver_wrappers.abaqus.614",
-                        "settings": {
+                        "settings":
+                        {
                             "working_directory": "CSM",
                             "cores": 1,
                             "dimensions": 2,

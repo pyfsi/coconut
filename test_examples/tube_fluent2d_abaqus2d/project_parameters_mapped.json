@@ -53,7 +53,8 @@
         [
             {
                 "type": "solver_wrappers.fluent.2019R1",
-                "settings": {
+                "settings":
+                {
                     "working_directory" : "CFD",
                     "case_file": "case_tube2d.cas",
                     "dimensions": 2,
@@ -77,7 +78,8 @@
             },
             {
                 "type": "solver_wrappers.mapped",
-                "settings": {
+                "settings":
+                {
                     "solver_wrapper" :
                     {
                         "type": "solver_wrappers.abaqus.614",
@@ -138,8 +140,10 @@
 						"settings" :
                         {
                             "type": "mappers.combined",
-                            "settings": {
-                                "mappers": [
+                            "settings":
+                            {
+                                "mappers":
+                                [
                                     {
                                         "type": "mappers.linear",
                                         "settings": {
