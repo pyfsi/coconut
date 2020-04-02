@@ -77,7 +77,7 @@ class SolverWrapperFluent2019R1(Component):
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
-        cmd1 = f'fluent 19.3.0 {self.dimensions}ddp '
+        cmd1 = f'fluent -r19.3.0 {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
         if self.settings['fluent_gui'].GetBool():
