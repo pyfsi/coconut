@@ -59,7 +59,7 @@ For more information about the implementation this solver refer to .
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name `solver_parameters.json`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name `input_file`.
 This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the structural solver.
 
@@ -125,7 +125,7 @@ For more information about the implementation this solver refer to .
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name `solver_parameters.json`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name `input_file`.
 This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
@@ -172,7 +172,7 @@ For more information about the implementation this solver refer to .
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name `solver_parameters.json`.This file should be located in the `working_directory`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name `input_file`.This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
 parameter|type|description
