@@ -26,7 +26,15 @@ $$
 LaTeX expressions will **not** be rendered on GitHub, but only on the documentation website. For the latter, the MD extension [Arithmatex](Arithmatex) is used to render the expressions with MathJax. Note that [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/) is a little more restrictive than a real LaTeX installation. 
 
 ### Images
-External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory `images` next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. For example:
+External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory `images` next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. 
+
+An image can be added with the MD command
+
+```markdown
+![alt](images/example.png "description")
+```
+
+with `alt` displayed when the image cannot be shown/viewed for some reason, and `description` appearing when hovering over the image with your mouse. For example:
 
 ![example image](images/lachend_kakske.png "diefstal in Oostende")
 
