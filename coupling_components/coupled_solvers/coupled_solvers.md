@@ -15,6 +15,12 @@ but also `predictor`, `convergence_criterion` and `solver_wrappers`.
 Gauss-Seidel iterations are the simplest way of coupling two solvers.
 In this coupling method fixed point iterations are performed as the output of one solver is given to the other one without adjustment.
 
+Basic schematic is given in the following figure.
+![gauss_seidel](images/iteration_gauss_seidel.png "Gauss-Seidel iterations")
+
+Here, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
+and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$
+
 Gauss-Seidel iterations are very simple, but unstable for cases with high added mass.
 
 ### Settings
@@ -49,6 +55,12 @@ with $x^k$ and $\tilde{x}^k$, respectively the input for the first solver and th
 The difference between both is called the residual $r^k=\tilde{x}^k-x^k$.
 The mixing or relaxation factor is $\omega$.
 
+A symbolic schematic is given in the following figure.
+![relaxation](images/iteration_relaxation.png "Relaxed Gauss-Seidel iterations")
+
+Here, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
+and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$
+
 A lower $\omega$ increases stability, but decreases convergence speed.
 
 This method is again quite simple, but still often unstable for cases with high added mass.
@@ -80,6 +92,12 @@ $$
 with $x^k$ and $\tilde{x}^k$, respectively the input for the first solver and the output of the second solver in iteration $k$.
 The difference between both is called the residual $r^k=\tilde{x}^k-x^k$.
 The mixing or relaxation factor is $\omega^k$ is dynamic in the sense that its value changes between iterations.
+
+A symbolic schematic is given in the following figure.
+![aitken](images/iteration_aitken.png "Aitken iterations")
+
+Here, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
+and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$
 
 The value of $\omega^k$ is determined by applying the secant method for scalars directly to vectors and projecting it on $r^k-r^{k-1}$
 as follows
@@ -160,6 +178,12 @@ $$
 x^{k+1}=x^k+(\tilde{N}^k-I)\Delta r^k=x^k-\tilde{N}^k r^k+r^k.
 $$
 
+A symbolic schematic is given in the following figure.
+![iqni](images/iteration_iqni.png "Residual operator iterations")
+
+Here, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
+and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$
+
 For more information refer to .
 
 ### Settings
@@ -231,6 +255,9 @@ $$
 =\tilde{y}^{k+1}-y^k+M_f^{k+1}(\tilde{x}^k-x^{k+1})
 $$
 for $\Delta y^k$.
+
+A symbolic schematic is given in the following figure.
+![ibqn](images/iteration_ibqn.png "Block iterations")
 
 For more information refer to .
 
