@@ -28,35 +28,33 @@ Example:
 if os.getcwd() != os.path.dirname(os.path.realpath(__file__)):
     raise SystemError('execute run_mkdcos.py from its directory')
 
-# clean docs folder and add coconuts
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+# clean docs folder
 shutil.rmtree('docs', ignore_errors=True)
+shutil.rmtree('site', ignore_errors=True)
 
 os.mkdir('docs')
 os.mkdir('docs/images')
 os.mkdir('docs/assets')
 os.mkdir('docs/assets/images')
 
-shutil.copy('logo.png', 'docs/images/logo.png')
-shutil.copy('favicon.ico', 'docs/assets/images/favicon.ico')
 
 # find all MarkDown files in CoCoNuT
 files = glob.glob('../**/*.md', recursive=True)
 
-# check for duplicate filenames
+# check for duplicate MarkDown files
 filenames = []
 for file in files:
     filenames.append(file.split('/')[-1])
 
 for i, filename in enumerate(filenames):
     if filenames.count(filename) > 1:
-        print(f'WARNING - duplicate file "{files[i]}"')
+        print(f'WARNING - duplicate filename "{files[i]}"')
 
 # copy all MarkDown files to docs folder
 for file in files:
     shutil.copy(file, 'docs/')
 
-# check if all files are mentioned in nav
+# check if all MarkDown files are mentioned in nav
 unused = []
 used = False
 for filename in filenames:
@@ -71,9 +69,31 @@ for filename in filenames:
 for file in unused:
     print(f'WARNING - file "{file}" is not used in mkdocs.yml')
 
+# find all relevant images in CoCoNuT
+extensions = ['png', 'jpg', 'jpeg']
+images = []
+for ext in extensions:
+    images += glob.glob(f'../**/images/*.{ext}', recursive=True)
 
+# check for duplicate images
+imagenames = []
+for image in images:
+    imagenames.append(image.split('/')[-1])
+
+for i, imagename in enumerate(imagenames):
+    if imagenames.count(imagename) > 1:
+        print(f'WARNING - duplicate image "{images[i]}"')
+
+# copy all images to docs/images folder
+for image in images:
+    shutil.copy(image, 'docs/images/')
+
+# add favicons
+shutil.copy('logo.png', 'docs/images/logo.png')
+shutil.copy('favicon.ico', 'docs/assets/images/favicon.ico')
 
 # build and deploy website
+print('\n---MkDocs output from here---')
 if len(argv) > 1:
     if argv[1] == '--preview':
         os.system('mkdocs build --clean')
