@@ -6,8 +6,6 @@ from coconut.coupling_components.interface import Interface
 
 class TestPredictorLinear(KratosUnittest.TestCase):
     def test_predictor_linear(self):
-        parameter_file_name = "test_parameters.json"
-
         m = 10
         dz = 3.0
         a0 = 1.0

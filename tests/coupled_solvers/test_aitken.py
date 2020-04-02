@@ -6,7 +6,7 @@ from coconut.coupling_components.interface import Interface
 import numpy as np
 
 
-class TestCoupledSolverAITKEN(KratosUnittest.TestCase):
+class TestCoupledSolverAitken(KratosUnittest.TestCase):
     def test_coupled_solver_aitken(self):
         m = 10
         dz = 2.0

@@ -3,7 +3,7 @@ from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.tools import CreateInstance
 
 
-class TestCoupledSolverGAUSSSEIDEL(KratosUnittest.TestCase):
+class TestCoupledSolverGaussSeidel(KratosUnittest.TestCase):
 
     def assertArrayAlmostEqual(self, a1, a2):
         ls1 = list(a1)

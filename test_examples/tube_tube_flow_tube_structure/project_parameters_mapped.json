@@ -1,7 +1,7 @@
 {
     "settings" :
     {
-        "number_of_timesteps": 20
+        "number_of_timesteps": 100
     },
     "coupled_solver" :
     {

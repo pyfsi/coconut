@@ -1,8 +1,7 @@
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
-import numpy as np
-from scipy.sparse.linalg import gmres, LinearOperator, aslinearoperator
+from scipy.sparse.linalg import gmres, LinearOperator
 
 
 def Create(parameters):
@@ -52,9 +51,15 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         self.dytemp.SetNumpyArray(dy.flatten())
         return self.model_s.Predict(self.dytemp).GetNumpyArray()
 
+    def identity_matvec(self, v):
+        return v
+
+    def callback(self, rk):
+        pass
+
     def SolveSolutionStep(self):
-        iu = aslinearoperator(np.identity(self.u))
-        iw = aslinearoperator(np.identity(self.w))
+        iu = LinearOperator((self.u, self.u), self.identity_matvec)
+        iw = LinearOperator((self.w, self.w), self.identity_matvec)
         dx = self.x.deepcopy()
         dy = self.y.deepcopy()
         # Initial value
@@ -76,9 +81,9 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                 ms = LinearOperator((self.u, self.w), self.lop_s)
                 a = iu - ms @ mf
                 b = (xt - self.x).GetNumpyArray() + ms @ (yt - self.y).GetNumpyArray()
-                dx_sol, exitcode = gmres(a, b, tol=self.rtol, atol=self.atol)
+                dx_sol, exitcode = gmres(a, b, tol=self.rtol, atol=self.atol, maxiter=20, callback=self.callback)
                 if exitcode != 0:
-                    raise RuntimeError("GMRES failed")
+                    RuntimeError("GMRES failed")
                 dx.SetNumpyArray(dx_sol)
             self.x += dx
             yt = self.solver_wrappers[0].SolveSolutionStep(self.x)
@@ -88,14 +93,12 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
             else:
                 a = iw - mf @ ms
                 b = (yt - self.y).GetNumpyArray() + mf @ (xt - self.x).GetNumpyArray()
-                dy_sol, exitcode = gmres(a, b, tol=self.rtol, atol=self.atol)
+                dy_sol, exitcode = gmres(a, b, tol=self.rtol, atol=self.atol, maxiter=20, callback=self.callback)
                 if exitcode != 0:
-                    raise RuntimeError("GMRES failed")
+                    RuntimeError("GMRES failed")
                 dy.SetNumpyArray(dy_sol)
             self.y += dy
             xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
             self.model_s.Add(self.y, xt)
             r = xt - self.x
             self.FinalizeIteration(r)
-
-

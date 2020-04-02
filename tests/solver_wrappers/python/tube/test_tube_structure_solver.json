@@ -1,0 +1,22 @@
+{
+   "solver_wrappers" :
+        [
+            {
+                "type" : "solver_wrappers.python.tube_structure_solver",
+                "settings" :
+                {
+                    "working_directory" : "solver_wrappers/python/tube/CSM",
+                    "input_file"  : "solver_parameters.json",
+                    "delta_t" : 0.01,
+                    "interface_input" :
+                    {
+                        "wall" : ["PRESSURE","TRACTION"]
+                    },
+                    "interface_output" :
+                    {
+                        "wall": "DISPLACEMENT"
+                    }
+                }
+            }
+        ]
+}

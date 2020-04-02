@@ -7,8 +7,6 @@ import numpy as np
 
 class TestPredictorCubic(KratosUnittest.TestCase):
     def test_predictor_cubic(self):
-        parameter_file_name = "test_parameters.json"
-
         m = 10
         dz = 3.0
         a0 = 1.0

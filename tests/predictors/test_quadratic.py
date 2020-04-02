@@ -8,8 +8,6 @@ import numpy as np
 
 class TestPredictorQuadratic(KratosUnittest.TestCase):
     def test_predictor_quadratic(self):
-        parameter_file_name = "test_parameters.json"
-
         m = 10
         dz = 3.0
         a0 = 5.0
