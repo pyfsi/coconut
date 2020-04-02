@@ -207,7 +207,7 @@
     <li class="md-tabs__item">
       
         <a href="../coupled_solvers/" class="md-tabs__link">
-          Components
+          CouplingComponents
         </a>
       
     </li>
@@ -307,11 +307,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
     
     <label class="md-nav__link" for="nav-2">
-      Components
+      CouplingComponents
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
-        Components
+        CouplingComponents
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -819,7 +819,8 @@ the radial direction along the x-axis.</p>
 <p>The difference in reference frames and number of cells on the fluid-structure interface, 
 but also the difference in dimensions require the use of mappers,
 In the structure solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
-Thereafter, a radial basis mapper is used to interpolate in the x- and y-direction from the 100 cell centers of Fluent to the 150 load points in Abaqus.
+Thereafter, a radial basis mapper is used to interpolate in the x-, y- and z-direction 
+from the loads coming from Fluent to a temporary 3D interface corresponding to Abaqus.
 Finally a mapper is added to go from 3D to 2D.
 For the output the same is done in the opposite order: first going from 2D to 3D, then interpolating and finally flipping the axes.</p>
                 

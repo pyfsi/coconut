@@ -207,7 +207,7 @@
     <li class="md-tabs__item">
       
         <a href="../coupled_solvers/" class="md-tabs__link md-tabs__link--active">
-          Components
+          CouplingComponents
         </a>
       
     </li>
@@ -309,11 +309,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
     
     <label class="md-nav__link" for="nav-2">
-      Components
+      CouplingComponents
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
-        Components
+        CouplingComponents
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -365,9 +365,91 @@
       
     
     
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Models
+      </label>
+    
     <a href="./" title="Models" class="md-nav__link md-nav__link--active">
       Models
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ls" class="md-nav__link">
+    LS
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mv" class="md-nav__link">
+    MV
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_1" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mv-mf" class="md-nav__link">
+    MV-MF
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_2" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -687,6 +769,75 @@
     
   
   
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ls" class="md-nav__link">
+    LS
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mv" class="md-nav__link">
+    MV
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_1" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mv-mf" class="md-nav__link">
+    MV-MF
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_2" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -699,8 +850,111 @@
                 
                 
                 <h1 id="models">Models</h1>
-<p>"documentation about models"</p>
-<p>coming soon</p>
+<p>This documentation describes the models which are available.
+These models always approximate a (inverse) Jacobian, denoted here by <span><span class="MathJax_Preview">J</span><script type="math/tex">J</script></span>.
+Receiving an input, called <span><span class="MathJax_Preview">\Delta x</span><script type="math/tex">\Delta x</script></span>, they return an estimation of <span><span class="MathJax_Preview">J\Delta x=\Delta r</span><script type="math/tex">J\Delta x=\Delta r</script></span>.
+In order to improve the estimation, information is added, when it becomes available.
+This information consists of pairs of calculated differences <span><span class="MathJax_Preview">\Delta x</span><script type="math/tex">\Delta x</script></span> and <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>.
+The different models use this information in a different way.</p>
+<h2 id="ls">LS</h2>
+<p>The abbreviation LS stands for <em>least-squares</em>.
+This model requires the approximation of <span><span class="MathJax_Preview">J</span><script type="math/tex">J</script></span>, to fulfill the secant equations of the current and <code>q</code> previous time steps.
+Moreover, it is required that the approximation is least-squares.
+This model is matrix-free, due to an implementation using QR-decomposition.
+With matrix-free is meant that no large dense matrices are constructed, not that no matrices are used at all.</p>
+<p>The optimal value of <code>q</code> is problem dependant.
+Typically however, an optimal value is around 10.
+The <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> matrix from the QR-decompostion has to be invertible.
+Therefore, (almost) linear columns in the matrix containing the input information from the current and previous time steps should be removed.
+This is called filtering. The larger <code>q</code>, the more important filtering becomes.
+If the diagonal element in <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level, the corresponding column is removed.
+The most recent information is kept.</p>
+<p>For more information refer to .</p>
+<h3 id="settings">Settings</h3>
+<p>The following parameters need to be included in the <code>settings</code> dictionary.
+They are listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>min_singificant</code></td>
+<td align="center">double</td>
+<td>Absolute tolerance for filtering.</td>
+</tr>
+<tr>
+<td align="right"><code>q</code></td>
+<td align="center">int</td>
+<td>Number of previous time steps that are reused.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mv">MV</h2>
+<p>The abbreviation MV stands for <em>multi-vector</em>.
+not matrix free, not for large number of degrees of freedom on the interface.</p>
+<p>This model requires the approximation of <span><span class="MathJax_Preview">J</span><script type="math/tex">J</script></span>, to fulfill the secant equations of the current time step only.
+Moreover, it is required that the approximation is as close as possible to the previous time step.
+In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.</p>
+<p>Here filtering can also be applied.
+Then, (almost) linear columns in the matrix containing the input information from the current time step are removed.
+If the diagonal element in <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level, the corresponding column is removed.
+The most recent information is kept.
+However, filtering is much less critical compared to the <code>LS</code> model as it concerns only the information from th current time step.
+If no filtering is wanted, the tolerance level should be set to zero.</p>
+<p>For more infromation refer to .</p>
+<h3 id="settings_1">Settings</h3>
+<p>The following parameters need to be included in the <code>settings</code> dictionary.
+They are listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>min_singificant</code></td>
+<td align="center">double</td>
+<td>Absolute tolerance for filtering.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mv-mf">MV-MF</h2>
+<p>The abbreviation MV-MF stands for <em>multi-vector matrix-free</em>.
+This method implements the multi-vector method, but in a matrix-free way.
+Therefore, a parameter <code>q</code> is used to denote how many time steps are re-used.
+Setting this parameter very large, this model will act the same as <code>MV</code>, which reuses all time steps.</p>
+<h3 id="settings_2">Settings</h3>
+<p>The following parameters need to be included in the <code>settings</code> dictionary.
+They are listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>min_singificant</code></td>
+<td align="center">double</td>
+<td>Absolute tolerance for filtering.</td>
+</tr>
+<tr>
+<td align="right"><code>q</code></td>
+<td align="center">int</td>
+<td>Number of previous time steps that are reused.</td>
+</tr>
+</tbody>
+</table>
                 
                   
                 

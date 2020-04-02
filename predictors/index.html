@@ -207,7 +207,7 @@
     <li class="md-tabs__item">
       
         <a href="../coupled_solvers/" class="md-tabs__link">
-          Components
+          CouplingComponents
         </a>
       
     </li>
@@ -309,11 +309,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
     
     <label class="md-nav__link" for="nav-2">
-      Components
+      CouplingComponents
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
-        Components
+        CouplingComponents
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -788,6 +788,7 @@
 A predictor is used to determine the initial guess in each time step by extrapolating the solution from previous time steps.
 The different predictors differ in the number of previous iterations they take into account 
 and the polynomial degree that is used.</p>
+<p>Only the <code>type</code> has to provided, no <code>settings</code> dictionary is required.</p>
 <h2 id="linear">Linear</h2>
 <p>This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
 using a linear extrapolation as follows

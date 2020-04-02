@@ -207,7 +207,7 @@
     <li class="md-tabs__item">
       
         <a href="../coupled_solvers/" class="md-tabs__link">
-          Components
+          CouplingComponents
         </a>
       
     </li>
@@ -307,11 +307,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
     
     <label class="md-nav__link" for="nav-2">
-      Components
+      CouplingComponents
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
-        Components
+        CouplingComponents
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -679,6 +679,26 @@
     Documentation in MarkDown
   </a>
   
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#math" class="md-nav__link">
+    Math
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#images" class="md-nav__link">
+    Images
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -729,6 +749,26 @@
     Documentation in MarkDown
   </a>
   
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#math" class="md-nav__link">
+    Math
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#images" class="md-nav__link">
+    Images
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -766,6 +806,7 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <li>The name of the file must be unique: use names like <code>fluent.md</code> or <code>test_examples.md</code>, not <code>readme.md</code>.</li>
 <li>Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names <code>example.md</code> with a proper link. </li>
 </ul>
+<h3 id="math">Math</h3>
 <p>For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. <span><span class="MathJax_Preview">E = m c^2</span><script type="math/tex">E = m c^2</script></span>), block-style equations in double dolar signs, e.g.</p>
 <div>
 <div class="MathJax_Preview">
@@ -776,6 +817,17 @@ e^{i \pi} + 1 = 0.
 </script>
 </div>
 <p>LaTeX expressions will <strong>not</strong> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="Arithmatex">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
+<h3 id="images">Images</h3>
+<p>External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory <code>images</code> next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. </p>
+<p>An image can be added with the MD command</p>
+<div class="codehilite"><pre><span></span><code><span class="err">!</span><span class="o">[</span><span class="n">alt</span><span class="o">]</span><span class="p">(</span><span class="n">images</span><span class="o">/</span><span class="n">example</span><span class="p">.</span><span class="n">png</span><span class="w"> </span><span class="ss">&quot;description&quot;</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+
+
+<p>with <code>alt</code> displayed when the image cannot be shown/viewed for some reason, and <code>description</code> appearing when hovering over the image with your mouse. For example:</p>
+<p><img alt="example image" src="../images/lachend_kakske.png" title="diefstal in Oostende" /></p>
+<p>Only image formats specified in <code>run_mkdocs.py</code> are copied to the website; missing extensions can be added. 
+Images from all <code>coconut</code> subdirectories called <code>images</code> are copied to the website, so care must be taken that <code>images</code> is not used in e.g. the output of the test examples.</p>
 <h2 id="creating-a-static-website-with-mkdocs">Creating a static website with MkDocs</h2>
 <p><a href="https://www.mkdocs.org/">MkDocs</a> can be installed using pip: </p>
 <div class="codehilite"><pre><span></span><code>pip install mkdocs
