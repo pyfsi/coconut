@@ -988,26 +988,25 @@
                 <h1 id="mappers">Mappers</h1>
 <h2 id="general-concepts">General concepts</h2>
 <h3 id="hierarchy-of-mapping-related-objects">Hierarchy of mapping-related objects</h3>
-<p>CoCoNuT interacts with the mappers through the <code>SolverWrapperMapped</code> object: this wrapper behaves like every other <code>SolverWrapper</code> as far as the other components are concerned. 
-It contains 3 main components: a <code>Mapper</code> for the input, a real <code>SolverWrapper</code> and a <code>Mapper</code> for the output. The mappers are initialized through the <code>SetInterfaceInput</code> and <code>SetInterfaceOutput</code> methods respectively, by providing them with the <code>Interface</code> objects that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
-<p>The two mappers in the <code>SolverWrapperMapped</code> object are also of a special type: they work on the level of <code>Interface</code> objects. They are some sort of mapper-wrapper around the actual mappers which work on <code>ModelPart</code> level.
+<p>CoCoNuT interacts with the mappers through the <code>SolverWrapperMapped</code> object. This solver-wrapper appears and behaves exactly the same as real solver-wrappers.
+It contains 3 <code>Components</code>: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the <code>SetInterfaceInput</code> and <code>SetInterfaceOutput</code> methods respectively, by providing them with the <code>Interfaces</code> that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
+<p>The two mappers in the <code>SolverWrapperMapped</code> are also of a special type: they work on the level of <code>Interfaces</code>. They are some sort of <em>mapper-wrapper</em> around the actual mappers which work on <code>ModelPart</code> level.
 Currently only one such mapper is available, aptly called <code>MapperInterface</code>.</p>
-<p>At the lowest level, mappers interpolate historical variables between two <code>ModelPart</code> objects, based on the coordinates of the nodes. Interpolation is always done from the <em>from</em>-<code>ModelPart</code> to the <em>to</em>-<code>ModelPart</code>.
-These mappers can be chained together in a <code>MapperCombined</code> object, creating in fact another layer of mapping. So many layers! Like an onion!</p>
+<p>At the lowest level, mappers interpolate historical variables between two <code>ModelParts</code>, based on the coordinates of the <code>Nodes</code>. Interpolation is always done from the <em>from</em>-<code>ModelPart</code> to the <em>to</em>-<code>ModelPart</code>.
+These mappers can be chained together in a <code>MapperCombined</code> mapper, creating in fact another layer of mapping. So many layers! Like an onion!</p>
 <h3 id="interpolators-and-transformers">Interpolators and transformers</h3>
 <p>The <code>ModelPart</code>-level mappers have two main methods: <code>Initialize</code> and <code>__call__</code>. </p>
 <p>The <code>Initialize</code> method performs one-time expensive operations, namely nearest-neighbour search and calculation of the interpolation coefficients. The initialization is done based on the original coordinates <code>X0</code>, <code>Y0</code> and <code>Z0</code>.</p>
-<p>The <code>__call__</code> method is used for the actual mapping. It takes two tuples as arguments (<em>from</em> and <em>to</em> respectively), each tuple containing the <code>ModelPart</code> and the <code>Variable</code> to be used in the interpolation. This method returns nothing: the interpolation is done in-place in the <code>ModelPart</code> objects.</p>
-<p>There are two types of <code>ModelPart</code>-level mappers: interpolators and transformers. They can be distinguished by their boolean <code>interpolator</code> attribute (see <code>__init__</code>). </p>
+<p>The <code>__call__</code> method is used for the actual mapping. It takes two tuples as arguments (<em>from</em> and <em>to</em> respectively), each tuple containing the <code>ModelPart</code> and the <code>Variable</code> to be used in the interpolation. This method returns nothing: the interpolation is done in-place in the <code>ModelParts</code>.</p>
+<p>There are two types of <code>ModelPart</code>-level mappers: <em>interpolators</em> and <em>transformers</em>. They can be distinguished by their boolean <code>interpolator</code> attribute (see <code>__init__</code>). </p>
 <p>For interpolators, <code>Initialize</code> gets two <code>ModelPart</code> objects (<em>from</em> and <em>to</em>), and returns nothing. These mappers do the real interpolation. Currently <code>MapperNearest</code>, <code>MapperLinear</code> and <code>MapperRadialBasis</code> are available.</p>
 <p>For transformers, <code>Initialize</code> gets only one <code>ModelPart</code> (from either the <em>from</em> or <em>to</em> side, depending on the transformation), and returns the other <code>ModelPart</code>. Currently <code>MapperPermutation</code>, <code>MapperAxisymmetric2DTo3D</code> and <code>MapperAxisymmetric3DTo2D</code> are available.</p>
 <p>A transformer can never be used by itself, it must always be combined with an interpolator: the reason is that interpolators use information coming from two sides, which is exactly what the <code>SolverWrapperMapped</code> and <code>MapperInterface</code> objects want. To chain together multiple mappers, the <code>MapperCombined</code> is used: it contains always 1 interpolator and 0 or more transformers, on either side of the interpolator.</p>
 <h2 id="overview-of-special-mappers">Overview of special mappers</h2>
 <h3 id="mapperinterface">MapperInterface</h3>
 <p>Special mapper-class that maps on the level of <code>Interface</code> objects. 
-It takes two <code>Interface</code> objects, 
-and maps the <code>ModelPart</code> objects to each other in order of appearance, all using the same <code>ModelPart</code> mapper.</p>
-<p>To use different interpolation for the different <code>ModelPart</code> objects or even for different historical variables, a new <code>Interface</code> mapper must be written. </p>
+It takes two <code>Interfaces</code>, and maps the <code>ModelParts</code> to each other in order of appearance, all using the same <code>ModelPart</code> mapper.</p>
+<p>To use a different <code>ModelPart</code> mapper for the different <code>ModelParts</code> in the <code>Interface</code>, or even for the different historical variables, a new <code>Interface</code> mapper must be written. </p>
 <table>
 <thead>
 <tr>
@@ -1023,15 +1022,15 @@ and maps the <code>ModelPart</code> objects to each other in order of appearance
 <td><code>ModelPart</code> mapper to be used</td>
 </tr>
 <tr>
-<td align="right"><code>settings</code></td>
+<td align="right"><nobr><code>settings</code></nobr></td>
 <td align="center">dict</td>
 <td>all the settings for the <code>ModelPart</code> mapper specified in <code>type</code></td>
 </tr>
 </tbody>
 </table>
 <h3 id="mappercombined">MapperCombined</h3>
-<p>The <code>MapperCombined</code> is used to chain together multiple mappers. It contains always 1 interpolator and 0 or more transformers, on either side of the interpolator. If transformers are present, <em>intermediate</em> <code>ModelPart</code> objects are created during initialization. This is done by working <em>inwards</em> towards the interpolator. This means that transformers upstream of the interpolator, are initialized based on the <em>from</em> <code>ModelPart</code> (input), while downstream transformers are initialized based on the <em>to</em> <code>ModelPart</code> (output). 
-Some transformers can only be initialized in one direction, e.g. for <code>MapperAxisymmetric3DTo2D</code>, the 2D <em>to</em> <code>ModelPart</code> must be supplied, therefore it must be downstream of the interpolator. </p>
+<p>The <code>MapperCombined</code> is used to chain together multiple mappers. It contains always 1 interpolator and 0 or more transformers, on either side of the interpolator. If transformers are present, <em>intermediate</em> <code>ModelParts</code> are created during initialization. This is done by working <em>inwards</em> towards the interpolator. This means that transformers upstream of the interpolator, are initialized based on the <em>from</em> <code>ModelPart</code> (input), while downstream transformers are initialized based on the <em>to</em> <code>ModelPart</code> (output). 
+Some transformers can only be initialized in one direction, e.g. for <code>MapperAxisymmetric3DTo2D</code>, the 2D <em>to</em>-<code>ModelPart</code> must be supplied, therefore it must be downstream of the interpolator. </p>
 <table>
 <thead>
 <tr>
@@ -1042,7 +1041,7 @@ Some transformers can only be initialized in one direction, e.g. for <code>Mappe
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>mappers</code></td>
+<td align="right"><nobr><code>mappers</code></nobr></td>
 <td align="center">list</td>
 <td>an ordered list of all the <code>ModelPart</code> mappers to be used</td>
 </tr>
@@ -1062,17 +1061,17 @@ This transformer can be initialized in both directions. </p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>permutation</code></td>
+<td align="right"><nobr><code>permutation</code></nobr></td>
 <td align="center">list</td>
 <td>a permutation of the list [0, 1, 2]</td>
 </tr>
 </tbody>
 </table>
 <h3 id="mapperaxisymmetric2dto3d">MapperAxisymmetric2DTo3D</h3>
-<p>Transforms from a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the <em>forward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>upstream</em> of the interpolator in a <code>MapperCombined</code>.</p>
-<p>The 3D <code>ModelPart</code> is returned by the initialization. <code>n_tangential</code> specifies the number of <code>Node</code> objects in the tangential (circumferential) direction. For each <code>Node</code> in the 2D <code>ModelPart</code>, <code>n_tangential</code> ones are created in the 3D <code>ModelPart</code>. The code knows which directions are axial, radial and tangential thanks to the input parameters <code>direction_axial</code> and <code>direction_radial</code>. </p>
+<p>Transforms from a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the <em>forward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>upstream</em> of the interpolator in the <code>MapperCombined</code>.</p>
+<p>The 3D <code>ModelPart</code> is returned by the initialization. <code>n_tangential</code> specifies the number of <code>Node</code> objects in the tangential (circumferential) direction. For each <code>Node</code> in the 2D <code>ModelPart</code>, <code>n_tangential</code> <code>Nodes</code> are created in the 3D <code>ModelPart</code>. The code knows which directions are axial, radial and tangential thanks to the input parameters <code>direction_axial</code> and <code>direction_radial</code>. </p>
 <p>It is not possible to change the axial direction between 2D and 3D: a separate <code>MapperPermutation</code> should be added for that purpose. </p>
-<p>Scalar variables are simply mapped from the 2D <code>Node</code> to all corresponding 3D ones. For vector variables, the axial component is simply mapped, the radial component is rotated. The tangential component (e.g. swirl) cannot be taken into account.</p>
+<p>Scalar variables are simply mapped from the 2D <code>Node</code> to all corresponding 3D <code>Nodes</code>. For vector variables, the axial component is simply mapped, the radial component is rotated. The tangential component (e.g. swirl) cannot be taken into account.</p>
 <table>
 <thead>
 <tr>
@@ -1088,7 +1087,7 @@ This transformer can be initialized in both directions. </p>
 <td>must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the symmetry axis</td>
 </tr>
 <tr>
-<td align="right"><code>direction_radial</code></td>
+<td align="right"><nobr><code>direction_radial</code></nobr></td>
 <td align="center">string</td>
 <td>must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the second (radial) axis in 2D</td>
 </tr>
@@ -1100,7 +1099,7 @@ This transformer can be initialized in both directions. </p>
 </tbody>
 </table>
 <h3 id="mapperaxisymmetric3dto2d">MapperAxisymmetric3DTo2D</h3>
-<p>Transforms from a 3D geometry to a 2D axisymmetric geometry. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the <code>MapperInterpolator</code> in a <code>MapperCombined</code>.</p>
+<p>Transforms from a 3D geometry to a 2D axisymmetric geometry. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the <code>MapperInterpolator</code> in the <code>MapperCombined</code>.</p>
 <p>For scalar variables, the circumferential average is taken for each 2D <code>Node</code>. For vector variables too, taking into account the correct radial direction in each 3D <code>Node</code>.  Again, swirl cannot be taken into account: if a tangential component is present in 3D, it is not mapped to 2D. </p>
 <p>For more information and JSON settings, see <code>MapperAxisymmetric2DTo3D</code> which is very similar.</p>
 <h2 id="overview-of-interpolators">Overview of interpolators</h2>
@@ -1121,18 +1120,20 @@ This transformer can be initialized in both directions. </p>
 <td>list of coordinate directions, maximum three entries, may contain <code>"X"</code>, <code>"Y"</code>, <code>"Z"</code></td>
 </tr>
 <tr>
-<td align="right"><code>balanced_tree</code></td>
+<td align="right"><nobr><code>balanced_tree</code></nobr></td>
 <td align="center">bool</td>
 <td>if <code>true</code>, create balanced <code>cKDTree</code>, which is more stable, but takes longer to build; set to <code>true</code> if the tree is giving problems (which I don't expect)</td>
 </tr>
 </tbody>
 </table>
-<p>The <code>Initialize</code>-method should be called in all child-classes. It does the following:
--   read and store the coordinates from the <em>from</em> and <em>to</em> <code>ModelPart</code> objects
--   check if the bounding boxes of the <em>from</em> and <em>to</em> <code>ModelPart</code> objects are more or less overlapping
--   do an efficient nearest neighbour search using <code>scipy.spatial.cKDTree</code>
--   check if the <em>from</em> <code>ModelPart</code> does not contain duplicate nodes (i.e. same coordinates)</p>
-<p>The <code>__call__</code>-method should not be overridden in the child-classes. It maps historical variables based on neighbours and coefficients determined in <code>Initialize</code>. Historical variables of type <code>Double</code> and type <code>Array</code> can be mapped (the latter is just the application of the former for each vector component).</p>
+<p>The <code>Initialize</code> method should be called in all child-classes. It does the following:</p>
+<ul>
+<li>read and store the coordinates from the <em>from</em> and <em>to</em> <code>ModelParts</code></li>
+<li>check if the bounding boxes of the <em>from</em> and <em>to</em> <code>ModelParts</code> are more or less overlapping</li>
+<li>do an efficient nearest neighbour search using <code>scipy.spatial.cKDTree</code></li>
+<li>check if the <em>from</em> <code>ModelPart</code> does not contain duplicate <code>Nodes</code> (i.e. with same coordinates)</li>
+</ul>
+<p>The <code>__call__</code> method should not be overridden in the child-classes. It maps historical variables based on neighbours and coefficients determined in <code>Initialize</code>. Historical variables of type <code>Double</code> and type <code>Array</code> can be mapped (the latter is just the application of the former for each vector component).</p>
 <h3 id="mappernearest">MapperNearest</h3>
 <p>Child-class of <code>MapperInterpolator</code>, does not require additional settings. Does simple nearest-neighbour mapping.</p>
 <h3 id="mapperlinear">MapperLinear</h3>
@@ -1147,7 +1148,7 @@ This transformer can be initialized in both directions. </p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>parallel</code></td>
+<td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
 <td>if <code>true</code>, use <code>multiprocessing</code> to parallellize loop that calculates coefficients</td>
 </tr>
@@ -1169,7 +1170,7 @@ This transformer can be initialized in both directions. </p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>parallel</code></td>
+<td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
 <td>if <code>true</code>, use <code>multiprocessing</code> to parallellize loop that calculates coefficients</td>
 </tr>
@@ -1243,7 +1244,7 @@ f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbo
 \boldsymbol{\Phi} \ \boldsymbol{c} = \boldsymbol{\Phi}_{to}.
 </script>
 </div>
-<p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <strong>c</strong> <span><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> must be calculated for each <em>to</em>-point independently. The matrix <span><span class="MathJax_Preview">\boldsymbol{\Phi}</span><script type="math/tex">\boldsymbol{\Phi}</script></span> and vector <span><span class="MathJax_Preview">\boldsymbol{\Phi}_{to}</span><script type="math/tex">\boldsymbol{\Phi}_{to}</script></span> must also be calculated for every <em>to</em>-point independently.</p>
+<p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <span><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> must be calculated for each <em>to</em>-point independently. The matrix <span><span class="MathJax_Preview">\boldsymbol{\Phi}</span><script type="math/tex">\boldsymbol{\Phi}</script></span> and vector <span><span class="MathJax_Preview">\boldsymbol{\Phi}_{to}</span><script type="math/tex">\boldsymbol{\Phi}_{to}</script></span> must also be calculated for every <em>to</em>-point independently.</p>
                 
                   
                 

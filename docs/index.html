@@ -796,7 +796,7 @@
                 
                 
                 <h1 id="guide-to-the-documentation">Guide to the documentation</h1>
-<p>This website is a collection of all MarkDown (MD) files found in the CoSimulationApplication folder and its subfolders.
+<p>This website is a collection of all MarkDown (MD) files found in the <code>coconut</code> package.
 These files are converted to a static website using <a href="https://www.mkdocs.org/">MkDocs</a>, based on the outline defined in the <code>mkdocs.yml</code> file.</p>
 <h2 id="documentation-in-markdown">Documentation in MarkDown</h2>
 <p>MD files are easy to write and read in raw form, and can easily be converted to HTML for nicer rendering. It is easy to learn, see e.g. this <a href="https://www.markdowntutorial.com/">tutorial</a>. Several flavors of MD exist, which differ only in some details. GitHub has its own <a href="https://github.github.com/gfm/">GitHub Flavored Markdown (GFM)</a>, which is used to render MD documents found in repositories on the run. PyCharm comes with an automatic rendering tool built in, and I assume many other IDE's too. </p>
@@ -853,7 +853,7 @@ Images from all <code>coconut</code> subdirectories called <code>images</code> a
 <p>The structure/outline of the website is dictated by the <code>nav</code> variable in <code>mkdocs.yml</code>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
 <p>The complete process to create the documentation website is automated by <code>run_mkdocs.py</code>. This does the following things:</p>
 <ul>
-<li>Copy all MD files in the CoSimulationApplication folder and its subfolders to folder <code>docs</code>. </li>
+<li>Copy all MD files in <code>coconut</code> and its subfolders to folder <code>docs</code>. </li>
 <li>Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.</li>
 <li>Check if each MD file is mentioned in <code>mkdocs.yml</code>. If a file is not mentioned, a warning is given.</li>
 <li>Build static HTML website using <code>mkdocs build</code>. </li>
@@ -863,7 +863,7 @@ Images from all <code>coconut</code> subdirectories called <code>images</code> a
 </code></pre></div>
 
 
-<p>deploys the website on GitHub Pages using <code>mkdocs gh-deploy</code>. </p>
+<p>deploys the website on GitHub Pages using <code>mkdocs gh-deploy</code>. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  </p>
 <div class="codehilite"><pre><span></span><code>python run_mkdocs.py --preview example
 </code></pre></div>
 

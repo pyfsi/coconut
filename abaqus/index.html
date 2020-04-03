@@ -924,7 +924,7 @@ Subcycling within the structural solver is possible.</p>
 <tr>
 <td align="right"><nobr><code>delta_t</code></nobr></td>
 <td align="center">float</td>
-<td>Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher CoSimulationObject.</td>
+<td>Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher <code>Component</code>.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>dimensions</code></nobr></td>
@@ -969,7 +969,7 @@ Subcycling within the structural solver is possible.</p>
 <tr>
 <td align="right"><nobr><code>timestep_start</code></nobr></td>
 <td align="center">integer</td>
-<td>Time step to start from [data should be available at this time step. For a new simulation this value will typically be 0] (Should be synchronized with the flow solver). This parameter is usually specified in a higher CoSimulationObject.</td>
+<td>Time step to start from [data should be available at this time step. For a new simulation this value will typically be 0] (Should be synchronized with the flow solver). This parameter is usually specified in a higher <code>Component</code>.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>working_directory</code></nobr></td>
@@ -978,7 +978,7 @@ Subcycling within the structural solver is possible.</p>
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher CoSimulationObject. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher <code>Component</code>. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.</p>
 <p>If different parameters are used with different Abaqus versions, this should be specified both in this section and in the version specific documentation section.</p>
 <h3 id="optional">Optional</h3>
 <table>

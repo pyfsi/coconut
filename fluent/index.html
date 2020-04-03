@@ -852,10 +852,10 @@
                 
                 
                 <h1 id="solverwrapperfluent">SolverWrapperFluent</h1>
-<p>This is the documentation for all Fluent SolverWrappers.
+<p>This is the documentation for all Fluent solver-wrappers.
 Currently only FSI simulations are supported, no other multiphysics problems. Also, inviscid flows are not supported yet.</p>
 <h2 id="parameters">Parameters</h2>
-<p>This section describes the Parameters in the JSON file, listed in alphabetical order.</p>
+<p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
 <table>
 <thead>
 <tr>
@@ -883,7 +883,7 @@ Currently only FSI simulations are supported, no other multiphysics problems. Al
 <tr>
 <td align="right"><code>delta_t</code></td>
 <td align="center">double</td>
-<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher CoSimulationObject.</td>
+<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>flow_iterations</code></td>
@@ -896,14 +896,14 @@ Currently only FSI simulations are supported, no other multiphysics problems. Al
 <td>Set to <code>true</code> to run Fluent with the graphical interface.</td>
 </tr>
 <tr>
-<td align="right"><code>hybrid_initialization</code></td>
+<td align="right"><nobr><code>hybrid_initialization</code></nobr></td>
 <td align="center">bool</td>
 <td>If <code>true</code>, the hybrid initialization is used in Fluent before the first timestep. If <code>false</code>, the standard initialization is used, which requires that adequate reference values have been set in advance by the user in the <code>case_file</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_input</code></td>
 <td align="center">dict</td>
-<td>Keys are names of ModelParts for Fluent nodes. Each name must be the concatenation of an entry from thread_names and '_nodes'. The values are (lists of) names of Variables.</td>
+<td>Keys are names of <code>ModelParts</code> for Fluent nodes. Each name must be the concatenation of an entry from <code>thread_names</code> and "_nodes". The values are (lists of) names of <code>Variables</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_output</code></td>
@@ -913,7 +913,7 @@ Currently only FSI simulations are supported, no other multiphysics problems. Al
 <tr>
 <td align="right"><code>max_nodes_per_face</code></td>
 <td align="center">int</td>
-<td>The parameter is used to construct unique IDs for faces, based on unique IDs of nodes. It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.</td>
+<td>This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.</td>
 </tr>
 <tr>
 <td align="right"><code>save_iterations</code></td>
@@ -928,7 +928,7 @@ Currently only FSI simulations are supported, no other multiphysics problems. Al
 <tr>
 <td align="right"><code>timestep_start</code></td>
 <td align="center">int</td>
-<td>Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the <code>case_file</code>, else the code looks for the relevant case and data files. This parameter is usually specified in a higher CoSimulationObject.</td>
+<td>Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the <code>case_file</code>, else the code looks for the relevant case and data files. This parameter is usually specified in a higher <code>Component</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>unsteady</code></td>
@@ -942,15 +942,17 @@ Currently only FSI simulations are supported, no other multiphysics problems. Al
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher CoSimulationObject. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher <code>Component</code>. However, they can also be given directly as parameter of the solver-wrapper (e.g. for standalone testing). If they are defined both in a higher <code>Component</code> and in the solver-wrapper, then the former value is used and a warning is printed.</p>
 <p>If different parameters are used with different Fluent versions, this should be specified both in this section and in the version specific documentation section.</p>
 <h2 id="overview-of-operation">Overview of operation</h2>
-<p>The solver wrapper consists of 3 files (with X the Fluent version, e.g. 2019R1):
--   X.py: defines the SolverWrapperFluentX class
--   X.jou: Fluent journal file to interactively run the FSI simulation, written in Scheme
--   X.c: Fluent UDF file that implements additional functionality used in Fluent, written in C</p>
+<p>The solver-wrapper consists of 3 files (with <code>X</code> the Fluent version, e.g. <code>2019R1</code>):</p>
+<ul>
+<li><code>X.py</code>: defines the <code>SolverWrapperFluentX</code> class</li>
+<li><code>X.jou</code>: Fluent journal file to interactively run the FSI simulation, written in Scheme</li>
+<li><code>X.c</code>: Fluent UDF file that implements additional functionality used in Fluent, written in C</li>
+</ul>
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
-<p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summery, so that SolverWrapperFluentX can link the interface thread names (specified in <code>thread_names</code>) to thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelPart</code> objects are created, based on data written by Fluent in timestep 0. After a restart, this same data must be found, i.e. if that file is removed from the <code>working_directory</code>, the simulation cannot be restarted. If the simulation was restarted, the coordinates <code>X</code>, <code>Y</code>, <code>Z</code> in the <code>Node</code> objects are updated to the current values. Finally, the <code>CoSimulationInteface</code> objects are made.</p>
+<p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summery, so that <code>SolverWrapperFluentX</code> can link the interface thread names (specified in <code>thread_names</code>) to Fluent thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelParts</code> are created, based on data written by Fluent in timestep 0. After a restart, this same data must be found, i.e. if that file is removed from the folder <code>working_directory</code>, the simulation cannot be restarted. If the simulation was restarted, the coordinates <code>X</code>, <code>Y</code>, <code>Z</code> in the <code>Nodes</code> are updated to the current values. Finally, the <code>Interfaces</code> are made.</p>
 <h3 id="files-created-during-simulation">Files created during simulation</h3>
 <p>In the file conventions, <code>A</code> is the timestep number and <code>B</code> the Fluent thread ID.</p>
 <ul>
@@ -968,13 +970,13 @@ Currently only FSI simulations are supported, no other multiphysics problems. Al
 <li>2D, 3D or axisymmetric (should match with the <code>dimensions</code> parameter)</li>
 <li>dynamic mesh for all zones, except the FSI interfaces</li>
 <li>boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria</li>
-<li>if <code>hybrid_initialization</code> is <code>false</code>, then default should be set for standard initialization</li>
+<li>if <code>hybrid_initialization</code> is <code>false</code>, then defaults should be set for standard initialization</li>
 </ul>
-<p>Following items are done after starting the FSI simulation, and must therefore not be included in the <code>case_file</code>:</p>
+<p>Following items are taken care of by CoCoNuT, and must therefore not be included in the <code>case_file</code>:</p>
 <ul>
 <li>dynamic mesh for the FSI interfaces (which are defined in <code>thread_names</code>)</li>
 <li>the timestep (<code>delta_t</code>) </li>
-<li>initialization</li>
+<li>initialization of the solution field</li>
 </ul>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
 <h3 id="2019r1-193">2019R1 (19.3)</h3>
