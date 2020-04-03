@@ -77,7 +77,7 @@ The behavior of `run_mkdocs.py` can be altered by adding an extra command line a
 ```bash
 python run_mkdocs.py --deploy
 ```
-deploys the website on GitHub Pages using `mkdocs gh-deploy`. 
+deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  
 
 ```bash
 python run_mkdocs.py --preview example
