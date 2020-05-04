@@ -58,6 +58,7 @@ Installation:
     ```
     
 -   Move to the `coconut` directory. 
+-   Load Anaconda module.
 -   Run `run_coconut_tests.sh` to see if the installation works.
 
 ```bash
