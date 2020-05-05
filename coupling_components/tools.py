@@ -12,6 +12,7 @@ def CreateInstance(settings):
     object_module = __import__("coconut.coupling_components." + object_type, fromlist=[object_type])
     return object_module.Create(settings)
 
+
 # InnerProduct: Computes the inner product for two given vectors (as python lists)
 #
 #  @param list_one   First vector (as a list)
@@ -76,7 +77,10 @@ class LayoutStyles:
             raise ValueError("Layout style is not implemented, correct layout styles are:"
                              "header, blue, green, red, warning, fail, bold, underline and plain.")
 
+
 layoutstyle = LayoutStyles()
+
+
 # Print: Printing with color
 #
 #  @param args          The arguments to be printed
@@ -99,7 +103,6 @@ def PrintInfo(label, *args):
 #  @param args          The arguments to be printed
 def PrintWarning(label, *args):
     print(label, " ".join(map(str, args)))
-
 
 
 # Timer-function
