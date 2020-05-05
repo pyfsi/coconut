@@ -136,7 +136,7 @@ The output of this solver is transferred unchanged to the second solver.
 The output of the second solver is denoted $\tilde{x}^k$.
 The difference between input and output is called the residual $r^k=\tilde{x}^k-x^k$.
 
-A residual operator $\mathcal{R}(x)$ is defined which return the residual $r^k$ in function of $x^k$.
+A residual operator $\mathcal{R}(x)$ is defined which return the residual $r^k$ as a function of $x^k$.
 The goal is to find $x$ for which $\mathcal{R}(x)=0$.
 This system of non-linear equations is solved using Newton-Raphson iterations as follows
 $$
