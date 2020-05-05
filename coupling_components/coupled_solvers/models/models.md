@@ -15,7 +15,7 @@ Moreover, it is required that the approximation is least-squares.
 This model is matrix-free, due to an implementation using QR-decomposition.
 With matrix-free is meant that no large dense matrices are constructed, not that no matrices are used at all.
 
-The optimal value of `q` is problem dependant.
+The optimal value of `q` is problem dependent.
 Typically however, an optimal value is around 10.
 The $R$ matrix from the QR-decompostion has to be invertible.
 Therefore, (almost) linear columns in the matrix containing the input information from the current and previous time steps should be removed.
