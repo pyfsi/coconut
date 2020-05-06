@@ -11,11 +11,6 @@ import numpy as np
 import re
 
 
-#TODO: Add readme file to the abaqus solver wrapper directory to describe how the Base.inp should be created (e.g.
-# create surfaces for the loading and their naming convention SURFACE%i and the sequence
-
-# TODO: Add a check which compares the output surfaces to the input surfaces based on e.g. mean, min and max in the 3 directions
-
 def Create(parameters):
     return SolverWrapperAbaqus614(parameters)
 
