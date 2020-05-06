@@ -698,7 +698,7 @@ class SolverWrapperAbaqus614(Component):
                 line += temp[0:char_limit] + "\n"
                 count += char_limit
                 while count < N:
-                    temp_string = temp[count:count + char_limit - 6]
+                    temp_string = temp[count:count + char_limit - ampersand_location]
                     n = len(temp_string)
                     count += n
                     if count < N:  # need to append an additional new line
