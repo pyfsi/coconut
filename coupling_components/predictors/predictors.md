@@ -5,7 +5,7 @@ A predictor is used to determine the initial guess in each time step by extrapol
 The different predictors differ in the number of previous iterations they take into account 
 and the polynomial degree that is used.
 
-Only the `type` has to provided, no `settings` dictionary is required.
+Only the `type` has to be provided, no `settings` dictionary is required.
 
 ## Linear
 This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
