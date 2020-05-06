@@ -724,7 +724,7 @@ class SolverWrapperAbaqus614(Component):
             while line:
                 if "*step" in line.lower():
                     contents = line.split(",")  # Split string on commas
-                    line_new=''
+                    line_new = ''
                     for s in contents:
                         if s.strip().startswith("inc="):
                             numbers = re.findall("\d+", s)
@@ -746,7 +746,7 @@ class SolverWrapperAbaqus614(Component):
                         if "application" in s.lower():
                             contents_B = s.split("=")
                             app = contents_B[1].lower().strip()
-                            if app == "quasi-static" or app == "moderate dissipation" :
+                            if app == "quasi-static" or app == "moderate dissipation":
                                 if not self.subcycling:
                                     line_2 = f"{self.delta_t}, {self.delta_t},\n"
                                 else:
@@ -806,7 +806,7 @@ class SolverWrapperAbaqus614(Component):
                 cmd = f"cp {file_name} {join(self.dir_csm, tmp2)}"
                 os.system(cmd)
 
-            if self.iteration == 1 and self.timestep == 1 and self.settings[
-                'ramp'].GetInt() == 1:  # Start of a simulation with ramp, needs an initial load at time 0
+            # Start of a simulation with ramp, needs an initial load at time 0
+            if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
                 cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
                 self.run_shell(self.dir_csm, [cmd], name='GetOutput')
