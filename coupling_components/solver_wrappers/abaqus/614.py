@@ -48,8 +48,6 @@ class SolverWrapperAbaqus614(Component):
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'].GetString())  # *** alternative for getcwd?
         path_src = os.path.realpath(os.path.dirname(__file__))
 
-        self.remove_all_messages()
-
         self.cores = self.settings['cores'].GetInt()  # number of cpus Abaqus has to use
         self.dimensions = self.settings['dimensions'].GetInt()
         if self.dimensions == 2:
@@ -586,7 +584,6 @@ class SolverWrapperAbaqus614(Component):
 
     def Finalize(self):
         super().Finalize()
-        self.remove_all_messages()
 
     def GetInterfaceInput(self):
         return self.interface_input.deepcopy()
@@ -599,31 +596,6 @@ class SolverWrapperAbaqus614(Component):
 
     def SetInterfaceOutput(self):
         Exception("This solver interface provides no mapping.")
-
-    def send_message(self, message):
-        file = join(self.dir_csm, message + ".coco")
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        file = join(self.dir_csm, message + ".coco")
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = join(self.dir_csm, message + ".coco")
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.dir_csm):
-            if file_name.endswith('.coco'):
-                file = join(self.dir_csm, file_name)
-                os.remove(file)
 
     def makeElements(self, face_file, output_file):
         firstLoop = 1
