@@ -14,6 +14,7 @@ import re
 def Create(parameters):
     return SolverWrapperAbaqus614(parameters)
 
+
 class SolverWrapperAbaqus614(Component):
     def __init__(self, parameters):
         super().__init__()
@@ -79,7 +80,6 @@ class SolverWrapperAbaqus614(Component):
             self.maxNumInc = 1
             self.ramp = 0
 
-
         # Upon (re)starting Abaqus needs to run USRInit.f
         # A restart requires Abaqus to be booted with a restart file
 
@@ -108,9 +108,9 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # Create start and restart file
-        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm+"/CSM_Time0.inp", self.dir_csm+"/CSM_Restart.inp")
+        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + "/CSM_Time0.inp", self.dir_csm + "/CSM_Restart.inp")
 
-        # prepare Abaqus USRInit.f
+        # Prepare Abaqus USRInit.f
         usr = "USRInit.f"
         with open(join(path_src, usr), "r") as infile:
             with open(join(self.dir_csm, "usrInit.f"), "w") as outfile:
@@ -120,13 +120,13 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|cpus|", str(self.cores))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.FORT_replace(line,"|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.FORT_replace(line,"|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
+                    line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
                         raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
                     outfile.write(line)
 
-        # compile Abaqus USRInit.f
+        # Compile Abaqus USRInit.f
         path_libusr = join(self.dir_csm, "libusr/")
         os.system("rm -rf " + path_libusr)
         os.system("mkdir " + path_libusr)
@@ -239,9 +239,9 @@ class SolverWrapperAbaqus614(Component):
                     mp.thread_id = self.thread_ids[i]  # This is just a number from 0 to n_surfaces
                     if 'thread_id' not in dir(mp):
                         raise AttributeError(f'Could not find thread id corresponding to {key}')
-                    bool_found=1
-            if bool_found==0:
-                    raise AttributeError(f'Could not identify surfaceID corresponding to key {key}. Check parameter file.')
+                    bool_found = 1
+            if bool_found == 0:
+                raise AttributeError(f'Could not identify surfaceID corresponding to key {key}. Check parameter file.')
 
         # add Nodes to input ModelParts (load_points)
         # elements line 1 contains number of elements
@@ -326,10 +326,10 @@ class SolverWrapperAbaqus614(Component):
                 node.Y = coords_tmp[i, 1]
                 node.Z = coords_tmp[i, 2]
 
-                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] < mp.min[2]: mp.min[2] = coords0_tmp[i, 2]
-                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] > mp.max[1]: mp.max[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] > mp.max[2]: mp.max[2] = coords0_tmp[i, 2]
 
@@ -386,24 +386,23 @@ class SolverWrapperAbaqus614(Component):
                 node.Y = coords_tmp[i, 1]
                 node.Z = coords_tmp[i, 2]
 
-                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] < mp.min[2]: mp.min[2] = coords0_tmp[i, 2]
-                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] > mp.max[1]: mp.max[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] > mp.max[2]: mp.max[2] = coords0_tmp[i, 2]
 
-
-            ##Check the bounding boxes for input interface versus output interface
-            #This will be based on the original coordinates at time 0
+            # Check the bounding boxes for input interface versus output interface
+            # This will be based on the original coordinates at time 0
             tol_center = 0.02
             tol_BB = 0.1
             tol_geom = 0.01
             AR_plane = 1e-08
             abs_tol_plane = 1e-06
 
-            #Find corresponding Input modelpart based on thread_id
-            bool_corresponds=0
+            # Find corresponding Input modelpart based on thread_id
+            bool_corresponds = 0
             for key_temp in self.settings['interface_input'].keys():
                 mp_temp = self.model[key_temp]
                 if mp_temp.thread_id == mp.thread_id:
@@ -415,31 +414,32 @@ class SolverWrapperAbaqus614(Component):
             else:
                 diff_Out = mp.max - mp.min
                 diff_In = mp_input.max - mp_input.min
-                ref = np.array([max(diff_Out[0],diff_In[0]),max(diff_Out[1],diff_In[1]),max(diff_Out[2],diff_In[2])])
-                geom_diff=geom_max-geom_min
+                ref = np.array([max(diff_Out[0], diff_In[0]), max(diff_Out[1], diff_In[1]),
+                                max(diff_Out[2], diff_In[2])])
+                geom_diff = geom_max-geom_min
                 for i in range(0, self.dimensions):
-                    if self.dimensions==3:
-                        bool_A = ref[i] < AR_plane*ref[i-1] and ref[i] < AR_plane*ref[i-2] # Identifies as plane perpendicular to coordinate direction
+                    if self.dimensions == 3:
+                        bool_A = ref[i] < AR_plane*ref[i-1] and ref[i] < AR_plane*ref[i-2]  # Identifies as plane perpendicular to coordinate direction
                         bool_B = (geom_diff[i] < AR_plane*geom_diff[i-1] and geom_diff[i] < AR_plane*geom_diff[i-2])
-                    elif self.dimensions==2:
-                        bool_A = ref[i] < AR_plane*ref[(i+1)%2] # Identifies as plane perpendicular to coordinate direction
-                        bool_B = geom_diff[i] < AR_plane*geom_diff[(i+1)%2]
+                    elif self.dimensions == 2:
+                        bool_A = ref[i] < AR_plane*ref[(i+1) % 2]  # Identifies as plane perpendicular to coordinate direction
+                        bool_B = geom_diff[i] < AR_plane*geom_diff[(i+1) % 2]
 
                     if bool_A:
                         if not bool_B:
-                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0)>tol_geom*geom_diff[i]:
+                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > tol_geom*geom_diff[i]:
                                 tools.Print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
-                                              f"differ by more than {tol_geom*100}% of the bounding box for the complete interface geometry in the {i}-direction", layout='red')
+                                            f"differ by more than {tol_geom*100}% of the bounding box for the complete interface geometry in the {i}-direction", layout='red')
                                 tools.Print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
                                 tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                         else:
-                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0)>abs_tol_plane:
+                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > abs_tol_plane:
                                 tools.Print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
-                                              f"differ by more than {abs_tol_plane}m in the {i}-direction", layout='red')
+                                            f"differ by more than {abs_tol_plane}m in the {i}-direction", layout='red')
                                 tools.Print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
                                 tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                     else:
-                        if np.abs(mp.min[i]-mp_input.min[i])>tol_BB*ref[i]:
+                        if np.abs(mp.min[i]-mp_input.min[i]) > tol_BB*ref[i]:
                             tools.Print(
                                 f"Warning: The minima of the bounding boxes of the input and output for {mp.thread_name} "
                                 f"differ by more than {tol_BB*100}% of the corresponding bounding box in the {i}-direction", layout='red')
@@ -682,8 +682,8 @@ class SolverWrapperAbaqus614(Component):
         return p
 
     def FORT_replace(self, line, orig, new):
-        """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit
-        This functions splits these strings over multiple lines"""
+        """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
+        This functions splits these strings over multiple lines."""
 
         ampersand_location = 6
         char_limit = 72
