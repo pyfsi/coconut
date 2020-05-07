@@ -1,4 +1,4 @@
-/** Opens an output database and writes the node positions to a file. The path of the output databate must be given as an argument. The database is opened and the last frame from the last step is analyzed. */
+/** Opens an output database and writes the node positions to a file. The path of the output database must be given as an argument. The database is opened and the last frame from the last step is analyzed. */
 
 //
 // System includes
