@@ -91,7 +91,7 @@ class SolverWrapperAbaqus614(Component):
                     self.hostnames_unique.append(line.rstrip())
         self.hostname_replace = ""
         for hostname in self.hostnames_unique:
-            self.hostname_replace += "[\'" + hostname + "\', " + str(self.hostnames.count(hostname)) + "], "  # self.hostname_replace = "[" + *hostnames_unqique + "]" ?
+            self.hostname_replace += "[\'" + hostname + "\', " + str(self.hostnames.count(hostname)) + "], "
         self.hostname_replace = self.hostname_replace.rstrip(", ")
         with open(join(path_src, "abaqus_v6.env"), "r") as infile:
             with open(join(self.dir_csm, "abaqus_v6.env"), "w") as outfile:
@@ -200,7 +200,7 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|ramp|", str(self.ramp))
                     line = line.replace("|deltaT|", str(self.delta_t))
 
-                    # if PWD is too ling then FORTRAN code can not compile so this needs special treatment
+                    # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                     line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
                     line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
