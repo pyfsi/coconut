@@ -95,11 +95,11 @@ my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distr
 my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)
 ```
 
-Not that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the
+Note that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the
 Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
 
 ```python
-step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=1, nlgeom=ON, amplitude=RAMP)
+step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
 Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t` and `subcycling` settings
