@@ -7,6 +7,9 @@ and the polynomial degree that is used.
 
 Only the `type` has to be provided, no `settings` dictionary is required.
 
+Specification of a predictor is mandatory, also for a steady simulation. In that case however, it does not matter which
+predictor is chosen as only 1 "time step" is performed.
+
 ## Linear
 This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
 using a linear extrapolation as follows
