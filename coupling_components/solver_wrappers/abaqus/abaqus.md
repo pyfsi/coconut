@@ -27,9 +27,9 @@ This section describes the Parameters in the JSON file, listed in alphabetical o
 parameter|type|description
 ---:|:---:|---
 <nobr>`arraysize`</nobr>|integer|Size specification for array in FORTRAN part of the code. Should be large enough and depends on the number of load points in the structural model.
-<nobr>`cores`</nobr>|integer|Number of cores to be used by Abaqus
+<nobr>`cores`</nobr>|integer|Number of cores to be used by Abaqus.
 <nobr>`delta_t`</nobr>|float|Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher `Component`.
-<nobr>`dimensions`</nobr>|integer|Dimensionality of the problem (2 or 3)
+<nobr>`dimensions`</nobr>|integer|Dimensionality of the problem (2 or 3).
 <nobr>`interface_input`</nobr>|dict|Should contain `surfaces` keys. Keys are names of ModelParts for Abaqus load points. Each name (key) must be the contain an entry from `surfaceIDs`. The list that follows specifies the historical variables that should be included in this modelpart. (Note the comma) <br> <br> <b>Example:</b> <br> &emsp;"NODESETA_load_points": ["PRESSURE", "TRACTION"],<br>&emsp;"NODESETB_load_points": ["PRESSURE", "TRACTION"]
 <nobr>`interface_output`</nobr>|dict|Similar to interface_input but for Abaqus load points.
 <nobr>`input_file`</nobr>|string|Name of the input file provided by the user. <br> <b>Example:</b> “Base.inp”
