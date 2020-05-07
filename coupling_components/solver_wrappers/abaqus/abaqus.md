@@ -67,6 +67,7 @@ The base-file has to contain all necessary information about the structural mode
  - Material properties
  - Boundary conditions
  - Surfaces where external loads need to be applied
+ - Node sets where displacement data will be extracted
  - Additional loads not dependent on the flow solver
  
 Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.
@@ -94,17 +95,36 @@ my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distr
 my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)
 ```
 
+Not that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the
+Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
+
+```python
+step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=1, nlgeom=ON, amplitude=RAMP)
+```
+
+Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t` and `subcycling` settings
+and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_. This does not mean that it is not possible to run a steady simulation,
+but it means that the correct values should be provided in the input-file (so no dummy values).
+
 ### Setup for Abaqus output (displacements)
 After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput 
-has to be generated for each surface involved in the fluid-structure interface. 
-To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this hadn’t been done before) 
-and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
-Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput 
-and historyOutput with PRESELECTED variables. 
+has to be generated covering all locations involved in the fluid-structure interface. 
+To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not
+been done before) and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
+
+In the previous section an example was given of how a surface can be created from a node set, but the other way around
+is also possible, creating a node set from a surface (presuming that this surface was already created):
+
+```python
+outputSet = my_assembly.Set(name='NAME_OF_THE_NODESET', nodes=movingSurface0.nodes)
+my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=my_assembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
+```
+
+Furthermore, it is interesting (for post-processing and debugging) to preserve the default Abaqus output and therefore
+also configure a fieldOutput and historyOutput with PRESELECTED variables. 
 This can be done via the GUI or using python lines similar to the following:  
 
 ```python   
-my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=tubeAssembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
 my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='H-Output-1', variables=PRESELECT)
 ```  
