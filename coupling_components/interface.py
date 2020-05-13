@@ -7,7 +7,7 @@ import copy
 # Class Interface: Holds the different ModelParts of the interface.
 class Interface(object):
     """
-    When copying a CosimulationInterface object, its proper
+    When copying an Interface object, its proper
     deepcopy method must be used (self.deepcopy()). If they are
     copied using copy.deepcopy(), the global Variables will be
     referenced wrong.
