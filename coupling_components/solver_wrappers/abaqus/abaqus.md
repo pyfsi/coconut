@@ -31,7 +31,7 @@ parameter|type|description
 <nobr>`delta_t`</nobr>|float|Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher `Component`.
 <nobr>`dimensions`</nobr>|integer|Dimensionality of the problem (2 or 3).
 <nobr>`interface_input`</nobr>|dict|Should contain `surfaces` keys. Keys are names of `ModelParts` for Abaqus load points. Each name (key) must be the contain an entry from `surfaceIDs`. The list that follows specifies the historical variables that should be included in this `ModelPart` (note the comma). <br> <br> <b>Example:</b> <br> &emsp;"NODESETA_load_points": ["PRESSURE", "TRACTION"],<br>&emsp;"NODESETB_load_points": ["PRESSURE", "TRACTION"]
-<nobr>`interface_output`</nobr>|dict|Similar to interface_input but for Abaqus load points.
+<nobr>`interface_output`</nobr>|dict|Similar to interface_input but for Abaqus geometrical nodes.
 <nobr>`input_file`</nobr>|string|Name of the input file provided by the user. <br> <b>Example:</b> “Base.inp”
 <nobr>`mp_mode`</nobr>|string|Determines how Abaqus is executed in parallel. Should be “THREADS” as “MPI”  is currently not implemented.
 <nobr>`save_iterations`</nobr>|integer|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to the `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
