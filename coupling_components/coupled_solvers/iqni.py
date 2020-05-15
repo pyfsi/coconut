@@ -25,8 +25,8 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
         # Initial value
         self.x = self.predictor.Predict(self.x)
         # First coupling iteration
-        y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-        xt = self.solver_wrappers[1].SolveSolutionStep(y)
+        self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
         r = xt - self.x
         self.model.Add(r, xt)
         self.FinalizeIteration(r)
@@ -36,10 +36,10 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
                 dx = self.omega * r
             else:
                 dr = -1 * r
-                dx = self.model.Predict(dr) + r
+                dx = self.model.Predict(dr) - dr
             self.x += dx
-            y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            xt = self.solver_wrappers[1].SolveSolutionStep(y)
+            self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
             r = xt - self.x
             self.model.Add(r, xt)
             self.FinalizeIteration(r)

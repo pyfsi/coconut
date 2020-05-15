@@ -18,17 +18,14 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         self.atol = self.settings["absolute_tolerance_gmres"].GetDouble()
         self.rtol = self.settings["relative_tolerance_gmres"].GetDouble()
 
-        self.y = None
-        self.xtemp = None
-        self.ytemp = None
-        self.u = None
-        self.w = None
+        self.xtemp = self.ytemp = None
+        self.dxtemp = self.dytemp = None
+        self.u = self.w = None
         self.ready = None
 
     def Initialize(self):
         super().Initialize()
 
-        self.y = self.solver_wrappers[0].GetInterfaceOutput()
         self.dxtemp = self.x.deepcopy()
         self.dytemp = self.y.deepcopy()
         self.u = self.x.GetNumpyArray().shape[0]
