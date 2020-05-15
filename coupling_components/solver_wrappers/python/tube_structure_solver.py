@@ -98,7 +98,7 @@ class SolverWrapperTubeStructure(Component):
         self.interface_output = Interface(self.model, self.settings["interface_output"])
 
         # Debug
-        self.debug = False  # Set on true to save solution of each time step
+        self.debug = False  # Set on True to save input and output of each iteration of every time step
         self.OutputSolutionStep()
 
     def Initialize(self):
@@ -131,7 +131,14 @@ class SolverWrapperTubeStructure(Component):
 
         self.k += 1
         if self.debug:
-            file_name = self.working_directory + f"/Area_TS{self.n}_IT{self.k}"
+            file_name = self.working_directory + f"/Input_Pressure_Traction_TS{self.n}_IT{self.k}.txt"
+            with open(file_name, 'w') as file:
+                file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'x-traction':<22}"
+                           f"\t{'y-traction':<22}\t{'z-traction':<22}\n")
+                for i in range(len(self.z)):
+                    file.write(f"{self.z[i]:<22}\t{self.p[i]:<22}\t{self.trac[i, 0]:<22}"
+                               f"\t{self.trac[i, 1]:<22}\t{self.trac[i, 2]:<22}\n")
+            file_name = self.working_directory + f"/Output_Area_TS{self.n}_IT{self.k}.txt"
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
@@ -155,7 +162,7 @@ class SolverWrapperTubeStructure(Component):
 
     def OutputSolutionStep(self):
         if self.debug:
-            file_name = self.working_directory + f"/Area_TS{self.n}"
+            file_name = self.working_directory + f"/Area_TS{self.n}.txt"
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
