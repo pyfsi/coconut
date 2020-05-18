@@ -14,8 +14,6 @@ tolerance = 1e-8  # cut-off tolerance
 common_path = "../../test_examples/"
 case_names = ["results"]
 case_paths = ["tube_tube_flow_tube_structure/results"]
-case_names = ["results"]
-case_paths = ["tube_fluent3d_abaqus3d/results"]
 
 # load cases
 results = {}
@@ -51,7 +49,7 @@ residual_list = []  # list containing residual lists corresponding for the diffe
 # each residual list contains a nested list: [ts0[it0, it1, ...], ts1[it0, ...], ...]
 for case in case_names:
     residual_list.append(to_tolerance(results[case]["residual"], tolerance))
-    for ls in residual_list:
+    for ls in residual_list[-1]:
         if len(ls) > it_max:
             it_max = len(ls)
 

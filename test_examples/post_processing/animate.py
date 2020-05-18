@@ -139,10 +139,10 @@ class Animate:
 
         if self.dimension == 1:
             component = 0
-        self.solution = [self.select(self.complete_solution[:, i], component) for i in range(self.time_steps)]
+        self.solution = [self.select(self.complete_solution[:, i], component) for i in range(self.time_steps + 1)]
         if self.displacement_available:
             self.displacement = [self.select_displacement(self.complete_solution[:, i], absicissa)
-                                 for i in range(self.time_steps)]
+                                 for i in range(self.time_steps + 1)]
 
         # adjust scale
         minimum = min([s.min() for s in self.solution])
@@ -188,21 +188,29 @@ class Animate:
 
     def MakeAnimation(self, interval=100, blit=False, save_count=100, repeat=True, frames=None):
         # inteval: interval between frames in ms
-        # frames: number of frames
+        # frames: (int) number of frames (<= number of time steps + 1)
+        #         (iterable) frames to plot (index <= number of time steps)
         if self.line is None:
             raise Exception("Animate object has not yet been initialized.")
         if frames is None:
-            frames = self.time_steps
+            frames = self.time_steps + 1
+        elif type(frames) is int:
+            if frames > self.time_steps + 1:
+                raise Exception(f"Time step out of range: maximum number of frames is {self.time_steps + 1} (number of "
+                                f"time steps + 1).")
+            else:
+                pass
+        elif max(frames) > self.time_steps:
+            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}.")
         self.animation = ani.FuncAnimation(self.fig, self.animate, init_func=self.init, interval=interval,
                                            blit=blit, save_count=save_count, repeat=repeat, frames=frames)
 
     def MakePlot(self, time_step):
-        # inteval: interval between frames in ms
-        # frames: number of frames
+        # time_step: time step at which plot is made
         if self.line is None:
             raise Exception("Animate object has not yet been initialized.")
         if time_step > self.time_steps:
-            raise Exception(f"Time step out of range: maximum number of time steps is {self.time_steps}")
+            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}")
         self.animate(time_step)
 
 

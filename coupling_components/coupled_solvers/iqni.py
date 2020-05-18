@@ -43,4 +43,3 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
             r = xt - self.x
             self.model.Add(r, xt)
             self.FinalizeIteration(r)
-

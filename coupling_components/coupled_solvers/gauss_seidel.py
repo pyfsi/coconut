@@ -58,7 +58,6 @@ class CoupledSolverGaussSeidel(Component):
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.complete_solution = []
             if self.settings.Has("name"):
                 self.case_name = self.settings["name"].GetString()  # case name
             else:
