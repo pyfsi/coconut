@@ -209,7 +209,7 @@ class Animate:
 # different cases to be plotted
 common_path = "../../test_examples/"
 case_names = ["results"]
-case_paths = ["tube_tube_flow_tube_structure/test"]
+case_paths = ["tube_tube_flow_tube_structure/results"]
 
 # load cases
 results = {}
@@ -218,7 +218,7 @@ for name, path in zip(case_names, case_paths):
 
 # make figure and create animation for each case
 figure = plt.figure()
-colors = ["tab:blue", "tab: orange", "tab:green", "tab:red"]
+colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
 line_styles = ['-', '--', ':', '-.']
 for j, name in enumerate(case_names):
     solution = results[name]["solution_x"]
@@ -228,7 +228,7 @@ for j, name in enumerate(case_names):
     # select points and component of variable to plot
     coordinates = animation.coordinates
 
-    # example 1: python solver
+    # example 1: python solver (YZ-plane)
     python_solver = True
     if python_solver:
         mask_x = (coordinates[::3] > -np.inf)
@@ -237,7 +237,7 @@ for j, name in enumerate(case_names):
         absicissa = 2  # z-axis
         component = 1  # y-component
 
-    # example 2: fluent solver
+    # example 2: fluent solver (XY-plane)
     fluent = False
     if fluent:
         mask_x = (coordinates[::3] > -np.inf)
@@ -248,7 +248,7 @@ for j, name in enumerate(case_names):
         component = 1  # y-component
 
     animation.Initialize(mask_x, mask_y, mask_z, absicissa, component)
-    animation.line.set_color(colors[j])
+    animation.line.set_color(colors[j % len(colors)])
     animation.line.set_linestyle(line_styles[0])
     animation.line.set_marker('o')
     animation.line.set_markersize(2)
