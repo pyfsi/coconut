@@ -16,6 +16,9 @@ class Element(DataValueContainer):
     def GetNodes(self):
         return self.__nodes
 
+    def NumberOfNodes(self):
+        return len(self.__nodes)
+
     def Initialize(self):
         pass
 

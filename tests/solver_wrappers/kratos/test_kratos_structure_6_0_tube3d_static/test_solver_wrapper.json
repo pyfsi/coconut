@@ -1,0 +1,32 @@
+{
+    "settings": {
+        "data_structure": "pyKratos"
+    },
+    "solver_wrappers":
+    [
+        {
+            "type": "solver_wrappers.kratos.kratos_structure_6_0",
+            "settings": {
+                "working_directory" : "test_kratos_structure_6_0_tube3d_static/kratos_structure",
+                "cores": 1,
+                "dimensions": 3,
+                "delta_t": 0.0,
+                "timestep_start": 0,
+                "time_integration_method": "implicit",
+                "time_integration_scheme" : "newmark",
+                "input_file": "ProjectParameters.json",
+                "sub_model_parts_from_str_solver": ["SurfaceLoad3D_tube"],
+                "interface_input":
+                {
+                    "fsi_interface_load": ["PRESSURE", "TRACTION"]
+
+                },
+                "interface_output":
+                {
+                    "fsi_interface_disp": ["DISPLACEMENT"]
+                }
+
+            }
+        }
+    ]
+}
