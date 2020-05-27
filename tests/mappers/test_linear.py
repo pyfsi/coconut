@@ -1,6 +1,6 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
-from coconut.tests.mappers.test_nearest import Case1D, Case2D, Case3DSphere, Case3DSinc
+from coconut.tests.mappers.test_nearest import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
 from coconut.coupling_components.mappers.linear import *
 
 import os
@@ -59,6 +59,21 @@ class TestMapperLinear(KratosUnittest.TestCase):
         self.assertTrue(case.check(tolerance=0.03))
         if gui:
             case.plot()
+
+        # 3D case: cylinder + sine function
+        """
+        TODO
+        """
+        n_x_from, n_theta_from = 140 * 2, 28 * 2
+        n_x_to, n_theta_to = 350, 60
+        length = 106. / 7.
+        par_mapper['settings'].SetArray('directions', ['X', 'Y', 'Z'])
+
+        case = Case3DCylinder(n_x_from, n_theta_from, n_x_to, n_theta_to, length)
+        case.map(par_mapper)
+        # self.assertTrue(case.check(tolerance=5e-4))
+        # if gui:
+        case.plot()
 
         # 3D case: sinc + linear vector function
         """

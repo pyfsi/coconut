@@ -63,9 +63,9 @@ class TestMapperRadialBasis(KratosUnittest.TestCase):
         """
         TODO
         """
-        n_x_from, n_theta_from = 50, 30
-        n_x_to, n_theta_to = 22, 11
-        length = 2.
+        n_x_from, n_theta_from = 140 * 2, 28 * 2
+        n_x_to, n_theta_to = 350, 60
+        length = 106. / 7.
         par_mapper['settings'].SetArray('directions', ['X', 'Y', 'Z'])
 
         case = Case3DCylinder(n_x_from, n_theta_from, n_x_to, n_theta_to, length)

@@ -382,6 +382,23 @@ class Case3DCylinder(Case3DSphere):
         # for i in range(self.n_to):
         #     self.model_part_to.CreateNewNode(i, self.x_to[i], self.y_to[i], self.z_to[i])
 
+    def plot(self):
+        _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
+
+        ax[0].plot(self.x_from[:, 0], self.v_from[:, 0], label='from', marker='o')
+        ax[0].plot(self.x_to[:, 0], self.v_to[:, 0], label='to', marker='o')
+
+        ax[1].plot(self.x_to[:, 0], self.v_error[:, 0], label='error', marker='o')
+
+        for a in ax:
+            a.legend()
+            a.set_xlabel(r'$x$')
+            a.set_ylabel(r'f($x$)')
+
+        plt.tight_layout()
+        plt.show()
+        plt.close()
+
 
     # TODO: check method; does all the rest work?
 
