@@ -332,6 +332,70 @@ class Case3DSphere:
         return x, y, z
 
 
+class Case3DCylinder(Case3DSphere):
+    # 3D case: cylinder + sine function
+    def __init__(self, n_x_from, n_theta_from, n_x_to, n_theta_to, length):
+        self.n_x_from = n_x_from
+        self.n_theta_from = n_theta_from
+        self.n_from = n_x_from * n_theta_from
+        self.n_x_to = n_x_to
+        self.n_theta_to = n_theta_to
+        self.n_to = n_x_to * n_theta_to
+        self.length = length
+
+        model = data_structure.Model()
+
+        # ModelPart from
+        self.var_from = variables["TEMPERATURE"]
+        self.model_part_from = model.CreateModelPart('wall_from')
+        self.model_part_from.AddNodalSolutionStepVariable(self.var_from)
+
+        shape = (self.n_x_from, self.n_theta_from)
+        dtheta = 2 * np.pi / self.n_theta_from
+        theta_from = np.ones(shape) * np.linspace(0, 2 * np.pi - dtheta, self.n_theta_from).reshape(1, -1)
+
+        self.x_from = np.ones(shape) * np.linspace(0, self.length, self.n_x_from).reshape(-1, 1)
+        self.y_from, self.z_from = self.get_cartesian(theta_from)
+        self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
+        for i in range(self.n_from):
+            node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
+                                self.y_from.flatten()[i], self.z_from.flatten()[i])
+            node.SetSolutionStepValue(self.var_from, 0, self.v_from.flatten()[i])
+        # for i in range(self.n_from):
+        #     node = self.model_part_from.CreateNewNode(i, self.x_from[i], self.y_from[i], self.z_from[i])
+        #     node.SetSolutionStepValue(self.var_from, 0, self.v_from[i])
+
+        # ModelPart to
+        self.var_to = variables["PRESSURE"]
+        self.model_part_to = model.CreateModelPart('wall_to')
+        self.model_part_to.AddNodalSolutionStepVariable(self.var_to)
+
+        shape = (self.n_x_to, self.n_theta_to)
+        dtheta = 2 * np.pi / self.n_theta_to
+        theta_to = np.ones(shape) * np.linspace(0, 2 * np.pi - dtheta, self.n_theta_to).reshape(1, -1)
+
+        self.x_to = np.ones(shape) * np.linspace(0, self.length, self.n_x_to).reshape(-1, 1)
+        self.y_to, self.z_to = self.get_cartesian(theta_to)
+        for i in range(self.n_to):
+            self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
+                            self.y_to.flatten()[i], self.z_to.flatten()[i])
+        # for i in range(self.n_to):
+        #     self.model_part_to.CreateNewNode(i, self.x_to[i], self.y_to[i], self.z_to[i])
+
+
+    # TODO: check method; does all the rest work?
+
+
+    def fun(self, x, y, z):
+        return np.sin(2 * np.pi * x / self.length)
+
+    def get_cartesian(self, theta):
+        r = .5
+        y = r * np.cos(theta)
+        z = r * np.sin(theta)
+        return y, z
+
+
 class Case3DSinc:
     # 3D case: sinc + linear vector function
     def __init__(self, n_x_from, n_y_from, n_x_to, n_y_to):
