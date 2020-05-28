@@ -6,21 +6,20 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 import pickle
+from fractions import Fraction, gcd
 
-# This files contains the calss Animate, which can be used make an animation of different cases or a plot at a certain
-# time step.
+# This files contains the class Animation, which can be used make an animation of different cases or a plot at a certain
+# time step. These Animation instances have to be added to an AnimationFigure instance. All Animations added to the same
+# AnimationFigure will be plotted in the same Figure.
 # To generate a result file, include a boolean "save_results" in the settings of the coupled solver with value True.
 # Give a name to the case by including the string {"name": "a_name"} in the settings of the coupled solver .
 
 
-class Animate:
-    animations_list = []
-    min = None
-    max = None
+class Animation:
 
-    def __init__(self, figure, solution, interface, model_part=None, variable=None, name=None):
+    def __init__(self, animation_figure, solution, interface, dt, model_part=None, variable=None, name=None):
         """
-        Creates Animate instance
+        Creates Animation instance
             self.info: list e.g. [("mp_a", ["PRESSURE", "TRACTION"]), ("mp_b, "DISPLACEMENT")]
                 this dictates the order of the values in solution and coordinates:
                 e.g. p0, p1, ..., pm, tx0, ty0, tz0, tx1, ty1, tz1,, ..., txm, tym, tzm, dx0, dy0, dz0, ...,
@@ -30,23 +29,23 @@ class Animate:
                 as given in self.info
                   e.g. x0, y0, z0, x1, y1, z1, ...
 
-        :param figure: (plt.figure) figure where animation is created
+        :param animation_figure: (AnimationFigure) AnimationFigure object where animation is created
         :param solution : (np.array) contains as columns the solution of each time step, order is dictated by self.info
         :param interface: (Interface) object interface to be plotted
+        :param dt: (float) time step size
         :param model_part: (string) model part to be plotted (optional if there is only one)
         :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
         :param name: (string) the name in the legend (optional)
         """
-        """"
-
-        """
-        self.fig = figure
+        self.animation_figure = animation_figure
         self.complete_solution = solution
         self.interface = interface
         self.info = interface.model_parts_variables
         self.coordinates = interface.GetInitialCoordinates()
         self.m = int(self.coordinates.size / 3)  # number of nodes
-        self.time_steps = solution.shape[1] - 1
+        self.time_steps = solution.shape[1] - 1  # number of times steps
+        self.dt = dt
+        self.time_step_start = 0  # currently not used
         self.animation = None
         self.mask = None
         self.argsort = None
@@ -54,6 +53,7 @@ class Animate:
         self.solution = None
         self.displacement = None
         self.line = None
+        self.initialized = False
 
         # check that model_part or variables are given if not unique
         if model_part is None:
@@ -116,9 +116,6 @@ class Animate:
         if index != self.complete_solution.shape[0]:
             raise Exception("Size of provided solution data does not match interface.")
 
-        # add animation instance to class list
-        self.animations_list.append(self)
-
     def Initialize(self, mask_x, mask_y, mask_z, absicissa, component):
         """
         This method selects which points to plot and how to sort them.
@@ -144,15 +141,12 @@ class Animate:
             self.displacement = [self.select_displacement(self.complete_solution[:, i], absicissa)
                                  for i in range(self.time_steps + 1)]
 
-        # adjust scale
-        minimum = min([s.min() for s in self.solution])
-        maximum = max([s.max() for s in self.solution])
-        Animate.min = minimum if Animate.min is None else min(Animate.min, minimum)
-        Animate.max = maximum if Animate.max is None else max(Animate.max, maximum)
-        margin = (Animate.max - Animate.min) * 0.05
-        plt.ylim([Animate.min - margin, Animate.max + margin])
-
         self.line, = plt.plot(self.absicissa, self.solution[0], label=self.name)
+
+        # adjust scale
+        self.animation_figure.UpdateScale(self)
+
+        self.initialized = True
 
     def select(self, array, component):
         # select correct model_part and variable data and order them
@@ -174,43 +168,114 @@ class Animate:
         self.line.set_ydata(self.solution[ts])
         return self.line,
 
+
+class AnimationFigure:
+
+    def __init__(self):
+        self.animations_list = []
+        self.base_dt = None  # common minimal time step size
+        self.dt_ratio_list = []  # ratio of the animation's time step size to the base_dt (list of ints)
+        self.time_steps = None  # number of time steps
+        self.timestep_start = 0  # currently not used
+        self.fig = plt.figure()
+        self.text = None
+        self.min = None
+        self.max = None
+
+    def AddAnimation(self, solution, interface, dt, model_part=None, variable=None, name=None):
+        """
+        Creates and adds Animation instance to self
+
+        :param solution : (np.array) contains as columns the solution of each time step, order is dictated by self.info
+        :param interface: (Interface) object interface to be plotted
+        :param dt: (float) time step size
+        :param model_part: (string) model part to be plotted (optional if there is only one)
+        :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
+        :param name: (string) the name in the legend (optional)
+        """
+        animation = Animation(self, solution, interface, dt, model_part=model_part, variable=variable, name=name)
+
+        # add animation instance to class list
+        self.animations_list.append(animation)
+
+        # find common denominator for updating time step sizes
+        def common_denominator(a, b):
+            fraction_a = Fraction(a).limit_denominator()
+            fraction_b = Fraction(b).limit_denominator()
+            multiple = np.lcm(fraction_a.denominator, fraction_b.denominator)
+            return multiple
+
+        # update base time step size and time steps for previously defined animations
+        if self.base_dt is None:
+            self.base_dt = animation.dt
+            self.dt_ratio_list.append(1)
+        else:
+            self.base_dt_prev = self.base_dt
+            self.base_dt = 1 / common_denominator(self.base_dt, animation.dt)
+            update_factor = int(self.base_dt_prev / self.base_dt)
+            self.dt_ratio_list = [int(dt_ratio * update_factor) for dt_ratio in self.dt_ratio_list]
+            self.dt_ratio_list.append(int(animation.dt / self.base_dt))
+
+        # update number of time steps
+        self.time_steps = animation.time_steps if self.time_steps is None \
+            else min(self.time_steps * update_factor, (animation.time_steps + 1) * int(animation.dt / self.base_dt) - 1)
+
+        return animation
+
+    def UpdateScale(self, animation):
+        # adjust scale
+        minimum = min([s.min() for s in animation.solution])
+        maximum = max([s.max() for s in animation.solution])
+        self.min = minimum if self.min is None else min(self.min, minimum)
+        self.max = maximum if self.max is None else max(self.max, maximum)
+        margin = (self.max - self.min) * 0.05
+        plt.ylim([self.min - margin, self.max + margin])
+
     def init(self):  # only required for blitting to give a clean slate.
         lines = ()
-        for animation in Animate.animations_list:
+        for animation in self.animations_list:
             lines += animation.case_init()
         return lines,
 
     def animate(self, ts):
         lines = ()
-        for animation in Animate.animations_list:
-            lines += animation.case_animate(ts)
+        for animation, dt_ratio in zip(self.animations_list, self.dt_ratio_list):
+            lines += animation.case_animate(ts // dt_ratio)
+        if self.text is None:
+            self.text = plt.text(0.1, 0.1, f"time = {0:.5f} s", transform=self.fig.axes[0].transAxes,
+                                    bbox=dict(facecolor='lightgray', edgecolor='black', pad=5.0, alpha=0.5))
+        self.text.set_text(f"time = {ts * self.base_dt:.5f} s")
         return lines,
 
     def MakeAnimation(self, interval=100, blit=False, save_count=100, repeat=True, frames=None):
         # inteval: interval between frames in ms
         # frames: (int) number of frames (<= number of time steps + 1)
         #         (iterable) frames to plot (index <= number of time steps)
-        if self.line is None:
-            raise Exception("Animate object has not yet been initialized.")
+        for animation in self.animations_list:
+            if not animation.initialized:
+                raise Exception(f"Animate object {animation.name} has not yet been initialized.")
         if frames is None:
             frames = self.time_steps + 1
         elif type(frames) is int:
             if frames > self.time_steps + 1:
                 raise Exception(f"Time step out of range: maximum number of frames is {self.time_steps + 1} (number of "
-                                f"time steps + 1).")
+                                f"time steps + 1), with time step size {self.base_dt}.")
             else:
                 pass
         elif max(frames) > self.time_steps:
-            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}.")
+            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
+                            f"with time step size {self.base_dt}.")
         self.animation = ani.FuncAnimation(self.fig, self.animate, init_func=self.init, interval=interval,
                                            blit=blit, save_count=save_count, repeat=repeat, frames=frames)
 
     def MakePlot(self, time_step):
         # time_step: time step at which plot is made
-        if self.line is None:
-            raise Exception("Animate object has not yet been initialized.")
+        for animation in self.animations_list:
+            if not animation.initialized:
+                raise Exception("Animate object has not yet been initialized.")
         if time_step > self.time_steps:
-            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}")
+            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
+                            f"with time step size {self.base_dt}.")
         self.animate(time_step)
 
 
@@ -225,14 +290,15 @@ for name, path in zip(case_names, case_paths):
     results.update({name: pickle.load(open(os.path.join(common_path, path), 'rb'))})
 
 # make figure and create animation for each case
-figure = plt.figure()
+animation_figure = AnimationFigure()
 colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
 line_styles = ['-', '--', ':', '-.']
 for j, name in enumerate(case_names):
     solution = results[name]["solution_x"]
     interface = results[name]["interface_x"]
+    dt = results[name]["delta_t"]
     # create animate object
-    animation = Animate(figure, solution, interface, variable="displacement", name=name)
+    animation = animation_figure.AddAnimation(solution, interface, dt, variable="displacement", name=name)
     # select points and component of variable to plot
     coordinates = animation.coordinates
 
@@ -264,9 +330,10 @@ for j, name in enumerate(case_names):
 plt.ylabel("displacement (m)")
 plt.xlabel("axial coordinate (m)")
 plt.legend()
+plt.tight_layout()
 
-animation.MakeAnimation()
-# animation.MakePlot(50)
+animation_figure.MakeAnimation()
+# animation_figure.MakePlot(50)
 
 save = False
 movie_name = "displacement.mp4"

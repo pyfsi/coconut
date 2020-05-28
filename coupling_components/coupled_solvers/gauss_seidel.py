@@ -18,7 +18,8 @@ class CoupledSolverGaussSeidel(Component):
         self.parameters = parameters
         self.settings = parameters["settings"]
 
-        self.n = self.settings["timestep_start"].GetInt()  # Time step
+        self.timestep_start = self.settings["timestep_start"].GetInt()  # Time step where calculation is started
+        self.n = self.timestep_start  # Time step
         self.delta_t = self.settings["delta_t"].GetDouble()  # Time step size
 
         self.predictor = CreateInstance(self.parameters["predictor"])
@@ -178,7 +179,8 @@ class CoupledSolverGaussSeidel(Component):
         if self.save_results:
             output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
                       "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
-                      "time": elapsed_time, "residual": self.residual}
+                      "time": elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
+                      "timestep_start": self.timestep_start}
             pickle.dump(output, open(self.case_name, 'wb'))
 
     def Check(self):
