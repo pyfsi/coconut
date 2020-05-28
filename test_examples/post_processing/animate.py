@@ -210,9 +210,9 @@ class AnimationFigure:
             self.base_dt = animation.dt
             self.dt_ratio_list.append(1)
         else:
-            self.base_dt_prev = self.base_dt
+            base_dt_prev = self.base_dt
             self.base_dt = 1 / common_denominator(self.base_dt, animation.dt)
-            update_factor = int(self.base_dt_prev / self.base_dt)
+            update_factor = int(base_dt_prev / self.base_dt)
             self.dt_ratio_list = [int(dt_ratio * update_factor) for dt_ratio in self.dt_ratio_list]
             self.dt_ratio_list.append(int(animation.dt / self.base_dt))
 
@@ -235,7 +235,7 @@ class AnimationFigure:
         lines = ()
         for animation in self.animations_list:
             lines += animation.case_init()
-        return lines,
+        return lines
 
     def animate(self, ts):
         lines = ()
@@ -245,7 +245,7 @@ class AnimationFigure:
             self.text = plt.text(0.1, 0.1, f"time = {0:.5f} s", transform=self.fig.axes[0].transAxes,
                                     bbox=dict(facecolor='lightgray', edgecolor='black', pad=5.0, alpha=0.5))
         self.text.set_text(f"time = {ts * self.base_dt:.5f} s")
-        return lines,
+        return lines
 
     def MakeAnimation(self, interval=100, blit=False, save_count=100, repeat=True, frames=None):
         # inteval: interval between frames in ms
@@ -342,6 +342,6 @@ if save:
     plt.rcParams['animation.ffmpeg_path'] = u'/apps/SL6.3/FFmpeg/3.1.3/bin/ffmpeg'  # path to ffmpeg conversion tool
     writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='NicolasDelaissé'), fps=24, bitrate=2000)
 
-    animation.animation.save(movie_name, writer=writer)
+    animation_figure.animation.save(movie_name, writer=writer)
 
 plt.show()
