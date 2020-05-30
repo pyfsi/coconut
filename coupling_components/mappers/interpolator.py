@@ -37,6 +37,14 @@ class MapperInterpolator(Component):
             if len(self.directions) > 3:
                 raise ValueError(f'too many directions given')
 
+        # get scaling (optional)
+        self.scaling = None
+        if self.settings.Has('scaling'):
+            self.scaling = self.settings['scaling'].GetArray()
+            if len(self.scaling) != len(self.directions):
+                raise ValueError(f'scaling must have same length as directions')
+            self.scaling = np.array(self.scaling).reshape(1, -1)
+
     def Initialize(self, model_part_from, model_part_to):
         super().Initialize()
 
@@ -60,6 +68,11 @@ class MapperInterpolator(Component):
 
         # check bounding boxes
         self.check_bounding_box(model_part_from, model_part_to)
+
+        # apply scaling to coordinates
+        if self.scaling is not None:
+            self.coords_from *= self.scaling
+            self.coords_to *= self.scaling
 
         # build and query tree
         if self.balanced_tree:  # time-intensive
