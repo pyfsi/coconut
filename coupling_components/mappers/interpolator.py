@@ -16,7 +16,9 @@ class MapperInterpolator(Component):
         # store settings
         self.settings = parameters['settings']
         self.interpolator = True
-        self.balanced_tree = self.settings['balanced_tree'].GetBool()  # *** optional parameter?
+        self.balanced_tree = False
+        if self.settings.Has('balanced_tree'):
+            self.balanced_tree = self.settings['balanced_tree'].GetBool()
         self.n_nearest = 0  # must be set in sub-class!
 
         # initialization
