@@ -95,9 +95,7 @@
 	                        "type": "mappers.linear",
                             "settings":
                             {
-                                "directions" : ["Z"],
-                                "balanced_tree" : false,
-                                "parallel" : true
+                                "directions" : ["Z"]
                             }
 						}
                     },
@@ -109,9 +107,7 @@
 	                        "type": "mappers.linear",
                             "settings":
                             {
-                                "directions" : ["Z"],
-                                "balanced_tree" : false,
-                                "parallel" : true
+                                "directions" : ["Z"]
                             }
 						}
                     }
