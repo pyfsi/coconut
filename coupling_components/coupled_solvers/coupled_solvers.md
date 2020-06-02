@@ -30,10 +30,10 @@ Here they are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
-`delta_t`|double|Fixed time step size used in both solvers.
-`time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver implements restart, see the solver documentation for more information.
+`delta_t`|double|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
+`time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver implements restart, see the solver documentation for more information. For a steady simulation this should be 0.
 
-`timestep_start` and `delta_t` are necessary parameters, but can also defined in the solverwrapper directly (e.g. for standalone testing).
+`timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solverwrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
 
 **These parameters should also be specified for the coupled solvers inheriting from `GaussSeidel`.**
@@ -136,7 +136,7 @@ The output of this solver is transferred unchanged to the second solver.
 The output of the second solver is denoted $\tilde{x}^k$.
 The difference between input and output is called the residual $r^k=\tilde{x}^k-x^k$.
 
-A residual operator $\mathcal{R}(x)$ is defined which return the residual $r^k$ in function of $x^k$.
+A residual operator $\mathcal{R}(x)$ is defined which return the residual $r^k$ as a function of $x^k$.
 The goal is to find $x$ for which $\mathcal{R}(x)=0$.
 This system of non-linear equations is solved using Newton-Raphson iterations as follows
 $$
