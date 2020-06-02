@@ -331,6 +331,7 @@ class Case1D:
     def plot(self):
         _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
         plt.title(f'max error = {self.v_error.max():.2g}')
+        plt.suptitle('1D case: square-root grid + linear function')
 
         ax[0].plot(self.z_from, self.v_from, label='from', marker='o')
         ax[0].plot(self.z_to, self.v_to, label='to', marker='o')
@@ -400,6 +401,7 @@ class Case2D:
 
     def plot(self):
         _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
+        plt.suptitle('2D case: circle + linear function')
 
         ax[0].plot(self.theta_from * 180 / np.pi, self.v_from, label='from', marker='o')
         ax[0].plot(self.theta_to * 180 / np.pi, self.v_to, label='to', marker='o')
@@ -496,7 +498,7 @@ class Case3DSphere:
         c_error = cm.jet(self.v_error / self.v_error.max())
 
         fig = plt.figure(figsize=(18, 6))
-        plt.suptitle(f'max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
+        plt.suptitle(f'3D case: sphere + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
 
         ax_from = fig.add_subplot(131, projection='3d')
         ax_from.set_title('from')
@@ -591,7 +593,7 @@ class Case3DCylinder(Case3DSphere):
         c_error = cm.jet(self.v_error / self.v_error.max())
 
         fig = plt.figure(figsize=(18, 10))
-        plt.suptitle(f'max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
+        plt.suptitle(f'3D case: cylinder + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
 
         # 2D plots
         ax_2dval = fig.add_subplot(221)
@@ -713,6 +715,8 @@ class Case3DSinc:
 
     def plot(self):
         fig = plt.figure(figsize=(18, 10))
+        plt.suptitle('3D case: sinc + linear vector function')
+
         for j in range(3):
             v_min = min(self.v_from[j].min(), self.v_to[j].min())
             v_max = max(self.v_from[j].max(), self.v_to[j].max())
