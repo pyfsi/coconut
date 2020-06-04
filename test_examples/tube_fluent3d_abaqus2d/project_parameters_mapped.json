@@ -126,9 +126,7 @@
                                         "type" : "mappers.radial_basis",
                                         "settings" :
                                         {
-                                            "balanced_tree" : false,
-                                            "directions" : ["X", "Y", "Z"],
-                                            "parallel" : true
+                                            "directions" : ["X", "Y", "Z"]
                                         }
                                     },
                                     {
@@ -167,9 +165,7 @@
                                         "type" : "mappers.radial_basis",
                                         "settings" :
                                         {
-                                            "balanced_tree" : false,
-                                            "directions" : ["X", "Y", "Z"],
-                                            "parallel" : true
+                                            "directions" : ["X", "Y", "Z"]
                                         }
                                     },
                                     {

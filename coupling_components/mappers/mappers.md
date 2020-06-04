@@ -45,8 +45,8 @@ To use a different `ModelPart` mapper for the different `ModelParts` in the `Int
 
 JSON setting|type|description
 ------:|:----:|-----------
-`type`|str|`ModelPart` mapper to be used
-<nobr>`settings`</nobr>|dict|all the settings for the `ModelPart` mapper specified in `type`
+`type`|str|`ModelPart` mapper to be used.
+<nobr>`settings`</nobr>|dict|All the settings for the `ModelPart` mapper specified in `type`.
 
 
 
@@ -57,7 +57,7 @@ Some transformers can only be initialized in one direction, e.g. for `MapperAxis
 
 JSON setting|type|description
 ------:|:----:|-----------
-<nobr>`mappers`</nobr>|list|an ordered list of all the `ModelPart` mappers to be used
+<nobr>`mappers`</nobr>|list|An ordered list of all the `ModelPart` mappers to be used.
 
 
 
@@ -70,7 +70,7 @@ This transformer can be initialized in both directions.
 
 JSON setting|type|description
 ------:|:----:|-----------
-<nobr>`permutation`</nobr>|list|a permutation of the list [0, 1, 2]
+<nobr>`permutation`</nobr>|list|A permutation of the list [0, 1, 2].
 
 ### MapperAxisymmetric2DTo3D
 
@@ -85,9 +85,9 @@ Scalar variables are simply mapped from the 2D `Node` to all corresponding 3D `N
 
 JSON setting|type|description
 ------:|:----:|-----------
-`direction_axial`|string|must be `"X"`, `"Y"` or `"Z"`, specifies the symmetry axis
-<nobr>`direction_radial`</nobr>|string|must be `"X"`, `"Y"` or `"Z"`, specifies the second (radial) axis in 2D
-`n_tangential`|int|must be ≥ 6
+`direction_axial`|string|Must be `"X"`, `"Y"` or `"Z"`, specifies the symmetry axis.
+<nobr>`direction_radial`</nobr>|string|Must be `"X"`, `"Y"` or `"Z"`, specifies the second (radial) axis in 2D.
+`n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. Must be $\geq 6$.
 
 ### MapperAxisymmetric3DTo2D
 
@@ -107,12 +107,14 @@ Base-class for all interpolators (currently `MapperNearest`, `MapperLinear` and 
 
 JSON setting|type|description
 ------:|:----:|-----------
-`directions`|list|list of coordinate directions, maximum three entries, may contain `"X"`, `"Y"`, `"Z"`
-<nobr>`balanced_tree`</nobr>|bool|if `true`, create balanced `cKDTree`, which is more stable, but takes longer to build; set to `true` if the tree is giving problems (which I don't expect)
+`directions`|list|List of coordinate directions, maximum three entries, may contain `"X"`, `"Y"`, `"Z"`.
+`scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
+<nobr>`balanced_tree`</nobr>|bool|Optional, default `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.
 
 The `Initialize` method should be called in all child-classes. It does the following:
 
 -   read and store the coordinates from the _from_ and _to_ `ModelParts`
+-   scale coordinates if necessary
 -   check if the bounding boxes of the _from_ and _to_ `ModelParts` are more or less overlapping
 -   do an efficient nearest neighbour search using `scipy.spatial.cKDTree`
 -   check if the _from_ `ModelPart` does not contain duplicate `Nodes` (i.e. with same coordinates)
@@ -131,7 +133,7 @@ Child-class of `MapperInterpolator`, additional settings:
 
 JSON setting|type|description
 ------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|if `true`, use `multiprocessing` to parallellize loop that calculates coefficients
+<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of `Nodes`. 
 
 The kind of linear mapping depends on the number of coordinate directions, as given in the `directions` setting.
 
@@ -148,7 +150,7 @@ Child-class of `MapperInterpolator`, additional settings:
 
 JSON setting|type|description
 ------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|if `true`, use `multiprocessing` to parallellize loop that calculates coefficients
+<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of `Nodes`. 
 
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 
 
