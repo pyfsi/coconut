@@ -472,7 +472,7 @@ class SolverWrapperAbaqus614(Component):
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
         # debug
-        self.debug = True  # set on True to save copy of input and output files in every iteration
+        self.debug = False  # set on True to save copy of input and output files in every iteration
 
     def Initialize(self):
         super().Initialize()

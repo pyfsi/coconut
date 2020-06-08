@@ -46,6 +46,7 @@ class CoupledSolverGaussSeidel(Component):
         self.x = None
         self.y = None
         self.iteration = None  # Iteration
+        self.solver_level = 0  # 0 is main solver (time step is printed)
 
         self.start_time = None
         self.stop_time = None
@@ -109,14 +110,13 @@ class CoupledSolverGaussSeidel(Component):
         self.n += 1  # Increment time step
         self.iteration = 0
 
-        # Print timestep
-        out = f"=============================================" \
-              f"===================================\n" \
-              f"\tTime step {self.n}\n" \
-              f"=============================================" \
-              f"===================================\n" \
-              f"Iteration\tNorm residual"
-        tools.PrintInfo(out)
+        # Print time step
+        if not self.solver_level:
+            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
+                  f"\tTime step {self.n}\n" \
+                  f"════════════════════════════════════════════════════════════════════════════════\n" \
+                  f"Iteration\tNorm residual"
+            tools.Print(out)
 
         if self.save_results:
             self.residual.append([])
@@ -143,7 +143,7 @@ class CoupledSolverGaussSeidel(Component):
         # Print iteration information
         norm = np.linalg.norm(r.GetNumpyArray())
         out = f"{self.iteration:<9d}\t{norm:<22.17e}"
-        tools.PrintInfo(out)
+        tools.Print(' │' * self.solver_level, out)
 
         if self.save_results:
             self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
@@ -189,8 +189,6 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.Check()
 
-    def PrintInfo(self, indent):
-        tools.Print('\n', '\t' * indent, "The coupled solver ", self.__class__.__name__,
-                    " has the following components:")
-        for component in self.components:
-            component.PrintInfo(indent + 1)
+    def PrintInfo(self, pre):
+        tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
+        tools.PrintStructureInfo(pre, self.components)
