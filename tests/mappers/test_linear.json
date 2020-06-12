@@ -5,7 +5,6 @@
         "settings":
         {
             "directions" : ["X", "Y", "Z"],
-            "balanced_tree" : false,
             "parallel" : true
         }
     }

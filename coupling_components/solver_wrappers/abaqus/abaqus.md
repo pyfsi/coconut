@@ -27,30 +27,30 @@ This section describes the Parameters in the JSON file, listed in alphabetical o
 parameter|type|description
 ---:|:---:|---
 <nobr>`arraysize`</nobr>|integer|Size specification for array in FORTRAN part of the code. Should be large enough and depends on the number of load points in the structural model.
-<nobr>`cores`</nobr>|integer|Number of cores to be used by Abaqus
-<nobr>`delta_t`</nobr>|float|Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher CoSimulationObject.
-<nobr>`dimensions`</nobr>|integer|Dimensionality of the problem (2 or 3)
-<nobr>`interface_input`</nobr>|dict|Should contain `surfaces` keys. Keys are names of ModelParts for Abaqus load points. Each name (key) must be the contain an entry from `surfaceIDs`. The list that follows specifies the historical variables that should be included in this modelpart. (Note the comma) <br> <br> <b>Example:</b> <br> &emsp;"NODESETA_load_points": ["PRESSURE", "TRACTION"],<br>&emsp;"NODESETB_load_points": ["PRESSURE", "TRACTION"]
-<nobr>`interface_output`</nobr>|dict|Similar to interface_input but for Abaqus load points.
+<nobr>`cores`</nobr>|integer|Number of cores to be used by Abaqus.
+<nobr>`delta_t`</nobr>|float|Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher `Component`.
+<nobr>`dimensions`</nobr>|integer|Dimensionality of the problem (2 or 3).
+<nobr>`interface_input`</nobr>|dict|Should contain `surfaces` keys. Keys are names of `ModelParts` for Abaqus load points. Each name (key) must be the contain an entry from `surfaceIDs`. The list that follows specifies the historical variables that should be included in this `ModelPart` (note the comma). <br> <br> <b>Example:</b> <br> &emsp;"NODESETA_load_points": ["PRESSURE", "TRACTION"],<br>&emsp;"NODESETB_load_points": ["PRESSURE", "TRACTION"]
+<nobr>`interface_output`</nobr>|dict|Similar to interface_input but for Abaqus geometrical nodes.
 <nobr>`input_file`</nobr>|string|Name of the input file provided by the user. <br> <b>Example:</b> “Base.inp”
-<nobr>`mp_mode`</nobr>|string|Determines how Abaqus is executed in parallel. Should be “THREADS” as “MPI”  is currently not implemented
-<nobr>`save_iterations`</nobr>|integer|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to the save_iterations are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
-<nobr>`surfaceIDs`</nobr>|list of strings|Comma-separated list with the names of the node sets associated with the geometrical nodes on the interface surfaces. <br><br> <b>Example:</b>  [“NODESETA”, “NODESETB”] <br> <br> <b>Important notes:</b><br> &emsp;•	The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (See the Input file section)<br>&emsp;•	The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.
+<nobr>`mp_mode`</nobr>|string|Determines how Abaqus is executed in parallel. Should be “THREADS” as “MPI”  is currently not implemented.
+<nobr>`save_iterations`</nobr>|integer|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to the `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
+<nobr>`surfaceIDs`</nobr>|list of strings|Comma-separated list with the names of the node sets associated with the geometrical nodes on the interface surfaces. <br><br> <b>Example:</b>  [“NODESETA”, “NODESETB”] <br> <br> <b>Important notes:</b><br> &emsp;•	The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the Input file section).<br>&emsp;•	The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.
 <nobr>`surfaces`</nobr>|integer|Number of surfaces on the FSI interface. Should correspond with the number of elements in `surfaceIDs`.
-<nobr>`timestep_start`</nobr>|integer|Time step to start from [data should be available at this time step. For a new simulation this value will typically be 0] (Should be synchronized with the flow solver). This parameter is usually specified in a higher CoSimulationObject. 
+<nobr>`timestep_start`</nobr>|integer|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component`. 
 <nobr>`working_directory`</nobr>|string|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. <br> Should be created before execution and contain an `AbaqusHosts.txt` file.
 
-`timestep_start` and `delta_t` are necessary parameters, but are usually defined in a higher CoSimulationObject. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.
+`timestep_start` and `delta_t` are necessary parameters, but are usually defined in a higher `Component`. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.
 
 If different parameters are used with different Abaqus versions, this should be specified both in this section and in the version specific documentation section.
 
 ### Optional
 parameter|type|description
 ---:|:---:|---
-<nobr>`initialInc`</nobr>|float|Required when subcycling is enabled. Contains the size of the first substep attempted Abaqus
-<nobr>`maxInc`</nobr>|float|Required when subcycling is enabled. Contains the maximal size allowed for a substep
-<nobr>`maxNumInc`</nobr>|integer|Required when subcycling is enabled. Contains the maximum number of increments that Abaqus is allowed to perform for one time step 
-<nobr>`minInc`</nobr>|float|Required when subcycling is enabled. Contains the minimal size allowed for a substep
+<nobr>`initialInc`</nobr>|float|Required when subcycling is enabled. Contains the size of the first substep attempted Abaqus.
+<nobr>`maxInc`</nobr>|float|Required when subcycling is enabled. Contains the maximal size allowed for a substep.
+<nobr>`maxNumInc`</nobr>|integer|Required when subcycling is enabled. Contains the maximum number of increments that Abaqus is allowed to perform for one time step. 
+<nobr>`minInc`</nobr>|float|Required when subcycling is enabled. Contains the minimal size allowed for a substep.
 <nobr>`ramp`</nobr>|integer| Only important when subcycling is enabled in Abaqus. <br> <b>0</b>: Load is considered to be constant throughout the time step <br><b>1</b>: [Default] Load is applied in a ramped fashion throughout the time step 
 <nobr>`subcycling`</nobr>|integer|<b>0</b>: [Default] Abaqus solves the requested time step using one increment <br> <b>1</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved 
 
@@ -67,6 +67,7 @@ The base-file has to contain all necessary information about the structural mode
  - Material properties
  - Boundary conditions
  - Surfaces where external loads need to be applied
+ - Node sets where displacement data will be extracted
  - Additional loads not dependent on the flow solver
  
 Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.
@@ -94,17 +95,36 @@ my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distr
 my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)
 ```
 
+Note that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the
+Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
+
+```python
+step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
+```
+
+Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t` and `subcycling` settings
+and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_. This does not mean that it is not possible to run a steady simulation,
+but it means that the correct values should be provided in the input-file (so no dummy values).
+
 ### Setup for Abaqus output (displacements)
 After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput 
-has to be generated for each surface involved in the fluid-structure interface. 
-To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this hadn’t been done before) 
-and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
-Furthermore, it is interesting to output maintain the default Abaqus output and therefore also configure a fieldOutput 
-and historyOutput with PRESELECTED variables. 
+has to be generated covering all locations involved in the fluid-structure interface. 
+To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not
+been done before) and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
+
+In the previous section an example was given of how a surface can be created from a node set, but the other way around
+is also possible, creating a node set from a surface (presuming that this surface was already created):
+
+```python
+outputSet = my_assembly.Set(name='NAME_OF_THE_NODESET', nodes=movingSurface0.nodes)
+my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=my_assembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
+```
+
+Furthermore, it is interesting (for post-processing and debugging) to preserve the default Abaqus output and therefore
+also configure a fieldOutput and historyOutput with PRESELECTED variables. 
 This can be done via the GUI or using python lines similar to the following:  
 
 ```python   
-my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=tubeAssembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
 my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='H-Output-1', variables=PRESELECT)
 ```  

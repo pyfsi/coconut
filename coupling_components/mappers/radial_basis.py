@@ -16,7 +16,9 @@ class MapperRadialBasis(MapperInterpolator):
         super().__init__(parameters)
 
         # store settings
-        self.parallel = self.settings['parallel'].GetBool()
+        self.parallel = False
+        if self.settings.Has('parallel'):
+            self.parallel = self.settings['parallel'].GetBool()
 
         # determine number of nearest neighbours
         if len(self.directions) == 3:

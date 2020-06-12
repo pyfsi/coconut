@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
-from coconut.tests.mappers.test_nearest import Case1D, Case2D, Case3DSphere, Case3DSinc
+from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
+from coconut.coupling_components.tools import quicktimer
 
 import os
 
@@ -58,6 +59,27 @@ class TestMapperRadialBasis(KratosUnittest.TestCase):
         self.assertTrue(case.check(tolerance=5e-4))
         if gui:
             case.plot()
+
+        # 3D case: cylinder + sine function
+        """
+        n_x_from, n_theta_from = 50, 15
+        n_x_to, n_theta_to = 45, 13
+        length = 1000.
+            => max error = 0.00047
+        """
+        n_x_from, n_theta_from = 50, 15
+        n_x_to, n_theta_to = 45, 13
+        length = 1000.
+        par_mapper['settings'].SetArray('directions', ['X', 'Y', 'Z'])
+        par_mapper['settings'].AddEmptyValue('scaling')
+        par_mapper['settings'].SetArray('scaling', [.01, 1, 1])  # bad result without scaling
+
+        case = Case3DCylinder(n_x_from, n_theta_from, n_x_to, n_theta_to, length)
+        case.map(par_mapper)
+        self.assertTrue(case.check(tolerance=5e-4))
+        if gui:
+            case.plot()
+        par_mapper['settings'].RemoveValue('scaling')
 
         # 3D case: sinc + linear vector function
         """
