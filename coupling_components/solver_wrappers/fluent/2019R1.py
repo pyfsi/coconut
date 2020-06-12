@@ -96,9 +96,9 @@ class SolverWrapperFluent2019R1(Component):
             for line in file:
                 if check == 2 and 'Time' in line:
                     if 'Steady' in line and self.unsteady:
-                        raise ValueError('steady in JSON does not match unsteady Fluent')
-                    elif 'Unsteady' in line and not self.unsteady:
                         raise ValueError('unsteady in JSON does not match steady Fluent')
+                    elif 'Unsteady' in line and not self.unsteady:
+                        raise ValueError('steady in JSON does not match unsteady Fluent')
                     break
                 if check == 1 and 'Space' in line:
                     if str(self.dimensions) not in line:
