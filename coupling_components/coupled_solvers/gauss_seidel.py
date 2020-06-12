@@ -181,7 +181,7 @@ class CoupledSolverGaussSeidel(Component):
                       "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
                       "time": elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
                       "timestep_start": self.timestep_start}
-            pickle.dump(output, open(self.case_name, 'wb'))
+            pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
 
     def Check(self):
         super().Check()

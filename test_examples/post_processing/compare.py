@@ -10,25 +10,25 @@ import pickle
 
 # different cases to be plotted
 common_path = "../../test_examples/"
-case_names = ["results"]
-case_paths = ["tube_tube_flow_tube_structure/results"]
+case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
+legend_entries = ["results"]
 
 # load cases
 results = {}
-for name, path in zip(case_names, case_paths):
+for name, path in zip(legend_entries, case_paths):
     results.update({name: pickle.load(open(os.path.join(common_path, path), 'rb'))})
 
 # reference case
-case_reference = case_names[0]
+case_reference = legend_entries[0]
 
 # check equal number of time steps
 time_steps = len(results[case_reference]["iterations"])
-for case in case_names:
+for case in legend_entries:
     if not len(results[case]["iterations"]) == time_steps:
         raise Exception(f"Number of time steps for case {case} ({len(results[case]['iterations'])})"
                         f"differs from number of time steps of reference case ({time_steps}).")
 
-for case in case_names:
+for case in legend_entries:
     norm = []
     for i in range(time_steps):
         norm = norm + [np.linalg.norm(results[case_reference]["solution_x"][:, i]

@@ -12,16 +12,16 @@ tolerance = 1e-8  # cut-off tolerance
 
 # different cases to be plotted
 common_path = "../../test_examples/"
-case_names = ["results"]
-case_paths = ["tube_tube_flow_tube_structure/results"]
+case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
+legend_entries = ["results"]
 
 # load cases
 results = {}
-for name, path in zip(case_names, case_paths):
+for name, path in zip(legend_entries, case_paths):
     results.update({name: pickle.load(open(os.path.join(common_path, path), 'rb'))})
 
 # reference case
-case_reference = case_names[0]
+case_reference = legend_entries[0]
 
 
 def zero_to_nan(values):
@@ -47,7 +47,7 @@ def to_tolerance(residuals, tolerance):
 it_max = 0
 residual_list = []  # list containing residual lists corresponding for the different cases
 # each residual list contains a nested list: [ts0[it0, it1, ...], ts1[it0, ...], ...]
-for case in case_names:
+for case in legend_entries:
     residual_list.append(to_tolerance(results[case]["residual"], tolerance))
     for ls in residual_list[-1]:
         if len(ls) > it_max:
@@ -56,7 +56,7 @@ for case in case_names:
 # make figure
 plt.figure()
 residual = None
-for case, residuals in zip(case_names, residual_list):
+for case, residuals in zip(legend_entries, residual_list):
     residual = np.zeros((len(residuals), it_max))
     for i, ls in enumerate(residuals):
         residual[i, :len(ls)] = np.array(ls)
@@ -68,7 +68,7 @@ plt.xlabel("iteration")
 plt.legend()
 
 # average number of iteration per time step
-for case, residuals in zip(case_names, residual_list):
+for case, residuals in zip(legend_entries, residual_list):
     iterations = []
     for ls in residuals:
         iterations.append(len(ls))

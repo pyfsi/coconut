@@ -281,19 +281,19 @@ class AnimationFigure:
 
 # different cases to be plotted
 common_path = "../../test_examples/"
-case_names = ["results"]
-case_paths = ["tube_tube_flow_tube_structure/results"]
+case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
+legend_entries = ["results"]
 
 # load cases
 results = {}
-for name, path in zip(case_names, case_paths):
+for name, path in zip(legend_entries, case_paths):
     results.update({name: pickle.load(open(os.path.join(common_path, path), 'rb'))})
 
 # make figure and create animation for each case
 animation_figure = AnimationFigure()
 colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
 line_styles = ['-', '--', ':', '-.']
-for j, name in enumerate(case_names):
+for j, name in enumerate(legend_entries):
     solution = results[name]["solution_x"]
     interface = results[name]["interface_x"]
     dt = results[name]["delta_t"]
