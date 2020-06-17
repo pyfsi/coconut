@@ -60,6 +60,8 @@ class SolverWrapperAbaqus614(Component):
         self.thread_ids = [i for i in range(0, self.n_surfaces)]  # list(range(self.n_surfaces))?
         self.mp_mode = self.settings["mp_mode"].GetString()
         self.input_file = self.settings["input_file"].GetString()
+        self.timestep = self.timestep_start
+        self.iteration = None
 
         if "subcycling" in self.settings.keys():
             self.subcycling = self.settings["subcycling"].GetInt()
@@ -470,11 +472,10 @@ class SolverWrapperAbaqus614(Component):
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
         # debug
-        self.debug = False
+        self.debug = False  # set on True to save copy of input and output files in every iteration
 
     def Initialize(self):
         super().Initialize()
-        self.timestep = self.timestep_start
 
     def InitializeSolutionStep(self):
         super().InitializeSolutionStep()
@@ -490,6 +491,15 @@ class SolverWrapperAbaqus614(Component):
 
         # write loads (from interface data to a file that will be read by USR.f
         self.write_loads()
+
+        # copy input data for debugging
+        if self.debug:
+            for key in self.settings['interface_input'].keys():
+                mp = self.model[key]
+                tmp = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat"
+                tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input_Iter{self.iteration}.dat"
+                cmd = f"cp {join(self.dir_csm, tmp)} {join(self.dir_csm, tmp2)}"
+                os.system(cmd)
 
         # Run Abaqus and check for (licensing) errors
         bool_completed = 0
@@ -545,6 +555,7 @@ class SolverWrapperAbaqus614(Component):
             disp_file = join(self.dir_csm, tmp)
             disp = np.loadtxt(disp_file, skiprows=1)
 
+            # copy output data for debugging
             if self.debug:
                 tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Output_Iter{self.iteration}.dat"
                 cmd = f"cp {disp_file} {join(self.dir_csm,tmp2)}"
@@ -772,11 +783,6 @@ class SolverWrapperAbaqus614(Component):
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}\n')
                     else:
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
-
-            if self.debug:
-                tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input_Iter{self.iteration}.dat"
-                cmd = f"cp {file_name} {join(self.dir_csm, tmp2)}"
-                os.system(cmd)
 
             # Start of a simulation with ramp, needs an initial load at time 0
             if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:

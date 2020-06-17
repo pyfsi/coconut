@@ -1,5 +1,4 @@
 from coconut.coupling_components.component import Component
-from coconut.coupling_components import tools
 
 
 def Create(parameters):

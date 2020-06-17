@@ -47,16 +47,16 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         # Initial value
         self.x = self.predictor.Predict(self.x)
         # First coupling iteration
-        y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-        xt = self.solver_wrappers[1].SolveSolutionStep(y)
+        self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
         r = xt - self.x
         self.Update(self.x, xt)
         self.FinalizeIteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.IsSatisfied():
             self.x += self.Predict(r)
-            y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            xt = self.solver_wrappers[1].SolveSolutionStep(y)
+            self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
             r = xt - self.x
             self.Update(self.x, xt)
             self.FinalizeIteration(r)

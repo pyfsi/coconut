@@ -79,7 +79,6 @@ class MapperCombined(Component):
         for mapper in self.mappers:
             mapper.OutputSolutionStep()
 
-    def PrintInfo(self, indent):
-        tools.Print('\t' * indent, "The component ", self.__class__.__name__, " combining the following mappers:")
-        for mapper in self.mappers:
-            mapper.PrintInfo(indent + 1)
+    def PrintInfo(self, pre):
+        tools.Print(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
+        tools.PrintStructureInfo(pre, self.mappers)

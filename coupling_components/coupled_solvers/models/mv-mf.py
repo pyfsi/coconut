@@ -128,3 +128,13 @@ class ModelMV(Component):
             self.wprev.pop()
             self.rrprev.pop()
             self.qqprev.pop()
+
+    def FilterQ(self, r_in):
+        r = r_in.GetNumpyArray().reshape(-1, 1)
+        r_out = r_in.deepcopy()
+        qq, _ = np.linalg.qr(self.v, mode='reduced')
+        r = r - qq @ (qq.T @ r)
+        for qq in self.qqprev:
+            r = r - qq @ (qq.T @ r)
+        r_out.SetNumpyArray(r.flatten())
+        return r_out

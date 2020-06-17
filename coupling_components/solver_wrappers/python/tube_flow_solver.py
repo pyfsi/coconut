@@ -69,7 +69,7 @@ class SolverWrapperTubeFlow(Component):
         self.k = 0  # Iteration
         self.n = 0  # Time step (no restart implemented)
         self.dt = self.settings["delta_t"].GetDouble()  # Time step size
-        self.alpha = 0.0  # Numerical damping parameter due to central discretization of pressure in momentum equation
+        self.alpha = np.pi * self.d ** 2 / 4.0 / (self.ureference + self.dz / self.dt)  # Numerical damping parameter due to central discretization of pressure in momentum equation
 
         self.newtonmax = self.settings["newtonmax"].GetInt()  # Maximal number of Newton iterations
         self.newtontol = self.settings["newtontol"].GetDouble()  # Tolerance of Newton iterations
@@ -110,7 +110,7 @@ class SolverWrapperTubeFlow(Component):
         self.interface_output = Interface(self.model, self.settings["interface_output"])
 
         # Debug
-        self.debug = False  # Set on true to save solution of each time step
+        self.debug = False  # Set on True to save input and output of each iteration of every time step
         self.OutputSolutionStep()
 
     def Initialize(self):
@@ -127,9 +127,9 @@ class SolverWrapperTubeFlow(Component):
 
     def SolveSolutionStep(self, interface_input):
         # Input
-        self.disp = interface_input.GetNumpyArray()
-        self.interface_input.SetNumpyArray(self.disp)
-        a = np.pi * (self.d + 2.0 * self.disp[1::3]) ** 2 / 4.0
+        self.disp = interface_input.GetNumpyArray().reshape(-1, 3)
+        self.interface_input.SetNumpyArray(self.disp.flatten())
+        a = np.pi * (self.d + 2.0 * self.disp[:, 1]) ** 2 / 4.0
 
         # Input does not contain boundary conditions
         self.a[1:self.m + 1] = a
@@ -161,19 +161,20 @@ class SolverWrapperTubeFlow(Component):
 
         self.k += 1
         if self.debug:
+            file_name = self.working_directory + f"/Input_Displacement_TS{self.n}_IT{self.k}.txt"
+            with open(file_name, 'w') as file:
+                file.write(f"{'z-coordinate':<22}\t{'x-displacement':<22}\t{'y-displacement':<22}"
+                           f"\t{'z-displacement':<22}\n")
+                for i in range(len(self.z)):
+                    file.write(f'{self.z[i]:<22}\t{self.disp[i, 0]:<22}\t{self.disp[i, 1]:<22}'
+                               f'\t{self.disp[i, 2]:<22}\n')
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = self.working_directory + f"/Pressure_Velocity_TS{self.n}_IT{self.k}"
+            file_name = self.working_directory + f"/Output_Pressure_Velocity_TS{self.n}_IT{self.k}.txt"
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f"{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n")
-            a = self.a[1:self.m + 1]
-            file_name = self.working_directory + f"/Area_TS{self.n}_IT{self.k}"
-            with open(file_name, 'w') as file:
-                file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
-                for i in range(len(self.z)):
-                    file.write(f'{self.z[i]:<22}\t{a[i]:<22}\n')
 
         # Output does not contain boundary conditions
         self.pres = self.p[1:self.m + 1] * self.rhof
@@ -196,7 +197,7 @@ class SolverWrapperTubeFlow(Component):
         if self.debug:
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = self.working_directory + f"/Pressure_Velocity_TS{self.n}"
+            file_name = self.working_directory + f"/Pressure_Velocity_TS{self.n}.txt"
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):

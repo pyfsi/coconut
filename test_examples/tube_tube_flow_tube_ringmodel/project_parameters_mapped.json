@@ -1,7 +1,7 @@
 {
     "settings" :
     {
-        "number_of_timesteps": 20
+        "number_of_timesteps": 100
     },
     "coupled_solver" :
     {
@@ -9,7 +9,7 @@
         "settings" :
         {
             "timestep_start": 0,
-            "delta_t": 0.0001,
+            "delta_t": 0.01,
             "omega" : 0.05,
             "model" :
             {

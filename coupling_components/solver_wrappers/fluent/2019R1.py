@@ -96,9 +96,9 @@ class SolverWrapperFluent2019R1(Component):
             for line in file:
                 if check == 2 and 'Time' in line:
                     if 'Steady' in line and self.unsteady:
-                        raise ValueError('steady in JSON does not match unsteady Fluent')
-                    elif 'Unsteady' in line and not self.unsteady:
                         raise ValueError('unsteady in JSON does not match steady Fluent')
+                    elif 'Unsteady' in line and not self.unsteady:
+                        raise ValueError('steady in JSON does not match unsteady Fluent')
                     break
                 if check == 1 and 'Space' in line:
                     if str(self.dimensions) not in line:
@@ -224,12 +224,11 @@ class SolverWrapperFluent2019R1(Component):
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
         # debug
-        self.debug = False  # set true to save txt file for each time step
+        self.debug = False  # set on True to save copy of input and output files in every iteration
         self.OutputSolutionStep()
 
     def Initialize(self):
         super().Initialize()
-        # self.timestep = self.timestep_start
 
     def InitializeSolutionStep(self):
         super().InitializeSolutionStep()
@@ -257,6 +256,15 @@ class SolverWrapperFluent2019R1(Component):
         # write interface data
         self.write_node_positions()
 
+        # copy input data for debugging
+        if self.debug:
+            for key in self.settings['interface_input'].keys():
+                mp = self.model[key]
+                tmp = f"nodes_update_timestep{self.timestep}_thread{mp.thread_id}.dat"
+                tmp2 = f"nodes_update_timestep{self.timestep}_thread{mp.thread_id}_Iter{self.iteration}.dat"
+                cmd = f"cp {join(self.dir_cfd, tmp)} {join(self.dir_cfd, tmp2)}"
+                os.system(cmd)
+
         # let Fluent run, wait for data
         self.send_message('continue')
         self.wait_message('continue_ready')
@@ -271,6 +279,12 @@ class SolverWrapperFluent2019R1(Component):
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + 1 + self.mnpf:
                 raise ValueError('given dimension does not match coordinates')
+
+            # copy output data for debugging
+            if self.debug:
+                tmp2 = f'pressure_traction_timestep{self.timestep}_thread{mp.thread_id}_Iter{self.iteration}.dat'
+                cmd = f"cp {file_name} {join(self.dir_cfd, tmp2)}"
+                os.system(cmd)
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
@@ -310,19 +324,6 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
-
-    def OutputSolutionStep(self):
-        if self.debug:
-            for key in self.settings['interface_input'].keys():
-                mp = self.model[key]
-                file_name = join(self.dir_cfd, f"/Coordinates_thread{mp.thread_id}_TS{self.n}")
-                with open(file_name, 'w') as file:
-                    file.write(f"{'x-coordinate':<22}\t{'y-coordinate':<22}\t{'z-coordinate':<22}\n")
-                    for node in mp.Nodes:
-                        if self.dimensions == 2:
-                            file.write(f'{node.X:<22}\t{node.Y:<22}\n')
-                        else:
-                            file.write(f'{node.X:<22}\t{node.Y:<22}\t{node.Z:<22}\n')
 
     def GetInterfaceInput(self):
         return self.interface_input.deepcopy()
