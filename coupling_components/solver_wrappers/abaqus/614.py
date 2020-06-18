@@ -11,13 +11,9 @@ import numpy as np
 import re
 
 
-#TODO: Add readme file to the abaqus solver wrapper directory to describe how the Base.inp should be created (e.g.
-# create surfaces for the loading and their naming convention SURFACE%i and the seaquence
-
-#TODO: Add a check which compares the output surfaces to the input surfaces based on e.g. mean, min and max in the 3 directions
-
 def Create(parameters):
     return SolverWrapperAbaqus614(parameters)
+
 
 class SolverWrapperAbaqus614(Component):
     def __init__(self, parameters):
@@ -45,16 +41,12 @@ class SolverWrapperAbaqus614(Component):
                     interface_output        Interface for the output nodes and their corresponding variable(s)
                                             displacements)
                     mp_mode                 Mode of the parallel computing (currently only THREADS is accepted)
-                    input_file              Name of the file in which the Abaqus case is defined
-                    save_iterations         number of timesteps between consecutive saves of Abaqus-files
-
+                    save_iterations         number of time steps between consecutive saves of Abaqus-files
         """
 
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'].GetString())  # *** alternative for getcwd?
         path_src = os.path.realpath(os.path.dirname(__file__))
-
-        self.remove_all_messages()
 
         self.cores = self.settings['cores'].GetInt()  # number of cpus Abaqus has to use
         self.dimensions = self.settings['dimensions'].GetInt()
@@ -63,12 +55,13 @@ class SolverWrapperAbaqus614(Component):
         self.array_size = self.settings["arraysize"].GetInt()
         self.delta_t = self.settings["delta_t"].GetDouble()
         self.timestep_start = self.settings["timestep_start"].GetDouble()
-        # self.surfaceIDs = self.settings["surfaceIDs"].GetString()
         self.surfaceIDs = [_.GetString() for _ in self.settings['surfaceIDs'].list()]
         self.n_surfaces = len(self.surfaceIDs)
-        self.thread_ids = [i for i in range(0, self.n_surfaces)]
+        self.thread_ids = [i for i in range(0, self.n_surfaces)]  # list(range(self.n_surfaces))?
         self.mp_mode = self.settings["mp_mode"].GetString()
         self.input_file = self.settings["input_file"].GetString()
+        self.timestep = self.timestep_start
+        self.iteration = None
 
         if "subcycling" in self.settings.keys():
             self.subcycling = self.settings["subcycling"].GetInt()
@@ -86,7 +79,6 @@ class SolverWrapperAbaqus614(Component):
             self.subcycling = 0
             self.maxNumInc = 1
             self.ramp = 0
-
 
         # Upon (re)starting Abaqus needs to run USRInit.f
         # A restart requires Abaqus to be booted with a restart file
@@ -116,9 +108,9 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # Create start and restart file
-        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm+"/CSM_Time0.inp", self.dir_csm+"/CSM_Restart.inp")
+        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + "/CSM_Time0.inp", self.dir_csm + "/CSM_Restart.inp")
 
-        # prepare Abaqus USRInit.f
+        # Prepare Abaqus USRInit.f
         usr = "USRInit.f"
         with open(join(path_src, usr), "r") as infile:
             with open(join(self.dir_csm, "usrInit.f"), "w") as outfile:
@@ -128,13 +120,13 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|cpus|", str(self.cores))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.FORT_replace(line,"|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.FORT_replace(line,"|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
+                    line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
                         raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
                     outfile.write(line)
 
-        # compile Abaqus USRInit.f
+        # Compile Abaqus USRInit.f
         path_libusr = join(self.dir_csm, "libusr/")
         os.system("rm -rf " + path_libusr)
         os.system("mkdir " + path_libusr)
@@ -146,6 +138,7 @@ class SolverWrapperAbaqus614(Component):
         if self.timestep_start == 0:
             cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
             cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat CSM_Time{self.timestep_start}Surface*FacesBis.dat"
+            # The output files will have a name with a higher time step  ("job=") than the input file ("input=")
             cmd3 = f"abaqus job=CSM_Time{self.timestep_start+1} input=CSM_Time{self.timestep_start} cpus=1 user=usrInit.f" \
                 f" output_precision=full interactive >> AbaqusSolver.log 2>&1"
             commands = [cmd1, cmd2, cmd3]
@@ -181,7 +174,7 @@ class SolverWrapperAbaqus614(Component):
         self.run_shell(self.dir_csm, commands, name='Compile_GetOutput')
 
         # Get node positions (not load points) at startTimeStep
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"
+        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"  # 0 is an argument to GetOutput.exe
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='GetOutput_Start')
 
@@ -209,7 +202,7 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|ramp|", str(self.ramp))
                     line = line.replace("|deltaT|", str(self.delta_t))
 
-                    # if PWD is too ling then FORTRAN code can not compile so this needs special treatment
+                    # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                     line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
                     line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
@@ -230,7 +223,7 @@ class SolverWrapperAbaqus614(Component):
         for key, value in (self.settings['interface_input'].items() +
                            self.settings['interface_output'].items()):
             # add ModelPart to Model
-            self.model.CreateModelPart(key)
+            self.model.CreateModelPart(key)  # Can those two lines be combined in mp = self.model.CreateModelPart(key)?
             mp = self.model[key]
 
             # add historical variables to ModelPart
@@ -246,9 +239,9 @@ class SolverWrapperAbaqus614(Component):
                     mp.thread_id = self.thread_ids[i]  # This is just a number from 0 to n_surfaces
                     if 'thread_id' not in dir(mp):
                         raise AttributeError(f'Could not find thread id corresponding to {key}')
-                    bool_found=1
-            if bool_found==0:
-                    raise AttributeError(f'Could not identify surfaceID corresponding to key {key}. Check parameter file.')
+                    bool_found = 1
+            if bool_found == 0:
+                raise AttributeError(f'Could not identify surfaceID corresponding to key {key}. Check parameter file.')
 
         # add Nodes to input ModelParts (load_points)
         # elements line 1 contains number of elements
@@ -278,7 +271,7 @@ class SolverWrapperAbaqus614(Component):
             if elements.shape[0]-2 != int(n_elem):
                 raise ValueError(f"Number of lines ({elements.shape[0]}) in {elem_file} does not correspond with the number of elements ({n_elem})")
 
-            if int(elements0[0]) != n_elem or int(elements0[1]) !=n_lp:
+            if int(elements0[0]) != n_elem or int(elements0[1]) != n_lp:
                 raise ValueError(f"Number of load points has changed for {key}")
 
             # read in Faces file for load points and also file at time 0 for original positions for the mappers
@@ -295,7 +288,6 @@ class SolverWrapperAbaqus614(Component):
 
             if faces.shape[1] != self.dimensions + 2:
                 raise ValueError(f'given dimension does not match coordinates')
-
 
             # get load point coordinates and ids of load points
             prev_elem = 0
@@ -325,23 +317,23 @@ class SolverWrapperAbaqus614(Component):
             # create Nodes for load points
             # Also keep track of min and max of the nodes to verify that surfaces are consistent
             mp.min = np.array([np.Inf, np.Inf, np.Inf])
-            mp.max = np.array([np.NINF, np.NINF, np.NINF])
+            mp.max = np.array([np.NINF, np.NINF, np.NINF])  # -np.inf == np.NINF
             for i in range(ids_tmp.size):
                 node = mp.CreateNewNode(ids_tmp[i],
-                                 coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2]) #Stores node.X0, node.Y0 and node.Z0 for mappers
-                #Set the node coordinates to the correct values at the current timestep_start
+                                 coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2])  # Stores node.X0, node.Y0 and node.Z0 for mappers
+                # Set the node coordinates to the correct values at the current timestep_start
                 node.X = coords_tmp[i, 0]
                 node.Y = coords_tmp[i, 1]
                 node.Z = coords_tmp[i, 2]
 
-                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] < mp.min[2]: mp.min[2] = coords0_tmp[i, 2]
-                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] > mp.max[1]: mp.max[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] > mp.max[2]: mp.max[2] = coords0_tmp[i, 2]
 
-            #Find the bounding box of the complete structure based on the interface_input
+            # Find the bounding box of the complete structure based on the interface_input
             if mp.min[0] < geom_min[0]: geom_min[0] = mp.min[0]
             if mp.min[1] < geom_min[1]: geom_min[1] = mp.min[1]
             if mp.min[2] < geom_min[2]: geom_min[2] = mp.min[2]
@@ -394,24 +386,23 @@ class SolverWrapperAbaqus614(Component):
                 node.Y = coords_tmp[i, 1]
                 node.Z = coords_tmp[i, 2]
 
-                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] < mp.min[2]: mp.min[2] = coords0_tmp[i, 2]
-                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i,0]
+                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] > mp.max[1]: mp.max[1] = coords0_tmp[i, 1]
                 if coords0_tmp[i, 2] > mp.max[2]: mp.max[2] = coords0_tmp[i, 2]
 
-
-            ##Check the bounding boxes for input interface versus output interface
-            #This will be based on the original coordinates at time 0
+            # Check the bounding boxes for input interface versus output interface
+            # This will be based on the original coordinates at time 0
             tol_center = 0.02
             tol_BB = 0.1
             tol_geom = 0.01
             AR_plane = 1e-08
             abs_tol_plane = 1e-06
 
-            #Find corresponding Input modelpart based on thread_id
-            bool_corresponds=0
+            # Find corresponding Input modelpart based on thread_id
+            bool_corresponds = 0
             for key_temp in self.settings['interface_input'].keys():
                 mp_temp = self.model[key_temp]
                 if mp_temp.thread_id == mp.thread_id:
@@ -423,31 +414,32 @@ class SolverWrapperAbaqus614(Component):
             else:
                 diff_Out = mp.max - mp.min
                 diff_In = mp_input.max - mp_input.min
-                ref = np.array([max(diff_Out[0],diff_In[0]),max(diff_Out[1],diff_In[1]),max(diff_Out[2],diff_In[2])])
-                geom_diff=geom_max-geom_min
-                for i in range(0,self.dimensions):
-                    if self.dimensions==3:
-                        bool_A = ref[i] < AR_plane*ref[i-1] and ref[i] < AR_plane*ref[i-2] #Identifies as plane perpendicular to coordinate direction
+                ref = np.array([max(diff_Out[0], diff_In[0]), max(diff_Out[1], diff_In[1]),
+                                max(diff_Out[2], diff_In[2])])
+                geom_diff = geom_max-geom_min
+                for i in range(0, self.dimensions):
+                    if self.dimensions == 3:
+                        bool_A = ref[i] < AR_plane*ref[i-1] and ref[i] < AR_plane*ref[i-2]  # Identifies as plane perpendicular to coordinate direction
                         bool_B = (geom_diff[i] < AR_plane*geom_diff[i-1] and geom_diff[i] < AR_plane*geom_diff[i-2])
-                    elif self.dimensions==2:
-                        bool_A = ref[i] < AR_plane*ref[(i+1)%2] #Identifies as plane perpendicular to coordinate direction
-                        bool_B = geom_diff[i] < AR_plane*geom_diff[(i+1)%2]
+                    elif self.dimensions == 2:
+                        bool_A = ref[i] < AR_plane*ref[(i+1) % 2]  # Identifies as plane perpendicular to coordinate direction
+                        bool_B = geom_diff[i] < AR_plane*geom_diff[(i+1) % 2]
 
                     if bool_A:
                         if not bool_B:
-                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0)>tol_geom*geom_diff[i]:
+                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > tol_geom*geom_diff[i]:
                                 tools.Print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
-                                              f"differ by more than {tol_geom*100}% of the bounding box for the complete interface geometry in the {i}-direction", layout='red')
+                                            f"differ by more than {tol_geom*100}% of the bounding box for the complete interface geometry in the {i}-direction", layout='red')
                                 tools.Print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
                                 tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                         else:
-                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0)>abs_tol_plane:
+                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > abs_tol_plane:
                                 tools.Print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
-                                              f"differ by more than {abs_tol_plane}m in the {i}-direction", layout='red')
+                                            f"differ by more than {abs_tol_plane}m in the {i}-direction", layout='red')
                                 tools.Print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
                                 tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                     else:
-                        if np.abs(mp.min[i]-mp_input.min[i])>tol_BB*ref[i]:
+                        if np.abs(mp.min[i]-mp_input.min[i]) > tol_BB*ref[i]:
                             tools.Print(
                                 f"Warning: The minima of the bounding boxes of the input and output for {mp.thread_name} "
                                 f"differ by more than {tol_BB*100}% of the corresponding bounding box in the {i}-direction", layout='red')
@@ -480,11 +472,10 @@ class SolverWrapperAbaqus614(Component):
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
         # debug
-        self.debug = False
+        self.debug = False  # set on True to save copy of input and output files in every iteration
 
     def Initialize(self):
         super().Initialize()
-        self.timestep = self.timestep_start
 
     def InitializeSolutionStep(self):
         super().InitializeSolutionStep()
@@ -500,6 +491,15 @@ class SolverWrapperAbaqus614(Component):
 
         # write loads (from interface data to a file that will be read by USR.f
         self.write_loads()
+
+        # copy input data for debugging
+        if self.debug:
+            for key in self.settings['interface_input'].keys():
+                mp = self.model[key]
+                tmp = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat"
+                tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input_Iter{self.iteration}.dat"
+                cmd = f"cp {join(self.dir_csm, tmp)} {join(self.dir_csm, tmp2)}"
+                os.system(cmd)
 
         # Run Abaqus and check for (licensing) errors
         bool_completed = 0
@@ -555,6 +555,7 @@ class SolverWrapperAbaqus614(Component):
             disp_file = join(self.dir_csm, tmp)
             disp = np.loadtxt(disp_file, skiprows=1)
 
+            # copy output data for debugging
             if self.debug:
                 tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Output_Iter{self.iteration}.dat"
                 cmd = f"cp {disp_file} {join(self.dir_csm,tmp2)}"
@@ -594,7 +595,6 @@ class SolverWrapperAbaqus614(Component):
 
     def Finalize(self):
         super().Finalize()
-        self.remove_all_messages()
 
     def GetInterfaceInput(self):
         return self.interface_input.deepcopy()
@@ -607,31 +607,6 @@ class SolverWrapperAbaqus614(Component):
 
     def SetInterfaceOutput(self):
         Exception("This solver interface provides no mapping.")
-
-    def send_message(self, message):
-        file = join(self.dir_csm, message + ".coco")
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        file = join(self.dir_csm, message + ".coco")
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = join(self.dir_csm, message + ".coco")
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.dir_csm):
-            if file_name.endswith('.coco'):
-                file = join(self.dir_csm, file_name)
-                os.remove(file)
 
     def makeElements(self, face_file, output_file):
         firstLoop = 1
@@ -690,8 +665,8 @@ class SolverWrapperAbaqus614(Component):
         return p
 
     def FORT_replace(self, line, orig, new):
-        """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limiet
-        This functions splits these strings over multiple lines"""
+        """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
+        This functions splits these strings over multiple lines."""
 
         ampersand_location = 6
         char_limit = 72
@@ -706,7 +681,7 @@ class SolverWrapperAbaqus614(Component):
                 line += temp[0:char_limit] + "\n"
                 count += char_limit
                 while count < N:
-                    temp_string = temp[count:count + char_limit - 6]
+                    temp_string = temp[count:count + char_limit - ampersand_location]
                     n = len(temp_string)
                     count += n
                     if count < N:  # need to append an additional new line
@@ -732,17 +707,17 @@ class SolverWrapperAbaqus614(Component):
             while line:
                 if "*step" in line.lower():
                     contents = line.split(",")  # Split string on commas
-                    line_new=''
+                    line_new = ''
                     for s in contents:
                         if s.strip().startswith("inc="):
                             numbers = re.findall("\d+", s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
                                 raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested but maxNumInc > 1.")
                             else:
-                                line_new+=f" inc={self.maxNumInc},"
+                                line_new += f" inc={self.maxNumInc},"
                         else:
-                            line_new+=s+","
-                    line_new = line_new[:-1]+"\n" #Remove the last added comma and add a newline
+                            line_new += s+","
+                    line_new = line_new[:-1]+"\n"  # Remove the last added comma and add a newline
 
                     of.write(line_new)
                     if bool_restart:
@@ -754,7 +729,7 @@ class SolverWrapperAbaqus614(Component):
                         if "application" in s.lower():
                             contents_B = s.split("=")
                             app = contents_B[1].lower().strip()
-                            if app == "quasi-static" or app == "moderate dissipation" :
+                            if app == "quasi-static" or app == "moderate dissipation":
                                 if not self.subcycling:
                                     line_2 = f"{self.delta_t}, {self.delta_t},\n"
                                 else:
@@ -809,12 +784,7 @@ class SolverWrapperAbaqus614(Component):
                     else:
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
 
-            if self.debug:
-                tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input_Iter{self.iteration}.dat"
-                cmd = f"cp {file_name} {join(self.dir_csm, tmp2)}"
-                os.system(cmd)
-
-            if self.iteration == 1 and self.timestep == 1 and self.settings[
-                'ramp'].GetInt() == 1:  # Start of a simulation with ramp, needs an initial load at time 0
+            # Start of a simulation with ramp, needs an initial load at time 0
+            if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
                 cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
                 self.run_shell(self.dir_csm, [cmd], name='GetOutput')

@@ -7,7 +7,7 @@ import copy
 # Class Interface: Holds the different ModelParts of the interface.
 class Interface(object):
     """
-    When copying a CosimulationInterface object, its proper
+    When copying an Interface object, its proper
     deepcopy method must be used (self.deepcopy()). If they are
     copied using copy.deepcopy(), the global Variables will be
     referenced wrong.
@@ -59,6 +59,16 @@ class Interface(object):
 
     def GetNumpyArray(self):
         return np.array(self.GetPythonList())
+
+    def GetInitialCoordinates(self):
+        coordinate = []
+        for model_part_name, _ in self.model_parts_variables:
+            model_part = self.model.GetModelPart(model_part_name)
+            for node in model_part.Nodes:
+                coordinate.append(node.X0)
+                coordinate.append(node.Y0)
+                coordinate.append(node.Z0)
+        return np.array(coordinate)
 
     def SetPythonList(self, data):
         index = 0

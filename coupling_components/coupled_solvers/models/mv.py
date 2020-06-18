@@ -97,3 +97,12 @@ class ModelMV(Component):
         super().FinalizeSolutionStep()
 
         self.nprev = self.ncurr
+
+    def FilterQ(self, r_in):
+        r = r_in.GetNumpyArray().reshape(-1, 1)
+        r_out = r_in.deepcopy()
+        qt, *_ = np.linalg.qr(self.ncurr.T)
+        q = qt[:, :np.linalg.matrix_rank(self.ncurr)]
+        r = r - q @ (q.T @ r)
+        r_out.SetNumpyArray(r.flatten())
+        return r_out

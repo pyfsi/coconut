@@ -54,11 +54,11 @@ class MapperInterface(Component):
         for mapper in self.mappers:
             mapper.OutputSolutionStep()
 
-    def PrintInfo(self, indent):
-        tools.Print('\t' * indent, "The component ", self.__class__.__name__, " has the following mapper(s):")
-        for i, mapper in enumerate(self.mappers):
-            mapper.PrintInfo(indent + 1)
-
-            tools.Print('\t' * (indent + 2),
-                           f"which maps ModelPart '{self.keys[i][0]}' to ModelPart '{self.keys[i][1]}'")
-
+    def PrintInfo(self, pre):
+        tools.Print(pre, "The component ", self.__class__.__name__, " maps the following model parts:")
+        pre = tools.UpdatePre(pre)
+        for i, mapper in enumerate(self.mappers[:-1]):
+            tools.Print(pre, f"├─ModelPart '{self.keys[i][0]}' to ModelPart '{self.keys[i][1]}' with the mapper:")
+            mapper.PrintInfo(pre + '│ └─')
+        tools.Print(pre, f"└─ModelPart '{self.keys[-1][0]}' to ModelPart '{self.keys[-1][1]}' with the mapper:")
+        self.mappers[-1].PrintInfo(pre + '  └─')

@@ -19,7 +19,7 @@ class Analysis:
     def Initialize(self):
         self.coupled_solver.Initialize()
         self.coupled_solver.Check()
-        self.coupled_solver.PrintInfo(0)
+        self.coupled_solver.PrintInfo(' ')
 
     def RunSolutionLoop(self):
         for _ in range(self.number_of_timesteps):
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     if len(argv) != 2:
         err_msg = 'Wrong number of input arguments!\n'
         err_msg += 'Use this script in the following way:\n'
-        err_msg += '    "python co_simulation_analysis.py <cosim-parameter-file>.json"\n'
+        err_msg += '    "python analysis.py <parameter>.json"\n'
         raise Exception(err_msg)
 
     # Import data structure

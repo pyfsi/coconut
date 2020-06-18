@@ -1,6 +1,6 @@
 # Guide to the documentation
 
-This website is a collection of all MarkDown (MD) files found in the CoSimulationApplication folder and its subfolders.
+This website is a collection of all MarkDown (MD) files found in the `coconut` package.
 These files are converted to a static website using [MkDocs][1], based on the outline defined in the `mkdocs.yml` file.
 
 
@@ -67,7 +67,7 @@ The structure/outline of the website is dictated by the `nav` variable in `mkdoc
 
 The complete process to create the documentation website is automated by `run_mkdocs.py`. This does the following things:
 
-*   Copy all MD files in the CoSimulationApplication folder and its subfolders to folder `docs`. 
+*   Copy all MD files in `coconut` and its subfolders to folder `docs`. 
 *   Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.
 *   Check if each MD file is mentioned in `mkdocs.yml`. If a file is not mentioned, a warning is given.
 *   Build static HTML website using `mkdocs build`. 
@@ -77,7 +77,7 @@ The behavior of `run_mkdocs.py` can be altered by adding an extra command line a
 ```bash
 python run_mkdocs.py --deploy
 ```
-deploys the website on GitHub Pages using `mkdocs gh-deploy`. 
+deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  
 
 ```bash
 python run_mkdocs.py --preview example

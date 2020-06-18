@@ -1,4 +1,3 @@
-from coconut.coupling_components.component import Component
 from coconut.coupling_components.convergence_criteria.combined import ConvergenceCriterionCombined
 
 
