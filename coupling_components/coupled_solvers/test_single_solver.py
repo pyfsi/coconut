@@ -1,3 +1,4 @@
+from coconut import data_structure
 from coconut.coupling_components import tools
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.component import Component
@@ -5,7 +6,14 @@ from coconut.coupling_components.component import Component
 import numpy as np
 import time
 import os
+import sys
 
+try:
+    from test_function import *
+    bool_test = True
+except ImportError:
+    bool_test = False
+    print(f"No file named test_function.py found, zero input will be used")
 
 def Create(parameters):
     return CoupledSolverTestSingleSolver(parameters)
@@ -41,6 +49,10 @@ class CoupledSolverTestSingleSolver(Component):
         self.test_settings = parameters["test_settings"] #Requires a new parameter input "test_settings"
         self.solver_index = self.test_settings["solver_index"].GetInt() #Starts at 0
 
+        self.test_class = self.test_settings["test_class"].GetString()
+
+
+
         ##delta_t
         self.delta_t = Param_Priority("delta_t",self.test_settings, self.settings)["delta_t"].GetDouble()
         print(f"Using delta_t = {self.delta_t}")
@@ -61,7 +73,7 @@ class CoupledSolverTestSingleSolver(Component):
         # self.predictor = CreateInstance(self.parameters["predictor"])
         # self.convergence_criterion = CreateInstance(self.parameters["convergence_criterion"])
         self.solver_wrappers = []
-        tools.Print("timestep_start set 0 (Default for test_single_solver)",layout="plain")
+        tools.Print("timestep_start set to 0 (Default for test_single_solver)",layout="plain")
         self.n = 0
 
 
@@ -72,7 +84,6 @@ class CoupledSolverTestSingleSolver(Component):
             settings = parameters["settings"]
         else:
             settings = parameters["settings"]
-
 
         for key in ["delta_t"]:
             if settings.Has(key):
@@ -92,7 +103,7 @@ class CoupledSolverTestSingleSolver(Component):
         cur_wd = f"{orig_wd}_test{i}"
         settings.SetString("working_directory", cur_wd)
         os.system(f"cp -r {orig_wd} {cur_wd}")
-        print(f"Copying {orig_wd} to {cur_wd} \n{cur_wd} is the working_directory for the test")
+        print(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
 
 
 
@@ -101,6 +112,43 @@ class CoupledSolverTestSingleSolver(Component):
         # self.components = [self.predictor, self.convergence_criterion, self.solver_wrappers[0], self.solver_wrappers[1]]
         self.components = [self.solver_wrappers[0]] #Will only contain 1 solver wrapper
 
+        input = self.solver_wrappers[0].interface_input
+        if not bool_test:
+            print("No test_function.py was found:")
+            for model_part_name, variable_names in input.model_parts_variables:
+                # model_part = input.model.GetModelPart(model_part_name)
+                for variable_name in variable_names.list():
+                    variable = vars(data_structure)[variable_name.GetString()]
+                    if variable.Type() is "Double":
+                        print(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
+                    elif variable.Type() is "Array":
+                        print(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
+
+        elif self.test_class == "None":
+            print("No test class specified")
+            for model_part_name, variable_names in input.model_parts_variables:
+                # model_part = input.model.GetModelPart(model_part_name)
+                for variable_name in variable_names.list():
+                    variable = vars(data_structure)[variable_name.GetString()]
+                    if variable.Type() is "Double":
+                        print(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
+                    elif variable.Type() is "Array":
+                        print(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
+        else:
+            print(f"The functions from the class {self.test_class} will be used to calculate the following inputs:")
+            self.Test_object = getattr(sys.modules[__name__], self.test_class)
+            for model_part_name, variable_names in input.model_parts_variables:
+                # model_part = input.model.GetModelPart(model_part_name)
+                for variable_name in variable_names.list():
+                    variable = vars(data_structure)[variable_name.GetString()]
+                    if variable.Type() is "Double":
+                        print(f"\t{variable_name.GetString()} [Scalar] on {model_part_name}")
+                    elif variable.Type() is "Array":
+                        print(f"\t{variable_name.GetString()} [3D array] on {model_part_name}")
+            # print(input.model_parts_variables)
+            # node_coords = input.GetInitialCoordinates()
+            # print(node_coords.shape)
+        print("")
 
         self.x = []
         self.iteration = None  # Iteration
@@ -121,7 +169,6 @@ class CoupledSolverTestSingleSolver(Component):
         # for component in self.components[1:]:
         #     component.Initialize()
 
-        print("solverwrapper initialized")
         #
         # # Construct mappers if required
         # index_mapped = None
@@ -147,6 +194,10 @@ class CoupledSolverTestSingleSolver(Component):
         # self.x = self.solver_wrappers[1].GetInterfaceOutput()
         # self.predictor.Initialize(self.x)
         #
+
+        self.solver_level = 0  # 0 is main solver (time step is printed)
+
+
         if self.save_iterations:
             self.start_time = time.time()
 
@@ -156,22 +207,18 @@ class CoupledSolverTestSingleSolver(Component):
         for component in self.components:
             component.InitializeSolutionStep()
 
-        print("solutionstep initialized")
+        # print("solutionstep initialized")
 
         self.n += 1  # Increment time step
         self.iteration = 0
 
-        # Print timestep
-        out = f"=======================================" \
-              f"====================\n" \
-              f"\tTime step {self.n}\n" \
-              f"=======================================" \
-              f"====================\n" \
-              f"Iteration\tNorm residual"
-        tools.PrintInfo(out)
-
-        if self.save_iterations:
-            self.residual.append([])
+        # Print time step
+        if not self.solver_level:
+            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
+                  f"\tTime step {self.n}\n" \
+                  f"════════════════════════════════════════════════════════════════════════════════\n" \
+                  # f"Iteration\tNorm residual"
+            tools.Print(out)
 
     def SolveSolutionStep(self):
         # # Initial value
@@ -180,6 +227,49 @@ class CoupledSolverTestSingleSolver(Component):
         # y = self.solver_wrappers[0].SolveSolutionStep(self.x)
         # P = self.solver_wrappers[0].interface_input.GetPythonList()
         input = self.solver_wrappers[0].interface_input
+
+
+        #### Put manipulation of the input here by creating a data list ####
+        if (not self.test_class == "None") and bool_test:
+            for model_part_name, variable_names in input.model_parts_variables:
+                model_part = input.model.GetModelPart(model_part_name)
+                for variable_name in variable_names.list():
+                    variable = vars(data_structure)[variable_name.GetString()]
+                    data = []
+                    for node in model_part.Nodes:
+                        if variable.Type() is "Double":
+                            value = getattr(self.Test_object,f"calculate_{variable_name.GetString()}")(node.X0,node.Y0,node.Z0,0)
+                            node.SetSolutionStepValue(variable, 0, value)
+                        elif variable.Type() is "Array":
+                            value = getattr(self.Test_object,f"calculate_{variable_name.GetString()}")(node.X0,node.Y0,node.Z0,0)
+                            node.SetSolutionStepValue(variable, 0, value)
+
+        elif self.test_class == "None":
+            print("No test class specified")
+            for model_part_name, variable_names in input.model_parts_variables:
+                # model_part = input.model.GetModelPart(model_part_name)
+                for variable_name in variable_names.list():
+                    variable = vars(data_structure)[variable_name.GetString()]
+                    if variable.Type() is "Double":
+                        print(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
+                    elif variable.Type() is "Array":
+                        print(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
+        else:
+            print(f"The functions from the class {self.test_class} will be used to calculate the following inputs:")
+            for model_part_name, variable_names in input.model_parts_variables:
+                # model_part = input.model.GetModelPart(model_part_name)
+                for variable_name in variable_names.list():
+                    variable = vars(data_structure)[variable_name.GetString()]
+                    if variable.Type() is "Double":
+                        print(f"\t{variable_name.GetString()} [Scalar] on {model_part_name}")
+                    elif variable.Type() is "Array":
+                        print(f"\t{variable_name.GetString()} [3D array] on {model_part_name}")
+            # print(input.model_parts_variables)
+            # node_coords = input.GetInitialCoordinates()
+            # print(node_coords.shape)
+        ####################################################################
+
+
         output = self.solver_wrappers[0].SolveSolutionStep(input)
         r = 0
         self.FinalizeIteration(r)
@@ -262,7 +352,7 @@ class CoupledSolverTestSingleSolver(Component):
         for component in self.components:
             component.Check()
 
-    def PrintInfo(self, indent):
-        tools.Print('\n', '\t' * indent, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        for component in self.components:
-            component.PrintInfo(indent + 1)
+    def PrintInfo(self, pre):
+        tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
+        tools.PrintStructureInfo(pre, self.components)
+
