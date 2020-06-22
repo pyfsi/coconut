@@ -1,9 +1,8 @@
 from coconut import data_structure
 from coconut.coupling_components import tools
-from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.component import Component
+from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
-import numpy as np
 import time
 import os
 import sys
@@ -15,96 +14,71 @@ except ImportError:
     bool_test = False
     print(f"No file named test_function.py found, zero input will be used")
 
+
 def Create(parameters):
     return CoupledSolverTestSingleSolver(parameters)
 
-def Param_Priority(key, set1, set2): # Code will give priority to set1 but can also look in set2
-    if set2:
-        if key in set1.keys():
-            return set1
-        elif key in set2.keys():
-            return set2
-        else:
-            raise KeyError(f"{key} is required but could not be found in set1 nor set2")
-    else:
-        if key in set1.keys():
-            return set1
-        else:
-            raise KeyError(f"{key} is required but could not be found in set1 and there is no set2")
 
-class CoupledSolverTestSingleSolver(Component):
+class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
+
     def __init__(self, parameters):
-        '''Should only initialize the solver that is to be tested'''
-        super().__init__()
+        """"Should only initialize the solver that is to be tested"""
+        Component.__init__(self)
 
         self.parameters = parameters
-        if not ("test_settings" in self.parameters.keys()):
-             raise KeyError("The coupled_solver \"test_single_solver\" requires \"test_settings\" which was not detected.")
+        if "test_settings" not in self.parameters.keys():
+            raise KeyError("The coupled_solver \"test_single_solver\" requires "
+                           "\"test_settings\" which was not detected.")
 
-        if ("settings" in self.parameters.keys()): #settings is optional as long as the necessary parameters are in test_settings
-            self.settings = parameters["settings"]
-        else:
-            self.settings=None
+        # settings is optional as long as the necessary parameters are in test_settings
+        self.settings = parameters["settings"] if self.parameters.Has("settings") else None
 
-        self.test_settings = parameters["test_settings"] #Requires a new parameter input "test_settings"
-        self.solver_index = self.test_settings["solver_index"].GetInt() #Starts at 0
+        self.test_settings = parameters["test_settings"]  # requires a new parameter input "test_settings"
+        self.solver_index = self.test_settings["solver_index"].GetInt()  # starts at 0
+        self.test_class = self.test_settings["test_class"].GetString() if self.test_settings.Has("test_class") else None
+        self.test_class = self.test_class if not self.test_class == "None" else None
 
-        self.test_class = self.test_settings["test_class"].GetString()
+        # copy value of settings to test_settings (test_settings are prioritized)
+        if self.settings is not None:
+            self.test_settings.AddMissingParameters(self.settings)
 
-        ##delta_t
-        self.delta_t = Param_Priority("delta_t",self.test_settings, self.settings)["delta_t"].GetDouble()
+        # delta_t and timestep_start
+        self.delta_t = self.test_settings["delta_t"].GetDouble()
         print(f"Using delta_t = {self.delta_t}")
 
-        self.solver_wrappers = []
-        tools.Print("timestep_start set to 0 (Default for test_single_solver)",layout="plain")
+        tools.Print("timestep_start set to 0 (Default for test_single_solver)")
         self.n = 0
 
-
-        # Add timestep_start and delta_t to solver_wrapper settings
+        # add delta_t and timestep_start to solver_wrapper settings
         parameters = self.parameters["solver_wrappers"][self.solver_index]
         if parameters["type"].GetString() == "solver_wrappers.mapped":
-            parameters = parameters["settings"]["solver_wrapper"] # for a mapped solver want to test the solver_wrapper itself
-            settings = parameters["settings"]
-        else:
-            settings = parameters["settings"]
+            parameters = parameters["settings"]["solver_wrapper"]  # for mapped solver: the solver_wrapper itself tested
+        settings = parameters["settings"]
 
-        for key in ["delta_t"]:
-            if settings.Has(key):
-                tools.Print(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-                settings.RemoveValue(key)
-            settings.AddEmptyValue(key)
-            settings.SetDouble(key,self.delta_t)
+        if settings.Has("delta_t"):
+            tools.Print(f'WARNING: parameter "{"delta_t"}" is defined multiple times in JSON file', layout='warning')
+            settings.RemoveValue("delta_t")
+        settings.AddValue("delta_t", self.test_settings["delta_t"])
 
         settings.AddEmptyValue("timestep_start")
-        settings.SetInt("timestep_start",0)
+        settings.SetInt("timestep_start", 0)
 
-        #Working directory will be changed to a test_working_directory
+        # working directory will be changed to a test_working_directory
         orig_wd = settings["working_directory"].GetString()
-        i=0
-        while(os.path.exists(f"{orig_wd}_test{i}")):
-                i+=1
+        i = 0
+        while os.path.exists(f"{orig_wd}_test{i}"):
+            i += 1
         cur_wd = f"{orig_wd}_test{i}"
         settings.SetString("working_directory", cur_wd)
         os.system(f"cp -r {orig_wd} {cur_wd}")
         print(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
 
+        self.solver_wrapper = tools.CreateInstance(parameters)
 
-        self.solver_wrappers.append(CreateInstance(parameters))
+        self.components = [self.solver_wrapper]  # will only contain 1 solver wrapper
 
-        self.components = [self.solver_wrappers[0]] #Will only contain 1 solver wrapper
-
-        input = self.solver_wrappers[0].interface_input
-        if not bool_test:
-            print("No test_function.py was found:")
-            for model_part_name, variable_names in input.model_parts_variables:
-                for variable_name in variable_names.list():
-                    variable = vars(data_structure)[variable_name.GetString()]
-                    if variable.Type() is "Double":
-                        print(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
-                    elif variable.Type() is "Array":
-                        print(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
-
-        elif self.test_class == "None":
+        input = self.solver_wrapper.interface_input
+        if self.test_class is None:
             print("No test class specified")
             for model_part_name, variable_names in input.model_parts_variables:
                 for variable_name in variable_names.list():
@@ -125,22 +99,15 @@ class CoupledSolverTestSingleSolver(Component):
                         print(f"\t{variable_name.GetString()} [3D array] on {model_part_name}")
         print("")
 
-        self.x = []
-        self.iteration = None  # Iteration
-
-        self.save_iterations = False  # Set True in order to save iteration related information
-        if self.save_iterations:
-            self.complete_solution = None
-            self.complete_solution_y = None
-            self.iterations = []
-            self.start_time = None
-            self.stop_time = None
-            self.residual = []
+        self.start_time = None
+        self.stop_time = None
+        self.iterations = [1]
+        self.save_results = False  # Always False
 
     def Initialize(self):
-        super().Initialize()
+        Component.Initialize(self)
 
-        self.solver_wrappers[0].Initialize()
+        self.solver_wrapper.Initialize()
         # for component in self.components[1:]:
         #     component.Initialize()
 
@@ -172,107 +139,27 @@ class CoupledSolverTestSingleSolver(Component):
 
         self.solver_level = 0  # 0 is main solver (time step is printed)
 
-
-        if self.save_iterations:
-            self.start_time = time.time()
-
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
-
-        for component in self.components:
-            component.InitializeSolutionStep()
-
-        # print("solutionstep initialized")
-
-        self.n += 1  # Increment time step
-        self.iteration = 0
-
-        # Print time step
-        if not self.solver_level:
-            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"\tTime step {self.n}\n" \
-                  f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  # f"Iteration\tNorm residual"
-            tools.Print(out)
+        self.start_time = time.time()
 
     def SolveSolutionStep(self):
-        input = self.solver_wrappers[0].interface_input
+        interface_input = self.solver_wrapper.interface_input
 
-        #### Generation of the input data #####
-        if (not self.test_class == "None") and bool_test:
-            for model_part_name, variable_names in input.model_parts_variables:
-                model_part = input.model.GetModelPart(model_part_name)
+        # Generation of the input data
+        if not self.test_class == "None" and bool_test:
+            for model_part_name, variable_names in interface_input.model_parts_variables:
+                model_part = interface_input.model.GetModelPart(model_part_name)
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
-                    data = []
                     for node in model_part.Nodes:
-                        if variable.Type() is "Double":
-                            value = getattr(self.Test_object,f"calculate_{variable_name.GetString()}")(node.X0,node.Y0,node.Z0,self.n)
-                            node.SetSolutionStepValue(variable, 0, value)
-                        elif variable.Type() is "Array":
-                            value = getattr(self.Test_object,f"calculate_{variable_name.GetString()}")(node.X0,node.Y0,node.Z0,self.n)
-                            node.SetSolutionStepValue(variable, 0, value)
-        #########################################
+                        value = getattr(self.Test_object, f"calculate_{variable_name.GetString()}")(self.Test_object,
+                                                                                                    node.X0, node.Y0,
+                                                                                                    node.Z0, self.n)
+                        node.SetSolutionStepValue(variable, 0, value)
 
-        output = self.solver_wrappers[0].SolveSolutionStep(input)
-        r = 0
-        self.FinalizeIteration(r)
-
-
-    def FinalizeIteration(self, r):
-        self.iteration += 1
-
-        if self.save_iterations:
-            self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
+        interface_output = self.solver_wrapper.SolveSolutionStep(interface_input)
 
     def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+        Component.FinalizeSolutionStep(self)
 
         for component in self.components:
             component.FinalizeSolutionStep()
-
-    def OutputSolutionStep(self):
-        super().OutputSolutionStep()
-
-        for component in self.components:
-            component.OutputSolutionStep()
-
-    def Finalize(self):
-        super().Finalize()
-
-        for component in self.components:
-            component.Finalize()
-
-        if self.save_iterations:
-            self.stop_time = time.time()
-            type = self.parameters["type"].GetString()
-            if self.parameters["settings"].Has("model"):
-                model = '_' + self.parameters["settings"]["model"]["type"].GetString()
-                if self.parameters["settings"]["model"]["settings"].Has("q") and model == "_coupled_solvers.models.ls":
-                    q = '_q' + str(self.parameters["settings"]["model"]["settings"]["q"].GetDouble())
-                else:
-                    q = ''
-            else:
-                model = ''
-                q = ''
-            if self.parameters["settings"].Has("surrogate"):
-                sur = '_' + self.parameters["settings"]["surrogate"]["type"].GetString()[23:]
-            else:
-                sur = ''
-
-            output_name = 'result.' + type + model + q + sur
-            output = {"solution": self.complete_solution, "solution_y": self.complete_solution_y,
-                      "iterations": self.iterations, "time": self.stop_time - self.start_time,
-                      "residual": self.residual}
-            np.save(output_name, output)
-
-    def Check(self):
-        super().Check()
-
-        for component in self.components:
-            component.Check()
-
-    def PrintInfo(self, pre):
-        tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        tools.PrintStructureInfo(pre, self.components)
-
