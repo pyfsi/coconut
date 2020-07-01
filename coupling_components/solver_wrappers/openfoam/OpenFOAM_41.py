@@ -347,17 +347,21 @@ class SolverWrapperOpenFOAM_41(Component):
         self.timestep += 1
         self.iteration = 0
         self.physical_time += self.dt
-        newPath=os.path.join(self.working_directory, str(self.physical_time))
-        if os.path.isdir(newPath):
-            print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder: "+str(newPath) + ". \n\n\n")
-            time.sleep(5)
-            os.system("rm -rf " + newPath)
-        os.system("mkdir "+ newPath)
+        if self.cores ==1:
+            newPath=os.path.join(self.working_directory, str(self.physical_time))
+            if os.path.isdir(newPath):
+                os.system("rm -rf " + newPath)
+            os.system("mkdir "+ newPath)
+        else: 
+            for p in np.arange(self.cores):
+                newPath=os.path.join(self.working_directory, "processor"+str(p), str(self.physical_time))
+                if os.path.isdir(newPath):
+                    os.system("rm -rf " + newPath)
+                os.system("mkdir "+ newPath)
         print('\t Time step '+str(self.timestep))
         
         self.send_message('next') # Let OpenFOAM go to next time step
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
-    
 
     def SolveSolutionStep(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
@@ -380,9 +384,13 @@ class SolverWrapperOpenFOAM_41(Component):
         # let Fluent run, wait for data
         self.send_message('continue')
         self.wait_message('continue_ready')
+        
+        print("\n\n I got passed this!!! (1) \n\n")
 
         # read data from OpenFOAM
         self.read_node_output()
+        
+        print("\n\n I got passed this!!! (2) \n\n")
         
         # return interface_output object
         return self.interface_output.deepcopy()
@@ -733,11 +741,11 @@ class SolverWrapperOpenFOAM_41(Component):
                     with open('tempDisp', 'a+') as file:
                         file.write("\t { \n")
                         file.write("\t\t type  \t fixedValue; \n")
-                        with mp.Nodes[0] as node:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
+                        node= mp.Nodes[0]
+                        dispX=node.X-node.X0
+                        dispY=node.Y-node.Y0
+                        dispZ=node.Z-node.Z0
+                        file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
                     file.close()
                 elif self.nNodes_proc[nKey,0] < 11: # 10 or less elements on interface
                     with open('tempDisp', 'a+') as file:
@@ -785,11 +793,11 @@ class SolverWrapperOpenFOAM_41(Component):
                         with open('tempDisp', 'a+') as file:
                             file.write("\t { \n")
                             file.write("\t\t type  \t fixedValue; \n")
-                            with mp.Nodes[nNodes_previousProc] as node:
-                                dispX=node.X-node.X0
-                                dispY=node.Y-node.Y0
-                                dispZ=node.Z-node.Z0
-                                file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
+                            node= mp.Nodes[nNodes_previousProc] 
+                            dispX=node.X-node.X0
+                            dispY=node.Y-node.Y0
+                            dispZ=node.Z-node.Z0
+                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
                         file.close()
                     elif self.nNodes_proc[nKey,p] < 11: # 10 or less elements on the interface in this processor-folder
                         with open('tempDisp', 'a+') as file:
@@ -797,11 +805,11 @@ class SolverWrapperOpenFOAM_41(Component):
                             file.write("\t\t type  \t fixedValue; \n")
                             file.write('\t\t value \t nonuniform List<vector> (')
                             for i in np.arange(self.nNodes_proc[nKey,p]):
-                                with mp.Nodes[nNodes_previousProc+i] as node:
-                                    dispX=node.X-node.X0
-                                    dispY=node.Y-node.Y0
-                                    dispZ=node.Z-node.Z0
-                                    file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
+                                node= mp.Nodes[nNodes_previousProc+i]
+                                dispX=node.X-node.X0
+                                dispY=node.Y-node.Y0
+                                dispZ=node.Z-node.Z0
+                                file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
                             file.write(');\n')
                         file.close()
                     else :    
@@ -810,16 +818,16 @@ class SolverWrapperOpenFOAM_41(Component):
                             file.write("\t\t type  \t fixedValue; \n")
                             file.write('\t\t value \t nonuniform List<vector> ( \n')
                             for i in np.arange(self.nNodes_proc[nKey,p]):
-                                with mp.Nodes[nNodes_previousProc+i] as node:
-                                    dispX=node.X-node.X0
-                                    dispY=node.Y-node.Y0
-                                    dispZ=node.Z-node.Z0
-                                    file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
+                                node= mp.Nodes[nNodes_previousProc+i]
+                                dispX=node.X-node.X0
+                                dispY=node.Y-node.Y0
+                                dispZ=node.Z-node.Z0
+                                file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
                             file.write(');\n')
                         file.close()
                     os.system("wc -l " + disp_file + " > lengthDisp")
                     lengthDisp_file=open("lengthDisp",'r')
-                    length_disp=int(lengthDisp_file.readline())
+                    length_disp=int(lengthDisp_file.readline().split(" ")[0])
                     lengthDisp_file.close()
                     os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
                     startToEndNr=self.find_string_in_file("}", "tempDisp2")
@@ -907,7 +915,7 @@ class SolverWrapperOpenFOAM_41(Component):
 
 
     def wait_message(self, message):
-        waitTimeLimit=0.5*60 # 10 minutes maximum waiting time for a single flow solver iteration
+        waitTimeLimit=1*60 # 10 minutes maximum waiting time for a single flow solver iteration
         cumulTime=0
         file = os.path.join(self.working_directory, message + ".coco")
         while not os.path.isfile(file):

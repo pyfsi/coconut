@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
     #include "createRDeltaT.H"
     #include "createFields.H"
     #include "createFvOptions.H"
+	#include "createUf.H"
 
     volScalarField rAU
     (
@@ -92,51 +93,52 @@ int main(int argc, char *argv[])
         dimensionedScalar("rAUf", dimTime/rho.dimensions(), 1.0)
     );
 
-    #include "correctPhi.H"
-    #include "createUf.H"
+
 
     turbulence->validate();
-
-    if (!LTS)
-    {
-        #include "CourantNo.H"
-        #include "setInitialDeltaT.H"
-    }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     Info<< "\nStarting time loop\n" << endl;
 
-    while (runTime.run()) // or True?
+	#include "readControls.H"
+	#include "CourantNo.H"
+	#include "setDeltaT.H"
+    
+    while (true) // NOT! runTime.run() 
     {
         usleep(1000); // Expressed in microseconds 
             
         if (exists("next.coco"))
     	{
-        	remove("next.coco");
-        	
-    		#include "readControls.H"
-    		#include "CourantNo.H"
-    		#include "setDeltaT.H"
-        	
+        	remove("next.coco");			
         	runTime++;
         	OFstream outfile ("next_ready.coco");
         	outfile << "Joris says: good job on next.coco" << endl;
     		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
     	}
         
+        
         if (exists("continue.coco"))
     	{
         	remove("continue.coco");        		
-        	        		
+        	  
+        	Info << "Here 0" << nl << endl;
+        	
         	// Calculate the mesh motion and update the mesh
             mesh.update();
-
+            
+            Info << "Here 1" << nl << endl;
+            
             // Calculate absolute flux from the mapped surface velocity
             phi = mesh.Sf() & Uf;
             if (mesh.changing() && correctPhi)
             {
                #include "correctPhi.H"
             }
+            
+            mixture.correct();
+            
+            Info << "Here 2" << nl << endl;
             
             // Make the flux relative to the mesh motion
             fvc::makeRelative(phi, U);
@@ -146,10 +148,12 @@ int main(int argc, char *argv[])
                 #include "meshCourantNo.H"
             }
 
+            Info << "Here 3" << nl << endl;
+            
             // --- Pressure-velocity PIMPLE corrector loop
             while (pimple.loop())
             {
-                if (pimple.firstIter() || moveMeshOuterCorrectors)
+ /*               if (pimple.firstIter() || moveMeshOuterCorrectors)
                 {
                     scalar timeBeforeMeshUpdate = runTime.elapsedCpuTime();
                     mesh.update();
@@ -182,7 +186,7 @@ int main(int argc, char *argv[])
                         #include "meshCourantNo.H"
                     }
                 }
-
+*/
                 #include "alphaControls.H"
                 #include "alphaEqnSubCycle.H"
 
@@ -202,6 +206,8 @@ int main(int argc, char *argv[])
                 }
             }
                 
+            Info << "Here 4" << nl << endl;
+            
             // Return the coupling interface output
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
@@ -214,8 +220,11 @@ int main(int argc, char *argv[])
                 
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;
+        
+            Info << "Here 5" << nl << endl;
     			            
     	}
+        
     		
         if (exists("save.coco"))
     	{
@@ -224,6 +233,7 @@ int main(int argc, char *argv[])
         	OFstream outfile ("save_ready.coco");
     		outfile << "Joris says: good job on save.coco" << endl;
     	}
+        
         	
         if (exists("stop.coco"))
     	{
@@ -231,7 +241,9 @@ int main(int argc, char *argv[])
         	OFstream outfile ("stop_ready.coco"); 
         	outfile << "Joris says: good job on stop.coco" << endl;
         	break;
-    	}  
+    	} 
+       
+        
     }
     
     return 0;

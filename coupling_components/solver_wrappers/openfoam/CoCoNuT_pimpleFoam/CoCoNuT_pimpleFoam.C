@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 	
 	
-    while (runTime.run()) // or True?
+    while (true) // NOT runTime.run()
     {
         usleep(1000); // Expressed in microseconds 
         
