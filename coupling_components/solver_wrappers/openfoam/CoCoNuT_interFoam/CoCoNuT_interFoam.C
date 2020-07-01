@@ -121,13 +121,10 @@ int main(int argc, char *argv[])
         if (exists("continue.coco"))
     	{
         	remove("continue.coco");        		
-        	  
-        	Info << "Here 0" << nl << endl;
-        	
+        	       	
         	// Calculate the mesh motion and update the mesh
             mesh.update();
             
-            Info << "Here 1" << nl << endl;
             
             // Calculate absolute flux from the mapped surface velocity
             phi = mesh.Sf() & Uf;
@@ -138,7 +135,6 @@ int main(int argc, char *argv[])
             
             mixture.correct();
             
-            Info << "Here 2" << nl << endl;
             
             // Make the flux relative to the mesh motion
             fvc::makeRelative(phi, U);
@@ -148,7 +144,6 @@ int main(int argc, char *argv[])
                 #include "meshCourantNo.H"
             }
 
-            Info << "Here 3" << nl << endl;
             
             // --- Pressure-velocity PIMPLE corrector loop
             while (pimple.loop())
@@ -206,7 +201,6 @@ int main(int argc, char *argv[])
                 }
             }
                 
-            Info << "Here 4" << nl << endl;
             
             // Return the coupling interface output
 
@@ -221,7 +215,6 @@ int main(int argc, char *argv[])
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;
         
-            Info << "Here 5" << nl << endl;
     			            
     	}
         
