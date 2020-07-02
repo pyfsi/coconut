@@ -1,7 +1,3 @@
-from coconut import data_structure
-from coconut.coupling_components.component import Component
-from coconut.coupling_components.interface import Interface
-
 import numpy as np
 import os
 import linecache
@@ -10,12 +6,19 @@ import time
 import copy
 import subprocess
 
+import KratosMultiphysics as KM
+from KratosMultiphysics.CoSimulationApplication.co_simulation_component import CoSimulationComponent
+from KratosMultiphysics.CoSimulationApplication.co_simulation_interface import CoSimulationInterface
+import KratosMultiphysics.CoSimulationApplication.co_simulation_tools as cs_tools
+
+cs_data_structure = cs_tools.cs_data_structure
+
 
 def Create(parameters):
     return SolverWrapperOpenFOAM_41(parameters)
 
 
-class SolverWrapperOpenFOAM_41(Component):
+class SolverWrapperOpenFOAM_41(CoSimulationComponent):
     def __init__(self, parameters):
         super().__init__()
         
@@ -44,6 +47,8 @@ class SolverWrapperOpenFOAM_41(Component):
         self.write_precision = self.settings["write_precision"].GetInt() # writePrecision-parameter in OpenFOAM
         self.time_precision = self.settings["time_precision"].GetInt() # timePrecision-parameter in OpenFOAM
         self.boundary_names = [_.GetString() for _ in self.settings['boundary_names'].list()] # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
+        self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
+        self.diffusivity=self.settings["diffusivity"].GetString()
         
         #Check that the boundary_names and the interface_input and interface_output are defined consistently in the JSON-file
         #For every boundary_name element, there should be one interface_input (boundary_name+"_input") element and one interface_output (boundary_name+"_output") element.
@@ -111,20 +116,41 @@ class SolverWrapperOpenFOAM_41(Component):
         rawFile.close()
         newFile.close()
         nKey=0
-        for key in self.boundary_names:
-            if nKey == 0:
-                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
-            else: 
-                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,False,False)
-            if nKey == (len(self.boundary_names)-1):
-                self.write_controlDict_function(controlDict_name,"pressure","libfieldFunctionObjects.so",key,False,True)
-            else:
-                self.write_controlDict_function(controlDict_name,"pressure","libfieldFunctionObjects.so",key,False,False)
-            nKey += 1
+        if len(self.boundary_names) == 1:
+            for key in self.boundary_names:
+                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,True)
+        else:
+            for key in self.boundary_names:
+                if nKey == 0:
+                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
+                else:
+                    if nKey == (len(self.boundary_names)-1):
+                        self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects_CoCoNuT.so",key,False,True)
+                    else:
+                        self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects_CoCoNuT.so",key,False,False)
+                nKey += 1
         self.write_footer(controlDict_name)
-    
+        # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file 
+        dynamicMeshDict_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"dynamicMeshDict_raw")
+        dynamicMeshDict_name=os.path.join(self.working_directory,"constant/dynamicMeshDict")
+        strBoundary=""
+        for boundary in self.boundary_names:
+            strBoundary=strBoundary+" "+str(boundary)
+        with open(dynamicMeshDict_raw_name,'r') as rawFile:
+            with open(dynamicMeshDict_name,'w') as newFile:
+                for line in rawFile:
+                    line=line.replace('|MESHMOTION_SOLVER|',str(self.meshmotion_solver))
+                    line=line.replace('|DIFFUSIVITY|',str(self.diffusivity))
+                    line=line.replace('|NUM_INTERFACE_INPUT|',str(len(self.settings['boundary_names'].list())))
+                    line=line.replace('|INTERFACE_INPUT|',strBoundary)
+                    newFile.write(line)
+        rawFile.close()
+        newFile.close()
+        nKey=0
+        self.write_footer(dynamicMeshDict_name)
+        
         # Creating Model
-        self.model = data_structure.Model()
+        self.model = cs_data_structure.Model()
         print("The model for OpenFOAM will be created. Please make sure all patch names given under the 'interface' setting are also found in the mesh used in OpenFOAM (see 'constant/polyMesh') \n")
         
         # Creating ModelParts and adding variables to these ModelParts - should happen before node addition
@@ -132,7 +158,7 @@ class SolverWrapperOpenFOAM_41(Component):
             self.model.CreateModelPart(key)
             mp=self.model[key]
             for var_name in value.list():
-                var=vars(data_structure)[var_name.GetString()]
+                var=vars(KM)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
             
         # Adding nodes to ModelParts - should happen after variable definition
@@ -301,14 +327,14 @@ class SolverWrapperOpenFOAM_41(Component):
         # Print node distribution among processor folders
         self.write_node_distribution()
     
-        # Create Interfaces
-        self.interface_input = Interface(self.model, self.settings["interface_input"])
-        self.interface_output = Interface(self.model, self.settings["interface_output"])
+        # Create CoSimulationInterfaces
+        self.interface_input = CoSimulationInterface(self.model, self.settings["interface_input"])
+        self.interface_output = CoSimulationInterface(self.model, self.settings["interface_output"])
 
         # Create Variables
-        self.pressure=vars(data_structure)['PRESSURE']
-        self.shear=vars(data_structure)['WALLSHEARSTRESS']  # @Laurent: longer definition does not exist anymore
-        self.displacement=vars(data_structure)['DISPLACEMENT']
+        self.pressure=vars(KM)['PRESSURE']
+        self.shear=KM.KratosGlobals.GetVariable('TRACTION') #used longer definition here because wallshearstress might be overwritten in future updates - this method has more clear error message if variable is not found
+        self.displacement=vars(KM)['DISPLACEMENT']
         
              
     def Initialize(self):
@@ -347,21 +373,27 @@ class SolverWrapperOpenFOAM_41(Component):
         self.timestep += 1
         self.iteration = 0
         self.physical_time += self.dt
-        if self.cores ==1:
+        if self.cores <2:
             newPath=os.path.join(self.working_directory, str(self.physical_time))
             if os.path.isdir(newPath):
+                print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder: "+str(newPath) + ". \n\n\n")
+                time.sleep(5)
                 os.system("rm -rf " + newPath)
             os.system("mkdir "+ newPath)
-        else: 
-            for p in np.arange(self.cores):
-                newPath=os.path.join(self.working_directory, "processor"+str(p), str(self.physical_time))
+        else :
+            for i in np.arange(self.cores):
+                newPath=os.path.join(self.working_directory, "processor"+str(i), str(self.physical_time))
                 if os.path.isdir(newPath):
+                    if i==0:
+                        print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in processor-subfolders. \n\n\n")
+                        time.sleep(5)
                     os.system("rm -rf " + newPath)
                 os.system("mkdir "+ newPath)
         print('\t Time step '+str(self.timestep))
         
         self.send_message('next') # Let OpenFOAM go to next time step
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
+    
 
     def SolveSolutionStep(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
@@ -384,13 +416,9 @@ class SolverWrapperOpenFOAM_41(Component):
         # let Fluent run, wait for data
         self.send_message('continue')
         self.wait_message('continue_ready')
-        
-        print("\n\n I got passed this!!! (1) \n\n")
 
         # read data from OpenFOAM
         self.read_node_output()
-        
-        print("\n\n I got passed this!!! (2) \n\n")
         
         # return interface_output object
         return self.interface_output.deepcopy()
@@ -458,7 +486,7 @@ class SolverWrapperOpenFOAM_41(Component):
         
     def read_node_output(self):
         nKey=0
-        maxIt=100
+        maxIt=20
         for boundary in self.boundary_names:
             wss_tmp=np.zeros([self.nNodes_tot[nKey],3])
             pres_tmp=np.zeros([self.nNodes_tot[nKey],3])
@@ -466,7 +494,7 @@ class SolverWrapperOpenFOAM_41(Component):
             it=0
             if self.cores == 1:
                 wss_file= os.path.join(self.working_directory, str(self.physical_time), "wallShearStress")
-                pres_file= os.path.join(self.working_directory, str(self.physical_time), "static(p)")
+                pres_file= os.path.join(self.working_directory, str(self.physical_time), "p")
                 if self.nNodes_proc[nKey,0] == 1: #Single node on interface (Really??)
                     #Read wall shear stress
                     while True:
@@ -588,7 +616,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 nodeCount=0
                 for p in np.arange(self.cores):
                     wss_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "wallShearStress")
-                    pres_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "static(p)")
+                    pres_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "p")
                     if self.nNodes_proc[nKey,p] == 1: #Single node of the interface on this processor
                         # read wall shear stress
                         while True:
@@ -741,11 +769,11 @@ class SolverWrapperOpenFOAM_41(Component):
                     with open('tempDisp', 'a+') as file:
                         file.write("\t { \n")
                         file.write("\t\t type  \t fixedValue; \n")
-                        node= mp.Nodes[0]
-                        dispX=node.X-node.X0
-                        dispY=node.Y-node.Y0
-                        dispZ=node.Z-node.Z0
-                        file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
+                        with mp.Nodes[0] as node:
+                            dispX=node.X-node.X0
+                            dispY=node.Y-node.Y0
+                            dispZ=node.Z-node.Z0
+                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
                     file.close()
                 elif self.nNodes_proc[nKey,0] < 11: # 10 or less elements on interface
                     with open('tempDisp', 'a+') as file:
@@ -793,10 +821,9 @@ class SolverWrapperOpenFOAM_41(Component):
                         with open('tempDisp', 'a+') as file:
                             file.write("\t { \n")
                             file.write("\t\t type  \t fixedValue; \n")
-                            node= mp.Nodes[nNodes_previousProc] 
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
+                            dispX=mp.Nodes[nNodes_previousProc].X-mp.Nodes[nNodes_previousProc].X0
+                            dispY=mp.Nodes[nNodes_previousProc].Y-mp.Nodes[nNodes_previousProc].Y0
+                            dispZ=mp.Nodes[nNodes_previousProc].Z-mp.Nodes[nNodes_previousProc].Z0
                             file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
                         file.close()
                     elif self.nNodes_proc[nKey,p] < 11: # 10 or less elements on the interface in this processor-folder
@@ -805,10 +832,10 @@ class SolverWrapperOpenFOAM_41(Component):
                             file.write("\t\t type  \t fixedValue; \n")
                             file.write('\t\t value \t nonuniform List<vector> (')
                             for i in np.arange(self.nNodes_proc[nKey,p]):
-                                node= mp.Nodes[nNodes_previousProc+i]
-                                dispX=node.X-node.X0
-                                dispY=node.Y-node.Y0
-                                dispZ=node.Z-node.Z0
+                                mp.Nodes[nNodes_previousProc+i]
+                                dispX=mp.Nodes[nNodes_previousProc+i].X-mp.Nodes[nNodes_previousProc+i].X0
+                                dispY=mp.Nodes[nNodes_previousProc+i].Y-mp.Nodes[nNodes_previousProc+i].Y0
+                                dispZ=mp.Nodes[nNodes_previousProc+i].Z-mp.Nodes[nNodes_previousProc+i].Z0
                                 file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
                             file.write(');\n')
                         file.close()
@@ -818,10 +845,10 @@ class SolverWrapperOpenFOAM_41(Component):
                             file.write("\t\t type  \t fixedValue; \n")
                             file.write('\t\t value \t nonuniform List<vector> ( \n')
                             for i in np.arange(self.nNodes_proc[nKey,p]):
-                                node= mp.Nodes[nNodes_previousProc+i]
-                                dispX=node.X-node.X0
-                                dispY=node.Y-node.Y0
-                                dispZ=node.Z-node.Z0
+                                mp.Nodes[nNodes_previousProc+i]
+                                dispX=mp.Nodes[nNodes_previousProc+i].X-mp.Nodes[nNodes_previousProc+i].X0
+                                dispY=mp.Nodes[nNodes_previousProc+i].Y-mp.Nodes[nNodes_previousProc+i].Y0
+                                dispZ=mp.Nodes[nNodes_previousProc+i].Z-mp.Nodes[nNodes_previousProc+i].Z0
                                 file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
                             file.write(');\n')
                         file.close()
@@ -915,7 +942,7 @@ class SolverWrapperOpenFOAM_41(Component):
 
 
     def wait_message(self, message):
-        waitTimeLimit=1*60 # 10 minutes maximum waiting time for a single flow solver iteration
+        waitTimeLimit=10*60 # 10 minutes maximum waiting time for a single flow solver iteration
         cumulTime=0
         file = os.path.join(self.working_directory, message + ".coco")
         while not os.path.isfile(file):
@@ -955,9 +982,5 @@ class SolverWrapperOpenFOAM_41(Component):
         versionNr=lastLine.split(' ')[-1]
         if versionNr[:-1] != self.moduleVersion :
                 sys.exit("OpenFOAM 4.1 should be loaded! Currently, another version of OpenFOAM is loaded")
-        
-        #Check that a 'dynamicMeshDict' is present in the constant-folder of the case
-        dynamicMeshDict_file=os.path.join(self.working_directory,"constant/dynamicMeshDict")
-        if not(os.path.isfile(dynamicMeshDict_file)):
-            sys.exit("Please make sure that a 'dynamicMeshDict' file is defined in the constant-folder of your working-directory.")       
+            
     
