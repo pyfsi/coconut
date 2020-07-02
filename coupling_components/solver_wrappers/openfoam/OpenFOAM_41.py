@@ -6,19 +6,16 @@ import time
 import copy
 import subprocess
 
-import KratosMultiphysics as KM
-from KratosMultiphysics.CoSimulationApplication.co_simulation_component import CoSimulationComponent
-from KratosMultiphysics.CoSimulationApplication.co_simulation_interface import CoSimulationInterface
-import KratosMultiphysics.CoSimulationApplication.co_simulation_tools as cs_tools
-
-cs_data_structure = cs_tools.cs_data_structure
+from coconut import data_structure
+from coconut.coupling_components.component import Component
+from coconut.coupling_components.interface import Interface
 
 
 def Create(parameters):
     return SolverWrapperOpenFOAM_41(parameters)
 
 
-class SolverWrapperOpenFOAM_41(CoSimulationComponent):
+class SolverWrapperOpenFOAM_41(Component):
     def __init__(self, parameters):
         super().__init__()
         
@@ -150,7 +147,7 @@ class SolverWrapperOpenFOAM_41(CoSimulationComponent):
         self.write_footer(dynamicMeshDict_name)
         
         # Creating Model
-        self.model = cs_data_structure.Model()
+        self.model = data_structure.Model()
         print("The model for OpenFOAM will be created. Please make sure all patch names given under the 'interface' setting are also found in the mesh used in OpenFOAM (see 'constant/polyMesh') \n")
         
         # Creating ModelParts and adding variables to these ModelParts - should happen before node addition
@@ -158,7 +155,7 @@ class SolverWrapperOpenFOAM_41(CoSimulationComponent):
             self.model.CreateModelPart(key)
             mp=self.model[key]
             for var_name in value.list():
-                var=vars(KM)[var_name.GetString()]
+                var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
             
         # Adding nodes to ModelParts - should happen after variable definition
@@ -328,13 +325,13 @@ class SolverWrapperOpenFOAM_41(CoSimulationComponent):
         self.write_node_distribution()
     
         # Create CoSimulationInterfaces
-        self.interface_input = CoSimulationInterface(self.model, self.settings["interface_input"])
-        self.interface_output = CoSimulationInterface(self.model, self.settings["interface_output"])
+        self.interface_input = Interface(self.model, self.settings["interface_input"])
+        self.interface_output = Interface(self.model, self.settings["interface_output"])
 
         # Create Variables
-        self.pressure=vars(KM)['PRESSURE']
-        self.shear=KM.KratosGlobals.GetVariable('TRACTION') #used longer definition here because wallshearstress might be overwritten in future updates - this method has more clear error message if variable is not found
-        self.displacement=vars(KM)['DISPLACEMENT']
+        self.pressure=vars(data_structure)['PRESSURE']
+        self.shear=vars(data_structure)['TRACTION']
+        self.displacement=vars(data_structure)['DISPLACEMENT']
         
              
     def Initialize(self):
