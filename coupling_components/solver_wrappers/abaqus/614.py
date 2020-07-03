@@ -785,6 +785,6 @@ class SolverWrapperAbaqus614(Component):
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
 
             # Start of a simulation with ramp, needs an initial load at time 0
-            if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
+            if self.iteration == 1 and self.timestep == 1 and self.ramp == 1:
                 cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
                 self.run_shell(self.dir_csm, [cmd], name='GetOutput')
