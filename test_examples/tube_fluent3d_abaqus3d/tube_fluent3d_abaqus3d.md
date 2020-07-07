@@ -1,4 +1,4 @@
-# Tube case with Fluent2D and Abaqus2D
+# Tube case with Fluent3D and Abaqus3D
 
 This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
 This done by using Fluent and Abaqus, both with a fully 3D case.
