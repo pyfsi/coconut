@@ -115,7 +115,8 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
-                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,True)
+                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
+                self.write_controlDict_function(controlDict_name, "pressure", "libfieldFunctionObjects.so", key,False,True)
         else:
             for key in self.boundary_names:
                 if nKey == 0:
@@ -886,10 +887,10 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write("\t { \n")
             file.write("\t\t type  \t " + funcname + "; \n")
             file.write('\t\t libs \t ("' + libOFname + '"); \n')
-            file.write('\t\t patches ( ' + patchname + ' ); \n')
+            file.write('\t\t patches ( "' + patchname + '"); \n')
             file.write('\t\t writeControl \t timeStep; \n')
             file.write('\t\t writeInterval \t 1; \n')
-            file.write('\t\t log \t false; \n')
+            file.write('\t\t log \t true; \n')
             if funcname == "pressure":
                 file.write('\t\t calcTotal \t no; \n')
                 file.write('\t\t calcCoeff \t no; \n')

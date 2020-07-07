@@ -153,14 +153,16 @@ int main(int argc, char *argv[])
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
-            
+
+            runTime.functionObjects().execute();
+
             IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
             IOdictionary controlDict(controlDict_IO);
             controlDict.Foam::regIOobject::write();
-            
+            runTime.write();
+            Info << "I get past the save" << nl << endl;
             OFstream outfile ("continue_ready.coco");
-        	outfile << "Joris says good job on continue.coco" << endl;
-			            
+            outfile << "Joris says good job on continue.coco" << endl;
     		
 		}
 		
