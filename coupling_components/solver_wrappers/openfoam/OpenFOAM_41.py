@@ -116,7 +116,6 @@ class SolverWrapperOpenFOAM_41(Component):
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
                 self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
-                self.write_controlDict_function(controlDict_name, "pressure", "libfieldFunctionObjects.so", key,False,True)
         else:
             for key in self.boundary_names:
                 if nKey == 0:
