@@ -1,0 +1,120 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : blockMesh
+Date   : Jul 09 2020
+Time   : 14:25:50
+Host   : "cfdclu13.ugent.be"
+PID    : 236802
+Case   : /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Creating block mesh from
+    "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #calcEntry at line 26 in file "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_e7c85629723d6f79a468cfb28baf9db918425a63.so"
+Creating new library in "dynamicCode/_e7c85629723d6f79a468cfb28baf9db918425a63/platforms/linux64IccDPInt32Opt/lib/libcodeStream_e7c85629723d6f79a468cfb28baf9db918425a63.so"
+Invoking "wmake -s libso /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_e7c85629723d6f79a468cfb28baf9db918425a63"
+'/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_e7c85629723d6f79a468cfb28baf9db918425a63/../platforms/linux64IccDPInt32Opt/lib/libcodeStream_e7c85629723d6f79a468cfb28baf9db918425a63.so' is up to date.
+Using #calcEntry at line 27 in file "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_557396496f0bbb15812ae5259e1b29a45f382441.so"
+Creating new library in "dynamicCode/_557396496f0bbb15812ae5259e1b29a45f382441/platforms/linux64IccDPInt32Opt/lib/libcodeStream_557396496f0bbb15812ae5259e1b29a45f382441.so"
+Invoking "wmake -s libso /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_557396496f0bbb15812ae5259e1b29a45f382441"
+'/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_557396496f0bbb15812ae5259e1b29a45f382441/../platforms/linux64IccDPInt32Opt/lib/libcodeStream_557396496f0bbb15812ae5259e1b29a45f382441.so' is up to date.
+Using #calcEntry at line 28 in file "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_f91320214f4a3eab61f342801ca1160b6dde08a6.so"
+Creating new library in "dynamicCode/_f91320214f4a3eab61f342801ca1160b6dde08a6/platforms/linux64IccDPInt32Opt/lib/libcodeStream_f91320214f4a3eab61f342801ca1160b6dde08a6.so"
+Invoking "wmake -s libso /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_f91320214f4a3eab61f342801ca1160b6dde08a6"
+'/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_f91320214f4a3eab61f342801ca1160b6dde08a6/../platforms/linux64IccDPInt32Opt/lib/libcodeStream_f91320214f4a3eab61f342801ca1160b6dde08a6.so' is up to date.
+Using #calcEntry at line 29 in file "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_8d3185823fb750cd3e713aabad279fa4f8e41079.so"
+Creating new library in "dynamicCode/_8d3185823fb750cd3e713aabad279fa4f8e41079/platforms/linux64IccDPInt32Opt/lib/libcodeStream_8d3185823fb750cd3e713aabad279fa4f8e41079.so"
+Invoking "wmake -s libso /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_8d3185823fb750cd3e713aabad279fa4f8e41079"
+'/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_8d3185823fb750cd3e713aabad279fa4f8e41079/../platforms/linux64IccDPInt32Opt/lib/libcodeStream_8d3185823fb750cd3e713aabad279fa4f8e41079.so' is up to date.
+Using #calcEntry at line 30 in file "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_b43fc2889697ccccb646758a359114a8c8f6ea53.so"
+Creating new library in "dynamicCode/_b43fc2889697ccccb646758a359114a8c8f6ea53/platforms/linux64IccDPInt32Opt/lib/libcodeStream_b43fc2889697ccccb646758a359114a8c8f6ea53.so"
+Invoking "wmake -s libso /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_b43fc2889697ccccb646758a359114a8c8f6ea53"
+'/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_b43fc2889697ccccb646758a359114a8c8f6ea53/../platforms/linux64IccDPInt32Opt/lib/libcodeStream_b43fc2889697ccccb646758a359114a8c8f6ea53.so' is up to date.
+Using #calcEntry at line 31 in file "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_c1114766fae125e215327161a09be63dda305ed4.so"
+Creating new library in "dynamicCode/_c1114766fae125e215327161a09be63dda305ed4/platforms/linux64IccDPInt32Opt/lib/libcodeStream_c1114766fae125e215327161a09be63dda305ed4.so"
+Invoking "wmake -s libso /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_c1114766fae125e215327161a09be63dda305ed4"
+'/lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/CFD/dynamicCode/_c1114766fae125e215327161a09be63dda305ed4/../platforms/linux64IccDPInt32Opt/lib/libcodeStream_c1114766fae125e215327161a09be63dda305ed4.so' is up to date.
+Creating curved edges
+Creating topology blocks
+Creating topology patches
+
+Creating block mesh topology
+
+Check topology
+
+	Basic statistics
+		Number of internal faces : 8
+		Number of boundary faces : 14
+		Number of defined boundary faces : 14
+		Number of undefined boundary faces : 0
+	Checking patch -> block consistency
+
+Creating block offsets
+Creating merge list .
+
+Creating polyMesh from blockMesh
+Creating points with scale 1
+    Block 0 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.000441942 .. 0.000441942
+
+    Block 1 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.0003125 .. 0.0003125
+
+    Block 2 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.0003125 .. 0.0003125
+
+    Block 3 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.0003125 .. 0.0003125
+
+    Block 4 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.0003125 .. 0.0003125
+
+Creating cells
+Creating patches
+
+Writing polyMesh
+----------------
+Mesh Information
+----------------
+  boundingBox: (-0.025 -0.005 -0.005) (0.025 0.005 0.005)
+  nPoints: 16513
+  nCells: 15360
+  nFaces: 47168
+  nInternalFaces: 44992
+----------------
+Patches
+----------------
+  patch 0 (start: 44992 size: 320) name: inlet
+  patch 1 (start: 45312 size: 320) name: outlet
+  patch 2 (start: 45632 size: 1536) name: mantle
+
+End
+

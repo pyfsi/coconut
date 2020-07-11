@@ -81,28 +81,21 @@ class SolverWrapperOpenFOAM_41(Component):
         self.remove_all_messages()
         
         # Creating OpenFOAM-files - raw dictionary files are predefined in the solver_wrapper folder (and should not be moved)
-        # DecomposeParDict: replace raw settings by actual settings defined by user in json-file
-        if self.cores > 1: #Only if calculating in parallel
-            decomposeParDict_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"decomposeParDict_raw")
-            decomposeParDict_name=os.path.join(self.working_directory,"system/decomposeParDict")
-            with open(decomposeParDict_raw_name,'r') as rawFile:
-                with open(decomposeParDict_name,'w') as newFile:
-                    for line in rawFile:
-                        line=line.replace('|CORES|',str(self.cores))
-                        line=line.replace('|DECOMPOSEMETHOD|',str(self.decomposeMethod))
-                        newFile.write(line)
-            rawFile.close()
-            newFile.close()
-            self.write_footer(decomposeParDict_name) 
-            # OpenFOAM-fields are decomposed automatically if you work in parallel
-            os.system("cd " + self.working_directory + "; decomposePar -force -time "+ str(self.start_time) + " &> log.decomposePar;")  
+
         # ControlDict: replace raw settings by actual settings defined by user in json-file AND add function objects to write pressure and wall shear stress
         controlDict_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"controlDict_raw")
         controlDict_name=os.path.join(self.working_directory,"system/controlDict")
+        boundary_names_string="("
+        for name in self.boundary_names:
+            boundary_names_string += name
+            boundary_names_string += " "
+        boundary_names_string=boundary_names_string[:-1]+")"
         with open(controlDict_raw_name,'r') as rawFile:
             with open(controlDict_name,'w') as newFile:
                 for line in rawFile:
                     line=line.replace('|APPLICATION|',str(self.application))
+
+                    line=line.replace('|BOUNDARY_NAMES|',boundary_names_string)
                     line=line.replace('|START_TIME|',str(self.start_time))
                     line=line.replace('|END_TIME|',str(self.end_time))
                     line=line.replace('|DT|',str(self.dt))
@@ -157,17 +150,38 @@ class SolverWrapperOpenFOAM_41(Component):
             for var_name in value.list():
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
-            
+
         # Adding nodes to ModelParts - should happen after variable definition
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
+
+        # Moved decompose here (after writeCellCentres) to get ccx, ccy, ccz into the processor directories
+        # DecomposeParDict: replace raw settings by actual settings defined by user in json-file
+        if self.cores > 1:  # Only if calculating in parallel
+            decomposeParDict_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                                                     "decomposeParDict_raw")
+            decomposeParDict_name = os.path.join(self.working_directory, "system/decomposeParDict")
+            with open(decomposeParDict_raw_name, 'r') as rawFile:
+                with open(decomposeParDict_name, 'w') as newFile:
+                    for line in rawFile:
+                        line = line.replace('|CORES|', str(self.cores))
+                        line = line.replace('|DECOMPOSEMETHOD|', str(self.decomposeMethod))
+                        newFile.write(line)
+            rawFile.close()
+            newFile.close()
+            self.write_footer(decomposeParDict_name)
+            # OpenFOAM-fields are decomposed automatically if you work in parallel
+            os.system("cd " + self.working_directory + "; decomposePar -force -time " + str(
+                self.start_time) + " &> log.decomposePar;")
+
         self.nNodes_proc=np.zeros([len(self.settings['interface_input'].keys()),self.cores],dtype=np.int32)
         self.nNodes_tot=np.zeros(len(self.settings['interface_input'].keys()),dtype=np.int32)
         nKey=0
         for boundary in self.boundary_names:
             if self.cores == 1: # If you work in serial
+            #For me (Lucas) the ccx, ccy and ccz were written in the 0-directory not in the processor/0-directory
                 #To avoid confusion, remove all present processor-files (from a possible previous parallel calculation)
-                os.system("cd " + self.working_directory + "; rm -r processor*;") 
-                
+                os.system("cd " + self.working_directory + "; rm -r processor*;")
+
                 # First look up the interface wall in OpenFOAM's constant-folder - the coordinates are found using the OF-utility 'writeCellCentres'
                 for i in np.arange(3):
                     if i == 0:
@@ -227,8 +241,8 @@ class SolverWrapperOpenFOAM_41(Component):
                         procContainsBoundaryNr=lineNameNr+4
                         os.system("awk NR==" + str(procContainsBoundaryNr) + " " + source_file + " > PCB" )
                         PCB_file=open("PCB",'r')
-                        procContainsBoundary=str(PCB_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder 
-                        PCB_file.close() 
+                        procContainsBoundary=str(PCB_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder
+                        PCB_file.close()
                         os.system("rm PCB")
                         if "nonuniform 0();" not in procContainsBoundary: # If this processor folder contains the interface you are looking for
                             try:
@@ -243,8 +257,8 @@ class SolverWrapperOpenFOAM_41(Component):
                                 tempCoordFile=np.ones([nNodes,1])*float("inf")
                                 for j in np.arange(nNodes):
                                     tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
-                            except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking OR that the nonuniform list contains less than 11 elements - because apparently OF prints the entire array on a single line in that case... 
-                                if "nonuniform" not in procContainsBoundary: # If the coordinate is a uniform value 
+                            except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking OR that the nonuniform list contains less than 11 elements - because apparently OF prints the entire array on a single line in that case...
+                                if "nonuniform" not in procContainsBoundary: # If the coordinate is a uniform value
                                     if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
                                         check_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccy"
                                         lineNameNr=self.find_string_in_file(boundary, check_file)
@@ -255,7 +269,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                         typeCcy_file.close()
                                         if "(" in typeCcy: # 10 nodes or less in this list
                                             listCcy=((typeCcy.split("(")[-1]).split(")")[0]).split(" ")
-                                            nNodes=int(len(listCcy))     
+                                            nNodes=int(len(listCcy))
                                         else : # More than 10 nodes in this list or ccy is also uniform
                                             if "nonuniform" not in typeCcy: #ccy is also uniform, check ccz
                                                 check_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccz"
@@ -265,7 +279,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                                 typeCcz_file=open("typeCcz",'r')
                                                 typeCcz=str(typeCcz_file.readline())
                                                 typeCcz_file.close()
-                                                if "(" in typeCcz: # 10 nodes or less in this list 
+                                                if "(" in typeCcz: # 10 nodes or less in this list
                                                     listCcz=((typeCcz.split("(")[-1]).split(")")[0]).split(" ")
                                                     nNodes=int(len(listCcz))
                                                 else: #More than 10 nodes in this list or ccz is also uniform
@@ -276,13 +290,13 @@ class SolverWrapperOpenFOAM_41(Component):
                                                         os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
                                                         nNodes_file=open("nNodes",'r')
                                                         nNodes=int(nNodes_file.readline())
-                                                        nNodes_file.close()              
+                                                        nNodes_file.close()
                                             else: # ccy is not uniform
                                                 nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
                                                 os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
                                                 nNodes_file=open("nNodes",'r')
                                                 nNodes=int(nNodes_file.readline())
-                                                nNodes_file.close() 
+                                                nNodes_file.close()
                                         os.system("rm nNodes typeCcy")
                                     indexUV=lineNameNr+4
                                     os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
@@ -298,7 +312,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                     nNodes=int(len(listToRead))
                                     tempCoordFile=np.ones([nNodes,1])*float("inf")
                                     for j in np.arange(nNodes):
-                                            tempCoordFile[j,0]=float(listToRead[j])                                
+                                            tempCoordFile[j,0]=float(listToRead[j])
                             if i == 0:
                                 coordList=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z - Area
                                 coordList[:,0]=self.nNodes_tot[nKey]*np.ones(nNodes)+np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
@@ -312,15 +326,15 @@ class SolverWrapperOpenFOAM_41(Component):
                             coordList_tot=np.concatenate((coordList_tot,coordList), axis=0)
                         del nNodes
                     self.nNodes_tot[nKey]=int(np.sum(self.nNodes_proc[nKey,:]))
-            
+
             # Subsequently create each node separately in the ModelPart- both input and output!
             mp_input=self.model[boundary+"_input"]
             mp_output=self.model[boundary+"_output"]
             for i in np.arange(int(self.nNodes_tot[nKey])):
                 mp_input.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
                 mp_output.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
-            nKey+=1    
-        
+            nKey+=1
+
         # Print node distribution among processor folders
         self.write_node_distribution()
     

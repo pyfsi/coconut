@@ -1,0 +1,147 @@
+{
+    "settings" :
+    {
+        "number_of_timesteps": 10000
+    },
+    "coupled_solver" :
+    {
+        "type" : "coupled_solvers.test_single_solver",
+        "test_settings" :
+        {
+            "solver_index": 0 ,
+            "check_mapping": 0,
+            "test_class": "None"
+        },
+        "settings" :
+        {
+            "timestep_start": 0,
+            "delta_t": 0.00001,
+            "omega" : 0.01,
+            "model" :
+            {
+                "type": "coupled_solvers.models.ls",
+                "settings":
+                {
+                    "min_significant": 1e-09,
+                    "q": 10
+                }
+            }
+        },
+        "predictor" :
+        {
+            "type" : "predictors.linear"
+        },
+        "convergence_criterion" :
+        {
+            "type" : "convergence_criteria.or",
+            "settings" :
+            {
+                "convergence_criterion0" :
+                {
+                    "type": "convergence_criteria.iteration_limit",
+                    "settings":
+                    {
+                        "maximum": 20
+                    }
+                },
+                "convergence_criterion1" :
+                {
+                    "type" : "convergence_criteria.relative_norm",
+                    "settings" :
+                    {
+                        "tolerance" : 1e-3,
+                        "order" : 2
+                    }
+                }
+            }
+        },
+        "solver_wrappers" :
+        [
+            {
+                "type": "solver_wrappers.openfoam.OpenFOAM_41",
+                "settings":
+                {
+                    "working_directory" : "CFD",
+                    "application" :  "CoCoNuT_pimpleFoam",
+                    "dimensions": 3,
+                    "dt" : 0.00001,
+                    "boundary_names": ["mantle"],
+                    "start_time":0,
+                    "end_time":0.01,
+                    "interface_input":
+                    {
+                        "mantle_input": "DISPLACEMENT"
+                    },
+                    "interface_output":
+                    {
+                        "mantle_output": ["PRESSURE", "TRACTION"]
+                    },
+                    "cores": 4,
+                    "decomposeMethod" : "scotch",
+                    "newtonmax" : 10,
+                    "newtonmin" : 1,
+                    "newtontol" : 1e-3,
+                    "write_interval" : 1,
+                    "write_precision" : 5,
+                    "time_precision" : 5,
+                    "meshmotion_solver": "displacementLaplacian",
+                    "diffusivity" : "inverseDistance"
+                }
+            },
+            {
+                "type": "solver_wrappers.mapped",
+                "settings":
+                {
+                    "solver_wrapper" :
+                    {
+                        "type": "solver_wrappers.abaqus.614",
+                        "settings": {
+                            "working_directory" : "CSM",
+                            "cores": 1,
+                            "dimensions": 3,
+                            "arraysize": 10e5,
+                            "surfaces": 1,
+                            "ramp": 0,
+                            "surfaceIDs": ["WALLOUTSIDE"],
+                            "interface_input":
+                            {
+                                "WALLOUTSIDE_load_points": ["PRESSURE", "TRACTION"]
+                            },
+                            "interface_output":
+                            {
+                                "WALLOUTSIDE_nodes": "DISPLACEMENT"
+                            },
+                            "mp_mode": "THREADS",
+                            "input_file": "Base.inp",
+                            "save_iterations": 1
+                        }
+                    },
+                    "mapper_interface_input":
+                    {
+						"type" : "mappers.interface",
+						"settings" :
+						{
+                            "type" : "mappers.radial_basis",
+                            "settings" :
+                            {
+                                "directions" : ["X", "Y", "Z"]
+                            }
+						}
+                    },
+                    "mapper_interface_output":
+                    {
+						"type" : "mappers.interface",
+						"settings" :
+						{
+	                        "type" : "mappers.radial_basis",
+                            "settings" :
+                            {
+                                "directions" : ["X", "Y", "Z"]
+                            }
+						}
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -17,6 +17,8 @@ FoamFile
 
 application     |APPLICATION|;
 
+interface       |BOUNDARY_NAMES|;
+
 startFrom       startTime;
 
 startTime       |START_TIME|;
