@@ -1,0 +1,93 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : pimpleDyMFoam -parallel
+Date   : Aug 04 2020
+Time   : 17:35:40
+Host   : "cfdclu13.ugent.be"
+PID    : 409995
+Case   : /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/Test_pointDisplacement_Parallel
+nProcs : 2
+Slaves : 1("cfdclu13.ugent.be.409996")
+Pstream initialized with:
+    floatTransfer      : 0
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Selecting dynamicFvMesh dynamicMotionSolverFvMesh
+Selecting motion solver: displacementLaplacian
+Selecting motion diffusion: inverseDistance
+
+PIMPLE: Operating solver in PISO mode
+
+Reading field p
+
+Reading field U
+
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type RAS
+Selecting RAS turbulence model kEpsilon
+kEpsilonCoeffs
+{
+    Cmu             0.09;
+    C1              1.44;
+    C2              1.92;
+    C3              -0.33;
+    sigmak          1;
+    sigmaEps        1.3;
+}
+
+No MRF models present
+
+Reading/calculating face velocity Uf
+
+No finite volume options present
+
+Courant Number mean: 0 max: 0
+
+Starting time loop
+
+wallShearStress wallShearStress:
+    processing wall patches: 
+        mantle
+
+Courant Number mean: 0 max: 0
+Time = 1e-05
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 1, Final residual = 0.00435979, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 1, Final residual = 0.00451841, No Iterations 2
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 1, Final residual = 9.17485e-08, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0, Final residual = 0, No Iterations 0
+smoothSolver:  Solving for Uz, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for p, Initial residual = 1, Final residual = 0.00222696, No Iterations 2
+time step continuity errors : sum local = 1.0898e-05, global = -1.47504e-06, cumulative = -1.47504e-06
+GAMG:  Solving for p, Initial residual = 0.0211838, Final residual = 4.57142e-08, No Iterations 9
+time step continuity errors : sum local = 4.42303e-10, global = 2.2477e-10, cumulative = -1.47482e-06
+smoothSolver:  Solving for epsilon, Initial residual = 0.0247603, Final residual = 2.1146e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 1, Final residual = 3.01447e-06, No Iterations 3
+ExecutionTime = 0.17 s  ClockTime = 0 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.00953734 -0.000322522 -0.00031827), (-0.00384674 0.000319784 0.000323001)
+End
+
+Finalising parallel run
