@@ -7,13 +7,13 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
 Exec   : pimpleDyMFoam -parallel
-Date   : Aug 04 2020
-Time   : 17:35:40
+Date   : Aug 05 2020
+Time   : 11:47:35
 Host   : "cfdclu13.ugent.be"
-PID    : 409995
-Case   : /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/Test_pointDisplacement_Parallel
+PID    : 417231
+Case   : /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/Test_pointDisplacement_Parallel_Decompose_Reconstruct
 nProcs : 2
-Slaves : 1("cfdclu13.ugent.be.409996")
+Slaves : 1("cfdclu13.ugent.be.417232")
 Pstream initialized with:
     floatTransfer      : 0
     nProcsSimpleSum    : 0
@@ -71,23 +71,23 @@ Courant Number mean: 0 max: 0
 Time = 1e-05
 
 GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
-GAMG:  Solving for cellDisplacementy, Initial residual = 1, Final residual = 0.00435979, No Iterations 2
-GAMG:  Solving for cellDisplacementz, Initial residual = 1, Final residual = 0.00451841, No Iterations 2
+GAMG:  Solving for cellDisplacementy, Initial residual = 1, Final residual = 0.00436157, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 1, Final residual = 0.00452317, No Iterations 2
 PIMPLE: iteration 1
-smoothSolver:  Solving for Ux, Initial residual = 1, Final residual = 9.17485e-08, No Iterations 3
+smoothSolver:  Solving for Ux, Initial residual = 1, Final residual = 1.29929e-07, No Iterations 3
 smoothSolver:  Solving for Uy, Initial residual = 0, Final residual = 0, No Iterations 0
 smoothSolver:  Solving for Uz, Initial residual = 0, Final residual = 0, No Iterations 0
-GAMG:  Solving for p, Initial residual = 1, Final residual = 0.00222696, No Iterations 2
-time step continuity errors : sum local = 1.0898e-05, global = -1.47504e-06, cumulative = -1.47504e-06
-GAMG:  Solving for p, Initial residual = 0.0211838, Final residual = 4.57142e-08, No Iterations 9
-time step continuity errors : sum local = 4.42303e-10, global = 2.2477e-10, cumulative = -1.47482e-06
-smoothSolver:  Solving for epsilon, Initial residual = 0.0247603, Final residual = 2.1146e-06, No Iterations 2
-smoothSolver:  Solving for k, Initial residual = 1, Final residual = 3.01447e-06, No Iterations 3
-ExecutionTime = 0.17 s  ClockTime = 0 s
+GAMG:  Solving for p, Initial residual = 1, Final residual = 0.00196923, No Iterations 2
+time step continuity errors : sum local = 9.44606e-06, global = -1.37285e-06, cumulative = -1.37285e-06
+GAMG:  Solving for p, Initial residual = 0.0263468, Final residual = 4.11862e-08, No Iterations 9
+time step continuity errors : sum local = 3.9724e-10, global = 1.89507e-10, cumulative = -1.37266e-06
+smoothSolver:  Solving for epsilon, Initial residual = 0.0246336, Final residual = 2.11256e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 1, Final residual = 3.02649e-06, No Iterations 3
+ExecutionTime = 0.14 s  ClockTime = 1 s
 
 wallShearStress wallShearStress write:
     writing field wallShearStress
-    min/max(mantle) = (-0.00953734 -0.000322522 -0.00031827), (-0.00384674 0.000319784 0.000323001)
+    min/max(mantle) = (-0.00953361 -0.00040035 -0.00039503), (-0.00383193 0.000397524 0.000402542)
 End
 
 Finalising parallel run

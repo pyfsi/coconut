@@ -107,7 +107,7 @@ def Get_Transform(dir,orig_boundary_Ind):
 
     swap = []
     for ind in boundary_Ind:
-        x = seq[ind-1]
+        x = seq[ind]
         X = np.where(orig_boundary_Ind == x+1)
         print(X)
         swap.append(X[0][0])
@@ -179,9 +179,9 @@ with open(f_f) as f:
 for nf in range(startFace,startFace+nFaces):
         list = All_Fnodes[nf]
         for n in list:
-            if points_Bool[int(n)-1,0]==0: #If not yet in list, add it to the list
+            if points_Bool[int(n),0]==0: #If not yet in list, add it to the list
                 boundary_Ind.append(int(n))
-                points_Bool[int(n)-1,0]=1
+                points_Bool[int(n),0]=1
 boundary_Ind = np.array(boundary_Ind)
 
 ## For original coordinates of the points ###
@@ -203,7 +203,7 @@ ORIG = np.array(ORIG)
 orig_coords_b=[]
 for b in boundary_Ind:
     # print(b)
-    orig_coords_b.append(ORIG[b-1,:])
+    orig_coords_b.append(ORIG[b,:])
 orig_coords_b = np.array(orig_coords_b)
 
 print("Launch TS 1")
@@ -289,7 +289,7 @@ os.system("reconstructPar -time '1e-05' -fields '(pointDisplacement)'")
 os.system("mv ./1e-05/pointDisplacement  ./1e-05/pointDisplacement_orig")
 
 delta_R *= -1
-#double the total displacement
+#reverse the deformation
 disp_b = np.zeros(np.shape(orig_coords_b))
 for i in range(0,orig_coords_b.shape[0]):
     r_vec = np.array([0,orig_coords_b[i,1],orig_coords_b[i,2]])

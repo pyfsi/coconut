@@ -87,9 +87,9 @@ with open(f_f) as f:
 for nf in range(startFace,startFace+nFaces):
         list = All_Fnodes[nf]
         for n in list:
-            if points_Bool[int(n)-1,0]==0: #If not yet in list, add it to the list
+            if points_Bool[int(n),0]==0: #If not yet in list, add it to the list
                 boundary_Ind.append(int(n))
-                points_Bool[int(n)-1,0]=1
+                points_Bool[int(n),0]=1
 boundary_Ind = np.array(boundary_Ind)
 
 ## For original coordinates of the points ###
@@ -111,7 +111,7 @@ ORIG = np.array(ORIG)
 orig_coords_b=[]
 for b in boundary_Ind:
     # print(b)
-    orig_coords_b.append(ORIG[b-1,:])
+    orig_coords_b.append(ORIG[b,:])
 orig_coords_b = np.array(orig_coords_b)
 
 print("Launch TS 1")
