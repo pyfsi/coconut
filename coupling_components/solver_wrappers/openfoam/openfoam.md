@@ -32,15 +32,23 @@ parameter|type|description
 If different parameters are used with different Fluent versions, this should be specified both in this section and in the version specific documentation section.
 
 
-## Overview of operation
+## Overview of the Python-file
 
 The solver-wrapper itself consists of only one Python-file: `OpenFOAM_X.py`, with `X`the identifier of the OpenFOAM-version (e.g. `41` for OpenFOAM 4.1). Aside from this, the Python-file constructs a number of files such as `controlDict`, `pointDisplacement` and `decomposeParDict` by starting from the `_raw`-files in the solver-wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accomodate the internal messaging system used during the FSI-simulation. Currently, only `pimpleFoam` and `interFoam` have been adapted; the solvers called by the solver-wrapper have the same name as the original OpenFOAM-solver but with `CoCoNuT_` added to the name. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using `wmake`).
 
 ### The `__init__` method
 
-During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the `working_directory`. Fluent is then started in that directory using the parameters `cores`, `dimensions` and `fluent_gui`. Fluent then writes a case summery, so that `SolverWrapperFluentX` can link the interface thread names (specified in `thread_names`) to Fluent thread IDs, for use in the UDFs. Then the `Model` and `ModelParts` are created, based on data written by Fluent in timestep 0. After a restart, this same data must be found, i.e. if that file is removed from the folder `working_directory`, the simulation cannot be restarted. If the simulation was restarted, the coordinates `X`, `Y`, `Z` in the `Nodes` are updated to the current values. Finally, the `Interfaces` are made.
+During initialization, the case settings as defined in the JSON-file are read into the corresponding Python-variables. Afterwards, the required OpenFOAM-files are constructed and some checks are in place to verify whether the necessary (and correct) modules are loaded. Next, the interface names are loaded and the tool `writeCellCentres` is used to read in the points located on said interfaces. Finally, the variables on each interface are stored in the data-structure of CoCoNuT. 
 
-### Files created during simulation
+### The `Initialize` method
+
+### The `InitializeSolutionStep` method
+
+### The `SolveSolutionStep` method
+
+### The `FinalizeSolutionStep` method
+
+### The `Finalize` method
 
 In the file conventions, `A` is the timestep number and `B` the Fluent thread ID.
 
@@ -50,7 +58,7 @@ In the file conventions, `A` is the timestep number and `B` the Fluent thread ID
 -   Pressure and tractions are passed from Fluent to Python with files of the form `pressure_traction_timestepA_threadB.dat`.
 -   Files with extension `.coco` are used to pass messages between Python and Fluent (via the journal). 
 
-
+## Overview of an OpenFOAM-solver used in CoCoNuT
 
 ## Setting up a new case
 
@@ -73,7 +81,7 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Version specific documentation
 
-### 2019R1 (19.3)
+### OpenFOAM_41 (OpenFOAM 4.1)
 
-This is currently the only version, so this section is still empty.
+This is currently the only version.
 
