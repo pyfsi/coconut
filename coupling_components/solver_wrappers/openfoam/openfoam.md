@@ -1,7 +1,7 @@
-# SolverWrapperFluent
+# SolverWrapperOpenFOAM
 
-This is the documentation for all Fluent solver-wrappers.
-Currently only FSI simulations are supported, no other multiphysics problems. Also, inviscid flows are not supported yet.
+This is the documentation for all OpenFOAM solver-wrappers.
+Currently only FSI simulations are supported, no other multiphysics problems.
 
 
 ## Parameters
@@ -34,11 +34,7 @@ If different parameters are used with different Fluent versions, this should be 
 
 ## Overview of operation
 
-The solver-wrapper consists of 3 files (with `X` the Fluent version, e.g. `2019R1`):
-
--   `X.py`: defines the `SolverWrapperFluentX` class
--   `X.jou`: Fluent journal file to interactively run the FSI simulation, written in Scheme
--   `X.c`: Fluent UDF file that implements additional functionality used in Fluent, written in C
+The solver-wrapper itself consists of only one Python-file: `OpenFOAM_X.py`, with `X`the identifier of the OpenFOAM-version (e.g. `41` for OpenFOAM 4.1). Aside from this, the Python-file constructs a number of files such as `controlDict`, `pointDisplacement` and `decomposeParDict` by starting from the `_raw`-files in the solver-wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accomodate the internal messaging system used during the FSI-simulation. Currently, only `pimpleFoam` and `interFoam` have been adapted; the solvers called by the solver-wrapper have the same name as the original OpenFOAM-solver but with `CoCoNuT_` added to the name. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using `wmake`).
 
 ### The `__init__` method
 
