@@ -25,8 +25,9 @@ nav:
         - Predictors: predictors.md
         - ConvergenceCriteria: convergence_criteria.md
         - SolverWrappers:
+	    - abaqus.md
             - fluent.md
-            - abaqus.md
+            - openfoam.md
             - python.md
         - Mappers: mappers.md
     - TestExamples:
