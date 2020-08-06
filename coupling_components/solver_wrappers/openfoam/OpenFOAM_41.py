@@ -901,7 +901,7 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write("\t ) \n")
             if writeEnd:
                 file.write("} \n ")
-            if funcname == "p":
+            if varname == "PRESSURE":
                 print("\n\n Please check the 'rho' option in the static pressure definition in controlDict! This might vary from OF-solver to OF-solver.\n\n")
            
         file.close()
