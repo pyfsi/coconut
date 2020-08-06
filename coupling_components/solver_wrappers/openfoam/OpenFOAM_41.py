@@ -381,55 +381,15 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         maxIt=20
         for boundary in self.boundary_names:
+            tractionName="TRACTION_"+boundary
+            pressureName="PRESSURE_"+boundary
             wss_tmp=np.zeros([self.nNodes_tot,3])
             pres_tmp=np.zeros([self.nNodes_tot,3])
             mp = self.model[boundary+"_output"]
             it=0
-            if self.cores == 1:
-                wss_file= os.path.join(self.working_directory, str(self.physical_time), "wallShearStress")
-                pres_file= os.path.join(self.working_directory, str(self.physical_time), "p")
-                if self.nNodes_proc[nKey,0] == 1: #Single node on interface (Really??)
-                    #Read wall shear stress
-                    while True:
-                        try:
-                            lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                            indexUV=lineNameNr_wss+4
-                            os.system("awk NR==" + str(indexUV) + " " + wss_file + " > unifValue")
-                            unifValue_file=open("unifValue",'r')
-                            unifValue=unifValue_file.readline().split("\t")[-1][0:-1] #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                            unifValue_file.close()
-                            os.system("rm unifValue ")
-                            for i in np.arange(self.nNodes[nKey,0]):
-                                    wss_tmp[i,0]=float(unifValue[0][1:])
-                                    wss_tmp[i,1]=float(unifValue[1])
-                                    wss_tmp[i,2]=float(unifValue[2][0:-2])
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")      
-                    #Read pressure
-                    while True:
-                        try:
-                            lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                            indexUV=lineNameNr_pres+4
-                            os.system("awk NR==" + str(indexUV) + " " + pres_file + " > unifValue")
-                            unifValue_file=open("unifValue",'r')
-                            unifValue=unifValue_file.readline().split()[-1][0:-1] #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                            unifValue_file.close()
-                            os.system("rm unifValue ")
-                            for i in np.arange(self.nNodes[nKey,0]):
-                                pres_tmp[i]=float(unifValue)
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")    
-                elif self.nNodes_proc[nKey,0] < 11: # 10 or less elements on the interface
+            wss_file= os.path.join(self.working_directory, "postProcessing", str(self.physical_time), tractionName)
+            pres_file= os.path.join(self.working_directory, "postProcessing", str(self.physical_time), pressureName)
+            if self.nNodes_tot < 11: # 10 or less elements on the interface
                     # read wall shear stress
                     while True:
                         try:
@@ -441,7 +401,7 @@ class SolverWrapperOpenFOAM_41(Component):
                             listNr_file.close()
                             os.system("rm listNr")
                             listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                            for i in np.arange(self.nNodes_proc[nKey,0]):
+                            for i in np.arange(self.nNodes_tot):
                                 wss_tmp[i,0]=float(listToRead[i])
                                 wss_tmp[i,1]=float(listToRead[i])
                                 wss_tmp[i,2]=float(listToRead[i])
@@ -463,7 +423,7 @@ class SolverWrapperOpenFOAM_41(Component):
                             listNr_file.close()
                             os.system("rm listNr")
                             listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                            for i in np.arange(self.nNodes_proc[nKey,0]):
+                            for i in np.arange(self.nNodes_tot):
                                 pres_tmp[i]=float(listToRead[i])
                             break
                         except ValueError:
@@ -474,7 +434,7 @@ class SolverWrapperOpenFOAM_41(Component):
                             sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
                 else: # More than 10 elements on interface
                     # read wall shear stress
-                    for i in np.arange(self.nNodes_proc[nKey,0]):
+                    for i in np.arange(self.nNodes_tot):
                         while True:
                             try:
                                 lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
@@ -491,7 +451,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 os.system("pkill " + self.application)
                                 sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
                     # read pressure
-                    for i in np.arange(self.nNodes_proc[nKey,0]):
+                    for i in np.arange(self.nNodes_tot):
                         while True:
                             try:
                                 lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
@@ -510,46 +470,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 for p in np.arange(self.cores):
                     wss_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "wallShearStress")
                     pres_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "p")
-                    if self.nNodes_proc[nKey,p] == 1: #Single node of the interface on this processor
-                        # read wall shear stress
-                        while True:
-                            try:
-                                lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                                indexUV=lineNameNr_wss+4
-                                os.system("awk NR==" + str(indexUV) + " " + wss_file + " > unifValue")
-                                unifValue_file=open("unifValue",'r')
-                                unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                                unifValue_file.close()
-                                for i in np.arange(self.nNodes[nKey,p]):
-                                    wss_tmp[nodeCount+i,0]=float(unifValue[0][1:])
-                                    wss_tmp[nodeCount+i,1]=float(unifValue[1])
-                                    wss_tmp[nodeCount+i,2]=float(unifValue[2][0:-2])
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                        # read pressure
-                        while True:
-                            try:
-                                lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                                indexUV=lineNameNr_pres+4
-                                os.system("awk NR==" + str(indexUV) + " " + pres_file + " > unifValue")
-                                unifValue_file=open("unifValue",'r')
-                                unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                                unifValue_file.close()
-                                for i in np.arange(self.nNodes[nKey,p]):
-                                    pres_tmp[nodeCount+i]=float(unifValue)
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    elif self.nNodes_proc[nKey,p] < 11: # 10 or less elements of the interface on this processor, nonuniform list recorded on a single line
+                    if self.nNodes_tot < 11: # 10 or less elements of the interface on this processor, nonuniform list recorded on a single line
                         # read wall shear stress
                         while True:
                             try:
@@ -561,7 +482,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 listNr_file.close()
                                 os.system("rm listNr")
                                 listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                                for i in np.arange(self.nNodes_proc[nKey,p]):
+                                for i in np.arange(self.nNodes_tot):
                                     wss_tmp[nodeCount+i,0]=float(listToRead[0])
                                     wss_tmp[nodeCount+i,1]=float(listToRead[1])
                                     wss_tmp[nodeCount+i,2]=float(listToRead[2])
@@ -583,7 +504,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 listNr_file.close()
                                 os.system("rm listNr")
                                 listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                                for i in np.arange(self.nNodes_proc[nKey,p]):
+                                for i in np.arange(self.nNodes_tot):
                                     pres_tmp[nodeCount+i]=float(listToRead[i])
                                 break
                             except ValueError:
@@ -594,7 +515,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
                     else: # More than 10 elements on interface
                         # read wall shear stress
-                        for i in np.arange(self.nNodes_proc[nKey,p]):
+                        for i in np.arange(self.nNodes_tot):
                             while True:
                                 try:
                                     lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
@@ -611,7 +532,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                     os.system("pkill " + self.application)
                                     sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
                         # read pressure
-                        for i in np.arange(self.nNodes_proc[nKey,p]):
+                        for i in np.arange(self.nNodes_tot):
                             while True:
                                 try:
                                     lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
@@ -625,7 +546,6 @@ class SolverWrapperOpenFOAM_41(Component):
                                 if it > maxIt:
                                     os.system("pkill " + self.application)
                                     sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    nodeCount += self.nNodes_proc[nKey,p]
             
             # store pressure and traction in Nodes
             index=0
