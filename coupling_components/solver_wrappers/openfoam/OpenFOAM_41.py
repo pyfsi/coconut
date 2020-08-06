@@ -211,7 +211,6 @@ class SolverWrapperOpenFOAM_41(Component):
                         coordList_tot[:,0]=np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
                 coordList_tot[:,(i+1)]=tempCoordFile[:,0]
             self.nNodes_tot=len(coordList_tot[:,0])
-            print(str(self.nNodes_tot))
             
             # Subsequently create each node separately in the ModelPart- both input and output!
             mp_input=self.model[boundary+"_input"]
@@ -221,9 +220,6 @@ class SolverWrapperOpenFOAM_41(Component):
                 mp_output.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
             nKey+=1    
         
-        # Print node distribution among processor folders
-        self.write_node_distribution()
-    
         # Create CoSimulationInterfaces
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
@@ -762,19 +758,20 @@ class SolverWrapperOpenFOAM_41(Component):
             nKey += 1     
     
     
-    def write_node_distribution(self):
-        nKey=0
-        for boundary in self.boundary_names:
-            tmp= 'CoCoNuT_nNodes_processor_' + boundary
-            file_name= os.path.join(self.working_directory, tmp)
-            with open(file_name, 'w') as file:
-                if self.cores > 1:
-                    for i in np.arange(len(self.nNodes_proc[nKey,:])):
-                        file.write("Processor " + str(i) + ": " + str(int(self.nNodes_proc[nKey,i]))+'\n')
-                else :
-                        file.write("Serial: " + str(int(self.nNodes_proc[nKey,0]))+'\n')
-            file.close()
-            nKey += 1
+#  OLD - TO REMOVE
+#     def write_node_distribution(self):
+#         nKey=0
+#         for boundary in self.boundary_names:
+#             tmp= 'CoCoNuT_nNodes_processor_' + boundary
+#             file_name= os.path.join(self.working_directory, tmp)
+#             with open(file_name, 'w') as file:
+#                 if self.cores > 1:
+#                     for i in np.arange(len(self.nNodes_proc[nKey,:])):
+#                         file.write("Processor " + str(i) + ": " + str(int(self.nNodes_proc[nKey,i]))+'\n')
+#                 else :
+#                         file.write("Serial: " + str(int(self.nNodes_proc[nKey,0]))+'\n')
+#             file.close()
+#             nKey += 1
      
             
     def write_controlDict_function(self, filename, funcname, libname, varname, patchname, writeStart, writeEnd):
