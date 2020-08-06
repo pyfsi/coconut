@@ -906,10 +906,10 @@ class SolverWrapperOpenFOAM_41(Component):
                 elif varname == "TRACTION":
                     file.write('\t\t\t wallShearStress \n')
                 file.write("\t\t ); \n")
-                file.write("\t } \n\n")
             elif funcname=="wallShearStress":
                 file.write('\t\t patches ( ' + patchname + ' ); \n')
                 file.write('\t\t log \t false; \n')
+            file.write("\t } \n\n")
             if writeEnd:
                 file.write("} \n ")
             if varname == "PRESSURE":
