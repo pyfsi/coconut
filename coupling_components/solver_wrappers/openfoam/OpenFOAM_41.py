@@ -116,6 +116,7 @@ class SolverWrapperOpenFOAM_41(Component):
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
                 self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
                 self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
         else:
             for key in self.boundary_names:
@@ -904,7 +905,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     file.write('\t\t\t p \n ')
                 elif varname == "TRACTION":
                     file.write('\t\t\t wallShearStress \n')
-                file.write("\t\t ) \n")
+                file.write("\t\t ); \n")
                 file.write("\t } \n\n")
             elif funcname=="wallShearStress":
                 file.write('\t\t patches ( ' + patchname + ' ); \n')
