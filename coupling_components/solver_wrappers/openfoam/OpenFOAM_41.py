@@ -710,16 +710,7 @@ class SolverWrapperOpenFOAM_41(Component):
                         self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,p)
                     startNr=self.find_string_in_file(boundary, disp_file)
                     os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
-                    if self.nNodes_proc[nKey,p] == 1: #Only 1 node on the interface in this processor-folder
-                        with open('tempDisp', 'a+') as file:
-                            file.write("\t { \n")
-                            file.write("\t\t type  \t fixedValue; \n")
-                            dispX=mp.Nodes[nNodes_previousProc].X-mp.Nodes[nNodes_previousProc].X0
-                            dispY=mp.Nodes[nNodes_previousProc].Y-mp.Nodes[nNodes_previousProc].Y0
-                            dispZ=mp.Nodes[nNodes_previousProc].Z-mp.Nodes[nNodes_previousProc].Z0
-                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
-                        file.close()
-                    elif self.nNodes_proc[nKey,p] < 11: # 10 or less elements on the interface in this processor-folder
+                    if self.nNodes_proc[nKey,p] < 11: # 10 or less elements on the interface in this processor-folder
                         with open('tempDisp', 'a+') as file:
                             file.write("\t { \n")
                             file.write("\t\t type  \t fixedValue; \n")
@@ -732,7 +723,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
                             file.write(');\n')
                         file.close()
-                    else :    
+                    else :   # More than 10 elements 
                         with open('tempDisp', 'a+') as file:
                             file.write("\t { \n")
                             file.write("\t\t type  \t fixedValue; \n")
@@ -818,12 +809,8 @@ class SolverWrapperOpenFOAM_41(Component):
                     for boundary in self.boundary_names: 
                         newFile.write(" \n \t "  + boundary +" \n")
                         newFile.write("\t { \n")
-                        if self.nNodes_proc[nKey,procNr] > 0:
-                            newFile.write("\t\t type  \t fixedValue; \n")
-                            newFile.write("\t\t value \t uniform (0 0 0); \n")
-                        else:
-                            newFile.write("\t\t type  \t calculated; \n")
-                            newFile.write("\t\t value \t nonuniform 0(); \n")
+                        newFile.write("\t\t type  \t calculated; \n")
+                        newFile.write("\t\t value \t nonuniform 0(); \n")
                         newFile.write("\t } \n")
                     newFile.write("} \n")
                     newFile.close()
