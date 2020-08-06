@@ -115,22 +115,22 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
-                self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
                 self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
-                self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
+                self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
         else:
             for key in self.boundary_names:
                 if nKey == 0:
-                    self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                    self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
                     self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
-                    self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
+                    self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 else:
-                    self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,False,False)
+                    self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,False,False)
                     self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
                     if nKey == (len(self.boundary_names)-1):
-                        self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
+                        self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
                     else:
-                        self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
+                        self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 nKey += 1
         self.write_footer(controlDict_name)
         # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file 
@@ -785,7 +785,7 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write('\t\t libs \t ("' + libname + '.so"); \n')
             file.write('\t\t writeControl \t timeStep; \n')
             file.write('\t\t writeInterval \t 1; \n')
-            if funcname=="SurfaceRegion":
+            if funcname=="surfaceRegion":
                 file.write('\t\t writeFields \t true; \n')
                 file.write('\t\t surfaceFormat \t raw; \n')
                 file.write('\t\t regionType \t patch; \n')
