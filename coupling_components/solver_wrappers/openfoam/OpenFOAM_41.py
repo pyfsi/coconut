@@ -164,165 +164,59 @@ class SolverWrapperOpenFOAM_41(Component):
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
             
-        # Adding nodes to ModelParts - should happen after variable definition
+        # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
-        self.nNodes_proc=np.zeros([len(self.settings['interface_input'].keys()),self.cores],dtype=np.int32)
-        self.nNodes_tot=np.zeros(len(self.settings['interface_input'].keys()),dtype=np.int32)
         nKey=0
         for boundary in self.boundary_names:
-            if self.cores == 1: # If you work in serial
-                #To avoid confusion, remove all present processor-files (from a possible previous parallel calculation)
-                os.system("cd " + self.working_directory + "; rm -r processor*;") 
-                
-                # First look up the interface wall in OpenFOAM's constant-folder - the coordinates are found using the OF-utility 'writeCellCentres'
-                for i in np.arange(3):
-                    if i == 0:
-                        source_file=self.working_directory + "/" + str(self.start_time) + "/ccx"
-                    elif i == 1:
-                        source_file=self.working_directory + "/" + str(self.start_time) + "/ccy"
-                    elif i == 2:
-                        source_file=self.working_directory + "/" + str(self.start_time) + "/ccz"
-                    try:
-                        lineNameNr=self.find_string_in_file(boundary, source_file)
-                        lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
+            for i in np.arange(3):
+                if i == 0:
+                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccx"
+                elif i == 1:
+                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccy"
+                elif i == 2:
+                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccz"
+                try:
+                    lineNameNr=self.find_string_in_file(boundary, source_file)
+                    lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
+                    nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
+                    os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
+                    nNodes_file=open("nNodes",'r')
+                    nNodes=int(nNodes_file.readline())
+                    nNodes_file.close()
+                    os.system("rm nNodes")
+                    tempCoordFile=np.ones([nNodes,1])*float("inf")
+                    for j in np.arange(nNodes):
+                        tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
+                except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking
+                    if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
+                        check_file=self.working_directory + "/" + str(self.start_time) + "/ccy" # if 'nNodes' does not exist, read the second sourceFile to know the number of rows
+                        lineNameNr=self.find_string_in_file(boundary, check_file)
                         nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                        os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
+                        os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
                         nNodes_file=open("nNodes",'r')
                         nNodes=int(nNodes_file.readline())
                         nNodes_file.close()
                         os.system("rm nNodes")
-                        tempCoordFile=np.ones([nNodes,1])*float("inf")
-                        for j in np.arange(nNodes):
-                            tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
-                    except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking
-                        if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
-                            check_file=self.working_directory + "/" + str(self.start_time) + "/ccy" # if 'nNodes' does not exist, read the second sourceFile to know the number of rows
-                            lineNameNr=self.find_string_in_file(boundary, check_file)
-                            nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                            os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                            nNodes_file=open("nNodes",'r')
-                            nNodes=int(nNodes_file.readline())
-                            nNodes_file.close()
-                            os.system("rm nNodes")
-                        indexUV=lineNameNr+4
-                        os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
-                        unifValue_file=open("unifValue",'r')
-                        unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                        unifValue_file.close()
-                        os.system("rm unifValue")
-                        tempCoordFile=np.ones([nNodes,1])*float("inf")
-                        for j in np.arange(nNodes):
-                            tempCoordFile[j,0]=unifValue
-                    if i == 0:
-                        coordList_tot=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z - Area
+                    indexUV=lineNameNr+4
+                    os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
+                    unifValue_file=open("unifValue",'r')
+                    unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
+                    unifValue_file.close()
+                    os.system("rm unifValue")
+                    tempCoordFile=np.ones([nNodes,1])*float("inf")
+                    for j in np.arange(nNodes):
+                        tempCoordFile[j,0]=unifValue
+                if i == 0:
+                        coordList_tot=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z
                         coordList_tot[:,0]=np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
-                        self.nNodes_proc[nKey,0]=nNodes
-                        self.nNodes_tot[nKey]=self.nNodes_proc[nKey,0]
-                    coordList_tot[:,(i+1)]=tempCoordFile[:,0]
-            else: # If you work in parallel
-                foundProcWithInterfaceValues=False
-                for p in np.arange(self.cores): # Check in each processor-folder
-                    for i in np.arange(3):
-                        if i == 0:
-                            source_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccx"
-                        elif i == 1:
-                            source_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccy"
-                        elif i == 2:
-                            source_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccz"
-                        lineNameNr=self.find_string_in_file(boundary, source_file)
-                        procContainsBoundaryNr=lineNameNr+4
-                        os.system("awk NR==" + str(procContainsBoundaryNr) + " " + source_file + " > PCB" )
-                        PCB_file=open("PCB",'r')
-                        procContainsBoundary=str(PCB_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder 
-                        PCB_file.close() 
-                        os.system("rm PCB")
-                        if "nonuniform 0();" not in procContainsBoundary: # If this processor folder contains the interface you are looking for
-                            try:
-                                lineNameNr=self.find_string_in_file(boundary, source_file)
-                                lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                                nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                                os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
-                                nNodes_file=open("nNodes",'r')
-                                nNodes=int(nNodes_file.readline())
-                                nNodes_file.close()
-                                os.system("rm nNodes")
-                                tempCoordFile=np.ones([nNodes,1])*float("inf")
-                                for j in np.arange(nNodes):
-                                    tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
-                            except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking OR that the nonuniform list contains less than 11 elements - because apparently OF prints the entire array on a single line in that case... 
-                                if "nonuniform" not in procContainsBoundary: # If the coordinate is a uniform value 
-                                    if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
-                                        check_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccy"
-                                        lineNameNr=self.find_string_in_file(boundary, check_file)
-                                        typeCcyNr=lineNameNr+5
-                                        os.system("awk NR==" + str(typeCcyNr) + " " + check_file + " > typeCcy" )
-                                        typeCcy_file=open("typeCcy",'r')
-                                        typeCcy=str(typeCcy_file.readline())
-                                        typeCcy_file.close()
-                                        if "(" in typeCcy: # 10 nodes or less in this list
-                                            listCcy=((typeCcy.split("(")[-1]).split(")")[0]).split(" ")
-                                            nNodes=int(len(listCcy))     
-                                        else : # More than 10 nodes in this list or ccy is also uniform
-                                            if "nonuniform" not in typeCcy: #ccy is also uniform, check ccz
-                                                check_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccz"
-                                                lineNameNr=lineNameNr=self.find_string_in_file(boundary, check_file)
-                                                typeCczNr=lineNameNr+4
-                                                os.system("awk NR==" + str(typeCczNr) + " " + check_file + " > typeCcz" )
-                                                typeCcz_file=open("typeCcz",'r')
-                                                typeCcz=str(typeCcz_file.readline())
-                                                typeCcz_file.close()
-                                                if "(" in typeCcz: # 10 nodes or less in this list 
-                                                    listCcz=((typeCcz.split("(")[-1]).split(")")[0]).split(" ")
-                                                    nNodes=int(len(listCcz))
-                                                else: #More than 10 nodes in this list or ccz is also uniform
-                                                    if "nonuniform" not in typeCcz: #ccz is also uniform - you only have 1 point in this processor (for real?)
-                                                        nNodes=1
-                                                    else : #there are more than 10 nodes in this list
-                                                        nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                                                        os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                                                        nNodes_file=open("nNodes",'r')
-                                                        nNodes=int(nNodes_file.readline())
-                                                        nNodes_file.close()              
-                                            else: # ccy is not uniform
-                                                nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                                                os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                                                nNodes_file=open("nNodes",'r')
-                                                nNodes=int(nNodes_file.readline())
-                                                nNodes_file.close() 
-                                        os.system("rm nNodes typeCcy")
-                                    indexUV=lineNameNr+4
-                                    os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
-                                    unifValue_file=open("unifValue",'r')
-                                    unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                                    unifValue_file.close()
-                                    os.system("rm unifValue")
-                                    tempCoordFile=np.ones([nNodes,1])*float("inf")
-                                    for j in np.arange(nNodes):
-                                        tempCoordFile[j,0]=unifValue
-                                else : # Coordinates are a nonuniform list containing less than 11 elements and are all written on one line
-                                    listToRead=((procContainsBoundary.split("(")[-1]).split(")")[0]).split(" ")
-                                    nNodes=int(len(listToRead))
-                                    tempCoordFile=np.ones([nNodes,1])*float("inf")
-                                    for j in np.arange(nNodes):
-                                            tempCoordFile[j,0]=float(listToRead[j])                                
-                            if i == 0:
-                                coordList=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z - Area
-                                coordList[:,0]=self.nNodes_tot[nKey]*np.ones(nNodes)+np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
-                                self.nNodes_proc[nKey,p]=nNodes
-                            coordList[:,(i+1)]=tempCoordFile[:,0]
-                    if "nonuniform 0();" not in procContainsBoundary: # If this processor folder contains the interface you are looking for
-                        if not(foundProcWithInterfaceValues) :
-                            coordList_tot= coordList
-                            foundProcWithInterfaceValues=True
-                        else :
-                            coordList_tot=np.concatenate((coordList_tot,coordList), axis=0)
-                        del nNodes
-                    self.nNodes_tot[nKey]=int(np.sum(self.nNodes_proc[nKey,:]))
+                coordList_tot[:,(i+1)]=tempCoordFile[:,0]
+            self.nNodes_tot=len(coordList_tot[:,0])
+            print(str(self.nNodes_tot))
             
             # Subsequently create each node separately in the ModelPart- both input and output!
             mp_input=self.model[boundary+"_input"]
             mp_output=self.model[boundary+"_output"]
-            for i in np.arange(int(self.nNodes_tot[nKey])):
+            for i in np.arange(int(self.nNodes_tot)):
                 mp_input.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
                 mp_output.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
             nKey+=1    
@@ -491,8 +385,8 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         maxIt=20
         for boundary in self.boundary_names:
-            wss_tmp=np.zeros([self.nNodes_tot[nKey],3])
-            pres_tmp=np.zeros([self.nNodes_tot[nKey],3])
+            wss_tmp=np.zeros([self.nNodes_tot,3])
+            pres_tmp=np.zeros([self.nNodes_tot,3])
             mp = self.model[boundary+"_output"]
             it=0
             if self.cores == 1:
