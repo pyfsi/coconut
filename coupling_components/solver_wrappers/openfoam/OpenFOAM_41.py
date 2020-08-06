@@ -113,20 +113,20 @@ class SolverWrapperOpenFOAM_41(Component):
         rawFile.close()
         newFile.close()
         nKey=0
-#         if len(self.boundary_names) == 1:
-#             for key in self.boundary_names:
-#                 self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects.so",key,True,False)
-#         else:
-#             for key in self.boundary_names:
-#                 if nKey == 0:
-#                     self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
-#                 else:
-#                     if nKey == (len(self.boundary_names)-1):
-#                         self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects_CoCoNuT.so",key,False,True)
-#                     else:
-#                         self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects_CoCoNuT.so",key,False,False)
-#                 nKey += 1
-#         self.write_footer(controlDict_name)
+        if len(self.boundary_names) == 1:
+            for key in self.boundary_names:
+                self.write_controlDict_SRfunction(controlDict_name,"p",key,True,False)
+        else:
+            for key in self.boundary_names:
+                if nKey == 0:
+                    self.write_controlDict_SRfunction(controlDict_name,"p",key,True,False)
+                else:
+                    if nKey == (len(self.boundary_names)-1):
+                        self.write_controlDict_function(controlDict_name,"p",key,False,True)
+                    else:
+                        self.write_controlDict_function(controlDict_name,"p",key,False,False)
+                nKey += 1
+        self.write_footer(controlDict_name)
         # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file 
         dynamicMeshDict_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"dynamicMeshDict_raw")
         dynamicMeshDict_name=os.path.join(self.working_directory,"constant/dynamicMeshDict")
@@ -877,28 +877,31 @@ class SolverWrapperOpenFOAM_41(Component):
             nKey += 1
      
             
-#     def write_controlDict_function(self, filename, funcname, libOFname, patchname, writeStart, writeEnd):
-#         with open(filename,'a+') as file:
-#             if writeStart:
-#                 file.write("functions \n")
-#                 file.write("{ \n ")
-#             file.write(" \n \t " + funcname + "_" + patchname +" \n")
-#             file.write("\t { \n")
-#             file.write("\t\t type  \t " + funcname + "; \n")
-#             file.write('\t\t libs \t ("' + libOFname + '"); \n')
-#             file.write('\t\t patches ( "' + patchname + '"); \n')
-#             file.write('\t\t writeControl \t timeStep; \n')
-#             file.write('\t\t writeInterval \t 1; \n')
-#             file.write('\t\t log \t true; \n')
-#             if funcname == "pressure":
-#                 file.write('\t\t calcTotal \t no; \n')
-#                 file.write('\t\t calcCoeff \t no; \n')
-#                 file.write('\t\t rho \t rho; \n')
-#                 print("\n\n Please check the 'rho' option in the static pressure definition in controlDict! This might vary from OF-solver to OF-solver.\n\n")
-#             file.write("\t } \n")
-#             if writeEnd:
-#                 file.write("} \n ")
-#         file.close()
+    def write_controlDict_SRfunction(self, filename, varname, patchname, writeStart, writeEnd):
+        with open(filename,'a+') as file:
+            if writeStart:
+                file.write("functions \n")
+                file.write("{ \n ")
+            file.write(" \n \t " + varname + "_" + patchname +" \n")
+            file.write("\t { \n")
+            file.write("\t\t type  \t surfaceRegion; \n")
+            file.write('\t\t libs \t ("libfieldFunctionObjects.so"); \n')
+            file.write('\t\t writeControl \t timeStep; \n')
+            file.write('\t\t writeFields \t true; \n')
+            file.write('\t\t writeInterval \t 1; \n')
+            file.write('\t\t surfaceFormat \t raw; \n')
+            file.write('\t\t regionType \t patch, \n')
+            file.write('\t\t name \t ' + patchName + ' ; \n')
+            file.write('\t\t fields \n')
+            file.write('\t\t ( \n')
+            file.write('\t\t\t' +  varname + '\n ')
+            file.write("\t ) \n")
+            if writeEnd:
+                file.write("} \n ")
+            if funcname == "p":
+                print("\n\n Please check the 'rho' option in the static pressure definition in controlDict! This might vary from OF-solver to OF-solver.\n\n")
+           
+        file.close()
             
     
     def write_pointDisplacement_file(self,pointDisp_raw_name,pointDisp_name,procNr):
