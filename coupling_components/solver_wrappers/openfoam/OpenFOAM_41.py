@@ -891,10 +891,13 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write('\t\t writeInterval \t 1; \n')
             file.write('\t\t surfaceFormat \t raw; \n')
             file.write('\t\t regionType \t patch, \n')
-            file.write('\t\t name \t ' + patchName + ' ; \n')
+            file.write('\t\t name \t ' + patchname + ' ; \n')
             file.write('\t\t fields \n')
             file.write('\t\t ( \n')
-            file.write('\t\t\t' +  varname + '\n ')
+            if varname == "PRESSURE":
+                file.write('\t\t\t p \n ')
+            elif varname == "TRACTION":
+                file.write('\t\t\t wallShearStress \n')
             file.write("\t ) \n")
             if writeEnd:
                 file.write("} \n ")
