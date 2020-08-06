@@ -721,6 +721,7 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write('\t\t writeControl \t timeStep; \n')
             file.write('\t\t writeInterval \t 1; \n')
             if funcname=="surfaceRegion":
+                file.write('\t\t operation \t none; \n')
                 file.write('\t\t writeFields \t true; \n')
                 file.write('\t\t surfaceFormat \t raw; \n')
                 file.write('\t\t regionType \t patch; \n')
