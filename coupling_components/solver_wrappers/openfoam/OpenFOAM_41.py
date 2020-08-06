@@ -115,16 +115,16 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
-                self.write_controlDict_SRfunction(controlDict_name,"p",key,True,False)
+                self.write_controlDict_SRfunction(controlDict_name,"PRESSURE",key,True,False)
         else:
             for key in self.boundary_names:
                 if nKey == 0:
-                    self.write_controlDict_SRfunction(controlDict_name,"p",key,True,False)
+                    self.write_controlDict_SRfunction(controlDict_name,"PRESSURE",key,True,False)
                 else:
                     if nKey == (len(self.boundary_names)-1):
-                        self.write_controlDict_function(controlDict_name,"p",key,False,True)
+                        self.write_controlDict_function(controlDict_name,"PRESSURE",key,False,True)
                     else:
-                        self.write_controlDict_function(controlDict_name,"p",key,False,False)
+                        self.write_controlDict_function(controlDict_name,"PRESSURE",key,False,False)
                 nKey += 1
         self.write_footer(controlDict_name)
         # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file 
@@ -890,7 +890,7 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write('\t\t writeFields \t true; \n')
             file.write('\t\t writeInterval \t 1; \n')
             file.write('\t\t surfaceFormat \t raw; \n')
-            file.write('\t\t regionType \t patch, \n')
+            file.write('\t\t regionType \t patch; \n')
             file.write('\t\t name \t ' + patchname + ' ; \n')
             file.write('\t\t fields \n')
             file.write('\t\t ( \n')
