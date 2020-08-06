@@ -651,101 +651,45 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         for boundary in self.boundary_names:
             mp = self.model[boundary+"_input"]
-            if self.cores == 1: #Working in serial operation
-                disp_file = os.path.join(self.working_directory, str(self.physical_time), 'pointDisplacement')
-                if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
-                    pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
-                    self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,0)
-                startNr=self.find_string_in_file(boundary, disp_file)
-                os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
-                if self.nNodes_proc[nKey,0] == 1: #Only 1 node on the interface (Really??)
-                    with open('tempDisp', 'a+') as file:
-                        file.write("\t { \n")
-                        file.write("\t\t type  \t fixedValue; \n")
-                        with mp.Nodes[0] as node:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
-                    file.close()
-                elif self.nNodes_proc[nKey,0] < 11: # 10 or less elements on interface
-                    with open('tempDisp', 'a+') as file:
-                        file.write("\t { \n")
-                        file.write("\t\t type  \t fixedValue; \n")
-                        file.write('\t\t value \t nonuniform List<vector> (')
-                        for node in mp.Nodes:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
-                        file.write(');\n')
-                    file.close()
-                else :    
-                    with open('tempDisp', 'a+') as file:
-                        file.write("\t { \n")
-                        file.write("\t\t type  \t fixedValue; \n")
-                        file.write('\t\t value \t nonuniform List<vector> ( \n')
-                        for node in mp.Nodes:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
-                        file.write(');\n')
-                    file.close()
-                os.system("wc -l " + disp_file + " > lengthDisp")
-                lengthDisp_file=open("lengthDisp",'r')
-                length_disp=int(lengthDisp_file.readline().split(" ")[0])
-                lengthDisp_file.close()
-                os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
-                startToEndNr=self.find_string_in_file("}", "tempDisp2")
-                os.system("tail -n " + str(length_disp-(startNr+1)-startToEndNr) + " " + disp_file + " > tempDisp3")
-                os.system("cat tempDisp tempDisp3 > "+ disp_file)
-                os.system("rm tempDisp* lengthDisp")
-            else : # Working in parallel mode
-                nNodes_previousProc=0
-                for p in np.arange(self.cores): 
-                    disp_file = os.path.join(self.working_directory, ("processor"+str(p)),str(self.physical_time), 'pointDisplacement')
-                    if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
-                        pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
-                        self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,p)
-                    startNr=self.find_string_in_file(boundary, disp_file)
-                    os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
-                    if self.nNodes_proc[nKey,p] < 11: # 10 or less elements on the interface in this processor-folder
-                        with open('tempDisp', 'a+') as file:
-                            file.write("\t { \n")
-                            file.write("\t\t type  \t fixedValue; \n")
-                            file.write('\t\t value \t nonuniform List<vector> (')
-                            for i in np.arange(self.nNodes_proc[nKey,p]):
-                                mp.Nodes[nNodes_previousProc+i]
-                                dispX=mp.Nodes[nNodes_previousProc+i].X-mp.Nodes[nNodes_previousProc+i].X0
-                                dispY=mp.Nodes[nNodes_previousProc+i].Y-mp.Nodes[nNodes_previousProc+i].Y0
-                                dispZ=mp.Nodes[nNodes_previousProc+i].Z-mp.Nodes[nNodes_previousProc+i].Z0
-                                file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
-                            file.write(');\n')
-                        file.close()
-                    else :   # More than 10 elements 
-                        with open('tempDisp', 'a+') as file:
-                            file.write("\t { \n")
-                            file.write("\t\t type  \t fixedValue; \n")
-                            file.write('\t\t value \t nonuniform List<vector> ( \n')
-                            for i in np.arange(self.nNodes_proc[nKey,p]):
-                                mp.Nodes[nNodes_previousProc+i]
-                                dispX=mp.Nodes[nNodes_previousProc+i].X-mp.Nodes[nNodes_previousProc+i].X0
-                                dispY=mp.Nodes[nNodes_previousProc+i].Y-mp.Nodes[nNodes_previousProc+i].Y0
-                                dispZ=mp.Nodes[nNodes_previousProc+i].Z-mp.Nodes[nNodes_previousProc+i].Z0
-                                file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
-                            file.write(');\n')
-                        file.close()
-                    os.system("wc -l " + disp_file + " > lengthDisp")
-                    lengthDisp_file=open("lengthDisp",'r')
-                    length_disp=int(lengthDisp_file.readline().split(" ")[0])
-                    lengthDisp_file.close()
-                    os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
-                    startToEndNr=self.find_string_in_file("}", "tempDisp2")
-                    os.system("tail -n " + str(length_disp-(startNr+1)-startToEndNr) + " " + disp_file + " > tempDisp3")
-                    os.system("cat tempDisp tempDisp3 > "+ disp_file)
-                    nNodes_previousProc+=self.nNodes_proc[nKey,p]
-                    os.system("rm tempDisp* lengthDisp")
+            disp_file = os.path.join(self.working_directory, str(self.physical_time), 'pointDisplacement')
+            if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
+                pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
+                self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,0)
+            startNr=self.find_string_in_file(boundary, disp_file)
+            os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
+            if self.nNodes_tot < 11: # 10 or less elements on interface
+                with open('tempDisp', 'a+') as file:
+                    file.write("\t { \n")
+                    file.write("\t\t type  \t fixedValue; \n")
+                    file.write('\t\t value \t nonuniform List<vector> (')
+                    for node in mp.Nodes:
+                        dispX=node.X-node.X0
+                        dispY=node.Y-node.Y0
+                        dispZ=node.Z-node.Z0
+                        file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
+                    file.write(');\n')
+                file.close()
+            else :    
+                with open('tempDisp', 'a+') as file:
+                    file.write("\t { \n")
+                    file.write("\t\t type  \t fixedValue; \n")
+                    file.write('\t\t value \t nonuniform List<vector> ( \n')
+                    for node in mp.Nodes:
+                        dispX=node.X-node.X0
+                        dispY=node.Y-node.Y0
+                        dispZ=node.Z-node.Z0
+                        file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
+                    file.write(');\n')
+                file.close()
+            os.system("wc -l " + disp_file + " > lengthDisp")
+            lengthDisp_file=open("lengthDisp",'r')
+            length_disp=int(lengthDisp_file.readline().split(" ")[0])
+            lengthDisp_file.close()
+            os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
+            startToEndNr=self.find_string_in_file("}", "tempDisp2")
+            os.system("tail -n " + str(length_disp-(startNr+1)-startToEndNr) + " " + disp_file + " > tempDisp3")
+            os.system("cat tempDisp tempDisp3 > "+ disp_file)
+            os.system("rm tempDisp* lengthDisp")
             nKey += 1     
     
     
