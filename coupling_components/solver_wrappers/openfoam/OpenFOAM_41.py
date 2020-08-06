@@ -115,16 +115,21 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
-                self.write_controlDict_SRfunction(controlDict_name,"PRESSURE",key,True,False)
+                self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
         else:
             for key in self.boundary_names:
                 if nKey == 0:
-                    self.write_controlDict_SRfunction(controlDict_name,"PRESSURE",key,True,False)
+                    self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
+                    self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 else:
+                    self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","PRESSURE",key,False,False)
+                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
                     if nKey == (len(self.boundary_names)-1):
-                        self.write_controlDict_function(controlDict_name,"PRESSURE",key,False,True)
+                        self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
                     else:
-                        self.write_controlDict_function(controlDict_name,"PRESSURE",key,False,False)
+                        self.write_controlDict_function(controlDict_name,"SurfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 nKey += 1
         self.write_footer(controlDict_name)
         # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file 
@@ -877,28 +882,30 @@ class SolverWrapperOpenFOAM_41(Component):
             nKey += 1
      
             
-    def write_controlDict_SRfunction(self, filename, varname, patchname, writeStart, writeEnd):
+    def write_controlDict_function(self, filename, funcname, libname, varname, patchname, writeStart, writeEnd):
         with open(filename,'a+') as file:
             if writeStart:
                 file.write("functions \n")
                 file.write("{ \n ")
             file.write(" \n \t " + varname + "_" + patchname +" \n")
             file.write("\t { \n")
-            file.write("\t\t type  \t surfaceRegion; \n")
-            file.write('\t\t libs \t ("libfieldFunctionObjects.so"); \n')
+            file.write("\t\t type  \t " + funcname + "; \n")
+            file.write('\t\t libs \t ("' + libname + '.so"); \n')
             file.write('\t\t writeControl \t timeStep; \n')
-            file.write('\t\t writeFields \t true; \n')
             file.write('\t\t writeInterval \t 1; \n')
-            file.write('\t\t surfaceFormat \t raw; \n')
-            file.write('\t\t regionType \t patch; \n')
-            file.write('\t\t name \t ' + patchname + ' ; \n')
-            file.write('\t\t fields \n')
-            file.write('\t\t ( \n')
-            if varname == "PRESSURE":
-                file.write('\t\t\t p \n ')
-            elif varname == "TRACTION":
-                file.write('\t\t\t wallShearStress \n')
-            file.write("\t ) \n")
+            if funcname="SurfaceRegion":
+                file.write('\t\t writeFields \t true; \n')
+                file.write('\t\t surfaceFormat \t raw; \n')
+                file.write('\t\t regionType \t patch; \n')
+                file.write('\t\t name \t ' + patchname + ' ; \n')
+                file.write('\t\t fields \n')
+                file.write('\t\t ( \n')
+                if varname == "PRESSURE":
+                    file.write('\t\t\t p \n ')
+                elif varname == "TRACTION":
+                    file.write('\t\t\t wallShearStress \n')
+                file.write("\t\t ) \n")
+                file.write("\t } \n\n")
             if writeEnd:
                 file.write("} \n ")
             if varname == "PRESSURE":
