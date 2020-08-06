@@ -21,7 +21,7 @@
                 },
                 "interface_output":
                 {
-                 	"walls_output": ["PRESSURE","WALLSHEARSTRESS"]
+                 	"walls_output": ["PRESSURE","TRACTION"]
                 },
                 "cores": 1,
                 "decomposeMethod": "scotch",
