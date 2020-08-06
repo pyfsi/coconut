@@ -893,7 +893,7 @@ class SolverWrapperOpenFOAM_41(Component):
             file.write('\t\t libs \t ("' + libname + '.so"); \n')
             file.write('\t\t writeControl \t timeStep; \n')
             file.write('\t\t writeInterval \t 1; \n')
-            if funcname="SurfaceRegion":
+            if funcname=="SurfaceRegion":
                 file.write('\t\t writeFields \t true; \n')
                 file.write('\t\t surfaceFormat \t raw; \n')
                 file.write('\t\t regionType \t patch; \n')
@@ -906,6 +906,9 @@ class SolverWrapperOpenFOAM_41(Component):
                     file.write('\t\t\t wallShearStress \n')
                 file.write("\t\t ) \n")
                 file.write("\t } \n\n")
+            elif funcname=="wallShearStress":
+                file.write('\t\t patches ( ' + patchname + ' ); \n')
+                file.write('\t\t log \t false; \n')
             if writeEnd:
                 file.write("} \n ")
             if varname == "PRESSURE":
