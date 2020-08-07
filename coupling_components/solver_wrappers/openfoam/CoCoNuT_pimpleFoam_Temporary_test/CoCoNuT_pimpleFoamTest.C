@@ -87,14 +87,14 @@ int main(int argc, char *argv[])
 			#include "setDeltaT.H"
 
             // Get the patch ID: patch name must be "mantle"
+            // This should be generalised and a loop should be provided for the different patches of interest
             label patchWallID = mesh.boundaryMesh().findPatchID("mantle");
             const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
 
+            // Info << "In Next" << nl << endl;
 
-            Info << "In Next" << nl << endl;
-
-            // Set patch displacement for motion solver.
-            //Find the reference to the pointDisplacement field (this appears to work)
+            // *** Set patch displacement for motion solver.*** //
+            // Find the reference to the pointDisplacement field (this appears to work)
         	pointVectorField& PointDisplacement = const_cast<pointVectorField&>
             (
                 mesh.objectRegistry::lookupObject<pointVectorField >
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
                 )
             );
 
-            Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
+            // Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
 
             //Get the vector field of the patch
             vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
@@ -112,20 +112,6 @@ int main(int argc, char *argv[])
             int Psize= pDisp.size();
             vectorField dispVals(Psize);
 
-            Info << "First Psize: " << Psize << nl << endl;
-
-            forAll(dispVals, index)
-            {
-                dispVals[index].x()=0;
-                dispVals[index].y()=0.001;
-                dispVals[index].z()=0;
-            }
-
-            //Once the values have been assigned to dispVals, assign them to cellDisplacement boundaryField
-            //PointDisplacement.boundaryFieldRef()[patchWallID] == dispVals; //This works but commented for now
-
-
-//            mesh.update();
             Info<< "Reading pointDisplacement\n" << endl; // bodyForce term
 
             pointVectorField pointDisplacement_temp_
@@ -148,41 +134,23 @@ int main(int argc, char *argv[])
 
             vectorField &pDispTemp=refCast<vectorField>(PointDisplacementTemp.boundaryFieldRef()[patchWallID]);
 
-            Info << pDispTemp <<nl << endl;
+            //Info << pDispTemp <<nl << endl;
 
             //Info << pointDisplacement_temp_ << nl <<endl;
-            //Info << pointDisplacement_temp_.boundaryField()[patchWallID].patchInternalField() << nl<< endl;
+            //Info << pointDisplacement_temp_.boundaryField()[patchWallID] << nl<< endl;
             //Info << "-------------------------------------------------------------------" << nl<< endl;
-            //Info << PointDisplacement.boundaryField()[patchWallID].patchInternalField() << nl<< endl;
+            //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
 
-            //Info << pointDisplacement_temp_.internalField() << nl<< endl;
-
+            // Assign the new boundary displacements
             PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
-//            Info << PointDisplacement.boundaryField()[patchWallID].value() << nl<< endl;
-
-            //vectorField test = pointDisplacement_temp_.boundaryField()[patchWallID];
-//            Info << test << nl<< endl;
-
-            Psize= pointDisplacement_temp_.boundaryField()[patchWallID].size();
-            Info << "Size of array "<< Psize << nl<< endl;
-//
-//            vectorField dispVals(Psize);
-//            forAll(dispVals, index)
-//            {
-//                dispVals[index].x()=0;
-//                dispVals[index].y()=0.001;
-//                dispVals[index].z()=0;
-//            }
 
             Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
 
     		runTime++;
 
-
     		OFstream outfile ("next_ready.coco");
     		outfile << "Joris says: good job on next.coco" << endl;
 			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
-			Info << "Just a test" << nl << endl;
 			remove("next.coco");
 		}
     	
@@ -198,17 +166,14 @@ int main(int argc, char *argv[])
     		Info << cPatch <<nl << endl;
 //    		forAll (cPatch,faceI)
 //    		{
-//    		pointDisplacement.boundaryField()[patchID][faceI] = ;
+//    		pointDisplacement.boundaryField()[patchID][faceI] = ; //The second index did not work for me
 //    		}
     		// See EMPIRE coupling code
     		*/
 
-
-    		
-    		
     		// Calculate the mesh motion and update the mesh
             mesh.update();
-            Info << "After mesh update" << nl << endl;
+            // Info << "After mesh update" << nl << endl;
 
             // Calculate absolute flux from the mapped surface velocity
             phi = mesh.Sf() & Uf;
