@@ -387,8 +387,8 @@ class SolverWrapperOpenFOAM_41(Component):
             pres_tmp=np.zeros([self.nNodes_tot,3])
             mp = self.model[boundary+"_output"]
             it=0
-            wss_file= os.path.join(self.working_directory, "postProcessing", str(self.physical_time), tractionName)
-            pres_file= os.path.join(self.working_directory, "postProcessing", str(self.physical_time), pressureName)
+            wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, str(self.physical_time))
+            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName,  str(self.physical_time))
             if self.nNodes_tot < 11: # 10 or less elements on the interface
                     # read wall shear stress
                 while True:
