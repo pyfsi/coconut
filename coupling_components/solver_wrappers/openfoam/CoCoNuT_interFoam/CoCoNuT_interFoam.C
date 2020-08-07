@@ -110,8 +110,9 @@ int main(int argc, char *argv[])
             
         if (exists("next.coco"))
     	{
-        	remove("next.coco");			
+        	remove("next.coco");
         	runTime++;
+        	runTime.run();
         	OFstream outfile ("next_ready.coco");
         	outfile << "Joris says: good job on next.coco" << endl;
     		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
