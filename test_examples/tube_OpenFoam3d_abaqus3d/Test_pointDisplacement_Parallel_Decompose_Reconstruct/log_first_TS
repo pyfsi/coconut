@@ -8,12 +8,12 @@
 Build  : 4.1
 Exec   : pimpleDyMFoam -parallel
 Date   : Aug 05 2020
-Time   : 11:47:35
+Time   : 15:43:44
 Host   : "cfdclu13.ugent.be"
-PID    : 417231
+PID    : 422748
 Case   : /lusers/temp/lucas/Temp_CoCoNut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/Test_pointDisplacement_Parallel_Decompose_Reconstruct
 nProcs : 2
-Slaves : 1("cfdclu13.ugent.be.417232")
+Slaves : 1("cfdclu13.ugent.be.422749")
 Pstream initialized with:
     floatTransfer      : 0
     nProcsSimpleSum    : 0
@@ -83,7 +83,7 @@ GAMG:  Solving for p, Initial residual = 0.0263468, Final residual = 4.11862e-08
 time step continuity errors : sum local = 3.9724e-10, global = 1.89507e-10, cumulative = -1.37266e-06
 smoothSolver:  Solving for epsilon, Initial residual = 0.0246336, Final residual = 2.11256e-06, No Iterations 2
 smoothSolver:  Solving for k, Initial residual = 1, Final residual = 3.02649e-06, No Iterations 3
-ExecutionTime = 0.14 s  ClockTime = 1 s
+ExecutionTime = 0.14 s  ClockTime = 0 s
 
 wallShearStress wallShearStress write:
     writing field wallShearStress
