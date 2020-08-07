@@ -380,37 +380,32 @@ class SolverWrapperOpenFOAM_41(Component):
     def read_node_output(self):
         nKey=0
         for boundary in self.boundary_names:
+            # specify location of pressure and traction
             tractionName="TRACTION_"+boundary
             pressureName="PRESSURE_"+boundary
             wss_tmp=np.zeros([self.nNodes_tot,3])
-            pres_tmp=np.zeros([self.nNodes_tot,3])
+            pres_tmp=np.zeros([self.nNodes_tot,1])
             mp = self.model[boundary+"_output"]
-            wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, str(self.physical_time))
-            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName, str(self.physical_time))
-            # read traction
-            lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-            listNr=lineNameNr_wss+4
-            os.system("awk NR==" + str(listNr) + " " + wss_file + " > listNr" )
-            listNr_file=open("listNr",'r')
-            listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-            listNr_file.close()
-            os.system("rm listNr")
-            listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-            for i in np.arange(self.nNodes_tot):
-                wss_tmp[i,0]=float(listToRead[i])
-                wss_tmp[i,1]=float(listToRead[i])
-                wss_tmp[i,2]=float(listToRead[i])
+            wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, str(self.start_time),"surfaceRegion.dat")
+            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName, str(self.start_time),"surfaceRegion.dat")
+#             # read traction
+#             f=open(wss_file,'r')
+#             fLines=f.readlines()
+#             index_start=4  
+#             for i in np.arange(self.nNodes_tot):
+#                 wss_tmp[i,0]=float(listToRead[index_start+i])
+#                 wss_tmp[i,1]=float(listToRead[index_start+i])
+#                 wss_tmp[i,2]=float(listToRead[index_start+i])
+#             f.close()
             # read pressure
-            lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-            listNr=lineNameNr_pres+4
-            os.system("awk NR==" + str(listNr) + " " + pres_file + " > listNr" )
-            listNr_file=open("listNr",'r')
-            listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-            listNr_file.close()
-            os.system("rm listNr")
-            listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
+            f=open(pres_file,'r')
+            fLines=f.readlines()
+            index_start=4+(self.timestep-1)*self.nNodes_tot
             for i in np.arange(self.nNodes_tot):
-                pres_tmp[i]=float(listToRead[i])
+                val=fLines[index_start+i].split()[2]
+                print(str(val))
+                pres_tmp[i,0]=float(fLines[index_start+i])
+            f.close()
             # store pressure and traction in Nodes
             index=0
             for node in mp.Nodes: # Easier than in Fluent because the sequence of nodes stays the same
