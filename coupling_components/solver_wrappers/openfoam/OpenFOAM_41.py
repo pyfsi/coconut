@@ -402,9 +402,9 @@ class SolverWrapperOpenFOAM_41(Component):
             fLines=f.readlines()
             index_start=4+(self.timestep-1)*self.nNodes_tot
             for i in np.arange(self.nNodes_tot):
-                val=fLines[index_start+i].split()[1]
+                val=fLines[index_start+i].split("\t")[1].split("\n")[0]
                 print(str(val))
-                pres_tmp[i,0]=float(fLines[index_start+i])
+                pres_tmp[i,0]=float(val)
             f.close()
             # store pressure and traction in Nodes
             index=0
