@@ -379,93 +379,38 @@ class SolverWrapperOpenFOAM_41(Component):
         
     def read_node_output(self):
         nKey=0
-        maxIt=20
         for boundary in self.boundary_names:
             tractionName="TRACTION_"+boundary
             pressureName="PRESSURE_"+boundary
             wss_tmp=np.zeros([self.nNodes_tot,3])
             pres_tmp=np.zeros([self.nNodes_tot,3])
             mp = self.model[boundary+"_output"]
-            it=0
             wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, str(self.physical_time))
-            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName,  str(self.physical_time))
-            if self.nNodes_tot < 11: # 10 or less elements on the interface
-                    # read wall shear stress
-                while True:
-                    try:
-                        lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                        listNr=lineNameNr_wss+4
-                        os.system("awk NR==" + str(listNr) + " " + wss_file + " > listNr" )
-                        listNr_file=open("listNr",'r')
-                        listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-                        listNr_file.close()
-                        os.system("rm listNr")
-                        listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                        for i in np.arange(self.nNodes_tot):
-                            wss_tmp[i,0]=float(listToRead[i])
-                            wss_tmp[i,1]=float(listToRead[i])
-                            wss_tmp[i,2]=float(listToRead[i])
-                        break
-                    except ValueError:
-                        time.sleep(1)
-                        it+=1
-                    if it > maxIt:
-                        os.system("pkill " + self.application)
-                        sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                # read pressure
-                while True:
-                    try:
-                        lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                        listNr=lineNameNr_pres+4
-                        os.system("awk NR==" + str(listNr) + " " + pres_file + " > listNr" )
-                        listNr_file=open("listNr",'r')
-                        listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-                        listNr_file.close()
-                        os.system("rm listNr")
-                        listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                        for i in np.arange(self.nNodes_tot):
-                            pres_tmp[i]=float(listToRead[i])
-                        break
-                    except ValueError:
-                        time.sleep(1)
-                        it+=1
-                    if it > maxIt:
-                        os.system("pkill " + self.application)
-                        sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-            else: # More than 10 elements on interface
-                # read wall shear stress
-                for i in np.arange(self.nNodes_tot):
-                    while True:
-                        try:
-                            lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                            lineStartNr=lineNameNr_wss+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                            str_line=linecache.getline(wss_file,lineStartNr+i).split(" ")
-                            wss_tmp[i,0]=float(str_line[0][1:])
-                            wss_tmp[i,1]=float(str_line[1])
-                            wss_tmp[i,2]=float(str_line[2][0:-2])   
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                # read pressure
-                for i in np.arange(self.nNodes_tot):
-                    while True:
-                        try:
-                            lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                            lineStartNr=lineNameNr_pres+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                            str_line=linecache.getline(pres_file,lineStartNr+i)
-                            pres_tmp[i]=float(str_line[0:-2]) # remove '\n'    
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")                      
-            
+            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName, str(self.physical_time))
+            # read traction
+            lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
+            listNr=lineNameNr_wss+4
+            os.system("awk NR==" + str(listNr) + " " + wss_file + " > listNr" )
+            listNr_file=open("listNr",'r')
+            listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
+            listNr_file.close()
+            os.system("rm listNr")
+            listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
+            for i in np.arange(self.nNodes_tot):
+                wss_tmp[i,0]=float(listToRead[i])
+                wss_tmp[i,1]=float(listToRead[i])
+                wss_tmp[i,2]=float(listToRead[i])
+            # read pressure
+            lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
+            listNr=lineNameNr_pres+4
+            os.system("awk NR==" + str(listNr) + " " + pres_file + " > listNr" )
+            listNr_file=open("listNr",'r')
+            listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
+            listNr_file.close()
+            os.system("rm listNr")
+            listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
+            for i in np.arange(self.nNodes_tot):
+                pres_tmp[i]=float(listToRead[i])
             # store pressure and traction in Nodes
             index=0
             for node in mp.Nodes: # Easier than in Fluent because the sequence of nodes stays the same
