@@ -403,7 +403,7 @@ class SolverWrapperOpenFOAM_41(Component):
             index_start=4+(self.timestep-1)*self.nNodes_tot
             it=0
             itMax=10
-            while (it < itMax);
+            while (it < itMax):
                 try:
                     for i in np.arange(self.nNodes_tot):
                         val=fLines[index_start+i].split("\t")[1].split("\n")[0]
