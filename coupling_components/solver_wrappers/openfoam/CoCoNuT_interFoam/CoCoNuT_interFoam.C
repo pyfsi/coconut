@@ -104,7 +104,9 @@ int main(int argc, char *argv[])
 	#include "CourantNo.H"
 	#include "setDeltaT.H"
     
-    while (true) // NOT! runTime.run() 
+    runTime.run(); // Initialize runTime object (also initializes functionObjects in controlDict)
+    
+    while (true)
     {
         usleep(1000); // Expressed in microseconds 
             
@@ -112,7 +114,6 @@ int main(int argc, char *argv[])
     	{
         	remove("next.coco");
         	runTime++;
-        	runTime.run();
         	OFstream outfile ("next_ready.coco");
         	outfile << "Joris says: good job on next.coco" << endl;
     		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
@@ -213,6 +214,7 @@ int main(int argc, char *argv[])
             IOdictionary controlDict(controlDict_IO);
             controlDict.Foam::regIOobject::write();
             runTime.functionObjects().execute();
+            runTime.run();
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;
         
