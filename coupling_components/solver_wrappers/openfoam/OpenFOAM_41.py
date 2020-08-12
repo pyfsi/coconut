@@ -402,7 +402,7 @@ class SolverWrapperOpenFOAM_41(Component):
             fLines=f.readlines()
             index_start=4+(self.timestep-1)*self.nNodes_tot
             it=0
-            itMax=100
+            itMax=10
             while (it < itMax):
                 try:
                     for i in np.arange(self.nNodes_tot):
