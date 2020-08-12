@@ -402,17 +402,18 @@ class SolverWrapperOpenFOAM_41(Component):
             fLines=f.readlines()
             index_start=4+(self.timestep-1)*self.nNodes_tot
             it=0
-            itMax=10
+            itMax=100
             while (it < itMax):
                 try:
                     for i in np.arange(self.nNodes_tot):
                         val=fLines[index_start+i].split("\t")[1].split("\n")[0]
-                        print(str(val))
                         pres_tmp[i,0]=float(val)
                     break
                 except IndexError:
+                    it=it+1
                     time.sleep(1)
             f.close()
+            print("\n\n Reached this: it=" + str(it) +"\n\n")
             # store pressure and traction in Nodes
             index=0
             for node in mp.Nodes: # Easier than in Fluent because the sequence of nodes stays the same
