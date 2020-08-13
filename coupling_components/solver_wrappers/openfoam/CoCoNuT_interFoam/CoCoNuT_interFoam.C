@@ -210,10 +210,6 @@ int main(int argc, char *argv[])
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
                 
-            IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
-            IOdictionary controlDict(controlDict_IO);
-            controlDict.Foam::regIOobject::write();
-            runTime.functionObjects().execute();
             runTime.run();
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;
@@ -225,7 +221,6 @@ int main(int argc, char *argv[])
         if (exists("save.coco"))
     	{
         	remove("save.coco");
-        	runTime.functionObjects().execute();
             runTime.write();
         	OFstream outfile ("save_ready.coco");
     		outfile << "Joris says: good job on save.coco" << endl;

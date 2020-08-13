@@ -156,10 +156,6 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             runTime.run();
-            runTime.functionObjects().execute();
-            IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
-            IOdictionary controlDict(controlDict_IO);
-            controlDict.Foam::regIOobject::write();
             Info << "I get past the save" << nl << endl;
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;
@@ -169,8 +165,7 @@ int main(int argc, char *argv[])
     	if (exists("save.coco"))
 		{
     		remove("save.coco");
-    		runTime.functionObjects().execute();
-    		runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+    		runTime.write();
     		OFstream outfile ("save_ready.coco");
 			outfile << "Joris says: good job on save.coco" << endl;
 		}

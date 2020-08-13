@@ -386,37 +386,29 @@ class SolverWrapperOpenFOAM_41(Component):
             wss_tmp=np.zeros([self.nNodes_tot,3])
             pres_tmp=np.zeros([self.nNodes_tot,1])
             mp = self.model[boundary+"_output"]
-            wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, str(self.start_time),"surfaceRegion.dat")
-            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName, str(self.start_time),"surfaceRegion.dat")
-#             # read traction
-#             f=open(wss_file,'r')
-#             fLines=f.readlines()
-#             index_start=4  
-#             for i in np.arange(self.nNodes_tot):
-#                 wss_tmp[i,0]=float(listToRead[index_start+i])
-#                 wss_tmp[i,1]=float(listToRead[index_start+i])
-#                 wss_tmp[i,2]=float(listToRead[index_start+i])
-#             f.close()
+            wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, "surface", str(self.physical_time),"wallShearStress_patch_"+boundary+".raw")
+            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName, "surface", str(self.physical_time),"p_patch_"+boundary+".raw")
+            # read traction
+            f=open(wss_file,'r')
+            fLines=f.readlines()
+            index_start=2  
+            for i in np.arange(self.nNodes_tot):
+                wss_tmp[i,0]=fLines[index_start+i].split()[3]
+                wss_tmp[i,1]=fLines[index_start+i].split()[4]
+                wss_tmp[i,2]=fLines[index_start+i].split()[5].split("\n")[0]
+            f.close()
             # read pressure
             f=open(pres_file,'r')
             fLines=f.readlines()
-            index_start=4+(self.timestep-1)*self.nNodes_tot
+            index_start=2
             it=0
-            itMax=10
-            while (it < itMax):
-                try:
-                    for i in np.arange(self.nNodes_tot):
-                        val=fLines[index_start+i].split("\t")[1].split("\n")[0]
-                        pres_tmp[i,0]=float(val)
-                    break
-                except IndexError:
-                    it=it+1
-                    time.sleep(1)
+            for i in np.arange(self.nNodes_tot):
+                val=fLines[index_start+i].split()[3].split("\n")[0]
+                pres_tmp[i,0]=float(val)
             f.close()
-            print("\n\n Reached this: it=" + str(it) +"\n\n")
             # store pressure and traction in Nodes
             index=0
-            for node in mp.Nodes: # Easier than in Fluent because the sequence of nodes stays the same
+            for node in mp.Nodes:
                 node.SetSolutionStepValue(self.shear, 0, wss_tmp[index])
                 node.SetSolutionStepValue(self.pressure, 0, pres_tmp[index])
                 index += 1
@@ -501,10 +493,15 @@ class SolverWrapperOpenFOAM_41(Component):
             if writeStart:
                 file.write("functions \n")
                 file.write("{ \n ")
-            file.write(" \n \t " + varname + "_" + patchname +" \n")
+            if varname=="wallShearStress":
+                file.write(" \n \t " + varname + " \n")
+            else:
+                file.write(" \n \t " + varname + "_" + patchname +" \n")
             file.write("\t { \n")
             file.write("\t\t type  \t " + funcname + "; \n")
             file.write('\t\t libs \t ("' + libname + '.so"); \n')
+            file.write('\t\t executeControl \t timeStep; \n')
+            file.write('\t\t executeInterval \t 1; \n')            
             file.write('\t\t writeControl \t timeStep; \n')
             file.write('\t\t writeInterval \t 1; \n')
             if funcname=="surfaceRegion":
@@ -518,10 +515,10 @@ class SolverWrapperOpenFOAM_41(Component):
                 if varname == "PRESSURE":
                     file.write('\t\t\t p \n ')
                 elif varname == "TRACTION":
-                    file.write('\t\t\t wallShearStress_' + patchname + '  \n')
+                    file.write('\t\t\t wallShearStress \n')
                 file.write("\t\t ); \n")
             elif funcname=="wallShearStress":
-                file.write('\t\t patches ( ' + patchname + ' ); \n')
+#                 file.write('\t\t patches ( ' + patchname + ' ); \n')
                 file.write('\t\t log \t false; \n')
             file.write("\t } \n\n")
             if writeEnd:
