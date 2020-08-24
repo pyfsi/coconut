@@ -19,15 +19,19 @@ def print_box(text):
 
 
 class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
+
+    version = '2019R1'
+
     def test_solver_wrapper_fluent_2019R1(self):
         self.test_solver_wrapper_fluent_2019R1_tube2d()
         self.test_solver_wrapper_fluent_2019R1_tube3d()
 
     def test_solver_wrapper_fluent_2019R1_tube2d(self):
         print_box('started tests for Fluent Tube2D')
-
+        print(f'in R1: {self.version}')
         parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_2019R1_tube2d', 'test_solver_wrapper.json')
+                                           f'test_v{self.version}_tube2d',
+                                           'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -35,7 +39,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory', 'test_2019R1_tube2d/CFD')
+            par_solver_0['settings'].SetString('working_directory',
+                                               f'test_v{self.version}_tube2d/CFD')
 
         # "global" definitions
         displacement = vars(data_structure)['DISPLACEMENT']
@@ -45,7 +50,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
         # setup Fluent case
         if True:
             print_box('setup Fluent case')
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_2019R1_tube2d')
+            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                                   f'test_v{self.version}_tube2d')
             p = subprocess.Popen(os.path.join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 
@@ -220,7 +226,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
         print_box('started tests for Fluent Tube3D')
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_2019R1_tube3d', 'test_solver_wrapper.json')
+                                           f'test_v{self.version}_tube3d',
+                                           'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -228,7 +235,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory', 'test_2019R1_tube3d/CFD')
+            par_solver_0['settings'].SetString('working_directory',
+                                               f'test_v{self.version}_tube3d/CFD')
 
         # "global" definitions
         displacement = vars(data_structure)['DISPLACEMENT']
@@ -243,7 +251,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
         if True:
             print_box('setup Fluent case')
 
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_2019R1_tube3d')
+            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                                   f'test_v{self.version}_tube3d')
             p = subprocess.Popen(os.path.join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 
