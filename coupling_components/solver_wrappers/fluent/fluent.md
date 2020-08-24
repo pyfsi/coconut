@@ -34,7 +34,7 @@ If different parameters are used with different Fluent versions, this should be 
 
 ## Overview of operation
 
-The solver-wrapper consists of 3 files (with `X` the Fluent version, e.g. `2019R1`):
+The solver-wrapper consists of 3 files (with `X` the Fluent version, e.g. `v2019R1`):
 
 -   `X.py`: defines the `SolverWrapperFluentX` class
 -   `X.jou`: Fluent journal file to interactively run the FSI simulation, written in Scheme
@@ -77,7 +77,7 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Version specific documentation
 
-### 2019R1 (19.3)
+### v2019R1 (19.3)
 
 This is currently the only version, so this section is still empty.
 

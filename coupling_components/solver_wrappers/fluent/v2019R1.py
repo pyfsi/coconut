@@ -44,7 +44,7 @@ class SolverWrapperFluent2019R1(Component):
         self.fluent_process = None
 
         # prepare Fluent journal
-        journal = '2019R1.jou'
+        journal = 'v2019R1.jou'
         thread_names_str = ''
         for key in self.thread_names:
             thread_names_str += ' "' + key + '"'
@@ -68,7 +68,7 @@ class SolverWrapperFluent2019R1(Component):
 
         # prepare Fluent UDF
         if self.timestep_start == 0:
-            udf = '2019R1.c'
+            udf = 'v2019R1.c'
             with open(join(path_src, udf), 'r') as infile:
                 with open(join(self.dir_cfd, udf), 'w') as outfile:
                     for line in infile:
