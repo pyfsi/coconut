@@ -9,7 +9,7 @@ then
 fi
 
 # create new CFD folder
-cp -r ./../test_v2019R1_tube3d/setup_fluent CFD
+cp -r ./../../test_v2019R1/tube2d/setup_fluent CFD
 cd CFD
 
 # make gambit mesh
@@ -20,7 +20,7 @@ ml -GAMBIT
 
 # make fluent case
 ml ANSYS_CFD/2019R2
-fluent 3ddp -g -i case.jou > setup_fluent.log 2>&1
+fluent 2ddp -g -i case.jou > setup_fluent.log 2>&1
 ml -ANSYS_CFD
 
 cd ..

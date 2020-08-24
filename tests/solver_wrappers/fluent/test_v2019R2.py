@@ -2,17 +2,16 @@ from coconut.data_structure import KratosUnittest
 from coconut.tests.solver_wrappers.fluent.test_v2019R1 import TestSolverWrapperFluent2019R1
 
 
-def print_box(text):
-    n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
-    mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
-
-# *** TO DO: put two test cases in 1 folder to reduce number of folders
-
 class TestSolverWrapperFluent2019R2(TestSolverWrapperFluent2019R1):
-    # warning: because of inheritance, this class cannot be tested independently
+    """
+    Only 1 Fluent version can be tested at a time,
+    because the correct software version must be
+    preloaded.
+
+    Another consequence is that this version cannot
+    be tested independentely (i.e. in this folder),
+    because of inheritance.
+    """
 
     version = '2019R2'
 
