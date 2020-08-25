@@ -42,41 +42,54 @@ During initialization, the case settings as defined in the JSON-file are read in
 
 ### The `Initialize` method
 
+The OpenFOAM-solver, which should be adapted to operation in CoCoNuT, is launched in a subprocess. Other variables, such as time step index and physical time, are initialized.
+
 ### The `InitializeSolutionStep` method
+
+This function is called at the start of every time step. The time step index is increased by one, the iteration index is set to zero and the OpenFOAM file directory is made in which the time step data needs to be stored (this last part is probably superfluous and can be removed at a later stage).
 
 ### The `SolveSolutionStep` method
 
+The interface displacement is converted into an OpenFOAM-readable format (with the function `write_node_input`), after which the OpenFOAM-loop is called in a subprocess. After completion of the OpenFOAM-loop, the function `read_node_output` is called, which reads the interface loads from the corresponding OpenFOAM-directory (in the `postProcessing`-folder).
+
 ### The `FinalizeSolutionStep` method
+
+In this method, it is checked whether the other flow variables need to be written in an OpenFOAM-directory. This save-option is done in OpenFOAM.
 
 ### The `Finalize` method
 
-In the file conventions, `A` is the timestep number and `B` the Fluent thread ID.
+The OpenFOAM-subprocess, which was launched in the `Initialize` method, is killed.
 
--   Fluent case and data files are saved as files of the form `case_timestepA.cas` and `case_timestepA.dat`.
--   Current node and face coordinates are passed from Fluent to Python with files of the form `nodes_timestepA_threadB.dat` and `faces_timestepA_threadB.dat`. 
--   The new node coordinates are passed from Python to Fluent with files of the form `nodes_update_timestepA_threadB`.
--   Pressure and tractions are passed from Fluent to Python with files of the form `pressure_traction_timestepA_threadB.dat`.
--   Files with extension `.coco` are used to pass messages between Python and Fluent (via the journal). 
+## Comments
+
+-   Files with extension `.coco` are used to pass messages between Python and OpenFOAM. After sending a message from Python to OpenFOAM, the Python-script is paused until it receives the corresponding message from OpenFOAM. The OpenFOAM-solver is operating in an infinite `while`-loop until it receives a message from Python. Upon receipt of this message, OpenFOAM executes the corresponding action after which it sends a response to Python and reverts into its infinite loop (waiting mode). 
+-	The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the CoCoNuT-simulation. It is closed by the Python-code only in the `Finalize` method, but if CoCoNuT crashes, the OpenFOAM-programme keeps running. The user should take care to kill that OpenFOAM-loop manually (using `kill` or `pkill` in the Linux-terminal, e.g. `pkill CoCoNuT_*`).
+-	The interface displacement is stored in a `pointDisplacement`-field, which is read in by OpenFOAM in every iteration (this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.
+-	The interface loads are stored in the `postProcessing`-directory, under the names `PRESSURE` and `TRACTION`. These are constructed from a `controlDict`-file which is defined in the `_init_`-method of the solver wrapper in Python.
 
 ## Overview of an OpenFOAM-solver used in CoCoNuT
 
+Default OpenFOAM-solvers cannot
+
+
 ## Setting up a new case
 
-Following items should be set up and saved in the `case_file` (this list may be non-exhaustive):
+Following items should be present in the OpenFOAM-directory prior to launching CoCoNuT:
 
--   additional UDFs must be configured
--   steady/unsteady (should match with the `unsteady` parameter)
--   2D, 3D or axisymmetric (should match with the `dimensions` parameter)
--   dynamic mesh for all zones, except the FSI interfaces
--   boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria
--   if `hybrid_initialization` is `false`, then defaults should be set for standard initialization
+-	The entire framework of the CFD-case in OpenFOAM which is to be used in the CoCoNuT simulation (so it should contain the `constant` and `system` directory as well as a time step directory). The working directory should be defined as if you would like to run it as a CFD case. The working directory is defined in a JSON-file and therefore the CoCoNuT-files do not need to be in the same folder as the OpenFOAM-case.
+-	a JSON-file containing all of the settings stipulated above.
 
-Following items are taken care of by CoCoNuT, and must therefore not be included in the `case_file`:
+Following items are taken care of by CoCoNuT, and must therefore not be included in the original OpenFOAM-directory:
 
--   dynamic mesh for the FSI interfaces (which are defined in `thread_names`)
--   the timestep (`delta_t`) 
--   initialization of the solution field
+-   `controlDict`-file with the necessary function objects to define the interface pressure/traction
+-	`dynamicMeshDict`-file which contains the settings for OpenFOAM's dynamic motion solver
+-   `decomposeParDict`-file with the necessary decomposition of the fluid domain (if `cores`>1)
 
+### Comments
+
+-	It is probably best to derive a new case from a test case already present in the CoCoNuT-installation in order to copy its structure.
+- 	If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers. You should compile the new solver BEFORE loading the CoCoNuT-modules as the overwriting of compiler modules can break the  `wmake`-command. Once the new solver is compiled, it works fine even after loading the CoCoNuT-modules.
+-	OpenFOAM is known for generating a lot of files, which is not different in CoCoNuT-operation. Make sure you have sufficient storage space on your cluster and that you are able to write a large number of files (the latter is specifically important when storing data in your home-directory).
 
 
 ## Version specific documentation
