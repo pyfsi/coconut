@@ -21,7 +21,7 @@
                 },
                 "interface_output":
                 {
-                 	"walls_output": ["PRESSURE","WALLSHEARSTRESS"]
+                 	"walls_output": ["PRESSURE","TRACTION"]
                 },
                 "cores": 1,
                 "decomposeMethod": "scotch",
@@ -29,7 +29,9 @@
                 "write_precision": 6,
                 "time_precision": 6,
                 "newtonmax": 10,
-                "newtontol": 1e-08
+                "newtontol": 1e-08,
+		"meshmotion_solver": "displacementLaplacian",
+		"diffusivity": "inverseDistance", 
             }
         }
     ]

@@ -76,6 +76,8 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 	
+	runTime.run();
+
     while (true) // NOT runTime.run()
     {
         usleep(1000); // Expressed in microseconds 
@@ -153,12 +155,7 @@ int main(int argc, char *argv[])
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
 
-            runTime.functionObjects().execute();
-
-            IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
-            IOdictionary controlDict(controlDict_IO);
-            controlDict.Foam::regIOobject::write();
-            runTime.write();
+            runTime.run();
             Info << "I get past the save" << nl << endl;
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;

@@ -104,13 +104,15 @@ int main(int argc, char *argv[])
 	#include "CourantNo.H"
 	#include "setDeltaT.H"
     
-    while (true) // NOT! runTime.run()
+    runTime.run(); // Initialize runTime object (also initializes functionObjects in controlDict)
+
+    while (true)
     {
         usleep(1000); // Expressed in microseconds 
             
         if (exists("next.coco"))
     	{
-        	remove("next.coco");			
+        	remove("next.coco");
         	runTime++;
         	OFstream outfile ("next_ready.coco");
         	outfile << "Joris says: good job on next.coco" << endl;
@@ -208,11 +210,7 @@ int main(int argc, char *argv[])
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
                 
-            IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
-            IOdictionary controlDict(controlDict_IO);
-            controlDict.Foam::regIOobject::write();
-            runTime.write();
-            Info << "I get past the save" << nl << endl;
+            runTime.run();
             OFstream outfile ("continue_ready.coco");
             outfile << "Joris says good job on continue.coco" << endl;
         
@@ -223,9 +221,6 @@ int main(int argc, char *argv[])
         if (exists("save.coco"))
     	{
         	remove("save.coco");
-            IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
-            IOdictionary controlDict(controlDict_IO);
-            controlDict.Foam::regIOobject::write();
             runTime.write();
         	OFstream outfile ("save_ready.coco");
     		outfile << "Joris says: good job on save.coco" << endl;

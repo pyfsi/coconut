@@ -1,5 +1,6 @@
 from coconut import data_structure
 from coconut.data_structure import KratosUnittest
+from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
 from copy import deepcopy
@@ -49,7 +50,7 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
             print_box("Testing imposed node (radial) displacement")
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
-            solver = cs_tools.CreateInstance(par_solver)
+            solver = CreateInstance(par_solver)
             
             # give value to DISPLACEMENT variable -  radial displacement all points on tube wall by 0.01m (sinusoidally changing in time)
             mp = solver.model['walls_input']

@@ -81,21 +81,28 @@ class SolverWrapperOpenFOAM_41(Component):
         self.remove_all_messages()
         
         # Creating OpenFOAM-files - raw dictionary files are predefined in the solver_wrapper folder (and should not be moved)
-
+        # DecomposeParDict: replace raw settings by actual settings defined by user in json-file
+        if self.cores > 1: #Only if calculating in parallel
+            decomposeParDict_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"decomposeParDict_raw")
+            decomposeParDict_name=os.path.join(self.working_directory,"system/decomposeParDict")
+            with open(decomposeParDict_raw_name,'r') as rawFile:
+                with open(decomposeParDict_name,'w') as newFile:
+                    for line in rawFile:
+                        line=line.replace('|CORES|',str(self.cores))
+                        line=line.replace('|DECOMPOSEMETHOD|',str(self.decomposeMethod))
+                        newFile.write(line)
+            rawFile.close()
+            newFile.close()
+            self.write_footer(decomposeParDict_name) 
+            # OpenFOAM-fields are decomposed automatically if you work in parallel
+            os.system("cd " + self.working_directory + "; decomposePar -force -time "+ str(self.start_time) + " &> log.decomposePar;")  
         # ControlDict: replace raw settings by actual settings defined by user in json-file AND add function objects to write pressure and wall shear stress
         controlDict_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"controlDict_raw")
         controlDict_name=os.path.join(self.working_directory,"system/controlDict")
-        boundary_names_string="("
-        for name in self.boundary_names:
-            boundary_names_string += name
-            boundary_names_string += " "
-        boundary_names_string=boundary_names_string[:-1]+")"
         with open(controlDict_raw_name,'r') as rawFile:
             with open(controlDict_name,'w') as newFile:
                 for line in rawFile:
                     line=line.replace('|APPLICATION|',str(self.application))
-
-                    line=line.replace('|BOUNDARY_NAMES|',boundary_names_string)
                     line=line.replace('|START_TIME|',str(self.start_time))
                     line=line.replace('|END_TIME|',str(self.end_time))
                     line=line.replace('|DT|',str(self.dt))
@@ -108,16 +115,22 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
-                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
+                self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
+                self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
         else:
             for key in self.boundary_names:
                 if nKey == 0:
-                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects.so",key,True,False)
+                    self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
+                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
+                    self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 else:
+                    self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,False,False)
+                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
                     if nKey == (len(self.boundary_names)-1):
-                        self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects_CoCoNuT.so",key,False,True)
+                        self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
                     else:
-                        self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects_CoCoNuT.so",key,False,False)
+                        self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 nKey += 1
         self.write_footer(controlDict_name)
         # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file 
@@ -150,194 +163,63 @@ class SolverWrapperOpenFOAM_41(Component):
             for var_name in value.list():
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
-
-        # Adding nodes to ModelParts - should happen after variable definition
+            
+        # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
-
-        # Moved decompose here (after writeCellCentres) to get ccx, ccy, ccz into the processor directories
-        # DecomposeParDict: replace raw settings by actual settings defined by user in json-file
-        if self.cores > 1:  # Only if calculating in parallel
-            decomposeParDict_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                                     "decomposeParDict_raw")
-            decomposeParDict_name = os.path.join(self.working_directory, "system/decomposeParDict")
-            with open(decomposeParDict_raw_name, 'r') as rawFile:
-                with open(decomposeParDict_name, 'w') as newFile:
-                    for line in rawFile:
-                        line = line.replace('|CORES|', str(self.cores))
-                        line = line.replace('|DECOMPOSEMETHOD|', str(self.decomposeMethod))
-                        newFile.write(line)
-            rawFile.close()
-            newFile.close()
-            self.write_footer(decomposeParDict_name)
-            # OpenFOAM-fields are decomposed automatically if you work in parallel
-            os.system("cd " + self.working_directory + "; decomposePar -force -time " + str(
-                self.start_time) + " &> log.decomposePar;")
-
-        self.nNodes_proc=np.zeros([len(self.settings['interface_input'].keys()),self.cores],dtype=np.int32)
-        self.nNodes_tot=np.zeros(len(self.settings['interface_input'].keys()),dtype=np.int32)
         nKey=0
         for boundary in self.boundary_names:
-            if self.cores == 1: # If you work in serial
-            #For me (Lucas) the ccx, ccy and ccz were written in the 0-directory not in the processor/0-directory
-                #To avoid confusion, remove all present processor-files (from a possible previous parallel calculation)
-                os.system("cd " + self.working_directory + "; rm -r processor*;")
-
-                # First look up the interface wall in OpenFOAM's constant-folder - the coordinates are found using the OF-utility 'writeCellCentres'
-                for i in np.arange(3):
-                    if i == 0:
-                        source_file=self.working_directory + "/" + str(self.start_time) + "/ccx"
-                    elif i == 1:
-                        source_file=self.working_directory + "/" + str(self.start_time) + "/ccy"
-                    elif i == 2:
-                        source_file=self.working_directory + "/" + str(self.start_time) + "/ccz"
-                    try:
-                        lineNameNr=self.find_string_in_file(boundary, source_file)
-                        lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
+            for i in np.arange(3):
+                if i == 0:
+                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccx"
+                elif i == 1:
+                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccy"
+                elif i == 2:
+                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccz"
+                try:
+                    lineNameNr=self.find_string_in_file(boundary, source_file)
+                    lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
+                    nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
+                    os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
+                    nNodes_file=open("nNodes",'r')
+                    nNodes=int(nNodes_file.readline())
+                    nNodes_file.close()
+                    os.system("rm nNodes")
+                    tempCoordFile=np.ones([nNodes,1])*float("inf")
+                    for j in np.arange(nNodes):
+                        tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
+                except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking
+                    if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
+                        check_file=self.working_directory + "/" + str(self.start_time) + "/ccy" # if 'nNodes' does not exist, read the second sourceFile to know the number of rows
+                        lineNameNr=self.find_string_in_file(boundary, check_file)
                         nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                        os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
+                        os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
                         nNodes_file=open("nNodes",'r')
                         nNodes=int(nNodes_file.readline())
                         nNodes_file.close()
                         os.system("rm nNodes")
-                        tempCoordFile=np.ones([nNodes,1])*float("inf")
-                        for j in np.arange(nNodes):
-                            tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
-                    except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking
-                        if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
-                            check_file=self.working_directory + "/" + str(self.start_time) + "/ccy" # if 'nNodes' does not exist, read the second sourceFile to know the number of rows
-                            lineNameNr=self.find_string_in_file(boundary, check_file)
-                            nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                            os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                            nNodes_file=open("nNodes",'r')
-                            nNodes=int(nNodes_file.readline())
-                            nNodes_file.close()
-                            os.system("rm nNodes")
-                        indexUV=lineNameNr+4
-                        os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
-                        unifValue_file=open("unifValue",'r')
-                        unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                        unifValue_file.close()
-                        os.system("rm unifValue")
-                        tempCoordFile=np.ones([nNodes,1])*float("inf")
-                        for j in np.arange(nNodes):
-                            tempCoordFile[j,0]=unifValue
-                    if i == 0:
-                        coordList_tot=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z - Area
+                    indexUV=lineNameNr+4
+                    os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
+                    unifValue_file=open("unifValue",'r')
+                    unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
+                    unifValue_file.close()
+                    os.system("rm unifValue")
+                    tempCoordFile=np.ones([nNodes,1])*float("inf")
+                    for j in np.arange(nNodes):
+                        tempCoordFile[j,0]=unifValue
+                if i == 0:
+                        coordList_tot=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z
                         coordList_tot[:,0]=np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
-                        self.nNodes_proc[nKey,0]=nNodes
-                        self.nNodes_tot[nKey]=self.nNodes_proc[nKey,0]
-                    coordList_tot[:,(i+1)]=tempCoordFile[:,0]
-            else: # If you work in parallel
-                foundProcWithInterfaceValues=False
-                for p in np.arange(self.cores): # Check in each processor-folder
-                    for i in np.arange(3):
-                        if i == 0:
-                            source_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccx"
-                        elif i == 1:
-                            source_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccy"
-                        elif i == 2:
-                            source_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccz"
-                        lineNameNr=self.find_string_in_file(boundary, source_file)
-                        procContainsBoundaryNr=lineNameNr+4
-                        os.system("awk NR==" + str(procContainsBoundaryNr) + " " + source_file + " > PCB" )
-                        PCB_file=open("PCB",'r')
-                        procContainsBoundary=str(PCB_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder
-                        PCB_file.close()
-                        os.system("rm PCB")
-                        if "nonuniform 0();" not in procContainsBoundary: # If this processor folder contains the interface you are looking for
-                            try:
-                                lineNameNr=self.find_string_in_file(boundary, source_file)
-                                lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                                nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                                os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
-                                nNodes_file=open("nNodes",'r')
-                                nNodes=int(nNodes_file.readline())
-                                nNodes_file.close()
-                                os.system("rm nNodes")
-                                tempCoordFile=np.ones([nNodes,1])*float("inf")
-                                for j in np.arange(nNodes):
-                                    tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
-                            except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking OR that the nonuniform list contains less than 11 elements - because apparently OF prints the entire array on a single line in that case...
-                                if "nonuniform" not in procContainsBoundary: # If the coordinate is a uniform value
-                                    if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
-                                        check_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccy"
-                                        lineNameNr=self.find_string_in_file(boundary, check_file)
-                                        typeCcyNr=lineNameNr+5
-                                        os.system("awk NR==" + str(typeCcyNr) + " " + check_file + " > typeCcy" )
-                                        typeCcy_file=open("typeCcy",'r')
-                                        typeCcy=str(typeCcy_file.readline())
-                                        typeCcy_file.close()
-                                        if "(" in typeCcy: # 10 nodes or less in this list
-                                            listCcy=((typeCcy.split("(")[-1]).split(")")[0]).split(" ")
-                                            nNodes=int(len(listCcy))
-                                        else : # More than 10 nodes in this list or ccy is also uniform
-                                            if "nonuniform" not in typeCcy: #ccy is also uniform, check ccz
-                                                check_file=self.working_directory + "/processor" + str(p) + "/" + str(self.start_time) + "/ccz"
-                                                lineNameNr=lineNameNr=self.find_string_in_file(boundary, check_file)
-                                                typeCczNr=lineNameNr+4
-                                                os.system("awk NR==" + str(typeCczNr) + " " + check_file + " > typeCcz" )
-                                                typeCcz_file=open("typeCcz",'r')
-                                                typeCcz=str(typeCcz_file.readline())
-                                                typeCcz_file.close()
-                                                if "(" in typeCcz: # 10 nodes or less in this list
-                                                    listCcz=((typeCcz.split("(")[-1]).split(")")[0]).split(" ")
-                                                    nNodes=int(len(listCcz))
-                                                else: #More than 10 nodes in this list or ccz is also uniform
-                                                    if "nonuniform" not in typeCcz: #ccz is also uniform - you only have 1 point in this processor (for real?)
-                                                        nNodes=1
-                                                    else : #there are more than 10 nodes in this list
-                                                        nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                                                        os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                                                        nNodes_file=open("nNodes",'r')
-                                                        nNodes=int(nNodes_file.readline())
-                                                        nNodes_file.close()
-                                            else: # ccy is not uniform
-                                                nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                                                os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                                                nNodes_file=open("nNodes",'r')
-                                                nNodes=int(nNodes_file.readline())
-                                                nNodes_file.close()
-                                        os.system("rm nNodes typeCcy")
-                                    indexUV=lineNameNr+4
-                                    os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
-                                    unifValue_file=open("unifValue",'r')
-                                    unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                                    unifValue_file.close()
-                                    os.system("rm unifValue")
-                                    tempCoordFile=np.ones([nNodes,1])*float("inf")
-                                    for j in np.arange(nNodes):
-                                        tempCoordFile[j,0]=unifValue
-                                else : # Coordinates are a nonuniform list containing less than 11 elements and are all written on one line
-                                    listToRead=((procContainsBoundary.split("(")[-1]).split(")")[0]).split(" ")
-                                    nNodes=int(len(listToRead))
-                                    tempCoordFile=np.ones([nNodes,1])*float("inf")
-                                    for j in np.arange(nNodes):
-                                            tempCoordFile[j,0]=float(listToRead[j])
-                            if i == 0:
-                                coordList=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z - Area
-                                coordList[:,0]=self.nNodes_tot[nKey]*np.ones(nNodes)+np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
-                                self.nNodes_proc[nKey,p]=nNodes
-                            coordList[:,(i+1)]=tempCoordFile[:,0]
-                    if "nonuniform 0();" not in procContainsBoundary: # If this processor folder contains the interface you are looking for
-                        if not(foundProcWithInterfaceValues) :
-                            coordList_tot= coordList
-                            foundProcWithInterfaceValues=True
-                        else :
-                            coordList_tot=np.concatenate((coordList_tot,coordList), axis=0)
-                        del nNodes
-                    self.nNodes_tot[nKey]=int(np.sum(self.nNodes_proc[nKey,:]))
-
+                coordList_tot[:,(i+1)]=tempCoordFile[:,0]
+            self.nNodes_tot=len(coordList_tot[:,0])
+            
             # Subsequently create each node separately in the ModelPart- both input and output!
             mp_input=self.model[boundary+"_input"]
             mp_output=self.model[boundary+"_output"]
-            for i in np.arange(int(self.nNodes_tot[nKey])):
+            for i in np.arange(int(self.nNodes_tot)):
                 mp_input.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
                 mp_output.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
-            nKey+=1
+            nKey+=1    
 
-        # Print node distribution among processor folders
-        self.write_node_distribution()
-    
         # Create CoSimulationInterfaces
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
@@ -497,257 +379,36 @@ class SolverWrapperOpenFOAM_41(Component):
         
     def read_node_output(self):
         nKey=0
-        maxIt=20
         for boundary in self.boundary_names:
-            wss_tmp=np.zeros([self.nNodes_tot[nKey],3])
-            pres_tmp=np.zeros([self.nNodes_tot[nKey],3])
+            # specify location of pressure and traction
+            tractionName="TRACTION_"+boundary
+            pressureName="PRESSURE_"+boundary
+            wss_tmp=np.zeros([self.nNodes_tot,3])
+            pres_tmp=np.zeros([self.nNodes_tot,1])
             mp = self.model[boundary+"_output"]
+            wss_file= os.path.join(self.working_directory, "postProcessing", tractionName, "surface", str(self.physical_time),"wallShearStress_patch_"+boundary+".raw")
+            pres_file= os.path.join(self.working_directory, "postProcessing", pressureName, "surface", str(self.physical_time),"p_patch_"+boundary+".raw")
+            # read traction
+            f=open(wss_file,'r')
+            fLines=f.readlines()
+            index_start=2
+            for i in np.arange(self.nNodes_tot):
+                wss_tmp[i,0]=fLines[index_start+i].split()[3]
+                wss_tmp[i,1]=fLines[index_start+i].split()[4]
+                wss_tmp[i,2]=fLines[index_start+i].split()[5].split("\n")[0]
+            f.close()
+            # read pressure
+            f=open(pres_file,'r')
+            fLines=f.readlines()
+            index_start=2
             it=0
-            if self.cores == 1:
-                wss_file= os.path.join(self.working_directory, str(self.physical_time), "wallShearStress")
-                pres_file= os.path.join(self.working_directory, str(self.physical_time), "p")
-                if self.nNodes_proc[nKey,0] == 1: #Single node on interface (Really??)
-                    #Read wall shear stress
-                    while True:
-                        try:
-                            lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                            indexUV=lineNameNr_wss+4
-                            os.system("awk NR==" + str(indexUV) + " " + wss_file + " > unifValue")
-                            unifValue_file=open("unifValue",'r')
-                            unifValue=unifValue_file.readline().split("\t")[-1][0:-1] #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                            unifValue_file.close()
-                            os.system("rm unifValue ")
-                            for i in np.arange(self.nNodes[nKey,0]):
-                                    wss_tmp[i,0]=float(unifValue[0][1:])
-                                    wss_tmp[i,1]=float(unifValue[1])
-                                    wss_tmp[i,2]=float(unifValue[2][0:-2])
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")      
-                    #Read pressure
-                    while True:
-                        try:
-                            lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                            indexUV=lineNameNr_pres+4
-                            os.system("awk NR==" + str(indexUV) + " " + pres_file + " > unifValue")
-                            unifValue_file=open("unifValue",'r')
-                            unifValue=unifValue_file.readline().split()[-1][0:-1] #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                            unifValue_file.close()
-                            os.system("rm unifValue ")
-                            for i in np.arange(self.nNodes[nKey,0]):
-                                pres_tmp[i]=float(unifValue)
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")    
-                elif self.nNodes_proc[nKey,0] < 11: # 10 or less elements on the interface
-                    # read wall shear stress
-                    while True:
-                        try:
-                            lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                            listNr=lineNameNr_wss+4
-                            os.system("awk NR==" + str(listNr) + " " + wss_file + " > listNr" )
-                            listNr_file=open("listNr",'r')
-                            listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-                            listNr_file.close()
-                            os.system("rm listNr")
-                            listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                            for i in np.arange(self.nNodes_proc[nKey,0]):
-                                wss_tmp[i,0]=float(listToRead[i])
-                                wss_tmp[i,1]=float(listToRead[i])
-                                wss_tmp[i,2]=float(listToRead[i])
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    # read pressure
-                    while True:
-                        try:
-                            lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                            listNr=lineNameNr_pres+4
-                            os.system("awk NR==" + str(listNr) + " " + pres_file + " > listNr" )
-                            listNr_file=open("listNr",'r')
-                            listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-                            listNr_file.close()
-                            os.system("rm listNr")
-                            listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                            for i in np.arange(self.nNodes_proc[nKey,0]):
-                                pres_tmp[i]=float(listToRead[i])
-                            break
-                        except ValueError:
-                            time.sleep(1)
-                            it+=1
-                        if it > maxIt:
-                            os.system("pkill " + self.application)
-                            sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                else: # More than 10 elements on interface
-                    # read wall shear stress
-                    for i in np.arange(self.nNodes_proc[nKey,0]):
-                        while True:
-                            try:
-                                lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                                lineStartNr=lineNameNr_wss+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                                str_line=linecache.getline(wss_file,lineStartNr+i).split(" ")
-                                wss_tmp[i,0]=float(str_line[0][1:])
-                                wss_tmp[i,1]=float(str_line[1])
-                                wss_tmp[i,2]=float(str_line[2][0:-2])   
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    # read pressure
-                    for i in np.arange(self.nNodes_proc[nKey,0]):
-                        while True:
-                            try:
-                                lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                                lineStartNr=lineNameNr_pres+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                                str_line=linecache.getline(pres_file,lineStartNr+i)
-                                pres_tmp[i]=float(str_line[0:-2]) # remove '\n'    
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")                      
-            else:
-                nodeCount=0
-                for p in np.arange(self.cores):
-                    wss_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "wallShearStress")
-                    pres_file= os.path.join(self.working_directory, ("processor"+str(p)), str(self.physical_time), "p")
-                    if self.nNodes_proc[nKey,p] == 1: #Single node of the interface on this processor
-                        # read wall shear stress
-                        while True:
-                            try:
-                                lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                                indexUV=lineNameNr_wss+4
-                                os.system("awk NR==" + str(indexUV) + " " + wss_file + " > unifValue")
-                                unifValue_file=open("unifValue",'r')
-                                unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                                unifValue_file.close()
-                                for i in np.arange(self.nNodes[nKey,p]):
-                                    wss_tmp[nodeCount+i,0]=float(unifValue[0][1:])
-                                    wss_tmp[nodeCount+i,1]=float(unifValue[1])
-                                    wss_tmp[nodeCount+i,2]=float(unifValue[2][0:-2])
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                        # read pressure
-                        while True:
-                            try:
-                                lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                                indexUV=lineNameNr_pres+4
-                                os.system("awk NR==" + str(indexUV) + " " + pres_file + " > unifValue")
-                                unifValue_file=open("unifValue",'r')
-                                unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                                unifValue_file.close()
-                                for i in np.arange(self.nNodes[nKey,p]):
-                                    pres_tmp[nodeCount+i]=float(unifValue)
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    elif self.nNodes_proc[nKey,p] < 11: # 10 or less elements of the interface on this processor, nonuniform list recorded on a single line
-                        # read wall shear stress
-                        while True:
-                            try:
-                                lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                                listNr=lineNameNr_wss+4
-                                os.system("awk NR==" + str(listNr) + " " + wss_file + " > listNr" )
-                                listNr_file=open("listNr",'r')
-                                listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-                                listNr_file.close()
-                                os.system("rm listNr")
-                                listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                                for i in np.arange(self.nNodes_proc[nKey,p]):
-                                    wss_tmp[nodeCount+i,0]=float(listToRead[0])
-                                    wss_tmp[nodeCount+i,1]=float(listToRead[1])
-                                    wss_tmp[nodeCount+i,2]=float(listToRead[2])
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                        # read pressure
-                        while True:
-                            try:
-                                lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                                listNr=lineNameNr_pres+4
-                                os.system("awk NR==" + str(listNr) + " " + pres_file + " > listNr" )
-                                listNr_file=open("listNr",'r')
-                                listToRead=str(listNr_file.readline()) #  whether there are cells adjacent to the interface in the processor-folder  
-                                listNr_file.close()
-                                os.system("rm listNr")
-                                listToRead=((listToRead.split("(")[-1]).split(")")[0]).split(" ")
-                                for i in np.arange(self.nNodes_proc[nKey,p]):
-                                    pres_tmp[nodeCount+i]=float(listToRead[i])
-                                break
-                            except ValueError:
-                                time.sleep(1)
-                                it+=1
-                            if it > maxIt:
-                                os.system("pkill " + self.application)
-                                sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    else: # More than 10 elements on interface
-                        # read wall shear stress
-                        for i in np.arange(self.nNodes_proc[nKey,p]):
-                            while True:
-                                try:
-                                    lineNameNr_wss=self.find_string_in_file(boundary, wss_file)
-                                    lineStartNr=lineNameNr_wss+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                                    str_line=linecache.getline(pres_file,lineStartNr+i).split(" ")
-                                    wss_tmp[nodeCount+i,0]=float(str_line[0][1:])
-                                    wss_tmp[nodeCount+i,1]=float(str_line[1])
-                                    wss_tmp[nodeCount+i,2]=float(str_line[2][0:-2])
-                                    break
-                                except ValueError:
-                                    time.sleep(1)
-                                    it+=1
-                                if it > maxIt:
-                                    os.system("pkill " + self.application)
-                                    sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                        # read pressure
-                        for i in np.arange(self.nNodes_proc[nKey,p]):
-                            while True:
-                                try:
-                                    lineNameNr_pres=self.find_string_in_file(boundary, pres_file)
-                                    lineStartNr=lineNameNr_pres+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                                    str_line=linecache.getline(pres_file,lineStartNr+i)
-                                    pres_tmp[nodeCount+i]=float(str_line[0:-2])
-                                    break
-                                except ValueError:
-                                    time.sleep(1)
-                                    it+=1
-                                if it > maxIt:
-                                    os.system("pkill " + self.application)
-                                    sys.exit("CoCoNUT stopped in read_node_output - please check the output-files of OpenFOAM")  
-                    nodeCount += self.nNodes_proc[nKey,p]
-            
+            for i in np.arange(self.nNodes_tot):
+                val=fLines[index_start+i].split()[3].split("\n")[0]
+                pres_tmp[i,0]=float(val)
+            f.close()
             # store pressure and traction in Nodes
             index=0
-            for node in mp.Nodes: # Easier than in Fluent because the sequence of nodes stays the same
+            for node in mp.Nodes:
                 node.SetSolutionStepValue(self.shear, 0, wss_tmp[index])
                 node.SetSolutionStepValue(self.pressure, 0, pres_tmp[index])
                 index += 1
@@ -769,149 +430,102 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         for boundary in self.boundary_names:
             mp = self.model[boundary+"_input"]
-            if self.cores == 1: #Working in serial operation
-                disp_file = os.path.join(self.working_directory, str(self.physical_time), 'pointDisplacement')
-                if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
-                    pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
-                    self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,0)
-                startNr=self.find_string_in_file(boundary, disp_file)
-                os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
-                if self.nNodes_proc[nKey,0] == 1: #Only 1 node on the interface (Really??)
-                    with open('tempDisp', 'a+') as file:
-                        file.write("\t { \n")
-                        file.write("\t\t type  \t fixedValue; \n")
-                        with mp.Nodes[0] as node:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
-                    file.close()
-                elif self.nNodes_proc[nKey,0] < 11: # 10 or less elements on interface
-                    with open('tempDisp', 'a+') as file:
-                        file.write("\t { \n")
-                        file.write("\t\t type  \t fixedValue; \n")
-                        file.write('\t\t value \t nonuniform List<vector> (')
-                        for node in mp.Nodes:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
-                        file.write(');\n')
-                    file.close()
-                else :    
-                    with open('tempDisp', 'a+') as file:
-                        file.write("\t { \n")
-                        file.write("\t\t type  \t fixedValue; \n")
-                        file.write('\t\t value \t nonuniform List<vector> ( \n')
-                        for node in mp.Nodes:
-                            dispX=node.X-node.X0
-                            dispY=node.Y-node.Y0
-                            dispZ=node.Z-node.Z0
-                            file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
-                        file.write(');\n')
-                    file.close()
-                os.system("wc -l " + disp_file + " > lengthDisp")
-                lengthDisp_file=open("lengthDisp",'r')
-                length_disp=int(lengthDisp_file.readline().split(" ")[0])
-                lengthDisp_file.close()
-                os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
-                startToEndNr=self.find_string_in_file("}", "tempDisp2")
-                os.system("tail -n " + str(length_disp-(startNr+1)-startToEndNr) + " " + disp_file + " > tempDisp3")
-                os.system("cat tempDisp tempDisp3 > "+ disp_file)
-                os.system("rm tempDisp* lengthDisp")
-            else : # Working in parallel mode
-                nNodes_previousProc=0
-                for p in np.arange(self.cores): 
-                    disp_file = os.path.join(self.working_directory, ("processor"+str(p)),str(self.physical_time), 'pointDisplacement')
-                    if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
-                        pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
-                        self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,p)
-                    startNr=self.find_string_in_file(boundary, disp_file)
-                    os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
-                    if self.nNodes_proc[nKey,p] == 1: #Only 1 node on the interface in this processor-folder
-                        with open('tempDisp', 'a+') as file:
-                            file.write("\t { \n")
-                            file.write("\t\t type  \t fixedValue; \n")
-                            dispX=mp.Nodes[nNodes_previousProc].X-mp.Nodes[nNodes_previousProc].X0
-                            dispY=mp.Nodes[nNodes_previousProc].Y-mp.Nodes[nNodes_previousProc].Y0
-                            dispZ=mp.Nodes[nNodes_previousProc].Z-mp.Nodes[nNodes_previousProc].Z0
-                            file.write('\t\t value \t uniform (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+'); \n')
-                        file.close()
-                    elif self.nNodes_proc[nKey,p] < 11: # 10 or less elements on the interface in this processor-folder
-                        with open('tempDisp', 'a+') as file:
-                            file.write("\t { \n")
-                            file.write("\t\t type  \t fixedValue; \n")
-                            file.write('\t\t value \t nonuniform List<vector> (')
-                            for i in np.arange(self.nNodes_proc[nKey,p]):
-                                mp.Nodes[nNodes_previousProc+i]
-                                dispX=mp.Nodes[nNodes_previousProc+i].X-mp.Nodes[nNodes_previousProc+i].X0
-                                dispY=mp.Nodes[nNodes_previousProc+i].Y-mp.Nodes[nNodes_previousProc+i].Y0
-                                dispZ=mp.Nodes[nNodes_previousProc+i].Z-mp.Nodes[nNodes_previousProc+i].Z0
-                                file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
-                            file.write(');\n')
-                        file.close()
-                    else :    
-                        with open('tempDisp', 'a+') as file:
-                            file.write("\t { \n")
-                            file.write("\t\t type  \t fixedValue; \n")
-                            file.write('\t\t value \t nonuniform List<vector> ( \n')
-                            for i in np.arange(self.nNodes_proc[nKey,p]):
-                                mp.Nodes[nNodes_previousProc+i]
-                                dispX=mp.Nodes[nNodes_previousProc+i].X-mp.Nodes[nNodes_previousProc+i].X0
-                                dispY=mp.Nodes[nNodes_previousProc+i].Y-mp.Nodes[nNodes_previousProc+i].Y0
-                                dispZ=mp.Nodes[nNodes_previousProc+i].Z-mp.Nodes[nNodes_previousProc+i].Z0
-                                file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
-                            file.write(');\n')
-                        file.close()
-                    os.system("wc -l " + disp_file + " > lengthDisp")
-                    lengthDisp_file=open("lengthDisp",'r')
-                    length_disp=int(lengthDisp_file.readline().split(" ")[0])
-                    lengthDisp_file.close()
-                    os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
-                    startToEndNr=self.find_string_in_file("}", "tempDisp2")
-                    os.system("tail -n " + str(length_disp-(startNr+1)-startToEndNr) + " " + disp_file + " > tempDisp3")
-                    os.system("cat tempDisp tempDisp3 > "+ disp_file)
-                    nNodes_previousProc+=self.nNodes_proc[nKey,p]
-                    os.system("rm tempDisp* lengthDisp")
+            disp_file = os.path.join(self.working_directory, str(self.physical_time), 'pointDisplacement')
+            if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
+                pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
+                self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,0)
+            startNr=self.find_string_in_file(boundary, disp_file)
+            os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
+            if self.nNodes_tot < 11: # 10 or less elements on interface
+                with open('tempDisp', 'a+') as file:
+                    file.write("\t { \n")
+                    file.write("\t\t type  \t fixedValue; \n")
+                    file.write('\t\t value \t nonuniform List<vector> (')
+                    for node in mp.Nodes:
+                        dispX=node.X-node.X0
+                        dispY=node.Y-node.Y0
+                        dispZ=node.Z-node.Z0
+                        file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') ')
+                    file.write(');\n')
+                file.close()
+            else :
+                with open('tempDisp', 'a+') as file:
+                    file.write("\t { \n")
+                    file.write("\t\t type  \t fixedValue; \n")
+                    file.write('\t\t value \t nonuniform List<vector> ( \n')
+                    for node in mp.Nodes:
+                        dispX=node.X-node.X0
+                        dispY=node.Y-node.Y0
+                        dispZ=node.Z-node.Z0
+                        file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}'+') \n')
+                    file.write(');\n')
+                file.close()
+            os.system("wc -l " + disp_file + " > lengthDisp")
+            lengthDisp_file=open("lengthDisp",'r')
+            length_disp=int(lengthDisp_file.readline().split(" ")[0])
+            lengthDisp_file.close()
+            os.system("tail -n " + str(length_disp-(startNr+1)) + " " + disp_file + " > tempDisp2")
+            startToEndNr=self.find_string_in_file("}", "tempDisp2")
+            os.system("tail -n " + str(length_disp-(startNr+1)-startToEndNr) + " " + disp_file + " > tempDisp3")
+            os.system("cat tempDisp tempDisp3 > "+ disp_file)
+            os.system("rm tempDisp* lengthDisp")
             nKey += 1     
     
     
-    def write_node_distribution(self):
-        nKey=0
-        for boundary in self.boundary_names:
-            tmp= 'CoCoNuT_nNodes_processor_' + boundary
-            file_name= os.path.join(self.working_directory, tmp)
-            with open(file_name, 'w') as file:
-                if self.cores > 1:
-                    for i in np.arange(len(self.nNodes_proc[nKey,:])):
-                        file.write("Processor " + str(i) + ": " + str(int(self.nNodes_proc[nKey,i]))+'\n')
-                else :
-                        file.write("Serial: " + str(int(self.nNodes_proc[nKey,0]))+'\n')
-            file.close()
-            nKey += 1
-     
-            
-    def write_controlDict_function(self, filename, funcname, libOFname, patchname, writeStart, writeEnd):
+#  OLD - TO REMOVE
+#     def write_node_distribution(self):
+#         nKey=0
+#         for boundary in self.boundary_names:
+#             tmp= 'CoCoNuT_nNodes_processor_' + boundary
+#             file_name= os.path.join(self.working_directory, tmp)
+#             with open(file_name, 'w') as file:
+#                 if self.cores > 1:
+#                     for i in np.arange(len(self.nNodes_proc[nKey,:])):
+#                         file.write("Processor " + str(i) + ": " + str(int(self.nNodes_proc[nKey,i]))+'\n')
+#                 else :
+#                         file.write("Serial: " + str(int(self.nNodes_proc[nKey,0]))+'\n')
+#             file.close()
+#             nKey += 1
+
+
+    def write_controlDict_function(self, filename, funcname, libname, varname, patchname, writeStart, writeEnd):
         with open(filename,'a+') as file:
             if writeStart:
                 file.write("functions \n")
                 file.write("{ \n ")
-            file.write(" \n \t " + funcname + "_" + patchname +" \n")
+            if varname=="wallShearStress":
+                file.write(" \n \t " + varname + " \n")
+            else:
+                file.write(" \n \t " + varname + "_" + patchname +" \n")
             file.write("\t { \n")
             file.write("\t\t type  \t " + funcname + "; \n")
-            file.write('\t\t libs \t ("' + libOFname + '"); \n')
-            file.write('\t\t patches ( "' + patchname + '"); \n')
+            file.write('\t\t libs \t ("' + libname + '.so"); \n')
+            file.write('\t\t executeControl \t timeStep; \n')
+            file.write('\t\t executeInterval \t 1; \n')
             file.write('\t\t writeControl \t timeStep; \n')
             file.write('\t\t writeInterval \t 1; \n')
-            file.write('\t\t log \t true; \n')
-            if funcname == "pressure":
-                file.write('\t\t calcTotal \t no; \n')
-                file.write('\t\t calcCoeff \t no; \n')
-                file.write('\t\t rho \t rho; \n')
-                print("\n\n Please check the 'rho' option in the static pressure definition in controlDict! This might vary from OF-solver to OF-solver.\n\n")
-            file.write("\t } \n")
+            if funcname=="surfaceRegion":
+                file.write('\t\t operation \t none; \n')
+                file.write('\t\t writeFields \t true; \n')
+                file.write('\t\t surfaceFormat \t raw; \n')
+                file.write('\t\t regionType \t patch; \n')
+                file.write('\t\t name \t ' + patchname + ' ; \n')
+                file.write('\t\t fields \n')
+                file.write('\t\t ( \n')
+                if varname == "PRESSURE":
+                    file.write('\t\t\t p \n ')
+                elif varname == "TRACTION":
+                    file.write('\t\t\t wallShearStress \n')
+                file.write("\t\t ); \n")
+            elif funcname=="wallShearStress":
+#                 file.write('\t\t patches ( ' + patchname + ' ); \n')
+                file.write('\t\t log \t false; \n')
+            file.write("\t } \n\n")
             if writeEnd:
                 file.write("} \n ")
+            if varname == "PRESSURE":
+                print("\n\n Please check the 'rho' option in the static pressure definition in controlDict! This might vary from OF-solver to OF-solver.\n\n")
+
         file.close()
             
     
@@ -924,12 +538,8 @@ class SolverWrapperOpenFOAM_41(Component):
                     for boundary in self.boundary_names: 
                         newFile.write(" \n \t "  + boundary +" \n")
                         newFile.write("\t { \n")
-                        if self.nNodes_proc[nKey,procNr] > 0:
-                            newFile.write("\t\t type  \t fixedValue; \n")
-                            newFile.write("\t\t value \t uniform (0 0 0); \n")
-                        else:
-                            newFile.write("\t\t type  \t calculated; \n")
-                            newFile.write("\t\t value \t nonuniform 0(); \n")
+                        newFile.write("\t\t type  \t calculated; \n")
+                        newFile.write("\t\t value \t nonuniform 0(); \n")
                         newFile.write("\t } \n")
                     newFile.write("} \n")
                     newFile.close()
