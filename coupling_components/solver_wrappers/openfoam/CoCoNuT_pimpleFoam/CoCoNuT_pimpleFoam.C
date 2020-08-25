@@ -84,13 +84,74 @@ int main(int argc, char *argv[])
         
     	if (exists("next.coco"))
 		{
-    		remove("next.coco");
+
     		
 			#include "readControls.H"
 			#include "CourantNo.H"
 			#include "setDeltaT.H"
+
+			 // Get the patch ID: patch name must be "mantle"
+            // This should be generalised and a loop should be provided for the different patches of interest
+            label patchWallID = mesh.boundaryMesh().findPatchID("mantle");
+            const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
+
+            // Info << "In Next" << nl << endl;
+
+            // *** Set patch displacement for motion solver.*** //
+            // Find the reference to the pointDisplacement field (this appears to work)
+        	pointVectorField& PointDisplacement = const_cast<pointVectorField&>
+            (
+                mesh.objectRegistry::lookupObject<pointVectorField >
+                (
+                "pointDisplacement"
+                )
+            );
+
+            //OFstream testfile(runTime.path()/"Example_pointDispFile");
+            //testfile << PointDisplacement<< endl;
+            //PointDisplacement.write();
+
+            // Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
+
+            //Get the vector field of the patch
+            vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
+
+            Info<< "Reading pointDisplacement\n" << endl;
+
+            pointVectorField pointDisplacement_temp_
+            (
+                IOobject
+                (
+                    "pointDisplacement",
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::MUST_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                pointMesh::New(mesh)
+            );
+
+            pointVectorField& PointDisplacementTemp = const_cast<pointVectorField&>
+            (
+                pointDisplacement_temp_
+            );
+
+            vectorField &pDispTemp=refCast<vectorField>(PointDisplacementTemp.boundaryFieldRef()[patchWallID]);
+
+            //Info << pDispTemp <<nl << endl;
+
+            //Info << pointDisplacement_temp_ << nl <<endl;
+            //Info << pointDisplacement_temp_.boundaryField()[patchWallID] << nl<< endl;
+            //Info << "-------------------------------------------------------------------" << nl<< endl;
+            //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
+
+            // Assign the new boundary displacements
+            PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
+
+            //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
     		
     		runTime++;
+    		remove("next.coco");
     		OFstream outfile ("next_ready.coco");
     		outfile << "Joris says: good job on next.coco" << endl;
 			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
@@ -98,7 +159,7 @@ int main(int argc, char *argv[])
     	
     	if (exists("continue.coco"))
 		{
-    		remove("continue.coco");
+
     		// Define movement of the coupling interface
     		
     		/*label patchID = mesh.boundaryMesh().findPatchID();
@@ -148,7 +209,7 @@ int main(int argc, char *argv[])
                     turbulence->correct();
                 }
             }
-            
+            remove("continue.coco");
             // Return the coupling interface output
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
@@ -164,8 +225,9 @@ int main(int argc, char *argv[])
 		
     	if (exists("save.coco"))
 		{
-    		remove("save.coco");
+
     		runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+    		remove("save.coco");
     		OFstream outfile ("save_ready.coco");
 			outfile << "Joris says: good job on save.coco" << endl;
 		}

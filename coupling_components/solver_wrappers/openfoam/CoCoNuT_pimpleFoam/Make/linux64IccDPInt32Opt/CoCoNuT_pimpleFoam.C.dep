@@ -797,7 +797,6 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createUf.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createFvOptions.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/CourantNo.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/setInitialDeltaT.H \
-writeFaceCentres.H \
 readControls.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/readTimeControls.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/setDeltaT.H \
