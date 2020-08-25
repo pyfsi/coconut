@@ -69,7 +69,16 @@ The OpenFOAM-subprocess, which was launched in the `Initialize` method, is kille
 
 ## Overview of an OpenFOAM-solver used in CoCoNuT
 
-Default OpenFOAM-solvers cannot
+Default OpenFOAM-solvers cannot be used in the CoCoNuT-framework, but need to be adjusted. Adapted solvers are stored in the solverwrapper-directory and receive the name `CoCoNuT_X`, where `X` is the name of the original solver, e.g. `pimpleFoam`. If a new solver needs to be adapted to operation in CoCoNuT, one of the already established solvers can work as an example. In brief, the following steps should be undertaken:
+
+-	Except for the initial `include`-statements, the entire solver code should be put in a loop that starts with `while(true)`.
+-	Just before this while-loop, add the statement `runTime.run();`! This is important as it creates and initializes the functionObjects in the `controlDict`-file which will be used for storing the interface loads.
+-	Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional statements. 
+-	The while-loop contains several conditional statements, each of which check whether the Python-code in CoCoNuT has sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: `next.coco`, `continue.coco`, `save.coco`, `stop.coco`. 	
+-	If the file `next.coco` exists, the runTime-object should be increased by one. OpenFOAM should create a file `next_ready.coco` upon completion. Do not forget to delete the original `next.coco`-file, which is advised to do as a first step inside the `if`-clause.
+-	If the file `continue.coco` exists, the flow equations need to be solved. This `if`-statement consequently contains most of the original solver definition, in which the flow equations are called in the same order as in the original CFD solver. OpenFOAM should create a file `continue_ready.coco` upon completion. Do not forget to delete the original `continue.coco`-file, which is advised to do as a first step inside the `if`-clause.
+-	If the file `save.coco` exists, OpenFOAM checks whether the flow variables should be stored in corresponding files, according to the user-defined save interval. OpenFOAM should create a file `save_ready.coco` upon completion. Do not forget to delete the original `save.coco`-file, which is advised to do as a first step inside the `if`-clause.
+-	If the file `stop.coco` exists, a `break`-statement should end the infinite loop (the subprocess is also killed in the Python-code). OpenFOAM should create a file `stop_ready.coco` before breaking the `while`-loop. Do not forget to delete the original `stop.coco`-file, which is advised to do as a first step inside the `if`-clause.
 
 
 ## Setting up a new case
