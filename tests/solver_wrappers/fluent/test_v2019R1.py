@@ -258,7 +258,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             return dy, dz
 
         # setup Fluent case
-        if True:
+        if 0:
             print_box('setup Fluent case')
 
             dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
@@ -435,6 +435,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
             data1n = (data1 - mean) / ref
             data2n = (data2 - mean) / ref
+
+            print(f'max rel error: {np.abs(data1n - data2n).max()}')
 
             for i in range(data1n.size):
                 self.assertAlmostEqual(data1n[i] - data2n[i], 0., delta=1e-14)
