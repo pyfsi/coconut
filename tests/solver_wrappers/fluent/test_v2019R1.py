@@ -267,7 +267,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             p.wait()
 
         # test if nodes are moved to the correct position
-        if True:
+        if 0:
             print_box('test if nodes are moved to the correct position')
 
             # adapt Parameters, create solver
@@ -305,7 +305,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
                 self.assertAlmostEqual(node.Z, z_goal, delta=1e-16)
 
         # test if different partitioning gives the same ModelParts
-        if True:
+        if 0:
             print_box('test if different partitioning gives the same ModelParts')
 
             # create two solvers with different flow solver partitioning
@@ -326,7 +326,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
                 self.assertEqual(node1.Z, node2.Z)
 
         # test if same coordinates always give same pressure & traction
-        if True:
+        if 0:
             print_box('test if same coordinates always gives same pressure & traction')
 
             # adapt Parameters, create solver
