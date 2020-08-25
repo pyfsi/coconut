@@ -108,10 +108,6 @@ int main(int argc, char *argv[])
             //Get the vector field of the patch
             vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
 
-            //Find the relevant size of the vector and declare a vectorField.
-            int Psize= pDisp.size();
-            vectorField dispVals(Psize);
-
             Info<< "Reading pointDisplacement\n" << endl; // bodyForce term
 
             pointVectorField pointDisplacement_temp_
@@ -144,7 +140,7 @@ int main(int argc, char *argv[])
             // Assign the new boundary displacements
             PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
 
-            Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
+            //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
 
     		runTime++;
 
