@@ -302,13 +302,11 @@ class SolverWrapperFluent2019R1(Component):
             # store pressure and traction in Nodes
             if ids_tmp.size != mp.NumberOfNodes():
                 raise ValueError('number of nodes does not match size of data')
-            index = 0
-            for node in mp.Nodes:  # *** todo: enumerate
-                if ids_tmp[index] != node.Id:
-                    raise ValueError(f'node IDs do not match: {ids_tmp[index]}, {node.Id}')
-                node.SetSolutionStepValue(self.traction, 0, traction_tmp[index, :].tolist())
-                node.SetSolutionStepValue(self.pressure, 0, pressure_tmp[index])
-                index += 1
+            for i, node in enumerate(mp.Nodes):
+                if ids_tmp[i] != node.Id:
+                    raise ValueError(f'node IDs do not match: {ids_tmp[i]}, {node.Id}')
+                node.SetSolutionStepValue(self.traction, 0, traction_tmp[i, :].tolist())
+                node.SetSolutionStepValue(self.pressure, 0, pressure_tmp[i])
 
         # return interface_output object
         return self.interface_output.deepcopy()

@@ -57,9 +57,6 @@ file start-transcript "transcript.txt"
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
 ;
-;
-solve set previous-defaults undo-2019r3-default-changes? y y
-;
 ;   SAVE CASE INFO TO TEXT FILE
 report summary y "report.sum"
 (send_message "case_info_exported")
