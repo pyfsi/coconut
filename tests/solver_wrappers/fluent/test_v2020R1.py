@@ -1,8 +1,8 @@
 from coconut.data_structure import KratosUnittest
-from coconut.tests.solver_wrappers.fluent.test_v2019R1 import TestSolverWrapperFluent2019R1
+from coconut.tests.solver_wrappers.fluent.test_v2019R3 import TestSolverWrapperFluent2019R3
 
 
-class TestSolverWrapperFluent2020R1(TestSolverWrapperFluent2019R1):
+class TestSolverWrapperFluent2020R1(TestSolverWrapperFluent2019R3):
     """
     Only 1 Fluent version can be tested at a time,
     because the correct software version must be
@@ -16,8 +16,8 @@ class TestSolverWrapperFluent2020R1(TestSolverWrapperFluent2019R1):
     version = '2020R1'
 
     def test_solver_wrapper_fluent_2020R1(self):
-        super().test_solver_wrapper_fluent_2019R1_tube2d()
-        super().test_solver_wrapper_fluent_2019R1_tube3d()
+        self.test_solver_wrapper_fluent_2019R1_tube2d()
+        self.test_solver_wrapper_fluent_2019R3_tube3d()
 
 
 if __name__ == '__main__':

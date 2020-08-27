@@ -94,8 +94,8 @@ define user-defined execute-on-demand "store_coordinates_id::v2020R1"
 ;   INITIALIZE SOLUTION
 (if (= timestep_start 0)
     (if |HYBRID_INITIALIZATION|
-        (ti-menu-load-string "solve initialize hyb-initialization y")
-        (ti-menu-load-string "solve initialize initialize-flow y")
+        (ti-menu-load-string "solve initialize hyb-initialization")
+        (ti-menu-load-string "solve initialize initialize-flow")
     )
 )
 ;

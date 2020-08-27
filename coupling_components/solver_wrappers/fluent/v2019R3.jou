@@ -57,6 +57,9 @@ file start-transcript "transcript.txt"
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
 ;
+;   RESET FLUX LIMITER TO OLD BEHAVIOR
+;solve set previous undo-2019r3 y n
+;
 ;   SAVE CASE INFO TO TEXT FILE
 report summary y "report.sum"
 (send_message "case_info_exported")
@@ -94,8 +97,8 @@ define user-defined execute-on-demand "store_coordinates_id::v2019R3"
 ;   INITIALIZE SOLUTION
 (if (= timestep_start 0)
     (if |HYBRID_INITIALIZATION|
-        (ti-menu-load-string "solve initialize hyb-initialization y")
-        (ti-menu-load-string "solve initialize initialize-flow y")
+        (ti-menu-load-string "solve initialize hyb-initialization")
+        (ti-menu-load-string "solve initialize initialize-flow")
     )
 )
 ;

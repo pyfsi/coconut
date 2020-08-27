@@ -87,5 +87,12 @@ No changes.
 
 ### v2019R3 (19.5.0)
 
-Last test (which tests restart) fails because Fluent behaves strangely. 
+Last test (3D restart test) fails because Fluent calculates a different solution after restarting the solver and loading case and data. There is only a slight difference (order $10^{-7}$), and I have no idea why... 
 
+The solutions in this version are (slightly) different because the *Rhie-Chow face flux interpolation in the pressure-based solver* has changed. This setting can be reverted with the TUI command `solve set previous undo-2019r3 y n`, which is included in `v2019R3.jou`.
+
+
+
+### v2020R3 (20.1.0)
+
+Same behavior as v2019R3.
