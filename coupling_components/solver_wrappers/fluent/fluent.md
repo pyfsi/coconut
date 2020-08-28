@@ -87,11 +87,10 @@ No changes.
 
 ### v2019R3 (19.5.0)
 
-Last test (3D restart test) fails because Fluent calculates a different solution after restarting the solver and loading case and data. There is only a slight difference (order $10^{-7}$), and I have no idea why... 
-
 The solutions in this version are (slightly) different because the *Rhie-Chow face flux interpolation in the pressure-based solver* has changed. This setting can be reverted with the TUI command `solve set previous undo-2019r3 y n`, which is included in `v2019R3.jou`.
 
-
+The results can be slightly different when restarts are used for multicore simulations for the following reason: *For parallel cases with smoothing that do not use dynamic load balancing, a zonal partitioning with Laplace smoothing will automatically be applied when the file is read, which should result in better load balancing for the mesh smoothing calculations.*
+After a restart, the partitioning can be different and hence the mesh deformation can be slightly different. 
 
 ### v2020R3 (20.1.0)
 

@@ -17,7 +17,7 @@ class TestSolverWrapperFluent2020R1(TestSolverWrapperFluent2019R3):
 
     def test_solver_wrapper_fluent_2020R1(self):
         self.test_solver_wrapper_fluent_2019R1_tube2d()
-        self.test_solver_wrapper_fluent_2019R3_tube3d()
+        self.test_solver_wrapper_fluent_2019R1_tube3d()
 
 
 if __name__ == '__main__':

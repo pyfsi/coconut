@@ -174,8 +174,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
-            par_solver['settings'].SetInt('flow_iterations', 500)
+            par_solver['settings'].SetInt('cores', 1)
+            par_solver['settings'].SetInt('flow_iterations', 30)
             solver = CreateInstance(par_solver)
 
             # run solver for 4 timesteps
@@ -381,8 +381,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
-            par_solver['settings'].SetInt('flow_iterations', 500)
+            par_solver['settings'].SetInt('cores', 1)
+            par_solver['settings'].SetInt('flow_iterations', 30)
             solver = CreateInstance(par_solver)
 
             # run solver for 4 timesteps
