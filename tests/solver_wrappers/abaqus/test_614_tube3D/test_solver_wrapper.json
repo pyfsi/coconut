@@ -12,7 +12,6 @@
                 "dimensions": 3,
                 "arraysize": 10e5,
                 "surfaces": 1,
-                "ramp": 1,
                 "delta_T": 2e-4,
                 "timestep_start": 0,
                 "surfaceIDs": ["WALLOUTSIDE"],

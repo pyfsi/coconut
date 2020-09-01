@@ -10,8 +10,10 @@
         {
             "timestep_start": 0,
             "delta_t": 0.0001,
-            "omega" : 0.05,
-            "model" :
+            "omega": 0.05,
+            "name": "results",
+            "save_results": true,
+            "model":
             {
                 "type": "coupled_solvers.models.ls",
                 "settings":
