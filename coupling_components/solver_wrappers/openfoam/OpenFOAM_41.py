@@ -157,7 +157,7 @@ class SolverWrapperOpenFOAM_41(Component):
         print("The model for OpenFOAM will be created. Please make sure all patch names given under the 'interface' setting are also found in the mesh used in OpenFOAM (see 'constant/polyMesh') \n")
         
         # Creating ModelParts and adding variables to these ModelParts - should happen before node addition
-        for key,value in (self.settings['interface_input'].items()+self.settings['interface_output'].items()): # OpenFOAM is a completely collocated, so all variables are stored in cell centres
+        for key,value in (self.settings['interface_input'].items()+self.settings['interface_output'].items()):
             self.model.CreateModelPart(key)
             mp=self.model[key]
             for var_name in value.list():
@@ -168,57 +168,19 @@ class SolverWrapperOpenFOAM_41(Component):
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
         nKey=0
         for boundary in self.boundary_names:
-            for i in np.arange(3):
-                if i == 0:
-                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccx"
-                elif i == 1:
-                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccy"
-                elif i == 2:
-                    source_file=self.working_directory + "/" + str(self.start_time) + "/ccz"
-                try:
-                    lineNameNr=self.find_string_in_file(boundary, source_file)
-                    lineStartNr=lineNameNr+7 # In case of non-uniform list, this is where the list of values in the sourceFile starts
-                    nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                    os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
-                    nNodes_file=open("nNodes",'r')
-                    nNodes=int(nNodes_file.readline())
-                    nNodes_file.close()
-                    os.system("rm nNodes")
-                    tempCoordFile=np.ones([nNodes,1])*float("inf")
-                    for j in np.arange(nNodes):
-                        tempCoordFile[j,0]=float(linecache.getline(source_file,lineStartNr+j))
-                except ValueError: # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking
-                    if not 'nNodes' in locals(): #If the first coordinate-file has a uniform value, the variable 'nNodes' does not exist, so you should check whether this variable exists
-                        check_file=self.working_directory + "/" + str(self.start_time) + "/ccy" # if 'nNodes' does not exist, read the second sourceFile to know the number of rows
-                        lineNameNr=self.find_string_in_file(boundary, check_file)
-                        nNodesIndex=lineNameNr+5 # On this line, the number of cell centers on the inlet is stated
-                        os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
-                        nNodes_file=open("nNodes",'r')
-                        nNodes=int(nNodes_file.readline())
-                        nNodes_file.close()
-                        os.system("rm nNodes")
-                    indexUV=lineNameNr+4
-                    os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
-                    unifValue_file=open("unifValue",'r')
-                    unifValue=float(unifValue_file.readline().split()[-1][0:-1]) #First '-1' makes sure the value is read, but this still contains a semi-colon, so this should be removed with second index '[0:-1]'.
-                    unifValue_file.close()
-                    os.system("rm unifValue")
-                    tempCoordFile=np.ones([nNodes,1])*float("inf")
-                    for j in np.arange(nNodes):
-                        tempCoordFile[j,0]=unifValue
-                if i == 0:
-                        coordList_tot=np.ones([nNodes,4])*float("inf") # ID - X - Y - Z
-                        coordList_tot[:,0]=np.arange(nNodes) #CellID = numbers from 0 till (nNodes - 1)
-                coordList_tot[:,(i+1)]=tempCoordFile[:,0]
-            self.nNodes_tot=len(coordList_tot[:,0])
-            
-            # Subsequently create each node separately in the ModelPart- both input and output!
-            mp_input=self.model[boundary+"_input"]
-            mp_output=self.model[boundary+"_output"]
-            for i in np.arange(int(self.nNodes_tot)):
-                mp_input.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
-                mp_output.CreateNewNode(coordList_tot[i,0],coordList_tot[i,1],coordList_tot[i,2],coordList_tot[i,3])
-            nKey+=1    
+            source_file = self.working_directory + "/constant/polyMesh"
+            node_ids, node_coords, face_centres = self.Get_Point_IDs(boundary,source_file)
+
+            mp_input = self.model[boundary + "_input"]
+            for i in np.arange(0,len(node_ids)):
+                mp_input.CreateNewNode(node_ids[i],node_coords[i, 0], node_coords[i, 1], node_coords[i, 2])
+
+            index = 0
+            mp_output = self.model[boundary + "_output"]
+            for i in np.arange(0, len(face_centres)):
+                mp_output.CreateNewNode(index, face_centres[i, 0], face_centres[i, 1], face_centres[i, 2])
+                index+=1
+
 
         # Create CoSimulationInterfaces
         self.interface_input = Interface(self.model, self.settings["interface_input"])
@@ -243,12 +205,12 @@ class SolverWrapperOpenFOAM_41(Component):
         if self.cores == 1:
             pointDisp_name=os.path.join(self.working_directory,str(self.physical_time),"pointDisplacement")
             if not(os.path.isfile(pointDisp_name)):
-                self.write_pointDisplacement_file(pointDisp_raw_name,pointDisp_name,0)
+                self.write_pointDisplacement_file(pointDisp_raw_name,pointDisp_name)
         else:
             for p in np.arange(self.cores):
                 pointDisp_name=os.path.join(self.working_directory,"processor"+str(p),str(self.physical_time),"pointDisplacement")
                 if not(os.path.isfile(pointDisp_name)):
-                    self.write_pointDisplacement_file(pointDisp_raw_name,pointDisp_name,p)
+                    self.write_pointDisplacement_file(pointDisp_raw_name,pointDisp_name)
         
         # Don't forget to start OpenFOAM-loop!
         if self.cores == 1:
@@ -266,7 +228,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.timestep += 1
         self.iteration = 0
         self.physical_time += self.dt
-        if self.cores <2:
+        if self.cores <2: #if serial
             newPath=os.path.join(self.working_directory, str(self.physical_time))
             if os.path.isdir(newPath):
                 print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder: "+str(newPath) + ". \n\n\n")
@@ -288,7 +250,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
     
 
-    def SolveSolutionStep(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
+    def SolveSolutionStep(self, interface_input):
         self.iteration += 1
         print(f'\t\tIteration {self.iteration}')
 
@@ -426,14 +388,20 @@ class SolverWrapperOpenFOAM_41(Component):
     
     
     def write_node_input(self):
-        # The values in the pointDisplacement-file at the interface need to be overwritten with the newest values for the interface_input
+        #Currently this will be programmed with a reConstructPar and a decomposePar for the pointDisplacement field
+        # An alternative is to kee ptrack of the ùmapping between processors, but this entails a lot of "exceptions" in terms of reading the files
+
+        ### Timestep zero should be reconstructPar with the option -withZero"
+        os.system(f"reconstructPar -time '{self.physical_time-self.dt:.6f}' -fields '(pointDisplacement_Next)'")
         nKey=0
         for boundary in self.boundary_names:
             mp = self.model[boundary+"_input"]
-            disp_file = os.path.join(self.working_directory, str(self.physical_time), 'pointDisplacement')
-            if self.iteration == 1: #first iteration of new time step: disp_file does not exist yet
-                pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
-                self.write_pointDisplacement_file(pointDisp_raw_name, disp_file,0)
+            if self.cores<2: #serial run
+                disp_file = os.path.join(self.working_directory, f"{self.physical_time-self.dt:.6f}", 'pointDisplacement_Next') #Need to update pointdisplacement in the previous time directory
+            else:
+                for c in range(0,self.cores):
+                    disp_file = os.path.join(self.working_directory,f"processor{c}", f"{self.physical_time - self.dt:.6f}",'pointDisplacement_Next')
+
             startNr=self.find_string_in_file(boundary, disp_file)
             os.system("head -n " + str(startNr+1) + " " + disp_file + " > tempDisp")
             if self.nNodes_tot < 11: # 10 or less elements on interface
@@ -529,7 +497,7 @@ class SolverWrapperOpenFOAM_41(Component):
         file.close()
             
     
-    def write_pointDisplacement_file(self,pointDisp_raw_name,pointDisp_name,procNr):
+    def write_pointDisplacement_file(self,pointDisp_raw_name,pointDisp_name):
         with open(pointDisp_raw_name,'r') as rawFile: 
                 with open(pointDisp_name,'w') as newFile:
                     for line in rawFile:
@@ -603,5 +571,121 @@ class SolverWrapperOpenFOAM_41(Component):
         versionNr=lastLine.split(' ')[-1]
         if versionNr[:-1] != self.moduleVersion :
                 sys.exit("OpenFOAM 4.1 should be loaded! Currently, another version of OpenFOAM is loaded")
+
+    # def read_boundary_file(self,source_file,boundary):
+    #     try:
+    #         lineNameNr = self.find_string_in_file(boundary, source_file)
+    #         lineStartNr = lineNameNr + 7  # In case of non-uniform list, this is where the list of values in the sourceFile starts
+    #         nNodesIndex = lineNameNr + 5  # On this line, the number of elements in the boundary
+    #         os.system("awk NR==" + str(nNodesIndex) + " " + source_file + " > nNodes")
+    #         nNodes_file = open("nNodes", 'r')
+    #         nNodes = int(nNodes_file.readline())
+    #         nNodes_file.close()
+    #         os.system("rm nNodes")
+    #         tempCoordFile = np.ones([nNodes, 1]) * float("inf")
+    #         for j in np.arange(nNodes):
+    #             tempCoordFile[j, 0] = float(linecache.getline(source_file, lineStartNr + j))
+    #     except ValueError:  # If ValueError is triggered, it means that the source-file has a uniform coordinate in the axis you are currently looking
+    #         if not 'nNodes' in locals():  # If the first coordinate-file has a uniform value, the variable 'nNodes'
+    #             # does not exist, so you should check whether this variable exists
+    #             check_file = self.working_directory + "/" + str(
+    #                 self.start_time) + "/ccy"  # if 'nNodes' does not exist, read the second sourceFile to know the number of rows
+    #             lineNameNr = self.find_string_in_file(boundary, check_file)
+    #             nNodesIndex = lineNameNr + 5  # On this line, the number of cell centers on the inlet is stated
+    #             os.system("awk NR==" + str(nNodesIndex) + " " + check_file + " > nNodes")
+    #             nNodes_file = open("nNodes", 'r')
+    #             nNodes = int(nNodes_file.readline())
+    #             nNodes_file.close()
+    #             os.system("rm nNodes")
+    #         indexUV = lineNameNr + 4
+    #         os.system("awk NR==" + str(indexUV) + " " + source_file + " > unifValue")
+    #         unifValue_file = open("unifValue", 'r')
+    #         unifValue = float(unifValue_file.readline().split()[-1][
+    #                           0:-1])  # First '-1' makes sure the value is read, but this still contains a
+    #         # semi-colon, so this should be removed with second index '[0:-1]'.
+    #         unifValue_file.close()
+    #         os.system("rm unifValue")
+    #         tempCoordFile = np.ones([nNodes, 1]) * float("inf")
+    #         for j in np.arange(nNodes):
+    #             tempCoordFile[j, 0] = unifValue
+    #     if i == 0:
+    #         coordList_tot = np.ones([nNodes, 4]) * float("inf")  # ID - X - Y - Z
+    #         coordList_tot[:, 0] = np.arange(nNodes)  # CellID = numbers from 0 till (nNodes - 1)
+    #     coordList_tot[:, (i + 1)] = tempCoordFile[:, 0]
+    #
+    # self.nNodes_tot = len(coordList_tot[:, 0])
+
+    def Get_Point_IDs(boundary, dir):
+        'Function that returns the local point IDs belonging to a specified boundary in the correct sequence for the pointDisplacement file'
+        f_b = f'{dir}/boundary'
+        f_f = f'{dir}/faces'
+        f_p = f'{dir}/points'
+
+        # Identify startface and endface for the boundary
+        with open(f_b) as f:
+            line = f.readline()
+            while not boundary in line:
+                line = f.readline()
+            for i in range(0, 4):
+                line = f.readline()
+            nFaces = int(line[:-2].split()[1])
+            line = f.readline()
+            startFace = int(line[:-2].split()[1])
+
+        # Get number of points to keep a list of booleans
+        prev_line = "("
+        with open(f_p) as f:
+            line = f.readline()
+            while not "(" in line:
+                prev_line = line
+                line = f.readline()
+            N_points = int(prev_line)
+            points = np.zeros((N_points, 3))
+            count = 0
+            line = f.readline()
+            while any(char.isdigit() for char in line):
+                temp = line.split(" ")
+                points[count, 0] = float(temp[0][1:])
+                points[count, 1] = float(temp[1][:])
+                points[count, 2] = float(temp[2][:-2])
+                count += 1
+                line = f.readline()
+
+        # print(N_points)
+
+        points_Bool = np.zeros((N_points, 1))
+        boundary_Ind = []
+
+        # Read in nodes file
+
+        # Read in the list of faces and the nodes constituting those faces
+        All_Fnodes = []
+        with open(f_f) as f:
+            line = f.readline()
+            while not "(" in line:
+                line = f.readline()
+            line = f.readline()
+            while any(char.isdigit() for char in line):
+                list = line[2:-2].split()
+                All_Fnodes.append(list)
+                line = f.readline()
+
+        # Extract the cell faces belonging to the boundary and create an ordered list of node id's
+        face_centers = np.zeros((nFaces, 3))
+        node_coords = []
+        for nf in range(startFace, startFace + nFaces):
+            face_center = np.zeros([1, 3])
+            list = All_Fnodes[nf]
+            for n in list:
+                face_center += points[int(n), :]
+                if points_Bool[int(n) - 1, 0] == 0:  # If not yet in list, add it to the list
+                    boundary_Ind.append(int(n))
+                    node_coords.append(points[int(n), :])
+                    points_Bool[int(n) - 1, 0] = 1
+            face_centers[nf - startFace, :] = face_center / float(len(list))
+        boundary_Ind = np.array(boundary_Ind)
+        node_coords = np.array(node_coords,dtype=float)
+
+        return boundary_Ind, node_coords,face_centers
             
     

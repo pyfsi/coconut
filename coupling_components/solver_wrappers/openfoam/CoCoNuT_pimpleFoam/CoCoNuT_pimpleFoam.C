@@ -77,11 +77,13 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 	
 	runTime.run();
+    word prev_runTime;
 
     while (true) // NOT runTime.run()
     {
         usleep(1000); // Expressed in microseconds 
-        
+
+
     	if (exists("next.coco"))
 		{
 
@@ -92,7 +94,22 @@ int main(int argc, char *argv[])
 
 			 // Get the patch ID: patch name must be "mantle"
             // This should be generalised and a loop should be provided for the different patches of interest
-            label patchWallID = mesh.boundaryMesh().findPatchID("mantle");
+
+    		prev_runTime = runTime.timeName();
+    		Info << prev_runTime << nl << endl;
+
+    		runTime++;
+    		remove("next.coco");
+    		OFstream outfile ("next_ready.coco");
+    		outfile << "Joris says: good job on next.coco" << endl;
+			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
+		}
+    	
+    	if (exists("continue.coco"))
+		{
+
+    		// Define movement of the coupling interface
+    		label patchWallID = mesh.boundaryMesh().findPatchID("mantle");
             const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
 
             // Info << "In Next" << nl << endl;
@@ -118,12 +135,14 @@ int main(int argc, char *argv[])
 
             Info<< "Reading pointDisplacement\n" << endl;
 
+            Info<< "prev_runTime" << prev_runTime << endl;
+
             pointVectorField pointDisplacement_temp_
             (
                 IOobject
                 (
-                    "pointDisplacement",
-                    runTime.timeName(),
+                    "pointDisplacement_Next",
+                    prev_runTime,
                     mesh,
                     IOobject::MUST_READ,
                     IOobject::AUTO_WRITE
@@ -149,28 +168,6 @@ int main(int argc, char *argv[])
             PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
 
             //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
-    		
-    		runTime++;
-    		remove("next.coco");
-    		OFstream outfile ("next_ready.coco");
-    		outfile << "Joris says: good job on next.coco" << endl;
-			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
-		}
-    	
-    	if (exists("continue.coco"))
-		{
-
-    		// Define movement of the coupling interface
-    		
-    		/*label patchID = mesh.boundaryMesh().findPatchID();
-    		const polyPatch& cPatch = mesh.boundaryMesh()[patchID];
-    		forAll (cPatch,faceI)
-    		{
-    		pointDisplacement.boundaryField()[patchID][faceI] = ;
-    		}*/
-    		// See EMPIRE coupling code
-    		
-    		
     		
     		
     		// Calculate the mesh motion and update the mesh
