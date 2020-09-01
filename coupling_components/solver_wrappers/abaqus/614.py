@@ -64,13 +64,13 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = None
 
         if "subcycling" in self.settings.keys():
-            self.subcycling = self.settings["subcycling"].GetInt()
+            self.subcycling = self.settings["subcycling"].GetBool()
             if self.subcycling:
                 self.minInc = self.settings["minInc"].GetDouble()
                 self.initialInc = self.settings["initialInc"].GetDouble()
                 self.maxNumInc = self.settings["maxNumInc"].GetInt()
                 self.maxInc = self.settings["maxInc"].GetInt()
-                self.ramp = self.settings["ramp"].GetInt()
+                self.ramp = 1 if self.settings["ramp"].GetBool() else 0
             else:
                 self.maxNumInc = 1
                 self.maxInc = self.delta_t
