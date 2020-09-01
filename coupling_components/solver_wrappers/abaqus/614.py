@@ -744,7 +744,20 @@ class SolverWrapperAbaqus614(Component):
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
-                    line = f.readline()  # need to skip the next line
+                    f.readline()  # need to skip the next line
+                    of.write(line_2)  # Change the time step in the Abaqus step
+                    if bool_restart:
+                        rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                    line = f.readline()
+                elif "*static" in line.lower():
+                    of.write(line)
+                    if bool_restart:
+                        rf.write(line)
+                    f.readline()  # need to skip the next line
+                    if not self.subcycling:
+                        raise NotImplementedError("Only Static with subcycling is implemented for the Abaqus wrapper")
+                    line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                    f.readline()
                     of.write(line_2)  # Change the time step in the Abaqus step
                     if bool_restart:
                         rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
@@ -788,7 +801,14 @@ class SolverWrapperAbaqus614(Component):
                     else:
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
 
-            # Start of a simulation with ramp, needs an initial load at time 0
-            if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
-                cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
-                self.run_shell(self.dir_csm, [cmd], name='GetOutput')
+            # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
+            if self.iteration == 1 and self.timestep == 1 and self.ramp:
+                tmp = f'CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat'
+                file_name = join(self.dir_csm, tmp)
+                with open(file_name, 'w') as file:
+                    file.write(f'{mp.NumberOfNodes()}\n')
+                    for _ in mp.Nodes:
+                        if self.dimensions == 2:
+                            file.write(f'{0:27.17e}{0:27.17e}{0:27.17e}\n')
+                        else:
+                            file.write(f'{0:27.17e}{0:27.17e}{0:27.17e}{0:27.17e}\n')
