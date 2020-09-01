@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
+from coconut.coupling_components import tools
 
 import os
 from os.path import join
@@ -223,6 +224,9 @@ class SolverWrapperFluent2019R1(Component):
         self.traction = vars(data_structure)['TRACTION']
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
+        # run time
+        self.run_time = 0.0
+
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
         self.OutputSolutionStep()
@@ -239,6 +243,7 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('next')
         self.wait_message('next_ready')
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):
         self.iteration += 1
 

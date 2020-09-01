@@ -471,6 +471,9 @@ class SolverWrapperAbaqus614(Component):
         self.traction = vars(data_structure)['TRACTION']
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
+        # run time
+        self.run_time = 0.0
+
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
 
@@ -483,6 +486,7 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = 0
         self.timestep += 1
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):
         self.iteration += 1
 

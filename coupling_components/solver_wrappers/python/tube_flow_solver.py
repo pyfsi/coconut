@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
+from coconut.coupling_components import tools
 
 import numpy as np
 import os.path as path
@@ -109,6 +110,9 @@ class SolverWrapperTubeFlow(Component):
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
 
+        # run time
+        self.run_time = 0.0
+
         # Debug
         self.debug = False  # Set on True to save input and output of each iteration of every time step
         self.OutputSolutionStep()
@@ -125,6 +129,7 @@ class SolverWrapperTubeFlow(Component):
         self.pn = np.array(self.p)
         self.an = np.array(self.a)
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):
         # Input
         self.disp = interface_input.GetNumpyArray().reshape(-1, 3)
