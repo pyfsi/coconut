@@ -51,8 +51,8 @@ parameter|type|description
 <nobr>`maxInc`</nobr>|float|Required when subcycling is enabled. Contains the maximal size allowed for a substep.
 <nobr>`maxNumInc`</nobr>|integer|Required when subcycling is enabled. Contains the maximum number of increments that Abaqus is allowed to perform for one time step. 
 <nobr>`minInc`</nobr>|float|Required when subcycling is enabled. Contains the minimal size allowed for a substep.
-<nobr>`ramp`</nobr>|bool| Only important when subcycling is enabled in Abaqus. <br> <b>0</b>: Load is considered to be constant throughout the time step <br><b>1</b>: [Default] Load is applied in a ramped fashion throughout the time step 
-<nobr>`subcycling`</nobr>|bool|<b>0</b>: [Default] Abaqus solves the requested time step using one increment <br> <b>1</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved 
+<nobr>`ramp`</nobr>|bool| Only important when subcycling is enabled in Abaqus. <br> <b>false</b>: Load is considered to be constant throughout the time step <br><b>true</b>: [Default] Load is applied in a ramped fashion throughout the time step 
+<nobr>`subcycling`</nobr>|bool|<b>false</b>: [Default] Abaqus solves the requested time step using one increment <br> <b>true</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved 
 
 ## Input file
 The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the `main directory`. Its name should be specified in the .json file via the parameter `input_file`. For the remainder of this section this file will be referred to as “base-file”
