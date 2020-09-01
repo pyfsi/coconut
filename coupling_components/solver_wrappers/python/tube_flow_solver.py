@@ -29,12 +29,15 @@ class SolverWrapperTubeFlow(Component):
             self.settings.AddMissingParameters(data_structure.Parameters(settings_file.read()))
 
         # Settings
+        self.unsteady = self.settings["unsteady"].GetBool() if self.settings.Has("unsteady") else True
+
         l = self.settings["l"].GetDouble()  # Length
         self.d = self.settings["d"].GetDouble()  # Diameter
         self.rhof = self.settings["rhof"].GetDouble()  # Density
 
         self.ureference = self.settings["ureference"].GetDouble()  # Reference velocity
-        self.preference = self.settings["preference"].GetDouble() if self.settings.Has("preference") else 0.0 # Reference pressure
+        self.u0 = self.settings["u0"].GetDouble() if self.settings.Has("u0") else self.ureference  # Initial velocity
+        self.preference = self.settings["preference"].GetDouble() if self.settings.Has("preference") else 0.0 # Reference and initial pressure
         self.inlet_boundary = self.settings["inlet_boundary"]
         self.inlet_variable = self.inlet_boundary["variable"].GetString()  # Variable upon which boundary condition is specified
         if self.inlet_variable == "velocity":
@@ -43,20 +46,28 @@ class SolverWrapperTubeFlow(Component):
         elif self.inlet_variable == "pressure":
             self.inlet_reference = self.inlet_boundary["reference"].GetDouble() if self.inlet_boundary.Has(
                 "reference") else self.preference  # Reference of pressure inlet boundary condition
+        elif self.inlet_variable == "total_pressure":
+            self.inlet_reference = self.inlet_boundary["reference"].GetDouble() if self.inlet_boundary.Has(
+                "reference") else self.preference + self.ureference ** 2 / 2  # Reference of total_pressure inlet boundary condition
         else:
             raise ValueError(f"The inlet_variable \'{self.inlet_variable}\' is not implemented,"
-                             f" chose between \'pressure\' and \'velocity\'")
+                             f" choose between \'pressure\', \'total_pressure\' and \'velocity\'")
         self.inlet_type = self.inlet_boundary["type"].GetInt()  # Type of inlet boundary condition
         self.inlet_amplitude = self.inlet_boundary["amplitude"].GetDouble()  # Amplitude of inlet boundary condition
-        self.inlet_period = self.inlet_boundary["period"].GetDouble()  # Period of inlet boundary condition
-        # Adjust to kinematic pressure
-        if self.inlet_variable == "pressure":
-            self.inlet_reference = self.inlet_reference / self.rhof
-            self.inlet_amplitude = self.inlet_amplitude / self.rhof
-        self.preference = self.preference / self.rhof
+        if not self.inlet_type == 4:
+            self.inlet_period = self.inlet_boundary["period"].GetDouble()  # Period of inlet boundary condition
 
         self.outlet_boundary = self.settings["outlet_boundary"]
         self.outlet_type = self.outlet_boundary["type"].GetInt()  # Type of outlet boundary condition
+        self.outlet_amplitude = self.outlet_boundary["amplitude"].GetDouble() if self.outlet_boundary.Has(
+            "amplitude") else self.preference  # Amplitude of outlet boundary condition
+
+        # Adjust to kinematic pressure
+        if self.inlet_variable in {"pressure", "total_pressure"}:
+            self.inlet_reference = self.inlet_reference / self.rhof
+            self.inlet_amplitude = self.inlet_amplitude / self.rhof
+        self.outlet_amplitude = self.outlet_amplitude / self.rhof
+        self.preference = self.preference / self.rhof
 
         e = self.settings["e"].GetDouble()  # Young"s modulus of structure
         h = self.settings["h"].GetDouble()  # Thickness of structure
@@ -69,14 +80,18 @@ class SolverWrapperTubeFlow(Component):
 
         self.k = 0  # Iteration
         self.n = 0  # Time step (no restart implemented)
-        self.dt = self.settings["delta_t"].GetDouble()  # Time step size
-        self.alpha = np.pi * self.d ** 2 / 4.0 / (self.ureference + self.dz / self.dt)  # Numerical damping parameter due to central discretization of pressure in momentum equation
+        if self.unsteady:
+            self.dt = self.settings["delta_t"].GetDouble()  # Time step size
+            self.alpha = np.pi * self.d ** 2 / 4.0 / (self.ureference + self.dz / self.dt)  # Numerical damping parameter due to central discretization of pressure in momentum equation
+        else:
+            self.dt = 1.0  # Time step size default value
+            self.alpha = np.pi * self.d ** 2 / 4.0 / self.ureference  # Numerical damping parameter due to central discretization of pressure in momentum equation
 
         self.newtonmax = self.settings["newtonmax"].GetInt()  # Maximal number of Newton iterations
         self.newtontol = self.settings["newtontol"].GetDouble()  # Tolerance of Newton iterations
 
         # Initialization
-        self.u = np.ones(self.m + 2) * self.ureference  # Velocity
+        self.u = np.ones(self.m + 2) * self.u0  # Velocity
         self.un = np.array(self.u)  # Previous velocity
         self.p = np.ones(self.m + 2) * self.preference  # Kinematic pressure
         self.pn = np.array(self.p)  # Previous kinematic pressure (only value at outlet is used)
@@ -87,7 +102,7 @@ class SolverWrapperTubeFlow(Component):
         self.pres = np.zeros(self.m)  # Pressure
         self.trac = np.zeros((self.m, 3))  # Traction
 
-        self.conditioning = np.pi * self.d ** 2 / 4.0 / (self.ureference + self.dz / self.dt)  # Factor for conditioning Jacobian
+        self.conditioning = self.alpha  # Factor for conditioning Jacobian
 
         # ModelParts
         self.variable_disp = vars(data_structure)["DISPLACEMENT"]
@@ -229,6 +244,8 @@ class SolverWrapperTubeFlow(Component):
         elif self.inlet_type == 3:
             x = self.inlet_reference \
                 + self.inlet_amplitude * (np.sin(np.pi * (self.n * self.dt) / self.inlet_period)) ** 2
+        elif self.inlet_type == 4:
+            x = self.inlet_reference + self.inlet_amplitude
         else:
             x = self.inlet_reference + self.inlet_amplitude * (self.n * self.dt) / self.inlet_period
         return x
@@ -237,7 +254,6 @@ class SolverWrapperTubeFlow(Component):
         usign = self.u[1:self.m + 1] > 0
         ur = self.u[1:self.m + 1] * usign + self.u[2:self.m + 2] * (1.0 - usign)
         ul = self.u[0:self.m] * usign + self.u[1:self.m + 1] * (1.0 - usign)
-        self.alpha = np.pi * self.d ** 2 / 4.0 / (self.ureference + self.dz / self.dt)
 
         f = np.zeros(2 * self.m + 4)
         if self.inlet_variable == "velocity":
@@ -246,14 +262,18 @@ class SolverWrapperTubeFlow(Component):
         elif self.inlet_variable == "pressure":
             f[0] = (self.u[0] - (2.0 * self.u[1] - self.u[2])) * self.conditioning
             f[1] = (self.p[0] - self.GetInletBoundary()) * self.conditioning
-        f[2:2 * self.m + 2:2] = (self.dz / self.dt * (self.a[1:self.m + 1] - self.an[1:self.m + 1])
+        elif self.inlet_variable == "total_pressure":
+            f[0] = (self.u[0] - (2.0 * (self.GetInletBoundary() - self.p[0])) ** 0.5) * self.conditioning
+            print(self.GetInletBoundary() - self.p[0])
+            f[1] = (self.p[0] - (2.0 * self.p[1] - self.p[2])) * self.conditioning
+        f[2:2 * self.m + 2:2] = (self.dz / self.dt * (self.a[1:self.m + 1] - self.an[1:self.m + 1]) * self.unsteady
                                  + (self.u[1:self.m + 1] + self.u[2:self.m + 2])
                                  * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
                                  - (self.u[1:self.m + 1] + self.u[0:self.m])
                                  * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0
                                  - self.alpha * (self.p[2:self.m + 2] - 2.0 * self.p[1:self.m + 1] + self.p[0:self.m]))
         f[3:2 * self.m + 3:2] = (self.dz / self.dt * (self.u[1:self.m + 1] * self.a[1:self.m + 1]
-                                 - self.un[1:self.m + 1] * self.an[1:self.m + 1])
+                                 - self.un[1:self.m + 1] * self.an[1:self.m + 1]) * self.unsteady
                                  + ur * (self.u[1:self.m + 1] + self.u[2:self.m + 2])
                                  * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
                                  - ul * (self.u[1:self.m + 1] + self.u[0:self.m])
@@ -269,7 +289,7 @@ class SolverWrapperTubeFlow(Component):
                                                               - (self.u[self.m + 1] - self.un[self.m + 1]) / 4.0) ** 2))
                                  ) * self.conditioning
         else:
-            f[2 * self.m + 3] = (self.p[self.m + 1] - self.preference) * self.conditioning
+            f[2 * self.m + 3] = (self.p[self.m + 1] - self.outlet_amplitude) * self.conditioning
         return f
 
     def GetJacobian(self):
@@ -285,6 +305,12 @@ class SolverWrapperTubeFlow(Component):
             j[self.Au + 0 - 2, 2] = -2.0 * self.conditioning  # [0,2]
             j[self.Au + 0 - 4, 4] = 1.0 * self.conditioning  # [0,4]
             j[self.Au + 1 - 1, 1] = 1.0 * self.conditioning  # [1,1]
+        elif self.inlet_variable == "total_pressure":
+            j[self.Au + 0 - 0, 0] = 1.0 * self.conditioning  # [0,0]
+            j[self.Au + 0 - 1, 1] = (2.0 * (self.GetInletBoundary() - self.p[0])) ** -0.5 * self.conditioning  # [1,1]
+            j[self.Au + 1 - 1, 1] = 1.0 * self.conditioning  # [1,1]
+            j[self.Au + 1 - 3, 3] = -2.0 * self.conditioning  # [1,3]
+            j[self.Au + 1 - 5, 5] = 1.0 * self.conditioning  # [1,5]
 
         j[self.Au + 2, 0:2 * self.m + 0:2] = -(self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0  # [2*i, 2*(i-1)]
         j[self.Au + 3, 0:2 * self.m + 0:2] = (-((self.u[1:self.m + 1] + 2.0 * self.u[0:self.m]) * usign
@@ -295,7 +321,7 @@ class SolverWrapperTubeFlow(Component):
 
         j[self.Au + 0, 2:2 * self.m + 2:2] = ((self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
                                               - (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0)  # [2*i, 2*i]
-        j[self.Au + 1, 2:2 * self.m + 2:2] = (self.dz / self.dt * self.a[1:self.m + 1]
+        j[self.Au + 1, 2:2 * self.m + 2:2] = (self.dz / self.dt * self.a[1:self.m + 1] * self.unsteady
                                               + ((2.0 * self.u[1:self.m + 1] + self.u[2:self.m + 2]) * usign
                                                  + self.u[2:self.m + 2] * (1.0 - usign))
                                               * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
