@@ -27,6 +27,8 @@ matplotlib.rcParams['ytick.minor.size'] = 2.4
 matplotlib.rcParams['savefig.dpi'] = 300
 
 
+'''Force an update'''
+
 def Get_Point_IDs_2(boundary, dir):
     'Function that returns the local point IDs belonging to a specified boundary in the correct sequence for the pointDisplacement file'
     f_b = f'{dir}/boundary'
