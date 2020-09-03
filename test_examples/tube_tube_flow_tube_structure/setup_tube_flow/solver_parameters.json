@@ -4,16 +4,14 @@
   "rhof": 1000.0,
   "u0": 0.0,
   "ureference": 1.0,
-  "inlet_boundary":
-  {
+  "inlet_boundary": {
     "variable": "pressure",
     "type": 2,
     "reference": 0.0,
     "amplitude": 1333.2,
     "period": 0.003
   },
-  "outlet_boundary":
-  {
+  "outlet_boundary": {
     "type": 0
   },
   "e": 300000.0,
