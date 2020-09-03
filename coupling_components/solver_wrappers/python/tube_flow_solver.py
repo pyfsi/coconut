@@ -264,7 +264,6 @@ class SolverWrapperTubeFlow(Component):
             f[1] = (self.p[0] - self.GetInletBoundary()) * self.conditioning
         elif self.inlet_variable == "total_pressure":
             f[0] = (self.u[0] - (2.0 * (self.GetInletBoundary() - self.p[0])) ** 0.5) * self.conditioning
-            print(self.GetInletBoundary() - self.p[0])
             f[1] = (self.p[0] - (2.0 * self.p[1] - self.p[2])) * self.conditioning
         f[2:2 * self.m + 2:2] = (self.dz / self.dt * (self.a[1:self.m + 1] - self.an[1:self.m + 1]) * self.unsteady
                                  + (self.u[1:self.m + 1] + self.u[2:self.m + 2])
