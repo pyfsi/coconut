@@ -76,7 +76,7 @@ JSON setting|type|description
 
 Transforms from a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the _forward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _upstream_ of the interpolator in the `MapperCombined`.
 
-The 3D `ModelPart` is returned by the initialization. `n_tangential` specifies the number of `Node` objects in the tangential (circumferential) direction. For each `Node` in the 2D `ModelPart`, `n_tangential` `Nodes` are created in the 3D `ModelPart`. The code knows which directions are axial, radial and tangential thanks to the input parameters `direction_axial` and `direction_radial`. 
+The 3D `ModelPart` is returned by the initialization. `n_tangential` specifies the number of `Node` objects in the tangential (circumferential) direction. For each `Node` in the 2D `ModelPart`, `n_tangential` `Nodes` are created in the 3D `ModelPart`. It is important to take the value of `n_tangential` large enough. By preference as close as possible to the number of nodes in the tangential direction of the 3D `ModelPart`. The code knows which directions are axial, radial and tangential thanks to the input parameters `direction_axial` and `direction_radial`. 
 
 It is not possible to change the axial direction between 2D and 3D: a separate `MapperPermutation` should be added for that purpose. 
 
