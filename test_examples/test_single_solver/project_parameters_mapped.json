@@ -59,7 +59,7 @@
         "solver_wrappers" :
         [
             {
-                "type": "solver_wrappers.fluent.2019R1",
+                "type": "solver_wrappers.fluent.v2019R1",
                 "settings":
                 {
                     "working_directory" : "CFD",

@@ -34,7 +34,7 @@ If different parameters are used with different Fluent versions, this should be 
 
 ## Overview of operation
 
-The solver-wrapper consists of 3 files (with `X` the Fluent version, e.g. `2019R1`):
+The solver-wrapper consists of 3 files (with `X` the Fluent version, e.g. `v2019R1`):
 
 -   `X.py`: defines the `SolverWrapperFluentX` class
 -   `X.jou`: Fluent journal file to interactively run the FSI simulation, written in Scheme
@@ -77,7 +77,21 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Version specific documentation
 
-### 2019R1 (19.3)
+### v2019R1 (19.3.0)
 
-This is currently the only version, so this section is still empty.
+First version.
 
+### v2019R2 (19.4.0)
+
+No changes.
+
+### v2019R3 (19.5.0)
+
+The solutions in this version are (slightly) different because the *Rhie-Chow face flux interpolation in the pressure-based solver* has changed. This setting can be reverted with the TUI command `solve set previous undo-2019r3 y n`, which is included in `v2019R3.jou`.
+
+The results can be slightly different when restarts are used for multicore simulations for the following reason: *For parallel cases with smoothing that do not use dynamic load balancing, a zonal partitioning with Laplace smoothing will automatically be applied when the file is read, which should result in better load balancing for the mesh smoothing calculations.*
+After a restart, the partitioning can be different and hence the mesh deformation can be slightly different. 
+
+### v2020R3 (20.1.0)
+
+Same behavior as v2019R3.

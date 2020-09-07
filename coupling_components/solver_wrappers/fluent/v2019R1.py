@@ -20,6 +20,7 @@ class SolverWrapperFluent2019R1(Component):
     def __init__(self, parameters):
         super().__init__()
 
+        self.set_fluent_version()
         self.settings = parameters['settings']
         self.check_software()
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'].GetString())
@@ -44,7 +45,7 @@ class SolverWrapperFluent2019R1(Component):
         self.fluent_process = None
 
         # prepare Fluent journal
-        journal = '2019R1.jou'
+        journal = f'v{self.version}.jou'
         thread_names_str = ''
         for key in self.thread_names:
             thread_names_str += ' "' + key + '"'
@@ -68,7 +69,7 @@ class SolverWrapperFluent2019R1(Component):
 
         # prepare Fluent UDF
         if self.timestep_start == 0:
-            udf = '2019R1.c'
+            udf = f'v{self.version}.c'
             with open(join(path_src, udf), 'r') as infile:
                 with open(join(self.dir_cfd, udf), 'w') as outfile:
                     for line in infile:
@@ -77,7 +78,7 @@ class SolverWrapperFluent2019R1(Component):
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
-        cmd1 = f'fluent -r19.3.0 {self.dimensions}ddp '
+        cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
         if self.settings['fluent_gui'].GetBool():
@@ -301,13 +302,11 @@ class SolverWrapperFluent2019R1(Component):
             # store pressure and traction in Nodes
             if ids_tmp.size != mp.NumberOfNodes():
                 raise ValueError('number of nodes does not match size of data')
-            index = 0
-            for node in mp.Nodes:  # *** todo: enumerate
-                if ids_tmp[index] != node.Id:
-                    raise ValueError(f'node IDs do not match: {ids_tmp[index]}, {node.Id}')
-                node.SetSolutionStepValue(self.traction, 0, traction_tmp[index, :].tolist())
-                node.SetSolutionStepValue(self.pressure, 0, pressure_tmp[index])
-                index += 1
+            for i, node in enumerate(mp.Nodes):
+                if ids_tmp[i] != node.Id:
+                    raise ValueError(f'node IDs do not match: {ids_tmp[i]}, {node.Id}')
+                node.SetSolutionStepValue(self.traction, 0, traction_tmp[i, :].tolist())
+                node.SetSolutionStepValue(self.pressure, 0, pressure_tmp[i])
 
         # return interface_output object
         return self.interface_output.deepcopy()
@@ -337,18 +336,23 @@ class SolverWrapperFluent2019R1(Component):
     def SetInterfaceOutput(self):
         Exception("This solver interface provides no mapping.")
 
+    def set_fluent_version(self):
+        self.version = '2019R1'
+        self.version_bis = '19.3.0'
+        print(f'\n\nFluent version = {self.version}\n\n')  # *** rm
+
     def check_software(self):
         # Python version: 3.6 or higher
         if sys.version_info < (3, 6):
             raise RuntimeError('Python version 3.6 or higher required.')
 
-        # Fluent version: 2019R1 (19.3.0)
+        # Fluent version: see set_fluent_version
         if shutil.which('fluent') is None:
             raise RuntimeError('ANSYS Fluent must be available.')
 
         result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE)
-        if '19.3.0' not in str(result.stdout):
-            raise RuntimeError('ANSYS Fluent version 2019R1 (19.3.0) is required.')
+        if self.version_bis not in str(result.stdout):
+            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
 
     def get_unique_face_ids(self, data):
         """
