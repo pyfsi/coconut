@@ -787,15 +787,15 @@
 <p>This documentation describes the different test examples.
 Currently all these examples calculate the flow in a flexible tube.</p>
 <h2 id="folder-and-file-structure">Folder and file structure</h2>
-<p>This section describes the different folders and files which are provided.</p>
+<p>This section describes the different folders and files that are provided.</p>
 <ul>
-<li>run_simulation.py: Main file which has to be run with a parameterfile as argument</li>
-<li>project_parameters_X.json: Parameter file in json format</li>
-<li>setup_X: Setup folder containing all files for setting up solver X</li>
-<li>setup_X.sh: Bash file which has to be run to set up solver X</li>
-<li>X.md: A description of the specific example</li>
+<li><code>run_simulation.py</code>: main file, has to be run with the parameter file as argument</li>
+<li><code>project_parameters_X.json</code>: parameter file in JSON format</li>
+<li><code>setup_X</code>: setup folder containing all files for setting up solver X</li>
+<li><code>setup_X.sh</code>: bash script, has to be run to set up solver X</li>
+<li><code>X.md</code>: description of the specific example</li>
 </ul>
-<p>When the setup files are run, working directories are created which have to match the ones specified in the parameter file.
+<p>When the setup files are run, working directories are created that have to match the ones specified in the parameter file.
 These folder are expandable and are deleted when the setup files are (re)run.</p>
 <h2 id="project-parameters">Project Parameters</h2>
 <p>The parameter file <code>project_parameters_X.json</code> contains two dictionaries. 
@@ -803,7 +803,15 @@ The first is <code>settings</code> in which the number of time steps for which t
 The second is <code>coupled_solver</code> in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solvers.</p>
 <h2 id="running-a-case">Running a case</h2>
 <p>In order to run a test example, first, the setup files have to be run to create the working directories.
-Then, the calculation is started by running run_simulation.py with the parameter file as argument.</p>
+Then, the calculation is started by running <code>run_simulation.py</code> with the parameter file as argument.
+Note that for Abaqus, the setup file must be <em>sourced</em>. </p>
+<p>For example, for a case with Fluent and Abaqus, you would run the following commands:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">./setup_fluent</span>
+<span class="err">source setup_abaqus.sh</span>
+<span class="err">python run_simulation.py project_parameters_X.json</span>
+</code></pre></div>
+
+
 <h2 id="debug-files">Debug files</h2>
 <p>The folder <code>test_examples</code> also contains a folder <code>debug_files</code> containing scripts for debug purposes.
 These files might need some adjustements to work. 

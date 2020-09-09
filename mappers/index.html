@@ -1019,12 +1019,12 @@ It takes two <code>Interfaces</code>, and maps the <code>ModelParts</code> to ea
 <tr>
 <td align="right"><code>type</code></td>
 <td align="center">str</td>
-<td><code>ModelPart</code> mapper to be used</td>
+<td><code>ModelPart</code> mapper to be used.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>settings</code></nobr></td>
 <td align="center">dict</td>
-<td>all the settings for the <code>ModelPart</code> mapper specified in <code>type</code></td>
+<td>All the settings for the <code>ModelPart</code> mapper specified in <code>type</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -1043,7 +1043,7 @@ Some transformers can only be initialized in one direction, e.g. for <code>Mappe
 <tr>
 <td align="right"><nobr><code>mappers</code></nobr></td>
 <td align="center">list</td>
-<td>an ordered list of all the <code>ModelPart</code> mappers to be used</td>
+<td>An ordered list of all the <code>ModelPart</code> mappers to be used.</td>
 </tr>
 </tbody>
 </table>
@@ -1063,7 +1063,7 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><nobr><code>permutation</code></nobr></td>
 <td align="center">list</td>
-<td>a permutation of the list [0, 1, 2]</td>
+<td>A permutation of the list [0, 1, 2].</td>
 </tr>
 </tbody>
 </table>
@@ -1084,17 +1084,17 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><code>direction_axial</code></td>
 <td align="center">string</td>
-<td>must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the symmetry axis</td>
+<td>Must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the symmetry axis.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>direction_radial</code></nobr></td>
 <td align="center">string</td>
-<td>must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the second (radial) axis in 2D</td>
+<td>Must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the second (radial) axis in 2D.</td>
 </tr>
 <tr>
 <td align="right"><code>n_tangential</code></td>
 <td align="center">int</td>
-<td>must be ≥ 6</td>
+<td>Degrees of freedom in tangential (circumferential) direction of 3D <code>ModelPart</code> that is created during initialization. Must be <span><span class="MathJax_Preview">\geq 6</span><script type="math/tex">\geq 6</script></span>.</td>
 </tr>
 </tbody>
 </table>
@@ -1117,18 +1117,24 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><code>directions</code></td>
 <td align="center">list</td>
-<td>list of coordinate directions, maximum three entries, may contain <code>"X"</code>, <code>"Y"</code>, <code>"Z"</code></td>
+<td>List of coordinate directions, maximum three entries, may contain <code>"X"</code>, <code>"Y"</code>, <code>"Z"</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>scaling</code></td>
+<td align="center">list</td>
+<td>Optional. List of scaling factors, must be same length as <code>directions</code>. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>balanced_tree</code></nobr></td>
 <td align="center">bool</td>
-<td>if <code>true</code>, create balanced <code>cKDTree</code>, which is more stable, but takes longer to build; set to <code>true</code> if the tree is giving problems (which I don't expect)</td>
+<td>Optional, default <code>false</code>. If set to <code>true</code> a balanced <code>cKDTree</code> is created, which is more stable, but takes longer to build. Set to <code>true</code> in the rare case that the tree gives problems.</td>
 </tr>
 </tbody>
 </table>
 <p>The <code>Initialize</code> method should be called in all child-classes. It does the following:</p>
 <ul>
 <li>read and store the coordinates from the <em>from</em> and <em>to</em> <code>ModelParts</code></li>
+<li>scale coordinates if necessary</li>
 <li>check if the bounding boxes of the <em>from</em> and <em>to</em> <code>ModelParts</code> are more or less overlapping</li>
 <li>do an efficient nearest neighbour search using <code>scipy.spatial.cKDTree</code></li>
 <li>check if the <em>from</em> <code>ModelPart</code> does not contain duplicate <code>Nodes</code> (i.e. with same coordinates)</li>
@@ -1150,7 +1156,7 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
-<td>if <code>true</code>, use <code>multiprocessing</code> to parallellize loop that calculates coefficients</td>
+<td>Optional, default <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of <code>Nodes</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -1172,7 +1178,7 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
-<td>if <code>true</code>, use <code>multiprocessing</code> to parallellize loop that calculates coefficients</td>
+<td>Optional, default <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of <code>Nodes</code>.</td>
 </tr>
 </tbody>
 </table>
