@@ -1,0 +1,130 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : CoCoNuT_pimpleFoam -parallel
+Date   : Sep 04 2020
+Time   : 09:57:02
+Host   : "cfdclu27.ugent.be"
+PID    : 13337
+Case   : /cfdfile2/data/fm/mathieu/PycharmProjects/coconut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/Test_Writing_pointDisplacementFromSourceCode_implicit
+nProcs : 2
+Slaves : 1("cfdclu27.ugent.be.13338")
+Pstream initialized with:
+    floatTransfer      : 0
+    nProcsSimpleSum    : 0
+    commsType          : nonBlocking
+    polling iterations : 0
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0.000000
+
+Selecting dynamicFvMesh dynamicMotionSolverFvMesh
+Selecting motion solver: displacementLaplacian
+Selecting motion diffusion: inverseDistance
+
+PIMPLE: Operating solver in PISO mode
+
+Reading field p
+
+Reading field U
+
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type RAS
+Selecting RAS turbulence model kEpsilon
+kEpsilonCoeffs
+{
+    Cmu             0.09;
+    C1              1.44;
+    C2              1.92;
+    C3              -0.33;
+    sigmak          1;
+    sigmaEps        1.3;
+}
+
+No MRF models present
+
+Reading/calculating face velocity Uf
+
+No finite volume options present
+
+Courant Number mean: 0 max: 0
+wallShearStress wallShearStress:
+    processing wall patches: 
+        mantle
+
+Courant Number mean: 0 max: 0
+0.000000
+
+Time = 0.000010
+
+Reading pointDisplacement
+
+prev_runTime0.000000
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 1, Final residual = 0.0042820362, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 1, Final residual = 0.0045244946, No Iterations 2
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 1, Final residual = 1.0217399e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0, Final residual = 0, No Iterations 0
+smoothSolver:  Solving for Uz, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for p, Initial residual = 1, Final residual = 0.0017996943, No Iterations 2
+time step continuity errors : sum local = 8.3591397e-06, global = -3.0166735e-06, cumulative = -3.0166735e-06
+GAMG:  Solving for p, Initial residual = 0.032381667, Final residual = 6.7300371e-08, No Iterations 8
+time step continuity errors : sum local = 6.2745469e-10, global = 1.2465734e-10, cumulative = -3.0165488e-06
+smoothSolver:  Solving for epsilon, Initial residual = 0.024176631, Final residual = 2.0972302e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 1, Final residual = 2.9972344e-06, No Iterations 3
+ExecutionTime = 0.29 s  ClockTime = 1 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.0094791206 -0.00035796633 -0.000359405), (-0.0038311485 0.00035137702 0.00036383243)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+I get past the save
+
+Reading pointDisplacement
+
+prev_runTime0.000000
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 0.72008865, Final residual = 0.0027379837, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 0.71783918, Final residual = 0.0026945322, No Iterations 2
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.73985025, Final residual = 3.2244948e-06, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.40359964, Final residual = 3.0494777e-06, No Iterations 3
+smoothSolver:  Solving for Uz, Initial residual = 0.40431489, Final residual = 3.0700087e-06, No Iterations 3
+GAMG:  Solving for p, Initial residual = 0.0051228748, Final residual = 3.7211513e-05, No Iterations 2
+time step continuity errors : sum local = 3.5968333e-07, global = 2.5279796e-08, cumulative = -2.991269e-06
+GAMG:  Solving for p, Initial residual = 0.00090222482, Final residual = 7.0963244e-08, No Iterations 5
+time step continuity errors : sum local = 6.8437295e-10, global = -3.588146e-11, cumulative = -2.9913049e-06
+smoothSolver:  Solving for epsilon, Initial residual = 0.019976138, Final residual = 1.4668388e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 0.56253895, Final residual = 1.5750246e-06, No Iterations 3
+ExecutionTime = 0.45 s  ClockTime = 3 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.0098010913 -0.0003495982 -0.00035009748), (-0.0033344623 0.00034921035 0.00035137273)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+I get past the save
+
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   PID 13337 RUNNING AT cfdclu27.ugent.be
+=   EXIT CODE: 9
+=   CLEANING UP REMAINING PROCESSES
+=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
+===================================================================================
+APPLICATION TERMINATED WITH THE EXIT STRING: Killed (signal 9)
