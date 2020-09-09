@@ -17,7 +17,7 @@ import time
 import subprocess
 
 matplotlib.rcParams['font.size'] = 20
-matplotlib.rcParams['axes.linewidth'] = 1
+matplotlib.rcParams['axes.linewidth']=1
 matplotlib.rcParams['lines.linewidth'] = 2
 matplotlib.rcParams['axes.labelweight'] = 'bold'
 matplotlib.rcParams['xtick.major.size'] = 6
@@ -236,11 +236,8 @@ plt.figure()
 plt.scatter(new_coords_b[:,0],new_coords_b[:,2])
 
 ## Create first pointdisplacement file ##
-os.system("cp -r /lusers/temp/lucas/Temp_CoCoNut/coconut/coupling_components/solver_wrappers/openfoam/pointDisplacement_raw ./0/pointDisplacement")
+os.system("cp -r /cfdfile2/data/fm/mathieu/PycharmProjects/coconut/coconut/coupling_components/solver_wrappers/openfoam/pointDisplacement_raw ./0/pointDisplacement")
 f_disp = "./0/pointDisplacement"
-
-
-
 
 with open(f_disp,"a") as f:
     f.write(name+"\n")
@@ -395,10 +392,10 @@ plt.scatter(new_coords_b[:,0],new_coords_b[:,2])
 
 #
 # ## Do some more iterations to check if quality remained ok
-# os.system("sed -i 's/.*startTime.*/startTime 0.00002;/' ./system/controlDict ") #Start from 0
-# os.system("sed -i 's/.*endTime.*/endTime 0.0001;/' ./system/controlDict  ")
+#os.system("sed -i 's/.*startTime.*/startTime 0.00005;/' ./system/controlDict ") #Start from 0
+#os.system("sed -i 's/.*endTime.*/endTime 0.0002;/' ./system/controlDict  ")
 #
-# os.system("pimpleDyMFoam &> log_extra_TS")
+#os.system("pimpleDyMFoam &> log_extra_TS")
 
 
 plt.show()

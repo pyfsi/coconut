@@ -17,11 +17,9 @@ FoamFile
 
 application     pimpleFoam;
 
-startFrom 	startTime;
+startTime 0.;
 
-startTime       0;
-
-endTime         5e-05;
+endTime 0.0001;
 
 deltaT          1e-05;
 

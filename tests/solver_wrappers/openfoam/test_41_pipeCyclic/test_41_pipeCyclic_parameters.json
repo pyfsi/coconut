@@ -31,7 +31,7 @@
                 "newtonmax": 10,
                 "newtontol": 1e-08,
 		"meshmotion_solver": "displacementLaplacian",
-		"diffusivity": "inverseDistance", 
+		"diffusivity": "inverseDistance"
             }
         }
     ]

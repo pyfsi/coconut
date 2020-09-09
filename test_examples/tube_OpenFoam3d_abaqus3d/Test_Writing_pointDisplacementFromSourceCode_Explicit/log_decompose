@@ -1,0 +1,40 @@
+
+Usage: decomposePar [OPTIONS]
+options:
+  -allRegions       operate on all regions in regionProperties
+  -case <dir>       specify alternate case directory, default is the cwd
+  -cellDist         write cell distribution as a labelList - for use with
+                    'manual' decomposition method or as a volScalarField for
+                    post-processing.
+  -constant         include the 'constant/' dir in the times list
+  -copyUniform      copy any uniform/ directories too
+  -fields           use existing geometry decomposition and convert fields only
+  -force            remove existing processor*/ subdirs before decomposing the
+                    geometry
+  -ifRequired       only decompose geometry if the number of domains has changed
+  -latestTime       select the latest time
+  -newTimes         select the new times
+  -noFunctionObjects
+                    do not execute functionObjects
+  -noSets           skip decomposing cellSets, faceSets, pointSets
+  -noZero           exclude the '0/' dir from the times list, has precedence
+                    over the -withZero option
+  -region <name>    specify alternative mesh region
+  -time <ranges>    comma-separated time ranges - eg, ':10,20,40:70,1000:'
+  -srcDoc           display source code in browser
+  -doc              display application documentation in browser
+  -help             print the usage
+
+decompose a mesh and fields of a case for parallel execution
+
+Using: OpenFOAM-4.1 (see www.OpenFOAM.org)
+Build: 4.1
+
+
+
+--> FOAM FATAL ERROR: 
+Invalid option: -field
+
+
+FOAM exiting
+
