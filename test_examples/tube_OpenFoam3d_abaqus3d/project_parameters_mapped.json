@@ -1,7 +1,7 @@
 {
     "settings" :
     {
-        "number_of_timesteps": 10000
+        "number_of_timesteps": 100
     },
     "coupled_solver" :
     {
@@ -81,7 +81,7 @@
                     "newtonmax" : 10,
                     "newtonmin" : 1,
                     "newtontol" : 1e-3,
-                    "write_interval" : 1,
+                    "write_interval" : 2,
                     "write_precision" : 5,
                     "time_precision" : 5,
                     "meshmotion_solver": "displacementLaplacian",
