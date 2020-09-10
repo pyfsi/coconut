@@ -49,3 +49,5 @@ runTimeModifiable false;
 
 adjustTimeStep	no;
 
+boundary_names |BOUNDARY_NAMES|;
+
