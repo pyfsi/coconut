@@ -139,6 +139,10 @@ class Animation:
         """
         # chose which nodes to plot
         self.mask = mask_x & mask_y & mask_z
+        if not sum(self.mask):
+            raise Exception(f"Intersection of sets of selected coordinates in Initialize is empty\n"
+                            f"\tmask_x selects {sum(mask_x)} points\n\tmask_y selects {sum(mask_y)} points\n"
+                            f"\tmask_z selects {sum(mask_z)} points")
 
         # chose sort direction
         self.argsort = np.argsort(self.coordinates[absicissa::3][self.mask])
