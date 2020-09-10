@@ -41,7 +41,7 @@ writePrecision  |WRITE_PRECISION|;
 
 writeCompression uncompressed;
 
-timeFormat      general;
+timeFormat      |TIME_FORMAT|;
 
 timePrecision   |TIME_PRECISION|;
 

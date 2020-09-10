@@ -10,7 +10,7 @@
         {
             "solver_index": 0 ,
             "check_mapping": 0,
-            "test_class": "None"
+            "test_class": "Transient_test"
         },
         "settings" :
         {
