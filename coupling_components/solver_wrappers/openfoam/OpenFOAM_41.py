@@ -119,8 +119,6 @@ class SolverWrapperOpenFOAM_41(Component):
                                 firstBoundary=False
                             else:
                                 boundary_name_temp += " , " + interfaces                          
-                        boundary_name_temp += ");"
-                        print(boundary_name_temp)
                         line=line.replace('|BOUNDARY_NAMES|',boundary_name_temp)
                     newFile.write(line)
         rawFile.close()
