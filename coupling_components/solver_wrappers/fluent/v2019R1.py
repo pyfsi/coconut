@@ -344,7 +344,6 @@ class SolverWrapperFluent2019R1(Component):
     def set_fluent_version(self):
         self.version = '2019R1'
         self.version_bis = '19.3.0'
-        print(f'\n\nFluent version = {self.version}\n\n')  # *** rm
 
     def check_software(self):
         # Python version: 3.6 or higher
