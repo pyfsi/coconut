@@ -78,7 +78,16 @@ int main(int argc, char *argv[])
 	
 	runTime.run();
     word prev_runTime;
-
+    
+    IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::AUTO_WRITE));
+    wordList boundary_names ( controlDict.lookup("boundary_names"));
+    
+    forAll(boundary_names, s)
+    {
+            word current_boundary = boundary_names[s];
+            Info << current_boundary << endl;
+	}
+    
     while (true) // NOT runTime.run()
     {
         usleep(1000); // Expressed in microseconds 
@@ -86,7 +95,6 @@ int main(int argc, char *argv[])
 
     	if (exists("next.coco"))
 		{
-
     		
 			#include "readControls.H"
 			#include "CourantNo.H"
@@ -106,8 +114,8 @@ int main(int argc, char *argv[])
 		}
     	
     	if (exists("continue.coco"))
-		{
-
+		{		
+    		
     		// Define movement of the coupling interface
     		label patchWallID = mesh.boundaryMesh().findPatchID("mantle");
             const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
