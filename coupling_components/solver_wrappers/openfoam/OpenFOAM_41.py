@@ -172,8 +172,6 @@ class SolverWrapperOpenFOAM_41(Component):
         nKey=0
         for boundary in self.boundary_names:
             source_file = self.working_directory + "/constant/polyMesh"
-            print(boundary)
-            print(source_file)
             node_ids, node_coords, face_centres = self.Get_Point_IDs(boundary,source_file)
 
             mp_input = self.model[boundary + "_input"]
