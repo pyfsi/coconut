@@ -1,0 +1,525 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : pimpleDyMFoam
+Date   : Sep 07 2020
+Time   : 11:53:09
+Host   : "cfdclu27.ugent.be"
+PID    : 44397
+Case   : /cfdfile2/data/fm/mathieu/PycharmProjects/coconut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/Test_Writing_pointDisplacementFromSourceCode
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0.000000
+
+Selecting dynamicFvMesh dynamicMotionSolverFvMesh
+Selecting motion solver: displacementLaplacian
+Selecting motion diffusion: inverseDistance
+
+PIMPLE: Operating solver in PISO mode
+
+Reading field p
+
+Reading field U
+
+Reading/calculating face flux field phi
+
+Selecting incompressible transport model Newtonian
+Selecting turbulence model type RAS
+Selecting RAS turbulence model kEpsilon
+kEpsilonCoeffs
+{
+    Cmu             0.09;
+    C1              1.44;
+    C2              1.92;
+    C3              -0.33;
+    sigmak          1;
+    sigmaEps        1.3;
+}
+
+No MRF models present
+
+Reading/calculating face velocity Uf
+
+No finite volume options present
+
+Courant Number mean: 0 max: 0
+
+Starting time loop
+
+wallShearStress wallShearStress:
+    processing wall patches: 
+        mantle
+
+Courant Number mean: 0 max: 0
+Time = 0.000010
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 1, Final residual = 0.0042838348, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 1, Final residual = 0.0045545463, No Iterations 2
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 1, Final residual = 1.026237e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0, Final residual = 0, No Iterations 0
+smoothSolver:  Solving for Uz, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for p, Initial residual = 1, Final residual = 0.0087132132, No Iterations 1
+time step continuity errors : sum local = 4.0594627e-05, global = -2.4171164e-05, cumulative = -2.4171164e-05
+GAMG:  Solving for p, Initial residual = 0.034400209, Final residual = 5.7148961e-08, No Iterations 8
+time step continuity errors : sum local = 5.3459599e-10, global = -3.2836981e-10, cumulative = -2.4171492e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.024171631, Final residual = 2.0728971e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 1, Final residual = 2.9892473e-06, No Iterations 3
+ExecutionTime = 0.19 s  ClockTime = 0 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.0093996754 -0.00031632882 -0.00041291754), (-0.0037962833 0.00031576721 0.00041677166)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.23356354 max: 1.1396938
+Time = 0.000020
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 0.01474146, Final residual = 7.8286599e-05, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 0.01511353, Final residual = 9.3911966e-05, No Iterations 2
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.86428801, Final residual = 2.1829495e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.3573257, Final residual = 3.7871662e-06, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.3103463, Final residual = 2.9439823e-06, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.0075886966, Final residual = 5.6136498e-05, No Iterations 4
+time step continuity errors : sum local = 5.2844538e-07, global = 1.2839758e-07, cumulative = -2.4043095e-05
+GAMG:  Solving for p, Initial residual = 0.0010607011, Final residual = 2.7918852e-08, No Iterations 7
+time step continuity errors : sum local = 2.6264848e-10, global = 2.1782912e-10, cumulative = -2.4042877e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00080811513, Final residual = 6.6997755e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.015784877, Final residual = 1.0706384e-07, No Iterations 2
+ExecutionTime = 0.42 s  ClockTime = 1 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.016575111 -0.00034073091 -0.00037240289), (-0.0081606831 0.00034136539 0.00037360644)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.010915209 max: 0.076017189
+Time = 0.000030
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 0.00096152595, Final residual = 3.4137227e-06, No Iterations 3
+GAMG:  Solving for cellDisplacementz, Initial residual = 0.0010452874, Final residual = 5.255398e-06, No Iterations 3
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.79670174, Final residual = 1.3882162e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.26917988, Final residual = 2.2881735e-06, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.24393961, Final residual = 1.8871163e-06, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.0015849693, Final residual = 5.8470921e-06, No Iterations 2
+time step continuity errors : sum local = 5.5008299e-08, global = 4.3519552e-08, cumulative = -2.3999357e-05
+GAMG:  Solving for p, Initial residual = 0.0001589783, Final residual = 8.2202758e-08, No Iterations 4
+time step continuity errors : sum local = 7.7362744e-10, global = -1.7805803e-10, cumulative = -2.3999536e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.0004503519, Final residual = 3.2904208e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0083600457, Final residual = 3.0267094e-06, No Iterations 1
+ExecutionTime = 0.51 s  ClockTime = 1 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.023795056 -0.00042478589 -0.00044707338), (-0.012405719 0.00042444299 0.00044828909)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.0082598619 max: 0.018350397
+Time = 0.000040
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 0.0001101938, Final residual = 9.0431039e-07, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 0.0001375664, Final residual = 2.3881709e-07, No Iterations 3
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.73406485, Final residual = 1.317969e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.18344791, Final residual = 1.491368e-06, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.17355928, Final residual = 1.2619545e-06, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.0010555437, Final residual = 3.460213e-06, No Iterations 2
+time step continuity errors : sum local = 3.2550725e-08, global = -8.8768901e-10, cumulative = -2.4000423e-05
+GAMG:  Solving for p, Initial residual = 9.2832224e-05, Final residual = 6.5321855e-08, No Iterations 3
+time step continuity errors : sum local = 6.1489806e-10, global = 1.1550583e-10, cumulative = -2.4000308e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00041234887, Final residual = 3.134124e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.007821048, Final residual = 2.098501e-06, No Iterations 1
+ExecutionTime = 0.73 s  ClockTime = 1 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.031010564 -0.00052867172 -0.00051286383), (-0.01664196 0.00052825171 0.00051437048)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.010212901 max: 0.013355304
+Time = 0.000050
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 1.4910679e-05, Final residual = 8.9521964e-08, No Iterations 3
+GAMG:  Solving for cellDisplacementz, Initial residual = 2.0564385e-05, Final residual = 1.2900511e-07, No Iterations 3
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.68030636, Final residual = 1.2815303e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.14360035, Final residual = 1.1109337e-06, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.13869086, Final residual = 9.5474198e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00069034779, Final residual = 1.6028284e-06, No Iterations 2
+time step continuity errors : sum local = 1.5075195e-08, global = 4.1441591e-09, cumulative = -2.3996164e-05
+GAMG:  Solving for p, Initial residual = 4.6741973e-05, Final residual = 2.9734514e-08, No Iterations 3
+time step continuity errors : sum local = 2.797542e-10, global = -3.1411926e-12, cumulative = -2.3996167e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00040529304, Final residual = 3.1700209e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0073515537, Final residual = 2.2415648e-06, No Iterations 1
+ExecutionTime = 0.82 s  ClockTime = 1 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.038213427 -0.00062881923 -0.00057609888), (-0.020870376 0.00062837449 0.00057713609)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.012663888 max: 0.016847923
+Time = 0.000060
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 1.852304e-06, Final residual = 2.3251469e-08, No Iterations 2
+GAMG:  Solving for cellDisplacementz, Initial residual = 2.8224767e-06, Final residual = 3.5724151e-08, No Iterations 2
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.62226352, Final residual = 1.2342363e-07, No Iterations 3
+smoothSolver:  Solving for Uy, Initial residual = 0.11583466, Final residual = 8.8714238e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.11287553, Final residual = 7.7207871e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00048509801, Final residual = 1.385379e-06, No Iterations 2
+time step continuity errors : sum local = 1.3019592e-08, global = -2.7902759e-09, cumulative = -2.3998957e-05
+GAMG:  Solving for p, Initial residual = 2.1021651e-05, Final residual = 3.1993463e-08, No Iterations 3
+time step continuity errors : sum local = 3.0068755e-10, global = -2.2231894e-10, cumulative = -2.3999179e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00039871552, Final residual = 3.2011118e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0069149219, Final residual = 2.2514086e-06, No Iterations 1
+ExecutionTime = 1.03 s  ClockTime = 2 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.045403878 -0.00072623848 -0.0006642535), (-0.025091565 0.00072577594 0.00066527151)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.015181188 max: 0.020260935
+Time = 0.000070
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 2.8523851e-07, Final residual = 3.0605158e-08, No Iterations 1
+GAMG:  Solving for cellDisplacementz, Initial residual = 4.2390657e-07, Final residual = 4.477862e-08, No Iterations 1
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.56061854, Final residual = 9.7612785e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.095618375, Final residual = 7.4266578e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.093653375, Final residual = 6.5234612e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00041513677, Final residual = 1.3034724e-06, No Iterations 2
+time step continuity errors : sum local = 1.2235269e-08, global = -3.2532787e-09, cumulative = -2.4002433e-05
+GAMG:  Solving for p, Initial residual = 1.407957e-05, Final residual = 4.4455112e-08, No Iterations 3
+time step continuity errors : sum local = 4.1725823e-10, global = -2.0455854e-10, cumulative = -2.4002637e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00039304042, Final residual = 3.2439999e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0064802694, Final residual = 2.2884972e-06, No Iterations 1
+ExecutionTime = 1.12 s  ClockTime = 2 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.052583165 -0.00090701863 -0.00075009), (-0.029305887 0.00090720079 0.00075108579)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.017702723 max: 0.023678791
+Time = 0.000080
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5293335e-08, Final residual = 5.5293335e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2145366e-08, Final residual = 8.2145366e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.50169209, Final residual = 9.0399152e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.080949515, Final residual = 6.4167363e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.079516322, Final residual = 5.6766449e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00039718206, Final residual = 1.9603171e-06, No Iterations 2
+time step continuity errors : sum local = 1.8375741e-08, global = -5.4595671e-09, cumulative = -2.4008097e-05
+GAMG:  Solving for p, Initial residual = 1.2213984e-05, Final residual = 3.5019403e-08, No Iterations 3
+time step continuity errors : sum local = 3.2822982e-10, global = -1.5989706e-10, cumulative = -2.4008257e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.0003879696, Final residual = 3.2918714e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0060540055, Final residual = 2.3248403e-06, No Iterations 1
+ExecutionTime = 1.32 s  ClockTime = 2 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.059751751 -0.001257333 -0.0010344735), (-0.033513411 0.0012574474 0.0010379102)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.020223288 max: 0.027091393
+Time = 0.000090
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274107e-08, Final residual = 5.5274107e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2158706e-08, Final residual = 8.2158706e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.45106802, Final residual = 8.4038792e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.070158763, Final residual = 5.6819401e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.069049626, Final residual = 5.0505966e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00039805597, Final residual = 1.6566673e-06, No Iterations 2
+time step continuity errors : sum local = 1.5506662e-08, global = -3.5368124e-09, cumulative = -2.4011793e-05
+GAMG:  Solving for p, Initial residual = 1.2626322e-05, Final residual = 4.0410051e-08, No Iterations 3
+time step continuity errors : sum local = 3.7818502e-10, global = -6.5262002e-11, cumulative = -2.4011859e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00038355606, Final residual = 3.3442313e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.005638019, Final residual = 2.3626944e-06, No Iterations 1
+ExecutionTime = 1.4 s  ClockTime = 2 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.066910916 -0.001664963 -0.0013817781), (-0.037714485 0.0016649519 0.0013850914)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.022742602 max: 0.030499043
+Time = 0.000100
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274682e-08, Final residual = 5.5274682e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159939e-08, Final residual = 8.2159939e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.40812473, Final residual = 7.8554189e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.061889894, Final residual = 5.129293e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.061011563, Final residual = 4.5743664e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00041276848, Final residual = 2.5275138e-06, No Iterations 2
+time step continuity errors : sum local = 2.3621454e-08, global = -6.4747924e-09, cumulative = -2.4018333e-05
+GAMG:  Solving for p, Initial residual = 1.3178069e-05, Final residual = 4.4214612e-08, No Iterations 3
+time step continuity errors : sum local = 4.1314014e-10, global = -1.3380624e-10, cumulative = -2.4018467e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00038011895, Final residual = 3.4007729e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0052296389, Final residual = 2.4016286e-06, No Iterations 1
+ExecutionTime = 1.62 s  ClockTime = 2 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.074061905 -0.0021303044 -0.0017821023), (-0.041909292 0.0021302649 0.0017853167)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.0252605 max: 0.033900998
+Time = 0.000110
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.37202849, Final residual = 7.3914814e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.055397488, Final residual = 4.6977327e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.054713839, Final residual = 4.2011501e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00043040161, Final residual = 2.057971e-06, No Iterations 2
+time step continuity errors : sum local = 1.9202125e-08, global = -3.7978881e-09, cumulative = -2.4022265e-05
+GAMG:  Solving for p, Initial residual = 1.4425046e-05, Final residual = 3.9175372e-08, No Iterations 3
+time step continuity errors : sum local = 3.6544716e-10, global = -7.4355435e-11, cumulative = -2.402234e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00037744271, Final residual = 3.4611225e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0048277757, Final residual = 2.4509573e-06, No Iterations 1
+ExecutionTime = 1.7 s  ClockTime = 3 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.081205872 -0.0026535468 -0.0022362676), (-0.04609805 0.0026533306 0.0022393208)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.027776862 max: 0.037296823
+Time = 0.000120
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.34115809, Final residual = 6.991001e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.050146798, Final residual = 4.3556829e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.049578551, Final residual = 3.9027845e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00045466143, Final residual = 3.0959023e-06, No Iterations 2
+time step continuity errors : sum local = 2.8837907e-08, global = -7.366072e-09, cumulative = -2.4029706e-05
+GAMG:  Solving for p, Initial residual = 1.5853321e-05, Final residual = 5.7030989e-08, No Iterations 3
+time step continuity errors : sum local = 5.3110168e-10, global = -1.1068756e-10, cumulative = -2.4029816e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00037527395, Final residual = 3.5248959e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0044322154, Final residual = 2.5129307e-06, No Iterations 1
+ExecutionTime = 1.9 s  ClockTime = 3 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.088344023 -0.0032351009 -0.0027436677), (-0.050281001 0.0032348888 0.002746478)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.030291539 max: 0.040686083
+Time = 0.000130
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.31476577, Final residual = 6.6475828e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.045843122, Final residual = 4.0762521e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.045370438, Final residual = 3.6579393e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00047741569, Final residual = 2.4498164e-06, No Iterations 2
+time step continuity errors : sum local = 2.2779656e-08, global = -3.9116136e-09, cumulative = -2.4033728e-05
+GAMG:  Solving for p, Initial residual = 1.6699337e-05, Final residual = 4.0658568e-08, No Iterations 3
+time step continuity errors : sum local = 3.779553e-10, global = -8.8786003e-11, cumulative = -2.4033817e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00037347382, Final residual = 3.5916666e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0040430827, Final residual = 2.5840461e-06, No Iterations 1
+ExecutionTime = 1.99 s  ClockTime = 3 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.095477313 -0.0038750176 -0.003306057), (-0.054458352 0.003874673 0.0033086751)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.032804361 max: 0.0440682
+Time = 0.000140
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.29193065, Final residual = 6.3492346e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.042228217, Final residual = 3.8466652e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.041823008, Final residual = 3.4551726e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00050428839, Final residual = 3.6673726e-06, No Iterations 2
+time step continuity errors : sum local = 3.4038987e-08, global = -8.2265819e-09, cumulative = -2.4042043e-05
+GAMG:  Solving for p, Initial residual = 1.7952365e-05, Final residual = 6.831402e-08, No Iterations 3
+time step continuity errors : sum local = 6.3386221e-10, global = -8.2854167e-11, cumulative = -2.4042126e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00037205203, Final residual = 3.6612422e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0036601663, Final residual = 2.661521e-06, No Iterations 1
+ExecutionTime = 2.21 s  ClockTime = 4 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.10260706 -0.0045735355 -0.0039242193), (-0.058630334 0.0045730647 0.0039266415)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.035315163 max: 0.047442799
+Time = 0.000150
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.27205548, Final residual = 6.0890922e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.039169648, Final residual = 3.6512196e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.038815901, Final residual = 3.2845009e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.0005323682, Final residual = 2.8742912e-06, No Iterations 2
+time step continuity errors : sum local = 2.6627644e-08, global = -4.2294635e-09, cumulative = -2.4046356e-05
+GAMG:  Solving for p, Initial residual = 1.9055871e-05, Final residual = 4.7322903e-08, No Iterations 3
+time step continuity errors : sum local = 4.3825111e-10, global = -9.6498821e-11, cumulative = -2.4046452e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00037102272, Final residual = 3.733188e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0032838889, Final residual = 2.7427014e-06, No Iterations 1
+ExecutionTime = 2.29 s  ClockTime = 4 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.10973438 -0.0053305626 -0.0045986092), (-0.062797159 0.0053299637 0.0046008252)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.037823788 max: 0.050809595
+Time = 0.000160
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.25460889, Final residual = 5.8602729e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.036533316, Final residual = 3.4858567e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.036223791, Final residual = 3.1391679e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00056249012, Final residual = 4.2306903e-06, No Iterations 2
+time step continuity errors : sum local = 3.9117111e-08, global = -9.2680219e-09, cumulative = -2.405572e-05
+GAMG:  Solving for p, Initial residual = 2.0505241e-05, Final residual = 8.0398033e-08, No Iterations 3
+time step continuity errors : sum local = 7.4308705e-10, global = -5.073204e-11, cumulative = -2.4055771e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00037025428, Final residual = 3.8074976e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.002944659, Final residual = 2.8345618e-06, No Iterations 1
+ExecutionTime = 2.5 s  ClockTime = 4 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.11686041 -0.0061460967 -0.0053296616), (-0.066959077 0.0061453591 0.0053316506)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.040330096 max: 0.054168305
+Time = 0.000170
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.2391222, Final residual = 5.6561909e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.034243342, Final residual = 3.3415102e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.033971389, Final residual = 3.0134137e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00059273158, Final residual = 3.30324e-06, No Iterations 2
+time step continuity errors : sum local = 3.0480584e-08, global = -4.7529165e-09, cumulative = -2.4060524e-05
+GAMG:  Solving for p, Initial residual = 2.1678459e-05, Final residual = 5.6949964e-08, No Iterations 3
+time step continuity errors : sum local = 5.2529431e-10, global = -9.7811649e-11, cumulative = -2.4060622e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00036968635, Final residual = 3.8840836e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0027461591, Final residual = 2.935456e-06, No Iterations 1
+ExecutionTime = 2.58 s  ClockTime = 4 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.12398615 -0.0070195629 -0.0061176669), (-0.071116269 0.0070187236 0.0061194188)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.042833931 max: 0.057518722
+Time = 0.000180
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.22534386, Final residual = 5.4742931e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.032231755, Final residual = 3.2163718e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.03199496, Final residual = 2.9039374e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00062443944, Final residual = 4.7986319e-06, No Iterations 2
+time step continuity errors : sum local = 4.4187866e-08, global = -1.0230257e-08, cumulative = -2.4070852e-05
+GAMG:  Solving for p, Initial residual = 2.3299186e-05, Final residual = 9.2189281e-08, No Iterations 3
+time step continuity errors : sum local = 8.4855892e-10, global = -5.4667726e-12, cumulative = -2.4070857e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.0003693111, Final residual = 3.9632003e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0026305045, Final residual = 3.043272e-06, No Iterations 1
+ExecutionTime = 2.79 s  ClockTime = 5 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.1311127 -0.0079509644 -0.0069629338), (-0.075268991 0.00794999 0.0069644366)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.045335159 max: 0.06086063
+Time = 0.000190
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.21300675, Final residual = 5.3111132e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.030464419, Final residual = 3.1054058e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.030248454, Final residual = 2.8069381e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00065596936, Final residual = 3.7278942e-06, No Iterations 2
+time step continuity errors : sum local = 3.425538e-08, global = -5.327969e-09, cumulative = -2.4076185e-05
+GAMG:  Solving for p, Initial residual = 2.4589872e-05, Final residual = 6.8580327e-08, No Iterations 3
+time step continuity errors : sum local = 6.2989784e-10, global = -9.6347763e-11, cumulative = -2.4076282e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00036911386, Final residual = 4.0446281e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0025675334, Final residual = 3.1550211e-06, No Iterations 1
+ExecutionTime = 2.87 s  ClockTime = 5 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.13824104 -0.00893955 -0.0078656078), (-0.079417419 0.0089384502 0.0078668551)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+Courant Number mean: 0.047833631 max: 0.064193869
+Time = 0.000200
+
+GAMG:  Solving for cellDisplacementx, Initial residual = 0, Final residual = 0, No Iterations 0
+GAMG:  Solving for cellDisplacementy, Initial residual = 5.5274659e-08, Final residual = 5.5274659e-08, No Iterations 0
+GAMG:  Solving for cellDisplacementz, Initial residual = 8.2159932e-08, Final residual = 8.2159932e-08, No Iterations 0
+PIMPLE: iteration 1
+smoothSolver:  Solving for Ux, Initial residual = 0.20190799, Final residual = 5.1640973e-06, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.028889729, Final residual = 3.0079719e-07, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.028694993, Final residual = 2.7211338e-07, No Iterations 2
+GAMG:  Solving for p, Initial residual = 0.00068776408, Final residual = 5.3654868e-06, No Iterations 2
+time step continuity errors : sum local = 4.9196113e-08, global = -1.1279269e-08, cumulative = -2.4087561e-05
+GAMG:  Solving for p, Initial residual = 2.6070415e-05, Final residual = 2.5631386e-08, No Iterations 4
+time step continuity errors : sum local = 2.3490315e-10, global = -1.6952124e-10, cumulative = -2.408773e-05
+smoothSolver:  Solving for epsilon, Initial residual = 0.00036910056, Final residual = 4.1289238e-07, No Iterations 1
+smoothSolver:  Solving for k, Initial residual = 0.0025485391, Final residual = 3.2706163e-06, No Iterations 1
+ExecutionTime = 3.08 s  ClockTime = 5 s
+
+wallShearStress wallShearStress write:
+    writing field wallShearStress
+    min/max(mantle) = (-0.14537222 -0.0099847285 -0.0088258039), (-0.083561773 0.0099835062 0.0088267862)
+writeObjects writeObjects1 write:
+    writing object pointDisplacement
+End
+

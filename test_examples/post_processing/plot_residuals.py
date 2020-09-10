@@ -1,3 +1,4 @@
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ tolerance = 1e-8  # cut-off tolerance
 
 # different cases to be plotted
 common_path = "../../test_examples/"
-case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
+case_paths = ["tube_fluent2d_abaqus2d/results.pickle"]
 legend_entries = ["results"]
 
 # load cases

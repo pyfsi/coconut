@@ -1,0 +1,441 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : reconstructPar -newTimes
+Date   : Sep 08 2020
+Time   : 16:46:47
+Host   : "cfdclu27.ugent.be"
+PID    : 30778
+Case   : /cfdfile2/data/fm/mathieu/PycharmProjects/coconut/coconut/test_examples/tube_OpenFoam3d_abaqus3d/test_Restart
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+
+Reconstructing fields for mesh region0
+
+Skipping time 0.000010
+
+Skipping time 0.000020
+
+Skipping time 0.000030
+
+Time = 0.000040
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000050
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000060
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000070
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000080
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000090
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000100
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000110
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000120
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000130
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+        pointDisplacement_Next
+
+No point fields
+
+No lagrangian fields
+
+Time = 0.000140
+
+Reconstructing FV fields
+
+    Reconstructing volScalarFields
+
+        nut
+        static(p)
+        p
+        k
+        epsilon
+
+    Reconstructing volVectorFields
+
+        wallShearStress
+        U
+        cellDisplacement
+
+    Reconstructing surfaceScalarFields
+
+        phi
+
+    Reconstructing surfaceVectorFields
+
+        Uf
+
+Reconstructing point fields
+
+    Reconstructing pointVectorFields
+
+        pointDisplacement
+
+No point fields
+
+No lagrangian fields
+
+
+End
+

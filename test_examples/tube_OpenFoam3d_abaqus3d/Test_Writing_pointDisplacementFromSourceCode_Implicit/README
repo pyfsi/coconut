@@ -1,0 +1,29 @@
+communication between Python (coCoNuT) and OF
+----------------------------------------------
+
+os.system ("touch next.coco") #creating of next.coco-file
+=> Launching OpenFOAM with cmd = ...
+
+=> go to OF and execute the script in CoCoNuT_pipmleFoam: if (exist("next.coco")
+	-> create a next_ready.coco 
+
+=> go to Python and end the while not loop with the file:(" next_ready.coco")
+
+os.system ("touch continue.coco") #creating of continue.coco-file
+=> go back to OF and execute: if (exist("continue.coco"))
+	-> create a continue_ready.coco
+
+ => go to Python and end the while not loop with the file:(" continue_ready.coco") 
+
+=> Impose another displacement ( In this case are "we" the structural solver, the purpose is that we get the information of another solver)
+
+=> Execute the command "decomposePar -fields
+=> repeat the continuity loop again in OpenFOAM
+	-> create a continue_ready.coco
+
+os.system ("touch save.coco") #creating of save.coco-file
+
+os.system (" reconstructPar")
+
+
+
