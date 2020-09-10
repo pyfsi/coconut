@@ -81,13 +81,7 @@ int main(int argc, char *argv[])
     
     IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::AUTO_WRITE));
     wordList boundary_names ( controlDict.lookup("boundary_names"));
-    
-    forAll(boundary_names, s)
-    {
-            word current_boundary = boundary_names[s];
-            Info << current_boundary << endl;
-	}
-    
+        
     while (true) // NOT runTime.run()
     {
         usleep(1000); // Expressed in microseconds 
@@ -117,67 +111,71 @@ int main(int argc, char *argv[])
 		{		
     		
     		// Define movement of the coupling interface
-    		label patchWallID = mesh.boundaryMesh().findPatchID("mantle");
-            const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
+    	    forAll(boundary_names, s)
+    	    {
+    	            word current_boundary = boundary_names[s];
+    	            label patchWallID = mesh.boundaryMesh().findPatchID(current_boundary);
+    	            const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
 
-            // Info << "In Next" << nl << endl;
+					// Info << "In Next" << nl << endl;
+		
+					// *** Set patch displacement for motion solver.*** //
+					// Find the reference to the pointDisplacement field (this appears to work)
+					pointVectorField& PointDisplacement = const_cast<pointVectorField&>
+					(
+						mesh.objectRegistry::lookupObject<pointVectorField >
+						(
+						"pointDisplacement"
+						)
+					);
 
-            // *** Set patch displacement for motion solver.*** //
-            // Find the reference to the pointDisplacement field (this appears to work)
-        	pointVectorField& PointDisplacement = const_cast<pointVectorField&>
-            (
-                mesh.objectRegistry::lookupObject<pointVectorField >
-                (
-                "pointDisplacement"
-                )
-            );
-
-            //OFstream testfile(runTime.path()/"Example_pointDispFile");
-            //testfile << PointDisplacement<< endl;
-            //PointDisplacement.write();
-
-            // Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
-
-            //Get the vector field of the patch
-            vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
-
-            Info<< "Reading pointDisplacement\n" << endl;
-
-            Info<< "prev_runTime" << prev_runTime << endl;
-
-            pointVectorField pointDisplacement_temp_
-            (
-                IOobject
-                (
-                    "pointDisplacement_Next",
-                    prev_runTime,
-                    mesh,
-                    IOobject::MUST_READ,
-                    IOobject::AUTO_WRITE
-                ),
-                pointMesh::New(mesh)
-            );
-
-            pointVectorField& PointDisplacementTemp = const_cast<pointVectorField&>
-            (
-                pointDisplacement_temp_
-            );
-
-            vectorField &pDispTemp=refCast<vectorField>(PointDisplacementTemp.boundaryFieldRef()[patchWallID]);
-
-            //Info << pDispTemp <<nl << endl;
-
-            //Info << pointDisplacement_temp_ << nl <<endl;
-            //Info << pointDisplacement_temp_.boundaryField()[patchWallID] << nl<< endl;
-            //Info << "-------------------------------------------------------------------" << nl<< endl;
-            //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
-
-            // Assign the new boundary displacements
-            PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
-
-            //Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
+					//OFstream testfile(runTime.path()/"Example_pointDispFile");
+					//testfile << PointDisplacement<< endl;
+					//PointDisplacement.write();
+		
+					// Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
+		
+					//Get the vector field of the patch
+					vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
+		
+					Info<< "Reading pointDisplacement\n" << endl;
+		
+					Info<< "prev_runTime" << prev_runTime << endl;
+		
+					pointVectorField pointDisplacement_temp_
+					(
+						IOobject
+						(
+							"pointDisplacement_Next",
+							prev_runTime,
+							mesh,
+							IOobject::MUST_READ,
+							IOobject::AUTO_WRITE
+						),
+						pointMesh::New(mesh)
+					);
+		
+					pointVectorField& PointDisplacementTemp = const_cast<pointVectorField&>
+					(
+						pointDisplacement_temp_
+					);
+		
+					vectorField &pDispTemp=refCast<vectorField>(PointDisplacementTemp.boundaryFieldRef()[patchWallID]);
+		
+					//Info << pDispTemp <<nl << endl;
+		
+					//Info << pointDisplacement_temp_ << nl <<endl;
+					//Info << pointDisplacement_temp_.boundaryField()[patchWallID] << nl<< endl;
+					//Info << "-------------------------------------------------------------------" << nl<< endl;
+					//Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
+		
+					// Assign the new boundary displacements
+					PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
+		
+					//Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
     		
-    		
+    	    }
+    	   
     		// Calculate the mesh motion and update the mesh
             mesh.update();
 
