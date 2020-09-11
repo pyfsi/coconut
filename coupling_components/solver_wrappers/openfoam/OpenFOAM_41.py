@@ -47,6 +47,9 @@ class SolverWrapperOpenFOAM_41(Component):
         self.boundary_names = [_.GetString() for _ in self.settings['boundary_names'].list()] # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
         self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
         self.diffusivity=self.settings["diffusivity"].GetString()
+
+        # debug
+        self.debug = True  # set on True to save copy of input and output files in every iteration
         
         #Check that the boundary_names and the interface_input and interface_output are defined consistently in the JSON-file
         #For every boundary_name element, there should be one interface_input (boundary_name+"_input") element and one interface_output (boundary_name+"_output") element.
@@ -166,23 +169,43 @@ class SolverWrapperOpenFOAM_41(Component):
             for var_name in value.list():
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
-            
+
         # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
+        # Want "cellCentres for face boundaries"
         nKey=0
         for boundary in self.boundary_names:
             source_file = self.working_directory + "/constant/polyMesh"
-            node_ids, node_coords, face_centres = self.Get_Point_IDs(boundary,source_file)
+            node_ids, node_coords, face_centres, start_face, nFaces, self.total_nFaces = self.Get_Point_IDs(boundary,source_file)
 
             mp_input = self.model[boundary + "_input"]
             for i in np.arange(0,len(node_ids)):
-                mp_input.CreateNewNode(node_ids[i],node_coords[i, 0], node_coords[i, 1], node_coords[i, 2])
+                # mp_input.CreateNewNode(node_ids[i],node_coords[i, 0], node_coords[i, 1], node_coords[i, 2])
+                mp_input.CreateNewNode(i, node_coords[i, 0], node_coords[i, 1], node_coords[i, 2])
 
-            index = 0
+            #output model part
+            name_X= os.path.join(self.working_directory,"0/ccx")
+            name_Y = os.path.join(self.working_directory, "0/ccy")
+            name_Z = os.path.join(self.working_directory, "0/ccz")
+            index_X = self.find_string_in_file(boundary,name_X)
+            index_Y = self.find_string_in_file(boundary, name_Y)
+            index_Z = self.find_string_in_file(boundary, name_Z)
+
+            fX = open(name_X,'r')
+            fXLines = fX.readlines()
+            fY = open(name_Y,'r')
+            fYLines = fY.readlines()
+            fZ = open(name_Z,'r')
+            fZLines = fZ.readlines()
+
             mp_output = self.model[boundary + "_output"]
             for i in np.arange(0, len(face_centres)):
-                mp_output.CreateNewNode(index, face_centres[i, 0], face_centres[i, 1], face_centres[i, 2])
-                index+=1
+                x= float(fXLines[i+6+index_X].split("\n")[0])
+                y= float(fYLines[i+6+index_Y].split("\n")[0])
+                z= float(fZLines[i+6+index_Z].split("\n")[0])
+                mp_output.CreateNewNode(i, x, y, z)
+                mp_output.start_face = start_face
+                mp_output.nFaces = nFaces
 
 
         # Create CoSimulationInterfaces
@@ -218,10 +241,56 @@ class SolverWrapperOpenFOAM_41(Component):
         #         if not(os.path.isfile(pointDisp_name)):
         #             self.write_pointDisplacement_file(pointDisp_raw_name,pointDisp_name)
 
-        ## Do a first decomposition
+        ##Copy zero folder to folder with correctly named timeformat
+        if self.physical_time==0:
+            timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
+            path_orig = os.path.join(self.working_directory, "0")
+            path_new = os.path.join(self.working_directory, timestamp)
+            os.system("cp -r "+path_orig+" "+path_new)
+
+        ## If parallell do a decomposition and establish a remapping for the output based on the faceProcAddressing
+        '''Note concerning the sequence: The file ./processorX/constant/polyMesh/pointprocAddressing contains a list of 
+        indices referring to the original index in the ./constant/polyMesh/points file, these indices go from 0 to nPoints -1
+        However, mesh faces can be shared between processors and it has to be tracekd whether these are inverted or not
+        This inversion is indicated by negative indices. However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
+        Therefore to get the correct index one should use |index|-1!!
+        Normally no doubles should be encountered on an interface as these faces are not shared by processors
+        '''
         if self.cores > 1:
             os.system("cd " + self.working_directory + "; decomposePar -force -time "+ str(self.start_time) + " &> log.decomposePar;")
-        
+            for boundary in self.boundary_names:
+                mp_output = self.model[boundary + "_output"]
+                mp_output.sequence = []
+                print(mp_output.start_face)
+                print(mp_output.nFaces)
+                i= 0
+                # bool = np.zeros(self.total_nFaces)
+
+                for p in range(self.cores):
+                    count = 0
+                    path = os.path.join(self.working_directory, "processor"+str(p),"constant","polyMesh","faceProcAddressing")
+                    f = open(path,'r')
+                    face_Lines = f.readlines()
+                    nFaces = int(face_Lines[18].split("\n")[0])
+                    for i in range(20,20+nFaces):
+                        ind = np.abs(int(face_Lines[i].split("\n")[0]))-1
+                        # if ind < 0:
+                        #     ind = self.total_nFaces + ind #Negative referalls most likely indicate starting from the end of the list
+                        # ind = ind-1 #procAdressing starts numbering from 1?
+                        # print(ind)
+                        if ind >= mp_output.start_face and ind < mp_output.start_face+mp_output.nFaces:
+                            # print('appending')
+                            # if bool[ind]==0:
+                            #     bool[ind]=1
+                            mp_output.sequence.append(ind-mp_output.start_face)
+                            count+=1
+                    print(f"count = {count}")
+                np.savetxt(os.path.join(self.working_directory, "sequence.txt"),np.array(mp_output.sequence))
+                if len(mp_output.sequence) != mp_output.nFaces:
+                    print(f"sequence: {len(mp_output.sequence)}")
+                    print(f"nNodes: {mp_output.NumberOfNodes}")
+                    raise ValueError("Number of face indices in sequence does not correspond to number of elements")
+
         # Don't forget to start OpenFOAM-loop!
         if self.cores == 1:
             cmd = self.application + "&> log." + self.application
@@ -297,8 +366,37 @@ class SolverWrapperOpenFOAM_41(Component):
 
         # write interface data to OpenFOAM-file
         self.write_node_input()
-            
-        # let Fluent run, wait for data
+
+        # copy output data for debugging
+        if self.debug:
+            if self.cores>1:
+                for i in range(0,self.cores):
+                    path = os.path.join(self.working_directory,"processor"+str(i), self.prev_timestamp,"pointDisplacement_Next")
+                    path2 = os.path.join(self.working_directory,"processor"+str(i), self.prev_timestamp,"pointDisplacement_Next_Iter"+str(self.iteration))
+                    cmd = f"cp {path} {path2}"
+                    os.system(cmd)
+            else:
+                path = os.path.join(self.working_directory, self.prev_timestamp,"pointDisplacement_Next")
+                path2 = os.path.join(self.working_directory, self.prev_timestamp,"pointDisplacement_Next_Iter"+ str(self.iteration))
+                cmd = f"cp {path} {path2}"
+                os.system(cmd)
+
+        # let OpenFOAM run, wait for data
+        '''OpenFOAM tends to keep on appending to files while already providing access, this causes issues when reading out the data
+        Therefore these files are removed if they already exist prior to generating new data output '''
+        for boundary in self.boundary_names:
+            # specify location of pressure and traction
+            tractionName = "TRACTION_" + boundary
+            pressureName = "PRESSURE_" + boundary
+            wss_file = os.path.join(self.working_directory, "postProcessing", tractionName, "surface",
+                                    self.cur_timestamp, "wallShearStress_patch_" + boundary + ".raw")
+            pres_file = os.path.join(self.working_directory, "postProcessing", pressureName, "surface",
+                                     self.cur_timestamp, "p_patch_" + boundary + ".raw")
+            if os.path.isfile(wss_file):
+                os.system(f"rm -r {wss_file}")
+            if os.path.isfile(pres_file):
+                os.system(f"rm -r {pres_file}")
+
         self.send_message('continue')
         self.wait_message('continue_ready')
 
@@ -311,9 +409,14 @@ class SolverWrapperOpenFOAM_41(Component):
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
+
         # Let OpenFOAM check whether it needs to save this timestep (in OF-solver: runTime.write())
         
         if not(self.timestep % self.write_interval):
+            if self.cores > 1:  # Remove folder that was used for pointDisplacement_Next
+                # at end of time step if parallel run if not writeInterval
+                path = os.path.join(self.working_directory, self.prev_timestamp)
+                os.system("rm -r " + path)
             self.send_message('save')
             self.wait_message('save_ready')
 #         else:
@@ -370,7 +473,11 @@ class SolverWrapperOpenFOAM_41(Component):
         f.close()
         
     def read_node_output(self):
-
+        ''' This is to be verified but it might be imortant that when a calculation is started from a prior time step while there is still
+        data in the postprocessing folder for that time step from a previous run, that then the checks to see whether the file is completely updated might fail
+        and consequently cause the simulation to crash
+        Maybe it would be better to remove these files beforehand if they exist instead of overwriting them
+        This however can not be done here, but should be done in another part of the code '''
         nKey=0
         for boundary in self.boundary_names:
             # specify location of pressure and traction
@@ -386,39 +493,66 @@ class SolverWrapperOpenFOAM_41(Component):
             # read traction
             counter = 0
             nlines = 0
-            while (nlines<nFaces_tot+2) and counter < 100:
+            lim = 1000
+            while (nlines<nFaces_tot+2) and counter < lim:
                 if os.path.isfile(wss_file):
                     nlines = sum(1 for line in open(wss_file))
-
                 time.sleep(0.01)
                 counter +=1
-
-            if counter == 100:
+            if counter == lim:
                 raise RuntimeError("Timed out waiting for wss file: "+wss_file)
 
             f=open(wss_file,'r')
             fLines=f.readlines()
             index_start=2
             for i in np.arange(nFaces_tot):
-                wss_tmp[i,0]=fLines[index_start+i].split()[3]
-                wss_tmp[i,1]=fLines[index_start+i].split()[4]
-                wss_tmp[i,2]=fLines[index_start+i].split()[5].split("\n")[0]
+                split = fLines[index_start+i].split()
+                pos = np.array([float(split[0]),float(split[1]),float(split[2])])
+                pos_MP = np.array([mp.Nodes[mp.sequence[i]].X0,mp.Nodes[mp.sequence[i]].Y0,mp.Nodes[mp.sequence[i]].Z0])
+                if(np.linalg.norm(pos_MP-pos)>1e-05):
+                    print(i)
+                    print(pos)
+                    print(pos_MP)
+                    raise ValueError("Positions do not agree !!")
+                wss_tmp[i,0]=split[3]
+                wss_tmp[i,1]=split[4]
+                wss_tmp[i,2]=split[5].split("\n")[0]
             f.close()
+            # print(wss_tmp)
+
             # read pressure
+            counter = 0
+            nlines = 0
+            while (nlines < nFaces_tot + 2) and counter < lim:
+                nlines = 0
+                if os.path.isfile(pres_file):
+                    nlines = sum(1 for line in open(pres_file))
+
+                time.sleep(0.01)
+                counter += 1
+            print(nlines)
+            print(counter)
+            if counter == lim:
+                raise RuntimeError("Timed out waiting for pressure file: " + pres_file)
+
             f=open(pres_file,'r')
             fLines=f.readlines()
             index_start=2
             it=0
+            print(len(fLines))
             for i in np.arange(nFaces_tot):
                 val=fLines[index_start+i].split()[3].split("\n")[0]
                 pres_tmp[i,0]=float(val)
             f.close()
+
             # store pressure and traction in Nodes
-            index=0
+            index = 0
             for node in mp.Nodes:
-                node.SetSolutionStepValue(self.shear, 0, wss_tmp[index])
-                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[index])
-                index += 1
+                pos = mp.sequence[index]
+                node.SetSolutionStepValue(self.shear, 0, wss_tmp[pos])
+                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos])
+                index+=1
+
             
             # go to next interface
             nKey += 1
@@ -785,7 +919,9 @@ class SolverWrapperOpenFOAM_41(Component):
             face_centers[nf - startFace, :] = face_center / float(len(list))
         boundary_Ind = np.array(boundary_Ind)
         node_coords = np.array(node_coords,dtype=float)
+        os.path.join(self.working_directory, "faceCenters.txt")
+        np.savetxt(os.path.join(self.working_directory, "faceCenters.txt"),face_centers)
 
-        return boundary_Ind, node_coords,face_centers
+        return boundary_Ind, node_coords,face_centers, startFace, nFaces, len(All_Fnodes)
             
     

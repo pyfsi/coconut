@@ -15,7 +15,9 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     pimpleFoam;
+application     CoCoNuT_pimpleFoam;
+
+interface       |BOUNDARY_NAMES|;
 
 startFrom       startTime;
 
@@ -25,54 +27,88 @@ stopAt          endTime;
 
 endTime         0.01;
 
-deltaT          0.00001;
+deltaT          5e-05;
 
 writeControl    timeStep;
 
-writeInterval   10;
+writeInterval   1;
 
 purgeWrite      0;
 
 writeFormat     ascii;
 
-writePrecision  6;
+writePrecision  5;
 
-writeCompression off;
+writeCompression uncompressed;
 
-timeFormat      general;
+timeFormat      fixed;
 
-timePrecision   6;
+timePrecision   5;
 
-runTimeModifiable yes;
+runTimeModifiable false;
 
-functions{
-	wallShearStress
-	{
-            type        wallShearStress;
-            libs ("libfieldFunctionObjects.so");
+adjustTimeStep	no;
 
-	    // Optional entries (runtime modifiable)
-	    patches         ("mantle"); 
+functions 
+{ 
+  
+ 	 PRESSURE_mantle 
+	 { 
+		 type  	 surfaceRegion; 
+		 libs 	 ("libfieldFunctionObjects.so"); 
+		 executeControl 	 timeStep; 
+		 executeInterval 	 1; 
+		 writeControl 	 timeStep; 
+		 writeInterval 	 1; 
+		 timeFormat 	 fixed; 
+		 timePrecision 	 5; 
+		 operation 	 none; 
+		 writeFields 	 true; 
+		 surfaceFormat 	 raw; 
+		 regionType 	 patch; 
+		 name 	 mantle ; 
+		 fields 
+		 ( 
+			 p 
+ 		 ); 
+	 } 
 
-	    // Optional (inherited) entries
-	    writePrecision  8;
-	    writeToFile     true;
-	    writeControl    timeStep;
-	    writeInterval   1;
-            log 	    true;
+ 
+ 	 wallShearStress 
+	 { 
+		 type  	 wallShearStress; 
+		 libs 	 ("libfieldFunctionObjects.so"); 
+		 executeControl 	 timeStep; 
+		 executeInterval 	 1; 
+		 writeControl 	 timeStep; 
+		 writeInterval 	 1; 
+		 timeFormat 	 fixed; 
+		 timePrecision 	 5; 
+		 log 	 false; 
+	 } 
 
-	}
-	forces1
-    	{
-        type        forces;
-        libs ("libforces.so");
-        log         yes;
-        patches     (mantle);
-	    writePrecision  8;
-	    writeToFile     true;
-	    writeControl    timeStep;
-	    writeInterval   1;
+ 
+ 	 TRACTION_mantle 
+	 { 
+		 type  	 surfaceRegion; 
+		 libs 	 ("libfieldFunctionObjects.so"); 
+		 executeControl 	 timeStep; 
+		 executeInterval 	 1; 
+		 writeControl 	 timeStep; 
+		 writeInterval 	 1; 
+		 timeFormat 	 fixed; 
+		 timePrecision 	 5; 
+		 operation 	 none; 
+		 writeFields 	 true; 
+		 surfaceFormat 	 raw; 
+		 regionType 	 patch; 
+		 name 	 mantle ; 
+		 fields 
+		 ( 
+			 wallShearStress 
+		 ); 
+	 } 
 
-    	}
-}
+} 
+ 
 // ************************************************************************* //
