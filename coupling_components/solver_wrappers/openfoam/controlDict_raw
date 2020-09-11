@@ -17,8 +17,6 @@ FoamFile
 
 application     |APPLICATION|;
 
-interface       |BOUNDARY_NAMES|;
-
 startFrom       startTime;
 
 startTime       |START_TIME|;
@@ -41,11 +39,13 @@ writePrecision  |WRITE_PRECISION|;
 
 writeCompression uncompressed;
 
-timeFormat      |TIME_FORMAT|;
+timeFormat      fixed;
 
 timePrecision   |TIME_PRECISION|;
 
 runTimeModifiable false;
 
 adjustTimeStep	no;
+
+boundary_names |BOUNDARY_NAMES|;
 

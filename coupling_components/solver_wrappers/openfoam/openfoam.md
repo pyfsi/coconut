@@ -10,27 +10,22 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 
 parameter|type|description
 ---:|:---:|---
-`case_file`|string|Name of the case file. It must be present in the folder `working_directory`.
-`cores`|int|Number of processor cores to use when running Fluent (tested only on single node so far).
+`application`|string|Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with `CoCoNuT_`.
+`working_directory`|string|Directory where the OpenFOAM-case is defined (and which contains the JSON-file).
 `dimensions`|int|Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D. 
-`delta_t`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
-`flow_iterations`|int|Number of non-linear iterations in Fluent per coupling iteration.
-`fluent_gui`|bool|Set to `true` to run Fluent with the graphical interface.
-<nobr>`hybrid_initialization`</nobr>|bool|If `true`, the hybrid initialization is used in Fluent before the first timestep. If `false`, the standard initialization is used, which requires that adequate reference values have been set in advance by the user in the `case_file`.
-`interface_input`|dict|Keys are names of `ModelParts` for Fluent nodes. Each name must be the concatenation of an entry from `thread_names` and "_nodes". The values are (lists of) names of `Variables`.
-`interface_output`|dict|Analogous to `interface_input`, but for Fluent faces ('_faces').
-`max_nodes_per_face`|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.
-`save_iterations`|int|Number of timesteps between consecutive saves of the Fluent case and data files.
-`thread_names`|list|List with Fluent names of the surface threads on the interface. IS THE ORDER IMPORTANT? TODO
-`timestep_start`|int|Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the `case_file`, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.
-`unsteady`|bool|`true` for transient FSI, `false` for steady FSI.  
-`working_directory`|string|Absolute path to the working directory or relative path w.r.t the current directory.
-
-
-`timestep_start` and `delta_t` are necessary parameters, but are usually defined in a higher `Component`. However, they can also be given directly as parameter of the solver-wrapper (e.g. for standalone testing). If they are defined both in a higher `Component` and in the solver-wrapper, then the former value is used and a warning is printed.
-
-If different parameters are used with different Fluent versions, this should be specified both in this section and in the version specific documentation section.
-
+`start_time`|double|Physical start time of the simulation. This should correspond to the name of the time step folder in OpenFOAM from which the initial data and boundary conditions are read.
+`end_time`|double|Physical end time of the simulation.
+`dt`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
+`boundary_names`|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
+`interface_input`|dict|Keys are names of `ModelParts`, which should correspond to a boundary name (defined in `boundary_names` appended with `_input`. Every boundary name should correspond to one interface input name. This is explicitly checked at the start of the CoCoNuT simulation. The values are (lists of) names of `Variables`. For a flow solver, this is typically `DISPLACEMENT`(Dirichlet condition).
+`interface_output`|dict|Keys are names of `ModelParts`, which should correspond to a boundary name (defined in `boundary_names` appended with `_output`. Every boundary name should correspond to one interface input name. This is explicitly checked at the start of the CoCoNuT simulation. The values are (lists of) names of `Variables`. For a flow solver, this is typically `PRESSURE` and  `TRACTION` (Neumann condition).
+`cores`|int|Number of cores on which the OpenFOAM-solver can run. This variable will be replaced in the raw `decomposeParDict`-file, after which the case is decomposed of the given number of cores.
+`decomposeMethod`|string|Name of the mesh decomposition method to be used in OpenFOAM (e.g. `simple`,`scotch`...).
+`write_interval`|double|Period between subsequent saves of the entire flow field.
+`write_precision`|int|Number of digits after the decimal sign to be used when writing data to time step folders or the `postProcessing`-folder.
+`time_precision`|int|Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.
+`meshmotion_solver`|string|Name of the mesh motion solver to be used in OpenFOAM (e.g. `displacementLaplacian`...).
+`diffusivity`|string |Name of the diffusivity constant used in the mesh motion solver in OpenFOAM (e.g. `inverseDistance`...). 
 
 ## Overview of the Python-file
 
@@ -73,12 +68,13 @@ Default OpenFOAM-solvers cannot be used in the CoCoNuT-framework, but need to be
 
 -	Except for the initial `include`-statements, the entire solver code should be put in a loop that starts with `while(true)`.
 -	Just before this while-loop, add the statement `runTime.run();`! This is important as it creates and initializes the functionObjects in the `controlDict`-file which will be used for storing the interface loads.
+-	Due to the fact that the infinite loop is driven by `while(true)` and not the default OpenFOAM-expression `while(runTime.run())`, OpenFOAM does not check itself whether the final time step is reached. In proper CoCoNuT-operation, OpenFOAM is killed when the solver wrapper reaches the final time step, but this might not be the case if the OpenFOAM-solverwrapper is tested separately.
 -	Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional statements. 
 -	The while-loop contains several conditional statements, each of which check whether the Python-code in CoCoNuT has sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: `next.coco`, `continue.coco`, `save.coco`, `stop.coco`. 	
--	If the file `next.coco` exists, the runTime-object should be increased by one. OpenFOAM should create a file `next_ready.coco` upon completion. Do not forget to delete the original `next.coco`-file, which is advised to do as a first step inside the `if`-clause.
--	If the file `continue.coco` exists, the flow equations need to be solved. This `if`-statement consequently contains most of the original solver definition, in which the flow equations are called in the same order as in the original CFD solver. OpenFOAM should create a file `continue_ready.coco` upon completion. Do not forget to delete the original `continue.coco`-file, which is advised to do as a first step inside the `if`-clause.
--	If the file `save.coco` exists, OpenFOAM checks whether the flow variables should be stored in corresponding files, according to the user-defined save interval. OpenFOAM should create a file `save_ready.coco` upon completion. Do not forget to delete the original `save.coco`-file, which is advised to do as a first step inside the `if`-clause.
--	If the file `stop.coco` exists, a `break`-statement should end the infinite loop (the subprocess is also killed in the Python-code). OpenFOAM should create a file `stop_ready.coco` before breaking the `while`-loop. Do not forget to delete the original `stop.coco`-file, which is advised to do as a first step inside the `if`-clause.
+-	If the file `next.coco` exists, the runTime-object should be increased by one. OpenFOAM should create a file `next_ready.coco` upon completion. Do not forget to delete the original `next.coco`-file, which is advised to do just before creating the `next_ready.coco`, so near the end of the `if`-clause.
+-	If the file `continue.coco` exists, the flow equations need to be solved. This `if`-statement consequently contains most of the original solver definition, in which the flow equations are called in the same order as in the original CFD solver. OpenFOAM should create a file `continue_ready.coco` upon completion. Do not forget to delete the original `continue.coco`-file, which is advised to do just before creating the `continue_ready.coco`, so near the end of the `if`-clause.
+-	If the file `save.coco` exists, OpenFOAM checks whether the flow variables should be stored in corresponding files, according to the user-defined save interval. OpenFOAM should create a file `save_ready.coco` upon completion. Do not forget to delete the original `save.coco`-file, which is advised to do just before creating the `save_ready.coco`, so near the end of the `if`-clause.
+-	If the file `stop.coco` exists, a `break`-statement should end the infinite loop (the subprocess is also killed in the Python-code). OpenFOAM should create a file `stop_ready.coco` before breaking the `while`-loop. Do not forget to delete the original `stop.coco`-file, which is advised to do just before creating the `stop_ready.coco`, so near the end of the `if`-clause.
 
 
 ## Setting up a new case

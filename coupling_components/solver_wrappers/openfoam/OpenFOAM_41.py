@@ -58,8 +58,8 @@ class SolverWrapperOpenFOAM_41(Component):
             sys.exit("Interface_input and boundary_names should have the same length; one interface_input element corresponds with one boundary_name element!")
         if len(self.boundary_names) != len(self.settings['interface_output'].keys()):
             sys.exit("Interface_output and boundary_names should have the same length; one interface_output element corresponds with one boundary_name element!")
+        index=0
         for boundary in self.boundary_names:
-            index=0
             key_input = self.settings['interface_input'].keys()[index]
             if not("_input" in key_input):
                 sys.exit('Please make that all interface_input elements correspond to a boundary_names element followed by "_input".')
@@ -114,7 +114,16 @@ class SolverWrapperOpenFOAM_41(Component):
                     line=line.replace('|WRITE_INTERVAL|',str(self.write_interval))
                     line=line.replace('|WRITE_PRECISION|',str(self.write_precision))
                     line=line.replace('|TIME_PRECISION|',str(self.time_precision))
-                    line = line.replace('|TIME_FORMAT|', str(self.time_format))
+                    if '|BOUNDARY_NAMES|' in line:
+                        firstBoundary=True
+                        for interfaces in self.boundary_names:
+                            if firstBoundary:
+                                boundary_name_temp = "(" + interfaces
+                                firstBoundary=False
+                            else:
+                                boundary_name_temp += " , " + interfaces
+                        boundary_name_temp += ")"                          
+                        line=line.replace('|BOUNDARY_NAMES|',boundary_name_temp)
                     newFile.write(line)
         rawFile.close()
         newFile.close()
@@ -132,7 +141,6 @@ class SolverWrapperOpenFOAM_41(Component):
                     self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,False)
                 else:
                     self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,False,False)
-                    self.write_controlDict_function(controlDict_name,"wallShearStress","libfieldFunctionObjects","wallShearStress",key,False,False)
                     if nKey == (len(self.boundary_names)-1):
                         self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","TRACTION",key,False,True)
                     else:
