@@ -94,8 +94,6 @@ int main(int argc, char *argv[])
 			#include "CourantNo.H"
 			#include "setDeltaT.H"
 
-			 // Get the patch ID: patch name must be "mantle"
-            // This should be generalised and a loop should be provided for the different patches of interest
 
     		prev_runTime = runTime.timeName();
     		Info << prev_runTime << nl << endl;

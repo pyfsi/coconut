@@ -515,13 +515,15 @@ class SolverWrapperOpenFOAM_41(Component):
             index_start=2
             for i in np.arange(nFaces_tot):
                 split = fLines[index_start+i].split()
-                pos = np.array([float(split[0]),float(split[1]),float(split[2])])
-                pos_MP = np.array([mp.Nodes[mp.sequence[i]].X0,mp.Nodes[mp.sequence[i]].Y0,mp.Nodes[mp.sequence[i]].Z0])
-                if(np.linalg.norm(pos_MP-pos)>1e-05):
-                    print(i)
-                    print(pos)
-                    print(pos_MP)
-                    raise ValueError("Positions do not agree !!")
+                if self.physical_time==self.start_time: #At start perform check of the mapping, CARE for restarts this check will need to be updated as the file will give coordinates of the deformed geometry
+                    #Could use the displacement vector for this which we most likely need to read anyways
+                    pos = np.array([float(split[0]),float(split[1]),float(split[2])])
+                    pos_MP = np.array([mp.Nodes[mp.sequence[i]].X0,mp.Nodes[mp.sequence[i]].Y0,mp.Nodes[mp.sequence[i]].Z0])
+                    if(np.linalg.norm(pos_MP-pos)>1e-05):
+                        print(i)
+                        print(pos)
+                        print(pos_MP)
+                        raise ValueError("Positions do not agree !!")
                 wss_tmp[i,0]=split[3]
                 wss_tmp[i,1]=split[4]
                 wss_tmp[i,2]=split[5].split("\n")[0]
