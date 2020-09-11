@@ -2,13 +2,12 @@ from .data_value_container import DataValueContainer
 from .Variables import VariableComponent
 
 from copy import deepcopy
+import numpy as np
 
+class Point(object):
 
-class Node(DataValueContainer):
-
-    def __init__(self, node_id, x, y, z, hist_variables, buffer_size):
-        super(Node, self).__init__()
-        self.Id = node_id
+    def __init__(self, point_id, x, y, z):
+        self.Id = point_id
 
         # current position
         self.X = x
@@ -19,6 +18,26 @@ class Node(DataValueContainer):
         self.X0 = x
         self.Y0 = y
         self.Z0 = z
+
+    def Coordinates(self):
+        return np.array([self.X0, self.Y0, self.Z0])
+
+
+class Node(Point, DataValueContainer):
+
+    def __init__(self, node_id, x, y, z, hist_variables, buffer_size):
+        super(Node, self).__init__(node_id, x, y, z)
+        # self.Id = node_id
+        #
+        # # current position
+        # self.X = x
+        # self.Y = y
+        # self.Z = z
+        #
+        # # initial position
+        # self.X0 = x
+        # self.Y0 = y
+        # self.Z0 = z
 
         # historical variables
         self.__hist_variables = hist_variables

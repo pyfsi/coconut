@@ -1,0 +1,12 @@
+{
+        "interface_input":
+        {
+            "fsi_interface_load": ["PRESSURE", "TRACTION"]
+
+        },
+        "interface_output":
+        {
+            "fsi_interface_disp": ["DISPLACEMENT"]
+        }
+
+}

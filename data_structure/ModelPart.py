@@ -1,10 +1,14 @@
 from .Node import Node
+from .Node import Point
 from .Element import Element
 from .data_value_container import DataValueContainer
 from .Logger import Logger
 
 from collections import OrderedDict
+import numpy as np
 
+#available_elements_dict = {module name :  element class name}
+available_elements = ["Quad4NodeElement"]
 
 class ModelPart(DataValueContainer):
 
@@ -27,7 +31,7 @@ class ModelPart(DataValueContainer):
         self.__nodes           = ModelPart.PointerVectorSet()
         self.__elements        = ModelPart.PointerVectorSet()
         self.__properties      = ModelPart.PointerVectorSet()
-
+        self.__points          = ModelPart.PointerVectorSet()
         self.__buffer_size = buffer_size
 
         self.__hist_variables = []
@@ -136,8 +140,15 @@ class ModelPart(DataValueContainer):
             return new_node
         else:
             existing_node = self.__nodes.get(node_id)
+            existing_point = self.__points.get(node_id)
+            if existing_point:
+                err_msg = 'A point with Id #' + str(node_id) + ' already exists in the root model part'
+                err_msg += '\nExisting Coords: ' + str(existing_point.Coordinates())
+                err_msg += '\nNew Coords: ' + str([coord_x, coord_y, coord_z])
+                raise RuntimeError(err_msg)
+
             if existing_node:
-                if self.__Distance(existing_node.Coordinates(), [coord_x, coord_y, coord_z]) > 1E-15:
+                if np.linalg.norm(existing_node.Coordinates()-np.array([coord_x, coord_y, coord_z])) > 1E-15:
                     err_msg  = 'A node with Id #' + str(node_id) + ' already exists in the root model part with different Coordinates!'
                     err_msg += '\nExisting Coords: ' + str(existing_node.Coordinates())
                     err_msg += '\nNew Coords: '      + str([coord_x, coord_y, coord_z])
@@ -164,15 +175,23 @@ class ModelPart(DataValueContainer):
         except KeyError:
             raise RuntimeError('Element index not found: {}'.format(element_id))
 
-    def CreateNewElement(self, element_name, element_id, node_ids, property_id):
+    def CreateNewElement(self, element_name, element_id, point_ids, gauss_node_ids = []):
         if self.IsSubModelPart():
-            new_element = self.__parent_model_part.CreateNewElement(element_name, element_id, node_ids, property_id)
+            new_element = self.__parent_model_part.CreateNewElement(element_name, element_id, point_ids, gauss_node_ids)
             self.__elements[element_id] = new_element
             self.AddElement(new_element)
             return new_element
         else:
-            element_nodes = [self.GetNode(node_id) for node_id in node_ids]
-            new_element = Element(element_id, element_nodes) # TODO pass property? Or at least check if this property exists ... # TODO how to create different elements? =>__import__(element_name) ?
+            element_points = [self.GetPoint(point_id) for point_id in point_ids]
+            if not element_points:
+                element_points = [self.GetNode(point_id) for point_id in point_ids]
+            gauss_nodes = [self.GetNode(node_id) for node_id in gauss_node_ids]
+
+            if element_name in available_elements:
+                element_module = __import__('coconut.data_structure.'+element_name, fromlist= [element_name])
+                new_element = element_module.Create(element_id, element_points, gauss_nodes) # TODO pass property? Or at least check if this property exists ... # TODO how to create different elements? =>__import__(element_name) ?
+            else:
+                raise NotImplementedError("Element: {element_name} is not implemented.")
             if element_id in self.__elements:
                 existing_element = self.__elements[element_id]
                 if existing_element != new_element:
@@ -182,6 +201,50 @@ class ModelPart(DataValueContainer):
             else:
                 self.__elements[element_id] = new_element
                 return new_element
+
+    ### Methods related to Nodes ###
+    @property
+    def Points(self):
+        return self.__points
+
+    def NumberOfPoints(self):
+        return len(self.__points)
+
+    def GetPoint(self, point_id):
+        try:
+            return self.__points[point_id]
+        except KeyError:
+            try:
+                return self.__nodes[point_id]
+            except KeyError:
+                raise RuntimeError('Point index not found: {}'.format(point_id))
+
+    def CreateNewPoint(self, point_id, coord_x, coord_y, coord_z):
+        if self.IsSubModelPart():
+            new_point = self.__parent_model_part.CreateNewPoint(point_id, coord_x, coord_y, coord_z)
+            self.__points[point_id] = new_point
+            return new_point
+        else:
+            existing_point = self.__points.get(point_id)
+            existing_node = self.__nodes.get(point_id)
+            if existing_node:
+                err_msg = 'A node with Id #' + str(point_id) + ' already exists in the root model part'
+                err_msg += '\nExisting Coords: ' + str(existing_node.Coordinates())
+                err_msg += '\nNew Coords: ' + str([coord_x, coord_y, coord_z])
+                raise RuntimeError(err_msg)
+            if existing_point:
+                if np.linalg.norm(existing_point.Coordinates()-np.array([coord_x, coord_y, coord_z])) > 1E-15:
+                    err_msg = 'A point with Id #' + str(
+                        point_id) + ' already exists in the root model part with different Coordinates!'
+                    err_msg += '\nExisting Coords: ' + str(existing_point.Coordinates())
+                    err_msg += '\nNew Coords: ' + str([coord_x, coord_y, coord_z])
+                    raise RuntimeError(err_msg)
+
+                return existing_point
+            else:
+                new_point = Point(point_id, coord_x, coord_y, coord_z)
+                self.__points[point_id] = new_point
+                return new_point
 
     ### the following methods are to be checked/implemented!
     # add properties
@@ -203,3 +266,4 @@ class ModelPart(DataValueContainer):
     def __str__(self):
         # previous string representation contained invalid information
         return f'ModelPart "{self.Name}"'
+
