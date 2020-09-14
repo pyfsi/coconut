@@ -23,9 +23,9 @@ class Quad4NodeElement(Element):
         if(len(self.GetPoints()) != 4):
             raise Exception("wrong number of nodes! should be 4!")
 
-        for point in self.GetPoints():
-            if(point.Id < 0):
-                raise Exception("point/node with Id smaller than 0 found")
+        # for point in self.GetPoints():
+        #     if(point.Id < 0):
+        #         raise Exception("point/node with Id smaller than 0 found")
         supported_number_gauss_nodes = self.integration_local_points_weights_dict.keys()
         nr_of_gauss_nodes = self.NumberOfGaussNodes()
 
@@ -34,8 +34,8 @@ class Quad4NodeElement(Element):
 
         self.__gauss_node_id_int_wt_pair_dict = {}
         for gauss_node in self.GetGaussNodes():
-            if (gauss_node.Id < 0):
-                raise Exception("gauss node with Id smaller than 0 found")
+            # if (gauss_node.Id < 0):  # *** doesn't work with string Id's
+            #     raise Exception("gauss node with Id smaller than 0 found")
             index = self._FindGaussNodeIndex(gauss_node)
             integration_local_points_weights = self.integration_local_points_weights_dict[nr_of_gauss_nodes]
             self.__gauss_node_id_int_wt_pair_dict[gauss_node.Id] = integration_local_points_weights[index]
@@ -49,7 +49,7 @@ class Quad4NodeElement(Element):
             local_gauss_point,_  = int_pt_wt_tuple
             global_gauss_point = self.GetGlobalCoordinate(local_gauss_point)
             distance = np.linalg.norm(global_gauss_point - node.Coordinates())
-            if distance < 1e-10:
+            if distance < 1e-5:  # TODO: change to relative criterion
                 return index
         raise Exception(f"{node} is not a gauss point in the Quad4NodeElement element")
 

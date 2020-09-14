@@ -29,7 +29,8 @@ class OutputInterfaceVtkProcess:
         for model_part_name, _  in self.model_part_variables_dict.items():
 
 
-            output_file_name =f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            # output_file_name =f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            output_file_name =f'{model_part_name}_{time_step_nr}.vtk'
             output_file_name = os.path.join(self.path, output_file_name)
 
         with open(output_file_name, 'w') as output_vtk_file:
@@ -54,7 +55,8 @@ class OutputInterfaceVtkProcess:
     def WriteNodes(self, time_step_nr, iteration_nr):
         for model_part_name, _ in self.model_part_variables_dict.items():
 
-            output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            # output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            output_file_name =f'{model_part_name}_{time_step_nr}.vtk'
             output_file_name = os.path.join(self.path, output_file_name)
             model_part = self.interface.model.GetModelPart(model_part_name)
 
@@ -80,7 +82,8 @@ class OutputInterfaceVtkProcess:
 
         for model_part_name, _ in self.model_part_variables_dict.items():
 
-            output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            # output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            output_file_name =f'{model_part_name}_{time_step_nr}.vtk'
             output_file_name = os.path.join(self.path, output_file_name)
             model_part = self.interface.model.GetModelPart(model_part_name)
             cell_list_size = self.DetermineVtkCellListSize(model_part)
@@ -108,7 +111,8 @@ class OutputInterfaceVtkProcess:
     def WriteNodalResults(self, time_step_nr, iteration_nr):
 
         for model_part_name, variable_list in self.model_part_variables_dict.items():
-            output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            # output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            output_file_name =f'{model_part_name}_{time_step_nr}.vtk'
             output_file_name = os.path.join(self.path, output_file_name)
             model_part = self.interface.model.GetModelPart(model_part_name)
             variable_components_dict = {"Array" : 3, "Double" : 1}
@@ -142,7 +146,8 @@ class OutputInterfaceVtkProcess:
 
     def ElementResults(self, time_step_nr, iteration_nr):
         for model_part_name, variable_list in self.model_part_variables_dict.items():
-            output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            # output_file_name = f'{model_part_name}_{time_step_nr}_{iteration_nr}.vtk'
+            output_file_name =f'{model_part_name}_{time_step_nr}.vtk'
             output_file_name = os.path.join(self.path, output_file_name)
             model_part = self.interface.model.GetModelPart(model_part_name)
             variable_components_dict = {"Array": 3, "Double": 1}
@@ -156,6 +161,7 @@ class OutputInterfaceVtkProcess:
                                           f'{model_part.NumberOfElements()}  float\n')
 
                     for elem in model_part.Elements:
+                        # value = elem.GetGaussNodes()[0].GetSolutionStepValue(variable)  # *** if Gauss node doesn't work
                         value = elem.CalculateElementAverage(variable)
                         if variable.Type() == "Double":
                             output_vtk_file.write(f'{value} ')

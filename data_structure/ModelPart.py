@@ -182,8 +182,9 @@ class ModelPart(DataValueContainer):
             self.AddElement(new_element)
             return new_element
         else:
-            element_points = [self.GetPoint(point_id) for point_id in point_ids]
-            if not element_points:
+            try:
+                element_points = [self.GetPoint(point_id) for point_id in point_ids]
+            except:
                 element_points = [self.GetNode(point_id) for point_id in point_ids]
             gauss_nodes = [self.GetNode(node_id) for node_id in gauss_node_ids]
 

@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
+from coconut.coupling_components import output_interface_vtk_process
 
 import os
 from os.path import join
@@ -185,11 +186,13 @@ class SolverWrapperFluent2019R1(Component):
                     coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
 
         # add Nodes to output ModelParts (faces)
-        for key in self.settings['interface_output'].keys():
-            mp = self.model[key]
+        for key_out, key_in in zip(self.settings['interface_output'].keys(),
+                                   self.settings['interface_input'].keys()):
+            mp_out = self.model[key_out]
+            mp_in = self.model[key_in]
 
             # read in datafile
-            tmp = f'faces_timestep0_thread{mp.thread_id}.dat'
+            tmp = f'faces_timestep0_thread{mp_out.thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + self.mnpf:
@@ -207,8 +210,34 @@ class SolverWrapperFluent2019R1(Component):
 
             # create Nodes
             for i in range(ids_tmp.size):
-                mp.CreateNewNode(ids_tmp[i],
+                mp_out.CreateNewNode(ids_tmp[i],
                     coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
+
+            # add Points and Elements for VTK output for both Interfaces
+            if True:  # *** works only in 3D for quad elements currently
+                for node in mp_in.Nodes:
+                    mp_out.CreateNewPoint(node.Id, node.X0, node.Y0, node.Z0)
+
+                for i, node in enumerate(mp_out.Nodes):
+                    index = None
+                    for j in range(data.shape[0]):
+                        if node.X0 == data[j, 0] and node.Y0 == data[j, 1] and node.Z0 == data[j, 2]:
+                            index = j
+                            break
+                    if index is None:
+                        raise ValueError
+
+                    tmp = data[index, -self.mnpf:]
+                    if tmp.min() < 0:
+                        j = tmp.argmin()
+                        tmp = tmp[:j]
+                    element_point_ids = [a for a in tmp.astype(int).astype(str).tolist()]
+
+                    mp_out.CreateNewElement('Quad4NodeElement', node.Id,
+                                        element_point_ids, [node.Id])
+
+                    mp_in.CreateNewElement('Quad4NodeElement', node.Id,
+                                           element_point_ids)
 
         # update coordinates of Nodes if necessary
         if self.timestep_start != 0:
@@ -217,6 +246,9 @@ class SolverWrapperFluent2019R1(Component):
         # create Interfaces
         self.interface_input = Interface(self.model, self.settings['interface_input'])
         self.interface_output = Interface(self.model, self.settings['interface_output'])
+
+        self.vtk_nodes = output_interface_vtk_process.OutputInterfaceVtkProcess(self.interface_input, self.dir_cfd)
+        self.vtk_faces = output_interface_vtk_process.OutputInterfaceVtkProcess(self.interface_output, self.dir_cfd)
 
         # create Variables
         self.pressure = vars(data_structure)['PRESSURE']
@@ -300,6 +332,10 @@ class SolverWrapperFluent2019R1(Component):
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
+
+        # write VTK output
+        self.vtk_nodes.Write(self.timestep, self.iteration)
+        self.vtk_faces.Write(self.timestep, self.iteration)
 
         if not self.timestep % self.settings['save_iterations'].GetInt():
             self.send_message('save')
