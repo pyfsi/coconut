@@ -78,26 +78,20 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             mp = solver.model['beamoutside_nodes']
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            mp0 = solver.GetInterfaceInput().deepcopy().model['beamoutside_nodes']
 
             # update position by iterating once in solver
             solver.Initialize()
             solver.InitializeSolutionStep()
             solver.SolveSolutionStep(solver.GetInterfaceInput())
             solver.FinalizeSolutionStep()
-            solver.Finalize()
-
-            # create solver to check new coordinates
-            par_solver['settings'].SetInt('timestep_start', 1)
-            solver = CreateInstance(par_solver)
-            solver.Initialize()
+            coord_data = solver.get_coordinates()
             solver.Finalize()
 
             # check if correct displacement was given
-            mp = solver.model['beamoutside_nodes']
-            for node0, node in zip(mp0.Nodes, mp.Nodes):
-                y_goal = node.Y0 + node0.GetSolutionStepValue(displacement)[1]
-                self.assertAlmostEqual(node.Y, y_goal, delta=1e-16)
+            for i, node in enumerate(mp.Nodes):
+                y_goal = node.Y0 + node.GetSolutionStepValue(displacement)[1]
+                y = coord_data['beamoutside_nodes']['coords'][i][1]
+                self.assertAlmostEqual(y, y_goal, delta=1e-16)
 
         # test if different partitioning gives the same ModelParts
         if True:
@@ -117,9 +111,9 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             mp1, mp2 = model_parts
             for node1 in mp1.Nodes:
                 node2 = mp2.GetNode(node1.Id)
-                self.assertEqual(node1.X, node2.X)
-                self.assertEqual(node1.Y, node2.Y)
-                self.assertEqual(node1.Z, node2.Z)
+                self.assertEqual(node1.X0, node2.X0)
+                self.assertEqual(node1.Y0, node2.Y0)
+                self.assertEqual(node1.Z0, node2.Z0)
 
         # test if same coordinates always give same pressure & traction
         if True:
@@ -187,6 +181,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
                 solver.InitializeSolutionStep()
                 solver.SolveSolutionStep(solver.GetInterfaceInput())
                 solver.FinalizeSolutionStep()
+            coord_data1 = solver.get_coordinates()
             solver.Finalize()
 
             # get data for solver without restart
@@ -206,6 +201,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
                 solver.InitializeSolutionStep()
                 solver.SolveSolutionStep(solver.GetInterfaceInput())
                 solver.FinalizeSolutionStep()
+            coord_data2 = solver.get_coordinates()
             solver.Finalize()
 
             # get data for solver with restart
@@ -213,12 +209,12 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             data2 = interface2.GetNumpyArray().copy()
 
             # compare coordinates of Nodes
-            mp1 = interface1.model['beamoutside_nodes']
-            mp2 = interface2.model['beamoutside_nodes']
-            for node1, node2 in zip(mp1.Nodes, mp2.Nodes):
-                self.assertAlmostEqual(node1.X, node2.X, delta=1e-16)
-                self.assertAlmostEqual(node1.Y, node2.Y, delta=1e-16)
-                self.assertAlmostEqual(node1.Z, node2.Z, delta=1e-16)
+            key = 'beamoutside_nodes'
+            for i in range(coord_data1[key]['ids'].size):
+                for j in range(3):
+                    self.assertAlmostEqual(coord_data1[key]['coords'][i, j],
+                                           coord_data2[key]['coords'][i, j],
+                                           delta=1e-16)
 
             # normalize pressure and traction data and compare
             mean = np.mean(data1)
@@ -287,22 +283,20 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             solver.InitializeSolutionStep()
             solver.SolveSolutionStep(solver.GetInterfaceInput())
             solver.FinalizeSolutionStep()
-            solver.Finalize()
-
-            # create solver to check new coordinates
-            par_solver['settings'].SetInt('timestep_start', 1)
-            solver = CreateInstance(par_solver)
-            solver.Initialize()
+            coord_data = solver.get_coordinates()
             solver.Finalize()
 
             # check if correct displacement was given
-            mp = solver.model['wall_nodes']
-            for node0, node in zip(mp0.Nodes, mp.Nodes):
-                disp = node0.GetSolutionStepValue(displacement)
-                y_goal = node0.Y0 + disp[1]
-                z_goal = node0.Z0 + disp[2]
-                self.assertAlmostEqual(node.Y, y_goal, delta=1e-16)
-                self.assertAlmostEqual(node.Z, z_goal, delta=1e-16)
+            for i, node in enumerate(mp.Nodes):
+                disp = node.GetSolutionStepValue(displacement)
+
+                y_goal = node.Y0 + disp[1]
+                y = coord_data['wall_nodes']['coords'][i][1]
+                self.assertAlmostEqual(y, y_goal, delta=1e-16)
+
+                z_goal = node.Z0 + disp[2]
+                z = coord_data['wall_nodes']['coords'][i][2]
+                self.assertAlmostEqual(z, z_goal, delta=1e-16)
 
         # test if different partitioning gives the same ModelParts
         if True:
@@ -321,9 +315,9 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             # compare Nodes in ModelParts between both solvers
             mp1, mp2 = model_parts
             for node1, node2 in zip(mp1.Nodes, mp2.Nodes):
-                self.assertEqual(node1.X, node2.X)
-                self.assertEqual(node1.Y, node2.Y)
-                self.assertEqual(node1.Z, node2.Z)
+                self.assertEqual(node1.X0, node2.X0)
+                self.assertEqual(node1.Y0, node2.Y0)
+                self.assertEqual(node1.Z0, node2.Z0)
 
         # test if same coordinates always give same pressure & traction
         if True:
@@ -395,6 +389,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
                 solver.InitializeSolutionStep()
                 solver.SolveSolutionStep(solver.GetInterfaceInput())
                 solver.FinalizeSolutionStep()
+            coord_data1 = solver.get_coordinates()
             solver.Finalize()
 
             # get data for solver without restart
@@ -415,6 +410,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
                 solver.InitializeSolutionStep()
                 solver.SolveSolutionStep(solver.GetInterfaceInput())
                 solver.FinalizeSolutionStep()
+            coord_data2 = solver.get_coordinates()
             solver.Finalize()
 
             # get data for solver with restart
@@ -422,12 +418,12 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
             data2 = interface2.GetNumpyArray().copy()
 
             # compare coordinates of Nodes
-            mp1 = interface1.model['wall_nodes']
-            mp2 = interface2.model['wall_nodes']
-            for node1, node2 in zip(mp1.Nodes, mp2.Nodes):
-                self.assertAlmostEqual(node1.X, node2.X, delta=1e-16)
-                self.assertAlmostEqual(node1.Y, node2.Y, delta=1e-16)
-                self.assertAlmostEqual(node1.Z, node2.Z, delta=1e-16)
+            key = 'wall_nodes'
+            for i in range(coord_data1[key]['ids'].size):
+                for j in range(3):
+                    self.assertAlmostEqual(coord_data1[key]['coords'][i, j],
+                                           coord_data2[key]['coords'][i, j],
+                                           delta=1e-16)
 
             # normalize pressure and traction data and compare
             mean = np.mean(data1)

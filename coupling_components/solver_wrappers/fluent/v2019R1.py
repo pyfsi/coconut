@@ -211,10 +211,6 @@ class SolverWrapperFluent2019R1(Component):
                 mp.CreateNewNode(ids_tmp[i],
                     coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
 
-        # update coordinates of Nodes if necessary
-        if self.timestep_start != 0:
-            self.update_coordinates()
-
         # create Interfaces
         self.interface_input = Interface(self.model, self.settings['interface_input'])
         self.interface_output = Interface(self.model, self.settings['interface_output'])
@@ -245,14 +241,6 @@ class SolverWrapperFluent2019R1(Component):
 
         # store incoming displacements
         self.interface_input.SetPythonList(interface_input.GetPythonList())
-
-        # update X,Y,Z in interface
-        for key in [_[0] for _ in self.interface_input.model_parts_variables]:
-            for node in self.model[key].Nodes:
-                disp = node.GetSolutionStepValue(self.displacement)
-                node.X = node.X0 + disp[0]
-                node.Y = node.Y0 + disp[1]
-                node.Z = node.Z0 + disp[2]
 
         # write interface data
         self.write_node_positions()
@@ -375,11 +363,6 @@ class SolverWrapperFluent2019R1(Component):
             ids[j] = '-'.join(tuple(tmp.astype(str)))
         return ids
 
-    def set_node_coordinates_test(self, f):
-        for key in self.settings['interface_input'].keys():
-            for node in self.model[key].Nodes:
-                node.Y += (1 - np.cos(2 * np.pi * node.X)) * 0.5 * f
-
     def write_node_positions(self):
         for key in self.settings['interface_input'].keys():
             mp = self.model[key]
@@ -388,18 +371,33 @@ class SolverWrapperFluent2019R1(Component):
             with open(file_name, 'w') as file:
                 file.write(f'{mp.NumberOfNodes()}\n')
                 for node in mp.Nodes:
+                    disp = node.GetSolutionStepValue(self.displacement)
+                    X, Y, Z = node.X0 + disp[0], node.Y0 + disp[1], node.Z0 + disp[2]
                     if self.dimensions == 2:
-                        file.write(f'{node.X:27.17e}{node.Y:27.17e}{node.Id:>27}\n')
+                        file.write(f'{X:27.17e}{Y:27.17e}{node.Id:>27}\n')
                     else:
-                        file.write(f'{node.X:27.17e}{node.Y:27.17e}{node.Z:27.17e}{node.Id:>27}\n')
+                        file.write(f'{X:27.17e}{Y:27.17e}{Z:27.17e}{node.Id:>27}\n')
 
-    def update_coordinates(self):
+    def get_coordinates(self):
+        """
+        This function can be used e.g. for debugging or testing.
+        It returns a dict that contains keys for the ModelParts 
+        on the two Interfaces. 
+        These keys give other dicts that have keys 'ids' and
+        'coords'. These refer to ndarrays with respectively the
+        ids of all Nodes and the current coordinates of those
+        Nodes in Fluent (i.e. of the deformed geometry).
+        """
+
         # make Fluent store coordinates and ids
         self.send_message('store_grid')
         self.wait_message('store_grid_ready')
 
-        # update coordinates for input ModelParts (nodes)
+        coord_data = {}
+
+        # get ids and coordinates for input ModelParts (nodes)
         for key in self.settings['interface_input'].keys():
+            coord_data[key] = {}
             mp = self.model[key]
 
             # read in datafile
@@ -415,20 +413,12 @@ class SolverWrapperFluent2019R1(Component):
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coords_tmp = coords_tmp[args, :]
-            ids_tmp = ids_tmp[args]
-
-            # update Node coordinates
-            for i, node in enumerate(mp.Nodes):
-                if ids_tmp[i] != node.Id:
-                    raise ValueError(f'node IDs do not match: {ids_tmp[i]}, {node.Id}')
-                node.X = coords_tmp[i, 0]
-                node.Y = coords_tmp[i, 1]
-                node.Z = coords_tmp[i, 2]
+            coord_data[key]['ids'] = ids_tmp[args]
+            coord_data[key]['coords'] = coords_tmp[args, :]
 
         # update coordinates for output ModelParts (faces)
-        # *** todo: put this read in a function: arg = timestep (default 0), output = ids_tmp, coords_tmp
         for key in self.settings['interface_output'].keys():
+            coord_data[key] = {}
             mp = self.model[key]
 
             # read in datafile
@@ -444,16 +434,10 @@ class SolverWrapperFluent2019R1(Component):
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coords_tmp = coords_tmp[args, :]
-            ids_tmp = ids_tmp[args]
+            coord_data[key]['ids'] = ids_tmp[args]
+            coord_data[key]['coords'] = coords_tmp[args, :]
 
-            # update Node coordinates
-            for i, node in enumerate(mp.Nodes):
-                if ids_tmp[i] != node.Id:
-                    raise ValueError(f'node IDs do not match: {ids_tmp[i]}, {node.Id}')
-                node.X = coords_tmp[i, 0]
-                node.Y = coords_tmp[i, 1]
-                node.Z = coords_tmp[i, 2]
+        return coord_data
 
     def send_message(self, message):
         file = join(self.dir_cfd, message + ".coco")

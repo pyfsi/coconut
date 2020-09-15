@@ -10,11 +10,6 @@ class Node(DataValueContainer):
         super(Node, self).__init__()
         self.Id = node_id
 
-        # current position
-        self.X = x
-        self.Y = y
-        self.Z = z
-
         # initial position
         self.X0 = x
         self.Y0 = y
