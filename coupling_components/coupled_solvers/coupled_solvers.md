@@ -1,6 +1,6 @@
-# CoupledSolvers
+# Coupled solvers
 
-This documentation describes the coupled solvers which are available.
+This documentation describes the coupled solvers that are available.
 A coupled solver refers to a coupling algortihm used to couple the two solvers.
 Some coupled solvers implement one or more models.
 All coupled solvers inherit from `gauss_seidel`.

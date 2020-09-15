@@ -1,4 +1,4 @@
-# Guide to the documentation
+# Documentation
 
 This website is a collection of all MarkDown (MD) files found in the `coconut` package.
 These files are converted to a static website using [MkDocs][1], based on the outline defined in the `mkdocs.yml` file.
