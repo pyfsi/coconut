@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
+from coconut.coupling_components import tools
 
 import numpy as np
 import os.path as path
@@ -28,6 +29,8 @@ class SolverWrapperTubeStructure(Component):
             self.settings.AddMissingParameters(data_structure.Parameters(settings_file.read()))
 
         # Settings
+        self.unsteady = self.settings["unsteady"].GetBool() if self.settings.Has("unsteady") else True
+
         l = self.settings["l"].GetDouble()  # Length
         d = self.settings["d"].GetDouble()  # Diameter
         self.rreference = d / 2.0  # Reference radius of cross section
@@ -51,7 +54,10 @@ class SolverWrapperTubeStructure(Component):
 
         self.k = 0  # Iteration
         self.n = 0  # Time step (no restart implemented)
-        self.dt = self.settings["delta_t"].GetDouble()  # Time step size
+        if self.unsteady:
+            self.dt = self.settings["delta_t"].GetDouble()  # Time step size
+        else:
+            self.dt = 1.0  # Time step size default
 
         self.gamma = self.settings["gamma"].GetDouble()  # Newmark parameter: gamma >= 1/2
         self.beta = self.settings["beta"].GetDouble()  # Newmark parameter: beta >= 1/4 * (1/2 + gamma) ^ 2
@@ -73,7 +79,8 @@ class SolverWrapperTubeStructure(Component):
         self.disp = np.zeros((self.m, 3))  # Displacement
         self.trac = np.zeros((self.m, 3))  # Traction (always zero)
 
-        self.conditioning = ((self.rhos * self.h) / (self.beta * self.dt ** 2) + 6.0 * self.b1 / self.dz ** 4
+        self.conditioning = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.unsteady
+                             + 6.0 * self.b1 / self.dz ** 4
                              + 2.0 * self.b2 / self.dz ** 2 + self.b3)  # Factor for conditioning Jacobian
 
         # ModelParts
@@ -97,6 +104,9 @@ class SolverWrapperTubeStructure(Component):
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
 
+        # run time
+        self.run_time = 0.0
+
         # Debug
         self.debug = False  # Set on True to save input and output of each iteration of every time step
         self.OutputSolutionStep()
@@ -113,6 +123,7 @@ class SolverWrapperTubeStructure(Component):
         self.rndot = np.array(self.rdot)
         self.rnddot = np.array(self.rddot)
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):
         # Input
         input = interface_input.GetNumpyArray()
@@ -184,7 +195,7 @@ class SolverWrapperTubeStructure(Component):
         f = np.zeros(self.m + 4)
         f[0] = (self.r[0] - self.rreference) * self.conditioning
         f[1] = (self.r[1] - self.rreference) * self.conditioning
-        f[2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.r[2: self.m + 2]
+        f[2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.r[2: self.m + 2] * self.unsteady
                            + self.b1 / self.dz ** 4 * (self.r[4:self.m + 4] - 4.0 * self.r[3:self.m + 3]
                                                        + 6.0 * self.r[2:self.m + 2] - 4.0 * self.r[1:self.m + 1]
                                                        + self.r[0:self.m])
@@ -194,7 +205,7 @@ class SolverWrapperTubeStructure(Component):
                            - (self.p - self.preference)
                            - self.rhos * self.h * (self.rn[2:self.m + 2] / (self.beta * self.dt ** 2)
                                                    + self.rndot / (self.beta * self.dt)
-                                                   + self.rnddot * (1.0 / (2.0 * self.beta) - 1.0)))
+                                                   + self.rnddot * (1.0 / (2.0 * self.beta) - 1.0)) * self.unsteady)
         f[self.m + 2] = (self.r[self.m + 2] - self.rreference) * self.conditioning
         f[self.m + 3] = (self.r[self.m + 3] - self.rreference) * self.conditioning
         return f
@@ -205,7 +216,7 @@ class SolverWrapperTubeStructure(Component):
         j[self.Au + 1 - 1, 1] = 1.0 * self.conditioning  # [1, 1]
         j[self.Au + 2, 0:self.m] = self.b1 / self.dz ** 4  # [i, (i - 2)]
         j[self.Au + 1, 1:self.m + 1] = - 4.0 * self.b1 / self.dz ** 4 - self.b2 / self.dz ** 2  # [i, (i - 1)]
-        j[self.Au + 0, 2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2)
+        j[self.Au + 0, 2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.unsteady
                                         + 6.0 * self.b1 / self.dz ** 4 + 2.0 * self.b2 / self.dz ** 2
                                         + self.b3)  # [i, i]
         j[self.Au - 1, 3:self.m + 3] = - 4.0 * self.b1 / self.dz ** 4 - self.b2 / self.dz ** 2  # [i, (i + 1)]

@@ -1,10 +1,12 @@
 {
-    "mapper" :
-    {
-        "type": "mappers.permutation",
-        "settings":
-        {
-            "permutation" : [2, 0, 1]
-        }
+  "mapper": {
+    "type": "mappers.permutation",
+    "settings": {
+      "permutation": [
+        2,
+        0,
+        1
+      ]
     }
+  }
 }

@@ -49,7 +49,7 @@ class CoupledSolverGaussSeidel(Component):
         self.solver_level = 0  # 0 is main solver (time step is printed)
 
         self.start_time = None
-        self.stop_time = None
+        self.elapsed_time = None
         self.iterations = []
         if self.settings.Has("save_results"):
             # Set True in order to save for every iteration
@@ -169,19 +169,43 @@ class CoupledSolverGaussSeidel(Component):
     def Finalize(self):
         super().Finalize()
 
+        if self.solver_level == 0:
+            out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
+                  f"║\tSummary\n" \
+                  f"╠═══════════════════════════════════════════════════════════════════════════════"
+            tools.Print(out)
+
         for component in self.components:
             component.Finalize()
 
-        self.stop_time = time.time()
-        elapsed_time = self.stop_time - self.start_time
-        print(f"\nElapsed time: {elapsed_time:0.3f}s\n"
-              f"Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}")
+        self.elapsed_time = time.time() - self.start_time
+        self.PrintSummary()
         if self.save_results:
             output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
                       "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
-                      "time": elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
+                      "time": self.elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
                       "timestep_start": self.timestep_start}
             pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
+
+    def PrintSummary(self):
+        solver_run_times = []
+        pre = '║' + ' │' * self.solver_level
+        out = ""
+        if self.solver_level == 0:
+            out += f"{pre}Elapsed time: {self.elapsed_time:0.3f}s\n"
+        out += f"{pre}Percentage of total calculation time:\n"
+        for solver in self.solver_wrappers:
+            solver_run_times.append(solver.run_time / self.elapsed_time * 100)
+            out += f"{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n"
+            if solver.__class__.__name__ == "SolverWrapperMapped":
+                out += f"{pre}\t└─{solver.solver_wrapper.__class__.__name__}: " \
+                       f"{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n"
+        if self.solver_level == 0:
+            out += f"{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n"
+        out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
+        if self.solver_level == 0:
+            out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
+        tools.Print(out)
 
     def Check(self):
         super().Check()

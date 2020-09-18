@@ -2,17 +2,21 @@ from coconut import data_structure
 from coconut.coupling_components import tools
 
 import numpy as np
-import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
-import pickle
-from fractions import Fraction, gcd
+from fractions import Fraction
 
-# This files contains the class Animation, which can be used make an animation of different cases or a plot at a certain
-# time step. These Animation instances have to be added to an AnimationFigure instance. All Animations added to the same
+# This file contains the class Animation, which can be used to make an animation, showing a variable on the interface
+# for different time steps. Also a plot of the variable on a certain time step can be made. Alternatively, the
+# the coordinates of the interface can also be animated using 'COORDINATES' as variable.
+# These Animation instances have to be added to an AnimationFigure instance. All Animations added to the same
 # AnimationFigure will be plotted in the same Figure.
-# To generate a result file, include a boolean "save_results" in the settings of the coupled solver with value True.
-# Give a name to the case by including the string {"name": "a_name"} in the settings of the coupled solver .
+# After adding to an AimationFigure,animation has to initialized, specifying which plane of the 3D space to plot in as
+# well as which coordinate on the x-axis and possibly which component of the variable has to be plotted.
+# An AnimationFigure can hold different Animations from different cases. The code is able to handle different time
+# steps. The case data is supplied using a results file. To generate such a result file, include a boolean
+# "save_results" in the settings of the coupled solver, set on True. Give a name to the case by including the string
+# {"name": "a_name"} in the settings of the coupled solver.
 
 
 class Animation:
@@ -46,9 +50,11 @@ class Animation:
         self.time_steps = solution.shape[1] - 1  # number of times steps
         self.dt = dt
         self.time_step_start = 0  # currently not used
+        self.variable = None
         self.animation = None
         self.mask = None
         self.argsort = None
+        self.initial_position = None
         self.absicissa = None
         self.solution = None
         self.displacement = None
@@ -74,10 +80,11 @@ class Animation:
                 variable_name = self.info[index][1].list()[0].GetString()
         else:
             variable = variable.upper()
-            if variable not in [var.GetString() for var in self.info[index][1].list()]:
+            if variable not in [var.GetString() for var in self.info[index][1].list()] + ['COORDINATES']:
                 raise Exception(f"Given variable '{variable}' is not found")
             else:
                 variable_name = variable
+                self.variable = variable
 
         self.name = name if name is not None else model_part_name + ': ' + variable_name
 
@@ -110,8 +117,11 @@ class Animation:
                 index += dimension * number_of_nodes
 
         if not self.displacement_available:
-            tools.Print(f"{self.name}: Nodes positions are not updated, because no 'DISPLACEMENT' available.",
-                        layout='warning')
+            out = f"{self.name}: Nodes positions are not updated, because no 'DISPLACEMENT' available."
+            if self.variable == 'COORDINATES':
+                raise Exception(out)
+            else:
+                tools.Print(out, layout='warning')
 
         if index != self.complete_solution.shape[0]:
             raise Exception("Size of provided solution data does not match interface.")
@@ -129,18 +139,28 @@ class Animation:
         """
         # chose which nodes to plot
         self.mask = mask_x & mask_y & mask_z
+        if not sum(self.mask):
+            raise Exception(f"Intersection of sets of selected coordinates in Initialize is empty\n"
+                            f"\tmask_x selects {sum(mask_x)} points\n\tmask_y selects {sum(mask_y)} points\n"
+                            f"\tmask_z selects {sum(mask_z)} points")
 
         # chose sort direction
         self.argsort = np.argsort(self.coordinates[absicissa::3][self.mask])
         self.absicissa = self.coordinates[absicissa::3][self.mask][self.argsort]
 
-        if self.dimension == 1:
-            component = 0
-        self.solution = [self.select(self.complete_solution[:, i], component) for i in range(self.time_steps + 1)]
+        if self.variable == 'COORDINATES':
+            self.initial_position = self.coordinates[component::3][self.mask][self.argsort]
+            self.solution = [self.select_displacement(self.complete_solution[:, i], component) + self.initial_position
+                             for i in range(self.time_steps + 1)]
+        else:
+            if self.dimension == 1:
+                component = 0
+            self.solution = [self.select(self.complete_solution[:, i], component) for i in range(self.time_steps + 1)]
         if self.displacement_available:
             self.displacement = [self.select_displacement(self.complete_solution[:, i], absicissa)
                                  for i in range(self.time_steps + 1)]
 
+        plt.figure(self.animation_figure.number)  # make figure active
         self.line, = plt.plot(self.absicissa, self.solution[0], label=self.name)
 
         # adjust scale
@@ -177,7 +197,8 @@ class AnimationFigure:
         self.dt_ratio_list = []  # ratio of the animation's time step size to the base_dt (list of ints)
         self.time_steps = None  # number of time steps
         self.timestep_start = 0  # currently not used
-        self.fig = plt.figure()
+        self.figure = plt.figure()
+        self.number = self.figure.number
         self.text = None
         self.min = None
         self.max = None
@@ -191,6 +212,7 @@ class AnimationFigure:
         :param dt: (float) time step size
         :param model_part: (string) model part to be plotted (optional if there is only one)
         :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
+                         Use 'COORDINATES' to plot the coordinates of the interface
         :param name: (string) the name in the legend (optional)
         """
         animation = Animation(self, solution, interface, dt, model_part=model_part, variable=variable, name=name)
@@ -229,6 +251,7 @@ class AnimationFigure:
         self.min = minimum if self.min is None else min(self.min, minimum)
         self.max = maximum if self.max is None else max(self.max, maximum)
         margin = (self.max - self.min) * 0.05
+        plt.figure(self.number)  # make figure active
         plt.ylim([self.min - margin, self.max + margin])
 
     def init(self):  # only required for blitting to give a clean slate.
@@ -242,8 +265,9 @@ class AnimationFigure:
         for animation, dt_ratio in zip(self.animations_list, self.dt_ratio_list):
             lines += animation.case_animate(ts // dt_ratio)
         if self.text is None:
-            self.text = plt.text(0.1, 0.1, f"time = {0:.5f} s", transform=self.fig.axes[0].transAxes,
-                                    bbox=dict(facecolor='lightgray', edgecolor='black', pad=5.0, alpha=0.5))
+            plt.figure(self.number)  # make figure active
+            self.text = plt.text(0.1, 0.1, f"time = {0:.5f} s", transform=self.figure.axes[0].transAxes,
+                                 bbox=dict(facecolor='lightgray', edgecolor='black', pad=5.0, alpha=0.5))
         self.text.set_text(f"time = {ts * self.base_dt:.5f} s")
         return lines
 
@@ -265,7 +289,7 @@ class AnimationFigure:
         elif max(frames) > self.time_steps:
             raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
                             f"with time step size {self.base_dt}.")
-        self.animation = ani.FuncAnimation(self.fig, self.animate, init_func=self.init, interval=interval,
+        self.animation = ani.FuncAnimation(self.figure, self.animate, init_func=self.init, interval=interval,
                                            blit=blit, save_count=save_count, repeat=repeat, frames=frames)
 
     def MakePlot(self, time_step):
@@ -277,71 +301,3 @@ class AnimationFigure:
             raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
                             f"with time step size {self.base_dt}.")
         self.animate(time_step)
-
-
-# different cases to be plotted
-common_path = "../../test_examples/"
-case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
-legend_entries = ["results"]
-
-# load cases
-results = {}
-for name, path in zip(legend_entries, case_paths):
-    results.update({name: pickle.load(open(os.path.join(common_path, path), 'rb'))})
-
-# make figure and create animation for each case
-animation_figure = AnimationFigure()
-colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
-line_styles = ['-', '--', ':', '-.']
-for j, name in enumerate(legend_entries):
-    solution = results[name]["solution_x"]
-    interface = results[name]["interface_x"]
-    dt = results[name]["delta_t"]
-    # create animate object
-    animation = animation_figure.AddAnimation(solution, interface, dt, variable="displacement", name=name)
-    # select points and component of variable to plot
-    coordinates = animation.coordinates
-
-    # example 1: python solver (YZ-plane)
-    python_solver = True
-    if python_solver:
-        mask_x = (coordinates[::3] > -np.inf)
-        mask_y = (abs(coordinates[1::3]) > 0)
-        mask_z = (coordinates[2::3] > -np.inf)
-        absicissa = 2  # z-axis
-        component = 1  # y-component
-
-    # example 2: fluent solver (XY-plane)
-    fluent = False
-    if fluent:
-        mask_x = (coordinates[::3] > -np.inf)
-        mask_y = (coordinates[1::3] > 0)
-        mask_z = (abs(coordinates[2::3]) < 1e-16)
-        # mask_z = (coordinates[2::3] > 0) & (coordinates[2::3] < 0.0005)
-        absicissa = 0  # x-axis
-        component = 1  # y-component
-
-    animation.Initialize(mask_x, mask_y, mask_z, absicissa, component)
-    animation.line.set_color(colors[j % len(colors)])
-    animation.line.set_linestyle(line_styles[0])
-    animation.line.set_marker('o')
-    animation.line.set_markersize(2)
-
-plt.ylabel("displacement (m)")
-plt.xlabel("axial coordinate (m)")
-plt.legend()
-plt.tight_layout()
-
-animation_figure.MakeAnimation()
-# animation_figure.MakePlot(50)
-
-save = False
-movie_name = "displacement.mp4"
-if save:
-    # set up formatting for the movie files: mp4-file
-    plt.rcParams['animation.ffmpeg_path'] = u'/apps/SL6.3/FFmpeg/3.1.3/bin/ffmpeg'  # path to ffmpeg conversion tool
-    writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='NicolasDelaissé'), fps=24, bitrate=2000)
-
-    animation_figure.animation.save(movie_name, writer=writer)
-
-plt.show()
