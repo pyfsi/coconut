@@ -643,6 +643,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../tube_fluent2d_abaqus2d_steady/" title="Fluent 2D - Abaqus 2D - Steady" class="md-nav__link">
+      Fluent 2D - Abaqus 2D - Steady
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../tube_fluent2d_tube_structure/" title="Fluent 2D - Python" class="md-nav__link">
       Fluent 2D - Python
     </a>
@@ -1012,13 +1024,13 @@ Subcycling within the structural solver is possible.</p>
 </tr>
 <tr>
 <td align="right"><nobr><code>ramp</code></nobr></td>
-<td align="center">integer</td>
-<td>Only important when subcycling is enabled in Abaqus. <br> <b>0</b>: Load is considered to be constant throughout the time step <br><b>1</b>: [Default] Load is applied in a ramped fashion throughout the time step</td>
+<td align="center">bool</td>
+<td>Only important when subcycling is enabled in Abaqus. <br> <b>false</b>: Load is considered to be constant throughout the time step <br><b>true</b>: [Default] Load is applied in a ramped fashion throughout the time step</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>subcycling</code></nobr></td>
-<td align="center">integer</td>
-<td><b>0</b>: [Default] Abaqus solves the requested time step using one increment <br> <b>1</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved</td>
+<td align="center">bool</td>
+<td><b>false</b>: [Default] Abaqus solves the requested time step using one increment <br> <b>true</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved</td>
 </tr>
 </tbody>
 </table>
