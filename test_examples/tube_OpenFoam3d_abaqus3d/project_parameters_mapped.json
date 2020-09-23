@@ -1,7 +1,7 @@
 {
     "settings" :
     {
-        "number_of_timesteps": 200
+        "number_of_timesteps": 100
     },
     "coupled_solver" :
     {
@@ -14,8 +14,10 @@
         },
         "settings" :
         {
+            "save_results": true,
+            "name": "results",
             "timestep_start": 0,
-            "delta_t": 0.00001,
+            "delta_t": 0.0001,
             "omega" : 0.01,
             "model" :
             {
@@ -64,7 +66,7 @@
                     "working_directory" : "CFD",
                     "application" :  "CoCoNuT_pimpleFoam",
                     "dimensions": 3,
-                    "dt" : 0.00005,
+                    "dt" : 0.0001,
                     "boundary_names": ["mantle"],
                     "start_time":0,
                     "end_time":0.01,

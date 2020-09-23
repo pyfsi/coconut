@@ -559,8 +559,8 @@ class SolverWrapperOpenFOAM_41(Component):
             index = 0
             for node in mp.Nodes:
                 pos = mp.sequence[index]
-                node.SetSolutionStepValue(self.shear, 0, wss_tmp[pos])
-                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos])
+                node.SetSolutionStepValue(self.shear, 0, wss_tmp[pos, :].tolist())
+                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos]*1000)
                 index+=1
 
             
