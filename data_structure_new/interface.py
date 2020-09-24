@@ -46,12 +46,21 @@ class Interface:
             s += self.__data[model_part_name][variable].size
         return s
 
-    def copy(self):
+    def copy_old(self):
         # create new Interface
         interface = Interface(self.__parameters, self.__model)
 
         # copy data
         interface.set_interface_data(self.get_interface_data())
+
+        return interface
+
+    def copy(self):
+        # create new Interface
+        interface = Interface(self.__parameters, self.__model)
+
+        # copy data
+        interface += self  # uses fast __iadd__ method to transfer data
 
         return interface
 
@@ -106,15 +115,23 @@ class Interface:
     I also implemented 3 different ways to do these operations (from high level 
     operations to low level operations). 
     The time I measured is given in the methods. 
+    Conclusions:
+        - low-level methods are much faster
+        - "+=" is much faster than "+"
+        - copy() is much faster if "+=" is used instead of get/set_interface_data
     The low-level one is faster, as expected.
     """
 
     def __add__(self, other):
         """
         speed for case
-            1: 215
-            2: 141
-            3: 126
+            1: 375
+            2: 270
+            3: 189
+        with new copy() method:
+            1: 256
+            2: 152
+            3: 69
         """
         case = 3
         if case == 1:
@@ -149,7 +166,7 @@ class Interface:
     def __radd__(self, other):
         return self.__add__(other)
 
-    def __iadd__(self, other):  # demonstrates speed without copy
+    def __iadd__(self, other):  # iadd does not need to use copy
         """
         speed for case
             1: 107
