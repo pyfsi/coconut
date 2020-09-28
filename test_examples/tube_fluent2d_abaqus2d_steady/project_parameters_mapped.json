@@ -31,7 +31,7 @@
             }
           },
           {
-            "type": "convergence_criteria.relative_norm",
+            "type": "convergence_criteria.absolute_norm",
             "settings": {
               "tolerance": 1e-9,
               "order": 2
