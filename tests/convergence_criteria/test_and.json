@@ -1,23 +1,25 @@
 {
   "type": "convergence_criteria.and",
   "settings": {
-    "convergence_criterion0": {
-      "type": "convergence_criteria.iteration_limit",
-      "settings": {
-        "maximum": 2
+    "criteria_list": [
+      {
+        "type": "convergence_criteria.iteration_limit",
+        "settings": {
+          "maximum": 2
+        }
+      },
+      {
+        "type": "convergence_criteria.iteration_limit",
+        "settings": {
+          "maximum": 3
+        }
+      },
+      {
+        "type": "convergence_criteria.iteration_limit",
+        "settings": {
+          "maximum": 4
+        }
       }
-    },
-    "convergence_criterion1": {
-      "type": "convergence_criteria.iteration_limit",
-      "settings": {
-        "maximum": 3
-      }
-    },
-    "convergence_criterion2": {
-      "type": "convergence_criteria.iteration_limit",
-      "settings": {
-        "maximum": 4
-      }
-    }
+    ]
   }
 }
