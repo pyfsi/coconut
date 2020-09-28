@@ -23,19 +23,19 @@
     "convergence_criterion": {
       "type": "convergence_criteria.or",
       "settings": {
-	    "criteria_list":[
+        "criteria_list": [
           {
-          "type": "convergence_criteria.iteration_limit",
-          "settings": {
-            "maximum": 20
-           }
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 20
+            }
           },
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
               "tolerance": 1e-3,
               "order": 2
-              }
+            }
           }
         ]
       }
