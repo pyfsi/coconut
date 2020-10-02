@@ -14,7 +14,7 @@ import timeit
 
 
 # >> testing code functionality
-if 0:
+if 1:
     model = Model()
     for i in range(3):
         coords = np.random.rand(5 + i, 3)
@@ -41,7 +41,7 @@ if 0:
 
 
 # >> compare speed of old and new data structure
-if 0:
+if 1:
     n = 10000
     coords = np.random.rand(n, 3)
 
@@ -86,6 +86,8 @@ if 0:
         interface + interface_2
     with quicktimer('old', t=1, ms=True):
         interface_old + interface_old_2
+
+    print('\n' * 5)
 
 # test speed of methods
 if 1:

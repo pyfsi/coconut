@@ -1,4 +1,5 @@
 from coconut.data_structure_new.variables import variables_dimensions
+from coconut.data_structure_new.model import Model
 
 import numpy as np
 import copy
@@ -11,10 +12,10 @@ class Interface:
         self.__parameters = parameters
         self.__data = {}
 
-        # if not type(model) == Model:
-        #     raise TypeError
-        # if not type(parameters) == dict:
-        #     raise TypeError
+        if not type(model) == Model:
+            raise TypeError
+        if not type(parameters) == dict:
+            raise TypeError
 
         for model_part_name in parameters:
             model_part = model.get_model_part(model_part_name)
@@ -57,7 +58,7 @@ class Interface:
 
     def copy(self):
         # create new Interface
-        interface = Interface(self.__parameters, self.__model)
+        interface = Interface(self.parameters, self.__model)
 
         # copy data
         interface += self  # uses fast __iadd__ method to transfer data
@@ -106,85 +107,24 @@ class Interface:
                                    data[index:index + tmp.size].reshape(tmp.shape))
             index += tmp.size
 
-    """
-    For one type of operation (add), I implemented the 3 required methods.
-    They do:
-        __add__:  self + other
-        __radd__: other + self
-        __iadd__: self += other
-    I also implemented 3 different ways to do these operations (from high level 
-    operations to low level operations). 
-    The time I measured is given in the methods. 
-    Conclusions:
-        - low-level methods are much faster
-        - "+=" is much faster than "+"
-        - copy() is much faster if "+=" is used instead of get/set_interface_data
-    The low-level one is faster, as expected.
-    """
-
     def __add__(self, other):
-        """
-        speed for case
-            1: 375
-            2: 270
-            3: 189
-        with new copy() method:
-            1: 256
-            2: 152
-            3: 69
-        """
-        case = 3
-        if case == 1:
-            result = self.copy()
-            if isinstance(other, Interface):
-                # loop over 1 Interface.model_part_variable_pairs --> gives automatic check if Interface are same
-                result.set_interface_data(self.get_interface_data() + other.get_interface_data())
-            elif isinstance(other, (int, float, np.integer, np.floating)):
-                result.set_interface_data(self.get_interface_data() + other)
-            else:
-                return NotImplemented
-            return result
-        if case == 2:
-            result = self.copy()
-            if isinstance(other, Interface):
-                for model_part_name, variable in self.model_part_variable_pairs:
-                    result.set_variable_data(model_part_name, variable,
-                                             self.get_variable_data(model_part_name, variable) +
-                                             other.get_variable_data(model_part_name, variable))
-            else:
-                return NotImplemented
-            return result
-        if case == 3:
-            result = self.copy()
-            if isinstance(other, Interface):
-                for model_part_name, variable in self.model_part_variable_pairs:
-                    result.__data[model_part_name][variable] += self.__data[model_part_name][variable]
-            else:
-                return NotImplemented
-            return result
+        result = self.copy()
+        if isinstance(other, Interface):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                result.__data[model_part_name][variable] += other.__data[model_part_name][variable]
+        else:
+            return NotImplemented
+        return result
 
     def __radd__(self, other):
         return self.__add__(other)
 
-    def __iadd__(self, other):  # iadd does not need to use copy
-        """
-        speed for case
-            1: 107
-            2: 35
-            3: 18
-        """
-        case = 3
+    def __iadd__(self, other):
         if isinstance(other, Interface):
-            if case == 1:
-                self.set_interface_data(self.get_interface_data() + other.get_interface_data())
-            if case == 2:
-                for model_part_name, variable in self.model_part_variable_pairs:
-                    self.set_variable_data(model_part_name, variable,
-                                           self.get_variable_data(model_part_name, variable) +
-                                           other.get_variable_data(model_part_name, variable))
-            if case == 3:
-                for model_part_name, variable in self.model_part_variable_pairs:
-                    self.__data[model_part_name][variable] += other.__data[model_part_name][variable]
+            for model_part_name, variable in self.model_part_variable_pairs:
+                self.__data[model_part_name][variable] += other.__data[model_part_name][variable]
         else:
             return NotImplemented
         return self
+
+    # TODO: other operations, see old Interface object

@@ -15,15 +15,6 @@ class Model:
             raise ValueError  # TODO
         return self.__model_parts[name]
 
-    """
-    looping over ModelParts instead of ModelPart-names?
-    --> requires new __iter__ and __next__
-    --> when would we use __iter__ functionality??
-        (mostly in Interface class?)
-        
-        leave it like this for now
-    """
-
     def __iter__(self):  # iterate over names of ModelParts
         return iter(self.__model_parts)
 
