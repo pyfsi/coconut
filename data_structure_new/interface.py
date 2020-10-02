@@ -13,16 +13,17 @@ class Interface:
         self.__data = {}
 
         if not type(model) == Model:
-            raise TypeError
+            raise TypeError('model should be an instance of the class Model')
         if not type(parameters) == dict:
-            raise TypeError
+            raise TypeError('parameters should be a dictionary with model parts as key '
+                            'and a list of variables as values')
 
         for model_part_name in parameters:
             model_part = model.get_model_part(model_part_name)
             self.__data[model_part_name] = {}
             for variable in parameters[model_part_name]:
                 if variable not in variables_dimensions:
-                    raise ValueError(f'Invalid variable name "{variable}"')
+                    raise ValueError(f'invalid variable name "{variable}"')
                 shape = (model_part.size, variables_dimensions[variable])
                 self.__data[model_part_name][variable] = np.zeros(shape)
 
@@ -46,15 +47,6 @@ class Interface:
         for model_part_name, variable in self.model_part_variable_pairs:
             s += self.__data[model_part_name][variable].size
         return s
-
-    def copy_old(self):
-        # create new Interface
-        interface = Interface(self.__parameters, self.__model)
-
-        # copy data
-        interface.set_interface_data(self.get_interface_data())
-
-        return interface
 
     def copy(self):
         # create new Interface
@@ -82,7 +74,7 @@ class Interface:
 
     def set_variable_data(self, model_part_name, variable, data):
         # *** this changes the original data!
-        if not isinstance(data, np.ndarray):
+        if type(data) is not np.ndarray:
             raise ValueError(f'data is of type {type(data)}, but must be ndarray')
         shape = self.__data[model_part_name][variable].shape
         if data.shape != shape:
@@ -96,7 +88,7 @@ class Interface:
         return data
 
     def set_interface_data(self, data):
-        if not isinstance(data, np.ndarray):
+        if type(data) is not np.ndarray:
             raise ValueError(f'data is of type {type(data)}, but must be ndarray')
         if data.shape != (self.size,):
             raise ValueError(f'ndarray has shape {data.shape} instead of shape {(self.size,)}')
@@ -107,11 +99,17 @@ class Interface:
                                    data[index:index + tmp.size].reshape(tmp.shape))
             index += tmp.size
 
+    def norm(self, order=2):
+        return np.linalg.norm(self.get_interface_data(), order)
+
     def __add__(self, other):
         result = self.copy()
-        if isinstance(other, Interface):
+        if type(other) is Interface:
             for model_part_name, variable in self.model_part_variable_pairs:
                 result.__data[model_part_name][variable] += other.__data[model_part_name][variable]
+        elif type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                result.__data[model_part_name][variable] += other
         else:
             return NotImplemented
         return result
@@ -120,11 +118,64 @@ class Interface:
         return self.__add__(other)
 
     def __iadd__(self, other):
-        if isinstance(other, Interface):
+        if type(other) is Interface:
             for model_part_name, variable in self.model_part_variable_pairs:
                 self.__data[model_part_name][variable] += other.__data[model_part_name][variable]
         else:
             return NotImplemented
         return self
 
-    # TODO: other operations, see old Interface object
+    def __sub__(self, other):
+        result = self.copy()
+        if type(other) is Interface:
+            for model_part_name, variable in self.model_part_variable_pairs:
+                result.__data[model_part_name][variable] -= other.__data[model_part_name][variable]
+        elif type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                result.__data[model_part_name][variable] -= other
+        else:
+            return NotImplemented
+        return result
+
+    def __rsub__(self, other):
+        return self.__sub__(other)
+
+    def __isub__(self, other):
+        if type(other) is Interface:
+            for model_part_name, variable in self.model_part_variable_pairs:
+                self.__data[model_part_name][variable] -= other.__data[model_part_name][variable]
+        elif type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                self.__data[model_part_name][variable] -= other
+        else:
+            return NotImplemented
+        return self
+
+    def __mul__(self, other):
+        result = self.copy()
+        if type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                result.__data[model_part_name][variable] *= other
+        else:
+            return NotImplemented
+        return result
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __imul__(self, other):
+        if type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                self.__data[model_part_name][variable] *= other
+        else:
+            return NotImplemented
+        return self
+
+    def __truediv__(self, other):
+        result = self.copy()
+        if type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                result.__data[model_part_name][variable] /= other
+        else:
+            return NotImplemented
+        return result

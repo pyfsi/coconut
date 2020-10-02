@@ -1,16 +1,30 @@
+import numpy as np
+
+
 class ModelPart:
 
-    def __init__(self, name, x0, y0, z0):
+    def __init__(self, name, x0, y0, z0, id=None):
         """
         - inputs should have same size and be 1D
         - ModelPart contains no data, only coordinates
         - ModelPart has no idea: we use index in array
         """
-        # TODO: check sizes and shapes of matrices, raise error
+        if type(name) is not str:
+            raise ValueError('name should be a string')
+        for coordinate in (x0, y0, z0):
+            if type(coordinate) is not np.ndarray or coordinate.ndim != 1:
+                raise ValueError('all coordinate arrays should be a 1D ndarray')
+        if x0.shape != y0.size or x0.size != z0.size:
+            raise ValueError(f'all coordinates should have the same size:'
+                             f'\n\tx0\t{x0.size}\n\ty0\t{y0.size}\n\tz0\t{z0.size}')
+        if id is not None and (type(id) is not np.ndarray or coordinate.ndim != 1
+                               or id.dtype.kind not in np.typecodes['AllInteger'] or id.size != x0.size):
+            raise ValueError(f'id array should be 1D array of integers of the same size as the coordinate arrays')
         self.__name = name
         self.__x0 = x0.copy()
         self.__y0 = y0.copy()
         self.__z0 = z0.copy()
+        self.__id = id.copy()
 
     def __repr__(self):
         return f'ModelPart "{self.name}" of size {self.size}'
@@ -28,10 +42,13 @@ class ModelPart:
         return self.__z0.copy()
 
     @property
+    def id(self):
+        return self.__id.copy()
+
+    @property
     def name(self):
         return self.__name
 
     @property
     def size(self):  # name is like numpy; or rename to number_of_points?
         return self.__x0.size
-

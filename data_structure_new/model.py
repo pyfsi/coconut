@@ -7,12 +7,12 @@ class Model:
 
     def create_model_part(self, name, x0, y0, z0):
         if name in self.__model_parts:
-            raise ValueError  # TODO
+            raise ValueError(f'model already has model part with name "{name}"')
         self.__model_parts[name] = ModelPart(name, x0, y0, z0)
 
     def get_model_part(self, name):
         if name not in self.__model_parts:
-            raise ValueError  # TODO
+            raise ValueError(f'no model part with name "{name}" in model')
         return self.__model_parts[name]
 
     def __iter__(self):  # iterate over names of ModelParts
@@ -25,5 +25,5 @@ class Model:
         repr = 'Model that consists of ModelParts'
         for model_part_name in self.__model_parts:
             repr += (f'\n\t"{self.__model_parts[model_part_name].name}" ' +
-                    f'of size {self.__model_parts[model_part_name].size}')
+                     f'of size {self.__model_parts[model_part_name].size}')
         return repr
