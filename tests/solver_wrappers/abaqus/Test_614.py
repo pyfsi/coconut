@@ -15,14 +15,13 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
     def test_solver_wrapper_abaqus_614_tube2d(self):
         print('Starting tests for Abaqus Tube2D.')
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_614_tube2D', 'test_solver_wrapper.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_614_tube2D', 'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
         par_solver_0 = parameters['solver_wrappers'][0]
 
-        # if running from this folder
+        # If running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
             par_solver_0['settings'].SetString('working_directory', 'test_614_tube2D/CSM')
             par_solver_0['settings'].SetString('input_file', 'test_614_tube2D/Base.inp')
@@ -52,7 +51,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             mp = AbaqusSolver0.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                # print(node.Y)
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
@@ -94,13 +92,11 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             os.system("cp test_614_tube2D/CSM/CSM_Time4Surface0Output.dat test_614_tube2D/CSM/CSM_Time4Surface0Output_Single.dat")
 
             # With restart
-            # create solver which restarts at timestep 2
-            par_solver['settings'].SetInt('timestep_start', 2)
+            par_solver['settings'].SetInt('timestep_start', 2)  # create solver which restarts at time step 2
             AbaqusSolver1 = CreateInstance(par_solver)
             mp = AbaqusSolver1.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                # print(node.Y)
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
@@ -124,18 +120,16 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             a2n = (a2 - mean) / ref
 
             for i in range(a1.size):
-                # print(f"{a1[i]} ?= {a2[i]}")
                 self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
 
         if True:
-            # Test whether using 4 cpus gives the same results as using a single one.
+            # Test whether using 4 CPUs gives the same results as using a single one.
             par_solver = deepcopy(par_solver_0)
             par_solver["settings"].SetInt("cores", 4)
             AbaqusSolver2 = CreateInstance(par_solver)
             mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                # print(node.Y)
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
@@ -162,7 +156,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                # print(node.Y)
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
             AbaqusSolver2.Initialize()
@@ -177,7 +170,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             mean_disp_y_no_shear = 0
             mean_disp_y_shear = 0
 
-            for i in range(1,a1.size,3):
+            for i in range(1, a1.size, 3):
                 mean_disp_y_no_shear += a2[i]
                 mean_disp_y_shear += a5[i]
 
@@ -191,10 +184,9 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
     def test_solver_wrapper_abaqus_614_tube3d(self):
         print('Starting tests for Abaqus Tube3D.')
-        #Axial direction is the x-direction
+        # Axial direction is the x-direction
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_614_tube3D', 'test_solver_wrapper.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_614_tube3D', 'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -230,7 +222,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 mp = AbaqusSolver0.model['WALLOUTSIDE_load_points']
                 for node in mp.Nodes:
                     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    # print(node.Y)
                     node.SetSolutionStepValue(pressure, 0, p)
                     node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
@@ -269,18 +260,16 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 AbaqusSolver0.FinalizeSolutionStep()
                 AbaqusSolver0.Finalize()
 
-                os.system(
-                    "cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
-                    "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
+                os.system("cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
+                          "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
 
                 # With restart
-                # create solver which restarts at timestep 2
-                par_solver['settings'].SetInt('timestep_start', 2)
+                par_solver['settings'].SetInt('timestep_start', 2)  # create solver which restarts at time step 2
+
                 AbaqusSolver1 = CreateInstance(par_solver)
                 mp = AbaqusSolver1.model['WALLOUTSIDE_load_points']
                 for node in mp.Nodes:
                     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    # print(node.Y)
                     node.SetSolutionStepValue(pressure, 0, p)
                     node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
@@ -304,18 +293,16 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 a2n = (a2 - mean) / ref
 
                 for i in range(a1.size):
-                    # print(f"{a1[i]} ?= {a2[i]}")
                     self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
 
             if True:
-                # Test whether using 4 cpus gives the same results as using a single one.
+                # Test whether using 4 CPUs gives the same results as using a single one.
                 par_solver = deepcopy(par_solver_0)
                 par_solver["settings"].SetInt("cores", 4)
                 AbaqusSolver2 = CreateInstance(par_solver)
                 mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
                 for node in mp.Nodes:
                     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    # print(node.Y)
                     node.SetSolutionStepValue(pressure, 0, p)
                     node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
@@ -342,7 +329,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
                 for node in mp.Nodes:
                     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    # print(node.Y)
                     node.SetSolutionStepValue(pressure, 0, p)
                     node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
                 AbaqusSolver2.Initialize()
@@ -368,7 +354,6 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 print(f"Mean x-displacement with shear = {mean_disp_x_shear} m")
 
                 self.assertNotAlmostEqual(mean_disp_x_no_shear - mean_disp_x_shear, 0., delta=1e-12)
-
 
 
 if __name__ == '__main__':

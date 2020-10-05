@@ -51,7 +51,9 @@ class SolverWrapperAbaqus614(Component):
         self.cores = self.settings['cores'].GetInt()  # number of cpus Abaqus has to use
         self.dimensions = self.settings['dimensions'].GetInt()
         if self.dimensions == 2:
-            tools.Print("Warning for Axisymmetric cases:\n\tIn Abaqus these have to be constructed around the y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be accomplished by using an appropriate mapper.", layout='warning')
+            tools.Print("Warning for Axisymmetric cases:\n\tIn Abaqus these have to be constructed around the y-axis. "
+                        "\n\tSwitching of x and y-coordinates might be necessary but should be accomplished by using an"
+                        " appropriate mapper.", layout='warning')
         self.array_size = self.settings["arraysize"].GetInt()
         self.delta_t = self.settings["delta_t"].GetDouble()
         self.timestep_start = self.settings["timestep_start"].GetDouble()
@@ -104,11 +106,13 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|PWD|", os.path.abspath(os.path.join(self.dir_csm, os.pardir)))
                     line = line.replace("|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
-                        raise ValueError(f"The following line in abaqus_v6.env still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
+                        raise ValueError(f"The following line in abaqus_v6.env still contains a \"|\" after "
+                                         f"substitution: \n \t{line} \n Probably a parameter was not substituted")
                     outfile.write(line)
 
         # Create start and restart file
-        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + "/CSM_Time0.inp", self.dir_csm + "/CSM_Restart.inp")
+        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + "/CSM_Time0.inp",
+                                         self.dir_csm + "/CSM_Restart.inp")
 
         # Prepare Abaqus USRInit.f
         usr = "USRInit.f"
@@ -123,7 +127,8 @@ class SolverWrapperAbaqus614(Component):
                     line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
                     line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
-                        raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
+                        raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: "
+                                         f"\n \t{line} \n Probably a parameter was not substituted")
                     outfile.write(line)
 
         # Compile Abaqus USRInit.f
@@ -269,7 +274,8 @@ class SolverWrapperAbaqus614(Component):
             n_elem = int(elements[0])
             n_lp = int(elements[1])
             if elements.shape[0]-2 != int(n_elem):
-                raise ValueError(f"Number of lines ({elements.shape[0]}) in {elem_file} does not correspond with the number of elements ({n_elem})")
+                raise ValueError(f"Number of lines ({elements.shape[0]}) in {elem_file} does not correspond with the "
+                                 f"number of elements ({n_elem})")
 
             if int(elements0[0]) != n_elem or int(elements0[1]) != n_lp:
                 raise ValueError(f"Number of load points has changed for {key}")
@@ -319,12 +325,8 @@ class SolverWrapperAbaqus614(Component):
             mp.min = np.array([np.Inf, np.Inf, np.Inf])
             mp.max = np.array([np.NINF, np.NINF, np.NINF])  # -np.inf == np.NINF
             for i in range(ids_tmp.size):
-                node = mp.CreateNewNode(ids_tmp[i],
-                                 coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2])  # Stores node.X0, node.Y0 and node.Z0 for mappers
-                # Set the node coordinates to the correct values at the current timestep_start
-                node.X = coords_tmp[i, 0]
-                node.Y = coords_tmp[i, 1]
-                node.Z = coords_tmp[i, 2]
+                # Store node.X0, node.Y0 and node.Z0 for mappers
+                node = mp.CreateNewNode(ids_tmp[i], coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2])
 
                 if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
@@ -382,9 +384,6 @@ class SolverWrapperAbaqus614(Component):
             mp.max = np.array([np.NINF, np.NINF, np.NINF])
             for i in range(ids_tmp.size):
                 node = mp.CreateNewNode(ids_tmp[i], coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2])
-                node.X = coords_tmp[i, 0]
-                node.Y = coords_tmp[i, 1]
-                node.Z = coords_tmp[i, 2]
 
                 if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
                 if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
@@ -459,8 +458,6 @@ class SolverWrapperAbaqus614(Component):
                             tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                             tools.Print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
                             tools.Print(f"Output interface bounding box: {mp.min} to {mp.max}")
-
-            # self.write_Nodes_test()  # This should be commented out in the final code
 
         # create Interfaces
         self.interface_input = Interface(self.model, self.settings['interface_input'])
@@ -754,19 +751,6 @@ class SolverWrapperAbaqus614(Component):
                     bool_restart = 1
         rf.close()
         of.close()
-
-    def write_Nodes_test(self):
-        for key in (self.settings['interface_input'].keys() + self.settings['interface_output'].keys()):
-            mp = self.model[key]
-            tmp = f'{key}_testNodes_thread{mp.thread_id}.dat'
-            file_name = join(self.dir_csm, tmp)
-            with open(file_name, 'w') as file:
-                file.write(f'{mp.NumberOfNodes()}\n')
-                for node in mp.Nodes:
-                    if self.dimensions == 2:
-                        file.write(f'{node.X:27.17e}{node.Y:27.17e}{node.Id:>27}\n')
-                    else:
-                        file.write(f'{node.X:27.17e}{node.Y:27.17e}{node.Z:27.17e}{node.Id:>27}\n')
 
     def write_loads(self):
         for key in self.settings['interface_input'].keys():
