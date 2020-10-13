@@ -275,6 +275,8 @@ class AnimationFigure:
         # inteval: interval between frames in ms
         # frames: (int) number of frames (<= number of time steps + 1)
         #         (iterable) frames to plot (index <= number of time steps)
+        if not self.animations_list:
+            raise Exception("No Animations have been added to this AnimationFigure.")
         for animation in self.animations_list:
             if not animation.initialized:
                 raise Exception(f"Animate object {animation.name} has not yet been initialized.")
@@ -294,6 +296,8 @@ class AnimationFigure:
 
     def MakePlot(self, time_step):
         # time_step: time step at which plot is made
+        if not self.animations_list:
+            raise Exception("No Animations have been added to this AnimationFigure.")
         for animation in self.animations_list:
             if not animation.initialized:
                 raise Exception("Animate object has not yet been initialized.")
