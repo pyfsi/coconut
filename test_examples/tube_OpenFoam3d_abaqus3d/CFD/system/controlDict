@@ -17,8 +17,6 @@ FoamFile
 
 application     CoCoNuT_pimpleFoam;
 
-interface       |BOUNDARY_NAMES|;
-
 startFrom       startTime;
 
 startTime       0;
@@ -27,7 +25,7 @@ stopAt          endTime;
 
 endTime         0.01;
 
-deltaT          5e-05;
+deltaT          0.0001;
 
 writeControl    timeStep;
 
@@ -48,6 +46,8 @@ timePrecision   5;
 runTimeModifiable false;
 
 adjustTimeStep	no;
+
+boundary_names (mantle);
 
 functions 
 { 

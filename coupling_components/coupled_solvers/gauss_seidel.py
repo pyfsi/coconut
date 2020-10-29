@@ -145,8 +145,10 @@ class CoupledSolverGaussSeidel(Component):
         out = f"{self.iteration:<9d}\t{norm:<22.17e}"
         tools.Print(' │' * self.solver_level, out)
 
+
+
         if self.save_results:
-            self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
+            self.residual[self.n - self.timestep_start - 1].append(np.linalg.norm(r.GetNumpyArray()))
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()

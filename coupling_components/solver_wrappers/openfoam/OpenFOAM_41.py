@@ -44,9 +44,10 @@ class SolverWrapperOpenFOAM_41(Component):
         self.write_precision = self.settings["write_precision"].GetInt() # writePrecision-parameter in OpenFOAM
         self.time_precision = self.settings["time_precision"].GetInt() # timePrecision-parameter in OpenFOAM
         self.time_format = "fixed"
-        self.boundary_names = [_.GetString() for _ in self.settings['boundary_names'].list()] # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
+        self.boundary_names = [_.GetString() for _ in self.settings['boundary_names'].list()]# boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
         self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
         self.diffusivity=self.settings["diffusivity"].GetString()
+        self.density=self.settings["density"].GetInt()
 
         # debug
         self.debug = True  # set on True to save copy of input and output files in every iteration
@@ -121,7 +122,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 boundary_name_temp = "(" + interfaces
                                 firstBoundary=False
                             else:
-                                boundary_name_temp += " , " + interfaces
+                                boundary_name_temp += " " + interfaces
                         boundary_name_temp += ")"                          
                         line=line.replace('|BOUNDARY_NAMES|',boundary_name_temp)
                     newFile.write(line)
@@ -178,6 +179,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
 
+
+
         # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
         # Want "cellCentres for face boundaries"
@@ -185,6 +188,7 @@ class SolverWrapperOpenFOAM_41(Component):
         for boundary in self.boundary_names:
             source_file = self.working_directory + "/constant/polyMesh"
             node_ids, node_coords, face_centres, start_face, nFaces, self.total_nFaces = self.Get_Point_IDs(boundary,source_file)
+            print(boundary)
 
             mp_input = self.model[boundary + "_input"]
             for i in np.arange(0,len(node_ids)):
@@ -199,6 +203,8 @@ class SolverWrapperOpenFOAM_41(Component):
             index_Y = self.find_string_in_file(boundary, name_Y)
             index_Z = self.find_string_in_file(boundary, name_Z)
 
+
+
             fX = open(name_X,'r')
             fXLines = fX.readlines()
             fY = open(name_Y,'r')
@@ -208,13 +214,76 @@ class SolverWrapperOpenFOAM_41(Component):
 
             mp_output = self.model[boundary + "_output"]
             for i in np.arange(0, len(face_centres)):
-                x= float(fXLines[i+6+index_X].split("\n")[0])
-                y= float(fYLines[i+6+index_Y].split("\n")[0])
-                z= float(fZLines[i+6+index_Z].split("\n")[0])
+
+                if "nonuniform" in fXLines[index_X + 3]:
+                    x= float(fXLines[i+6+index_X].split("\n")[0])
+                else:
+                    s = list(fXLines[index_X + 3])
+                    r = s[-3]
+                    x = float(r)
+
+                if "nonuniform" in fYLines[index_Y + 3]:
+                    y= float(fYLines[i+6+index_Y].split("\n")[0])
+                else:
+                    s = list(fYLines[index_Y + 3])
+                    r = s[-3]
+                    y = float(r)
+
+                if "nonuniform" in fZLines[index_Z + 3]:
+                    z= float(fZLines[i+6+index_Z].split("\n")[0])
+                else:
+                    s = list(fZLines[index_Z + 3])
+                    r = s[-3]
+                    z=float(r)
+
                 mp_output.CreateNewNode(i, x, y, z)
                 mp_output.start_face = start_face
                 mp_output.nFaces = nFaces
 
+
+            # if "nonuniform" in fZLines[index_Z+3]:
+            #
+            #
+            #     mp_output = self.model[boundary + "_output"]
+            #     for i in np.arange(0, len(face_centres)):
+            #         x= float(fXLines[i+6+index_X].split("\n")[0])
+            #         y= float(fYLines[i+6+index_Y].split("\n")[0])
+            #         z= float(fZLines[i+6+index_Z].split("\n")[0])
+            #         mp_output.CreateNewNode(i, x, y, z)
+            #         mp_output.start_face = start_face
+            #         mp_output.nFaces = nFaces
+            #         print(i)
+            #         print(x)
+            #         print(y)
+            #         print(z)
+            #
+            #
+            #
+            # else:
+            #     mp_output = self.model[boundary + "_output"]
+            #     for i in np.arange(0, len(face_centres)):
+            #         x = float(fXLines[i + 6 + index_X].split("\n")[0])
+            #         y = float(fYLines[i + 6 + index_Y].split("\n")[0])
+            #         s = list(fZLines[index_Z+3])
+            #         r = s[-3]
+            #         z=float(r)
+            #         mp_output.CreateNewNode(i, x, y, z)
+            #         mp_output.start_face = start_face
+            #         mp_output.nFaces = nFaces
+            #         print(i)
+            #         print(x)
+            #         print(y)
+            #         print(z)
+
+
+
+        # print('position 1')
+        # for key, _ in (self.settings['interface_input'].items() + self.settings['interface_output'].items()):
+        #     mp = self.model.GetModelPart(key)
+        #     print(mp.Name)
+        #     for node in mp.Nodes:
+        #         print(node.X, node.Y, node.Z)
+        # print('position 2')
 
         # Create CoSimulationInterfaces
         self.interface_input = Interface(self.model, self.settings["interface_input"])
@@ -372,6 +441,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 node.Y = node.Y0 + disp[1]
                 node.Z = node.Z0 + disp[2]
 
+
         # write interface data to OpenFOAM-file
         self.write_node_input()
 
@@ -388,6 +458,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 path2 = os.path.join(self.working_directory, self.prev_timestamp,"pointDisplacement_Next_Iter"+ str(self.iteration))
                 cmd = f"cp {path} {path2}"
                 os.system(cmd)
+
 
         # let OpenFOAM run, wait for data
         '''OpenFOAM tends to keep on appending to files while already providing access, this causes issues when reading out the data
@@ -481,7 +552,7 @@ class SolverWrapperOpenFOAM_41(Component):
         f.close()
         
     def read_node_output(self):
-        ''' This is to be verified but it might be imortant that when a calculation is started from a prior time step while there is still
+        ''' This is to be verified but it might be important that when a calculation is started from a prior time step while there is still
         data in the postprocessing folder for that time step from a previous run, that then the checks to see whether the file is completely updated might fail
         and consequently cause the simulation to crash
         Maybe it would be better to remove these files beforehand if they exist instead of overwriting them
@@ -557,13 +628,36 @@ class SolverWrapperOpenFOAM_41(Component):
 
             # store pressure and traction in Nodes
             index = 0
-            for node in mp.Nodes:
-                pos = mp.sequence[index]
-                node.SetSolutionStepValue(self.shear, 0, wss_tmp[pos, :].tolist())
-                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos]*1000)
-                index+=1
+            position=[]
+            # if self.cores>1:
+            #     for node in mp.Nodes:
+            #         pos = mp.sequence[index]
+            #
+            #         node.SetSolutionStepValue(self.shear, 0, wss_tmp[pos, :].tolist())
+            #         node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos] * self.density)
+            #         index += 1
+            #
+            # else:
+            #     for node in mp.Nodes:
+            #         pos = index
+            #         node.SetSolutionStepValue(self.shear, 0, wss_tmp[pos, :].tolist())
+            #         node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos] * 1000)
+            #         index += 1
 
-            
+            for node in mp.Nodes:
+                if self.cores>1:
+                    pos=mp.sequence[index]
+                    position.append(pos)
+
+                else:
+                    pos=index
+                    position.append(pos)
+                node.SetSolutionStepValue(self.shear, 0, (wss_tmp[pos, :]*self.density).tolist())
+                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos] * self.density)
+                index += 1
+
+            # print(position)
+
             # go to next interface
             nKey += 1
       
@@ -595,6 +689,7 @@ class SolverWrapperOpenFOAM_41(Component):
         for boundary in self.boundary_names:
             mp = self.model[boundary + "_input"]
 
+
             startNr = self.find_string_in_file(boundary, disp_file)
             os.system("head -n " + str(startNr + 1) + " " + disp_file + " > tempDisp")
 
@@ -607,7 +702,9 @@ class SolverWrapperOpenFOAM_41(Component):
                     dispY = node.Y - node.Y0
                     dispZ = node.Z - node.Z0
                     file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}' + ') \n')
+                    #file.write(' (' + f'{node.X:27.17e} {node.Y:27.17e} {node.Z:27.17e}' + ') \n')
                 file.write(');\n')
+
             # if self.nNodes_tot < 11:  # 10 or less elements on interface
             #     with open('tempDisp', 'a+') as file:
             #         file.write("\t { \n")
@@ -625,7 +722,15 @@ class SolverWrapperOpenFOAM_41(Component):
             #         file.write("\t { \n")
             #         file.write("\t\t type  \t fixedValue; \n")
             #         file.write('\t\t value \t nonuniform List<vector> ( \n')
-            #         for node in mp.Nodes:
+            #         for node in mp.
+            #
+            #
+            #
+            #
+            #
+            #
+            #
+            #         :
             #             dispX = node.X - node.X0
             #             dispY = node.Y - node.Y0
             #             dispZ = node.Z - node.Z0
@@ -900,7 +1005,8 @@ class SolverWrapperOpenFOAM_41(Component):
         points_Bool = np.zeros((N_points, 1))
         boundary_Ind = []
 
-        # Read in nodes file
+        # Read in
+        # file
 
         # Read in the list of faces and the nodes constituting those faces
         All_Fnodes = []

@@ -15,7 +15,7 @@
         "settings" :
         {
             "save_results": true,
-            "name": "results",
+            "name": "results_openfoam",
             "timestep_start": 0,
             "delta_t": 0.0001,
             "omega" : 0.01,

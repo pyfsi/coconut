@@ -15,6 +15,8 @@ class ConvergenceCriterionRelativeNorm(Component):
         self.tolerance = settings["tolerance"].GetDouble()
         self.order = settings["order"].GetInt()
 
+
+
         self.initial_norm = 0.0
         self.last_norm = 0.0
         self.is_initial_norm_set = False

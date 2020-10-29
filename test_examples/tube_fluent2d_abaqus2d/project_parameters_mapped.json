@@ -1,24 +1,31 @@
 {
     "settings" :
     {
-        "number_of_timesteps": 100
+        "number_of_timesteps": 1
     },
     "coupled_solver" :
     {
         "type" : "coupled_solvers.iqni",
+        "test_settings" :
+        {
+            "solver_index": 0 ,
+            "check_mapping": 0,
+            "test_class": "Transient_test"
+        },
         "settings" :
         {
-            "timestep_start": 0,
-            "delta_t": 0.0001,
-            "omega" : 0.05,
             "save_results": true,
+            "name": "results_openfoam",
+            "timestep_start": 0,
+            "delta_t": 0.000001,
+            "omega" : 0.00001,
             "model" :
             {
                 "type": "coupled_solvers.models.ls",
                 "settings":
                 {
-                    "min_significant": 1e-10,
-                    "q": 5
+                    "min_significant": 1e-09,
+                    "q": 10
                 }
             }
         },
@@ -36,7 +43,7 @@
                     "type": "convergence_criteria.iteration_limit",
                     "settings":
                     {
-                        "maximum": 10
+                        "maximum": 20
                     }
                 },
                 "convergence_criterion1" :
@@ -44,7 +51,7 @@
                     "type" : "convergence_criteria.relative_norm",
                     "settings" :
                     {
-                        "tolerance" : 1e-4,
+                        "tolerance" : 1e-3,
                         "order" : 2
                     }
                 }
@@ -53,28 +60,34 @@
         "solver_wrappers" :
         [
             {
-                "type": "solver_wrappers.fluent.2019R1",
+                "type": "solver_wrappers.openfoam.OpenFOAM_41",
                 "settings":
                 {
                     "working_directory" : "CFD",
-                    "case_file": "case_tube2d.cas",
-                    "dimensions": 2,
-                    "unsteady": true,
-                    "thread_names": ["beamoutside"],
+                    "application" :  "CoCoNuT_pimpleFoam",
+                    "dimensions": 3,
+                    "dt" : 0.000001,
+                    "boundary_names": ["wire"],
+                    "start_time":0,
+                    "end_time":0.00001,
                     "interface_input":
                     {
-                        "beamoutside_nodes": "DISPLACEMENT"
+                        "wire_input": "DISPLACEMENT"
                     },
                     "interface_output":
                     {
-                        "beamoutside_faces": ["PRESSURE", "TRACTION"]
+                        "wire_output": ["PRESSURE", "TRACTION"]
                     },
                     "cores": 4,
-                    "fluent_gui": false,
-                    "max_nodes_per_face": 2,
-                    "hybrid_initialization": false,
-                    "flow_iterations": 200,
-                    "save_iterations": 1
+                    "decomposeMethod" : "scotch",
+                    "newtonmax" : 10,
+                    "newtonmin" : 1,
+                    "newtontol" : 1e-3,
+                    "write_interval" : 1,
+                    "write_precision" : 5,
+                    "time_precision" : 5,
+                    "meshmotion_solver": "displacementLaplacian",
+                    "diffusivity" : "inverseDistance"
                 }
             },
             {
@@ -87,21 +100,21 @@
                         "settings": {
                             "working_directory" : "CSM",
                             "cores": 1,
-                            "dimensions": 2,
+                            "dimensions": 3,
                             "arraysize": 10e5,
                             "surfaces": 1,
                             "ramp": 0,
-                            "surfaceIDs": ["BEAMINSIDEMOVING"],
+                            "surfaceIDs": ["WALLOUTSIDE"],
                             "interface_input":
                             {
-                                "BEAMINSIDEMOVING_load_points": ["PRESSURE", "TRACTION"]
+                                "WALLOUTSIDE_load_points": ["PRESSURE", "TRACTION"]
                             },
                             "interface_output":
                             {
-                                "BEAMINSIDEMOVING_nodes": "DISPLACEMENT"
+                                "WALLOUTSIDE_nodes": "DISPLACEMENT"
                             },
                             "mp_mode": "THREADS",
-                            "input_file": "Base.inp",
+                            "input_file": "wireDrawing.inp",
                             "save_iterations": 1
                         }
                     },
@@ -133,6 +146,7 @@
                             }
 						}
                     },
+
                     "mapper_interface_output":
                     {
                         "type" : "mappers.interface",
@@ -147,7 +161,7 @@
                                         "type": "mappers.linear",
                                         "settings": {
                                             "directions": ["X", "Y"]
-                                        }
+                                        	     }
                                     },
                                     {
                                         "type": "mappers.permutation",
