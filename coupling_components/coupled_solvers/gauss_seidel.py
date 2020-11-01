@@ -5,6 +5,7 @@ from coconut.coupling_components.component import Component
 import numpy as np
 import time
 import pickle
+import os
 
 
 def Create(parameters):
@@ -59,6 +60,11 @@ class CoupledSolverGaussSeidel(Component):
             self.complete_solution_y = None
             self.residual = []
             self.case_name = self.settings["name"].GetString() if self.settings.Has("name") else "results"  # Case name
+            if self.case_name + '.pickle' in os.listdir(os.getcwd()):
+                i = 1
+                while self.case_name + str(i) + '.pickle' in os.listdir(os.getcwd()):
+                    i += 1
+                self.case_name += str(i)
 
     def Initialize(self):
         super().Initialize()
