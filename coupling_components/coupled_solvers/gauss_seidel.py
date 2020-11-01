@@ -46,24 +46,19 @@ class CoupledSolverGaussSeidel(Component):
         self.x = None
         self.y = None
         self.iteration = None  # Iteration
-        self.solver_level = 0  # 0 is main solver (time step is printed)
+        self.solver_level = 0  # 0 is main solver (indication of time step is printed)
 
         self.start_time = None
         self.elapsed_time = None
         self.iterations = []
-        if self.settings.Has("save_results"):
-            # Set True in order to save for every iteration
-            self.save_results = self.settings["save_results"].GetBool()
-        else:
-            self.save_results = False
+
+        # Set True in order to save for every iteration
+        self.save_results = self.settings["save_results"].GetBool() if self.settings.Has("save_results") else False
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            if self.settings.Has("name"):
-                self.case_name = self.settings["name"].GetString()  # case name
-            else:
-                self.case_name = "results"
+            self.case_name = self.settings["name"].GetString() if self.settings.Has("name") else "results"  # Case name
 
     def Initialize(self):
         super().Initialize()
@@ -146,7 +141,7 @@ class CoupledSolverGaussSeidel(Component):
         tools.Print(' │' * self.solver_level, out)
 
         if self.save_results:
-            self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
+            self.residual[self.n - self.timestep_start - 1].append(np.linalg.norm(r.GetNumpyArray()))
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
