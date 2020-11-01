@@ -29,8 +29,9 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
         solution = results[name][sol]
         interface = results[name][itf]
         dt = results[name]["delta_t"]
+        time_step_start = results[name]["timestep_start"]
         # create animate object
-        animation = ani_fig.AddAnimation(solution, interface, dt, variable=var, name=name)
+        animation = ani_fig.AddAnimation(solution, interface, dt, time_step_start, variable=var, name=name)
         # select points and component of variable to plot
         coordinates = animation.coordinates
 
