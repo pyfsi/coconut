@@ -23,6 +23,8 @@ class MapperRadialBasis(MapperInterpolator):
         self.parallel = self.settings['parallel'].GetBool() if self.settings.Has('parallel') else False
         self.shape_parameter = self.settings['shape_parameter'].GetInt() if self.settings.Has('shape_parameter') \
             else 200
+        if self.shape_parameter < 2:
+            tools.Print(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
 
         # determine number of nearest neighbours
         if len(self.directions) == 3:
