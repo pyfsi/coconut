@@ -207,9 +207,9 @@ $$
 
 As every to-point has different nearest neighbours in the _from_-points, the coefficient vector $\boldsymbol{c}$ must be calculated for each _to_-point independently. The matrix $\boldsymbol{\Phi}$ and vector $\boldsymbol{\Phi}_{to}$ must also be calculated for every _to_-point independently.
 
-For every _to_-point, the reference distance $d_{ref}$ is determined as the product of the distance $d_{fur}$ of the two furthest _from_-points and the `shape_parameter`.
+For every _to_-point, the reference distance $d_{ref}$ is determined as the product of the `shape_parameter` and the distance between the _to_-point and the furthest _from_-point.
 
-In order to ensure that the basis function of each of the nearest _from_-points covers every _from_-point, the `shape_parameter` should be larger than one.
+In order to ensure that the basis function of each of the nearest _from_-points covers every _from_-point, the `shape_parameter` should be larger than two.
 This value may however lead to an interpolation function which consists of sharp peaks or wiggles, with the correct value near the _from_-points, but a deviating value away from them.
 
 In the extreme case of a very small $d_{ref}$ approaching zero, the so-called "bed-of-nails interpolant" will be obtained, which is near zero everywhere, except near the _from_-points where it will sharply peak.
