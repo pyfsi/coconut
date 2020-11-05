@@ -7,4 +7,4 @@ rm -rf ./CSM
 mkdir ./CSM
 
 # copy setup files
-cp setup_tube_structure/solver_parameters.json CSM/
+cp setup_tube_ringmodel/solver_parameters.json CSM/

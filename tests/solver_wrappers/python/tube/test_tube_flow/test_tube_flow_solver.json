@@ -3,7 +3,7 @@
     {
       "type": "solver_wrappers.python.tube_flow_solver",
       "settings": {
-        "working_directory": "solver_wrappers/python/tube/CFD",
+        "working_directory": "solver_wrappers/python/tube/test_tube_flow/CFD",
         "input_file": "solver_parameters.json",
         "delta_t": 0.0001,
         "interface_input": {

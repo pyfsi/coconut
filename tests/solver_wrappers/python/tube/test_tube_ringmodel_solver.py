@@ -18,16 +18,21 @@ class TestSolverWrapperTubeRingmodelSolver(KratosUnittest.TestCase):
                 self.assertAlmostEqual(ls1[i], ls2[i], delta=delta)
 
     def test_solver_wrapper_tube_ringmodel_solver(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_ringmodel_solver.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_ringmodel',
+                                           'test_tube_ringmodel_solver.json')
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
         parameters_solver = parameters['solver_wrappers'][0]
+
+        # if running from this folder
+        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
+            parameters_solver['settings'].SetString('working_directory', 'test_tube_ringmodel/CSM')
 
         # "global" definitions
         pressure = vars(data_structure)['PRESSURE']
 
         # setup case
-        dir_tmp = os.path.realpath(os.path.dirname(__file__))
+        dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_tube_ringmodel')
         p = subprocess.Popen(os.path.join(dir_tmp, 'setup_tube_ringmodel.sh'), cwd=dir_tmp, shell=True)
         p.wait()
 
