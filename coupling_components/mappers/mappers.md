@@ -150,7 +150,8 @@ Child-class of `MapperInterpolator`, additional settings:
 
 JSON setting|type|description
 ------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of `Nodes`. 
+<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of `Nodes`.
+<nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible wihtout rendering the interpolation matrix ill-conditioned.
 
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 
 
@@ -161,13 +162,14 @@ $\phi(r)$ is a radial basis function defined as
 $$
 \phi(r) = 
 \begin{cases}
-    (1-r)^4 (1 + 4r) \quad &\mathrm{for} \quad 0 \leq r < 1 \\
-    0 &\mathrm{for} \quad 1 \leq r
+    (1-\frac{r}{d_{ref}})^4 (1 + 4\frac{r}{d_{ref}}) \quad &\mathrm{for} \quad 0 \leq \frac{r}{d_{ref}} < 1 \\
+    0 &\mathrm{for} \quad 1 \leq \frac{r}{d_{ref}}
 \end{cases}
 $$
 
+with $r$ a positive distance. To control the width of the function, $r$ is scaled with a reference distance $d_{ref}$.
  
-with $r$ a positive distance. Assume that $n$ nearest _from_-points will be used in the interpolation.
+Assume that $n$ nearest _from_-points will be used in the interpolation.
 An unknown function $f(\boldsymbol{x})$ can then be approximated as the weighted sum of $n$ shifted radial basis functions:
 
 $$
@@ -205,7 +207,15 @@ $$
 
 As every to-point has different nearest neighbours in the _from_-points, the coefficient vector $\boldsymbol{c}$ must be calculated for each _to_-point independently. The matrix $\boldsymbol{\Phi}$ and vector $\boldsymbol{\Phi}_{to}$ must also be calculated for every _to_-point independently.
 
+For every _to_-point, the reference distance $d_{ref}$ is determined as the product of the distance $d_{fur}$ of the two furthest _from_-points and the `shape_parameter`.
 
+In order to ensure that the basis function of each of the nearest _from_-points covers every _from_-point, the `shape_parameter` should be larger than one.
+This value may however lead to an interpolation function which consists of sharp peaks or wiggles, with the correct value near the _from_-points, but a deviating value away from them.
 
+In the extreme case of a very small $d_{ref}$ approaching zero, the so-called "bed-of-nails interpolant" will be obtained, which is near zero everywhere, except near the _from_-points where it will sharply peak.
+In this case the interpolation matrix will approach the identity matrix.
 
-
+Choosing a higher value improves the interpolation as the basis functions become wider, but the interpolation matrix becomes less stable, i.e. the condition number increases.
+The default value is 200.
+In practice, the `shape_parameter` is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (eg. with a condition number of roughly $10^{13}$ for double-precision floating point).
+A warning is printed when the condition number of a interpolation matrix becomes higher than $10^{13}$.

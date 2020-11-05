@@ -1,4 +1,5 @@
 from coconut.coupling_components.mappers.interpolator import MapperInterpolator
+from coconut.coupling_components import tools
 
 from scipy.spatial import distance
 from scipy.linalg import solve
@@ -15,10 +16,13 @@ class MapperRadialBasis(MapperInterpolator):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        # store settings
-        self.parallel = False
-        if self.settings.Has('parallel'):
-            self.parallel = self.settings['parallel'].GetBool()
+        self.coeffs = None
+        self.cond = 0
+
+        # check and store settings
+        self.parallel = self.settings['parallel'].GetBool() if self.settings.Has('parallel') else False
+        self.shape_parameter = self.settings['shape_parameter'].GetInt() if self.settings.Has('shape_parameter') \
+            else 200
 
         # determine number of nearest neighbours
         if len(self.directions) == 3:
@@ -40,28 +44,38 @@ class MapperRadialBasis(MapperInterpolator):
             processes = cpu_count()
             with Pool(processes=processes) as pool:
                 # optimal chunksize automatically calculated
-                out = pool.starmap(get_coeffs, iterable)
+                out = pool.starmap(self.get_coeffs, iterable)
             self.coeffs = np.vstack(tuple(out))
         else:
             self.coeffs = np.zeros(self.nearest.shape)
             for i_to, tup in enumerate(iterable):
-                self.coeffs[i_to, :] = get_coeffs(*tup).flatten()
+                self.coeffs[i_to, :] = self.get_coeffs(*tup).flatten()
 
-def get_coeffs(distances, coords_from):
-    def phi(r):
-        return (1 - r) ** 4 * (1 + 4 * r) * np.heaviside(1 - r, 0)
+        # check condition number
+        if self.cond > 1e13:
+            tools.Print(f'The highest condition number of the interpolation matrices is {self.cond:.2e} > 1e13\n'
+                        f'Decrease the shape parameter to decrease the condition number', layout='warning')
 
-    d_ref = distances[-1] * 2  # *** add parameter for this?
+    def get_coeffs(self, distances, coords_from):
+        def phi(r):
+            return (1 - r) ** 4 * (1 + 4 * r) * np.heaviside(1 - r, 0)
 
-    # create column Phi_to, based on distances to from-points
-    d_to = distances.reshape(-1, 1)
-    Phi_to = phi(d_to / d_ref)
+        d_ref = distances[-1] * self.shape_parameter
 
-    # create matrix Phi, based on distances between from-points
-    d = distance.squareform(distance.pdist(coords_from))
-    Phi = phi(d / d_ref)
+        # create column Phi_to, based on distances to from-points
+        d_to = distances.reshape(-1, 1)
+        Phi_to = phi(d_to / d_ref)
 
-    # solve system Phi^T c = Phi_t for c (Phi is symmetric)
-    coeffs = solve(Phi, Phi_to, sym_pos=True)
+        # create matrix Phi, based on distances between from-points
+        d = distance.squareform(distance.pdist(coords_from))
+        Phi = phi(d / d_ref)
 
-    return coeffs.reshape(1, -1)
+        # calculate condition number
+        cond = np.linalg.cond(Phi)
+        if cond > self.cond:
+            self.cond = cond
+
+        # solve system Phi^T c = Phi_t for c (Phi is symmetric)
+        coeffs = solve(Phi, Phi_to, sym_pos=True)
+
+        return coeffs.reshape(1, -1)
