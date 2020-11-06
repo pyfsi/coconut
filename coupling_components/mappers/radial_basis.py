@@ -17,7 +17,6 @@ class MapperRadialBasis(MapperInterpolator):
         super().__init__(parameters)
 
         self.coeffs = None
-        self.cond = 0
 
         # check and store settings
         self.parallel = self.settings['parallel'].GetBool() if self.settings.Has('parallel') else False
@@ -37,6 +36,7 @@ class MapperRadialBasis(MapperInterpolator):
 
         # calculate coefficients
         iterable = []
+        cond = []
         for i_to in range(self.n_to):
             nearest = self.nearest[i_to, :]
             iterable.append((self.distances[i_to, :],
@@ -47,15 +47,19 @@ class MapperRadialBasis(MapperInterpolator):
             with Pool(processes=processes) as pool:
                 # optimal chunksize automatically calculated
                 out = pool.starmap(self.get_coeffs, iterable)
-            self.coeffs = np.vstack(tuple(out))
+            self.coeffs = np.vstack(tuple(zip(*out))[0])
+            cond = list(zip(*out))[1]
         else:
             self.coeffs = np.zeros(self.nearest.shape)
             for i_to, tup in enumerate(iterable):
-                self.coeffs[i_to, :] = self.get_coeffs(*tup).flatten()
+                out = self.get_coeffs(*tup)
+                self.coeffs[i_to, :] = out[0].flatten()
+                cond.append(out[1])
 
         # check condition number
-        if self.cond > 1e13:
-            tools.Print(f'The highest condition number of the interpolation matrices is {self.cond:.2e} > 1e13\n'
+        cond = max(cond)
+        if cond > 1e13:
+            tools.Print(f'The highest condition number of the interpolation matrices is {cond:.2e} > 1e13\n'
                         f'Decrease the shape parameter to decrease the condition number', layout='warning')
 
     def get_coeffs(self, distances, coords_from):
@@ -74,10 +78,8 @@ class MapperRadialBasis(MapperInterpolator):
 
         # calculate condition number
         cond = np.linalg.cond(Phi)
-        if cond > self.cond:
-            self.cond = cond
 
         # solve system Phi^T c = Phi_t for c (Phi is symmetric)
         coeffs = solve(Phi, Phi_to, sym_pos=True)
 
-        return coeffs.reshape(1, -1)
+        return coeffs.reshape(1, -1), cond
