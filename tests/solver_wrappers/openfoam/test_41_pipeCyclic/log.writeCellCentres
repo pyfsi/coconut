@@ -6,12 +6,12 @@
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
-Exec   : writeCellCentres -time 0.1
-Date   : Mar 27 2020
-Time   : 16:57:33
-Host   : "cfdclu55.ugent.be"
-PID    : 181783
-Case   : /cfdfile2/data/fm/laurent/git-repository/kratos/applications/CoSimulationApplication/tests/solver_wrappers/openfoam/test_41_pipeCyclic
+Exec   : writeCellCentres -time 0
+Date   : Sep 24 2020
+Time   : 10:01:41
+Host   : "cfdclu27.ugent.be"
+PID    : 6873
+Case   : /lusers/temp/mathieu/PycharmProjects/coconut/tests/solver_wrappers/openfoam/test_41_pipeCyclic
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
 fileModificationChecking : Monitoring run-time modified files using timeStampMaster
@@ -20,11 +20,11 @@ allowSystemOperations : Allowing user-supplied system call operations
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 Create time
 
-Create mesh for time = 0.1
+Create mesh for time = 0
 
-Time = 0.1
-Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0.1
-Writing cellVolumes and patch faceAreas to V in 0.1
+Time = 0
+Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0
+Writing cellVolumes and patch faceAreas to V in 0
 
 End
 

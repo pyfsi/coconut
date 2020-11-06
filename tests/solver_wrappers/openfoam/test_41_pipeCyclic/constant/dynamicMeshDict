@@ -23,7 +23,9 @@ solver             displacementLaplacian;
 
 displacementLaplacianCoeffs
 {
-	diffusivity	   	quadratic inverseDistance 1(walls);
+	diffusivity	   	inverseDistance 1( walls);
 }
+
+
 
 // ************************************************************************* //

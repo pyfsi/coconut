@@ -652,7 +652,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 else:
                     pos=index
                     position.append(pos)
-                node.SetSolutionStepValue(self.shear, 0, (wss_tmp[pos, :]*self.density).tolist())
+                node.SetSolutionStepValue(self.shear, 0, (wss_tmp[pos, :]*-self.density).tolist())
                 node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos] * self.density)
                 index += 1
 

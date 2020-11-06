@@ -1,0 +1,12 @@
+{
+    "mapper" :
+    {
+        "type": "mappers.wedge_3d_to_2d_axisymmetric",
+        "settings":
+        {
+            "direction_axial": "X",
+            "direction_radial": "Y"
+
+        }
+    }
+}

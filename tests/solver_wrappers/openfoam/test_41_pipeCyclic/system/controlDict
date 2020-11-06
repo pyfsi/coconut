@@ -19,7 +19,7 @@ application     CoCoNuT_pimpleFoam;
 
 startFrom       startTime;
 
-startTime       0.1;
+startTime       0;
 
 stopAt          endTime;
 
@@ -39,7 +39,7 @@ writePrecision  6;
 
 writeCompression uncompressed;
 
-timeFormat      general;
+timeFormat      fixed;
 
 timePrecision   6;
 
@@ -47,31 +47,68 @@ runTimeModifiable false;
 
 adjustTimeStep	no;
 
+boundary_names (walls);
+
 functions 
 { 
   
- 	 wallShearStress_walls 
+ 	 PRESSURE_walls 
+	 { 
+		 type  	 surfaceRegion; 
+		 libs 	 ("libfieldFunctionObjects.so"); 
+		 executeControl 	 timeStep; 
+		 executeInterval 	 1; 
+		 writeControl 	 timeStep; 
+		 writeInterval 	 1; 
+		 timeFormat 	 fixed; 
+		 timePrecision 	 6; 
+		 operation 	 none; 
+		 writeFields 	 true; 
+		 surfaceFormat 	 raw; 
+		 regionType 	 patch; 
+		 name 	 walls ; 
+		 fields 
+		 ( 
+			 p 
+ 		 ); 
+	 } 
+
+ 
+ 	 wallShearStress 
 	 { 
 		 type  	 wallShearStress; 
 		 libs 	 ("libfieldFunctionObjects.so"); 
-		 patches ( walls ); 
+		 executeControl 	 timeStep; 
+		 executeInterval 	 1; 
 		 writeControl 	 timeStep; 
 		 writeInterval 	 1; 
+		 timeFormat 	 fixed; 
+		 timePrecision 	 6; 
 		 log 	 false; 
 	 } 
+
  
- 	 pressure_walls 
+ 	 TRACTION_walls 
 	 { 
-		 type  	 pressure; 
+		 type  	 surfaceRegion; 
 		 libs 	 ("libfieldFunctionObjects.so"); 
-		 patches ( walls ); 
+		 executeControl 	 timeStep; 
+		 executeInterval 	 1; 
 		 writeControl 	 timeStep; 
 		 writeInterval 	 1; 
-		 log 	 false; 
-		 calcTotal 	 no; 
-		 calcCoeff 	 no; 
-		 rho 	 rho; 
+		 timeFormat 	 fixed; 
+		 timePrecision 	 6; 
+		 operation 	 none; 
+		 writeFields 	 true; 
+		 surfaceFormat 	 raw; 
+		 regionType 	 patch; 
+		 name 	 walls ; 
+		 fields 
+		 ( 
+			 wallShearStress 
+		 ); 
 	 } 
+
 } 
  
 // ************************************************************************* //
