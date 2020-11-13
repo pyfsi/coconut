@@ -80,11 +80,9 @@ class MapperAxisymmetric2DTo3D(Component):
         if var_from.Type() == 'Double':
             hist_var_from = np.zeros(self.n_from)
             for i_from, node_from in enumerate(model_part_from.Nodes):
-                print(i_from)
                 hist_var_from[i_from] = node_from.GetSolutionStepValue(var_from)
-            print("")
+
             for i_to, node_to in enumerate(model_part_to.Nodes):
-                print(i_to)
                 node_to.SetSolutionStepValue(var_to, 0, hist_var_from[self.nearest[i_to, 0]])
 
         # vector interpolation

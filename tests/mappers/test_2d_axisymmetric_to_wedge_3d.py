@@ -123,11 +123,11 @@ class TestMapper2DaxisymmetricToWedge3D(KratosUnittest.TestCase):
                 for v1, v2 in zip(list(node.GetSolutionStepValue(var_v)),
                                     fun_v(node.X0, node.Y0, node.Z0)):
                     self.assertAlmostEqual(v1, v2, delta=1e-8)
-                    print("solution" )
-                    print(fun_v(node.X0, node.Y0, node.Z0))
-                    print(node.GetSolutionStepValue(var_v))
-                    a=np.abs((v1-v2)/v1)
-                    print(a)
+                    # print("solution" )
+                    # print(fun_v(node.X0, node.Y0, node.Z0))
+                    # print(node.GetSolutionStepValue(var_v))
+                    # a=np.abs((v1-v2)/v1)
+                    # print(a)
 
                 # Optional:Visual check
             if True:

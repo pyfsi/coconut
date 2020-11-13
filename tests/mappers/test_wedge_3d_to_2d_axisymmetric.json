@@ -5,7 +5,8 @@
         "settings":
         {
             "direction_axial": "X",
-            "direction_radial": "Y"
+            "direction_radial": "Y",
+            "points": true
 
         }
     }

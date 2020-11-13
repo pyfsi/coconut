@@ -15,6 +15,7 @@ def Create(parameters):
     return SolverWrapperAbaqus614(parameters)
 
 
+
 class SolverWrapperAbaqus614(Component):
     def __init__(self, parameters):
         super().__init__()

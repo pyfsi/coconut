@@ -116,11 +116,11 @@ class SolverWrapperOpenFOAM_41(Component):
                     line=line.replace('|WRITE_PRECISION|',str(self.write_precision))
                     line=line.replace('|TIME_PRECISION|',str(self.time_precision))
                     if '|BOUNDARY_NAMES|' in line:
-                        firstBoundary=True
+                        firstBoundary = True
                         for interfaces in self.boundary_names:
                             if firstBoundary:
                                 boundary_name_temp = "(" + interfaces
-                                firstBoundary=False
+                                firstBoundary = False
                             else:
                                 boundary_name_temp += " " + interfaces
                         boundary_name_temp += ")"                          
@@ -128,7 +128,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     newFile.write(line)
         rawFile.close()
         newFile.close()
-        nKey=0
+        nKey = 0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
                 self.write_controlDict_function(controlDict_name,"surfaceRegion","libfieldFunctionObjects","PRESSURE",key,True,False)
@@ -179,8 +179,6 @@ class SolverWrapperOpenFOAM_41(Component):
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
 
-
-
         # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
         # Want "cellCentres for face boundaries"
@@ -202,8 +200,6 @@ class SolverWrapperOpenFOAM_41(Component):
             index_X = self.find_string_in_file(boundary,name_X)
             index_Y = self.find_string_in_file(boundary, name_Y)
             index_Z = self.find_string_in_file(boundary, name_Z)
-
-
 
             fX = open(name_X,'r')
             fXLines = fX.readlines()
@@ -274,8 +270,6 @@ class SolverWrapperOpenFOAM_41(Component):
             #         print(x)
             #         print(y)
             #         print(z)
-
-
 
         # print('position 1')
         # for key, _ in (self.settings['interface_input'].items() + self.settings['interface_output'].items()):

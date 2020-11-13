@@ -25,10 +25,12 @@ class MapperWedge3DToAxisymmetric2D(Component):
         self.interpolator = False
 
         # get axial and radial directions
-        dirs = ['X', 'Y', 'Z']
+        dirs = ['X', 'Y']
         self.dir_a = dirs.index(self.settings['direction_axial'].GetString())
         self.dir_r = dirs.index(self.settings['direction_radial'].GetString())
         self.dir_wedge = (set([0, 1 ,2]) - set([self.dir_a, self.dir_r])).pop()
+        self.points =  dirs.index(self.settings['points'].GetBool())
+        print(self.points)
         self.angle=np.radians(2.5)
 
     def Initialize(self, model_part_in, forward):
@@ -47,17 +49,26 @@ class MapperWedge3DToAxisymmetric2D(Component):
 
             i_to = 0
 
-            for i_from,node in enumerate(model_part_in.Nodes):
-                coords = np.array([node.X0, node.Y0, node.Z0])
-                r = coords[self.dir_r]
-                z = coords[self.dir_wedge]
-                if coords[self.dir_wedge] > 0:
-                    self.nearest[i_to] = i_from
-                    coords[self.dir_r] = np.cos(self.angle) * r + np.sin(self.angle) * z
-                    coords[self.dir_wedge] = 0
+            if self.points == True:
+                for i_from,node in enumerate(model_part_in.Nodes):
+                    coords = np.array([node.X0, node.Y0, node.Z0])
+                    r = coords[self.dir_r]
+                    z = coords[self.dir_wedge]
+                    if coords[self.dir_wedge] > 0:
+                        self.nearest[i_to] = i_from
+                        coords[self.dir_r] = np.cos(self.angle) * r + np.sin(self.angle) * z
+                        coords[self.dir_wedge] = 0
 
+                        model_part_out.CreateNewNode(i_to, *tuple(coords))
+                        i_to += 1
+
+            else:
+               for i_from,node in enumerate(model_part_in.Nodes):
+                    coords = np.array([node.X0, node.Y0, node.Z0])
+                    self.nearest[i_to] = i_from
                     model_part_out.CreateNewNode(i_to, *tuple(coords))
                     i_to += 1
+
 
             return model_part_out
 

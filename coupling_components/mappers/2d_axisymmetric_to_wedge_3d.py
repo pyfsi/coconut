@@ -55,9 +55,6 @@ class MapperAxisymmetric2DToWedge3D(Component):
             model_part_out._ModelPart__hist_variables = model_part_in._ModelPart__hist_variables
 
             self.nearest = np.zeros((self.n_to,)).astype(int)
-            # print("nearest1")
-            # print(self.nearest)
-
 
             i_from = 0
 
@@ -66,10 +63,7 @@ class MapperAxisymmetric2DToWedge3D(Component):
                 coords_bis=coords.copy()
                 r = coords[self.dir_r]
                 z = coords[self.dir_wedge]
-                # print("i_to")
-                # print(i_to)
                 if coords[self.dir_wedge] > 0:
-                    # coords[self.dir_r] = np.sqrt(r**2 + z**2)
                     coords[self.dir_r] = np.cos(self.angle) * r + np.sin(self.angle) * z
                     coords[self.dir_wedge] = 0
 
@@ -81,9 +75,6 @@ class MapperAxisymmetric2DToWedge3D(Component):
                     self.nearest[ii] = i_from
 
                     i_from += 1
-
-            # print("nearest2")
-            # print(self.nearest)
 
             return model_part_out
 
