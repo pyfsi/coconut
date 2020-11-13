@@ -174,13 +174,15 @@
 			        "permutation": [1, 0, 2]
                             }
                    },
- 		   {
-			   "type": "mappers.2d_axisymmetric_to_wedge_3d",
-			   "settings":
+                   {
+			  "type": "mappers.2d_axisymmetric_to_wedge_3d",
+		 	  "settings":
 			    {
 				"direction_axial": "X",
 				"direction_radial": "Y"
+
 			    }
+
 		   }
 	        ]
             }		    
