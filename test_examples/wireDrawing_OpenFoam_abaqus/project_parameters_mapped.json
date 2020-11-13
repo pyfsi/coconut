@@ -114,7 +114,7 @@
                             {
                                 "WALLOUTSIDE0_nodes": "DISPLACEMENT", "WALLOUTSIDE1_nodes": "DISPLACEMENT", "WALLOUTSIDE2_nodes": "DISPLACEMENT"
                             },
-
+			    "mp_mode": "THREADS",
                             "input_file": "wireDeform.inp",
                             "save_iterations": 1
                         }
@@ -166,21 +166,22 @@
 				"directions": ["X","Y"]
                             }
 		   },
-	           {
-			   "type": "mappers.2d_axisymmetric_to_wedge_3d",
-			   "settings":
-			    {
-				"direction_axial": "Y",
-				"direction_radial": "X"
-			    }
-		   },
+	          
 		   {
 			   "type": "mappers.permutation",
                            "settings":
                    	    { 
 			        "permutation": [1, 0, 2]
                             }
-                   }
+                   },
+ 		   {
+			   "type": "mappers.2d_axisymmetric_to_wedge_3d",
+			   "settings":
+			    {
+				"direction_axial": "X",
+				"direction_radial": "Y"
+			    }
+		   }
 	        ]
             }		    
         

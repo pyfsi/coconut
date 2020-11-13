@@ -431,10 +431,10 @@ class SolverWrapperOpenFOAM_41(Component):
         for key in [_[0] for _ in self.interface_input.model_parts_variables]:
             for node in self.model[key].Nodes:
                 disp = node.GetSolutionStepValue(self.displacement)
+                print(disp)
                 node.X = node.X0 + disp[0]
                 node.Y = node.Y0 + disp[1]
                 node.Z = node.Z0 + disp[2]
-
 
         # write interface data to OpenFOAM-file
         self.write_node_input()
