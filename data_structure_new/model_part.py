@@ -3,7 +3,7 @@ import numpy as np
 
 class ModelPart:
 
-    def __init__(self, name, x0, y0, z0, id=None):
+    def __init__(self, name, x0, y0, z0, id):
         """
         - inputs should have same size and be 1D
         - ModelPart contains no data, only coordinates
@@ -14,12 +14,16 @@ class ModelPart:
         for coordinate in (x0, y0, z0):
             if type(coordinate) is not np.ndarray or coordinate.ndim != 1:
                 raise ValueError('all coordinate arrays should be a 1D ndarray')
-        if x0.shape != y0.size or x0.size != z0.size:
+
+        if x0.size != y0.size or x0.size != z0.size:
             raise ValueError(f'all coordinates should have the same size:'
                              f'\n\tx0\t{x0.size}\n\ty0\t{y0.size}\n\tz0\t{z0.size}')
-        if id is not None and (type(id) is not np.ndarray or coordinate.ndim != 1
-                               or id.dtype.kind not in np.typecodes['AllInteger'] or id.size != x0.size):
+        if type(id) is not np.ndarray or id.dtype.kind not in np.typecodes['AllInteger'] or id.size != x0.size:
             raise ValueError(f'id array should be 1D array of integers of the same size as the coordinate arrays')
+
+        if not np.array_equal(id, np.unique(id)):
+            raise ValueError(f'id array should be 1D array should have unique integer values')
+
         self.__name = name
         self.__x0 = x0.copy()
         self.__y0 = y0.copy()
@@ -28,6 +32,7 @@ class ModelPart:
 
     def __repr__(self):
         return f'ModelPart "{self.name}" of size {self.size}'
+
 
     @property
     def x0(self):

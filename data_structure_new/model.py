@@ -5,10 +5,11 @@ class Model:
     def __init__(self):
         self.__model_parts = {}
 
-    def create_model_part(self, name, x0, y0, z0):
+    def create_model_part(self, name, x0, y0, z0, ids):
         if name in self.__model_parts:
             raise ValueError(f'model already has model part with name "{name}"')
-        self.__model_parts[name] = ModelPart(name, x0, y0, z0)
+        self.__model_parts[name] = ModelPart(name, x0, y0, z0, ids)
+        return self.__model_parts[name]
 
     def get_model_part(self, name):
         if name not in self.__model_parts:
