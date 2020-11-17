@@ -48,6 +48,9 @@ class SolverWrapperOpenFOAM_41(Component):
         self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
         self.diffusivity=self.settings["diffusivity"].GetString()
         self.density=self.settings["density"].GetInt()
+        self.displacementX = self.settings["displacementX"].GetInt()
+        self.displacementY = self.settings["displacementY"].GetInt()
+        self.displacementZ = self.settings["displacementZ"].GetInt()
 
         # debug
         self.debug = True  # set on True to save copy of input and output files in every iteration
@@ -302,6 +305,36 @@ class SolverWrapperOpenFOAM_41(Component):
         pointDisp_name=os.path.join(self.working_directory,str(self.physical_time),"pointDisplacement")
         if not(os.path.isfile(pointDisp_name)):
             self.write_pointDisplacement_file(pointDisp_raw_name,pointDisp_name)
+
+            #initial guess pointdisplacement
+            for boundary in self.boundary_names:
+                name_A = os.path.join(self.working_directory,str(self.physical_time), "pointDisplacement")
+                index_A = self.find_string_in_file(boundary, name_A)
+
+                fA = open(name_A, 'r')
+                fALines = fA.readlines()
+                fALines[index_A + 3] = '\t' '\t' ' ' "value" '\t' " uniform (" + str(self.displacementX) + " " + str(self.displacementY) + " " + str(self.displacementZ) + ");" '\n'
+
+                fA = open(name_A,'w')
+                fA.writelines(fALines)
+                fA.close()
+
+                # with open(name_A) as fALines:
+                #     lines=[]
+                #     for line in fALines:
+                #         lines.append(line)
+                #     if boundary in lines[index_A]:
+                #         s = list(lines[index_A + 3])
+                #         s[-5] = 0.001
+                #         # print(s[-5])
+                #         # print(s[-7])
+                #         # print(s[-9])
+                #         # print(s)
+                #
+                #
+                #     print(lines)
+
+
         # if self.cores == 1:
         #     pointDisp_name=os.path.join(self.working_directory,str(self.physical_time),"pointDisplacement")
         #     if not(os.path.isfile(pointDisp_name)):
@@ -335,6 +368,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 print(mp_output.start_face)
                 print(mp_output.nFaces)
                 i= 0
+
                 # bool = np.zeros(self.total_nFaces)
 
                 for p in range(self.cores):
@@ -431,20 +465,10 @@ class SolverWrapperOpenFOAM_41(Component):
         for key in [_[0] for _ in self.interface_input.model_parts_variables]:
             for node in self.model[key].Nodes:
                 disp = node.GetSolutionStepValue(self.displacement)
-                print(disp,type(disp))
-                # print(node)
                 node.X = node.X0 + disp[0]
-                # print("X0")
-                # print(node.X0)
-                # print("X")
-                # print(node.X)
-
                 node.Y = node.Y0 + disp[1]
-                # print("Y0")
-                # print(node.Y0)
                 node.Z = node.Z0 + disp[2]
-                # print("Z0")
-                # print(node.Z0)
+
 
         # write interface data to OpenFOAM-file
         self.write_node_input()
