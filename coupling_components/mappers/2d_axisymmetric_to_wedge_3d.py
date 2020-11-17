@@ -105,13 +105,13 @@ class MapperAxisymmetric2DToWedge3D(Component):
             for i_from, node_from in enumerate(model_part_from.Nodes):
                 hist_var_from[i_from] = node_from.GetSolutionStepValue(var_from)
 
-            print("hist_from")
-            print(hist_var_from)
+            # print("hist_from")
+            # print(hist_var_from)
 
             for i_to, node_to in enumerate(model_part_to.Nodes):
                 hist_var_to = hist_var_from[self.nearest[i_to]].copy()
-                print("hist_to")
-                print(hist_var_to)
+                # print("hist_to")
+                # print(hist_var_to)
 
                 tmp = hist_var_to[self.dir_r]
                 # print("tmp")
