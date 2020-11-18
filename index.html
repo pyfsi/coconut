@@ -38,7 +38,7 @@
     
     
       
-        <title>CoCoNuT</title>
+        <title>CoCoNuT - Coupling Code for Numerical Tools - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#coconut-installation" tabindex="0" class="md-skip">
+      <a href="#coconut-coupling-code-for-numerical-tools" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                CoCoNuT installation
+                CoCoNuT - Coupling Code for Numerical Tools
               
             </span>
           
@@ -181,46 +181,32 @@
       
         
 
-<nav class="md-tabs" data-md-component="tabs">
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
       
         
-  <li class="md-tabs__item">
-    
-      <a href="." class="md-tabs__link md-tabs__link--active">
-        CoCoNuT installation
-      </a>
-    
-  </li>
-
-      
-        
-  
-  
-    
-    
   
   
     <li class="md-tabs__item">
       
-        <a href="coupled_solvers/" class="md-tabs__link">
-          CouplingComponents
+        <a href="." class="md-tabs__link md-tabs__link--active">
+          Introduction
         </a>
       
     </li>
   
 
-  
-
       
         
   
   
     <li class="md-tabs__item">
       
-        <a href="test_examples/" class="md-tabs__link">
-          TestExamples
+        <a href="coupling_components/" class="md-tabs__link">
+          Coupling components
         </a>
       
     </li>
@@ -233,7 +219,46 @@
     <li class="md-tabs__item">
       
         <a href="data_structure/" class="md-tabs__link">
-          Varia
+          Data structure
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="docs/" class="md-tabs__link">
+          Documentation
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="test_examples/" class="md-tabs__link">
+          Test examples
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="tests/" class="md-tabs__link">
+          Tests
         </a>
       
     </li>
@@ -290,6 +315,27 @@
   
 
 
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-1" type="checkbox" id="nav-1" checked>
+    
+    <label class="md-nav__link" for="nav-1">
+      Introduction
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-1">
+        Introduction
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
   <li class="md-nav__item md-nav__item--active">
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
@@ -298,11 +344,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        CoCoNuT installation
+        CoCoNuT - Coupling Code for Numerical Tools
       </label>
     
-    <a href="." title="CoCoNuT installation" class="md-nav__link md-nav__link--active">
-      CoCoNuT installation
+    <a href="." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link md-nav__link--active">
+      CoCoNuT - Coupling Code for Numerical Tools
     </a>
     
       
@@ -316,15 +362,49 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#for-users" class="md-nav__link">
-    For users
+  <a href="#introduction" class="md-nav__link">
+    Introduction
   </a>
   
 </li>
       
         <li class="md-nav__item">
+  <a href="#coconut-installation" class="md-nav__link">
+    CoCoNuT installation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-users" class="md-nav__link">
+    For users
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#for-developers" class="md-nav__link">
     For developers
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting started
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-the-code" class="md-nav__link">
+    Overview of the code
   </a>
   
 </li>
@@ -339,6 +419,11 @@
     
   </li>
 
+        
+      </ul>
+    </nav>
+  </li>
+
     
       
       
@@ -350,30 +435,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
     
     <label class="md-nav__link" for="nav-2">
-      CouplingComponents
+      Coupling components
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
-        CouplingComponents
-      </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-1" type="checkbox" id="nav-2-1">
-    
-    <label class="md-nav__link" for="nav-2-1">
-      CoupledSolvers
-    </label>
-    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-1">
-        CoupledSolvers
+        Coupling components
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -384,8 +450,51 @@
 
 
   <li class="md-nav__item">
-    <a href="coupled_solvers/" title="CoupledSolvers" class="md-nav__link">
-      CoupledSolvers
+    <a href="coupling_components/" title="General" class="md-nav__link">
+      General
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="convergence_criteria/" title="Convergence criteria" class="md-nav__link">
+      Convergence criteria
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-3" type="checkbox" id="nav-2-3">
+    
+    <label class="md-nav__link" for="nav-2-3">
+      Coupled solvers
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-2-3">
+        Coupled solvers
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="coupled_solvers/" title="Coupled solvers" class="md-nav__link">
+      Coupled solvers
     </a>
   </li>
 
@@ -413,6 +522,18 @@
 
 
   <li class="md-nav__item">
+    <a href="mappers/" title="Mappers" class="md-nav__link">
+      Mappers
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="predictors/" title="Predictors" class="md-nav__link">
       Predictors
     </a>
@@ -424,28 +545,16 @@
           
 
 
-  <li class="md-nav__item">
-    <a href="convergence_criteria/" title="ConvergenceCriteria" class="md-nav__link">
-      ConvergenceCriteria
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-4" type="checkbox" id="nav-2-4">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6">
     
-    <label class="md-nav__link" for="nav-2-4">
-      SolverWrappers
+    <label class="md-nav__link" for="nav-2-6">
+      Solver wrappers
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-4">
-        SolverWrappers
+      <label class="md-nav__title" for="nav-2-6">
+        Solver wrappers
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -491,14 +600,38 @@
   </li>
 
         
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+    
+    <label class="md-nav__link" for="nav-3">
+      Data structure
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        Data structure
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
           
           
 
 
   <li class="md-nav__item">
-    <a href="mappers/" title="Mappers" class="md-nav__link">
-      Mappers
+    <a href="data_structure/" title="Data structure" class="md-nav__link">
+      Data structure
     </a>
   </li>
 
@@ -515,14 +648,14 @@
 
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
     
-    <label class="md-nav__link" for="nav-3">
-      TestExamples
+    <label class="md-nav__link" for="nav-4">
+      Documentation
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
-      <label class="md-nav__title" for="nav-3">
-        TestExamples
+      <label class="md-nav__title" for="nav-4">
+        Documentation
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -533,8 +666,44 @@
 
 
   <li class="md-nav__item">
-    <a href="test_examples/" title="TestExample" class="md-nav__link">
-      TestExample
+    <a href="docs/" title="Documentation" class="md-nav__link">
+      Documentation
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5">
+    
+    <label class="md-nav__link" for="nav-5">
+      Test examples
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-5">
+        Test examples
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="test_examples/" title="General" class="md-nav__link">
+      General
     </a>
   </li>
 
@@ -546,17 +715,65 @@
 
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5-2" type="checkbox" id="nav-5-2">
     
-    <label class="md-nav__link" for="nav-3-2">
+    <label class="md-nav__link" for="nav-5-2">
       Tube
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-3-2">
+      <label class="md-nav__title" for="nav-5-2">
         Tube
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="tube_tube_flow_tube_structure/" title="Python TubeFlow - Python TubeStructre" class="md-nav__link">
+      Python TubeFlow - Python TubeStructre
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="tube_tube_flow_tube_ringmodel/" title="Python TubeFlow - Python TubeRingmodel" class="md-nav__link">
+      Python TubeFlow - Python TubeRingmodel
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="tube_tube_flow_abaqus2d/" title="Python TubeFlow - Abaqus 2D" class="md-nav__link">
+      Python TubeFlow - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="tube_fluent2d_tube_structure/" title="Fluent 2D - Python TubeStructure" class="md-nav__link">
+      Fluent 2D - Python TubeStructure
+    </a>
+  </li>
+
         
           
           
@@ -588,30 +805,6 @@
 
 
   <li class="md-nav__item">
-    <a href="tube_fluent2d_tube_structure/" title="Fluent 2D - Python" class="md-nav__link">
-      Fluent 2D - Python
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="tube_fluent3d_abaqus3d/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
-      Fluent 3D - Abaqus 3D
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
     <a href="tube_fluent3d_abaqus2d/" title="Fluent 3D - Abaqus 2D" class="md-nav__link">
       Fluent 3D - Abaqus 2D
     </a>
@@ -624,32 +817,8 @@
 
 
   <li class="md-nav__item">
-    <a href="tube_tube_flow_abaqus2d/" title="Python TubeFlow - Abaqus 2D" class="md-nav__link">
-      Python TubeFlow - Abaqus 2D
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="tube_tube_flow_tube_ringmodel/" title="Python TubeFlow - Python TubeRingmodel" class="md-nav__link">
-      Python TubeFlow - Python TubeRingmodel
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="tube_tube_flow_tube_structure/" title="Python TubeFlow - Python TubeStructre" class="md-nav__link">
-      Python TubeFlow - Python TubeStructre
+    <a href="tube_fluent3d_abaqus3d/" title="Fluent 3D - Abaqus 3D" class="md-nav__link">
+      Fluent 3D - Abaqus 3D
     </a>
   </li>
 
@@ -671,14 +840,14 @@
 
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-6" type="checkbox" id="nav-6">
     
-    <label class="md-nav__link" for="nav-4">
-      Varia
+    <label class="md-nav__link" for="nav-6">
+      Tests
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
-      <label class="md-nav__title" for="nav-4">
-        Varia
+      <label class="md-nav__title" for="nav-6">
+        Tests
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -689,20 +858,8 @@
 
 
   <li class="md-nav__item">
-    <a href="data_structure/" title="Data structure" class="md-nav__link">
-      Data structure
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="docs/" title="Guide to the documentation" class="md-nav__link">
-      Guide to the documentation
+    <a href="tests/" title="Tests" class="md-nav__link">
+      Tests
     </a>
   </li>
 
@@ -733,15 +890,49 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#for-users" class="md-nav__link">
-    For users
+  <a href="#introduction" class="md-nav__link">
+    Introduction
   </a>
   
 </li>
       
         <li class="md-nav__item">
+  <a href="#coconut-installation" class="md-nav__link">
+    CoCoNuT installation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-users" class="md-nav__link">
+    For users
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#for-developers" class="md-nav__link">
     For developers
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting started
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-the-code" class="md-nav__link">
+    Overview of the code
   </a>
   
 </li>
@@ -763,8 +954,14 @@
               
                 
                 
-                <h1 id="coconut-installation">CoCoNuT installation</h1>
-<h2 id="for-users">For users</h2>
+                <h1 id="coconut-coupling-code-for-numerical-tools">CoCoNuT - Coupling Code for Numerical Tools</h1>
+<h2 id="introduction">Introduction</h2>
+<blockquote>
+<p>TODO: this section should contain a general overview of how the coconut code works, without going into specifics, mostly the philosophy but keep it quite short.</p>
+</blockquote>
+<h2 id="coconut-installation">CoCoNuT installation</h2>
+<h3 id="for-users">For users</h3>
+<p>These instructions describe the setup of CoCoNuT on Linux. It has not been tested on Windows or macOS, so compatibility is not guaranteed, although it probably would work without major issues. </p>
 <p>Requirements:</p>
 <ul>
 <li>Python 3.6+ (Anaconda 2019.03+ recommended)</li>
@@ -772,7 +969,7 @@
 <p>Installation:</p>
 <ul>
 <li>Download the source code from <a href="https://github.com/pyfsi/coconut">GitHub</a></li>
-<li>Unzip to a folder <code>coconut</code>.</li>
+<li>Unzip to a folder <code>coconut</code>. If the folder is unzipped in Windows, some of the file permissions may change and some tests or test examples may not run out of the box. </li>
 <li>Add the parent folder of <code>coconut</code> to your Python path.</li>
 </ul>
 <p>For example, with a folder structure like</p>
@@ -791,9 +988,8 @@
 
 
 <p>This line can also be added to your <code>.bashrc</code> file.</p>
-<p>Documentation:</p>
-<p>All documentation is grouped on the <a href="https://pyfsi.github.io/coconut/">CoCoNut website</a>.</p>
-<h2 id="for-developers">For developers</h2>
+<p>For information about the CoCoNuT package, we refer to the <a href="https://pyfsi.github.io/coconut/">documentation website</a>.</p>
+<h3 id="for-developers">For developers</h3>
 <p>Requirements:</p>
 <ul>
 <li>Python 3.6+ (Anaconda 2019.03+ recommended)</li>
@@ -843,8 +1039,15 @@
 
 
 <p>This line can also be added to your <code>.bashrc</code> file.</p>
-<p>Documentation:</p>
-<p>All documentation is grouped on the <a href="https://pyfsi.github.io/coconut/">CoCoNut website</a>.</p>
+<p>For information about the CoCoNuT package, we refer to the <a href="https://pyfsi.github.io/coconut/">documentation website</a>.</p>
+<h2 id="getting-started">Getting started</h2>
+<blockquote>
+<p>TODO: this section should contain a kind of tutorial that goes over one of the test cases and explains more or less step-by-step how you run it, and what happens when you run it.</p>
+</blockquote>
+<h2 id="overview-of-the-code">Overview of the code</h2>
+<blockquote>
+<p>TODO: this section gives an overview of the 5 main folders in coconut, the rest of the website follows the structure of these folders. Some details are given about what is in each folder (coupling_components, data_structure, docs, test_examples, tests).</p>
+</blockquote>
                 
                   
                 
@@ -867,13 +1070,13 @@
       <nav class="md-footer-nav__inner md-grid">
         
         
-          <a href="coupled_solvers/" title="CoupledSolvers" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="coupling_components/" title="General" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                CoupledSolvers
+                General
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
