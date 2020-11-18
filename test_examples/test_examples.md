@@ -1,4 +1,4 @@
-# TestExamples
+# Test examples
 
 This documentation describes the different test examples.
 Currently all these examples calculate the flow in a flexible tube.

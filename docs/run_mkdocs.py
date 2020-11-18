@@ -98,10 +98,13 @@ if len(argv) > 1:
     if argv[1] == '--preview':
         os.system('mkdocs build --clean')
         cwd = os.getcwd()
-        if len(argv) == 3:
-            cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2], 'index.html &')
-        else:
+        if len(argv) == 2:
             cmd = 'firefox ' + os.path.join(cwd, 'site', 'index.html &')
+        else:
+            if argv[2] == 'README':
+                cmd = 'firefox ' + os.path.join(cwd, 'site', 'index.html &')
+            else:
+                cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2], 'index.html &')
         os.system(cmd)
     elif argv[1] == '--deploy':
         os.system('mkdocs gh-deploy')

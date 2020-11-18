@@ -1,10 +1,15 @@
-# CoCoNuT installation
+# CoCoNuT - Coupling Code for Numerical Tools
 
+
+## Introduction
+
+> TODO: this section should contain a general overview of how the coconut code works, without going into specifics, mostly the philosophy but keep it quite short.
+
+## CoCoNuT installation
+
+### For users
 
 These instructions describe the setup of CoCoNuT on Linux. It has not been tested on Windows or macOS, so compatibility is not guaranteed, although it probably would work without major issues. 
-
-
-## For users
 
 Requirements:
 
@@ -34,7 +39,7 @@ This line can also be added to your `.bashrc` file.
 For information about the CoCoNuT package, we refer to the [documentation website][https://pyfsi.github.io/coconut/].
 
 
-## For developers
+### For developers
 
 Requirements:
 
@@ -89,9 +94,15 @@ This line can also be added to your `.bashrc` file.
 
 For information about the CoCoNuT package, we refer to the [documentation website][https://pyfsi.github.io/coconut/].
 
-
-
-
-
-
 [https://pyfsi.github.io/coconut/]: https://pyfsi.github.io/coconut/
+
+
+## Getting started
+
+> TODO: this section should contain a kind of tutorial that goes over one of the test cases and explains more or less step-by-step how you run it, and what happens when you run it.
+
+
+
+## Overview of the code
+
+> TODO: this section gives an overview of the 5 main folders in coconut, the rest of the website follows the structure of these folders. Some details are given about what is in each folder (coupling_components, data_structure, docs, test_examples, tests).
