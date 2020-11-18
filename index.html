@@ -369,23 +369,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#coconut-installation" class="md-nav__link">
-    CoCoNuT installation
+  <a href="#installation" class="md-nav__link">
+    Installation
   </a>
   
     <nav class="md-nav">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-users" class="md-nav__link">
-    For users
+  <a href="#requirements" class="md-nav__link">
+    Requirements
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#for-developers" class="md-nav__link">
-    For developers
+  <a href="#installation_1" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quick-test" class="md-nav__link">
+    Quick test
   </a>
   
 </li>
@@ -406,6 +413,47 @@
   <a href="#overview-of-the-code" class="md-nav__link">
     Overview of the code
   </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#coupling_components" class="md-nav__link">
+    coupling_components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data_structure" class="md-nav__link">
+    data_structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    docs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests" class="md-nav__link">
+    tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -897,23 +945,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#coconut-installation" class="md-nav__link">
-    CoCoNuT installation
+  <a href="#installation" class="md-nav__link">
+    Installation
   </a>
   
     <nav class="md-nav">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-users" class="md-nav__link">
-    For users
+  <a href="#requirements" class="md-nav__link">
+    Requirements
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#for-developers" class="md-nav__link">
-    For developers
+  <a href="#installation_1" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quick-test" class="md-nav__link">
+    Quick test
   </a>
   
 </li>
@@ -935,6 +990,47 @@
     Overview of the code
   </a>
   
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#coupling_components" class="md-nav__link">
+    coupling_components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data_structure" class="md-nav__link">
+    data_structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    docs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    examples
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests" class="md-nav__link">
+    tests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
       
@@ -955,75 +1051,50 @@
                 
                 
                 <h1 id="coconut-coupling-code-for-numerical-tools">CoCoNuT - Coupling Code for Numerical Tools</h1>
+<p>CoCoNuT is a Python package for partitioned multi-physics simulations, with a focus on fluid-structure interaction. 
+Thanks to its fully modular approach, the package is versatile and easy to extend. It is available under the GPL-3.0 license. </p>
 <h2 id="introduction">Introduction</h2>
-<blockquote>
-<p>TODO: this section should contain a general overview of how the coconut code works, without going into specifics, mostly the philosophy but keep it quite short.</p>
-</blockquote>
-<h2 id="coconut-installation">CoCoNuT installation</h2>
-<h3 id="for-users">For users</h3>
-<p>These instructions describe the setup of CoCoNuT on Linux. It has not been tested on Windows or macOS, so compatibility is not guaranteed, although it probably would work without major issues. </p>
-<p>Requirements:</p>
+<p>The <em>Coupling Code for Numerical Tools</em>&mdash;<em>CoCoNuT</em> in short&mdash;follows a partitioned approach to solve multi-physics problem: existing single-physics solvers are coupled through a Python interface. 
+This has the advantage that dedicated, highly-optimized single-physics solvers can be used. 
+To use the code with a new solver (open source or commercial), a so-called <em>solver-wrapper</em> is written to take care of the communication with CoCoNuT. 
+All other CoCoNuT components, such as mapping for non-conformal meshes, are solver-independent and are easily swapped thanks to CoCoNuT's modular architecture. </p>
+<p>CoCoNuT is under active development by the <a href="https://www.ugent.be/ea/eemmecs/en/research/stfes/flow">Fluid Mechanics research team</a> at Ghent University. 
+Our specialization is partitioned fluid-structure interaction. 
+We develop high-performance quasi-Newton algorithms to accelerate convergence of the coupled problem, and apply these techniques to diverse fluid-structure interaction applications such as wind turbines, tube bundles and flexible aircraft. </p>
+<p>The full documentation of the CoCoNuT package can be found at the <a href="https://pyfsi.github.io/coconut/">documentation website</a>.</p>
+<h2 id="installation">Installation</h2>
+<p>These instructions describe the setup of CoCoNuT on Linux. The package has not been tested on Windows or macOS, so compatibility is not guaranteed, although we do not expect major issues. </p>
+<h3 id="requirements">Requirements</h3>
 <ul>
-<li>Python 3.6+ (Anaconda 2019.03+ recommended)</li>
+<li>Python 3.6+ </li>
+<li>NumPy and SciPy packages (we recommend Anaconda 2019.03+)</li>
 </ul>
-<p>Installation:</p>
+<h3 id="installation_1">Installation</h3>
+<p>CoCoNuT does not need to be compiled, hence installation is straightforward. 
+The source code can be downloaded as a zip file, or cloned directly from GitHub. For users that have no experience with Git or GitHub, we recommend the first option. The second option makes it easier to update the software and contribute to the code. </p>
+<p><em>Option 1: download zip</em></p>
 <ul>
-<li>Download the source code from <a href="https://github.com/pyfsi/coconut">GitHub</a></li>
-<li>Unzip to a folder <code>coconut</code>. If the folder is unzipped in Windows, some of the file permissions may change and some tests or test examples may not run out of the box. </li>
-<li>Add the parent folder of <code>coconut</code> to your Python path.</li>
+<li>Download the source code from <a href="https://github.com/pyfsi/coconut">GitHub</a>.</li>
+<li>Unzip to a folder <code>coconut</code>. If the folder is unzipped in Windows, some of the file permissions may change and some tests or examples may not run out of the box. </li>
 </ul>
-<p>For example, with a folder structure like</p>
-<div class="codehilite"><pre><span></span><code><span class="err">/some/absolute/path/</span>
-<span class="err">    coconut/</span>
-<span class="err">        coupling_components/</span>
-<span class="err">        data_structure/</span>
-<span class="err">        ...</span>
-<span class="err">        README.md</span>
-</code></pre></div>
-
-
-<p><code>coconut</code> can be added to your Python path with:</p>
-<div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
-</code></pre></div>
-
-
-<p>This line can also be added to your <code>.bashrc</code> file.</p>
-<p>For information about the CoCoNuT package, we refer to the <a href="https://pyfsi.github.io/coconut/">documentation website</a>.</p>
-<h3 id="for-developers">For developers</h3>
-<p>Requirements:</p>
-<ul>
-<li>Python 3.6+ (Anaconda 2019.03+ recommended)</li>
-<li>Git</li>
-</ul>
-<p>Installation:</p>
+<p><em>Option 2: clone source</em></p>
 <ul>
 <li>Choose or create a directory to install CoCoNuT. </li>
 <li>Move to this directory. </li>
 <li>
-<p>Clone the GitHub repository with SSH or HTTPS by executing one of the following commands. The choice depends on your git configuration.</p>
+<p>Clone the GitHub repository with SSH or HTTPS by executing one of the following commands. </p>
 <ul>
 <li>With SSH:</li>
 </ul>
 <p><code>git clone git@github.com:pyfsi/coconut.git</code></p>
 <ul>
-<li>With HTTPS</li>
+<li>With HTTPS:</li>
 </ul>
 <p><code>git clone https://github.com/pyfsi/coconut.git</code></p>
 </li>
-<li>
-<p>Move to the <code>coconut</code> directory. </p>
-</li>
-<li>Load Anaconda module.</li>
-<li>Run <code>run_coconut_tests.sh</code> to see if the installation works.</li>
 </ul>
-<div class="codehilite"><pre><span></span><code>sh run_coconut_tests.sh
-</code></pre></div>
-
-
-<ul>
-<li>Add the parent folder of <code>coconut</code> to your Python path.</li>
-</ul>
-<p>For example, with a folder structure like</p>
+<p>After the code has been downloaded or cloned, the <code>coconut</code> package must be added to the user's Python path. 
+For example, with a folder structure like</p>
 <div class="codehilite"><pre><span></span><code><span class="err">/some/absolute/path/</span>
 <span class="err">    coconut/</span>
 <span class="err">        coupling_components/</span>
@@ -1033,21 +1104,39 @@
 </code></pre></div>
 
 
-<p><code>coconut</code> can be added to your Python path with:</p>
+<p><code>coconut</code> can be added to your Python path by executing the following line:</p>
 <div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
 </code></pre></div>
 
 
-<p>This line can also be added to your <code>.bashrc</code> file.</p>
-<p>For information about the CoCoNuT package, we refer to the <a href="https://pyfsi.github.io/coconut/">documentation website</a>.</p>
+<p>This line can also be added to your <code>.bashrc</code> file. </p>
+<h3 id="quick-test">Quick test</h3>
+<p>We recommend to run the unit tests at the end of the installation, to make sure that everything works. </p>
+<ul>
+<li>Ensure that <code>coconut</code> is included in your Python path.</li>
+<li>Move to the <code>coconut</code> directory. </li>
+<li>
+<p>Run the unit tests by executing the following line:</p>
+<p><code>bash
+sh run_coconut_tests.sh</code></p>
+</li>
+</ul>
 <h2 id="getting-started">Getting started</h2>
 <blockquote>
 <p>TODO: this section should contain a kind of tutorial that goes over one of the test cases and explains more or less step-by-step how you run it, and what happens when you run it.</p>
 </blockquote>
 <h2 id="overview-of-the-code">Overview of the code</h2>
-<blockquote>
-<p>TODO: this section gives an overview of the 5 main folders in coconut, the rest of the website follows the structure of these folders. Some details are given about what is in each folder (coupling_components, data_structure, docs, test_examples, tests).</p>
-</blockquote>
+<p>The CoCoNuT package consists of 5 main folders: <code>coupling_components</code>, <code>data_structure</code>, <code>docs</code>, <code>examples</code> and <code>tests</code>. To give a general understanding of how the code is structured, we give a brief description of the purpose of each folder. The documentation website mirrors this folder structure.</p>
+<h3 id="coupling_components"><code>coupling_components</code></h3>
+<p>This folder contains the basic building blocks of CoCoNuT, which can be used to set up a coupled simulation. This includes among others the solver-wrappers, to communicate with single-physics solvers, and the mappers, which provide interpolation between non-conforming meshes present in the different single-physics solvers.</p>
+<h3 id="data_structure"><code>data_structure</code></h3>
+<p>This folder contains the data structure that is used internally in CoCoNuT to store and pass around information obtained from the single-physics solvers. The data structure relies on NumPy arrays for efficient storage and manipulation of data.</p>
+<h3 id="docs"><code>docs</code></h3>
+<p>This folder serves to automatically generate the documentation website, based on the MarkDown documentation files that are present throughout the code. </p>
+<h3 id="examples"><code>examples</code></h3>
+<p>This folder contains examples of several fluid-structure interaction cases, which can serve as starting point for settings up the user's own simulation. They also provide insight into the capabilities of CoCoNuT.</p>
+<h3 id="tests"><code>tests</code></h3>
+<p>This folder contains the unit tests. These are created for each piece of code that is added to CoCoNuT and are run regularly, to avoid bugs. </p>
                 
                   
                 

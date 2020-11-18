@@ -888,12 +888,14 @@
                 
                 <h1 id="coupling-components">Coupling components</h1>
 <p>The coupling components are the basic building blocks of the CoCoNuT coupling tool.
-There are five types: 
-* <code>convergence_criteria</code> which determine when the calculation in a time step has converged
-* <code>coupled_solvers</code> (completed by <code>models</code>) which perform the actual coupling, implementing a coupling algorithm
-* <code>mappers</code> which map from one interface discretization to another
-* <code>predictors</code> which provide an initial guess at the start of a new time step
-* <code>solver_wrappers</code> which provide communication which the actual solvers</p>
+There are five types: </p>
+<ul>
+<li><code>convergence_criteria</code> which determine when the calculation in a time step has converged</li>
+<li><code>coupled_solvers</code> (completed by <code>models</code>) which perform the actual coupling, implementing a coupling algorithm</li>
+<li><code>mappers</code> which map from one interface discretization to another</li>
+<li><code>predictors</code> which provide an initial guess at the start of a new time step</li>
+<li><code>solver_wrappers</code> which provide communication which the actual solvers</li>
+</ul>
 <p>The idea behind these components is modularity. For example, changing a <code>solver_wrapper</code> or creating a new one can be done wihtout having to adapt any other components.
 This allows for high degree of flexibility, a short learning curve and a limited development effort.
 Moreover, components can be used multiple times without the need for copying code.
