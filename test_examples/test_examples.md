@@ -3,7 +3,6 @@
 This documentation describes the different test examples.
 Currently all these examples calculate the flow in a flexible tube.
 
-
 ## Folder and file structure
 
 This section describes the different folders and files that are provided.
@@ -35,7 +34,6 @@ For example, for a case with Fluent and Abaqus, you would run the following comm
     source setup_abaqus.sh
     python run_simulation.py project_parameters_X.json
     
-
 ## Debug files
 
 The folder `test_examples` also contains a folder `debug_files` containing scripts for debug purposes.

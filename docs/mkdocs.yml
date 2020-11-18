@@ -43,6 +43,7 @@ nav:
             -   Python TubeFlow - Abaqus 2D: tube_tube_flow_abaqus2d.md
             -   Fluent 2D - Python TubeStructure: tube_fluent2d_tube_structure.md
             -   Fluent 2D - Abaqus 2D: tube_fluent2d_abaqus2d.md
+            -   Fluent 2D - Abaqus 2D - Steady: tube_fluent2d_abaqus2d_steady.md
             -   Fluent 3D - Abaqus 2D: tube_fluent3d_abaqus2d.md
             -   Fluent 3D - Abaqus 3D: tube_fluent3d_abaqus3d.md
     -   Tests:

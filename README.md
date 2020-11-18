@@ -9,6 +9,8 @@
 
 ### For users
 
+These instructions describe the setup of CoCoNuT on Linux. It has not been tested on Windows or macOS, so compatibility is not guaranteed, although it probably would work without major issues. 
+
 Requirements:
 
 -   Python 3.6+ (Anaconda 2019.03+ recommended)
@@ -16,7 +18,7 @@ Requirements:
 Installation:
 
 -   Download the source code from [GitHub](https://github.com/pyfsi/coconut)
--   Unzip to a folder `coconut`.
+-   Unzip to a folder `coconut`. If the folder is unzipped in Windows, some of the file permissions may change and some tests or test examples may not run out of the box. 
 -   Add the parent folder of `coconut` to your Python path.
 
 For example, with a folder structure like
@@ -34,9 +36,7 @@ export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 ```
 This line can also be added to your `.bashrc` file.
 
-Documentation:
-
-All documentation is grouped on the [CoCoNut website][https://pyfsi.github.io/coconut/].
+For information about the CoCoNuT package, we refer to the [documentation website][https://pyfsi.github.io/coconut/].
 
 
 ### For developers
@@ -92,9 +92,7 @@ export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 
 This line can also be added to your `.bashrc` file.
 
-Documentation:
-
-All documentation is grouped on the [CoCoNut website][https://pyfsi.github.io/coconut/].
+For information about the CoCoNuT package, we refer to the [documentation website][https://pyfsi.github.io/coconut/].
 
 [https://pyfsi.github.io/coconut/]: https://pyfsi.github.io/coconut/
 
