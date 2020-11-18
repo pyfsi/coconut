@@ -1,0 +1,10 @@
+Run pre
+Wed 18 Nov 2020 01:27:27 PM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 18 Nov 2020 01:27:27 PM CET
+Run standard
+Wed 18 Nov 2020 01:27:31 PM CET
+Abaqus Error: Abaqus/Standard Analysis exited with an error - Please see the 
+message file for possible error messages if the file exists.
+Abaqus/Analysis exited with errors

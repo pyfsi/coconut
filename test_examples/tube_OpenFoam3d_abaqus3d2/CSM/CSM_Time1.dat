@@ -1,0 +1,423 @@
+1
+
+   Abaqus 6.14-1                                  Date 03-Nov-2020   Time 13:32:12
+   For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
+
+
+
+                         The Abaqus Software is a product of:
+
+                           Dassault Systemes Simulia Corp.
+                                 Rising Sun Mills
+                                 166 Valley Street
+                           Providence, RI 02909-2499, USA
+ 
+
+
+                   Available for internal use at UNIVERSITEIT GENT VZW. 
+                   The Abaqus Online Support System is accessible
+                   through the "My Support" section of the SIMULIA
+                   Home Page at http://www.simulia.com.
+
+                   Support policies for academic licenses are described
+                   on the SIMULIA web site at
+                   http://www.3ds.com/products/simulia/academics/
+ 
+                          On machine cfdclu27.ugent.be 
+                          you are authorized to run
+                          Abaqus/Standard until 30-Apr-2021
+
+                          Your site id is: 200000000021321 
+
+
+ 
+                    For assistance or any other information you may
+                    obtain contact information for your local office
+                    from the world wide web at:
+
+                      http://www.3ds.com/products/simulia/locations/
+
+ 
+                * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+                *                                                         * 
+                *                   *****************                     * 
+                *                   *  N O T I C E  *                     * 
+                *                   *****************                     * 
+                *                                                         * 
+                *                                                         * 
+                *                    Abaqus 6.14-1                        * 
+                *                                                         * 
+                *          BUILD ID: 2014_06_04-21.37.49 134264           * 
+                *                                                         * 
+                *                                                         * 
+                *  Please make sure you are using release 6.14 manuals    * 
+                *  plus the notes accompanying this release.              * 
+                *                                                         * 
+                *                                                         * 
+                *                                                         * 
+                *                                                         * 
+                *                                                         * 
+                *   This program may not be used for commercial purposes  * 
+                *           without payment of a commercial fee.          * 
+                *                                                         * 
+                * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+
+ 
+
+
+
+     PROCESSING PART, INSTANCE, AND ASSEMBLY INFORMATION
+   *******************************************************
+
+
+     END PROCESSING PART, INSTANCE, AND ASSEMBLY INFORMATION
+   ***********************************************************
+
+
+
+
+     OPTIONS BEING PROCESSED
+   ***************************
+
+
+  *Heading
+          Tube                                                                                                                                                                                                                                                            
+  *Node
+  *Element, type=S8R
+  *Nset, nset=ASSEMBLY_PART-1-1_LEFTFIXED
+  *Nset, nset=ASSEMBLY_PART-1-1_NALL
+  *Nset, nset=ASSEMBLY_PART-1-1_RIGHTFIXED
+  *Nset, nset=ASSEMBLY_PART-1-1_TOP
+  *Elset, elset=ASSEMBLY_PART-1-1_EALL
+  *Elset, elset=ASSEMBLY_PART-1-1_SOLID
+  *Elset, elset=ASSEMBLY_PART-1-1__PICKEDSET8
+  *Nset, nset=ASSEMBLY_LEFTFIXED
+  *Nset, nset=ASSEMBLY_NALL
+  *Nset, nset=ASSEMBLY_RIGHTFIXED
+  *Nset, nset=ASSEMBLY_TOP
+  *Nset, nset=ASSEMBLY_WALLOUTSIDE
+  *Elset, elset=ASSEMBLY_EALL
+  *Elset, elset=ASSEMBLY_SOLID
+  *Elset, elset=ASSEMBLY__MOVINGSURFACE0_SNEG
+  *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE0
+  *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE0
+  *material, name=MATERIAL
+  *density
+  *elastic
+  *shellsection, elset=ASSEMBLY_PART-1-1__PICKEDSET8, material=MATERIAL, offset=0.5
+  *boundary
+  *boundary
+  *shellsection, elset=ASSEMBLY_PART-1-1__PICKEDSET8, material=MATERIAL, offset=0.5
+  *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE0
+  *output, field, frequency=99999
+  *output, field, variable=PRESELECT, frequency=99999
+  *output, history, variable=PRESELECT, frequency=99999
+  *output, field, frequency=99999
+  *output, field, variable=PRESELECT, frequency=99999
+  *output, history, variable=PRESELECT, frequency=99999
+  *output, field, frequency=99999
+  *output, field, variable=PRESELECT, frequency=99999
+  *output, history, variable=PRESELECT, frequency=99999
+  *Step, name=Step-1, nlgeom=YES, inc=1
+  *output, field, frequency=99999
+  *output, field, variable=PRESELECT, frequency=99999
+  *output, history, variable=PRESELECT, frequency=99999
+  *Step, name=Step-1, nlgeom=YES, inc=1
+  *Step, name=Step-1, nlgeom=YES, inc=1
+  *dynamic, application=QUASI-STATIC, directusercontrol, nohaf, initial=NO
+  *dsload, op=NEW
+  *dsload, op=NEW
+  *output, field, frequency=99999
+  *nodeoutput, nset=ASSEMBLY_WALLOUTSIDE
+  *output, field, variable=PRESELECT, frequency=99999
+  *output, history, variable=PRESELECT, frequency=99999
+  *endstep
+  *boundary
+  *boundary
+  *Step, name=Step-1, nlgeom=YES, inc=1
+  *dynamic, application=QUASI-STATIC, directusercontrol, nohaf, initial=NO
+  *endstep
+  
+                               E L E M E N T   Q U A L I T Y  C H E C K S        
+  
+  
+ ***NOTES: DISTORTED ISOPARAMETRIC ELEMENTS: ANGLE BETWEEN ISOPARAMETRIC LINES 
+           IS LESS THAN 45 DEGREES OR GREATER THAN 135 DEGREES.
+  
+           TETRAHEDRAL QUALITY MEASURE: VOLUME OF TETRAHEDRON DIVIDED BY THE 
+           VOLUME OF EQUILATERAL TETRAHEDRON WITH SAME CIRCUMSPHERE RADIUS; 
+           0 FOR DEGENERATE TETRAHEDRON AND 1 FOR EQUILATERIAL TETRAHEDRON. IT 
+           IS RECOMMENDED THAT THE TETRAHEDRAL QUALITY MEASURE BE GREATER THAN 
+           0.02, THE MIN INTERIOR (DIHEDRAL) ANGLE BE GREATER THAN 10 DEGREES, 
+           AND THE MAX INTERIOR (DIHEDRAL) ANGLE BE LESS THAN 160 DEGREES. 
+  
+           MODIFIED TETRAHEDRAL QUALITY MEASURE: ANGLES BETWEEN THE TWO LINE 
+           SEGMENTS ON EACH EDGE; THE EDGES OF MODIFIED TETRAHEDRAL SHOULD BE 
+           AS STRAIGHT AS POSSIBLE. IT IS RECOMMENDED THAT THE ANGLE BETWEEN 
+           THE TWO LINE SEGMENTS ON EACH EDGE IS BETWEEN 160 AND 180 DEGREES. 
+  
+           TRIANGULAR QUALITY MEASURE: AREA OF TRIANGLE DIVIDED BY THE AREA OF 
+           EQUILATERAL TRIANGLE WITH SAME CIRCUMCIRCLE RADIUS; 0 FOR DEGENERATE 
+           TRIANGLE AND 1 FOR EQUILATERAL TRIANGLE. IT IS RECOMMENDED THAT THE
+           TRIANGULAR QUALITY MEASURE BE GREATER THAN 0.01, THE MIN INTERIOR 
+           ANGLE BE GREATER THAN 10 DEGREES, AND THE MAX INTERIOR ANGLE BE LESS 
+           THAN 160 DEGREES. 
+  
+           NODAL ADJUSTMENTS ARISING FROM CONTACT INTERACTIONS AND/OR TIE 
+           CONSTRAINTS CAN CAUSE SEVERE ELEMENT DISTORTION. IT MAY BE NECESSARY 
+           TO REMESH IN ORDER TO REDUCE THE AMOUNT OF ADJUSTMENT. 
+
+ ***WARNING: 96 elements are curved/warped. The angle subtended between the 
+             average element normal and a nodal normal exceeds 10 degrees. Mesh 
+             refinement is recommended. The elements have been identified in 
+             element set WarnElemWarped.
+  
+ --------------------------------------------------------------------------------
+ Warped elements
+  
+      Element       Adjusted nodes 
+ ------------------ -------------- 
+         PART-1-1.1       NO       
+         PART-1-1.2       NO       
+         PART-1-1.3       NO       
+         PART-1-1.4       NO       
+         PART-1-1.5       NO       
+         PART-1-1.6       NO       
+         PART-1-1.7       NO       
+         PART-1-1.8       NO       
+         PART-1-1.9       NO       
+        PART-1-1.10       NO       
+        PART-1-1.11       NO       
+        PART-1-1.12       NO       
+        PART-1-1.13       NO       
+        PART-1-1.14       NO       
+        PART-1-1.15       NO       
+        PART-1-1.16       NO       
+        PART-1-1.17       NO       
+        PART-1-1.18       NO       
+        PART-1-1.19       NO       
+        PART-1-1.20       NO       
+        PART-1-1.21       NO       
+        PART-1-1.22       NO       
+        PART-1-1.23       NO       
+        PART-1-1.24       NO       
+        PART-1-1.25       NO       
+        PART-1-1.26       NO       
+        PART-1-1.27       NO       
+        PART-1-1.28       NO       
+        PART-1-1.29       NO       
+        PART-1-1.30       NO       
+        PART-1-1.31       NO       
+        PART-1-1.32       NO       
+        PART-1-1.33       NO       
+        PART-1-1.34       NO       
+        PART-1-1.35       NO       
+        PART-1-1.36       NO       
+        PART-1-1.37       NO       
+        PART-1-1.38       NO       
+        PART-1-1.39       NO       
+        PART-1-1.40       NO       
+        PART-1-1.41       NO       
+        PART-1-1.42       NO       
+        PART-1-1.43       NO       
+        PART-1-1.44       NO       
+        PART-1-1.45       NO       
+        PART-1-1.46       NO       
+        PART-1-1.47       NO       
+        PART-1-1.48       NO       
+        PART-1-1.49       NO       
+        PART-1-1.50       NO       
+        PART-1-1.51       NO       
+        PART-1-1.52       NO       
+        PART-1-1.53       NO       
+        PART-1-1.54       NO       
+        PART-1-1.55       NO       
+        PART-1-1.56       NO       
+        PART-1-1.57       NO       
+        PART-1-1.58       NO       
+        PART-1-1.59       NO       
+        PART-1-1.60       NO       
+        PART-1-1.61       NO       
+        PART-1-1.62       NO       
+        PART-1-1.63       NO       
+        PART-1-1.64       NO       
+        PART-1-1.65       NO       
+        PART-1-1.66       NO       
+        PART-1-1.67       NO       
+        PART-1-1.68       NO       
+        PART-1-1.69       NO       
+        PART-1-1.70       NO       
+        PART-1-1.71       NO       
+        PART-1-1.72       NO       
+        PART-1-1.73       NO       
+        PART-1-1.74       NO       
+        PART-1-1.75       NO       
+        PART-1-1.76       NO       
+        PART-1-1.77       NO       
+        PART-1-1.78       NO       
+        PART-1-1.79       NO       
+        PART-1-1.80       NO       
+        PART-1-1.81       NO       
+        PART-1-1.82       NO       
+        PART-1-1.83       NO       
+        PART-1-1.84       NO       
+        PART-1-1.85       NO       
+        PART-1-1.86       NO       
+        PART-1-1.87       NO       
+        PART-1-1.88       NO       
+        PART-1-1.89       NO       
+        PART-1-1.90       NO       
+        PART-1-1.91       NO       
+        PART-1-1.92       NO       
+        PART-1-1.93       NO       
+        PART-1-1.94       NO       
+        PART-1-1.95       NO       
+        PART-1-1.96       NO       
+  
+
+     - (RAMP) OR (STEP) - INDICATE USE OF DEFAULT AMPLITUDES ASSOCIATED WITH THE STEP
+
+     - (RAMP) OR (STEP) - INDICATE USE OF DEFAULT AMPLITUDES ASSOCIATED WITH THE STEP
+
+
+
+                            P R O B L E M   S I Z E
+
+
+          NUMBER OF ELEMENTS IS                                    96
+          NUMBER OF NODES IS                                      304
+          NUMBER OF NODES DEFINED BY THE USER                     304
+          TOTAL NUMBER OF VARIABLES IN THE MODEL                 1824
+          (DEGREES OF FREEDOM PLUS MAX NO. OF ANY LAGRANGE MULTIPLIER
+           VARIABLES. INCLUDE *PRINT,SOLVE=YES TO GET THE ACTUAL NUMBER.)
+
+
+
+                              END OF USER INPUT PROCESSING
+
+
+
+     JOB TIME SUMMARY
+       USER TIME (SEC)      =  0.16000    
+       SYSTEM TIME (SEC)    =  4.00000E-02
+       TOTAL CPU TIME (SEC) =  0.20000    
+       WALLCLOCK TIME (SEC) =          0
+1
+
+   Abaqus 6.14-1                                  Date 03-Nov-2020   Time 13:32:15
+   For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
+
+     Tube                                                                                      STEP    1  INCREMENT    1
+                                                                                          TIME COMPLETED IN THIS STEP   0.00    
+
+
+                        S T E P       1     D Y N A M I C   A N A L Y S I S - I M P L I C I T  I N T E G R A T I O N
+
+
+                                                                                          
+
+          DYNAMIC APPLICATION PACKED SCHEME IS                 QUASI-STATIC        
+          BACKWARD EULER (BWE) TIME INTEGRATOR IS USED
+
+          FIXED TIME INCREMENTS
+          TIME INCREMENT IS                                    1.000E-04
+          TIME PERIOD IS                                       1.000E-04
+
+          THE HALF-INCREMENT RESIDUALS WILL NOT BE CALCULATED
+
+          INITIAL ACCELERATIONS WILL NOT BE CALCULATED
+          AGGRESSIVE   TIME INCREMENTATION IS USED
+          STEP AMPLITUDE IS                                    RAMP
+
+          LARGE DISPLACEMENT THEORY WILL BE USED
+
+
+
+                    TOTAL MASS OF MODEL
+
+                      1.8842344E-03
+
+
+                    LOCATION OF THE CENTER OF MASS OF THE MODEL
+
+                      1.5452832E-19     -7.7264158E-20      6.8484140E-20
+
+
+                    MOMENTS OF INERTIA ABOUT THE ORIGIN
+                           I(XX)               I(YY)               I(ZZ)
+
+                      4.7696836E-08      4.1671131E-07      4.1671131E-07
+
+
+                    PRODUCTS OF INERTIA ABOUT THE ORIGIN
+                           I(XY)               I(XZ)               I(YZ)
+
+                     -4.1359031E-25     -1.4475661E-24      3.1019273E-25
+
+
+                    MOMENTS OF INERTIA ABOUT THE CENTER OF MASS
+                           I(XX)               I(YY)               I(ZZ)
+
+                      4.7696836E-08      4.1671131E-07      4.1671131E-07
+
+
+                    PRODUCTS OF INERTIA ABOUT THE CENTER OF MASS
+                           I(XY)               I(XZ)               I(YZ)
+
+                     -4.1359031E-25     -1.4475661E-24      3.1019273E-25
+  
+                   M E M O R Y   E S T I M A T E
+  
+ PROCESS      FLOATING PT       MINIMUM MEMORY        MEMORY TO
+              OPERATIONS           REQUIRED          MINIMIZE I/O
+             PER ITERATION           (MB)               (MB)
+  
+     1          4.65E+07               17                 27
+  
+ NOTE:
+      (1) SINCE ABAQUS DOES NOT PRE-ALLOCATE MEMORY AND ONLY ALLOCATES MEMORY AS NEEDED DURING THE ANALYSIS,
+          THE MEMORY REQUIREMENT PRINTED HERE CAN ONLY BE VIEWED AS A GENERAL GUIDELINE BASED ON THE BEST
+          KNOWLEDGE AVAILABLE AT THE BEGINNING OF A STEP BEFORE THE SOLUTION PROCESS HAS BEGUN.
+      (2) THE ESTIMATE IS NORMALLY UPDATED AT THE BEGINNING OF EVERY STEP. IT IS THE MAXIMUM VALUE OF THE
+          ESTIMATE FROM THE CURRENT STEP TO THE LAST STEP OF THE ANALYSIS, WITH UNSYMMETRIC SOLUTION TAKEN
+          INTO ACCOUNT IF APPLICABLE. 
+      (3) SINCE THE ESTIMATE IS BASED ON THE ACTIVE DEGREES OF FREEDOM IN THE FIRST ITERATION OF THE 
+          CURRENT STEP, THE MEMORY ESTIMATE MIGHT BE SIGNIFICANTLY DIFFERENT THAN ACTUAL USAGE FOR 
+          PROBLEMS WITH SUBSTANTIAL CHANGES IN ACTIVE DEGREES OF FREEDOM BETWEEN STEPS (OR EVEN WITHIN
+          THE SAME STEP). EXAMPLES ARE: PROBLEMS WITH SIGNIFICANT CONTACT CHANGES, PROBLEMS WITH MODEL
+          CHANGE, PROBLEMS WITH BOTH STATIC STEP AND STEADY STATE DYNAMIC PROCEDURES WHERE ACOUSTIC 
+          ELEMENTS WILL ONLY BE ACTIVATED IN THE STEADY STATE DYNAMIC STEPS.
+      (4) FOR MULTI-PROCESS EXECUTION, THE ESTIMATED VALUE OF FLOATING POINT OPERATIONS FOR EACH PROCESS
+          IS BASED ON AN INITIAL SCHEDULING OF OPERATIONS AND MIGHT NOT REFLECT THE ACTUAL FLOATING 
+          POINT OPERATIONS COMPLETED ON EACH PROCESS. OPERATIONS ARE DYNAMICALLY BALANCED DURING EXECUTION, 
+          SO THE ACTUAL BALANCE OF OPERATIONS BETWEEN PROCESSES IS EXPECTED TO BE BETTER THAN THE ESTIMATE
+          PRINTED HERE.
+      (5) THE UPPER LIMIT OF MEMORY THAT CAN BE ALLOCATED BY ABAQUS WILL IN GENERAL DEPEND ON THE VALUE OF
+          THE "MEMORY" PARAMETER AND THE AMOUNT OF PHYSICAL MEMORY AVAILABLE ON THE MACHINE. PLEASE SEE
+          THE "ABAQUS ANALYSIS USER'S MANUAL" FOR MORE DETAILS. THE ACTUAL USAGE OF MEMORY AND OF DISK
+          SPACE FOR SCRATCH DATA WILL DEPEND ON THIS UPPER LIMIT AS WELL AS THE MEMORY REQUIRED TO MINIMIZE
+          I/O. IF THE MEMORY UPPER LIMIT IS GREATER THAN THE MEMORY REQUIRED TO MINIMIZE I/O, THEN THE ACTUAL
+          MEMORY USAGE WILL BE CLOSE TO THE ESTIMATED "MEMORY TO MINIMIZE I/O" VALUE, AND THE SCRATCH DISK
+          USAGE WILL BE CLOSE-TO-ZERO; OTHERWISE, THE ACTUAL MEMORY USED WILL BE CLOSE TO THE PREVIOUSLY
+          MENTIONED MEMORY LIMIT, AND THE SCRATCH DISK USAGE WILL BE ROUGHLY PROPORTIONAL TO THE DIFFERENCE
+          BETWEEN THE ESTIMATED "MEMORY TO MINIMIZE I/O" AND THE MEMORY UPPER LIMIT. HOWEVER ACCURATE
+          ESTIMATE OF THE SCRATCH DISK SPACE IS NOT POSSIBLE.
+      (6) USING "*RESTART, WRITE" CAN GENERATE A LARGE AMOUNT OF DATA WRITTEN IN THE WORK DIRECTORY.
+
+
+          THE ANALYSIS HAS BEEN COMPLETED
+
+
+
+                              ANALYSIS COMPLETE
+                              WITH      1 WARNING MESSAGES ON THE DAT FILE
+                              AND       1 WARNING MESSAGES ON THE MSG FILE
+
+
+
+     JOB TIME SUMMARY
+       USER TIME (SEC)      =  0.42000    
+       SYSTEM TIME (SEC)    =  7.00000E-02
+       TOTAL CPU TIME (SEC) =  0.49000    
+       WALLCLOCK TIME (SEC) =          0

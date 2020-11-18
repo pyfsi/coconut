@@ -48,9 +48,9 @@ class SolverWrapperOpenFOAM_41(Component):
         self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
         self.diffusivity=self.settings["diffusivity"].GetString()
         self.density=self.settings["density"].GetInt()
-        self.displacementX = self.settings["displacementX"].GetInt()
-        self.displacementY = self.settings["displacementY"].GetInt()
-        self.displacementZ = self.settings["displacementZ"].GetInt()
+        self.displacementX = self.settings["displacementX"].GetDouble()
+        self.displacementY = self.settings["displacementY"].GetDouble()
+        self.displacementZ = self.settings["displacementZ"].GetDouble()
 
         # debug
         self.debug = True  # set on True to save copy of input and output files in every iteration

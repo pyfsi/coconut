@@ -1,0 +1,102 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : blockMesh
+Date   : Nov 03 2020
+Time   : 09:01:29
+Host   : "cfdclu27.ugent.be"
+PID    : 21740
+Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Creating block mesh from
+    "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #calcEntry at line 26 in file "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_e7c85629723d6f79a468cfb28baf9db918425a63.so"
+Using #calcEntry at line 27 in file "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_557396496f0bbb15812ae5259e1b29a45f382441.so"
+Using #calcEntry at line 28 in file "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_f91320214f4a3eab61f342801ca1160b6dde08a6.so"
+Using #calcEntry at line 29 in file "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_8d3185823fb750cd3e713aabad279fa4f8e41079.so"
+Using #calcEntry at line 30 in file "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_b43fc2889697ccccb646758a359114a8c8f6ea53.so"
+Using #calcEntry at line 31 in file "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/system/blockMeshDict"
+Using #codeStream with "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD/dynamicCode/platforms/linux64IccDPInt32Opt/lib/libcodeStream_c1114766fae125e215327161a09be63dda305ed4.so"
+Creating curved edges
+Creating topology blocks
+Creating topology patches
+
+Creating block mesh topology
+
+Check topology
+
+	Basic statistics
+		Number of internal faces : 8
+		Number of boundary faces : 14
+		Number of defined boundary faces : 14
+		Number of undefined boundary faces : 0
+	Checking patch -> block consistency
+
+Creating block offsets
+Creating merge list .
+
+Creating polyMesh from blockMesh
+Creating points with scale 1
+    Block 0 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.000441942 .. 0.000441942
+
+    Block 1 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.00125 .. 0.00125
+
+    Block 2 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.00125 .. 0.00125
+
+    Block 3 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.00125 .. 0.00125
+
+    Block 4 cell size :
+        i : 0.00104167 .. 0.00104167
+        j : 0.000441942 .. 0.000441942
+        k : 0.00125 .. 0.00125
+
+Creating cells
+Creating patches
+
+Writing polyMesh
+----------------
+Mesh Information
+----------------
+  boundingBox: (-0.025 -0.005 -0.005) (0.025 0.005 0.005)
+  nPoints: 7105
+  nCells: 6144
+  nFaces: 19328
+  nInternalFaces: 17536
+----------------
+Patches
+----------------
+  patch 0 (start: 17536 size: 128) name: inlet
+  patch 1 (start: 17664 size: 128) name: outlet
+  patch 2 (start: 17792 size: 1536) name: mantle
+
+End
+

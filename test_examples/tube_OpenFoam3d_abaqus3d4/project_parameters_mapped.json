@@ -89,9 +89,9 @@
                     "meshmotion_solver": "displacementLaplacian",
                     "diffusivity" : "inverseDistance",
 		    "density" : 1000,
-                    "displacementX" : 0,
-		    "displacementY" : 0,
-                    "displacementZ" : 0
+                    "displacementX" : 0.000010,
+		    "displacementY" : 0.0,
+                    "displacementZ" : 0.0
                 }
             },
             {
