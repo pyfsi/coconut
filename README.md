@@ -97,6 +97,60 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 
 > TODO: this section should contain a kind of tutorial that goes over one of the test cases and explains more or less step-by-step how you run it, and what happens when you run it.
 
+> TODO: change 'test_examples' to 'examples' where necessary
+
+
+Once the CoCoNuT package has been successfully installed, it is time to run a first example case. For this purpose, a step-by-step guide to run an example included in the source code is given.
+
+In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated. For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. 
+
+We start by creating an environment variable `COCO` in which we can store the path to the folder in which CoCoNuT is installed. We will use this variable to avoid any confusion about relative or absolute paths in this tutorial. Using the example installation location from above:
+
+```bash
+COCO=/some/absolute/path
+```
+
+> TODO: perhaps this is overkill, as we don't use path very often actually
+
+We can now navigate to the folder of the example we will simulate. 
+
+```bash
+cd $COCO/coconut/test_examples/tube_tube_flow_tube_structure/
+```
+
+This folder contains all the files required to set up and run the FSI simulation in CoCoNuT. The files `run_simulation.py` and `project_paramaters_mapped.json` will be used to run the actual FSI simulation, but we will come back to those later. 
+
+First we must set up both single-physics solvers separately, starting with the flow solver. This setup is typically done outside of CoCoNuT by the user, as it is solver-specific, but in this case we provide a bash script `setup_tube_flow.sh` that uses the files in the folder `setup_tube_flow` to generate the case. When the script is run with
+
+```bash
+./setup_tube_flow.sh
+```
+
+a new folder `CFD` appears. This folder contains all files required to start a simulation of the flow in the tube. Analogously, we run 
+
+```bash
+./setup_tube_structure.sh
+```
+
+to generate the `CSM` folder, which contains all files required to start a simulation of the tube structure. 
+
+We can now start the FSI simulation in CoCoNuT by running the Python file `run_simulation.py` with the settings file `project_paramaters_mapped.json` as argument:
+
+```bash
+python run_simulation.py project_parameters_mapped.json
+```
+
+The simulation should start, first printing the CoCoNuT ASCII-banner, then some information about the settings of the FSI simulation and finally the residuals of the coupling iterations per time step. 
+
+
+> TODO:
+> - run_simulation.py: this is standard file, typically not changed 
+> - project_parameters.json: go over file, explain a whole bunch of settings; also suggest to change some parameters and rerun simulation; 
+> - finally: show an exmple of post-processing? we'll see... 
+
+
+
+
 
 
 ## Overview of the code
