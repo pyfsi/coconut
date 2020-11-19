@@ -1,7 +1,7 @@
 # CoCoNuT - Coupling Code for Numerical Tools
 
 
-CoCoNuT is a Python package for partitioned multi-physics simulations, with a focus on fluid-structure interaction. 
+CoCoNuT is a light-weight Python package for efficient partitioned multi-physics simulations, with a focus on fluid-structure interaction. 
 Thanks to its fully modular approach, the package is versatile and easy to extend. It is available under the GPL-3.0 license. 
 
 
@@ -95,14 +95,12 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 
 ## Getting started
 
-> TODO: this section should contain a kind of tutorial that goes over one of the test cases and explains more or less step-by-step how you run it, and what happens when you run it.
-
 > TODO: change 'test_examples' to 'examples' where necessary
 
 
-Once the CoCoNuT package has been successfully installed, it is time to run a first example case. For this purpose, a step-by-step guide to run an example included in the source code is given.
+Once the CoCoNuT package has been successfully installed, it is time to run a first coupled simulation. For this purpose, we give a step-by-step guide of an example case included in the source code.
 
-In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated. For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. 
+In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated (see [here](https://biblio.ugent.be/publication/940283)). For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. Another example in the source code solves the same case in 3D using ANSYS Fluent and Abaqus for respectively the flow and structure calculations. 
 
 We start by creating an environment variable `COCO` in which we can store the path to the folder in which CoCoNuT is installed. We will use this variable to avoid any confusion about relative or absolute paths in this tutorial. Using the example installation location from above:
 
@@ -110,17 +108,13 @@ We start by creating an environment variable `COCO` in which we can store the pa
 COCO=/some/absolute/path
 ```
 
-> TODO: perhaps this is overkill, as we don't use path very often actually
-
 We can now navigate to the folder of the example we will simulate. 
-
 ```bash
 cd $COCO/coconut/test_examples/tube_tube_flow_tube_structure/
 ```
-
 This folder contains all the files required to set up and run the FSI simulation in CoCoNuT. The files `run_simulation.py` and `project_paramaters_mapped.json` will be used to run the actual FSI simulation, but we will come back to those later. 
 
-First we must set up both single-physics solvers separately, starting with the flow solver. This setup is typically done outside of CoCoNuT by the user, as it is solver-specific, but in this case we provide a bash script `setup_tube_flow.sh` that uses the files in the folder `setup_tube_flow` to generate the case. When the script is run with
+First we must set up both single-physics solvers separately, starting with the flow solver. This setup is typically done outside of CoCoNuT by the user, as it is solver-specific. In this case we provide a bash script `setup_tube_flow.sh` that uses the files in the folder `setup_tube_flow` to generate the case. When the script is run with
 
 ```bash
 ./setup_tube_flow.sh
@@ -142,15 +136,32 @@ python run_simulation.py project_parameters_mapped.json
 
 The simulation should start, first printing the CoCoNuT ASCII-banner, then some information about the settings of the FSI simulation and finally the residuals of the coupling iterations per time step. 
 
+Let us now take a closer look at the two files that are used to run CoCoNuT. 
+The Python file `run_simulation.py` typically does not have to be adapted by the user. Its task is to read in the settings file `project_paramaters_mapped.json` and launch a simulation using those settings. 
+The file `project_paramaters_mapped.json` is a collection of settings that is written in [JSON format](https://www.json.org/json-en.html). JSON is a language-independent text format that is easy to read and write, and is used for data-exchange. 
+It consists mainly of key-value pairs, and can hence be easily converted to a (nested) Python dictionary. While the keys are always strings, the values can be strings, numbers, arrays, booleans or nested JSON objects (nested dictionaries).
+Before you read on, it can be useful to familiarize yourself with the JSON syntax. In what follows, we will use Python terminology (dictionary, list, boolean, etc...) to refer to the structure and the values in the JSON file. 
 
-> TODO:
-> - run_simulation.py: this is standard file, typically not changed 
-> - project_parameters.json: go over file, explain a whole bunch of settings; also suggest to change some parameters and rerun simulation; 
-> - finally: show an exmple of post-processing? we'll see... 
+The JSON file is built up in a hierarchical way that represents the objects created in the CoCoNuT simulation. At the highest level, the dictionary contains two keys: `settings` and `coupled_solver`. 
+The value given to the `settings` key is a nested dictionary, which contains a single key-value pair that sets the number of timesteps to be simulated. 
+The value given to the `coupled_solver` key is a special dictionary, because it has the `type` key. CoCoNuT will generate an object of the specified type, namely `coupled_solvers.iqni`. This refers to the class defined in the file `$COCO/coconut/coupling_components/coupled_solvers/iqni.py`: the `CoupledSolverIQNI` class. 
+Note that the value in `type` always refers to a file located in `$COCO/coconut/coupling_components`. 
+The dictionary under `settings` is used to initialize an instance of this class. In this case the initial time `timestep_start`, the time step `delta_t` and some other parameters must be given. The coupled solver is the main class that determines how the two single-physics solvers are coupled. 
+The dictionary that is given to the `coupled_solver` key contains next to `type` and `settings` three other key-value pairs. These will generate other objects: the fact that they are given in the `coupled_solver` dictionary means that these objects will be created by the coupled solver object.
 
+`predictor` will generate an object of the `PredictorLinear` class found in the file `$COCO/coconut/coupling_components/predictors/linear.py`. This class requires no additional settings for its initialization. The predictor object is used to extrapolate the solution to the next time step. 
 
+`convergence_criterion` will generate an object of the `ConvergenceCriterionOr` class found in the file `$COCO/coconut/coupling_components/convergence_criteria/or.py`, using the given `settings` for its initialization. The convergence criterion is used to determine when CoCoNuT should move to the next time step. In this case the *or* criterion is used, which signals convergence when one or both underlying criteria are satisfied. These underlying criteria are instances of the `ConvergenceCriterionIterationLimit` and `ConvergenceCriterionRelativeNorm` classes defined in respectively `$COCO/coconut/coupling_components/convergence_criteria/iteration_limit.py` and `$COCO/coconut/coupling_components/convergence_criteria/relative_norm.py`. 
+This means that CoCoNuT will move to the next time step after 15 iterations or when the 2-norm of the residual has decreased six orders of magnitude.
 
+`solver_wrappers` is a list of two solver-wrapper objects, which will communicate with the two single-physics solvers, in this case the 1D flow solver and the 1D structure solver. The first dictionary in the list will generate an instance of the `SolverWrapperTubeFlow` class found in `$COCO/coconut/coupling_components/solver_wrappers/python/tube_flow_solver.py`. An important setting to generate this object is the `working_directory`, which refers to the folder `CFD` that we created with the case files of the flow solver. All files written by the flow solver will also appear in this folder.
+We would now expect the second dictionary to generate a solver-wrapper to communicate with the structure solver, i.e. an instance of the `SolverWrapperTubeStructure` class found in `$COCO/coconut/coupling_components/solver_wrappers/python/tube_structure_solver.py`. This is not the case however: the flow and structure solvers typically use a different geometrical discretization (computational grid or mesh), hence they cannot readily be coupled in CoCoNuT. To overcome this issue, we put a layer of mapping around one of the solver-wrappers. This is done with the `SolverWrapperMapped` class found in `$COCO/coconut/coupling_components/solver_wrappers/mapped.py`. The *mapped* solver-wrapper interpolates all data flowing between CoCoNuT and the real solver-wrapper. The mapped solver-wrapper itself contains three objects: the actual solver-wrapper (`SolverWrapperTubeStructure` class), and mappers for respectively the input and the output of the solver-wrapper (both `MapperInterface` class). 
 
+The concept of the mapped solver-wrapper illustrates the modularity of CoCoNuT. As far as the coupled solver is concerned, the mapped solver-wrapper acts exactly as a real solver-wrapper. The real solver-wrapper does not know about the mapping at all: it acts as if it directly communicates with the coupled solver. Furthermore, the interpolation method can be easily changed by swapping the mappers in the mapped solver-wrapper: the current linear interpolation scheme can easily be replaced by e.g. a radial-basis scheme by changing `mappers.linear` to `mappers.radial_basis`. 
+
+Now try to change some of the settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation. 
+
+> TODO: add visualization using the post_processing files?
 
 
 ## Overview of the code
