@@ -36,7 +36,7 @@ nav:
     -   Documentation:
         -   docs.md
     -   Test examples:
-        -   General: test_examples.md
+        -   General: examples.md
         -   Tube:
             -   Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
             -   Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md

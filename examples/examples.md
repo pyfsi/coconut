@@ -36,6 +36,6 @@ For example, for a case with Fluent and Abaqus, you would run the following comm
     
 ## Debug files
 
-The folder `test_examples` also contains a folder `debug_files` containing scripts for debug purposes.
+The folder `examples` also contains a folder `debug_files` containing scripts for debug purposes.
 These files might need some adjustements to work. 
 In order to use them, the debug boolean `self.debug` has to be `True` in the code of the corresponding solver wrappers.

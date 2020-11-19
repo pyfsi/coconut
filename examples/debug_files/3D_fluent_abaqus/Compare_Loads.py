@@ -33,8 +33,8 @@ coordTango = np.array(pd.read_csv(file_coordTango, sep="\s+"))
 loadTango = np.array(pd.read_csv(file_loadTango,  sep="\s+",header = None, skiprows=1))
 n_Tango = loadTango.shape[0]
 
-file_loadCoCo =  "/cfdfile2/data/fm/lucas/Kratos/applications/CoSimulationApplication/test_examples/tube3D_fluent_abaqus/CSM-rb/CSM_Time1Surface0Cpu0Input.dat"
-file_coordCoCo = "/cfdfile2/data/fm/lucas/Kratos/applications/CoSimulationApplication/test_examples/tube3D_fluent_abaqus/CSM-rb/CSM_Time0Surface0CFaces.dat"
+file_loadCoCo =  "/cfdfile2/data/fm/lucas/Kratos/applications/CoSimulationApplication/examples/tube3D_fluent_abaqus/CSM-rb/CSM_Time1Surface0Cpu0Input.dat"
+file_coordCoCo = "/cfdfile2/data/fm/lucas/Kratos/applications/CoSimulationApplication/examples/tube3D_fluent_abaqus/CSM-rb/CSM_Time0Surface0CFaces.dat"
 
 coordCoCo = np.array(pd.read_csv(file_coordTango,  sep="\s+"))
 loadCoCo = np.array(pd.read_csv(file_loadCoCo,  sep="\s+", header = None, skiprows = 1))
