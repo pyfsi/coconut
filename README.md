@@ -95,9 +95,6 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 
 ## Getting started
 
-> TODO: change 'test_examples' to 'examples' where necessary
-
-
 Once the CoCoNuT package has been successfully installed, it is time to run a first coupled simulation. For this purpose, we give a step-by-step guide of an example case included in the source code.
 
 In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated (see [here](https://biblio.ugent.be/publication/940283)). For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. Another example in the source code solves the same case in 3D using ANSYS Fluent and Abaqus for respectively the flow and structure calculations. 
@@ -110,7 +107,7 @@ COCO=/some/absolute/path
 
 We can now navigate to the folder of the example we will simulate. 
 ```bash
-cd $COCO/coconut/test_examples/tube_tube_flow_tube_structure/
+cd $COCO/coconut/examples/tube_tube_flow_tube_structure/
 ```
 This folder contains all the files required to set up and run the FSI simulation in CoCoNuT. The files `run_simulation.py` and `project_paramaters_mapped.json` will be used to run the actual FSI simulation, but we will come back to those later. 
 
