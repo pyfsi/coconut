@@ -10,7 +10,11 @@ class TestInterface(unittest.TestCase):
 
     def setUp(self):
         model_part_size = 3
-        self.parameters = {'interface_a': {'mp1': ['pressure', 'traction'], 'mp2': ['density']}}
+        self.parameters = {'interface_a':
+                               [{'model_part': 'mp1', 'variables': ['pressure', 'traction']},
+                                {'model_part': 'mp2', 'variables': ['density']}]
+                           }
+
         self.model = Model()
         x0 = np.random.rand(3 * model_part_size)
         y0 = np.random.rand(3 * model_part_size)
@@ -25,13 +29,28 @@ class TestInterface(unittest.TestCase):
                                      y0[2 * model_part_size:3 * model_part_size],
                                      z0[2 * model_part_size:3 * model_part_size], ids[2*model_part_size: 3 * model_part_size])
 
-        self.interface= Interface(self.parameters['interface_a'], self.model)
+        self.interface = Interface(self.parameters['interface_a'], self.model)
         self.scalar_size = 1
         self.vector_size = 3
         self.pressure = np.random.rand(model_part_size, self.scalar_size)
         self.traction = np.random.rand(model_part_size, self.vector_size)
         self.temperature = np.random.rand(model_part_size, self.scalar_size)
         self.density = np.random.rand(model_part_size, self.scalar_size)
+
+    def test_parameters(self):
+        parameters = {'mp1': ['pressure']}
+        self.assertRaises(TypeError, Interface, parameters, self.model)
+        parameters = [{'model_part': 'mp1', 'variables': ['pressure']}, 2]
+        self.assertRaises(TypeError, Interface, parameters, self.model)
+        parameters = [{'model_part': 'mp1'}]
+        self.assertRaises(KeyError, Interface, parameters, self.model)
+        parameters = [{'model_part': 'mp1', 'variables': ['pressure'], 'extra': 2}]
+        self.assertRaises(KeyError, Interface, parameters, self.model)
+
+        self.assertEqual(self.interface.parameters, self.parameters['interface_a'])
+
+        with self.assertRaises(AttributeError):
+            self.interface.parameters = parameters
 
     def test_model_part_variable_pairs(self):
         ref_result = [('mp1', 'pressure'), ('mp1', 'traction'), ('mp2', 'density')]

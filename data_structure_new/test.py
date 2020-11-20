@@ -18,15 +18,24 @@ if 1:
     model = Model()
     for i in range(3):
         coords = np.random.rand(5 + i, 3)
-        model.create_model_part(f'mp{i}', coords[:, 0], coords[:, 1], coords[:, 2])
+        ids = np.arange(5 + i) + 10 * i
+        model.create_model_part(f'mp{i}', coords[:, 0], coords[:, 1], coords[:, 2], ids)
 
     print(model)
     mp1 = model.get_model_part('mp1')
 
     print(mp1)
 
-    par = {'mp0': ['pressure'],
-           'mp1': ['pressure', 'traction']}  # *** order correct?? orderd dicts??
+    par = [
+        {
+            'model_part': 'mp0',
+            'variables': ['pressure']
+        },
+        {
+            'model_part': 'mp1',
+            'variables': ['pressure', 'traction']
+        }
+    ]
 
     interface = Interface(par, model)
     print(interface)
@@ -44,17 +53,20 @@ if 1:
 if 1:
     n = 10000
     coords = np.random.rand(n, 3)
+    ids = np.arange(n)
 
-    par = {'mp0': ['pressure'],
-           'mp1': ['pressure', 'traction']}
+
+    par = [{'model_part': 'mp0', 'variables': ['pressure']},
+           {'model_part': 'mp1', 'variables': ['pressure', 'traction']}]
     tmp = {'mp0': ['PRESSURE'],
            'mp1': ['PRESSURE', 'TRACTION']}
     par_old = Parameters(json.dumps(tmp))
 
     # setup with new data structure
     model = Model()
-    for model_part_name in par:
-        model.create_model_part(model_part_name, *np.hsplit(coords, 3))
+    for model_part_dict in par:
+        model.create_model_part(model_part_dict['model_part'], coords[:, 0],
+                                coords[:, 1], coords[:, 2], ids)
     interface = Interface(par, model)
 
     # setup with old data structure
@@ -67,6 +79,7 @@ if 1:
             mp.CreateNewNode(i, coords[i, 0], coords[i, 1], coords[i, 2])
     interface_old = InterfaceOld(model_old, par_old)
 
+    # compare speed
     print('\nget and set numpy array in interface')
     with quicktimer('new', t=1, ms=True):
         data = interface.get_interface_data()
@@ -99,13 +112,15 @@ import numpy as np
 
 n = 1000
 coords = np.random.rand(n, 3)
+ids = np.arange(n)
 
-par = {'mp0': ['pressure'],
-   'mp1': ['pressure', 'traction']}
+par = [{'model_part': 'mp0', 'variables': ['pressure']},
+       {'model_part': 'mp1', 'variables': ['pressure', 'traction']}]
 
 model = Model()
-for model_part_name in par:
-    model.create_model_part(model_part_name, *np.hsplit(coords, 3))
+for model_part_dict in par:
+    model.create_model_part(model_part_dict['model_part'], coords[:, 0], 
+                            coords[:, 1], coords[:, 2], ids)
 interface = Interface(par, model)
 
 data = interface.get_interface_data()
@@ -116,15 +131,14 @@ interface2 = interface.copy()
 
     code1 = """interface.get_interface_data()"""
     code2 = """interface.set_interface_data(data)"""
-    code3 = """interface.copy_old()"""
+    # code3 = """interface.copy_old()"""
     code4 = """interface.copy()"""
     code5 = """interface + interface2"""
     code6 = """interface += interface2"""
 
 
     m = 10000
-    codes = [code1, code2, code3, code4, code5, code6]
+    codes = [code1, code2, code4, code5, code6]
     # codes = [code3, code4]
     for code in codes:
         print(f'{code}:\n\t{timeit.timeit(setup=setup, stmt=code, number=m) / m * 1e6:} micro-s')
-

@@ -14,22 +14,31 @@ class Interface:
 
         if not type(model) == Model:
             raise TypeError('model should be an instance of the class Model')
-        if not type(parameters) == dict:
-            raise TypeError('parameters should be a dictionary with model parts as key '
-                            'and a list of variables as values')
 
-        for model_part_name in parameters:
+        if not type(parameters) == list:
+            raise TypeError('parameters must be a list')
+        for model_part_dict in parameters:
+            if not type(model_part_dict) == dict:
+                raise TypeError('parameters must only contain dictionaries')
+            if not sorted(list(model_part_dict)) == ['model_part', 'variables']:
+                raise KeyError('dictionaries in parameters must contain ' +
+                                 '(only) the keys "model_part" and "variables"')
+
+        for model_part_dict in parameters:
+            model_part_name = model_part_dict['model_part']
+            variables = model_part_dict['variables']
             model_part = model.get_model_part(model_part_name)
             self.__data[model_part_name] = {}
-            for variable in parameters[model_part_name]:
+            for variable in variables:
                 if variable not in variables_dimensions:
                     raise ValueError(f'invalid variable name "{variable}"')
                 shape = (model_part.size, variables_dimensions[variable])
                 self.__data[model_part_name][variable] = np.zeros(shape)
 
         tmp = []
-        for model_part_name in self.parameters:
-            for variable in self.parameters[model_part_name]:
+        for model_part_dict in parameters:
+            model_part_name = model_part_dict['model_part']
+            for variable in model_part_dict['variables']:
                 tmp.append((model_part_name, variable))
         self.__model_part_variable_pairs = tmp
 
@@ -59,7 +68,8 @@ class Interface:
 
     def __repr__(self):
         repr = 'Interface that refers to ModelParts'
-        for model_part_name in self.parameters:
+        for model_part_dict in self.parameters:
+            model_part_name = model_part_dict['model_part']
             model_part = self.__model.get_model_part(model_part_name)
             repr += f'\n\t"{model_part.name}" of size {model_part.size} with variables'
             for variable in self.__data[model_part_name]:
