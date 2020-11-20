@@ -20,9 +20,12 @@ class Interface:
         for model_part_dict in parameters:
             if not type(model_part_dict) == dict:
                 raise TypeError('parameters must only contain dictionaries')
-            if not sorted(list(model_part_dict)) == ['model_part', 'variables']:
+            if not sorted(model_part_dict) == ['model_part', 'variables']:
                 raise KeyError('dictionaries in parameters must contain ' +
-                                 '(only) the keys "model_part" and "variables"')
+                               '(only) the keys "model_part" and "variables"')
+            if not type(model_part_dict['variables']) == list:
+                name = model_part_dict['model_part']
+                raise TypeError(f'variables of {name} must be a list')
 
         for model_part_dict in parameters:
             model_part_name = model_part_dict['model_part']
@@ -72,7 +75,7 @@ class Interface:
             model_part_name = model_part_dict['model_part']
             model_part = self.__model.get_model_part(model_part_name)
             repr += f'\n\t"{model_part.name}" of size {model_part.size} with variables'
-            for variable in self.__data[model_part_name]:
+            for variable in model_part_dict['variables']:
                 repr += f'\n\t\t{variable} with {variables_dimensions[variable]} components'
         return repr
 
@@ -85,7 +88,7 @@ class Interface:
     def set_variable_data(self, model_part_name, variable, data):
         # *** this changes the original data!
         if type(data) is not np.ndarray:
-            raise ValueError(f'data is of type {type(data)}, but must be ndarray')
+            raise ValueError(f'data is of type {type(data)}, but must   be ndarray')
         shape = self.__data[model_part_name][variable].shape
         if data.shape != shape:
             raise ValueError(f'ndarray has shape {data.shape} instead of shape {shape}')
@@ -111,6 +114,12 @@ class Interface:
 
     def norm(self, order=2):
         return np.linalg.norm(self.get_interface_data(), order)
+
+    def __eq__(self, other):
+        if type(other) is Interface:
+            return self.model_part_variable_pairs == other.model_part_variable_pairs and \
+                   all(self.get_interface_data() == other.get_interface_data())
+        return NotImplemented
 
     def __add__(self, other):
         result = self.copy()
@@ -189,3 +198,11 @@ class Interface:
         else:
             return NotImplemented
         return result
+
+    def __itruediv__(self, other):
+        if type(other) in (int, float, np.integer, np.floating):
+            for model_part_name, variable in self.model_part_variable_pairs:
+                self.__data[model_part_name][variable] /= other
+        else:
+            return NotImplemented
+        return self
