@@ -151,7 +151,7 @@ Child-class of `MapperInterpolator`, additional settings:
 JSON setting|type|description
 ------:|:----:|-----------
 <nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of `Nodes`.
-<nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible wihtout rendering the interpolation matrix ill-conditioned.
+<nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.
 
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 
 
@@ -212,10 +212,10 @@ For every _to_-point, the reference distance $d_{ref}$ is determined as the prod
 In order to ensure that the basis function of each of the nearest _from_-points covers every _from_-point, the `shape_parameter` should be larger than two.
 This value may however lead to an interpolation function which consists of sharp peaks or wiggles, with the correct value near the _from_-points, but a deviating value away from them.
 
-In the extreme case of a very small $d_{ref}$ approaching zero, the so-called "bed-of-nails interpolant" will be obtained, which is near zero everywhere, except near the _from_-points where it will sharply peak.
-In this case the interpolation matrix will approach the identity matrix.
+In the extreme case of $d_{ref}$ approaching zero, the so-called "bed-of-nails interpolant" is obtained, which is close to zero everywhere, except near the _from_-points where it sharply peaks.
+In this case the interpolation matrix approaches the identity matrix.
 
 Choosing a higher value improves the interpolation as the basis functions become wider, but the interpolation matrix becomes less stable, i.e. the condition number increases.
 The default value is 200.
 In practice, the `shape_parameter` is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (eg. with a condition number of roughly $10^{13}$ for double-precision floating point).
-A warning is printed when the condition number of a interpolation matrix becomes higher than $10^{13}$.
+A warning is printed when the condition number of an interpolation matrix becomes higher than $10^{13}$.
