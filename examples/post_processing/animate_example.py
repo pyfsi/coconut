@@ -1,4 +1,4 @@
-from coconut.test_examples.post_processing.animate import AnimationFigure
+from coconut.examples.post_processing.animate import AnimationFigure
 
 import numpy as np
 import os
@@ -7,7 +7,7 @@ import matplotlib.animation as ani
 import pickle
 
 # different cases to be plotted
-common_path = "../../test_examples/"
+common_path = "../../examples/"
 case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
 legend_entries = ["results"]
 

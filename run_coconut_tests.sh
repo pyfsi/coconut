@@ -11,7 +11,7 @@ python3 test_coconut.py
 
 # run an FSI test example
 echo "Running test example..."
-cd $COCONUT_INSTALLATION_PATH/coconut/test_examples/tube_tube_flow_tube_structure
+cd $COCONUT_INSTALLATION_PATH/coconut/examples/tube_tube_flow_tube_structure
 chmod 700 setup_tube_flow.sh setup_tube_structure.sh
 ./setup_tube_flow.sh
 ./setup_tube_structure.sh
