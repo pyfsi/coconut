@@ -7,11 +7,11 @@ import numpy as np
 
 class TestModel(unittest.TestCase):
 
-    def setUp(self):  # this function is called after every test
+    def setUp(self):  # this function is called before every test
         self.model = Model()
         self.size = 3
         self.name = 'mp1'
-        self.ids = np.arange(0, self.size)
+        self.ids = np.arange(self.size)
         self.x0 = np.random.rand(self.size)
         self.y0 = np.random.rand(self.size)
         self.z0 = np.random.rand(self.size)
@@ -40,7 +40,7 @@ class TestModel(unittest.TestCase):
         name_list = [self.name]
         name = 'mp2'
         name_list.append(name)
-        ids = np.arange(0, self.size)
+        ids = np.arange(self.size)
         x0 = np.random.rand(self.size)
         y0 = np.random.rand(self.size)
         z0 = np.random.rand(self.size)

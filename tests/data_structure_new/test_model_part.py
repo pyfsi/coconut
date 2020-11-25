@@ -10,7 +10,7 @@ class TestModelPart(unittest.TestCase):
         self.correct_size = 3
         self.incorrect_size = 2
         self.name = 'mp1'
-        self.ids = np.arange(0, self.correct_size)
+        self.ids = np.arange(self.correct_size)
         self.x0 = np.random.rand(self.correct_size)
         self.y0 = np.random.rand(self.correct_size)
         self.z0 = np.random.rand(self.correct_size)
@@ -28,15 +28,15 @@ class TestModelPart(unittest.TestCase):
 
     def test_ids(self):
         # check ids have correct size
-        self.ids = np.arange(0, self.incorrect_size)
+        self.ids = np.arange(self.incorrect_size)
         self.assertRaises(ValueError, ModelPart, self.name, self.x0, self.y0, self.z0, self.ids)
         # check ids are integers
-        self.ids = np.arange(0, self.correct_size) + 0.5
+        self.ids = np.arange(self.correct_size) + 0.5
         self.assertRaises(ValueError, ModelPart, self.name, self.x0, self.y0, self.z0, self.ids)
         # check id is 1d numpy array
         self.ids = list(range(self.correct_size))
         self.assertRaises(ValueError, ModelPart, self.name, self.x0, self.y0, self.z0, self.ids)
-        self.ids = np.arange(0, self.correct_size).reshape(1, -1)
+        self.ids = np.arange(self.correct_size).reshape(1, -1)
         self.assertRaises(ValueError, ModelPart, self.name, self.x0, self.y0, self.z0, self.ids)
         # check for duplicity of ids
         self.ids = np.full(shape=self.correct_size, fill_value=1)
@@ -57,7 +57,7 @@ class TestModelPart(unittest.TestCase):
         with self.assertRaises(AttributeError):
             mp.name = 'mp2'
         with self.assertRaises(AttributeError):
-            mp.id = np.arange(0, self.correct_size)
+            mp.id = np.arange(self.correct_size)
 
 
 if __name__ == '__main__':
