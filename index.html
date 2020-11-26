@@ -244,8 +244,8 @@
   
     <li class="md-tabs__item">
       
-        <a href="test_examples/" class="md-tabs__link">
-          Test examples
+        <a href="examples/" class="md-tabs__link">
+          Examples
         </a>
       
     </li>
@@ -735,11 +735,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5">
     
     <label class="md-nav__link" for="nav-5">
-      Test examples
+      Examples
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-5">
-        Test examples
+        Examples
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -750,7 +750,7 @@
 
 
   <li class="md-nav__item">
-    <a href="test_examples/" title="General" class="md-nav__link">
+    <a href="examples/" title="General" class="md-nav__link">
       General
     </a>
   </li>
@@ -1122,9 +1122,6 @@ sh run_coconut_tests.sh</code></p>
 </li>
 </ul>
 <h2 id="getting-started">Getting started</h2>
-<blockquote>
-<p>TODO: change 'test_examples' to 'examples' where necessary</p>
-</blockquote>
 <p>Once the CoCoNuT package has been successfully installed, it is time to run a first coupled simulation. For this purpose, we give a step-by-step guide of an example case included in the source code.</p>
 <p>In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated (see <a href="https://biblio.ugent.be/publication/940283">here</a>). For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. Another example in the source code solves the same case in 3D using ANSYS Fluent and Abaqus for respectively the flow and structure calculations. </p>
 <p>We start by creating an environment variable <code>COCO</code> in which we can store the path to the folder in which CoCoNuT is installed. We will use this variable to avoid any confusion about relative or absolute paths in this tutorial. Using the example installation location from above:</p>
@@ -1133,7 +1130,7 @@ sh run_coconut_tests.sh</code></p>
 
 
 <p>We can now navigate to the folder of the example we will simulate. </p>
-<div class="codehilite"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$COCO</span>/coconut/test_examples/tube_tube_flow_tube_structure/
+<div class="codehilite"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$COCO</span>/coconut/examples/tube_tube_flow_tube_structure/
 </code></pre></div>
 
 

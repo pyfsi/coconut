@@ -244,8 +244,8 @@
   
     <li class="md-tabs__item">
       
-        <a href="../test_examples/" class="md-tabs__link">
-          Test examples
+        <a href="../examples/" class="md-tabs__link">
+          Examples
         </a>
       
     </li>
@@ -768,11 +768,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5">
     
     <label class="md-nav__link" for="nav-5">
-      Test examples
+      Examples
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-5">
-        Test examples
+        Examples
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -783,7 +783,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_examples/" title="General" class="md-nav__link">
+    <a href="../examples/" title="General" class="md-nav__link">
       General
     </a>
   </li>
@@ -1311,6 +1311,11 @@ This transformer can be initialized in both directions. </p>
 <td align="center">bool</td>
 <td>Optional, default <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of <code>Nodes</code>.</td>
 </tr>
+<tr>
+<td align="right"><nobr><code>shape_parameter</code></nobr></td>
+<td align="center">int</td>
+<td>Optional, default <code>200</code>. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.</td>
+</tr>
 </tbody>
 </table>
 <p>Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using <code>scipy.spatial.distance</code>. </p>
@@ -1320,19 +1325,20 @@ This transformer can be initialized in both directions. </p>
 <div class="MathJax_Preview">
 \phi(r) = 
 \begin{cases}
-    (1-r)^4 (1 + 4r) \quad &amp;\mathrm{for} \quad 0 \leq r &lt; 1 \\
-    0 &amp;\mathrm{for} \quad 1 \leq r
+    (1-\frac{r}{d_{ref}})^4 (1 + 4\frac{r}{d_{ref}}) \quad &amp;\mathrm{for} \quad 0 \leq \frac{r}{d_{ref}} &lt; 1 \\
+    0 &amp;\mathrm{for} \quad 1 \leq \frac{r}{d_{ref}}
 \end{cases}
 </div>
 <script type="math/tex; mode=display">
 \phi(r) = 
 \begin{cases}
-    (1-r)^4 (1 + 4r) \quad &\mathrm{for} \quad 0 \leq r < 1 \\
-    0 &\mathrm{for} \quad 1 \leq r
+    (1-\frac{r}{d_{ref}})^4 (1 + 4\frac{r}{d_{ref}}) \quad &\mathrm{for} \quad 0 \leq \frac{r}{d_{ref}} < 1 \\
+    0 &\mathrm{for} \quad 1 \leq \frac{r}{d_{ref}}
 \end{cases}
 </script>
 </div>
-<p>with <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> a positive distance. Assume that <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> nearest <em>from</em>-points will be used in the interpolation.
+<p>with <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> a positive distance. To control the width of the function, <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is scaled with a reference distance <span><span class="MathJax_Preview">d_{ref}</span><script type="math/tex">d_{ref}</script></span>.</p>
+<p>Assume that <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> nearest <em>from</em>-points will be used in the interpolation.
 An unknown function <span><span class="MathJax_Preview">f(\boldsymbol{x})</span><script type="math/tex">f(\boldsymbol{x})</script></span> can then be approximated as the weighted sum of <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> shifted radial basis functions:</p>
 <div>
 <div class="MathJax_Preview">
@@ -1382,6 +1388,15 @@ f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbo
 </script>
 </div>
 <p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <span><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> must be calculated for each <em>to</em>-point independently. The matrix <span><span class="MathJax_Preview">\boldsymbol{\Phi}</span><script type="math/tex">\boldsymbol{\Phi}</script></span> and vector <span><span class="MathJax_Preview">\boldsymbol{\Phi}_{to}</span><script type="math/tex">\boldsymbol{\Phi}_{to}</script></span> must also be calculated for every <em>to</em>-point independently.</p>
+<p>For every <em>to</em>-point, the reference distance <span><span class="MathJax_Preview">d_{ref}</span><script type="math/tex">d_{ref}</script></span> is determined as the product of the <code>shape_parameter</code> and the distance between the <em>to</em>-point and the furthest <em>from</em>-point.</p>
+<p>In order to ensure that the basis function of each of the nearest <em>from</em>-points covers every <em>from</em>-point, the <code>shape_parameter</code> should be larger than two.
+This value may however lead to an interpolation function which consists of sharp peaks or wiggles, with the correct value near the <em>from</em>-points, but a deviating value away from them.</p>
+<p>In the extreme case of <span><span class="MathJax_Preview">d_{ref}</span><script type="math/tex">d_{ref}</script></span> approaching zero, the so-called "bed-of-nails interpolant" is obtained, which is close to zero everywhere, except near the <em>from</em>-points where it sharply peaks.
+In this case the interpolation matrix approaches the identity matrix.</p>
+<p>Choosing a higher value improves the interpolation as the basis functions become wider, but the interpolation matrix becomes less stable, i.e. the condition number increases.
+The default value is 200.
+In practice, the <code>shape_parameter</code> is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (eg. with a condition number of roughly <span><span class="MathJax_Preview">10^{13}</span><script type="math/tex">10^{13}</script></span> for double-precision floating point).
+A warning is printed when the condition number of an interpolation matrix becomes higher than <span><span class="MathJax_Preview">10^{13}</span><script type="math/tex">10^{13}</script></span>.</p>
                 
                   
                 
