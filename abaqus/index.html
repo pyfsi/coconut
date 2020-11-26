@@ -601,6 +601,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#modelparts" class="md-nav__link">
+    ModelParts
+  </a>
+  
+</li>
+      
       
       
       
@@ -993,6 +1000,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#modelparts" class="md-nav__link">
+    ModelParts
+  </a>
+  
+</li>
+      
       
       
       
@@ -1023,12 +1037,17 @@ Subcycling within the structural solver is possible.</p>
 <code>Loadpoints</code>: Every element has load points. This is where the loads (input to Abaqus) are applied.  </p>
 <h2 id="environment">Environment</h2>
 <ul>
-<li>A working directory for Abaqus needs to be created within the main directory. Its <strong>relative path to the main directory</strong> should be specified in the .json file.</li>
-<li>Abaqus needs an <code>AbaqusHosts.txt</code> file in the working directory.</li>
+<li>A <code>working directory</code> for Abaqus needs to be created within the main directory. Its <strong>relative path to the main directory</strong> should be specified in the .json file.  In the CoCoNuT examples this folder is typically called "<code>CSM</code>", but any name is allowed.</li>
+<li>Abaqus needs a <strong>host-file</strong> called <code>AbaqusHosts.txt</code> file in the <code>working directory</code>.<ul>
 <li>This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm.</li>
 <li>The <code>extra directory</code> contains an <code>Example_makeHostFile.sh</code> which was used the generate a host file for the local system.</li>
-<li>The Abaqus license server needs to be specified in the parametrized file <code>abaqus_v6.env</code> which is present in the <code>source directory</code> </li>
-<li>The <code>extra directory</code> contains a file <code>abaqus_setup</code> which should be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers.</li>
+</ul>
+</li>
+<li>The <strong>Abaqus license server</strong> needs to be specified in the parametrized file <code>abaqus_v6.env</code> which is present in the <code>source directory</code>. For use at Ghent University no changes are required. </li>
+<li>The <strong>Abaqus software should be available as wel as compilers</strong> to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. <ul>
+<li>The <code>extra directory</code> contains a file <code>abaqus_setup</code> which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).</li>
+</ul>
+</li>
 </ul>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the Parameters in the JSON file, listed in alphabetical order. A distinction is made between mandatory and optional parameters.</p>
@@ -1144,12 +1163,12 @@ Subcycling within the structural solver is possible.</p>
 <tr>
 <td align="right"><nobr><code>ramp</code></nobr></td>
 <td align="center">bool</td>
-<td>Only important when subcycling is enabled in Abaqus. <br> <b>false</b>: Load is considered to be constant throughout the time step <br><b>true</b>: [Default] Load is applied in a ramped fashion throughout the time step</td>
+<td>Only used when subcycling is enabled in Abaqus. <br> <b>false</b>: Load is considered to be constant throughout the time step. <br><b>true</b>: Load is applied in a ramped fashion throughout the time step.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>subcycling</code></nobr></td>
 <td align="center">bool</td>
-<td><b>false</b>: [Default] Abaqus solves the requested time step using one increment <br> <b>true</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved</td>
+<td><b>false</b>: [Default] Abaqus solves the requested time step using one increment. <br> <b>true</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved.</td>
 </tr>
 </tbody>
 </table>
@@ -1170,8 +1189,8 @@ The base-file has to contain all necessary information about the structural mode
 </ul>
 <p>Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.</p>
 <h3 id="setup-for-abaqus-input-loads">Setup for Abaqus input (loads)</h3>
-<p>Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a “surface” should be created in the assembly. 
-These surfaces can for example be created from geometry or by creating a “node set” containing all the nodes on the surface and then calling the “SurfaceFromNodeSet” function which can be found in the makeSurface.py file in the <code>Extra directory</code>. The name of the surface has to be MOVINGSURFACE followed by an integer. The integer of the surface has to correspond with the index of that specific surface in the <code>surfaceIDs</code> parameter (index starts from 0). 
+<p>Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a “surface” should be created <strong>in the assembly</strong>. 
+These surfaces can for example be created from geometry or by creating a “node set” containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <code>makeSurface.py</code> file in the <code>Extra directory</code>. The name of the surface has to be <strong>MOVINGSURFACE followed by an integer</strong>. The integer of the surface has to correspond with the index of that specific surface in the <code>surfaceIDs</code> parameter (index starts from 0). 
 For example MOVINGSURFACE0 is associated with the first item in <code>surfaceIDs</code> and MOVINGSURFACE1 would be associated with the second item in <code>surfaceIDs</code>. 
 An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus):  </p>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">makeSurface</span> <span class="kn">import</span> <span class="o">*</span>
@@ -1197,8 +1216,15 @@ Abaqus part of the FSI simulation. For a steady simulation this could for exampl
 
 
 <p>Currently, the Abaqus wrapper automatically checks if the increments comply with the <code>delta_t</code> and <code>subcycling</code> settings
-and adjusts them accordingly or raises an error, but <em>only</em> for a <em>dynamic step</em>. This does not mean that it is not possible to run a steady simulation,
-but it means that the correct values should be provided in the input-file (so no dummy values).</p>
+and adjusts them accordingly or raises an error, but <em>only</em> for a <em>dynamic step</em> or a <em>static step with subcycling</em>.<br />
+<strong>Attention:</strong> Replacing the incrementation settings is done by looking up some keywords in the base file (<code>*Step</code>, <code>*Dynamic</code>, <code>application</code>). This procedure fails when these keywords are not found. When using the GUI to create the base file (.inp) and using the default settings for the step, often the keyword <code>application</code> is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (<code>inc=1</code>), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the input file should look similar to this:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">*Step, name=Step-1, nlgeom=YES, inc=1</span>
+<span class="err">*Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO</span>
+<span class="err">0.0001,0.0001,</span>
+</code></pre></div>
+
+
+<p>The time step (0.0001) will in this case be replaced by settings found in the json-file. More information can be found in the <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm">Abaqus documentation</a>.</p>
 <h3 id="setup-for-abaqus-output-displacements">Setup for Abaqus output (displacements)</h3>
 <p>After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput 
 has to be generated covering all locations involved in the fluid-structure interface. 
@@ -1217,6 +1243,11 @@ This can be done via the GUI or using python lines similar to the following:  </
 <div class="codehilite"><pre><span></span><code><span class="n">my_model</span><span class="o">.</span><span class="n">FieldOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;F-Output-2&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">PRESELECT</span><span class="p">)</span>
 <span class="n">my_model</span><span class="o">.</span><span class="n">HistoryOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;H-Output-1&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">PRESELECT</span><span class="p">)</span>
 </code></pre></div>
+
+
+<h2 id="modelparts">ModelParts</h2>
+<p>The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to ModelParts in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different ModelPart. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different ModelParts at each side of the corner.<br />
+Another reason to do this is because the code cannot handle elements with two or more faces being part of the same ModelPart. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same ModelPart: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a <code>Node</code> on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.</p>
                 
                   
                 
