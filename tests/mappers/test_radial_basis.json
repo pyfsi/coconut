@@ -1,11 +1,13 @@
 {
-    "mapper" :
-    {
-        "type": "mappers.radial_basis",
-        "settings":
-        {
-            "directions" : ["X", "Y", "Z"],
-            "parallel" : true
-        }
+  "mapper": {
+    "type": "mappers.radial_basis",
+    "settings": {
+      "directions": [
+        "X",
+        "Y",
+        "Z"
+      ],
+      "parallel": true
     }
+  }
 }

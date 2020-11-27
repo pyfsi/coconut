@@ -1,4 +1,4 @@
-# Guide to the documentation
+# Documentation
 
 This website is a collection of all MarkDown (MD) files found in the `coconut` package.
 These files are converted to a static website using [MkDocs][1], based on the outline defined in the `mkdocs.yml` file.
@@ -13,7 +13,7 @@ The MD documents for the CoCoNuT documentation must be written in the [Python-Ma
 
 Some important rules for writing MD files for this documentation website:
 
-*   The name of the file must be unique: use names like `fluent.md` or `test_examples.md`, not `readme.md`.
+*   The name of the file must be unique: use names like `fluent.md` or `examples.md`, not `readme.md`.
 *   Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names `example.md` with a proper link. 
 
 ### Math

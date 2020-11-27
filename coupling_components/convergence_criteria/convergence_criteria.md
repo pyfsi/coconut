@@ -1,3 +1,3 @@
-# ConvergenceCriterion
+# Convergence criteria
 
-"documentation on convergence criterion"
+> TODO...

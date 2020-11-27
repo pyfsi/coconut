@@ -8,14 +8,9 @@ class ConvergenceCriterionCombined(Component):
 
         settings = parameters["settings"]
         self.convergence_criteria = []
-        index = 0
-        while True:
-            key = "convergence_criterion" + str(index)
-            if key in settings.keys():
-                self.convergence_criteria.append(CreateInstance(settings[key]))
-                index += 1
-            else:
-                break
+        for criterion in settings["criteria_list"]:
+            self.convergence_criteria.append(CreateInstance(criterion))
+
 
     def Initialize(self):
         super().Initialize()

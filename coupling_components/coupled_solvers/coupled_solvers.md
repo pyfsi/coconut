@@ -1,6 +1,6 @@
-# CoupledSolvers
+# Coupled solvers
 
-This documentation describes the coupled solvers which are available.
+This documentation describes the coupled solvers that are available.
 A coupled solver refers to a coupling algortihm used to couple the two solvers.
 Some coupled solvers implement one or more models.
 All coupled solvers inherit from `gauss_seidel`.
@@ -31,6 +31,8 @@ Here they are listed in alphabetical order.
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
+`name`|string|(optional) Name of the case used to store a pickle file with results. If not provided 'results' is used.
+`save_results`|bool|(optional) Default: false. If true a pickle file is stored containing some main results: the value of the displacement and load on the interface for every time step, interface objects used by the two solvers, the number of coupling iterations per time step, the total elapsed time for the calculation, the residual after every coupling iteration and the values of `delta_t` and `timestep_start`.<br> This file is used by the postprocessing files included with the test examples.
 `time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver implements restart, see the solver documentation for more information. For a steady simulation this should be 0.
 
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solverwrapper directly (e.g. for standalone testing).
