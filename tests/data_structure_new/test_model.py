@@ -1,5 +1,5 @@
-from coconut.data_structure_new.model import Model
-from coconut.data_structure_new.model_part import ModelPart
+from coconut.data_structure.model import Model
+from coconut.data_structure.model_part import ModelPart
 
 import unittest
 import numpy as np

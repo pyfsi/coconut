@@ -1,5 +1,5 @@
-from coconut.data_structure_new.variables import variables_dimensions
-from coconut.data_structure_new.model import Model
+from coconut.data_structure.variables import variables_dimensions
+from coconut.data_structure.model import Model
 
 import numpy as np
 import copy

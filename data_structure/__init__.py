@@ -1,5 +1,4 @@
-from .Parameters import Parameters
-from .Model import Model
-from .ModelPart import ModelPart
-from .Variables import *
-
+from .model import Model
+from .model_part import ModelPart
+from .interface import Interface
+from .variables import variables_dimensions

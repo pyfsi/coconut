@@ -1,4 +1,4 @@
-from coconut.data_structure_new.model_part import ModelPart
+from coconut.data_structure.model_part import ModelPart
 
 
 class Model:
