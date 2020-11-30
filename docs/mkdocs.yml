@@ -35,7 +35,7 @@ nav:
         -   data_structure.md
     -   Documentation:
         -   docs.md
-    -   Test examples:
+    -   Examples:
         -   General: examples.md
         -   Tube:
             -   Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
