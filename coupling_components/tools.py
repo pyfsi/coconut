@@ -1,43 +1,12 @@
-import sys
-import os.path
 import time
 from contextlib import contextmanager
 
 
-# CreateInstance: Creates an instance of a given class based on a settings dictionary
-#
-#  @param settings  The settings dictionary, with the key "type"
-def CreateInstance(settings):
-    object_type = settings["type"].GetString()
-    object_module = __import__("coconut.coupling_components." + object_type, fromlist=[object_type])
+def create_instance(settings):
+    # create instance of given class based on settings dict
+    object_type = settings['type']
+    object_module = __import__('coconut.coupling_components.' + object_type, fromlist=[object_type])
     return object_module.Create(settings)
-
-
-# InnerProduct: Computes the inner product for two given vectors (as python lists)
-#
-#  @param list_one   First vector (as a list)
-#  @param list_two   Second vector (as a list)
-def InnerProduct(list_one, list_two):
-    result = 0.0
-    num_entries = len(list_one)
-    if len(list_one) == len(list_two):
-        for i in range(num_entries):
-            component_one = list_one[i]
-            component_two = list_two[i]
-            result += component_one * component_two
-
-    return result
-
-
-# CalculateNorm: Calculates the L2-norm of the list
-#
-#  @param list   Vector (as a list)
-def CalculateNorm(list):
-    norm = 0.0
-    for value in list:
-        norm += value*value
-
-    return norm
 
 
 # PrintInfo: Printing information with a label
