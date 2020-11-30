@@ -115,15 +115,15 @@ and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_
 The time step (0.0001) will in this case be replaced by settings found in the json-file. More information can be found in the [Abaqus documentation](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
 
 ### Setup for Abaqus output (displacements)
-After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput 
-has to be generated covering all locations involved in the fluid-structure interface. 
-To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not
-been done before) and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
+After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput has to be generated covering all locations involved in the fluid-structure interface. 
+To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not been done before) and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
 
-In the previous section an example was given of how a surface can be created from a node set, but the other way around
-is also possible, creating a node set from a surface (presuming that this surface was already created):
+In the previous section an example was given of how a surface can be created from a node set, but the other way around is also possible, creating a node set from a surface (presuming that this surface was already created):
 
 ```python
+my_model = mdb.models['Model-1']
+my_assembly = my_model.rootAssembly  
+movingSurface0 = my_assembly.surfaces["MOVINGSURFACE0"]
 outputSet = my_assembly.Set(name='NAME_OF_THE_NODESET', nodes=movingSurface0.nodes)
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=my_assembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
 ```
