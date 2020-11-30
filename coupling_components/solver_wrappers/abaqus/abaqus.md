@@ -86,24 +86,24 @@ my_instance=my_assembly.instances['PART-1-1']
 movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NAME_OF_THE_NODESET', 'MOVINGSURFACE0')
 ```  
 
-On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:  
+On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:  
 
 ```python
 from step import *
 step1 = my_model.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=1, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=1, minInc=1, maxInc=1, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
+step1.Restart(frequency = 99999, overlay = ON)
 my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distributionType = USER_DEFINED, field = '', magnitude = 1, region=movingSurface0)
 my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)
 ```
 
-Note that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the
-Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
+The second command enables writing of restart files by Abaqus, which is required for running unsteady cases. This can be done from the GUI when the "step" module is active, by selecting "Output" in the top menu and subsequently "Restart Requests". _Frequency_ should be put on _99999_, _overlay_ _activated_ (this saves data since only the last increment is kept) and _interval_ on _1_ (also see [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAECAERefMap/simacae-t-simodbrestart.htm)).  
+Note that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
 
 ```python
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
-Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t` and `subcycling` settings
-and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_ or a _static step with subcycling_.  
+Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t` and `subcycling` settings and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_ or a _static step with subcycling_.  
 **Attention:** Replacing the incrementation settings is done by looking up some keywords in the base file (`*Step`, `*Dynamic`, `application`). This procedure fails when these keywords are not found. When using the GUI to create the base file (.inp) and using the default settings for the step, often the keyword `application` is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (`inc=1`), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the input file should look similar to this:
 
 ```
@@ -112,7 +112,7 @@ and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_
 0.0001,0.0001,
 ```
 
-The time step (0.0001) will in this case be replaced by settings found in the json-file. More information can be found in the [Abaqus documentation](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
+The time step (0.0001) will in this case be replaced by settings found in the json-file. More information can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
 
 ### Setup for Abaqus output (displacements)
 After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput has to be generated covering all locations involved in the fluid-structure interface. 
