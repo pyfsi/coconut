@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import Component
+from coconut.data_structure.variables import variables_dimensions
 
 from scipy.spatial import cKDTree
 import numpy as np
@@ -16,24 +17,22 @@ class MapperInterpolator(Component):
         # store settings
         self.settings = parameters['settings']
         self.interpolator = True
-        self.balanced_tree = False
-        if self.settings.Has('balanced_tree'):
-            self.balanced_tree = self.settings['balanced_tree'].GetBool()
+        self.balanced_tree = (self.settings['balanced_tree']
+                              if 'balanced_tree' in self.settings else False)
         self.n_nearest = 0  # must be set in sub-class!
 
         # initialization
-        self.n_from = None
-        self.coords_from = None
-        self.n_to = None
-        self.coords_to = None
+        self.n_from, self.n_to = None, None
+        self.coords_from, self.coords_to = None, None
         self.tree = None
         self.distances = None
         self.nearest = None
+        self.coeffs = None
 
         # get list with directions
         self.directions = []
-        for direction in self.settings['directions'].GetArray():
-            if direction not in ['X', 'Y', 'Z']:
+        for direction in self.settings['directions']:
+            if direction not in ['x', 'y', 'z']:  # *** cast to lowercase?
                 raise ValueError(f'"{direction}" is not a valid direction.')
             self.directions.append(direction + '0')
             if len(self.directions) > 3:
@@ -41,28 +40,25 @@ class MapperInterpolator(Component):
 
         # get scaling (optional)
         self.scaling = None
-        if self.settings.Has('scaling'):
-            self.scaling = self.settings['scaling'].GetArray()
-            if len(self.scaling) != len(self.directions):
+        if 'scaling' in self.settings:
+            self.scaling = np.array(self.settings['scaling']).reshape(1, -1)
+            if self.scaling.size != len(self.directions):
                 raise ValueError(f'scaling must have same length as directions')
-            self.scaling = np.array(self.scaling).reshape(1, -1)
 
-    def Initialize(self, model_part_from, model_part_to):
+    def Initialize(self, model_part_from, model_part_to):  # *** make all methods lowercase
         super().Initialize()
 
         # get coords_from
-        self.n_from = model_part_from.NumberOfNodes()
+        self.n_from = model_part_from.size
         self.coords_from = np.zeros((self.n_from, len(self.directions)))
-        for i, node in enumerate(model_part_from.Nodes):
-            for j, direction in enumerate(self.directions):
-                self.coords_from[i, j] = getattr(node, direction)
+        for j, direction in enumerate(self.directions):
+            self.coords_from[:, j] = getattr(model_part_from, direction)
 
         # get coords_to
-        self.n_to = model_part_to.NumberOfNodes()
+        self.n_to = model_part_to.size
         self.coords_to = np.zeros((self.n_to, len(self.directions)))
-        for i, node in enumerate(model_part_to.Nodes):
-            for j, direction in enumerate(self.directions):
-                self.coords_to[i, j] = getattr(node, direction)
+        for j, direction in enumerate(self.directions):
+            self.coords_to[:, j] = getattr(model_part_to, direction)
 
         # check if n_from is large enough
         if self.n_from < self.n_nearest:
@@ -81,6 +77,7 @@ class MapperInterpolator(Component):
             self.tree = cKDTree(self.coords_from)
         else:  # less stable
             self.tree = cKDTree(self.coords_from, balanced_tree=False)
+
         self.distances, self.nearest = self.tree.query(self.coords_to, k=self.n_nearest)
         self.nearest = self.nearest.reshape(-1, self.n_nearest)
 
@@ -88,39 +85,23 @@ class MapperInterpolator(Component):
         self.check_duplicate_points(model_part_from)
 
     def __call__(self, args_from, args_to):
-        model_part_from, var_from = args_from
-        model_part_to, var_to = args_to
+        # unpack arguments
+        interface_from, mp_name_from, var_from = args_from
+        interface_to, mp_name_to, var_to = args_to
 
-        # check if both Variables have same Type
-        if var_from.Type() != var_to.Type():
-            raise TypeError('Variables to be mapped have different Type.')
+        # check variables
+        if var_from not in variables_dimensions:
+            raise NameError(f'variable "{var_from}" does not exist')
+        if var_from != var_to:
+            raise TypeError('variables must be equal')
 
-        # scalar interpolation
-        if var_from.Type() == 'Double':
-            hist_var_from = np.zeros(self.n_from)
-            for i, node in enumerate(model_part_from.Nodes):
-                hist_var_from[i] = node.GetSolutionStepValue(var_from)
-
-            for i, node in enumerate(model_part_to.Nodes):
-                hist_var_to = np.dot(self.coeffs[i], hist_var_from[self.nearest[i, :]])
-                node.SetSolutionStepValue(var_to, 0, hist_var_to)
-
-        # vector interpolation
-        elif var_from.Type() == 'Array':
-            hist_var_from = np.zeros((self.n_from, 3))
-            for i, node in enumerate(model_part_from.Nodes):
-                hist_var_from[i] = node.GetSolutionStepValue(var_from)
-
-            for i, node in enumerate(model_part_to.Nodes):
-                hist_var_to = [0., 0., 0.]
-                for j in range(3):
-                    hist_var_to[j] = np.dot(self.coeffs[i],
-                                            hist_var_from[self.nearest[i, :], j])
-                node.SetSolutionStepValue(var_to, 0, hist_var_to)
-
-        # other types of Variables
-        else:
-            raise NotImplementedError(f'Mapping not yet implemented for Variable of Type {var_from.Type()}.')
+        # interpolation
+        data_from = interface_from.get_variable_data(mp_name_from, var_from)
+        data_to = interface_to.get_variable_data(mp_name_to, var_to)
+        for i in range(data_to.shape[0]):
+            for j in range(data_to.shape[1]):
+                data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest[i, :], j])
+        interface_to.set_variable_data(mp_name_to, var_to, data_to)
 
     def check_bounding_box(self, model_part_from, model_part_to):
         # set tolerances  #*** overwrite tolerances from parameters?
@@ -148,10 +129,10 @@ class MapperInterpolator(Component):
         error_max = np.linalg.norm(from_max - to_max) / d_ref
 
         # raise warning or error if necessary
-        msg_1 = f'ModelParts "{model_part_from.Name}", "{model_part_to.Name}": '
+        msg_1 = f'ModelParts "{model_part_from.name}", "{model_part_to.name}": '
         msg_2 = ' values differ by '
-        msg_3 = f'\n\t"{model_part_from.Name}": minimal values = {from_min} and maximal values = {from_max}' \
-                f'\n\t"{model_part_to.Name}": minimal values = {to_min} and maximal values = {to_max}'
+        msg_3 = f'\n\t"{model_part_from.name}": minimal values = {from_min} and maximal values = {from_max}' \
+                f'\n\t"{model_part_to.name}": minimal values = {to_min} and maximal values = {to_max}'
 
         msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
         if error_center > tol_center_error:
@@ -184,7 +165,7 @@ class MapperInterpolator(Component):
         # check for duplicate points
         dist, _ = self.tree.query(self.coords_from, k=2)
 
-        msg_1 = f'ModelPart {model_part_from.Name}: '
+        msg_1 = f'ModelPart {model_part_from.name}: '
         msg_2 = f' duplicate points found, first duplicate: '
 
         duplicate = (dist[:, 1] / d_ref < tol_error)

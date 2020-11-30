@@ -3,7 +3,7 @@ from coconut.coupling_components.mappers.interpolator import MapperInterpolator
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     return MapperNearest(parameters)
 
 
