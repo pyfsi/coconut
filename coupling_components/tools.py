@@ -6,7 +6,7 @@ def create_instance(settings):
     # create instance of given class based on settings dict
     object_type = settings['type']
     object_module = __import__('coconut.coupling_components.' + object_type, fromlist=[object_type])
-    return object_module.Create(settings)
+    return object_module.create(settings)
 
 
 # PrintInfo: Printing information with a label

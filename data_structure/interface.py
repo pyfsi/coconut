@@ -79,8 +79,11 @@ class Interface:
                 repr += f'\n\t\t{variable} with {variables_dimensions[variable]} components'
         return repr
 
+    def get_model_part(self, model_part_name):  # *** newly added
+        return self.__model.get_model_part(model_part_name)
+
     def get_variable_data(self, model_part_name, variable):
-        # *** always returns copies!
+        # *** always returns copies! this data is 2D ndarray always
         if (model_part_name, variable) not in self.model_part_variable_pairs:
             raise KeyError
         return self.__data[model_part_name][variable].copy()
@@ -95,6 +98,7 @@ class Interface:
         self.__data[model_part_name][variable] = data.copy()
 
     def get_interface_data(self):
+        # *** this data is 1D ndarray always
         data = np.empty(0)
         for model_part_name, variable in self.model_part_variable_pairs:
             data = np.concatenate((data, self.get_variable_data(model_part_name, variable).flatten()))
