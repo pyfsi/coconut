@@ -1,6 +1,16 @@
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.component import Component
 from coconut.coupling_components import tools
+
+""" proposed changes to mapped.py
+- do initialization of mappers in Initialize method, would be more logical
+- remove all SetInterfaceInput/Output methods?
+- use copy in GetInterfaceInput/Output methods?
+    and just refer to actual solver wrapper in SolverWrapperMapped
+- all Interfaces are stored in this mapper, e.g. self.interface_output_to and 3 others;
+    I see no reason for this; furthermore, it is only useful to store it if you take copies all the time
+- OutputSolutionStep is barely used; what's the deal with it??
+"""
 
 
 def Create(parameters):
@@ -16,7 +26,7 @@ class SolverWrapperMapped(Component):
         self.settings = parameters["settings"]
 
         # Create solver
-        self.solver_wrapper = CreateInstance(self.settings["solver_wrapper"])
+        self.solver_wrapper = create_instance(self.settings["solver_wrapper"])
 
         # run time
         self.run_time = 0.0
@@ -33,11 +43,11 @@ class SolverWrapperMapped(Component):
 
     @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input_from):
-        self.interface_input_from = interface_input_from.deepcopy()
+        self.interface_input_from = interface_input_from
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
         self.interface_output_from = self.solver_wrapper.SolveSolutionStep(self.interface_input_to)
         self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
-        return self.interface_output_to.deepcopy()
+        return self.interface_output_to
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
@@ -60,14 +70,15 @@ class SolverWrapperMapped(Component):
 
     def GetInterfaceInput(self):
         # Does not contain most recent data
-        return self.interface_input_from.deepcopy()
+        # *** shouldn't this just call the underlying solver wrapper?
+        return self.interface_input_from
 
     def SetInterfaceInput(self, interface_input_from):
         # Create input mapper
         self.interface_input_from = interface_input_from.deepcopy()
         self.interface_input_to = self.solver_wrapper.GetInterfaceInput()
 
-        self.mapper_interface_input = CreateInstance(self.settings["mapper_interface_input"])
+        self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
         self.mapper_interface_input.Initialize(self.interface_input_from, self.interface_input_to)
 
     def GetInterfaceOutput(self):
@@ -80,7 +91,7 @@ class SolverWrapperMapped(Component):
         self.interface_output_to = interface_output_to.deepcopy()
         self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
 
-        self.mapper_interface_output = CreateInstance(self.settings["mapper_interface_output"])
+        self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
         self.mapper_interface_output.Initialize(self.interface_output_from, self.interface_output_to)
 
     def PrintInfo(self, pre):
