@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
     def test_mapper_wedge_3d_to_2d_axisymmetric(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_wedge_3d_to_2d_axisymmetric.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_wedge_3d_to_2d_axisymmetric_faces.json')
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
 
@@ -22,7 +22,7 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
             model_part_in = model.CreateModelPart('wall_in')
 
             n_in = 10
-            n_from=n_in*2
+            n_from=n_in
             x = np.linspace(0, 0.1, n_in)
             r = 1 + 0.07 * np.sin(x * 600)
 
@@ -32,13 +32,11 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
 
             i = 0
             for k in range(n_in):
-                for j in range(2):
-                    x_in[i] = x[k]
-                    y_in[i] = r[k] * np.cos(np.radians(2.5))
-                    z_in[i] = r[k] * ((-1)**j)* np.sin(np.radians(2.5))
-                    model_part_in.CreateNewNode(i, x_in[i], y_in[i], z_in[i])
-                    i += 1
-                k += 1
+                x_in[i] = x[k]
+                y_in[i] = r[k] * np.cos(np.radians(2.5))
+                z_in[i] = r[k] * 0
+                model_part_in.CreateNewNode(i, x_in[i], y_in[i], z_in[i])
+                i += 1
 
             # create 2D model_part_in
             n_out_ref=n_in
@@ -49,15 +47,12 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
             i_to=0
 
             for i_from in range(n_from):
-                r=y_in[i_from]
-                z=z_in[i_from]
-                if z_in[i_from]>0:
-                    x_out_ref[i_to]=x_in[i_from]
-                    y_out_ref[i_to] = np.cos(np.radians(2.5)) * r + np.sin(np.radians(2.5)) * z
-                    z_out_ref[i_to]=0
-                    i_to +=1
-                i_from +=1
+                s=y_in[i_from]
+                x_out_ref[i_to] = x_in[i_from]
+                y_out_ref[i_to] = s / np.cos(np.radians(2.5))
+                z_out_ref[i_to] = 0
 
+                i_to += 1
             # initialize mapper to get model_part_out
             mapper = CreateInstance(parameters['mapper'])
             model_part_out = mapper.Initialize(model_part_in, forward=True)
@@ -83,12 +78,18 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
                 return 1 + 2.5 * x
 
             def fun_v(x, y, z):
-                theta = np.arctan2(z, y)
-                print("theta")
-                print(theta)
+                # r = y / np.cos(np.radians(2.5))
+                # theta = np.arctan(r)
+                # print("theta")
+                # print(theta)
                 f_x = 1 + 2.5 * x
-                f_y = f_x * 0.5 * np.cos(theta)
-                f_z = f_x * 0.5 * np.sin(theta)
+                f_y = f_x * 0.5 * y
+                # f_y = f_x * 0.5 * np.cos(theta)
+                f_z = 0 * z
+                # print("fx")
+                # print(f_x)
+                # print("fy")
+                # print(f_y)
                 return [f_x, f_y, f_z]
 
             # create model_part_from (3D)
@@ -112,7 +113,6 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
             mapper = CreateInstance(parameters['mapper'])
             model_part_to = mapper.Initialize(model_part_from, forward=True)
 
-
             # check mapped values for Double Variable
             mapper((model_part_from, var_s), (model_part_to, var_s))
             for node in model_part_to.Nodes:
@@ -125,15 +125,15 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
                 for v1, v2 in zip(list(node.GetSolutionStepValue(var_v)),
                                     fun_v(node.X0, node.Y0, node.Z0)):
                     self.assertAlmostEqual(v1, v2, delta=1e-8)
-                    # print("v1")
-                    # print(v1)
-                    # print("v2")
-                    # print(v2)
-                    # if v1 != 0.0:
-                    #     print("a")
-                    #     a = np.abs((v1 - v2) / v1)
-                    #
-                    # print(a)
+                    print("v1")
+                    print(v1)
+                    print("v2")
+                    print(v2)
+                    if v1 != 0.0:
+                        print("a")
+                        a = np.abs((v1 - v2) / v1)
+
+                    print(a)
 
         #Optional:Visual check
         if True:
@@ -148,7 +148,7 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
                 model_part_from.AddNodalSolutionStepVariable(var_s)
                 model_part_from.AddNodalSolutionStepVariable(var_v)
 
-                n = 20
+                n = 10
                 for i in range(n):
                     x = x_in[i]
                     y = y_in[i]
@@ -168,11 +168,11 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
                 v_v_from = np.zeros((n_from, 3))
                 for i, node in enumerate(model_part_from.Nodes):
                     x_from[i], y_from[i], z_from[i] = node.X0, node.Y0, node.Z0
-                    theta = np.arctan2(z_from[i], y_from[i])
+                    # theta = np.arctan2(z_from[i], y_from[i])
 
                     v_s_from[i] = x_from[i]
-                    v_v_from[i] = np.array([x_from[i] * .5, x_from[i] * np.cos(theta),
-                                            x_from[i] * np.sin(theta)])
+                    v_v_from[i] = np.array([1 + x_from[i] * 2.5, 0.5 * y_from[i],
+                                            x_from[i] * 0])
 
                     node.SetSolutionStepValue(var_s, 0, v_s_from[i])
                     node.SetSolutionStepValue(var_v, 0, tuple(v_v_from[i]))
@@ -207,9 +207,9 @@ class TestMapperWedge3DTo2Daxisymmetric(KratosUnittest.TestCase):
                 ax_v = fig.add_subplot(122, projection='3d')
                 ax_v.set_title('check vector mapping')
                 ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
-                            pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.3)
+                            pivot='tail', arrow_length_ratio=0.3, normalize=True, length=0.03)
                 ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
-                            pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.3, colors='r', linewidth=2)
+                            pivot='tail', arrow_length_ratio=0.3, normalize=True, length=0.03, colors='r', linewidth=3)
 
                 for ax in [ax_s, ax_v]:
                     ax.set_xlabel('x')

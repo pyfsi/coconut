@@ -44,9 +44,13 @@ class SolverWrapperOpenFOAM_41(Component):
         self.write_precision = self.settings["write_precision"].GetInt() # writePrecision-parameter in OpenFOAM
         self.time_precision = self.settings["time_precision"].GetInt() # timePrecision-parameter in OpenFOAM
         self.time_format = "fixed"
+        self.courant_nr = self.settings["Courant_nr"].GetInt()
         self.boundary_names = [_.GetString() for _ in self.settings['boundary_names'].list()]# boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
         self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
         self.diffusivity=self.settings["diffusivity"].GetString()
+        self.diffusivityX = self.settings["diffusivityX"].GetInt()
+        self.diffusivityY = self.settings["diffusivityY"].GetInt()
+        self.diffusivityZ = self.settings["diffusivityZ"].GetInt()
         self.density=self.settings["density"].GetInt()
         self.displacementX = self.settings["displacementX"].GetDouble()
         self.displacementY = self.settings["displacementY"].GetDouble()
@@ -111,13 +115,14 @@ class SolverWrapperOpenFOAM_41(Component):
         with open(controlDict_raw_name,'r') as rawFile:
             with open(controlDict_name,'w') as newFile:
                 for line in rawFile:
-                    line=line.replace('|APPLICATION|',str(self.application))
-                    line=line.replace('|START_TIME|',str(self.start_time))
-                    line=line.replace('|END_TIME|',str(self.end_time))
-                    line=line.replace('|DT|',str(self.dt))
-                    line=line.replace('|WRITE_INTERVAL|',str(self.write_interval))
-                    line=line.replace('|WRITE_PRECISION|',str(self.write_precision))
-                    line=line.replace('|TIME_PRECISION|',str(self.time_precision))
+                    line = line.replace('|APPLICATION|',str(self.application))
+                    line = line.replace('|START_TIME|',str(self.start_time))
+                    line = line.replace('|END_TIME|',str(self.end_time))
+                    line = line.replace('|DT|',str(self.dt))
+                    line = line.replace('|WRITE_INTERVAL|',str(self.write_interval))
+                    line = line.replace('|WRITE_PRECISION|',str(self.write_precision))
+                    line = line.replace('|TIME_PRECISION|',str(self.time_precision))
+                    line = line.replace('|COURANT_NR|',str(self.courant_nr))
                     if '|BOUNDARY_NAMES|' in line:
                         firstBoundary = True
                         for interfaces in self.boundary_names:
@@ -162,8 +167,9 @@ class SolverWrapperOpenFOAM_41(Component):
                 for line in rawFile:
                     line=line.replace('|MESHMOTION_SOLVER|',str(self.meshmotion_solver))
                     line=line.replace('|DIFFUSIVITY|',str(self.diffusivity))
-                    line=line.replace('|NUM_INTERFACE_INPUT|',str(len(self.settings['boundary_names'].list())))
+                    # line=line.replace('|NUM_INTERFACE_INPUT|',str(len(self.settings['boundary_names'].list())))
                     line=line.replace('|INTERFACE_INPUT|',strBoundary)
+                    # line = line.replace('|INTERFACE_INPUT|', str(self.diffusivityX) + " " + str(self.diffusivityY) + " " + str(self.diffusivityZ))
                     newFile.write(line)
         rawFile.close()
         newFile.close()
@@ -215,21 +221,21 @@ class SolverWrapperOpenFOAM_41(Component):
             for i in np.arange(0, len(face_centres)):
 
                 if "nonuniform" in fXLines[index_X + 3]:
-                    x= float(fXLines[i+6+index_X].split("\n")[0])
+                    x = float(fXLines[i + 6 + index_X].split("\n")[0])
                 else:
                     s = list(fXLines[index_X + 3])
                     r = s[-3]
                     x = float(r)
 
                 if "nonuniform" in fYLines[index_Y + 3]:
-                    y= float(fYLines[i+6+index_Y].split("\n")[0])
+                    y = float(fYLines[i + 6 + index_Y].split("\n")[0])
                 else:
                     s = list(fYLines[index_Y + 3])
                     r = s[-3]
                     y = float(r)
 
                 if "nonuniform" in fZLines[index_Z + 3]:
-                    z= float(fZLines[i+6+index_Z].split("\n")[0])
+                    z = float(fZLines[i + 6 + index_Z].split("\n")[0])
                 else:
                     s = list(fZLines[index_Z + 3])
                     r = s[-3]
@@ -319,20 +325,6 @@ class SolverWrapperOpenFOAM_41(Component):
                 fA.writelines(fALines)
                 fA.close()
 
-                # with open(name_A) as fALines:
-                #     lines=[]
-                #     for line in fALines:
-                #         lines.append(line)
-                #     if boundary in lines[index_A]:
-                #         s = list(lines[index_A + 3])
-                #         s[-5] = 0.001
-                #         # print(s[-5])
-                #         # print(s[-7])
-                #         # print(s[-9])
-                #         # print(s)
-                #
-                #
-                #     print(lines)
 
 
         # if self.cores == 1:
@@ -361,7 +353,7 @@ class SolverWrapperOpenFOAM_41(Component):
         Normally no doubles should be encountered on an interface as these faces are not shared by processors
         '''
         if self.cores > 1:
-            os.system("cd " + self.working_directory + "; decomposePar -force -time "+ str(self.start_time) + " &> log.decomposePar;")
+            os.system("cd " + self.working_directory + "; decomposePar -force -cellDist -time "+ str(self.start_time) + " &> log.decomposePar;")
             for boundary in self.boundary_names:
                 mp_output = self.model[boundary + "_output"]
                 mp_output.sequence = []
@@ -827,7 +819,7 @@ class SolverWrapperOpenFOAM_41(Component):
         #     nKey += 1
 
         if self.cores > 1:
-            os.system("cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp + " &> log.decomposePar;")
+            os.system("cd " + self.working_directory + "; decomposePar -fields -cellDist -time " + self.prev_timestamp + " &> log.decomposePar;")
 
 
     def write_controlDict_function(self, filename, funcname, libname, varname, patchname, writeStart, writeEnd):
@@ -997,6 +989,7 @@ class SolverWrapperOpenFOAM_41(Component):
         f_b = f'{dir}/boundary'
         f_f = f'{dir}/faces'
         f_p = f'{dir}/points'
+
 
         # Identify startface and endface for the boundary
         with open(f_b) as f:
