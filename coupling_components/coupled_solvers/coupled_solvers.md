@@ -186,7 +186,7 @@ A symbolic schematic is given in the following figure.
 Here, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
 and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$
 
-For more information refer to .
+For more information refer to [models](models/models.md).
 
 ### Settings
 
@@ -275,3 +275,8 @@ parameter|type|description
 `model_s`|dict|Model component corresponding to the second solver wrapper.
 `omega`|double|Relaxation factor.
 `relative_tolerance_gmres`|double|Relative tolerance used in the GMRES method.
+
+## Test single solver
+
+This test environment inherits from `GaussSeidel`. More information is given in [Test single solver](tets_single_solver.md)
+as this is not a component that couples two solvers.
