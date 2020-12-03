@@ -278,5 +278,5 @@ parameter|type|description
 
 ## Test single solver
 
-This test environment inherits from `GaussSeidel`. More information is given in [Test single solver](tets_single_solver.md)
-as this is not a component that couples two solvers.
+This test environment inherits from `GaussSeidel`. More information is given in `test_single_solver` as this is not a 
+component that couples two solvers.

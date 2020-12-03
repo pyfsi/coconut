@@ -5,27 +5,26 @@ The idea behind this component is that only one of the two solvers is tested, wh
 
 ## Settings
 
-The JSON settings for this `test_single_solver` are largely the same as in [`coupled_solvers`](coupled_solvers.md), namely
+The JSON settings for this `test_single_solver` are largely the same as in `coupled_solvers`, namely
 the dictionaries `type`, `settings`, `predictor`, `convergence_criterion` and `solver_wrappers`. The entry for `type` is
 obviously `test_single_solver`, the `settings` that one wants to use in the actual simulation, can be kept. Additionally 
 to these directories, a mandatory directory `test_settings` is to be defined as well. An example case can be found 
-[here](../../examples/test_single_solver/test_single_solver.md). The possibilities for the `test_settings` directory 
-are shown below.
+in `examples/test_single_solver`. The possibilities for the `test_settings` directory 
+are listed in alphabetical order below.
 
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first solver wrapper that appears in the JSON-file, 1 the second wrapper.
-`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py` file in your case (for more information, see [examples](../../examples/test_single_solver/test_single_solver.md)).
+`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py` file in your case (for more information, see example case).
 `timestep_start`|int|(optional) Time step to start from. In this test environment, this is set to 0 by default.
 
 Note that `test_settings` overwrites some parameters defined in `settings`. As such, these dictionaries are completely 
 independent. This allows the user to set up a normal case but instead of running a full simulation, a test can easily be 
 set up by only adding this `test_settings` dictionary and setting the `type` of `coupled_solvers` to `test_single_solver`.
 
-An attentive reader will notice that in the [example case](../../examples/test_single_solver/test_single_solver.md), 
-an additional parameter `check_mapping` is defined. This allows to test the mappers as well but this feature is currently 
-not implemented and as such, this value is not used.
+An attentive reader will notice that in the example case, an additional parameter `check_mapping` is defined. This 
+allows to test the mappers as well but this feature is currently not implemented and as such, this value is not used.
 
 In your case directory where the simulation is run, a python file `dummy_solver.py` should be present that contains
 at least one `test_class`. These classes allow to define forces or displacement on your structure and acts as "second
