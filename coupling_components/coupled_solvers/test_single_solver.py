@@ -8,11 +8,11 @@ import os
 import sys
 
 try:
-    from functions import *
+    from dummy_solver import *
     bool_test = True
 except ImportError:
     bool_test = False
-    print(f"No file named functions.py found, zero input will be used")
+    print(f"No file named dummy_solver.py found, zero input will be used")
 
 
 def Create(parameters):
