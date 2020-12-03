@@ -8,11 +8,11 @@ import os
 import sys
 
 try:
-    from test_function import *
+    from functions import *
     bool_test = True
 except ImportError:
     bool_test = False
-    print(f"No file named test_function.py found, zero input will be used")
+    print(f"No file named functions.py found, zero input will be used")
 
 
 def Create(parameters):
