@@ -391,9 +391,98 @@
       
     
     
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Convergence criteria
+      </label>
+    
     <a href="./" title="Convergence criteria" class="md-nav__link md-nav__link--active">
       Convergence criteria
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#iteration-limit" class="md-nav__link">
+    Iteration limit
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#absolute-norm" class="md-nav__link">
+    Absolute norm
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_1" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relative-norm" class="md-nav__link">
+    Relative norm
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_2" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combining-multiple-convergence-criteria" class="md-nav__link">
+    Combining multiple convergence criteria
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -816,6 +905,82 @@
     
   
   
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#iteration-limit" class="md-nav__link">
+    Iteration limit
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#absolute-norm" class="md-nav__link">
+    Absolute norm
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_1" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relative-norm" class="md-nav__link">
+    Relative norm
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_2" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combining-multiple-convergence-criteria" class="md-nav__link">
+    Combining multiple convergence criteria
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -828,9 +993,96 @@
                 
                 
                 <h1 id="convergence-criteria">Convergence criteria</h1>
-<blockquote>
-<p>TODO...</p>
-</blockquote>
+<p>Convergence criteria are an essential part of numerical tools. They should be chosen wisely in order to obtain a reasonably
+accurate solution without performing more iterations than needed. This documentation describes how the user can practically
+assemble a set of convergence criteria.</p>
+<h2 id="iteration-limit">Iteration limit</h2>
+<p>The <code>type</code> <code>convergence_criterion.iteration_limit</code> is satisfied if the number of coupling iterations equals or is larger than a predefined maximum.</p>
+<h3 id="settings">Settings</h3>
+<p>The <code>settings</code> dictionary contains one entry:</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>maximum</code></td>
+<td align="center">int</td>
+<td>Maximum number of iterations.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="absolute-norm">Absolute norm</h2>
+<p>The <code>type</code> <code>convergence_criterion.absolute_norm</code> is satisfied if the <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual in the last coupling iteration
+is smaller than a predefined <code>tolerance</code>. The <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is defined as</p>
+<div>
+<div class="MathJax_Preview">
+\Vert r \Vert = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
+</div>
+<script type="math/tex; mode=display">
+\Vert r \Vert = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
+</script>
+</div>
+<h3 id="settings_1">Settings</h3>
+<p>The <code>settings</code> are as follows:</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>tolerance</code></td>
+<td align="center">double</td>
+<td>Maximal relaxation factor.</td>
+</tr>
+<tr>
+<td align="right"><code>order</code></td>
+<td align="center">int</td>
+<td>Order <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> of the norm.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="relative-norm">Relative norm</h2>
+<p>This <code>type</code> (<code>convergence_criterion.relative_norm</code>) is completely analogous to the absolute norm. Instead of the norm of 
+the last residual being smaller than a set <code>tolerance</code>, now the ratio of the residual of the last coupling iteration to the 
+residual of the first coupling iteration is compared to a <code>tolerance</code>.</p>
+<h3 id="settings_2">Settings</h3>
+<p>These are the same as for <code>convergence_criterion.absolute_norm</code>.</p>
+<h2 id="combining-multiple-convergence-criteria">Combining multiple convergence criteria</h2>
+<p>In most cases, it is wise to combine two criteria: one to ensure a high enough accuracy and an iteration limit in order
+to break loops that are not converging fast enough. In that case, the criteria are combined via <code>or</code> or <code>and</code> statements.
+In that case, the <code>type</code> is set to <code>convergence_criterion.or</code> (alternatively, <code>convergence_criterion.and</code>) and the <code>settings</code>
+contain a <code>criteria_list</code> that contains single criteria in the same way as described above. </p>
+<p>In the following example, the <code>iteration_limit</code> and <code>relative_norm</code> criteria are combined using an <code>or</code> statement. </p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.or&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;criteria_list&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.iteration_limit&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;maximum&quot;</span><span class="p">:</span> <span class="mi">20</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.relative_norm&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+          <span class="nt">&quot;order&quot;</span><span class="p">:</span> <span class="mi">2</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
                 
                   
                 
