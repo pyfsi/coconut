@@ -26,4 +26,10 @@ The abaqus case can easily be tested by changing this value to 1.
 ## Dummy solver
 
 Even though the presence of `dummy_solver.py` is not strictly required, it can be valuable to have a nonzero input. The
-file included in this case provides an example.
+file included in this case provides an example. It contains two classes, `Simple_test` and `Transient_test` to illustrate
+how variables can be defined based on undeformed coordinates (`x`, `y`, `z`) and time step (`n`). Note that the number 
+of classes defined is not restricted. The name of the class that one wants to use should be specified in the JSON file, 
+in this example the `Transient_test`. Each class contains three function definitions with a fixed name 
+`calculate_VARIABLE(x,y,z,n)`, with `VARIABLE` being `DISPLACEMENT`, `PRESSURE` or `TRACTION`. How these variables are 
+defined inside a function, is up to the user. Make sure to return the right format: a 3x1 list for `DISPLACEMENT` and 
+`TRACTION` and a scalar for `PRESSURE`.

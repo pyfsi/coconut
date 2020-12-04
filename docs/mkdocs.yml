@@ -25,6 +25,7 @@ nav:
         -   Coupled solvers:
             -   coupled_solvers.md
             -   models.md
+            -   test_single_solver.md
         -   mappers.md
         -   predictors.md
         -   Solver wrappers:
@@ -46,5 +47,6 @@ nav:
             -   Fluent 2D - Abaqus 2D - Steady: tube_fluent2d_abaqus2d_steady.md
             -   Fluent 3D - Abaqus 2D: tube_fluent3d_abaqus2d.md
             -   Fluent 3D - Abaqus 3D: tube_fluent3d_abaqus3d.md
+        - Test single solver: example_test_single_solver.md
     -   Tests:
         -   tests.md

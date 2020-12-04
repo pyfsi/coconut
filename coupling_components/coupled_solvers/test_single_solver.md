@@ -8,8 +8,8 @@ The idea behind this component is that only one of the two solvers is tested, wh
 The JSON settings for this `test_single_solver` are largely the same as in `coupled_solvers`, namely
 the dictionaries `type`, `settings`, `predictor`, `convergence_criterion` and `solver_wrappers`. The entry for `type` is
 obviously `test_single_solver`, the `settings` that one wants to use in the actual simulation, can be kept. Additionally 
-to these directories, a mandatory directory `test_settings` is to be defined as well. An example case can be found 
-in `examples/test_single_solver`. The possibilities for the `test_settings` directory 
+to these directories, a mandatory directory `test_settings` is to be defined as well. An illustration can be found 
+in the example cases. The possibilities for the `test_settings` directory 
 are listed in alphabetical order below.
 
 parameter|type|description
