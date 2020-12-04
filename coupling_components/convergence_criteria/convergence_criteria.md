@@ -47,9 +47,33 @@ These are the same as for `convergence_criterion.absolute_norm`.
 ## Combining multiple convergence criteria
 
 In most cases, it is wise to combine two criteria: one to ensure a high enough accuracy and an iteration limit in order
-to break loops that are not converging fast enough. In that case, the criteria are `combined` via `or` or `and` statements.
+to break loops that are not converging fast enough. In that case, the criteria are combined via `or` or `and` statements.
 In that case, the `type` is set to `convergence_criterion.or` (alternatively, `convergence_criterion.and`) and the `settings`
-contain a `criteria_list` that contains single criteria in the same way as described above. See the example cases for an
-illustration.
+contain a `criteria_list` that contains single criteria in the same way as described above. 
+
+In the following example, the `iteration_limit` and `relative_norm` criteria are combined using an `or` statement. 
+
+```json
+{
+  "type": "convergence_criteria.or",
+  "settings": {
+    "criteria_list": [
+      {
+        "type": "convergence_criteria.iteration_limit",
+        "settings": {
+          "maximum": 20
+        }
+      },
+      {
+        "type": "convergence_criteria.relative_norm",
+          "settings": {
+          "tolerance": 1e-3,
+          "order": 2
+        }
+      }
+    ]
+  }
+}
+```
 
 
