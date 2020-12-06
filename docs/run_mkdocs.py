@@ -2,6 +2,8 @@ import glob
 import os
 import shutil
 from sys import argv
+import re
+import fileinput
 
 """
 README
@@ -68,6 +70,23 @@ for filename in filenames:
     used = False
 for file in unused:
     print(f'WARNING - file "{file}" is not used in mkdocs.yml')
+
+# fix links to MarkDown files
+for filename in filenames:
+    with fileinput.FileInput('docs/' + filename, inplace=True) as file:
+        for line in file:
+            matches = []
+            for match in re.finditer(r'\([a-zA-Z0-9_./\-]+\.md\)', line):
+                matches.append(match)
+            if len(matches) > 0:
+                for match in matches[::-1]:
+                    tmp = match[0][1:-4].split('/')[-1]
+                    if tmp == 'README':
+                        url = '(https://pyfsi.github.io/coconut/)'
+                    else:
+                        url = '(https://pyfsi.github.io/coconut/' + tmp + '/)'
+                    line = line[:match.start()] + url + line[match.end():]
+            print(line, end='')
 
 # find all relevant images in CoCoNuT
 extensions = ['png', 'jpg', 'jpeg']
