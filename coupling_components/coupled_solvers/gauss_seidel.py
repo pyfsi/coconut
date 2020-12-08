@@ -213,6 +213,6 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.Check()
 
-    def PrintInfo(self, pre):
+    def PrintComponentsInfo(self, pre):
         tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        tools.PrintStructureInfo(pre, self.components)
+        tools.PrintComponentsInfo(pre, self.components)

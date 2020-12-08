@@ -133,7 +133,7 @@ def UpdatePre(pre):
 # PrintInfoStructure: Print information from a list of Comonents in a strucutred way
 #  @param label         Preceding text ending with '├─' or '└─'
 #  @param compent_list  List of Components from which the info is printed
-def PrintStructureInfo(pre, component_list):
+def PrintComponentsInfo(pre, component_list):
     """
     This function accepts a list of Components and print their info in a structured tree-like format as such:
     ├─Component0.PrintInfo
@@ -143,8 +143,8 @@ def PrintStructureInfo(pre, component_list):
     """
     pre = UpdatePre(pre)
     for component in component_list[:-1]:
-        component.PrintInfo(pre + '├─')
-    component_list[-1].PrintInfo(pre + '└─')
+        component.PrintComponentsInfo(pre + '├─')
+    component_list[-1].PrintComponentsInfo(pre + '└─')
 
 
 # Timer-function
