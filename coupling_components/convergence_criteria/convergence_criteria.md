@@ -22,7 +22,7 @@ The `type` `convergence_criterion.absolute_norm` is satisfied if the $p$-norm of
 is smaller than a predefined `tolerance`. The $p$-norm of the residual $r$ is defined as
 
 $$
-\Vert r \Vert = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
+\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
 $$
 
 ### Settings
@@ -31,14 +31,14 @@ The `settings` are as follows:
 
 parameter|type|description
 ---:|:---:|---
-`tolerance`|double|Maximal relaxation factor.
+`tolerance`|double|Limit value for convergence.
 `order`|int|Order $p$ of the norm.
 
 ## Relative norm
 
 This `type` (`convergence_criterion.relative_norm`) is completely analogous to the absolute norm. Instead of the norm of 
-the last residual being smaller than a set `tolerance`, now the ratio of the residual of the last coupling iteration to the 
-residual of the first coupling iteration is compared to a `tolerance`.
+the last residual being smaller than a set `tolerance`, now the ratio norm of the residual of the last coupling iteration to the 
+norm of the residual of the first coupling iteration is compared to a `tolerance`.
 
 ### Settings
 
@@ -66,7 +66,7 @@ In the following example, the `iteration_limit` and `relative_norm` criteria are
       },
       {
         "type": "convergence_criteria.relative_norm",
-          "settings": {
+        "settings": {
           "tolerance": 1e-3,
           "order": 2
         }
