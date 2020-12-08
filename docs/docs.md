@@ -13,6 +13,7 @@ The MD documents for the CoCoNuT documentation must be written in the [Python-Ma
 
 An important rule for writing MD files for this documentation website is that the name of the file must be unique: use names like `fluent.md` or `examples.md`, not `readme.md`.
 
+
 ### Links to other MarkDown files
 It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax
 ```markdown
