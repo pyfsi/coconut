@@ -622,6 +622,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#links-to-other-markdown-files" class="md-nav__link">
+    Links to other MarkDown files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#math" class="md-nav__link">
     Math
   </a>
@@ -884,6 +891,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#links-to-other-markdown-files" class="md-nav__link">
+    Links to other MarkDown files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#math" class="md-nav__link">
     Math
   </a>
@@ -932,11 +946,17 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <h2 id="documentation-in-markdown">Documentation in MarkDown</h2>
 <p>MD files are easy to write and read in raw form, and can easily be converted to HTML for nicer rendering. It is easy to learn, see e.g. this <a href="https://www.markdowntutorial.com/">tutorial</a>. Several flavors of MD exist, which differ only in some details. GitHub has its own <a href="https://github.github.com/gfm/">GitHub Flavored Markdown (GFM)</a>, which is used to render MD documents found in repositories on the run. PyCharm comes with an automatic rendering tool built in, and I assume many other IDE's too. </p>
 <p>The MD documents for the CoCoNuT documentation must be written in the <a href="https://python-markdown.github.io/">Python-Markdown</a> flavor, because they are processed by <a href="https://www.mkdocs.org/">MkDocs</a>. This flavor stays very close to the <a href="reference implementation">reference implementation</a> of MD. Pay attention to lists: they should be indented with 4 spaces (contrary to GFM). </p>
-<p>Some important rules for writing MD files for this documentation website:</p>
-<ul>
-<li>The name of the file must be unique: use names like <code>fluent.md</code> or <code>examples.md</code>, not <code>readme.md</code>.</li>
-<li>Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names <code>example.md</code> with a proper link. </li>
-</ul>
+<p>An important rule for writing MD files for the documentation website is that the name of the file must be unique: use names like <code>fluent.md</code> or <code>examples.md</code>, not <code>readme.md</code>. </p>
+<h3 id="links-to-other-markdown-files">Links to other MarkDown files</h3>
+<p>It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax</p>
+<div class="codehilite"><pre><span></span><code><span class="p">[</span><span class="n">link</span> <span class="n">description</span><span class="p">](</span><span class="n">relative_path</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>where <code>relative_path</code> is the relative path to another MarkDown file, e.g. <code>../coupling_components/mappers/mappers.md</code>. </p>
+<p>These links can be used in rendered MarkDown, e.g. in PyCharm, but also on GitHub itself (see <a href="https://github.blog/2013-01-31-relative-links-in-markup-files/">this blogpost</a>). 
+These links also work on the documentation website, as they are automatically replaced by the correct URL. 
+Take for example a look at the documentation of the <a href="https://pyfsi.github.io/coconut/mappers/">mappers</a> or the <a href="https://pyfsi.github.io/coconut/examples/">examples</a>. </p>
 <h3 id="math">Math</h3>
 <p>For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. <span><span class="MathJax_Preview">E = m c^2</span><script type="math/tex">E = m c^2</script></span>), block-style equations in double dolar signs, e.g.</p>
 <div>
@@ -947,7 +967,7 @@ e^{i \pi} + 1 = 0.
 e^{i \pi} + 1 = 0.
 </script>
 </div>
-<p>LaTeX expressions will <strong>not</strong> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="Arithmatex">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
+<p>LaTeX expressions will <strong>not</strong> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="https://facelessuser.github.io/pymdown-extensions/extensions/arithmatex/">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
 <h3 id="images">Images</h3>
 <p>External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory <code>images</code> next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. </p>
 <p>An image can be added with the MD command</p>
