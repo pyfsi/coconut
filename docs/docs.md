@@ -11,10 +11,7 @@ MD files are easy to write and read in raw form, and can easily be converted to 
 
 The MD documents for the CoCoNuT documentation must be written in the [Python-Markdown](https://python-markdown.github.io/) flavor, because they are processed by [MkDocs][1]. This flavor stays very close to the [reference implementation](reference implementation) of MD. Pay attention to lists: they should be indented with 4 spaces (contrary to GFM). 
 
-Some important rules for writing MD files for this documentation website:
-
-*   The name of the file must be unique: use names like `fluent.md` or `examples.md`, not `readme.md`.
-*   Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names `example.md` with a proper link. 
+An important rule for writing MD files for this documentation website is that the name of the file must be unique: use names like `fluent.md` or `examples.md`, not `readme.md`.
 
 ### Links to other MarkDown files
 It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax
