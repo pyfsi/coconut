@@ -577,6 +577,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#test-single-solver" class="md-nav__link">
+    Test single solver
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_5" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#algorithm_5" class="md-nav__link">
+    Algorithm
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
       
       
       
@@ -917,6 +944,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+      Test single solver
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -1113,6 +1152,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#test-single-solver" class="md-nav__link">
+    Test single solver
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#settings_5" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#algorithm_5" class="md-nav__link">
+    Algorithm
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
       
       
       
@@ -1134,9 +1200,12 @@
 <p>This documentation describes the coupled solvers that are available.
 A coupled solver refers to a coupling algortihm used to couple the two solvers.
 Some coupled solvers implement one or more models.
+An odd one out is <code>test_single_solver</code> which allows to test only one solver by coupling it to a dummy solver. 
 All coupled solvers inherit from <code>gauss_seidel</code>.</p>
-<p>In the parameter JSON file, the dictionary <code>coupled_solver</code> holds the dictionaries <code>type</code> and <code>settings</code>,
-but also <code>predictor</code>, <code>convergence_criterion</code> and <code>solver_wrappers</code>.</p>
+<p>In the parameter JSON file, the dictionary <code>coupled_solver</code> holds the <code>type</code> and the dictionary <code>settings</code>,
+but also <code>predictor</code>, <code>convergence_criterion</code> and <code>solver_wrappers</code>.
+More information on these last three can be found in respectively <a href="https://pyfsi.github.io/coconut/predictors/">predictors</a>,
+<a href="https://pyfsi.github.io/coconut/convergence_criteria/">convergence_criteria</a> and the <code>solver_wrappers</code> documentation.</p>
 <h2 id="gaussseidel">GaussSeidel</h2>
 <h3 id="algorithm">Algorithm</h3>
 <p>Gauss-Seidel iterations are the simplest way of coupling two solvers.
@@ -1323,7 +1392,7 @@ $$</p>
 <img alt="iqni" src="../images/iteration_iqni.png" title="Residual operator iterations" /></p>
 <p>Here, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\tilde{y}</span><script type="math/tex">\tilde{y}</script></span> 
 and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span></p>
-<p>For more information refer to .</p>
+<p>For more information refer to <a href="https://pyfsi.github.io/coconut/models/">models</a>.</p>
 <h3 id="settings_3">Settings</h3>
 <p>Besides the parameters required in <code>GaussSeidel</code>, the following parameters need to be included in the <code>settings</code> dictionary.
 They are listed in alphabetical order.</p>
@@ -1445,6 +1514,71 @@ They are listed in alphabetical order.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="test-single-solver">Test single solver</h2>
+<p>The solver <code>test_single_solver</code> can be used to test new cases and settings.
+The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy.
+This test environment inherits from <code>GaussSeidel</code>. </p>
+<h3 id="settings_5">Settings</h3>
+<p>The JSON settings for this <code>test_single_solver</code> are largely the same as in <code>coupled_solvers</code>, namely
+the <code>type</code> and the  dictionaries  <code>settings</code>, <code>predictor</code>, <code>convergence_criterion</code> and <code>solver_wrappers</code>.
+The entry for <code>type</code> is <code>test_single_solver</code>, the <code>settings</code> that one wants to use in the actual simulation, can be kept, but are not used.
+Additionally to these directories, a mandatory directory <code>test_settings</code> has to be defined as well.
+An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver/">test_single_solver</a>.
+The possibilities for the <code>test_settings</code> directory are listed in alphabetical order below.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>delta_t</code></td>
+<td align="center">double</td>
+<td>(optional) Time step size to be used in the test. Is optional as long as this value is defined in the <code>settings</code> dictionary. If a different value is defined in both dictionaries, the one defined in <code>test_settings</code> is chosen.</td>
+</tr>
+<tr>
+<td align="right"><code>solver_index</code></td>
+<td align="center">int</td>
+<td>Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first solver wrapper that appears in the JSON-file, 1 the second wrapper.</td>
+</tr>
+<tr>
+<td align="right"><code>test_class</code></td>
+<td align="center">string</td>
+<td>(optional) Refers to the class to use in the <code>dummy_solver.py</code> file in your case (for more information, see <a href="https://pyfsi.github.io/coconut/test_single_solver/">example case</a>).</td>
+</tr>
+<tr>
+<td align="right"><code>timestep_start</code></td>
+<td align="center">int</td>
+<td>(optional) Time step to start from. In this test environment, this is set to 0 by default.</td>
+</tr>
+</tbody>
+</table>
+<p>Note that <code>test_settings</code> overwrites some parameters defined in <code>settings</code>. As such, these dictionaries are completely 
+independent. This allows the user to set up a normal case but instead of running a full simulation, a test can easily be 
+set up by only adding this <code>test_settings</code> dictionary and setting the <code>type</code> of <code>coupled_solvers</code> to <code>test_single_solver</code>.</p>
+<p>An attentive reader will notice that in the example case, an additional parameter <code>check_mapping</code> is defined. This 
+allows to test the mappers as well but this feature is currently not implemented and as such, this value is not used.</p>
+<p>In your case directory where the simulation is run, a python file <code>dummy_solver.py</code> should be present that contains
+at least one <code>test_class</code>. These classes allow to define forces or displacement on your structure and acts as "second
+solver" to the problem. If this file is not present or <code>test_class</code> is not defined in <code>test_settings</code>, zero input will
+be used. If <code>dummy_solver.py</code> does not contain the <code>test_class</code> defined in <code>test_settings</code>, an error will occur.</p>
+<h3 id="algorithm_5">Algorithm</h3>
+<p>The initialization starts with checking whether or not <code>dummy_solver.py</code> is present. If not, a boolean <code>bool_test</code> is set
+to <code>False</code> and a message is printed that the input will be used. Then, the presence of <code>test_settings</code> is checked and
+the parameters are set. Note once more that the parameters in <code>test_settings</code> have priority over these defined in <code>settings</code>.
+Furthermore, only <code>delta_t</code> is of interest. Other <code>settings</code> are ignored, <code>timestep_start</code> is set to 0 and <code>save_results</code> 
+to <code>False</code>.</p>
+<p>As a next step, <code>delta_t</code> and <code>timestep_start</code> are added to the <code>settings</code> of the solver wrapper to be tested. The working
+directory is copied to a new directory with the same name and a suffix <code>_testX</code> with <code>X</code> an integer starting from 0.<br />
+Previous test working directories are not overwritten. The initialization finishes with informing the user that either
+the <code>test_class</code> is used to provide input or, in absence of this parameter, a zero input will be used.</p>
+<p>The <code>SolveSolutionStep</code> is fairly straightforward: if the boolean <code>bool_test</code> is true and a <code>test_class</code> was defined,
+the <code>SolutionStepValue</code> of the nodes on the <code>interface_input</code> of the solver wrapper is set to the values defined in the
+<code>test_class</code>. The <code>interface_output</code> of the solver wrapper is ignored. As such, this test environment can be considered
+as one way FSI in some way.</p>
                 
                   
                 

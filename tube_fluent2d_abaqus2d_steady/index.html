@@ -757,8 +757,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#predictors" class="md-nav__link">
-    Predictors
+  <a href="#predictor" class="md-nav__link">
+    Predictor
   </a>
   
 </li>
@@ -807,6 +807,18 @@
         
       </ul>
     </nav>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+      Test single solver
+    </a>
   </li>
 
         
@@ -886,8 +898,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#predictors" class="md-nav__link">
-    Predictors
+  <a href="#predictor" class="md-nav__link">
+    Predictor
   </a>
   
 </li>
@@ -927,7 +939,7 @@ Here the most important differences and peculiarities of a steady case are highl
 <h2 id="coupling-algorithm">Coupling algorithm</h2>
 <p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQNI-LS).
 The paramter <code>q</code> is not used no as there is only one time step. Note that in a steady caculation, the models <code>ls</code> (IQN-ILS) and <code>mv</code> (IQN-MVJ) are identical.</p>
-<h2 id="predictors">Predictors</h2>
+<h2 id="predictor">Predictor</h2>
 <p>A predictor is still required, but not used as only one time step is calculated.</p>
 <h2 id="solvers">Solvers</h2>
 <p>Of course the suplied case files in both Fluent and Abaqus also need to be steady. 
