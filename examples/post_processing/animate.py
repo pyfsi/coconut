@@ -98,9 +98,9 @@ class Animation:
                 correct_location = True if var_name == variable_name and mp_name == model_part_name else False
                 displacement_location = True if var_name == "DISPLACEMENT" and mp_name == model_part_name else False
                 var = vars(data_structure)[var_name]
-                if var.Type() is "Double":
+                if var.Type() == "Double":
                     dimension = 1
-                elif var.Type() is "Array":
+                elif var.Type() == "Array":
                     dimension = 3
                 else:
                     raise NotImplementedError('Only "Double" and "Array" Variables implemented.')
