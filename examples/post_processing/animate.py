@@ -55,7 +55,7 @@ class Animation:
         self.mask = None
         self.argsort = None
         self.initial_position = None
-        self.absicissa = None
+        self.abscissa = None
         self.solution = None
         self.displacement = None
         self.line = None
@@ -126,14 +126,14 @@ class Animation:
         if index != self.complete_solution.shape[0]:
             raise Exception("Size of provided solution data does not match interface.")
 
-    def Initialize(self, mask_x, mask_y, mask_z, absicissa, component):
+    def Initialize(self, mask_x, mask_y, mask_z, abscissa, component):
         """
         This method selects which points to plot and how to sort them.
 
         :param mask_x: (ndarray) selects points based on x-coordinate
         :param mask_y: (ndarray) selects points based on y-coordinate
         :param mask_z: (ndarray) selects points based on z-coordinate
-        :param absicissa: (int) absicissa direction: 0 for x-axis, 1 for y-axis and 2 for z-axis
+        :param abscissa: (int) abscissa direction: 0 for x-axis, 1 for y-axis and 2 for z-axis
         :param component: (int) which component to plot if variable is vector:
                                 0 for x-axis, 1 for y-axis and 2 for z-axis
         """
@@ -145,8 +145,8 @@ class Animation:
                             f"\tmask_z selects {sum(mask_z)} points")
 
         # chose sort direction
-        self.argsort = np.argsort(self.coordinates[absicissa::3][self.mask])
-        self.absicissa = self.coordinates[absicissa::3][self.mask][self.argsort]
+        self.argsort = np.argsort(self.coordinates[abscissa::3][self.mask])
+        self.abscissa = self.coordinates[abscissa::3][self.mask][self.argsort]
 
         if self.variable == 'COORDINATES':
             self.initial_position = self.coordinates[component::3][self.mask][self.argsort]
@@ -157,11 +157,11 @@ class Animation:
                 component = 0
             self.solution = [self.select(self.complete_solution[:, i], component) for i in range(self.time_steps + 1)]
         if self.displacement_available:
-            self.displacement = [self.select_displacement(self.complete_solution[:, i], absicissa)
+            self.displacement = [self.select_displacement(self.complete_solution[:, i], abscissa)
                                  for i in range(self.time_steps + 1)]
 
         plt.figure(self.animation_figure.number)  # make figure active
-        self.line, = plt.plot(self.absicissa, self.solution[0], label=self.name)
+        self.line, = plt.plot(self.abscissa, self.solution[0], label=self.name)
 
         # adjust scale
         self.animation_figure.UpdateScale(self)
@@ -172,19 +172,19 @@ class Animation:
         # select correct model_part and variable data and order them
         return array[self.start_index + component: self.end_index: self.dimension][self.mask][self.argsort]
 
-    def select_displacement(self, array, absicissa):
+    def select_displacement(self, array, abscissa):
         # select correct model_part and variable node displacement data and order them
-        return array[self.start_index_displacement + absicissa: self.end_index_displacement: 3][self.mask][self.argsort]
+        return array[self.start_index_displacement + abscissa: self.end_index_displacement: 3][self.mask][self.argsort]
 
     def case_init(self):
-        self.line.set_ydata([np.nan] * self.absicissa.size)
+        self.line.set_ydata([np.nan] * self.abscissa.size)
         return self.line,
 
     def case_animate(self, ts):
         if self.displacement_available:
-            self.line.set_xdata(self.absicissa + self.displacement[ts])
+            self.line.set_xdata(self.abscissa + self.displacement[ts])
         else:
-            self.line.set_xdata(self.absicissa)
+            self.line.set_xdata(self.abscissa)
         self.line.set_ydata(self.solution[ts])
         return self.line,
 
