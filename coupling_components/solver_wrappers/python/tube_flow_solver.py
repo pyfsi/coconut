@@ -48,7 +48,7 @@ class SolverWrapperTubeFlow(Component):
                 "reference") else self.preference  # Reference of pressure inlet boundary condition
         elif self.inlet_variable == "total_pressure":
             self.inlet_reference = self.inlet_boundary["reference"].GetDouble() if self.inlet_boundary.Has(
-                "reference") else self.preference + self.ureference ** 2 / 2  # Reference of total_pressure inlet boundary condition
+                "reference") else self.preference + self.rhof * self.ureference ** 2 / 2  # Reference of total_pressure inlet boundary condition
         else:
             raise ValueError(f"The inlet_variable \'{self.inlet_variable}\' is not implemented,"
                              f" choose between \'pressure\', \'total_pressure\' and \'velocity\'")
