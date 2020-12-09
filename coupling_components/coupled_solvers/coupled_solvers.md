@@ -292,7 +292,7 @@ The JSON settings for this `test_single_solver` are largely the same as in `coup
 the `type` and the  dictionaries  `settings`, `predictor`, `convergence_criterion` and `solver_wrappers`.
 The entry for `type` is `test_single_solver`, the `settings` that one wants to use in the actual simulation, can be kept, but are not used.
 Additionally to these directories, a mandatory directory `test_settings` has to be defined as well.
-An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md.
+An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 The possibilities for the `test_settings` directory are listed in alphabetical order below.
 
 parameter|type|description
