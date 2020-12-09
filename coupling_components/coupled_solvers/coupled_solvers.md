@@ -299,7 +299,7 @@ parameter|type|description
 ---:|:---:|---
 `delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first solver wrapper that appears in the JSON-file, 1 the second wrapper.
-`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py` file in your case (for more information, see [example case](../../examples/test_single_solver/test_single_solver.md).
+`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py` file in your case (for more information, see [example case](../../examples/test_single_solver/test_single_solver.md)).
 `timestep_start`|int|(optional) Time step to start from. In this test environment, this is set to 0 by default.
 
 Note that `test_settings` overwrites some parameters defined in `settings`. As such, these dictionaries are completely 
