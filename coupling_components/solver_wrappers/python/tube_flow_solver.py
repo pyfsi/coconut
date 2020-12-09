@@ -86,6 +86,8 @@ class SolverWrapperTubeFlow(Component):
         else:
             self.dt = 1.0  # Time step size default value
             self.alpha = np.pi * self.d ** 2 / 4.0 / self.ureference  # Numerical damping parameter due to central discretization of pressure in momentum equation
+            if self.outlet_type == 1:
+                raise ValueError("Outlet type 1 can not be used for steady calculation")
 
         self.newtonmax = self.settings["newtonmax"].GetInt()  # Maximal number of Newton iterations
         self.newtontol = self.settings["newtontol"].GetDouble()  # Tolerance of Newton iterations
@@ -140,9 +142,10 @@ class SolverWrapperTubeFlow(Component):
 
         self.k = 0
         self.n += 1
-        self.un = np.array(self.u)
-        self.pn = np.array(self.p)
-        self.an = np.array(self.a)
+        if self.unsteady:
+            self.un = np.array(self.u)
+            self.pn = np.array(self.p)
+            self.an = np.array(self.a)
 
     @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):

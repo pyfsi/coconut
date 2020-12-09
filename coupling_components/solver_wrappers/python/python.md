@@ -99,7 +99,7 @@ This section describes all parameters that need to be specified in the dictionar
 
 parameter|type|description
 ---:|:---:|---
-`type`|int|Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. <br>If other, a fixed value equal to the reference pressure is applied.
+`type`|int|Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. This type can not be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.
 
 ### TubeRingModel
 
