@@ -13,7 +13,9 @@ class PredictorCubic(Predictor):
         self.order = 3
 
     def Predict(self, x):
-        if len(self.dataprev) < 3:
+        if len(self.dataprev) == 1:
+            return self.Constant(x)
+        if len(self.dataprev) == 2:
             return self.Linear(x)
         elif len(self.dataprev) == 3:
             return self.Quadratic(x)

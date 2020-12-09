@@ -13,7 +13,9 @@ class PredictorQuadratic(Predictor):
         self.order = 2
 
     def Predict(self, x):
-        if len(self.dataprev) < 3:
+        if len(self.dataprev) == 1:
+            return self.Constant(x)
+        if len(self.dataprev) == 2:
             return self.Linear(x)
         else:
             return self.Quadratic(x)
