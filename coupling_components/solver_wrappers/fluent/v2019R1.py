@@ -30,6 +30,8 @@ class SolverWrapperFluent2019R1(Component):
         path_src = os.path.realpath(os.path.dirname(__file__))
         self.cores = self.settings['cores'].GetInt()
         self.case_file = self.settings['case_file'].GetString()  # file must be in self.dir_cfd
+        if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
+            raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face'].GetInt()
         self.dimensions = self.settings['dimensions'].GetInt()
         self.unsteady = self.settings['unsteady'].GetBool()
