@@ -286,7 +286,7 @@ The solver `test_single_solver` can be used to test new cases and settings.
 The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy.
 This test environment inherits from `GaussSeidel`. 
 
-## Settings
+### Settings
 
 The JSON settings for this `test_single_solver` are largely the same as in `coupled_solvers`, namely
 the `type` and the  dictionaries  `settings`, `predictor`, `convergence_criterion` and `solver_wrappers`.
@@ -314,7 +314,7 @@ at least one `test_class`. These classes allow to define forces or displacement 
 solver" to the problem. If this file is not present or `test_class` is not defined in `test_settings`, zero input will
 be used. If `dummy_solver.py` does not contain the `test_class` defined in `test_settings`, an error will occur.
 
-## Algorithm
+### Algorithm
 
 The initialization starts with checking whether or not `dummy_solver.py` is present. If not, a boolean `bool_test` is set
 to `False` and a message is printed that the input will be used. Then, the presence of `test_settings` is checked and
