@@ -1,12 +1,12 @@
 #Import of utilities
 import numpy as np
 
-'''This is an example of test_function.py
+'''This is an example of dummy_solver.py
 To use test functions for the testing of a single solver, a file with this name should be included in the working directory.
 The functions that need to be defined depend on the variables for the interface
 The names of these functions are fixed as calculate_VARIABLE(x,y,z,n)
 The functions receive the x, y and z-coordinate of the nodes in undeformed state and the current time step (n)
-Several types of test can be grouped into this test_function.py file by creating additional classes
+Several types of test can be grouped into this dummy_solver.py file by creating additional classes
 The name of the class to be used should be specified in the .json file containing the settings for the case
 '''
 

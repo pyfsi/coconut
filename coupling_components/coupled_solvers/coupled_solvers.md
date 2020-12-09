@@ -3,10 +3,14 @@
 This documentation describes the coupled solvers that are available.
 A coupled solver refers to a coupling algortihm used to couple the two solvers.
 Some coupled solvers implement one or more models.
+An odd one out is `test_single_solver` which allows to test only one solver by coupling it to a dummy solver. 
 All coupled solvers inherit from `gauss_seidel`.
 
-In the parameter JSON file, the dictionary `coupled_solver` holds the dictionaries `type` and `settings`,
+In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`,
 but also `predictor`, `convergence_criterion` and `solver_wrappers`.
+More information on these last three can be found in respectively [predictors](../predictors/predictors.md),
+[convergence_criteria](../convergence_criteria/convergence_criteria.md) and the `solver_wrappers` documentation.
+
 
 ## GaussSeidel
 
@@ -186,7 +190,7 @@ A symbolic schematic is given in the following figure.
 Here, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
 and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$
 
-For more information refer to .
+For more information refer to [models](models/models.md).
 
 ### Settings
 
@@ -275,3 +279,55 @@ parameter|type|description
 `model_s`|dict|Model component corresponding to the second solver wrapper.
 `omega`|double|Relaxation factor.
 `relative_tolerance_gmres`|double|Relative tolerance used in the GMRES method.
+
+## Test single solver
+
+The solver `test_single_solver` can be used to test new cases and settings.
+The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy.
+This test environment inherits from `GaussSeidel`. 
+
+## Settings
+
+The JSON settings for this `test_single_solver` are largely the same as in `coupled_solvers`, namely
+the `type` and the  dictionaries  `settings`, `predictor`, `convergence_criterion` and `solver_wrappers`.
+The entry for `type` is `test_single_solver`, the `settings` that one wants to use in the actual simulation, can be kept, but are not used.
+Additionally to these directories, a mandatory directory `test_settings` has to be defined as well.
+An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md.
+The possibilities for the `test_settings` directory are listed in alphabetical order below.
+
+parameter|type|description
+---:|:---:|---
+`delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
+`solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first solver wrapper that appears in the JSON-file, 1 the second wrapper.
+`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py` file in your case (for more information, see [example case](../../examples/test_single_solver/test_single_solver.md)).
+`timestep_start`|int|(optional) Time step to start from. In this test environment, this is set to 0 by default.
+
+Note that `test_settings` overwrites some parameters defined in `settings`. As such, these dictionaries are completely 
+independent. This allows the user to set up a normal case but instead of running a full simulation, a test can easily be 
+set up by only adding this `test_settings` dictionary and setting the `type` of `coupled_solvers` to `test_single_solver`.
+
+An attentive reader will notice that in the example case, an additional parameter `check_mapping` is defined. This 
+allows to test the mappers as well but this feature is currently not implemented and as such, this value is not used.
+
+In your case directory where the simulation is run, a python file `dummy_solver.py` should be present that contains
+at least one `test_class`. These classes allow to define forces or displacement on your structure and acts as "second
+solver" to the problem. If this file is not present or `test_class` is not defined in `test_settings`, zero input will
+be used. If `dummy_solver.py` does not contain the `test_class` defined in `test_settings`, an error will occur.
+
+## Algorithm
+
+The initialization starts with checking whether or not `dummy_solver.py` is present. If not, a boolean `bool_test` is set
+to `False` and a message is printed that the input will be used. Then, the presence of `test_settings` is checked and
+the parameters are set. Note once more that the parameters in `test_settings` have priority over these defined in `settings`.
+Furthermore, only `delta_t` is of interest. Other `settings` are ignored, `timestep_start` is set to 0 and `save_results` 
+to `False`.
+
+As a next step, `delta_t` and `timestep_start` are added to the `settings` of the solver wrapper to be tested. The working
+directory is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0.  
+Previous test working directories are not overwritten. The initialization finishes with informing the user that either
+the `test_class` is used to provide input or, in absence of this parameter, a zero input will be used.
+
+The `SolveSolutionStep` is fairly straightforward: if the boolean `bool_test` is true and a `test_class` was defined,
+the `SolutionStepValue` of the nodes on the `interface_input` of the solver wrapper is set to the values defined in the
+`test_class`. The `interface_output` of the solver wrapper is ignored. As such, this test environment can be considered
+as one way FSI in some way.

@@ -7,7 +7,7 @@ This done by using Python solvers TubeFlow and TubeStructure.
 
 The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
 
-## Predictors
+## Predictor
 
 The initial guess in every time step is done using the linear predictor.
 
