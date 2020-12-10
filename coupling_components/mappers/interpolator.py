@@ -124,9 +124,9 @@ class MapperInterpolator(Component):
 
     def check_bounding_box(self, model_part_from, model_part_to):
         # set tolerances  #*** overwrite tolerances from parameters?
-        tol_center_warning = 0.02
-        tol_center_error = 0.1
-        tol_minmax_warning = 0.1
+        tol_center_warning = 0.23 # TODO: be carefull, initialy it is 0.02, but due to plastic deformation, it has to be increased
+        tol_center_error = 0.23 #TODO: be carefull, initialy it is 0.1, but due to plastic deformation, it has to be increased
+        tol_minmax_warning = 0.23#TODO: be carefull, initialy it is 0.1, but due to plastic deformation, it has to be increased
         tol_minmax_error = 0.3
 
         # get bounding boxes

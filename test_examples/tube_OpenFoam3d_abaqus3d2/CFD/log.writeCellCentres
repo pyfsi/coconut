@@ -7,10 +7,10 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
 Exec   : writeCellCentres -time 0
-Date   : Nov 03 2020
-Time   : 13:28:39
+Date   : Dec 01 2020
+Time   : 11:45:36
 Host   : "cfdclu27.ugent.be"
-PID    : 23434
+PID    : 46132
 Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).

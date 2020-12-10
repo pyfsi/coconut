@@ -1,6 +1,6 @@
 1
 
-   Abaqus 6.14-1                                  Date 18-Nov-2020   Time 12:36:14
+   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 10:54:04
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
 
@@ -82,7 +82,7 @@
 
 
 
-          READING RESTART DATA GENERATED ON RELEASE  6.14-1       DATE  18-Nov-2020     TIME  12:34:14
+          READING RESTART DATA GENERATED ON RELEASE  6.14-1       DATE  01-Dec-2020     TIME  10:51:58
   *Heading
 
           STEP   17  INCREMENT    1  HAS BEEN FOUND ON THE RESTART FILE
@@ -114,13 +114,13 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.33000    
-       SYSTEM TIME (SEC)    =  7.00000E-02
-       TOTAL CPU TIME (SEC) =  0.40000    
+       USER TIME (SEC)      =  0.22000    
+       SYSTEM TIME (SEC)    =  4.00000E-02
+       TOTAL CPU TIME (SEC) =  0.26000    
        WALLCLOCK TIME (SEC) =          1
 1
 
-   Abaqus 6.14-1                                  Date 18-Nov-2020   Time 12:36:17
+   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 10:54:07
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
      Tube                                                                                      STEP   18  INCREMENT    1
@@ -158,31 +158,31 @@
 
                     LOCATION OF THE CENTER OF MASS OF THE MODEL
 
-                      4.7114075E-07      9.1787914E-07     -3.4147304E-05
+                      4.7109244E-07     -9.1767531E-07     -3.4148018E-05
 
 
                     MOMENTS OF INERTIA ABOUT THE ORIGIN
                            I(XX)               I(YY)               I(ZZ)
 
-                      4.7994094E-08      4.1679081E-07      4.1677070E-07
+                      4.7994052E-08      4.1679080E-07      4.1677068E-07
 
 
                     PRODUCTS OF INERTIA ABOUT THE ORIGIN
                            I(XY)               I(XZ)               I(YZ)
 
-                      7.6419773E-11     -4.5762556E-10     -4.7473858E-10
+                     -7.6416366E-11     -4.5762021E-10      4.7475551E-10
 
 
                     MOMENTS OF INERTIA ABOUT THE CENTER OF MASS
                            I(XX)               I(YY)               I(ZZ)
 
-                      4.7991896E-08      4.1678862E-07      4.1677069E-07
+                      4.7991854E-08      4.1678860E-07      4.1677068E-07
 
 
                     PRODUCTS OF INERTIA ABOUT THE CENTER OF MASS
                            I(XY)               I(XZ)               I(YZ)
 
-                      7.6420588E-11     -4.5765587E-10     -4.7479764E-10
+                     -7.6417181E-11     -4.5765052E-10      4.7481455E-10
   
                    M E M O R Y   E S T I M A T E
   
@@ -236,4 +236,4 @@
        USER TIME (SEC)      =  0.41000    
        SYSTEM TIME (SEC)    =  5.00000E-02
        TOTAL CPU TIME (SEC) =  0.46000    
-       WALLCLOCK TIME (SEC) =          1
+       WALLCLOCK TIME (SEC) =          0

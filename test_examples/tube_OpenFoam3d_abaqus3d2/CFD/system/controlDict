@@ -47,7 +47,11 @@ runTimeModifiable false;
 
 adjustTimeStep	no;
 
+maxCo           0.2;
+
 boundary_names (mantle);
+
+
 
 functions 
 { 

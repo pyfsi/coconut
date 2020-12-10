@@ -17,8 +17,8 @@
             "save_results": true,
             "name": "results_openfoam",
             "timestep_start":0,
-            "delta_t": 0.00001,
-            "omega" : 0.00001,
+            "delta_t": 0.000001,
+            "omega" : 0.000001,
             "model" :
             {
                 "type": "coupled_solvers.models.ls",
@@ -43,7 +43,7 @@
                     "type": "convergence_criteria.iteration_limit",
                     "settings":
                     {
-                        "maximum": 2
+                        "maximum": 10
                     }
                 },
                 "convergence_criterion1" :
@@ -60,16 +60,16 @@
         "solver_wrappers" :
         [
             {
-                "type": "solver_wrappers.openfoam.OpenFOAM_41",
+                "type": "solver_wrappers.openfoam.v41",
                 "settings":
                 {
                     "working_directory" : "CFD",
                     "application" :  "CoCoNuT_pimpleFoam",
                     "dimensions": 3,
-                    "dt" : 0.00001,
+                    "dt" : 0.000001,
                     "boundary_names": ["upWire", "deformWire","finalWire"],
                     "start_time":0,
-                    "end_time":0.00001,
+                    "end_time":0.000001,
                     "interface_input":
                     {
                         "upWire_input": "DISPLACEMENT", "deformWire_input": "DISPLACEMENT", "finalWire_input": "DISPLACEMENT"
@@ -80,15 +80,20 @@
                     },
                     "cores": 1,
                     "decomposeMethod" : "scotch",
-                    "newtonmax" : 10,
-                    "newtonmin" : 1,
-                    "newtontol" : 1e-3,
                     "write_interval" : 1,
-                    "write_precision" : 5,
-                    "time_precision" : 5,
+                    "write_precision" : 6,
+                    "time_precision" : 6,
+                    "adjust_time" : "no",
+		    "Courant_nr" : 0.2,
                     "meshmotion_solver": "displacementLaplacian",
-                    "diffusivity" : "inverseDistance",
-		    "density" : 1000
+                    "diffusivity" : "directional",
+                    "diffusivityX" : 1,
+       		    "diffusivityY" : 1,
+                    "diffusivityZ" : 0,
+		    "density" : 1000,
+                    "displacementX" : 0.0,
+                    "displacementY" : 0.0,
+    		    "displacementZ" : 0.0
                 }
             },
             {
@@ -129,6 +134,16 @@
 			    {
 			     "mappers":
 		 [
+		    
+		    { 
+                            "type" : "mappers.wedge_3d_to_2d_axisymmetric",
+                            "settings" :
+                            {
+                                 "direction_axial": "X",
+            			 "direction_radial": "Y",
+            			 "points": false
+                            }
+                    },
 		    { 
                             "type" : "mappers.permutation",
                             "settings" :

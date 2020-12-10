@@ -23,7 +23,7 @@ solver             |MESHMOTION_SOLVER|;
 
 displacementLaplacianCoeffs
 {
-	diffusivity	   	|DIFFUSIVITY| |NUM_INTERFACE_INPUT|(|INTERFACE_INPUT|);
+	diffusivity	   	|DIFFUSIVITY| (|INTERFACE_INPUT|);
 }
 
 

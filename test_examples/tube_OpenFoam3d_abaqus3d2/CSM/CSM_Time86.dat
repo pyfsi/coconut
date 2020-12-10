@@ -1,6 +1,6 @@
 1
 
-   Abaqus 6.14-1                                  Date 03-Nov-2020   Time 15:10:18
+   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 13:17:00
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
 
@@ -82,7 +82,7 @@
 
 
 
-          READING RESTART DATA GENERATED ON RELEASE  6.14-1       DATE  03-Nov-2020     TIME  15:09:15
+          READING RESTART DATA GENERATED ON RELEASE  6.14-1       DATE  01-Dec-2020     TIME  13:15:59
   *Heading
 
           STEP   85  INCREMENT    1  HAS BEEN FOUND ON THE RESTART FILE
@@ -114,13 +114,13 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.23000    
+       USER TIME (SEC)      =  0.27000    
        SYSTEM TIME (SEC)    =  6.00000E-02
-       TOTAL CPU TIME (SEC) =  0.29000    
-       WALLCLOCK TIME (SEC) =          0
+       TOTAL CPU TIME (SEC) =  0.33000    
+       WALLCLOCK TIME (SEC) =          1
 1
 
-   Abaqus 6.14-1                                  Date 03-Nov-2020   Time 15:10:20
+   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 13:17:03
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
      Tube                                                                                      STEP   86  INCREMENT    1
@@ -233,7 +233,7 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.28000    
-       SYSTEM TIME (SEC)    =  5.00000E-02
-       TOTAL CPU TIME (SEC) =  0.33000    
-       WALLCLOCK TIME (SEC) =          1
+       USER TIME (SEC)      =  0.33000    
+       SYSTEM TIME (SEC)    =  4.00000E-02
+       TOTAL CPU TIME (SEC) =  0.37000    
+       WALLCLOCK TIME (SEC) =          0

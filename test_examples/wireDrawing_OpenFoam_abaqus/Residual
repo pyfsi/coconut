@@ -6,7 +6,7 @@ plot "< cat log.CoCoNuT_pimpleFoam | grep 'Solving for Ux' | cut -d' ' -f9 | tr 
 "< cat log.CoCoNuT_pimpleFoam | grep 'Solving for Uy' | cut -d' ' -f9 | tr -d ','" title 'Uy' with lines,\
 "< cat log.CoCoNuT_pimpleFoam | grep 'Solving for Uz' | cut -d' ' -f9 | tr -d ','" title 'Uz' with lines,\
 "< cat log.CoCoNuT_pimpleFoam | grep 'Solving for p' | cut -d' ' -f9 | tr -d ','" title 'p' with lines
-pause 1
+pause 10
 
 
 

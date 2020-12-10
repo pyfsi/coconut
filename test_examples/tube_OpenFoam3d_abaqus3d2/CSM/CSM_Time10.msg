@@ -1,6 +1,6 @@
 1
 
-   Abaqus 6.14-1                                  Date 03-Nov-2020   Time 13:41:15
+   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 11:55:56
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
  Tube                                                                            
@@ -209,6 +209,6 @@
 
      JOB TIME SUMMARY
        USER TIME (SEC)      =  0.38000    
-       SYSTEM TIME (SEC)    =  6.00000E-02
-       TOTAL CPU TIME (SEC) =  0.44000    
+       SYSTEM TIME (SEC)    =  5.00000E-02
+       TOTAL CPU TIME (SEC) =  0.43000    
        WALLCLOCK TIME (SEC) =          1

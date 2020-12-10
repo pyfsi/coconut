@@ -7,10 +7,10 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
 Exec   : blockMesh
-Date   : Nov 03 2020
-Time   : 09:01:29
+Date   : Dec 01 2020
+Time   : 11:45:16
 Host   : "cfdclu27.ugent.be"
-PID    : 21740
+PID    : 46086
 Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2/CFD
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).

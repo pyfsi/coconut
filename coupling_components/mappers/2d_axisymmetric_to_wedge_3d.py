@@ -98,6 +98,8 @@ class MapperAxisymmetric2DToWedge3D(Component):
             for i_to, node_to in enumerate(model_part_to.Nodes):
                 node_to.SetSolutionStepValue(var_to, 0, hist_var_from[self.nearest[i_to]])
 
+
+
         # vector interpolation
         elif var_from.Type() == 'Array':
             hist_var_from = np.zeros((self.n_from, 3))

@@ -777,6 +777,8 @@ class SolverWrapperAbaqus614(Component):
             file_name = join(self.dir_csm, tmp)
             with open(file_name, 'w') as file:
                 file.write(f'{mp.NumberOfNodes()}\n')
+                # print("number" )
+                # print(mp.Nodes)
                 for node in mp.Nodes:
                     pressure = node.GetSolutionStepValue(self.pressure)
                     traction = node.GetSolutionStepValue(self.traction)
@@ -784,6 +786,7 @@ class SolverWrapperAbaqus614(Component):
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}\n')
                     else:
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
+
 
             # Start of a simulation with ramp, needs an initial load at time 0
             if self.iteration == 1 and self.timestep == 1 and self.ramp == 1:

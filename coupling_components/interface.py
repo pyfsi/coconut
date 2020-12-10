@@ -57,6 +57,7 @@ class Interface(object):
                         data.append(value)
         return data
 
+
     def GetNumpyArray(self):
         return np.array(self.GetPythonList())
 

@@ -20,3 +20,10 @@ numberOfSubdomains |CORES|;
 
 method          |DECOMPOSEMETHOD|;
 
+simpleCoeffs
+
+ {
+      n               (|CORES| 1 1);
+      delta           0.001;
+ }
+

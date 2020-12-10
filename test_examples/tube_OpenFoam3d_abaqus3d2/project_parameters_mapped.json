@@ -60,7 +60,7 @@
         "solver_wrappers" :
         [
             {
-                "type": "solver_wrappers.openfoam.OpenFOAM_41",
+                "type": "solver_wrappers.openfoam.v41",
                 "settings":
                 {
                     "working_directory" : "CFD",
@@ -79,16 +79,24 @@
                         "mantle_output": ["PRESSURE", "TRACTION"]
                     },
                     "cores": 4,
-                    "decomposeMethod" : "scotch",
+                    "decomposeMethod" : "simple",
                     "newtonmax" : 10,
                     "newtonmin" : 1,
                     "newtontol" : 1e-3,
                     "write_interval" : 1,
                     "write_precision" : 5,
                     "time_precision" : 4,
+                    "Courant_nr":0.2,
                     "meshmotion_solver": "displacementLaplacian",
                     "diffusivity" : "inverseDistance",
-		    "density" : 1000
+                    "diffusivityX" : 0,
+                    "diffusivityY" : 0,
+                    "diffusivityZ" : 0,
+		    "density" : 1000,
+                    "displacementX" : 0.0,
+                    "displacementY" : 0.0,
+                    "displacementZ" : 0.0
+
                 }
             },
             {

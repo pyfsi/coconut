@@ -6,11 +6,11 @@
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
-Exec   : decomposePar -fields -time 0.0039
-Date   : Nov 18 2020
-Time   : 13:27:15
+Exec   : decomposePar -fields -cellDist -time 0.0039
+Date   : Dec 01 2020
+Time   : 11:41:37
 Host   : "cfdclu27.ugent.be"
-PID    : 1233
+PID    : 44621
 Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2Cores/CFD
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
