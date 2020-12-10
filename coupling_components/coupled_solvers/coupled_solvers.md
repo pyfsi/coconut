@@ -7,12 +7,14 @@ An odd one out is `test_single_solver` which allows to test only one solver by c
 All coupled solvers inherit from `gauss_seidel`.
 
 In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`,
-but also `predictor`, `convergence_criterion` and `solver_wrappers`.
+but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing 2 dictionaries, one for each `solver_wrapper`.
 More information on these last three can be found in respectively [predictors](../predictors/predictors.md),
 [convergence_criteria](../convergence_criteria/convergence_criteria.md) and the `solver_wrappers` documentation.
 
 
 ## GaussSeidel
+
+The `type` for this `coupled_solver` is `coupled_solvers.gauss_seidel`.
 
 ### Algorithm
 
@@ -36,7 +38,7 @@ parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
 `name`|string|(optional) Name of the case used to store a pickle file with results. If not provided 'results' is used.
-`save_results`|bool|(optional) Default: false. If true a pickle file is stored containing some main results: the value of the displacement and load on the interface for every time step, interface objects used by the two solvers, the number of coupling iterations per time step, the total elapsed time for the calculation, the residual after every coupling iteration and the values of `delta_t` and `timestep_start`.<br> This file is used by the postprocessing files included with the test examples.
+`save_results`|bool|(optional) Default: false. If true a pickle file is stored containing some main results: the value of the displacement and load on the interface for every time step, interface objects used by the two solvers, the number of coupling iterations per time step, the total elapsed time for the calculation, the residual after every coupling iteration and the values of `delta_t` and `timestep_start`.<br> This file is used by the postprocessing files included with the examples.
 `time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver implements restart, see the solver documentation for more information. For a steady simulation this should be 0.
 
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solverwrapper directly (e.g. for standalone testing).
@@ -46,7 +48,8 @@ If they are defined both here and in the solver wrapper, then the former value i
 
 ## Relaxation
 
-This coupled solvers inherits from `GaussSeidel`.
+This `coupled_solver` inherits from `GaussSeidel`.
+The `type` for this `coupled_solver` is `coupled_solvers.relaxation`.
 
 ### Algorithm
 
@@ -82,7 +85,8 @@ parameter|type|description
 
 ## Aitken
 
-This coupled solvers inherits from `GaussSeidel`.
+This `coupled_solver` inherits from `GaussSeidel`.
+The `type` for this `coupled_solver` is `coupled_solvers.aitken`.
 
 ### Algorithm
 
@@ -131,7 +135,8 @@ parameter|type|description
 
 ## IQNI
 
-This coupled solvers inherits from `GaussSeidel`.
+This `coupled_solver` inherits from `GaussSeidel`.
+The `type` for this `coupled_solver` is `coupled_solvers.iqni`.
 
 ### Algorithm
 
@@ -204,7 +209,8 @@ parameter|type|description
 
 ## IBQN
 
-This coupled solvers inherits from `GaussSeidel`.
+This `coupled_solver` inherits from `GaussSeidel`.
+The `type` for this `coupled_solver` is `coupled_solvers.ibqn`.
 
 ### Algorithm
 
@@ -282,52 +288,55 @@ parameter|type|description
 
 ## Test single solver
 
-The solver `test_single_solver` can be used to test new cases and settings.
+The solver `test_single_solver` can be used to test new cases and solver settings.
 The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy.
 This test environment inherits from `GaussSeidel`. 
+The `type` for this `coupled_solver` is `coupled_solvers.test_single_solver`.
+
+### Dummy solver
+
+To test only one solver, a dummy solver must be used.
+Such a dummy solver is implemented by a test class in the file `dummy_solver.py`, which has to be on the same folder level as `run_simulation.py`.
+Upon run-time an instance of this class is made.
+The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `DISPLACEMENT`, `PRESSURE` or `TRACTION`.
+How these variables are defined inside these methods, is up to the user.
+However, the methods need to return the right format: a 3-element list of floats for vector variables and a single float for scalar variables.
+Some examples are given in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md)
+The test class name is provided in the JSON settings as a string.
+If no test class is provided or the value `None` is used, zero input will be used.
 
 ### Settings
 
-The JSON settings for this `test_single_solver` are largely the same as in `coupled_solvers`, namely
-the `type` and the  dictionaries  `settings`, `predictor`, `convergence_criterion` and `solver_wrappers`.
-The entry for `type` is `test_single_solver`, the `settings` that one wants to use in the actual simulation, can be kept, but are not used.
-Additionally to these directories, a mandatory directory `test_settings` has to be defined as well.
-An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
-The possibilities for the `test_settings` directory are listed in alphabetical order below.
+The JSON settings for this test environment `test_single_solver` are different from the other `coupled_solvers` in the sense that they only require 
+the `type`, which is `coupled_solvers.test_single_solver`, the dictionary `test_settings` and the list `solver_wrappers` containing at least one `solver_wrapper`.
+The possibilities for the `test_settings` dictionary are listed in alphabetical order below.
 
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
-`solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first solver wrapper that appears in the JSON-file, 1 the second wrapper.
-`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py` file in your case (for more information, see [example case](../../examples/test_single_solver/test_single_solver.md)).
-`timestep_start`|int|(optional) Time step to start from. In this test environment, this is set to 0 by default.
+`name`|string|(optional) Name of the case used to store a pickle file with results. If not provided 'results' is used. The pickle file will have the name `<name>_<test_solver_working_directory>.pickle`.
+`save_results`|bool|(optional) Default: false. If true a pickle file is stored containing some main results as in `gauss_seidel`.
+`solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first `solver_wrapper` that appears in the JSON-file, 1 the second one.
+`test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py`. If not provided or `None`, zero input will be used.
+`timestep_start`|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
 
-Note that `test_settings` overwrites some parameters defined in `settings`. As such, these dictionaries are completely 
-independent. This allows the user to set up a normal case but instead of running a full simulation, a test can easily be 
-set up by only adding this `test_settings` dictionary and setting the `type` of `coupled_solvers` to `test_single_solver`.
+Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the `settings` dictionary.
+The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `name` if not provided in `test_settings`.
+Note that `test_settings` has priority over the parameters defined in `settings`.
+This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the `coupled_solver` type to `coupled_solvers.test_single_solver` and without altering anything else.
+An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 
-An attentive reader will notice that in the example case, an additional parameter `check_mapping` is defined. This 
-allows to test the mappers as well but this feature is currently not implemented and as such, this value is not used.
+The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0.  
+As such, previous test solver working directories are not overwritten.
+The optional pickle file saving some results uses the name as specified by the JSON settings followed by an underscore and the solver test working directory.
+As such the pickle file always belongs to the corresponding test working directory.
 
-In your case directory where the simulation is run, a python file `dummy_solver.py` should be present that contains
-at least one `test_class`. These classes allow to define forces or displacement on your structure and acts as "second
-solver" to the problem. If this file is not present or `test_class` is not defined in `test_settings`, zero input will
-be used. If `dummy_solver.py` does not contain the `test_class` defined in `test_settings`, an error will occur.
+During run time, the norm of $x$ and $y$ are printed.
+A residual does not exist here.
+The arrays $x$ and $y$ do not have a physical meaning but are the in- and output of the solver:
+the output of a typical flow solver, for example, will contain pressure and traction components for all points.
+For the first solver in the `solver_wrappers` list, $x$ and $y$ are respectively in- and output,
+whereas for the second, $y$ is the input an $x$ the output.
+Nonetheless, these values can be useful to verify that the `solver_wrapper` runs.
 
-### Algorithm
-
-The initialization starts with checking whether or not `dummy_solver.py` is present. If not, a boolean `bool_test` is set
-to `False` and a message is printed that the input will be used. Then, the presence of `test_settings` is checked and
-the parameters are set. Note once more that the parameters in `test_settings` have priority over these defined in `settings`.
-Furthermore, only `delta_t` is of interest. Other `settings` are ignored, `timestep_start` is set to 0 and `save_results` 
-to `False`.
-
-As a next step, `delta_t` and `timestep_start` are added to the `settings` of the solver wrapper to be tested. The working
-directory is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0.  
-Previous test working directories are not overwritten. The initialization finishes with informing the user that either
-the `test_class` is used to provide input or, in absence of this parameter, a zero input will be used.
-
-The `SolveSolutionStep` is fairly straightforward: if the boolean `bool_test` is true and a `test_class` was defined,
-the `SolutionStepValue` of the nodes on the `interface_input` of the solver wrapper is set to the values defined in the
-`test_class`. The `interface_output` of the solver wrapper is ignored. As such, this test environment can be considered
-as one way FSI in some way.
+The test environment `test_single_solver` tests only the `solver_wrapper` itself, no mapping is included.

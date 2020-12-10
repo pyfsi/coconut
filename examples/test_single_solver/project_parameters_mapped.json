@@ -6,8 +6,7 @@
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
       "solver_index": 0,
-      "check_mapping": 0,
-      "test_class": "Transient_test",
+      "test_class": "TransientTest",
       "delta_t": 0.05
     },
     "settings": {

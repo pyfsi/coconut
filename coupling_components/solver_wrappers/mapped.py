@@ -83,11 +83,11 @@ class SolverWrapperMapped(Component):
         self.mapper_interface_output = CreateInstance(self.settings["mapper_interface_output"])
         self.mapper_interface_output.Initialize(self.interface_output_from, self.interface_output_to)
 
-    def PrintInfo(self, pre):
+    def PrintComponentsInfo(self, pre):
         tools.Print(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
         pre = tools.UpdatePre(pre)
-        self.solver_wrapper.PrintInfo(pre + '├─')
+        self.solver_wrapper.PrintComponentsInfo(pre + '├─')
         tools.Print(pre, '├─', "Input mapper:")
-        self.mapper_interface_input.PrintInfo(pre + '│ └─')
+        self.mapper_interface_input.PrintComponentsInfo(pre + '│ └─')
         tools.Print(pre, '└─', "Output mapper:")
-        self.mapper_interface_output.PrintInfo(pre + '  └─')
+        self.mapper_interface_output.PrintComponentsInfo(pre + '  └─')
