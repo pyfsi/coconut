@@ -23,7 +23,7 @@ The index refers to the index of the respective solver in the `solver_wrappers` 
 Even though the presence `dummy_solver.py` with a test class is not strictly required, it can be very valuable because it allows to have a non-zero input.
 The file included in this case provides an example. It contains, among others, `SimpleTest`, `TransientTest` and `InterpolatedData` to illustrate how variables can be defined based on undeformed coordinates (`x`, `y`, `z`) and time step (`n`).
 Note that the number of classes defined is not restricted.
-Also note that the `__init__()` mehtod can be used to avoid repeating the same calculations multiple times.
+Also note that the `__init__()` method can be used to avoid repeating the same calculations multiple times.
 The name of the class that one wants to use should be specified in the JSON file. 
 In this example the `TransientTest` is used.
 Each class contains function definitions with a pre-formatted name `calculate_VARIABLE(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `DISPLACEMENT`, `PRESSURE` or `TRACTION`.
