@@ -482,6 +482,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#constant" class="md-nav__link">
+    Constant
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#linear" class="md-nav__link">
     Linear
   </a>
@@ -882,6 +889,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#constant" class="md-nav__link">
+    Constant
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#linear" class="md-nav__link">
     Linear
   </a>
@@ -931,16 +945,21 @@
 A predictor is used to determine the initial guess in each time step by extrapolating the solution from previous time steps.
 The different predictors differ in the number of previous iterations they take into account 
 and the polynomial degree that is used.</p>
-<p>Only the <code>type</code> has to be provided, no <code>settings</code> dictionary is required.</p>
+<p>Only the <code>type</code> has to be provided (e.g. <code>predictors.linear</code>), no <code>settings</code> dictionary is required.</p>
 <p>Specification of a predictor is mandatory, also for a steady simulation. In that case however, it does not matter which
-predictor is chosen as only 1 "time step" is performed.</p>
+predictor is chosen as only one "time step" is performed.</p>
+<h2 id="constant">Constant</h2>
+<p>This predictor uses the result from the last time step as the initial guess in the current time step
+$$
+x^{n+1}=x^{n}.
+$$</p>
 <h2 id="linear">Linear</h2>
 <p>This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
 using a linear extrapolation as follows
 $$
 x^{n+1}=2x^{n}-1x^{n-1}.
 $$
-If no two previous solutions are available, the solution from the last time step is used.</p>
+If no two previous solutions are available, the solution from the last time step is used, i.e. the predictor <code>constant</code>.</p>
 <h2 id="legacy">Legacy</h2>
 <p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
 using a linear extrapolation as follows

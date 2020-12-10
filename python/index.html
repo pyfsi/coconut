@@ -1122,7 +1122,7 @@ as <code>setttings</code> of the solver wrapper.</p>
 <td>(optional) Indicates if case is steady or unsteady. If omitted, <code>true</code> is assumed.</td>
 </tr>
 <tr>
-<td align="right"><code>working_directory</code></td>
+<td align="right"><nobr><code>working_directory</code></nobr></td>
 <td align="center">string</td>
 <td>Absolute path to the working directory or relative path w.r.t the current directory.</td>
 </tr>
@@ -1209,7 +1209,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.</td>
 </tr>
 <tr>
-<td align="right"><code>outlet_boundary</code></td>
+<td align="right"><nobr><code>outlet_boundary</code></nobr></td>
 <td align="center">dict</td>
 <td>Dictionary containing all information with respect to the outlet boundary condition.</td>
 </tr>
@@ -1247,7 +1247,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>amplitude</code></td>
+<td align="right"><nobr><code>amplitude</code></nobr></td>
 <td align="center">double</td>
 <td>Amplitude of the inlet boundary condition.</td>
 </tr>
@@ -1287,7 +1287,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>type</code></td>
 <td align="center">int</td>
-<td>Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. <br>If other, a fixed value equal to the reference pressure is applied.</td>
+<td>Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. This type can not be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.</td>
 </tr>
 </tbody>
 </table>
@@ -1325,7 +1325,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>axial_offset</code></td>
+<td align="right"><nobr><code>axial_offset</code></nobr></td>
 <td align="center">double</td>
 <td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
 </tr>
@@ -1465,7 +1465,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>Density of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>time_disretization</code></td>
+<td align="right"><nobr><code>time_disretization</code></nobr></td>
 <td align="center">string</td>
 <td>(optional) Either 'Newmark' or 'backward Euler'. If not provided, backward Euler is used.</td>
 </tr>

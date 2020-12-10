@@ -789,20 +789,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#predictor" class="md-nav__link">
-    Predictor
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    Convergence criterion
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#solvers" class="md-nav__link">
     Solvers
   </a>
@@ -896,20 +882,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#predictor" class="md-nav__link">
-    Predictor
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    Convergence criterion
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#solvers" class="md-nav__link">
     Solvers
   </a>
@@ -944,27 +916,26 @@
 <p>This example shows how the separate solvers or their cases in the respective working directories can be tested individually
 using <code>test_single_solver</code> as coupling component. For more information refer to <a href="https://pyfsi.github.io/coconut/coupled_solvers/">coupled_solvers</a>.</p>
 <h2 id="coupling-algorithm">Coupling algorithm</h2>
-<p>The <code>type</code> is set to <code>test_single_solver</code> and an additional required dictionary <code>test_settings</code> is added.
-All other parameters in the JSON file, including the <code>settings</code> dictionary, can be set to the values that will be used in the actual coupled simulation.</p>
-<h2 id="predictor">Predictor</h2>
-<p>The initial guess in every time step is done using the linear predictor. </p>
-<h2 id="convergence-criterion">Convergence criterion</h2>
-<p>The convergence criteria are set as they would be used in the fully coupled simulation. However, as a dummy solver 
-imposes a certain motion or certain forces on the <code>interface_input</code> of the tested solver wrapper regardless of the output
-of the solver wrapper, these settings are not used and hence do not matter in the test environment. </p>
+<p>The <code>type</code> is set to <code>coupled_solvers.test_single_solver</code> and an additional required dictionary <code>test_settings</code> is added.
+All other parameters in the JSON file, including the <code>settings</code> dictionary, can be set to the values that will be used in the actual coupled simulation.
+The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>name</code> if not provided in <code>test_settings</code>.
+The other dictionaries are not used: no <code>predictor</code>,<code>convergence_criterion</code> or <code>mapper</code> are used.</p>
 <h2 id="solvers">Solvers</h2>
-<p>If you run this case as it is, the Fluent case and solver will be tested, as the <code>solver_index</code> is set to 0 in <code>test_settings</code>.
+<p>If you run this case as is, the Fluent case and solver will be tested, as the <code>solver_index</code> is set to 0 in <code>test_settings</code>.
+In that case the Abaqus settings won't be used.
 The Abaqus case can easily be tested by changing this value to 1.
+Then the Fluent settings will not be used.
 The index refers to the index of the respective solver in the <code>solver_wrappers</code> list in the JSON file.</p>
 <h2 id="dummy-solver">Dummy solver</h2>
-<p>Even though the presence of <code>dummy_solver.py</code> is not strictly required, it can be valuable to have a nonzero input.
-The file included in this case provides an example. It contains two classes, <code>Simple_test</code> and <code>Transient_test</code> to illustrate
-how variables can be defined based on undeformed coordinates (<code>x</code>, <code>y</code>, <code>z</code>) and time step (<code>n</code>). Note that the number 
-of classes defined is not restricted. The name of the class that one wants to use should be specified in the JSON file. 
-In this example the <code>Transient_test</code> is used.
-Each class contains three function definitions with a fixed name <code>calculate_VARIABLE(x,y,z,n)</code>, with <code>VARIABLE</code> being <code>DISPLACEMENT</code>, <code>PRESSURE</code> or <code>TRACTION</code>.
-How these variables are defined inside a function, is up to the user.
-Make sure to return the right format: a 3-element list containing floats for <code>DISPLACEMENT</code> and <code>TRACTION</code> and a scalar for <code>PRESSURE</code>.</p>
+<p>Even though the presence <code>dummy_solver.py</code> with a test class is not strictly required, it can be very valuable because it allows to have a non-zero input.
+The file included in this case provides an example. It contains, among others, <code>SimpleTest</code>, <code>TransientTest</code> and <code>InterpolatedData</code> to illustrate how variables can be defined based on undeformed coordinates (<code>x</code>, <code>y</code>, <code>z</code>) and time step (<code>n</code>).
+Note that the number of classes defined is not restricted.
+Also note that the <code>__init__()</code> mehtod can be used to avoid repeating the same calculations multiple times.
+The name of the class that one wants to use should be specified in the JSON file. 
+In this example the <code>TransientTest</code> is used.
+Each class contains function definitions with a pre-formatted name <code>calculate_VARIABLE(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being the variable(s) required by the tested solver, e.g. <code>DISPLACEMENT</code>, <code>PRESSURE</code> or <code>TRACTION</code>.
+How these variables are defined inside these methods, is up to the user.
+However, the methods need to return the right format: a 3-element list of floats for vector variables and a single float for scalar variables.</p>
                 
                   
                 
