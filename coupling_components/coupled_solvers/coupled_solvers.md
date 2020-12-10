@@ -318,7 +318,7 @@ parameter|type|description
 `save_results`|bool|(optional) Default: false. If true a pickle file is stored containing some main results as in `gauss_seidel`.
 `solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first `solver_wrapper` that appears in the JSON-file, 1 the second one.
 `test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py`. If not provided or `None`, zero input will be used.
-`timestep_start`|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
+<nobr>`timestep_start`</nobr>|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
 
 Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the `settings` dictionary.
 The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `name` if not provided in `test_settings`.
