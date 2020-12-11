@@ -11,9 +11,9 @@ from coconut.tests.solver_wrappers.python.tube.test_tube_structure_solver import
 
 # test_cases = (TestSolverWrapperFluent2019R1, TestSolverWrapperFluent2019R2, TestSolverWrapperFluent2019R3, TestSolverWrapperFluent2020R1, TestSolverWrapperAbaqus614,
 #               TestSolverWrapperOpenFoam41, TestSolverWrapperTubeFlowSolver, TestSolverWrapperTubeRingmodelSolver, TestSolverWrapperTubeStructureSolver)
-test_cases =  [TestSolverWrapperTubeStructureSolver,
-               TestSolverWrapperTubeFlowSolver,
-               TestSolverWrapperTubeRingmodelSolver]
+test_cases = [TestSolverWrapperTubeStructureSolver,
+              TestSolverWrapperTubeFlowSolver,
+              TestSolverWrapperTubeRingmodelSolver]
                #TestSolverWrapperFluent2019R1]
 
 def load_tests(loader, tests, pattern):
