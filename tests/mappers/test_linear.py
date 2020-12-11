@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
 from coconut.coupling_components.mappers.linear import *
 
@@ -7,7 +7,7 @@ import os
 import numpy as np
 
 
-class TestMapperLinear(KratosUnittest.TestCase):
+class TestMapperLinear(unittest.TestCase):
     def test_mapper_linear(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_linear.json')
         with open(parameter_file_name, 'r') as parameter_file:
@@ -238,4 +238,4 @@ class TestMapperLinear(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

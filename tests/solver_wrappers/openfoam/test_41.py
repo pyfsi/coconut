@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 
 import numpy as np
 from copy import deepcopy
@@ -15,7 +15,7 @@ def print_box(text):
     print(top + mid + bottom)
 
 
-class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
+class TestSolverWrapperOpenFoam41(unittest.TestCase):
     def test_solver_wrapper_openfoam_41(self):
         pass
         #self.test_solver_wrapper_openfoam_41_pipeCyclic()
@@ -257,4 +257,4 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
 
  
 if __name__ == '__main__':
-    KratosUnittest.main() #If this script is executed directly (and NOT through "test_CoSimulationApplication.py') the "KratosUnitTest.py"-script is launched which executes all functions in the class.
+    unittest.main() #If this script is executed directly (and NOT through "test_CoSimulationApplication.py') the "unittest.py"-script is launched which executes all functions in the class.

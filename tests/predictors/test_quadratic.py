@@ -1,12 +1,12 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
 
 
-class TestPredictorQuadratic(KratosUnittest.TestCase):
+class TestPredictorQuadratic(unittest.TestCase):
     def test_predictor_quadratic(self):
         m = 10
         dz = 3.0
@@ -72,4 +72,4 @@ class TestPredictorQuadratic(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

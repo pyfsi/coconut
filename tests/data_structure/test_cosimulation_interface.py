@@ -1,11 +1,11 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
 import os
 
-class TestInterface(KratosUnittest.TestCase):
+class TestInterface(unittest.TestCase):
     def test_cosimulation_interface(self):
         parameter_file_name = "test_parameters.json"
 
@@ -126,4 +126,4 @@ class TestInterface(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()
