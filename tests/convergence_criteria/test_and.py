@@ -1,12 +1,12 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.interface import Interface
 from coconut.coupling_components.tools import CreateInstance
 
 import os
 
 
-class TestConvergenceCriterionAnd(KratosUnittest.TestCase):
+class TestConvergenceCriterionAnd(unittest.TestCase):
     def test_convergence_criterion_and(self):
         m = 10
         dz = 2.0
@@ -54,4 +54,4 @@ class TestConvergenceCriterionAnd(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

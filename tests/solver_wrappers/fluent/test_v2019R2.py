@@ -1,4 +1,4 @@
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.tests.solver_wrappers.fluent.test_v2019R1 import TestSolverWrapperFluent2019R1
 
 
@@ -21,4 +21,4 @@ class TestSolverWrapperFluent2019R2(TestSolverWrapperFluent2019R1):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

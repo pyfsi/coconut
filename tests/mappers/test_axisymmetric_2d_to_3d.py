@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
@@ -9,7 +9,7 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
 
-class TestMapperAxisymmetric2DTo3D(KratosUnittest.TestCase):
+class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     def test_mapper_axisymmetric_2d_to_3d(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_axisymmetric_2d_to_3d.json')
         with open(parameter_file_name, 'r') as parameter_file:
@@ -189,4 +189,4 @@ class TestMapperAxisymmetric2DTo3D(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

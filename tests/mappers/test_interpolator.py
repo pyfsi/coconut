@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 
 import os
@@ -12,7 +12,7 @@ from matplotlib import cm
 variables = vars(data_structure)
 
 
-class TestMapperInterpolator(KratosUnittest.TestCase):
+class TestMapperInterpolator(unittest.TestCase):
     def test_mapper_interpolator(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_interpolator.json')
         with open(parameter_file_name, 'r') as parameter_file:
@@ -754,4 +754,4 @@ class Case3DSinc:
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

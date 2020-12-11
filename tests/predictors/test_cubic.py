@@ -1,11 +1,11 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
 
-class TestPredictorCubic(KratosUnittest.TestCase):
+class TestPredictorCubic(unittest.TestCase):
     def test_predictor_cubic(self):
         m = 10
         dz = 3.0
@@ -85,4 +85,4 @@ class TestPredictorCubic(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

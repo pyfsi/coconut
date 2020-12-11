@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
 
 import os
@@ -7,7 +7,7 @@ import os
 variables = vars(data_structure)
 
 
-class TestMapperNearest(KratosUnittest.TestCase):
+class TestMapperNearest(unittest.TestCase):
     def test_mapper_nearest(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_nearest.json')
         with open(parameter_file_name, 'r') as parameter_file:
@@ -101,4 +101,4 @@ class TestMapperNearest(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

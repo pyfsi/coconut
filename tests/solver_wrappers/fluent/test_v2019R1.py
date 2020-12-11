@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
@@ -17,7 +17,7 @@ def print_box(text):
     print(top + mid + bottom)
 
 
-class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
+class TestSolverWrapperFluent2019R1(unittest.TestCase):
     """
     Only 1 Fluent version can be tested at a time,
     because the correct software version must be
@@ -445,4 +445,4 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()
