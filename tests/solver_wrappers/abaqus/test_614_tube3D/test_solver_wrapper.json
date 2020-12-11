@@ -3,12 +3,12 @@
     {
       "type": "solver_wrappers.abaqus.614",
       "settings": {
-        "working_directory": "CSM",
+        "working_directory": "solver_wrappers/abaqus/test_614_tube2D/CSM",
         "cores": 1,
         "dimensions": 3,
         "arraysize": 10e5,
         "surfaces": 1,
-        "delta_T": 2e-4,
+        "delta_t": 2e-4,
         "timestep_start": 0,
         "surfaceIDs": [
           "WALLOUTSIDE"

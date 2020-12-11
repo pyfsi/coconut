@@ -31,7 +31,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         pressure = vars(data_structure)['PRESSURE']
         traction = vars(data_structure)['TRACTION']
 
-        p = 10000
+        p = 1500
         shear_x = 0
         shear_y = 0
         shear_z = 0
@@ -39,13 +39,12 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         # setup Abaqus case
         if True:
             print('setup Abaqus case')
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                   f'test_614_tube2D')
+            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_614_tube2D')
             print(f'dir_tmp = {dir_tmp}')
             p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
 
-        # Create solver0
+        # create solver0
         if True:
             # Create the solver (__init__)
             print("Creating an AbaqusSolver")
@@ -160,7 +159,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
         # Test whether shear is also applied
         if True:
-            shear_y = 500
+            shear_y = 5
             mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
@@ -194,8 +193,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         print('Starting tests for Abaqus Tube3D.')
         # Axial direction is the x-direction
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_614_tube3D', 'test_solver_wrapper.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_614_tube3D', 'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -204,167 +202,169 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
             par_solver_0['settings'].SetString('working_directory', 'test_614_tube3D/CSM')
-            par_solver_0['settings'].SetString('input_file', 'test_614_tube3D/Base.inp')
-
-        # Create hostfile for Abaqus
-        os.system("cd test_614_tube3D/CSM; ./makeHostFile.sh")
 
         par_solver = deepcopy(par_solver_0)
 
         pressure = vars(data_structure)['PRESSURE']
         traction = vars(data_structure)['TRACTION']
 
-        p = 10000
+        p = 1500
         shear_x = 0
         shear_y = 0
         shear_z = 0
 
-        # Create solver0
+        # setup Abaqus case
+        if True:
+            print('setup Abaqus case')
+            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_614_tube3D')
+            print(f'dir_tmp = {dir_tmp}')
+            p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
+            p_setup_abaqus.wait()
+
+        # create solver0
         if True:
             # Create the solver (__init__)
             print("Creating an AbaqusSolver")
             AbaqusSolver0 = CreateInstance(par_solver_0)
             print("AbaqusSolver0 created")
 
-            # Test start and restart
-            if True:
-                mp = AbaqusSolver0.model['WALLOUTSIDE_load_points']
-                for node in mp.Nodes:
-                    # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    node.SetSolutionStepValue(pressure, 0, p)
-                    node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
+        # test start and restart
+        if True:
+            mp = AbaqusSolver0.model['WALLOUTSIDE_load_points']
+            for node in mp.Nodes:
+                # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
+                node.SetSolutionStepValue(pressure, 0, p)
+                node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-                AbaqusSolver0.Initialize()
+            AbaqusSolver0.Initialize()
 
-                # Step 1, Coupling 1
+            # Step 1, Coupling 1
+            AbaqusSolver0.InitializeSolutionStep()
+            output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
+            os.system("cp -r test_614_tube3D/CSM/CSM_Time1.odb test_614_tube3D/CSM/CSM_Time1_Iter1.odb")
+            # Step 1, Coupling 2
+            output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+            AbaqusSolver0.FinalizeSolutionStep()
+
+            # Compare output, as input hasn't changed these should be the same
+            # normalize data and compare
+            a1 = output1_1.GetNumpyArray()
+            a2 = output1_2.GetNumpyArray()
+
+            mean = np.mean(a1)
+            ref = np.abs(a1 - mean).max()
+
+            a1n = (a1 - mean) / ref
+            a2n = (a2 - mean) / ref
+
+            for i in range(a1.size):
+                self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
+
+            # Step 2 and 3
+            for i in range(2):
                 AbaqusSolver0.InitializeSolutionStep()
-                output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-                os.system("cp -r test_614_tube3D/CSM/CSM_Time1.odb test_614_tube3D/CSM/CSM_Time1_Iter1.odb")
-                # Step 1, Coupling 2
-                output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+                AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
                 AbaqusSolver0.FinalizeSolutionStep()
+            # Step 4
+            AbaqusSolver0.InitializeSolutionStep()
+            output_single_run = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+            AbaqusSolver0.FinalizeSolutionStep()
+            AbaqusSolver0.Finalize()
 
-                # Compare output, as input hasn't changed these should be the same
-                # normalize data and compare
-                a1 = output1_1.GetNumpyArray()
-                a2 = output1_2.GetNumpyArray()
+            os.system(
+                "cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
+                "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
 
-                mean = np.mean(a1)
-                ref = np.abs(a1 - mean).max()
+            # With restart
+            # create solver which restarts at time step 2
+            par_solver['settings'].SetInt('timestep_start', 2)
+            AbaqusSolver1 = CreateInstance(par_solver)
+            mp = AbaqusSolver1.model['WALLOUTSIDE_load_points']
+            for node in mp.Nodes:
+                # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
+                node.SetSolutionStepValue(pressure, 0, p)
+                node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-                a1n = (a1 - mean) / ref
-                a2n = (a2 - mean) / ref
+            AbaqusSolver1.Initialize()
 
-                for i in range(a1.size):
-                    self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
+            for i in range(2):
+                AbaqusSolver1.InitializeSolutionStep()
+                output_restart = AbaqusSolver1.SolveSolutionStep(AbaqusSolver1.GetInterfaceInput()).deepcopy()
+                AbaqusSolver1.FinalizeSolutionStep()
+            AbaqusSolver1.Finalize()
 
-                # Step 2 and 3
-                for i in range(2):
-                    AbaqusSolver0.InitializeSolutionStep()
-                    AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-                    AbaqusSolver0.FinalizeSolutionStep()
-                # Step 4
-                AbaqusSolver0.InitializeSolutionStep()
-                output_single_run = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
-                AbaqusSolver0.FinalizeSolutionStep()
-                AbaqusSolver0.Finalize()
+            # Compare output, as input hasn't changed these should be the same
+            # normalize data and compare
+            a1 = output_single_run.GetNumpyArray()
+            a2 = output_restart.GetNumpyArray()
 
-                os.system(
-                    "cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
-                    "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
+            mean = np.mean(a1)
+            ref = np.abs(a1 - mean).max()
 
-                # With restart
-                # create solver which restarts at timestep 2
-                par_solver['settings'].SetInt('timestep_start', 2)
-                AbaqusSolver1 = CreateInstance(par_solver)
-                mp = AbaqusSolver1.model['WALLOUTSIDE_load_points']
-                for node in mp.Nodes:
-                    # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    node.SetSolutionStepValue(pressure, 0, p)
-                    node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
+            a1n = (a1 - mean) / ref
+            a2n = (a2 - mean) / ref
 
-                AbaqusSolver1.Initialize()
+            for i in range(a1.size):
+                self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
 
-                for i in range(2):
-                    AbaqusSolver1.InitializeSolutionStep()
-                    output_restart = AbaqusSolver1.SolveSolutionStep(AbaqusSolver1.GetInterfaceInput()).deepcopy()
-                    AbaqusSolver1.FinalizeSolutionStep()
-                AbaqusSolver1.Finalize()
+        # test whether using 4 CPUs gives the same results as using a single one.
+        if True:
+            par_solver = deepcopy(par_solver_0)
+            par_solver["settings"].SetInt("cores", 4)
+            AbaqusSolver2 = CreateInstance(par_solver)
+            mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
+            for node in mp.Nodes:
+                # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
+                node.SetSolutionStepValue(pressure, 0, p)
+                node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-                # Compare output, as input hasn't changed these should be the same
-                # normalize data and compare
-                a1 = output_single_run.GetNumpyArray()
-                a2 = output_restart.GetNumpyArray()
+            AbaqusSolver2.Initialize()
+            for i in range(4):
+                AbaqusSolver2.InitializeSolutionStep()
+                output_4cores = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
+                AbaqusSolver2.FinalizeSolutionStep()
+            AbaqusSolver2.Finalize()
 
-                mean = np.mean(a1)
-                ref = np.abs(a1 - mean).max()
+            # Compare output, as input hasn't changed these should be the same
+            # normalize data and compare
+            a4 = output_4cores.GetNumpyArray()
+            a4n = (a4 - mean) / ref
 
-                a1n = (a1 - mean) / ref
-                a2n = (a2 - mean) / ref
+            for i in range(a1.size):
+                self.assertAlmostEqual(a2n[i] - a4n[i], 0., delta=1e-12)
+                self.assertAlmostEqual(a1n[i] - a4n[i], 0., delta=1e-12)
 
-                for i in range(a1.size):
-                    # print(f"{a1[i]} ?= {a2[i]}")
-                    self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
+        # test whether shear is also applied (x is the axial direction)
+        if True:
+            shear_x = 5
+            mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
+            for node in mp.Nodes:
+                # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
+                node.SetSolutionStepValue(pressure, 0, p)
+                node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
+            AbaqusSolver2.Initialize()
+            for i in range(4):
+                AbaqusSolver2.InitializeSolutionStep()
+                output_shear = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
+                AbaqusSolver2.FinalizeSolutionStep()
+            AbaqusSolver2.Finalize()
 
-            if True:
-                # Test whether using 4 cpus gives the same results as using a single one.
-                par_solver = deepcopy(par_solver_0)
-                par_solver["settings"].SetInt("cores", 4)
-                AbaqusSolver2 = CreateInstance(par_solver)
-                mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
-                for node in mp.Nodes:
-                    # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    node.SetSolutionStepValue(pressure, 0, p)
-                    node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
+            a5 = output_shear.GetNumpyArray()
 
-                AbaqusSolver2.Initialize()
-                for i in range(4):
-                    AbaqusSolver2.InitializeSolutionStep()
-                    output_4cores = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
-                    AbaqusSolver2.FinalizeSolutionStep()
-                AbaqusSolver2.Finalize()
+            mean_disp_x_no_shear = 0
+            mean_disp_x_shear = 0
 
-                # Compare output, as input hasn't changed these should be the same
-                # normalize data and compare
-                a4 = output_4cores.GetNumpyArray()
-                print(a4.shape)
-                a4n = (a4 - mean) / ref
+            for i in range(0, a1.size, 3):
+                mean_disp_x_no_shear += a2[i]
+                mean_disp_x_shear += a5[i]
 
-                for i in range(a1.size):
-                    self.assertAlmostEqual(a2n[i] - a4n[i], 0., delta=1e-12)
-                    self.assertAlmostEqual(a1n[i] - a4n[i], 0., delta=1e-12)
+            mean_disp_x_no_shear /= (a1.size / 3)
+            mean_disp_x_shear /= (a1.size / 3)
 
-            if True:
-                # Test whether shear is also applied (x is the axial direction)
-                shear_x = p
-                mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
-                for node in mp.Nodes:
-                    # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                    node.SetSolutionStepValue(pressure, 0, p)
-                    node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
-                AbaqusSolver2.Initialize()
-                for i in range(4):
-                    AbaqusSolver2.InitializeSolutionStep()
-                    output_shear = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
-                    AbaqusSolver2.FinalizeSolutionStep()
-                AbaqusSolver2.Finalize()
+            print(f"Mean x-displacement without shear = {mean_disp_x_no_shear} m")
+            print(f"Mean x-displacement with shear = {mean_disp_x_shear} m")
 
-                a5 = output_shear.GetNumpyArray()
-
-                mean_disp_x_no_shear = 0
-                mean_disp_x_shear = 0
-
-                for i in range(0, a1.size, 3):
-                    mean_disp_x_no_shear += a2[i]
-                    mean_disp_x_shear += a5[i]
-
-                mean_disp_x_no_shear /= (a1.size / 3)
-                mean_disp_x_shear /= (a1.size / 3)
-
-                print(f"Mean x-displacement without shear = {mean_disp_x_no_shear} m")
-                print(f"Mean x-displacement with shear = {mean_disp_x_shear} m")
-
-                self.assertNotAlmostEqual(mean_disp_x_no_shear - mean_disp_x_shear, 0., delta=1e-12)
+            self.assertNotAlmostEqual(mean_disp_x_no_shear - mean_disp_x_shear, 0., delta=1e-12)
 
 
 if __name__ == '__main__':
