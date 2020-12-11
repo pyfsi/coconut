@@ -91,7 +91,7 @@ class Interface:
     def set_variable_data(self, model_part_name, variable, data):
         # *** this changes the original data!
         if type(data) is not np.ndarray:
-            raise ValueError(f'data is of type {type(data)}, but must   be ndarray')
+            raise ValueError(f'data is of type {type(data)}, but must be ndarray')
         shape = self.__data[model_part_name][variable].shape
         if data.shape != shape:
             raise ValueError(f'ndarray has shape {data.shape} instead of shape {shape}')
