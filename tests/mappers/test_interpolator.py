@@ -11,11 +11,13 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
 
+def split(coords):
+    x, y, z = np.hsplit(coords, 3)
+    return x.flatten(), y.flatten(), z.flatten()
+
+
 class TestMapperInterpolator(unittest.TestCase):
     def test_mapper_interpolator(self):
-        def split(coords):
-            x, y, z = np.hsplit(coords, 3)
-            return x.flatten(), y.flatten(), z.flatten()
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
                                            'test_interpolator.json')
@@ -261,38 +263,41 @@ class Case1D:
     def __init__(self, n_from, n_to):
         self.n_from = n_from
         self.n_to = n_to
+        self.var = 'pressure'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
 
-        model = data_structure.Model()
+        self.model = data_structure.Model()
 
-        # ModelPart from
-        self.var_from = variables["TEMPERATURE"]
-        self.model_part_from = model.CreateModelPart('wall_from')
-        self.model_part_from.AddNodalSolutionStepVariable(self.var_from)
+        # Interface from
         self.z_from = np.linspace(0, 10, self.n_from) ** .5
         self.v_from = self.fun(self.z_from)
-        for i in range(self.n_from):
-            node = self.model_part_from.CreateNewNode(i, 0., 0., self.z_from[i])
-            node.SetSolutionStepValue(self.var_from, 0, self.v_from[i])
+        self.model.create_model_part(self.mp_name_from, np.zeros(self.n_from),
+                                     np.zeros(self.n_from), self.z_from, np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        self.interface_from.set_interface_data(self.v_from)
 
-        # ModelPart to
-        self.var_to = variables["PRESSURE"]
-        self.model_part_to = model.CreateModelPart('wall_to')
-        self.model_part_to.AddNodalSolutionStepVariable(self.var_to)
+        # Interface to
         self.z_to = np.linspace(0, 10, self.n_to) ** .5
-        for i in range(self.n_to):
-            self.model_part_to.CreateNewNode(i, 0., 0., self.z_to[i])
+        self.model.create_model_part(self.mp_name_to, np.zeros(self.n_to),
+                                     np.zeros(self.n_to), self.z_to, np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model_part_from, self.model_part_to)
-        mapper((self.model_part_from, self.var_from),
-               (self.model_part_to, self.var_to))
+        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+                          self.model.get_model_part(self.mp_name_to))
+
+        args_from = (self.interface_from, self.mp_name_from, self.var)
+        args_to = (self.interface_to, self.mp_name_to, self.var)
+        mapper(args_from, args_to)
 
         self.v_to_fun = self.fun(self.z_to)
-        self.v_to = np.zeros(self.n_to)
-        for i, node in enumerate(self.model_part_to.Nodes):
-            self.v_to[i] = node.GetSolutionStepValue(self.var_to)
-        self.v_error = np.abs(self.v_to - self.v_to_fun)
+        self.v_to = self.interface_to.get_variable_data(self.mp_name_to, self.var)
+
+        self.v_error = np.abs(self.v_to.flatten() - self.v_to_fun)
 
     def check(self, tolerance):
         criterion = (self.v_error < tolerance)
@@ -324,46 +329,45 @@ class Case2D:
     def __init__(self, n_from, n_to):
         self.n_from = n_from
         self.n_to = n_to
+        self.var = 'pressure'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
 
-        model = data_structure.Model()
+        self.model = data_structure.Model()
 
-        # ModelPart from
-        self.var_from = variables["TEMPERATURE"]
-        self.model_part_from = model.CreateModelPart('wall_from')
-        self.model_part_from.AddNodalSolutionStepVariable(self.var_from)
-
+        # Interface from
         dtheta = 2 * np.pi / self.n_from
         self.theta_from = np.linspace(0, 2 * np.pi - dtheta, self.n_from)
-
         self.x_from, self.y_from = self.get_cartesian(self.theta_from)
         self.v_from = self.fun(self.x_from, self.y_from)
-        for i in range(self.n_from):
-            node = self.model_part_from.CreateNewNode(i, self.x_from[i], self.y_from[i], 0.)
-            node.SetSolutionStepValue(self.var_from, 0, self.v_from[i])
+        self.model.create_model_part(self.mp_name_from, self.x_from, self.y_from,
+                                     np.zeros(self.n_from), np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        self.interface_from.set_interface_data(self.v_from)
 
-        # ModelPart to
-        self.var_to = variables["PRESSURE"]
-        self.model_part_to = model.CreateModelPart('wall_to')
-        self.model_part_to.AddNodalSolutionStepVariable(self.var_to)
-
+        # Interface to
         dtheta = 2 * np.pi / self.n_to
         self.theta_to = np.linspace(0, 2 * np.pi - dtheta, self.n_to)
-
         self.x_to, self.y_to = self.get_cartesian(self.theta_to)
-        for i in range(self.n_to):
-            self.model_part_to.CreateNewNode(i, self.x_to[i], self.y_to[i], 0.)
+        self.model.create_model_part(self.mp_name_to, self.x_to, self.y_to,
+                                     np.zeros(self.n_to), np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model_part_from, self.model_part_to)
-        mapper((self.model_part_from, self.var_from),
-               (self.model_part_to, self.var_to))
+        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+                          self.model.get_model_part(self.mp_name_to))
+
+        args_from = (self.interface_from, self.mp_name_from, self.var)
+        args_to = (self.interface_to, self.mp_name_to, self.var)
+        mapper(args_from, args_to)
 
         self.v_to_fun = self.fun(self.x_to, self.y_to)
-        self.v_to = np.zeros(self.n_to)
-        for i, node in enumerate(self.model_part_to.Nodes):
-            self.v_to[i] = node.GetSolutionStepValue(self.var_to)
-        self.v_error = np.abs(self.v_to - self.v_to_fun)
+        self.v_to = self.interface_to.get_variable_data(self.mp_name_to, self.var)
+
+        self.v_error = np.abs(self.v_to.flatten() - self.v_to_fun)
 
     def check(self, tolerance):
         criterion = (self.v_error < tolerance)
@@ -406,14 +410,12 @@ class Case3DSphere:
         self.n_theta_to = n_theta_to
         self.n_phi_to = n_phi_to  # for bounding box: not too far from n_phi_from!
         self.n_to = n_theta_to * n_phi_to
+        self.var = 'pressure'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
+        self.model = data_structure.Model()
 
-        model = data_structure.Model()
-
-        # ModelPart from
-        self.var_from = variables["TEMPERATURE"]
-        self.model_part_from = model.CreateModelPart('wall_from')
-        self.model_part_from.AddNodalSolutionStepVariable(self.var_from)
-
+        # Interface from
         shape = (self.n_theta_from, self.n_phi_from)
         dtheta = 2 * np.pi / self.n_theta_from
         dphi = np.pi / (self.n_phi_from - 1)
@@ -422,16 +424,13 @@ class Case3DSphere:
 
         self.x_from, self.y_from, self.z_from = self.get_cartesian(theta, phi)
         self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
-        for i in range(self.n_from):
-            node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
-                                self.y_from.flatten()[i], self.z_from.flatten()[i])
-            node.SetSolutionStepValue(self.var_from, 0, self.v_from.flatten()[i])
+        self.model.create_model_part(self.mp_name_from, self.x_from.flatten(), self.y_from.flatten(),
+                                     self.z_from.flatten(), np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        self.interface_from.set_interface_data(self.v_from.flatten())
 
-        # ModelPart to
-        self.var_to = variables["PRESSURE"]
-        self.model_part_to = model.CreateModelPart('wall_to')
-        self.model_part_to.AddNodalSolutionStepVariable(self.var_to)
-
+        # Interface to
         shape = (self.n_theta_to, self.n_phi_to)
         dtheta = 2 * np.pi / self.n_theta_to
         dphi = np.pi / (self.n_phi_to - 1)
@@ -439,20 +438,22 @@ class Case3DSphere:
         phi = np.ones(shape) * np.linspace(dphi, np.pi - dphi, self.n_phi_to).reshape(1, -1)
 
         self.x_to, self.y_to, self.z_to = self.get_cartesian(theta, phi)
-        for i in range(self.n_to):
-            self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
-                            self.y_to.flatten()[i], self.z_to.flatten()[i])
+        self.model.create_model_part(self.mp_name_to, self.x_to.flatten(), self.y_to.flatten(),
+                                     self.z_to.flatten(), np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model_part_from, self.model_part_to)
-        mapper((self.model_part_from, self.var_from),
-               (self.model_part_to, self.var_to))
+        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+                          self.model.get_model_part(self.mp_name_to))
+
+        args_from = (self.interface_from, self.mp_name_from, self.var)
+        args_to = (self.interface_to, self.mp_name_to, self.var)
+        mapper(args_from, args_to)
 
         self.v_to_fun = self.fun(self.x_to, self.y_to, self.z_to)
-        self.v_to = np.zeros(self.n_to)
-        for i, node in enumerate(self.model_part_to.Nodes):
-            self.v_to[i] = node.GetSolutionStepValue(self.var_to)
+        self.v_to = self.interface_to.get_variable_data(self.mp_name_to, self.var)
         self.v_to = self.v_to.reshape(self.x_to.shape)
         self.v_error = np.abs(self.v_to - self.v_to_fun)
 
@@ -515,14 +516,14 @@ class Case3DCylinder(Case3DSphere):
         self.n_theta_to = n_theta_to
         self.n_to = n_x_to * n_theta_to
         self.length = length
+        self.var = 'pressure'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
+        self.model = data_structure.Model()
 
-        model = data_structure.Model()
+        self.model = data_structure.Model()
 
-        # ModelPart from
-        self.var_from = variables["TEMPERATURE"]
-        self.model_part_from = model.CreateModelPart('wall_from')
-        self.model_part_from.AddNodalSolutionStepVariable(self.var_from)
-
+        # Interface from
         shape = (self.n_x_from, self.n_theta_from)
         dtheta = 2 * np.pi / self.n_theta_from
         theta_from = np.ones(shape) * np.linspace(0, 2 * np.pi - dtheta, self.n_theta_from).reshape(1, -1)
@@ -530,30 +531,23 @@ class Case3DCylinder(Case3DSphere):
         self.x_from = np.ones(shape) * np.linspace(0, self.length, self.n_x_from).reshape(-1, 1)
         self.y_from, self.z_from = self.get_cartesian(theta_from)
         self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
-        for i in range(self.n_from):
-            node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
-                                self.y_from.flatten()[i], self.z_from.flatten()[i])
-            node.SetSolutionStepValue(self.var_from, 0, self.v_from.flatten()[i])
-        # for i in range(self.n_from):
-        #     node = self.model_part_from.CreateNewNode(i, self.x_from[i], self.y_from[i], self.z_from[i])
-        #     node.SetSolutionStepValue(self.var_from, 0, self.v_from[i])
+        self.model.create_model_part(self.mp_name_from, self.x_from.flatten(), self.y_from.flatten(),
+                                     self.z_from.flatten(), np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        self.interface_from.set_interface_data(self.v_from.flatten())
 
-        # ModelPart to
-        self.var_to = variables["PRESSURE"]
-        self.model_part_to = model.CreateModelPart('wall_to')
-        self.model_part_to.AddNodalSolutionStepVariable(self.var_to)
-
+        # Interface to
         shape = (self.n_x_to, self.n_theta_to)
         dtheta = 2 * np.pi / self.n_theta_to
         theta_to = np.ones(shape) * np.linspace(0, 2 * np.pi - dtheta, self.n_theta_to).reshape(1, -1)
 
         self.x_to = np.ones(shape) * np.linspace(0, self.length, self.n_x_to).reshape(-1, 1)
         self.y_to, self.z_to = self.get_cartesian(theta_to)
-        for i in range(self.n_to):
-            self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
-                            self.y_to.flatten()[i], self.z_to.flatten()[i])
-        # for i in range(self.n_to):
-        #     self.model_part_to.CreateNewNode(i, self.x_to[i], self.y_to[i], self.z_to[i])
+        self.model.create_model_part(self.mp_name_to, self.x_to.flatten(), self.y_to.flatten(),
+                                     self.z_to.flatten(), np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
 
     def plot(self):
         v_min = min(self.v_from.min(), self.v_to.min())
@@ -599,7 +593,6 @@ class Case3DCylinder(Case3DSphere):
             ax.set_ylabel('y')
             ax.set_zlabel('z')
 
-        plt.tight_layout()
         plt.show()
         plt.close()
 
@@ -623,57 +616,57 @@ class Case3DSinc:
         self.n_x_to = n_x_to
         self.n_y_to = n_y_to
         self.n_to = n_x_to * n_y_to
+        self.var = 'displacement'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
+        self.model = data_structure.Model()
 
         model = data_structure.Model()
 
         # ModelPart from
-        self.var_from = variables["VELOCITY"]
-        self.model_part_from = model.CreateModelPart('wall_from')
-        self.model_part_from.AddNodalSolutionStepVariable(self.var_from)
-
         shape = (self.n_x_from, self.n_y_from)
         self.x_from = np.ones(shape) * np.linspace(-1, 1, self.n_x_from).reshape(-1, 1)
         self.y_from = np.ones(shape) * np.linspace(-1, 1, self.n_y_from).reshape(1, -1)
         self.z_from = np.sinc(np.sqrt((10 * self.x_from) ** 2 + (self.y_from * 10) ** 2) / np.pi)
         self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
-        for i in range(self.n_from):
-            node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
-                                    self.y_from.flatten()[i], self.z_from.flatten()[i])
-            hist = []
-            for j in range(3):
-                hist.append(self.v_from[j].flatten()[i])
-            node.SetSolutionStepValue(self.var_from, 0, hist)
+        self.model.create_model_part(self.mp_name_from, self.x_from.flatten(), self.y_from.flatten(),
+                                     self.z_from.flatten(), np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        tmp = np.hstack((self.v_from[0].reshape(-1, 1),
+                         self.v_from[1].reshape(-1, 1),
+                         self.v_from[2].reshape(-1, 1)))
+        self.interface_from.set_variable_data(self.mp_name_from, self.var, tmp)
 
         # ModelPart to
-        self.var_to = variables["FORCE"]
-        self.model_part_to = model.CreateModelPart('wall_to')
-        self.model_part_to.AddNodalSolutionStepVariable(self.var_to)
-
         shape = (self.n_x_to, self.n_y_to)
         self.x_to = np.ones(shape) * np.linspace(-1, 1, self.n_x_to).reshape(-1, 1)
         self.y_to = np.ones(shape) * np.linspace(-1, 1, self.n_y_to).reshape(1, -1)
         self.z_to = np.sinc(np.sqrt((10 * self.x_to) ** 2 + (self.y_to * 10) ** 2) / np.pi)
         self.v_to = self.fun(self.x_to, self.y_to, self.z_to)
-        for i in range(self.n_to):
-            self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
-                                 self.y_to.flatten()[i], self.z_to.flatten()[i])
+        self.model.create_model_part(self.mp_name_to, self.x_to.flatten(), self.y_to.flatten(),
+                                     self.z_to.flatten(), np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model_part_from, self.model_part_to)
-        mapper((self.model_part_from, self.var_from),
-               (self.model_part_to, self.var_to))
+        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+                          self.model.get_model_part(self.mp_name_to))
+
+        args_from = (self.interface_from, self.mp_name_from, self.var)
+        args_to = (self.interface_to, self.mp_name_to, self.var)
+        mapper(args_from, args_to)
 
         self.v_to_fun = self.fun(self.x_to, self.y_to, self.z_to)
-        self.v_to = [np.zeros(self.n_to), np.zeros(self.n_to), np.zeros(self.n_to)]
-        for i, node in enumerate(self.model_part_to.Nodes):
-            hist = node.GetSolutionStepValue(self.var_to)
-            for j in range(3):
-                self.v_to[j][i] = hist[j]
+        tmp = self.interface_to.get_variable_data(self.mp_name_to, self.var)
+        shape_to = self.v_to_fun[0].shape
+        self.v_to = [tmp[:, 0].reshape(shape_to),
+                     tmp[:, 1].reshape(shape_to),
+                     tmp[:, 2].reshape(shape_to)]
 
         self.v_error = []
         for j in range(3):
-            self.v_to[j] = self.v_to[j].reshape(self.x_to.shape)
             self.v_error.append(np.abs(self.v_to[j] - self.v_to_fun[j]))
 
     def check(self, tolerance):
