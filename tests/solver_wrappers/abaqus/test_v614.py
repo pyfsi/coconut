@@ -16,7 +16,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
     def test_solver_wrapper_abaqus_614_tube2d(self):
         print('Starting tests for Abaqus Tube2D.')
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_614_tube2D', 'test_solver_wrapper.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_v614/tube2d', 'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -24,7 +24,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory', 'test_614_tube2D/CSM')
+            par_solver_0['settings'].SetString('working_directory', 'test_v614/tube2d/CSM')
 
         par_solver = deepcopy(par_solver_0)
 
@@ -39,7 +39,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         # setup Abaqus case
         if True:
             print('setup Abaqus case')
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_614_tube2D')
+            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_v614/tube2d')
             print(f'dir_tmp = {dir_tmp}')
             p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
@@ -65,7 +65,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             AbaqusSolver0.InitializeSolutionStep()
             output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
             # TODO: this could break down, depending on cwd check
-            os.system("cp -r test_614_tube2D/CSM/CSM_Time1.odb test_614_tube2D/CSM/CSM_Time1_Iter1.odb")
+            os.system("cp -r test_v614/tube2d/CSM/CSM_Time1.odb test_v614/tube2d/CSM/CSM_Time1_Iter1.odb")
             # Step 1, Coupling 2
             output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
             AbaqusSolver0.FinalizeSolutionStep()
@@ -96,8 +96,8 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             AbaqusSolver0.FinalizeSolutionStep()
             AbaqusSolver0.Finalize()
             # TODO: this could break down, depending on cwd check
-            os.system("cp test_614_tube2D/CSM/CSM_Time4Surface0Output.dat"
-                      " test_614_tube2D/CSM/CSM_Time4Surface0Output_Single.dat")
+            os.system("cp test_v614/tube2d/CSM/CSM_Time4Surface0Output.dat"
+                      " test_v614/tube2d/CSM/CSM_Time4Surface0Output_Single.dat")
 
             # With restart
             # create solver which restarts at time step 2
@@ -195,7 +195,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         print('Starting tests for Abaqus Tube3D.')
         # Axial direction is the x-direction
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_614_tube3D', 'test_solver_wrapper.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_v614/tube3d', 'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -203,7 +203,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory', 'test_614_tube3D/CSM')
+            par_solver_0['settings'].SetString('working_directory', 'test_v614/tube3d/CSM')
 
         par_solver = deepcopy(par_solver_0)
 
@@ -218,7 +218,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         # setup Abaqus case
         if True:
             print('setup Abaqus case')
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_614_tube3D')
+            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_v614/tube3d')
             print(f'dir_tmp = {dir_tmp}')
             p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
@@ -243,7 +243,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             # Step 1, Coupling 1
             AbaqusSolver0.InitializeSolutionStep()
             output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-            os.system("cp -r test_614_tube3D/CSM/CSM_Time1.odb test_614_tube3D/CSM/CSM_Time1_Iter1.odb")
+            os.system("cp -r test_v614/tube3d/CSM/CSM_Time1.odb test_v614/tube3d/CSM/CSM_Time1_Iter1.odb")
             # Step 1, Coupling 2
             output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
             AbaqusSolver0.FinalizeSolutionStep()
@@ -273,8 +273,8 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             AbaqusSolver0.FinalizeSolutionStep()
             AbaqusSolver0.Finalize()
 
-            os.system("cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
-                      "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
+            os.system("cp test_v614/tube3d/CSM/CSM_Time4Surface0Output.dat "
+                      "test_v614/tube3d/CSM/CSM_Time4Surface0Output_Single.dat")
 
             # With restart
             # create solver which restarts at time step 2
