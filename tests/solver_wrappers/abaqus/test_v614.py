@@ -64,7 +64,8 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             # Step 1, Coupling 1
             AbaqusSolver0.InitializeSolutionStep()
             output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-            os.system("cp -r test_614_tube2D/CSM/CSM_Time1.odb test_614_tube2D/CSM/CSM_Time1_Iter1.odb")  # TODO: this could break down, depending on cwd check
+            # TODO: this could break down, depending on cwd check
+            os.system("cp -r test_614_tube2D/CSM/CSM_Time1.odb test_614_tube2D/CSM/CSM_Time1_Iter1.odb")
             # Step 1, Coupling 2
             output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
             AbaqusSolver0.FinalizeSolutionStep()
@@ -95,7 +96,8 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             AbaqusSolver0.FinalizeSolutionStep()
             AbaqusSolver0.Finalize()
             # TODO: this could break down, depending on cwd check
-            os.system("cp test_614_tube2D/CSM/CSM_Time4Surface0Output.dat test_614_tube2D/CSM/CSM_Time4Surface0Output_Single.dat")
+            os.system("cp test_614_tube2D/CSM/CSM_Time4Surface0Output.dat"
+                      " test_614_tube2D/CSM/CSM_Time4Surface0Output_Single.dat")
 
             # With restart
             # create solver which restarts at time step 2
@@ -129,7 +131,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             for i in range(a1.size):
                 self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
 
-        # Test whether using 4 CPUs gives the same results as using a single one
+        # test whether using 4 CPUs gives the same results as using a single one
         if True:
             par_solver = deepcopy(par_solver_0)
             par_solver["settings"].SetInt("cores", 4)
@@ -157,7 +159,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 self.assertAlmostEqual(a2n[i] - a4n[i], 0., delta=1e-12)
                 self.assertAlmostEqual(a1n[i] - a4n[i], 0., delta=1e-12)
 
-        # Test whether shear is also applied
+        # test whether shear is also applied
         if True:
             shear_y = 5
             mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
@@ -271,9 +273,8 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             AbaqusSolver0.FinalizeSolutionStep()
             AbaqusSolver0.Finalize()
 
-            os.system(
-                "cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
-                "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
+            os.system("cp test_614_tube3D/CSM/CSM_Time4Surface0Output.dat "
+                      "test_614_tube3D/CSM/CSM_Time4Surface0Output_Single.dat")
 
             # With restart
             # create solver which restarts at time step 2
