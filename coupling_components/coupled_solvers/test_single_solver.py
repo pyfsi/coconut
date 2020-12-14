@@ -57,6 +57,15 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             parameters = parameters["settings"]["solver_wrapper"]  # for mapped solver: the solver_wrapper itself tested
         settings = parameters["settings"]
 
+        orig_wd = settings["working_directory"].GetString()  # working directory changed to a test_working_directory
+        i = 0
+        while os.path.exists(f"{orig_wd}_test{i}"):
+            i += 1
+        cur_wd = f"{orig_wd}_test{i}"
+        settings.SetString("working_directory", cur_wd)
+        os.system(f"cp -r {orig_wd} {cur_wd}")
+        tools.Print(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
+
         for key in ["timestep_start", "delta_t"]:  # add delta_t and timestep_start to solver_wrapper settings
             if settings.Has(key):
                 tools.Print(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
@@ -66,18 +75,9 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.solver_wrapper = tools.CreateInstance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
 
-        # working directory will be changed to a test_working_directory
-        orig_wd = settings["working_directory"].GetString()
-        i = 0
-        while os.path.exists(f"{orig_wd}_test{i}"):
-            i += 1
-        cur_wd = f"{orig_wd}_test{i}"
-        settings.SetString("working_directory", cur_wd)
-        os.system(f"cp -r {orig_wd} {cur_wd}")
-        tools.Print(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
-
         self.components = [self.solver_wrapper]  # will only contain 1 solver wrapper
 
+        # initialize test_class
         interface_input = self.solver_wrapper.interface_input
         if self.test_class is None:
             self.zero_input = True
