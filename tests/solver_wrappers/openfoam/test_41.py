@@ -42,7 +42,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             print_box("Testing basic solver_wrapper creation and initialization")
             par_solver = deepcopy(par_solver_0)
             solver=cs_tools.CreateInstance(par_solver)
-            solver.Initialize()
+            solver.initialize()
 
         # test if nodes are moved to the correct position
         if True:
@@ -63,17 +63,17 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
                 node.SetSolutionStepValue(displacement, 0, [0., dy, dz])
  
             # update position by iterating once in solver
-            solver.Initialize()
-            solver.InitializeSolutionStep()
-            solver.SolveSolutionStep(solver.GetInterfaceInput())
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+            solver.initialize()
+            solver.initialize_solution_step()
+            solver.solve_solution_step(solver.GetInterfaceInput())
+            solver.finalize_solution_step()
+            solver.finalize()
  
             # create solver to check new coordinates
             par_solver['settings'].SetDouble('start_time', 0.1)
             solver = cs_tools.CreateInstance(par_solver)
-            solver.Initialize()
-            solver.Finalize()
+            solver.initialize()
+            solver.finalize()
     
             # check if correct displacement was given
             mp = solver.model['walls_input']
@@ -89,8 +89,8 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             for cores in [1, multiprocessing.cpu_count()]:
 #                 par_solver['settings'].SetInt('cores', cores)
 #                 solver = cs_tools.CreateInstance(par_solver)
-#                 solver.Initialize()
-#                 solver.Finalize()
+#                 solver.initialize()
+#                 solver.finalize()
 #                 model_parts.append(deepcopy(solver.model['beamoutside_nodes']))
 # 
 #             # compare Nodes in ModelParts between both solvers
@@ -108,27 +108,27 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
 #             par_solver['settings'].SetInt('flow_iterations', 500)
 #             solver = cs_tools.CreateInstance(par_solver)
-#             solver.Initialize()
-#             solver.InitializeSolutionStep()
+#             solver.initialize()
+#             solver.initialize_solution_step()
 # 
 #             # change grid to position 1
 #             mp = solver.model['beamoutside_nodes']
 #             for node in mp.Nodes:
 #                 node.Y = 0.005 + 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-#             output1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+#             output1 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 # 
 #             # change grid to position 2
 #             for node in mp.Nodes:
 #                 node.Y = 0.005 - 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-#             output2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+#             output2 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 # 
 #             # change grid back to position 1
 #             for node in mp.Nodes:
 #                 node.Y = 0.005 + 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-#             output3 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+#             output3 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 # 
-#             solver.FinalizeSolutionStep()
-#             solver.Finalize()
+#             solver.finalize_solution_step()
+#             solver.finalize()
 # 
 #             # normalize data and compare
 #             a1 = output1.GetNumpyArray()
@@ -160,21 +160,21 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #                 node.SetSolutionStepValue(displacement, 0, [0., dy, 0.])
 # 
 #             # run solver for some timesteps and iterations
-#             solver.Initialize()
+#             solver.initialize()
 #             timesteps = 3
 #             iterations = 4
 #             for i in range(timesteps):
-#                 solver.InitializeSolutionStep()
+#                 solver.initialize_solution_step()
 #                 for j in range(iterations):
-#                     solver.SolveSolutionStep(solver.GetInterfaceInput())
-#                 solver.FinalizeSolutionStep()
-#             solver.Finalize()
+#                     solver.solve_solution_step(solver.GetInterfaceInput())
+#                 solver.finalize_solution_step()
+#             solver.finalize()
 # 
 #             # create solver to check coordinates at last timestep
 #             par_solver['settings'].SetInt('timestep_start', timesteps)
 #             solver = cs_tools.CreateInstance(par_solver)
-#             solver.Initialize()
-#             solver.Finalize()
+#             solver.initialize()
+#             solver.finalize()
 # 
 #             # check if displacement was applied correct number of times
 #             mp = solver.model['beamoutside_nodes']
@@ -198,13 +198,13 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #                 node.SetSolutionStepValue(displacement, 0, [0., dy, 0.])
 # 
 #             # run solver for 2 timesteps
-#             solver.Initialize()
+#             solver.initialize()
 #             for i in range(4):
-#                 solver.InitializeSolutionStep()
+#                 solver.initialize_solution_step()
 #                 for j in range(2):
-#                     solver.SolveSolutionStep(solver.GetInterfaceInput())
-#                 solver.FinalizeSolutionStep()
-#             solver.Finalize()
+#                     solver.solve_solution_step(solver.GetInterfaceInput())
+#                 solver.finalize_solution_step()
+#             solver.finalize()
 # 
 #             # get data for solver without restart
 #             interface1 = solver.GetInterfaceOutput().deepcopy()
@@ -221,13 +221,13 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #                 node.SetSolutionStepValue(displacement, 0, [0., dy, 0.])
 # 
 #             # run solver for 2 more timesteps
-#             solver.Initialize()
+#             solver.initialize()
 #             for i in range(2):
-#                 solver.InitializeSolutionStep()
+#                 solver.initialize_solution_step()
 #                 for j in range(2):
-#                     solver.SolveSolutionStep(solver.GetInterfaceInput())
-#                 solver.FinalizeSolutionStep()
-#             solver.Finalize()
+#                     solver.solve_solution_step(solver.GetInterfaceInput())
+#                 solver.finalize_solution_step()
+#             solver.finalize()
 # 
 #             # get data for solver with restart
 #             interface2 = solver.GetInterfaceOutput().deepcopy()

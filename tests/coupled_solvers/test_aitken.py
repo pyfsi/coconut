@@ -39,8 +39,8 @@ class TestCoupledSolverAitken(unittest.TestCase):
         omega_max = settings["settings"]["omega_max"].GetDouble()
 
         coupled_solver = CreateInstance(settings)
-        coupled_solver.Initialize()
-        coupled_solver.InitializeSolutionStep()
+        coupled_solver.initialize()
+        coupled_solver.initialize_solution_step()
 
         interface_r = interface.deepcopy()
         interface_r.SetNumpyArray(r * np.ones(m))
@@ -61,18 +61,18 @@ class TestCoupledSolverAitken(unittest.TestCase):
         is_ready = coupled_solver.IsReady()
         self.assertFalse(is_ready)
 
-        # Test Update()
-        coupled_solver.Update(interface_x, interface_xt0)
+        # Test update()
+        coupled_solver.update(interface_x, interface_xt0)
         is_ready = coupled_solver.IsReady()
         self.assertTrue(is_ready)
         omega = coupled_solver.omega
         self.assertEqual(omega, omega_max)
-        coupled_solver.Update(interface_x, interface_xt1)
+        coupled_solver.update(interface_x, interface_xt1)
         is_ready = coupled_solver.IsReady()
         self.assertTrue(is_ready)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, 5 / 3 * omega_max, 10)
-        coupled_solver.Update(interface_x, interface_xt2)
+        coupled_solver.update(interface_x, interface_xt2)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, 10 / 3 * omega_max, 10)
 
@@ -85,41 +85,41 @@ class TestCoupledSolverAitken(unittest.TestCase):
         self.assertAlmostEqual(omega, 10 / 3 * omega_max, 10)
 
         # New solution step
-        coupled_solver.FinalizeSolutionStep()
-        coupled_solver.InitializeSolutionStep()
+        coupled_solver.finalize_solution_step()
+        coupled_solver.initialize_solution_step()
 
         # Test value of self.added
         is_ready = coupled_solver.IsReady()
         self.assertFalse(is_ready)
 
-        # Test Update()
-        coupled_solver.Update(interface_x, interface_xt0)
+        # Test update()
+        coupled_solver.update(interface_x, interface_xt0)
         is_ready = coupled_solver.IsReady()
         self.assertTrue(is_ready)
         omega = coupled_solver.omega
         self.assertEqual(omega, omega_max)
-        coupled_solver.Update(interface_x, interface_xt3)
+        coupled_solver.update(interface_x, interface_xt3)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 2 * omega_max, 10)
 
         # New solution step
-        coupled_solver.FinalizeSolutionStep()
-        coupled_solver.InitializeSolutionStep()
+        coupled_solver.finalize_solution_step()
+        coupled_solver.initialize_solution_step()
 
-        # Test Update()
-        coupled_solver.Update(interface_x, interface_xt0)
+        # Test update()
+        coupled_solver.update(interface_x, interface_xt0)
         omega = coupled_solver.omega
         self.assertEqual(omega, -omega_max)
-        coupled_solver.Update(interface_x, interface_xt4)
+        coupled_solver.update(interface_x, interface_xt4)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 6 * omega_max, 10)
 
         # New solution step
-        coupled_solver.FinalizeSolutionStep()
-        coupled_solver.InitializeSolutionStep()
+        coupled_solver.finalize_solution_step()
+        coupled_solver.initialize_solution_step()
 
-        # Test Update()
-        coupled_solver.Update(interface_x, interface_xt0)
+        # Test update()
+        coupled_solver.update(interface_x, interface_xt0)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 6 * omega_max, 10)
 

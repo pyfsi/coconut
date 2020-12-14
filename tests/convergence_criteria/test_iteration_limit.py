@@ -51,21 +51,21 @@ class TestConvergenceCriterionIterationLimit(unittest.TestCase):
             settings = json.loads(parameter_file.read())
 
         convergence_criterion_iteration_limit = create_instance(settings)
-        convergence_criterion_iteration_limit.Initialize()
+        convergence_criterion_iteration_limit.initialize()
         for i in range(3):
-            convergence_criterion_iteration_limit.InitializeSolutionStep()
-            is_satisfied = convergence_criterion_iteration_limit.IsSatisfied()
+            convergence_criterion_iteration_limit.initialize_solution_step()
+            is_satisfied = convergence_criterion_iteration_limit.is_satisfied()
             self.assertFalse(is_satisfied)
-            convergence_criterion_iteration_limit.Update(interface)
-            is_satisfied = convergence_criterion_iteration_limit.IsSatisfied()
+            convergence_criterion_iteration_limit.update(interface)
+            is_satisfied = convergence_criterion_iteration_limit.is_satisfied()
             self.assertFalse(is_satisfied)
-            convergence_criterion_iteration_limit.Update(interface)
-            is_satisfied = convergence_criterion_iteration_limit.IsSatisfied()
+            convergence_criterion_iteration_limit.update(interface)
+            is_satisfied = convergence_criterion_iteration_limit.is_satisfied()
             self.assertTrue(is_satisfied)
-            convergence_criterion_iteration_limit.Update(interface)
-            is_satisfied = convergence_criterion_iteration_limit.IsSatisfied()
+            convergence_criterion_iteration_limit.update(interface)
+            is_satisfied = convergence_criterion_iteration_limit.is_satisfied()
             self.assertTrue(is_satisfied)
-            convergence_criterion_iteration_limit.FinalizeSolutionStep()
+            convergence_criterion_iteration_limit.finalize_solution_step()
 
 
 if __name__ == '__main__':

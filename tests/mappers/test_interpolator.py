@@ -63,38 +63,38 @@ class TestMapperInterpolator(unittest.TestCase):
             coords = np.array([[0, 0, 0], [0, 0, 1]])
             mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
             mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, 1.01]])))
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, -.01]])))
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, 1.1]])))
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, 1.25]])))
             mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, -.25]])))
             mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, 2], [0, 0, -1]])))
             mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             # check 2D errors and warnings
             par_mapper['settings']['directions'] = ['z', 'x']
@@ -105,38 +105,38 @@ class TestMapperInterpolator(unittest.TestCase):
             coords = np.array([[0, 0, 0], [1, 0, 1]])
             mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
             mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.01, 0, 1.01]])))
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[-.01, 0, -.01]])))
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.1, 0, 1.1]])))
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.25, 0, 1.25]])))
             mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[-.25, 0, -.25]])))
             mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[2, 0, 2], [-1, 0, -1]])))
             mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             # check 3D errors and warnings
             par_mapper['settings']['directions'] = ['z', 'x', 'y']
@@ -147,38 +147,38 @@ class TestMapperInterpolator(unittest.TestCase):
             coords = np.array([[0, 0, 0], [1, 1, 1]])
             mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
             mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.01, 1.01, 1.01]])))
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[-.01, -.01, -.01]])))
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.1, 1.1, 1.1]])))
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.25, 1.25, 1.25]])))
             mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[-.25, -.25, -.25]])))
             mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.vstack((coords, np.array([[2, 2, 2], [-1, -1, -1]])))
             mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             # check if method works for lines aligned with coordinate axes in 2D
             par_mapper['settings']['directions'] = ['x', 'y']
@@ -190,23 +190,23 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.array([[0, 1, 0], [1.01, 1.01, 0.]])
             mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.array([[0, .85, 0], [1, 1.15, 0]])
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             # check if method works for planes aligned with coordinate axes in 3D
             par_mapper['settings']['directions'] = ['x', 'y', 'z']
@@ -218,23 +218,23 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.array([[0, 1, 0], [1.01, 1.01, 0.]])
             mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.Initialize(mp_from, mp_to)
-            mapper.Finalize()
+            mapper.initialize(mp_from, mp_to)
+            mapper.finalize()
 
             coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
             self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
             coords = np.array([[0, .85, 0], [1, 1.15, 0]])
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
             self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-            mapper.Finalize()
+            mapper.finalize()
 
         # test check_duplicate_points method
         par_mapper = deepcopy(par_mapper_0)
@@ -248,12 +248,12 @@ class TestMapperInterpolator(unittest.TestCase):
         coords = np.vstack((coords, np.array([[1e-10, 0., 0.]])))
         mp_from = model.create_model_part('mp_from_1', *split(coords), np.arange(3))
         self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
-        mapper.Finalize()
+        mapper.finalize()
 
         coords = np.vstack((coords, np.array([[1e-14, 0., 0.]])))
         mp_from = model.create_model_part('mp_from_2', *split(coords), np.arange(4))
         self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
-        mapper.Finalize()
+        mapper.finalize()
 
         # *** TODO: check tree? check __call__ method?
 
@@ -287,7 +287,7 @@ class Case1D:
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+        mapper.initialize(self.model.get_model_part(self.mp_name_from),
                           self.model.get_model_part(self.mp_name_to))
 
         args_from = (self.interface_from, self.mp_name_from, self.var)
@@ -357,7 +357,7 @@ class Case2D:
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+        mapper.initialize(self.model.get_model_part(self.mp_name_from),
                           self.model.get_model_part(self.mp_name_to))
 
         args_from = (self.interface_from, self.mp_name_from, self.var)
@@ -445,7 +445,7 @@ class Case3DSphere:
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+        mapper.initialize(self.model.get_model_part(self.mp_name_from),
                           self.model.get_model_part(self.mp_name_to))
 
         args_from = (self.interface_from, self.mp_name_from, self.var)
@@ -651,7 +651,7 @@ class Case3DSinc:
 
     def map(self, parameters):
         mapper = create_instance(parameters)
-        mapper.Initialize(self.model.get_model_part(self.mp_name_from),
+        mapper.initialize(self.model.get_model_part(self.mp_name_from),
                           self.model.get_model_part(self.mp_name_to))
 
         args_from = (self.interface_from, self.mp_name_from, self.var)

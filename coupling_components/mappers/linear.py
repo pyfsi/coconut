@@ -39,8 +39,8 @@ class MapperLinear(MapperInterpolator):
         else:
             self.n_nearest = 2
 
-    def Initialize(self, model_part_from, model_part_to):
-        super().Initialize(model_part_from, model_part_to)
+    def initialize(self, model_part_from, model_part_to):
+        super().initialize(model_part_from, model_part_to)
 
         if len(self.directions) == 3:
             get_coeffs = get_coeffs_3d

@@ -13,15 +13,15 @@ def create_instance(settings):
 #
 #  @param label         The label for the print
 #  @param args          The arguments to be printed
-def PrintInfo(label, *args):
+def print_Info(label, *args):
     print(label, " ".join(map(str, args)))
 
 
-# PrintWarning: Printing a warning with a label
+# print_warning: Printing a warning with a label
 #
 #  @param label         The label for the print
 #  @param args          The arguments to be printed
-def PrintWarning(label, *args):
+def print_warning(label, *args):
     print(label, " ".join(map(str, args)))
 
 
@@ -70,7 +70,7 @@ layout_style = LayoutStyles()
 #
 #  @param args          The arguments to be printed
 #  @param layout        The layout to be used: header, blue, green, red, warning, fail, bold, underline or plain
-def Print(*args, layout=None):
+def print(*args, layout=None):
     if layout is None:
         print("".join(map(str, args)))
     else:
@@ -79,7 +79,7 @@ def Print(*args, layout=None):
 
 # UpdatePre: Update preceding text, used in structure printing
 #  @param pre         Preceding text ending with '├─' or '└─'
-def UpdatePre(pre):
+def update_pre(pre):
     """
     This function is used to update the preceding string in a structured tree-like format as such:
     Name
@@ -102,7 +102,7 @@ def UpdatePre(pre):
 # PrintInfoStructure: Print information from a list of Comonents in a strucutred way
 #  @param label         Preceding text ending with '├─' or '└─'
 #  @param compent_list  List of Components from which the info is printed
-def PrintStructureInfo(pre, component_list):
+def print_components_info(pre, component_list):
     """
     This function accepts a list of Components and print their info in a structured tree-like format as such:
     ├─Component0.PrintInfo
@@ -110,10 +110,10 @@ def PrintStructureInfo(pre, component_list):
     └─Component1.PrintInfo
       XXX
     """
-    pre = UpdatePre(pre)
+    pre = update_pre(pre)
     for component in component_list[:-1]:
-        component.PrintInfo(pre + '├─')
-    component_list[-1].PrintInfo(pre + '└─')
+        component.print_components_info(pre + '├─')
+    component_list[-1].print_components_info(pre + '└─')
 
 
 # Timer-function
@@ -147,17 +147,17 @@ def quicktimer(name=None, t=0, n=0, ms=False):
     if name is not None:
         s += f' - {name}'
     s += '\n' * n
-    Print(s)
+    print(s)
 
 
 # Run time measuring function
-def time_solve_solution_step(SolveSolutionStep):
+def time_solve_solution_step(solve_solution_step):
     def wrapper(*args):
         self = args[0]
         if not hasattr(self, 'run_time'):
             self.run_time = 0.0
         start_time = time.time()
-        interface_output = SolveSolutionStep(*args)
+        interface_output = solve_solution_step(*args)
         self.run_time += time.time() - start_time
         return interface_output
 

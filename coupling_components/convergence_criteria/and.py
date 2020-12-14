@@ -6,9 +6,9 @@ def create(parameters):
 
 
 class ConvergenceCriterionAnd(ConvergenceCriterionCombined):
-    def IsSatisfied(self): #TODO: change to lower case
+    def is_satisfied(self):
         is_satisfied = True
         for convergence_criterion in self.convergence_criteria:
-            is_satisfied = is_satisfied and convergence_criterion.IsSatisfied()
+            is_satisfied = is_satisfied and convergence_criterion.is_satisfied()
 
         return is_satisfied

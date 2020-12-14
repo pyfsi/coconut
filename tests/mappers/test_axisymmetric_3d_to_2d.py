@@ -47,7 +47,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
 
             # initialize mapper to get model_part_out
             mapper = CreateInstance(parameters['mapper'])
-            model_part_out = mapper.Initialize(model_part_in, forward=False)
+            model_part_out = mapper.initialize(model_part_in, forward=False)
 
             # get mapped geometry from 3D model_part_out
             n_out = model_part_out.NumberOfNodes()
@@ -90,7 +90,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
 
             # initialize mapper to get model_part_from (3D)
             mapper = CreateInstance(parameters['mapper'])
-            model_part_from = mapper.Initialize(model_part_to, forward=False)
+            model_part_from = mapper.initialize(model_part_to, forward=False)
 
             for node in model_part_from.Nodes:
                 node.SetSolutionStepValue(var_s, 0, fun_s(node.X0))
@@ -128,7 +128,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
 
                 # get model_part_from (3D) from mapper
                 mapper = CreateInstance(parameters['mapper'])
-                model_part_from = mapper.Initialize(model_part_to, forward=False)
+                model_part_from = mapper.initialize(model_part_to, forward=False)
 
                 # for model_part_from (3D): get geometry, set historical variables
                 n_from = model_part_from.NumberOfNodes()

@@ -24,11 +24,11 @@ class TestCoupledSolverGaussSeidel(unittest.TestCase):
             settings = json.loads(parameter_file.read())
 
         coupled_solver = create_instance(settings)
-        coupled_solver.Initialize()
-        coupled_solver.Check()
+        coupled_solver.initialize()
+        coupled_solver.check()
 
-        coupled_solver.InitializeSolutionStep()
-        coupled_solver.SolveSolutionStep()
+        coupled_solver.initialize_solution_step()
+        coupled_solver.solve_solution_step()
         sol_x = [0.00000e+00, 3.09851e-07, 0.00000e+00, 0.00000e+00,
                  3.00094e-07, 0.00000e+00, 0.00000e+00, 2.90572e-07,
                  0.00000e+00, 0.00000e+00, 2.81238e-07, 0.00000e+00,
@@ -40,10 +40,10 @@ class TestCoupledSolverGaussSeidel(unittest.TestCase):
 
         np.testing.assert_allclose(coupled_solver.x.GetNumpyArray(), sol_x, rtol=1e-5)
 
-        coupled_solver.FinalizeSolutionStep()
-        coupled_solver.OutputSolutionStep()
+        coupled_solver.finalize_solution_step()
+        coupled_solver.output_solution_step()
 
-        coupled_solver.Finalize()
+        coupled_solver.finalize()
 
 if __name__ == '__main__':
     unittest.main()

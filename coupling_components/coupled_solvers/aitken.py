@@ -28,7 +28,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         dx_out.SetNumpyArray(dx)
         return dx_out
 
-    def Update(self, x_in, xt_in):
+    def update(self, x_in, xt_in):
         x = x_in.GetNumpyArray().reshape(-1, 1)
         xt = xt_in.GetNumpyArray().reshape(-1, 1)
         r = xt - x
@@ -43,29 +43,29 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
             self.omega = np.sign(self.omega) * min(abs(self.omega), self.omega_max)
             self.added = True
 
-    def SolveSolutionStep(self):
+    def solve_solution_step(self):
         # Initial value
         self.x = self.predictor.Predict(self.x)
         # First coupling iteration
-        self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x)
+        xt = self.solver_wrappers[1].solve_solution_step(self.y)
         r = xt - self.x
-        self.Update(self.x, xt)
-        self.FinalizeIteration(r)
+        self.update(self.x, xt)
+        self.finalize_Iteration(r)
         # Coupling iteration loop
-        while not self.convergence_criterion.IsSatisfied():
+        while not self.convergence_criterion.is_satisfied():
             self.x += self.Predict(r)
-            self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+            self.y = self.solver_wrappers[0].solve_solution_step(self.x)
+            xt = self.solver_wrappers[1].solve_solution_step(self.y)
             r = xt - self.x
-            self.Update(self.x, xt)
-            self.FinalizeIteration(r)
+            self.update(self.x, xt)
+            self.finalize_Iteration(r)
 
     def IsReady(self):
         return self.added
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.added = False
         self.rcurr = None

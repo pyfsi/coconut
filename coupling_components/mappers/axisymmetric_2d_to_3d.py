@@ -28,8 +28,8 @@ class MapperAxisymmetric2DTo3D(Component):
         if self.n_t < 6:  # hardcode minimum value?
             raise ValueError('minimum value for n_tangential is 6')
 
-    def Initialize(self, model_part_in, forward):
-        super().Initialize()
+    def initialize(self, model_part_in, forward):
+        super().initialize()
 
         if forward:
             self.n_from = model_part_in.NumberOfNodes()

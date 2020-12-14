@@ -7,7 +7,7 @@ import numpy as np
 import os.path as path
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperTubeRingmodel(parameters)
 
 
@@ -18,7 +18,7 @@ class SolverWrapperTubeRingmodel(Component):
         # Reading
         self.parameters = parameters
         self.settings = parameters["settings"]
-        self.working_directory = self.settings["working_directory"].GetString()
+        self.working_directory = self.settings["working_directory"]
         input_file = self.settings["input_file"].GetString()
         settings_file_name = path.join(self.working_directory, input_file)
         with open(settings_file_name, 'r') as settings_file:
@@ -78,19 +78,19 @@ class SolverWrapperTubeRingmodel(Component):
 
         # Debug
         self.debug = False  # Set on True to save input and output of each iteration of every time step
-        self.OutputSolutionStep()
+        self.output_solution_step()
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.k = 0
         self.n += 1
 
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input):
+    @tools.time_solve_solution_step
+    def solve_solution_step(self, interface_input):
         # Input
         input = interface_input.GetNumpyArray()
         self.p = input[:self.m] / self.rhof  # Kinematic pressure
@@ -124,13 +124,13 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_output.SetNumpyArray(self.disp.flatten())
         return self.interface_output.deepcopy()
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
 
-    def OutputSolutionStep(self):
+    def output_solution_step(self):
         if self.debug:
             file_name = self.working_directory + f"/Area_TS{self.n}.txt"
             with open(file_name, 'w') as file:

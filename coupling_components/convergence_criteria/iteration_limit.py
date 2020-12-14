@@ -14,14 +14,14 @@ class ConvergenceCriterionIterationLimit(Component):
 
         self.iteration = 0
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.iteration = 0
 
-    def Update(self, _unused):
+    def update(self, _unused):
         self.iteration += 1
 
-    def IsSatisfied(self):
-        # tools.PrintInfo("Iteration: " + str(self.iteration))
+    def is_satisfied(self):
+        # tools.print_Info("Iteration: " + str(self.iteration))
         return self.iteration >= self.maximum

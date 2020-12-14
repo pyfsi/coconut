@@ -33,11 +33,11 @@ tmp = {'type': 'mappers.nearest', 'settings': {'directions': ['x', 'y']}}
 mapper_parameters = {'type': 'mappers.interface', 'settings': tmp}
 
 mapper = create_instance(mapper_parameters)
-mapper.Initialize(interface_from, interface_to)
+mapper.initialize(interface_from, interface_to)
 
 mapper(interface_from, interface_to)
 
-mapper.PrintInfo('')
+mapper.print_Info('')
 
 print('------------------')
 
@@ -58,7 +58,7 @@ mapper_parameters = {"type": "mappers.nearest",
                      "settings": {"directions": ["x", "y"]}}
 
 mapper = create_instance(mapper_parameters)
-mapper.Initialize(mp1, mp2)
+mapper.initialize(mp1, mp2)
 
 
 

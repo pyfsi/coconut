@@ -15,7 +15,7 @@ Although the caculation is steady, a `delta_t` is still required. Its value is a
 The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
 The paramter `q` is not used no as there is only one time step. Note that in a steady caculation, the models `ls` (IQN-ILS) and `mv` (IQN-MVJ) are identical.
 
-## Predictors
+## Predictor
 
 A predictor is still required, but not used as only one time step is calculated.
 

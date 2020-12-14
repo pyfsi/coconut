@@ -56,10 +56,10 @@ class TestPredictorLegacy(unittest.TestCase):
             settings = json.loads(parameter_file.read())
 
         predictor_legacy = create_instance(settings)
-        predictor_legacy.Initialize(interface)
+        predictor_legacy.initialize(interface)
 
         # Test predictor: first prediction needs to be equal to initialized value
-        predictor_legacy.InitializeSolutionStep()
+        predictor_legacy.initialize_solution_step()
         prediction = predictor_legacy.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -67,11 +67,11 @@ class TestPredictorLegacy(unittest.TestCase):
             self.assertAlmostEqual(p1, prediction_as_array[i])
         interface_as_array = a1 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_legacy.Update(interface)
-        predictor_legacy.FinalizeSolutionStep()
+        predictor_legacy.update(interface)
+        predictor_legacy.finalize_solution_step()
 
         # Test predictor: second prediction needs to be linear
-        predictor_legacy.InitializeSolutionStep()
+        predictor_legacy.initialize_solution_step()
         prediction = predictor_legacy.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -79,11 +79,11 @@ class TestPredictorLegacy(unittest.TestCase):
             self.assertAlmostEqual(p2, prediction_as_array[i])
         interface_as_array = a2 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_legacy.Update(interface)
-        predictor_legacy.FinalizeSolutionStep()
+        predictor_legacy.update(interface)
+        predictor_legacy.finalize_solution_step()
 
         # Test predictor: third prediction needs to be legacy
-        predictor_legacy.InitializeSolutionStep()
+        predictor_legacy.initialize_solution_step()
         prediction = predictor_legacy.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()

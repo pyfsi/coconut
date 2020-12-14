@@ -19,14 +19,14 @@ class ConvergenceCriterionRelativeNorm(Component):
         self.last_norm = 0.0
         self.is_initial_norm_set = False
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.initial_norm = 0.0
         self.last_norm = 0.0
         self.is_initial_norm_set = False
 
-    def Update(self, r):
+    def update(self, r):
         self.last_norm = np.linalg.norm(r.get_interface_data(), self.order)
         if not self.is_initial_norm_set:
             self.initial_norm = self.last_norm
@@ -34,8 +34,8 @@ class ConvergenceCriterionRelativeNorm(Component):
             if self.initial_norm < np.finfo(type(self.initial_norm)).eps:
                 raise Exception("Initial norm is too small")
 
-    def IsSatisfied(self):
-        # tools.PrintInfo("Norm: " + str(self.last_norm))
+    def is_satisfied(self):
+        # tools.print_Info("Norm: " + str(self.last_norm))
         if not self.is_initial_norm_set:
             return False
         else:

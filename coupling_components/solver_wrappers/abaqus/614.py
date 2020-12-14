@@ -51,7 +51,7 @@ class SolverWrapperAbaqus614(Component):
         self.cores = self.settings['cores'].GetInt()  # number of cpus Abaqus has to use
         self.dimensions = self.settings['dimensions'].GetInt()
         if self.dimensions == 2:
-            tools.Print("Warning for Axisymmetric cases:\n\tIn Abaqus these have to be constructed around the y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be accomplished by using an appropriate mapper.", layout='warning')
+            tools.print("Warning for Axisymmetric cases:\n\tIn Abaqus these have to be constructed around the y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be accomplished by using an appropriate mapper.", layout='warning')
         self.array_size = self.settings["arraysize"].GetInt()
         self.delta_t = self.settings["delta_t"].GetDouble()
         self.timestep_start = self.settings["timestep_start"].GetDouble()
@@ -428,37 +428,37 @@ class SolverWrapperAbaqus614(Component):
                     if bool_A:
                         if not bool_B:
                             if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > tol_geom*geom_diff[i]:
-                                tools.Print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
+                                tools.print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
                                             f"differ by more than {tol_geom*100}% of the bounding box for the complete interface geometry in the {i}-direction", layout='red')
-                                tools.Print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
-                                tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
+                                tools.print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
+                                tools.print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                         else:
                             if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > abs_tol_plane:
-                                tools.Print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
+                                tools.print(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
                                             f"differ by more than {abs_tol_plane}m in the {i}-direction", layout='red')
-                                tools.Print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
-                                tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
+                                tools.print(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
+                                tools.print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
                     else:
                         if np.abs(mp.min[i]-mp_input.min[i]) > tol_BB*ref[i]:
-                            tools.Print(
+                            tools.print(
                                 f"Warning: The minima of the bounding boxes of the input and output for {mp.thread_name} "
                                 f"differ by more than {tol_BB*100}% of the corresponding bounding box in the {i}-direction", layout='red')
-                            tools.Print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
-                            tools.Print(f"Output interface bounding box: {mp.min} to {mp.max}")
+                            tools.print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
+                            tools.print(f"Output interface bounding box: {mp.min} to {mp.max}")
                         if np.abs(mp.max[i] - mp_input.max[i]) > tol_BB * ref[i]:
-                            tools.Print(
+                            tools.print(
                                 f"Warning: The maxima of the bounding boxes of the input and output for {mp.thread_name} "
                                 f"differ by more than {tol_BB*100}% of the corresponding bounding box in the {i}-direction", layout='red')
-                            tools.Print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
-                            tools.Print(f"Output interface bounding box: {mp.min} to {mp.max}")
+                            tools.print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
+                            tools.print(f"Output interface bounding box: {mp.min} to {mp.max}")
                         if np.abs((mp.max[i]+mp.min[i])/2.0 - (mp_input.max[i]+mp_input.min[i])/2.0) > tol_center * ref[i]:
-                            tools.Print(
+                            tools.print(
                                 f"Warning: The geometric centers of the input and output for {mp.thread_name} "
                                 f"differ by more than {tol_center*100}% of the corresponding bounding box in the {i}-direction", layout='red')
-                            tools.Print(f"Input interface center: {(mp_input.max + mp_input.min) / 2.0}")
-                            tools.Print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
-                            tools.Print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
-                            tools.Print(f"Output interface bounding box: {mp.min} to {mp.max}")
+                            tools.print(f"Input interface center: {(mp_input.max + mp_input.min) / 2.0}")
+                            tools.print(f"Output interface center: {(mp.max + mp.min) / 2.0}")
+                            tools.print(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
+                            tools.print(f"Output interface bounding box: {mp.min} to {mp.max}")
 
             # self.write_Nodes_test()  # This should be commented out in the final code
 
@@ -477,17 +477,17 @@ class SolverWrapperAbaqus614(Component):
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.iteration = 0
         self.timestep += 1
 
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input):
+    @tools.Timesolve_solution_step
+    def solve_solution_step(self, interface_input):
         self.iteration += 1
 
         # store incoming loads
@@ -511,9 +511,9 @@ class SolverWrapperAbaqus614(Component):
         while not bool_completed and attempt < 10000:
             attempt += 1
             if attempt > 1:
-                tools.Print(f"Warning attempt {attempt-1} in AbaqusSolver failed, new attempt in one minute", layout='warning')
+                tools.print(f"Warning attempt {attempt-1} in AbaqusSolver failed, new attempt in one minute", layout='warning')
                 time.sleep(60)
-                tools.Print(f"Starting attempt {attempt}")
+                tools.print(f"Starting attempt {attempt}")
             if self.timestep == 1:
                 cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"
                 cmd2 = f"abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1}" \
@@ -537,7 +537,7 @@ class SolverWrapperAbaqus614(Component):
                     if any(x in line for x in ["Licensing error", "license error", "Error checking out Abaqus license"]):
                         bool_lic = 0
             if not bool_lic:
-                tools.Print("Abaqus licensing error", layout='fail')
+                tools.print("Abaqus licensing error", layout='fail')
             elif "COMPLETED" in line:  # Check final line for completed
                 bool_completed = 1
             elif bool_lic:  # Final line did not contain "COMPLETED" but also no licensing error detected
@@ -587,8 +587,8 @@ class SolverWrapperAbaqus614(Component):
 
         return self.interface_output
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
         if self.timestep and (self.timestep-1) % self.settings['save_iterations'].GetInt():
             to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
                                     "Surface0Cpu0Input.dat", "Surface0Output.dat"]
@@ -597,8 +597,8 @@ class SolverWrapperAbaqus614(Component):
                 cmd.append(f"rm CSM_Time{self.timestep - 1}{suffix}")
             self.run_shell(self.dir_csm, cmd, name="Remove_previous")
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
 
     def GetInterfaceInput(self):
         return self.interface_input.deepcopy()

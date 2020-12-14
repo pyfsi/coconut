@@ -1,5 +1,5 @@
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import create_instance, PrintStructureInfo
+from coconut.coupling_components.tools import create_instance, print_components_info
 
 
 class ConvergenceCriterionCombined(Component):
@@ -12,47 +12,47 @@ class ConvergenceCriterionCombined(Component):
             self.convergence_criteria.append(create_instance(criterion))
 
 
-    def Initialize(self): #TODO: change to lower case
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
         for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.Initialize()
+            convergence_criterion.initialize()
 
-    def Finalize(self): #TODO: change to lower case
-        super().Finalize()
-
-        for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.Finalize()
-
-    def InitializeSolutionStep(self): #TODO: change to lower case
-        super().InitializeSolutionStep()
+    def finalize(self):
+        super().finalize()
 
         for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.InitializeSolutionStep()
+            convergence_criterion.finalize()
 
-    def FinalizeSolutionStep(self): #TODO: change to lower case
-        super().FinalizeSolutionStep()
-
-        for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.FinalizeSolutionStep()
-
-    def OutputSolutionStep(self):
-        super().OutputSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.OutputSolutionStep()
+            convergence_criterion.initialize_solution_step()
 
-    def Check(self):
-        super().Check()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
         for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.Check()
+            convergence_criterion.finalize_solution_step()
 
-    def PrintInfo(self, pre):
-        super().PrintInfo(pre)
+    def output_solution_step(self):
+        super().output_solution_step()
 
-        PrintStructureInfo(pre, self.convergence_criteria)
-
-    def Update(self, r):
         for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.Update(r)
+            convergence_criterion.output_solution_step()
+
+    def check(self):
+        super().check()
+
+        for convergence_criterion in self.convergence_criteria:
+            convergence_criterion.check()
+
+    def print_Info(self, pre):
+        super().print_Info(pre)
+
+        print_components_info(pre, self.convergence_criteria)
+
+    def update(self, r):
+        for convergence_criterion in self.convergence_criteria:
+            convergence_criterion.update(r)

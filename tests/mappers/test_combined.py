@@ -36,7 +36,7 @@ class TestMapperCombined(unittest.TestCase):
             data = []
             for mapper_name in ['mapper_nearest', 'mapper_combined_a', 'mapper_combined_b']:
                 mapper = CreateInstance(parameters[mapper_name])
-                mapper.Initialize(model_part_from, model_part_to)
+                mapper.initialize(model_part_from, model_part_to)
                 mapper((model_part_from, var_from), (model_part_to, var_to))
 
                 values = []

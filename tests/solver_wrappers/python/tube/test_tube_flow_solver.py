@@ -44,28 +44,28 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
             solver_2 = CreateInstance(parameters_solver)
             solvers = [solver_1, solver_2]
             for solver in solvers:
-                solver.Initialize()
-                solver.InitializeSolutionStep()
+                solver.initialize()
+                solver.initialize_solution_step()
 
             # change solver_1 to end position and solve
             mp = solver_1.model['wall']
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output1_end = solver_1.SolveSolutionStep(solver_1.GetInterfaceInput()).deepcopy()
+            output1_end = solver_1.solve_solution_step(solver_1.GetInterfaceInput()).deepcopy()
 
             # change solver_2 to intermediate position and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., -get_dy(node.X0), 0.])
-            solver_2.SolveSolutionStep(solver_2.GetInterfaceInput()).deepcopy()
+            solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
 
             # change solver_2 to end position and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output2_end = solver_2.SolveSolutionStep(solver_2.GetInterfaceInput()).deepcopy()
+            output2_end = solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
 
             for solver in solvers:
-                solver.FinalizeSolutionStep()
-                solver.Finalize()
+                solver.finalize_solution_step()
+                solver.finalize()
 
             # compare
             a1 = output1_end.GetNumpyArray()

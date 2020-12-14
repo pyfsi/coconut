@@ -9,7 +9,7 @@ from coconut.coupling_components import tools
     and just refer to actual solver wrapper in SolverWrapperMapped
 - all Interfaces are stored in this mapper, e.g. self.interface_output_to and 3 others;
     I see no reason for this; furthermore, it is only useful to store it if you take copies all the time
-- OutputSolutionStep is barely used; what's the deal with it??
+- output_solution_step is barely used; what's the deal with it??
 """
 
 
@@ -31,42 +31,42 @@ class SolverWrapperMapped(Component):
         # run time
         self.run_time = 0.0
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-        self.solver_wrapper.Initialize()
+        self.solver_wrapper.initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
-        self.solver_wrapper.InitializeSolutionStep()
+        self.solver_wrapper.initialize_solution_step()
 
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input_from):
+    @tools.Timesolve_solution_step
+    def solve_solution_step(self, interface_input_from):
         self.interface_input_from = interface_input_from
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
-        self.interface_output_from = self.solver_wrapper.SolveSolutionStep(self.interface_input_to)
+        self.interface_output_from = self.solver_wrapper.solve_solution_step(self.interface_input_to)
         self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
         return self.interface_output_to
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
-        self.solver_wrapper.FinalizeSolutionStep()
+        self.solver_wrapper.finalize_solution_step()
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
 
-        self.solver_wrapper.Finalize()
-        self.mapper_interface_input.Finalize()
-        self.mapper_interface_output.Finalize()
+        self.solver_wrapper.finalize()
+        self.mapper_interface_input.finalize()
+        self.mapper_interface_output.finalize()
 
-    def OutputSolutionStep(self):
-        super().OutputSolutionStep()
+    def output_solution_step(self):
+        super().output_solution_step()
 
-        self.solver_wrapper.OutputSolutionStep()
-        self.mapper_interface_input.OutputSolutionStep()
-        self.mapper_interface_output.OutputSolutionStep()
+        self.solver_wrapper.output_solution_step()
+        self.mapper_interface_input.output_solution_step()
+        self.mapper_interface_output.output_solution_step()
 
     def GetInterfaceInput(self):
         # Does not contain most recent data
@@ -79,7 +79,7 @@ class SolverWrapperMapped(Component):
         self.interface_input_to = self.solver_wrapper.GetInterfaceInput()
 
         self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
-        self.mapper_interface_input.Initialize(self.interface_input_from, self.interface_input_to)
+        self.mapper_interface_input.initialize(self.interface_input_from, self.interface_input_to)
 
     def GetInterfaceOutput(self):
         self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
@@ -92,13 +92,13 @@ class SolverWrapperMapped(Component):
         self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
 
         self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
-        self.mapper_interface_output.Initialize(self.interface_output_from, self.interface_output_to)
+        self.mapper_interface_output.initialize(self.interface_output_from, self.interface_output_to)
 
-    def PrintInfo(self, pre):
-        tools.Print(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
-        pre = tools.UpdatePre(pre)
-        self.solver_wrapper.PrintInfo(pre + '├─')
-        tools.Print(pre, '├─', "Input mapper:")
-        self.mapper_interface_input.PrintInfo(pre + '│ └─')
-        tools.Print(pre, '└─', "Output mapper:")
-        self.mapper_interface_output.PrintInfo(pre + '  └─')
+    def print_components_info(self, pre):
+        tools.print(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
+        pre = tools.update_pre(pre)
+        self.solver_wrapper.print_components_info(pre + '├─')
+        tools.print(pre, '├─', "Input mapper:")
+        self.mapper_interface_input.print_components_info(pre + '│ └─')
+        tools.print(pre, '└─', "Output mapper:")
+        self.mapper_interface_output.print_components_info(pre + '  └─')

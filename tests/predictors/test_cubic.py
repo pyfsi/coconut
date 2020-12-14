@@ -59,10 +59,10 @@ class TestPredictorCubic(unittest.TestCase):
             settings = json.loads(parameter_file.read())
 
         predictor_cubic = create_instance(settings)
-        predictor_cubic.Initialize(interface)
+        predictor_cubic.initialize(interface)
 
         # Test predictor: first prediction needs to be equal to initialized value
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.initialize_solution_step()
         prediction = predictor_cubic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -70,11 +70,11 @@ class TestPredictorCubic(unittest.TestCase):
             self.assertAlmostEqual(p1, prediction_as_array[i])
         interface_as_array = a1 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
 
         # Test predictor: second prediction needs to be linear
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.initialize_solution_step()
         prediction = predictor_cubic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -82,11 +82,11 @@ class TestPredictorCubic(unittest.TestCase):
             self.assertAlmostEqual(p2, prediction_as_array[i])
         interface_as_array = a2 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
 
         # Test predictor: third prediction needs to be quadratic
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.initialize_solution_step()
         prediction = predictor_cubic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -94,11 +94,11 @@ class TestPredictorCubic(unittest.TestCase):
             self.assertAlmostEqual(p3, prediction_as_array[i])
         interface_as_array = a3 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
         
         # Test predictor: fourth prediction needs to be cubic
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.initialize_solution_step()
         prediction = predictor_cubic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()

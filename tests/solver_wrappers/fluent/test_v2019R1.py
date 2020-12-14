@@ -81,17 +81,17 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             mp0 = solver.GetInterfaceInput().deepcopy().model['beamoutside_nodes']
 
             # update position by iterating once in solver
-            solver.Initialize()
-            solver.InitializeSolutionStep()
-            solver.SolveSolutionStep(solver.GetInterfaceInput())
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+            solver.initialize()
+            solver.initialize_solution_step()
+            solver.solve_solution_step(solver.GetInterfaceInput())
+            solver.finalize_solution_step()
+            solver.finalize()
 
             # create solver to check new coordinates
             par_solver['settings'].SetInt('timestep_start', 1)
             solver = CreateInstance(par_solver)
-            solver.Initialize()
-            solver.Finalize()
+            solver.initialize()
+            solver.finalize()
 
             # check if correct displacement was given
             mp = solver.model['beamoutside_nodes']
@@ -109,8 +109,8 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             for cores in [1, multiprocessing.cpu_count()]:
                 par_solver['settings'].SetInt('cores', cores)
                 solver = CreateInstance(par_solver)
-                solver.Initialize()
-                solver.Finalize()
+                solver.initialize()
+                solver.finalize()
                 model_parts.append(deepcopy(solver.model['beamoutside_nodes']))
 
             # compare Nodes in ModelParts between both solvers
@@ -130,27 +130,27 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
             par_solver['settings'].SetInt('flow_iterations', 500)
             solver = CreateInstance(par_solver)
-            solver.Initialize()
-            solver.InitializeSolutionStep()
+            solver.initialize()
+            solver.initialize_solution_step()
 
             # change grid to position 1
             mp = solver.model['beamoutside_nodes']
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output1 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 
             # change grid to position 2
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., -get_dy(node.X0), 0.])
-            output2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output2 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 
             # change grid back to position 1
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output3 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output3 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+            solver.finalize_solution_step()
+            solver.finalize()
 
             # normalize data and compare
             a1 = output1.GetNumpyArray()
@@ -179,15 +179,15 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             solver = CreateInstance(par_solver)
 
             # run solver for 4 timesteps
-            solver.Initialize()
+            solver.initialize()
             for i in range(4):
                 mp = solver.model['beamoutside_nodes']
                 for node in mp.Nodes:
                     node.SetSolutionStepValue(displacement, 0, [0., i * get_dy(node.X0), 0.])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            solver.Finalize()
+                solver.initialize_solution_step()
+                solver.solve_solution_step(solver.GetInterfaceInput())
+                solver.finalize_solution_step()
+            solver.finalize()
 
             # get data for solver without restart
             interface1 = solver.GetInterfaceOutput().deepcopy()
@@ -198,15 +198,15 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             solver = CreateInstance(par_solver)
 
             # run solver for 2 more timesteps
-            solver.Initialize()
+            solver.initialize()
             for i in range(2, 4):
                 mp = solver.model['beamoutside_nodes']
                 for node in mp.Nodes:
                     node.SetSolutionStepValue(displacement, 0, [0., i * get_dy(node.X0), 0.])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            solver.Finalize()
+                solver.initialize_solution_step()
+                solver.solve_solution_step(solver.GetInterfaceInput())
+                solver.finalize_solution_step()
+            solver.finalize()
 
             # get data for solver with restart
             interface2 = solver.GetInterfaceOutput().deepcopy()
@@ -283,17 +283,17 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             mp0 = solver.GetInterfaceInput().deepcopy().model['wall_nodes']
 
             # update position by iterating once in solver
-            solver.Initialize()
-            solver.InitializeSolutionStep()
-            solver.SolveSolutionStep(solver.GetInterfaceInput())
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+            solver.initialize()
+            solver.initialize_solution_step()
+            solver.solve_solution_step(solver.GetInterfaceInput())
+            solver.finalize_solution_step()
+            solver.finalize()
 
             # create solver to check new coordinates
             par_solver['settings'].SetInt('timestep_start', 1)
             solver = CreateInstance(par_solver)
-            solver.Initialize()
-            solver.Finalize()
+            solver.initialize()
+            solver.finalize()
 
             # check if correct displacement was given
             mp = solver.model['wall_nodes']
@@ -314,8 +314,8 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             for cores in [1, multiprocessing.cpu_count()]:
                 par_solver['settings'].SetInt('cores', cores)
                 solver = CreateInstance(par_solver)
-                solver.Initialize()
-                solver.Finalize()
+                solver.initialize()
+                solver.finalize()
                 model_parts.append(deepcopy(solver.model['wall_nodes']))
 
             # compare Nodes in ModelParts between both solvers
@@ -334,30 +334,30 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
             par_solver['settings'].SetInt('flow_iterations', 500)
             solver = CreateInstance(par_solver)
-            solver.Initialize()
-            solver.InitializeSolutionStep()
+            solver.initialize()
+            solver.initialize_solution_step()
 
             # change grid to position 1
             mp = solver.model['wall_nodes']
             for node in mp.Nodes:
                 dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
                 node.SetSolutionStepValue(displacement, 0, [0., dy, dz])
-            output1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output1 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 
             # change grid to position 2
             for node in mp.Nodes:
                 dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
                 node.SetSolutionStepValue(displacement, 0, [0., -dy, -dz])
-            output2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output2 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 
             # change grid back to position 1
             for node in mp.Nodes:
                 dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
                 node.SetSolutionStepValue(displacement, 0, [0., dy, dz])
-            output3 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output3 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
 
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+            solver.finalize_solution_step()
+            solver.finalize()
 
             # normalize data and compare
             a1 = output1.GetNumpyArray()
@@ -386,16 +386,16 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             solver = CreateInstance(par_solver)
 
             # run solver for 4 timesteps
-            solver.Initialize()
+            solver.initialize()
             for i in range(4):
                 mp = solver.model['wall_nodes']
                 for node in mp.Nodes:
                     dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
                     node.SetSolutionStepValue(displacement, 0, [0., i * dy, i * dz])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            solver.Finalize()
+                solver.initialize_solution_step()
+                solver.solve_solution_step(solver.GetInterfaceInput())
+                solver.finalize_solution_step()
+            solver.finalize()
 
             # get data for solver without restart
             interface1 = solver.GetInterfaceOutput().deepcopy()
@@ -406,16 +406,16 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             solver = CreateInstance(par_solver)
 
             # run solver for 2 more timesteps
-            solver.Initialize()
+            solver.initialize()
             for i in range(2, 4):
                 mp = solver.model['wall_nodes']
                 for node in mp.Nodes:
                     dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
                     node.SetSolutionStepValue(displacement, 0, [0., i * dy, i * dz])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            solver.Finalize()
+                solver.initialize_solution_step()
+                solver.solve_solution_step(solver.GetInterfaceInput())
+                solver.finalize_solution_step()
+            solver.finalize()
 
             # get data for solver with restart
             interface2 = solver.GetInterfaceOutput().deepcopy()

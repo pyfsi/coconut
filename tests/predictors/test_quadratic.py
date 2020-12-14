@@ -57,10 +57,10 @@ class TestPredictorQuadratic(unittest.TestCase):
             settings = json.loads(parameter_file.read())
 
         predictor_quadratic = create_instance(settings)
-        predictor_quadratic.Initialize(interface)
+        predictor_quadratic.initialize(interface)
 
         # Test predictor: first prediction needs to be equal to initialized value
-        predictor_quadratic.InitializeSolutionStep()
+        predictor_quadratic.initialize_solution_step()
         prediction = predictor_quadratic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -68,11 +68,11 @@ class TestPredictorQuadratic(unittest.TestCase):
             self.assertAlmostEqual(p1, prediction_as_array[i])
         interface_as_array = a1 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_quadratic.Update(interface)
-        predictor_quadratic.FinalizeSolutionStep()
+        predictor_quadratic.update(interface)
+        predictor_quadratic.finalize_solution_step()
 
         # Test predictor: second prediction needs to be linear
-        predictor_quadratic.InitializeSolutionStep()
+        predictor_quadratic.initialize_solution_step()
         prediction = predictor_quadratic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()
@@ -80,11 +80,11 @@ class TestPredictorQuadratic(unittest.TestCase):
             self.assertAlmostEqual(p2, prediction_as_array[i])
         interface_as_array = a2 * np.ones_like(prediction_as_array)
         interface.set_interface_data(interface_as_array)
-        predictor_quadratic.Update(interface)
-        predictor_quadratic.FinalizeSolutionStep()
+        predictor_quadratic.update(interface)
+        predictor_quadratic.finalize_solution_step()
 
         # Test predictor: third prediction needs to be quadratic
-        predictor_quadratic.InitializeSolutionStep()
+        predictor_quadratic.initialize_solution_step()
         prediction = predictor_quadratic.predict(interface)
         self.assertIsInstance(prediction, Interface)
         prediction_as_array = prediction.get_interface_data()

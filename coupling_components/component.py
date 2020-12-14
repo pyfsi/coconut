@@ -6,13 +6,13 @@ class Component(object):
         self.initialized = False
         self.initialized_solution_step = False
 
-    def Initialize(self):
+    def initialize(self):
         if self.initialized:
             raise Exception("Already initialized")
         else:
             self.initialized = True
 
-    def Finalize(self):
+    def finalize(self):
         if self.initialized_solution_step:
             raise Exception("Solution step not finalized")
         if self.initialized:
@@ -20,7 +20,7 @@ class Component(object):
         else:
             raise Exception("Not initialized")
 
-    def InitializeSolutionStep(self):
+    def initialize_solution_step(self):
         if self.initialized:
             if self.initialized_solution_step:
                 raise Exception("Already solution step initialized")
@@ -29,7 +29,7 @@ class Component(object):
         else:
             raise Exception("Not initialized")
 
-    def FinalizeSolutionStep(self):
+    def finalize_solution_step(self):
         if self.initialized:
             if self.initialized_solution_step:
                 self.initialized_solution_step = False
@@ -38,11 +38,11 @@ class Component(object):
         else:
             raise Exception("Not initialized")
 
-    def OutputSolutionStep(self):
+    def output_solution_step(self):
         pass
 
-    def Check(self):
+    def check(self):
         pass
 
-    def PrintInfo(self, pre):
-        tools.Print(pre, "The component ", self.__class__.__name__)
+    def print_components_info(self, pre):
+        tools.print(pre, "The component ", self.__class__.__name__)

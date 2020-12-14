@@ -29,8 +29,8 @@ class ModelMV(Component):
         self.rrprev = []
         self.qqprev = []
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
         self.v = np.empty((self.size_in, 0))
         self.w = np.empty((self.size_out, 0))
@@ -46,7 +46,7 @@ class ModelMV(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.Print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
+                tools.print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
                 self.v = np.delete(self.v, i, 1)
                 self.w = np.delete(self.w, i, 1)
             else:
@@ -107,8 +107,8 @@ class ModelMV(Component):
     def IsReady(self):
         return self.v.shape[1] + len(self.wprev)
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.rref = None
         self.xtref = None
@@ -116,8 +116,8 @@ class ModelMV(Component):
         self.w = np.empty((self.size_out, 0))
         self.added = False
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
         self.wprev = [self.w] + self.wprev
         qq, rr = np.linalg.qr(self.v, mode='reduced')

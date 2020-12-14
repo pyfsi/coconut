@@ -42,21 +42,21 @@ class MapperCombined(Component):
 
         # TODO: combined mapper which has 0 interpolators? not possible now
 
-    def Initialize(self, model_part_from, model_part_to):
-        super().Initialize()
+    def initialize(self, model_part_from, model_part_to):
+        super().initialize()
 
         # initialize upstream transformers
         mps_from = [model_part_from]
         for i in range(self.index):
-            mps_from.append(self.mappers[i].Initialize(mps_from[-1], forward=True))
+            mps_from.append(self.mappers[i].initialize(mps_from[-1], forward=True))
 
         # initialize downstream transformers
         mps_to = [model_part_to]
         for i in range(len(self.mappers) - 1, self.index, -1):
-            mps_to.append(self.mappers[i].Initialize(mps_to[-1], forward=False))
+            mps_to.append(self.mappers[i].initialize(mps_to[-1], forward=False))
 
         # initialize interpolator
-        self.mappers[self.index].Initialize(mps_from[-1], mps_to[-1])
+        self.mappers[self.index].initialize(mps_from[-1], mps_to[-1])
 
         # store inner ModelParts
         mps_to.reverse()
@@ -75,10 +75,10 @@ class MapperCombined(Component):
                 var_to = args_from[1]
             mapper((mps_from[i], var_from), (mps_to[i], var_to))
 
-    def OutputSolutionStep(self):
+    def output_solution_step(self):
         for mapper in self.mappers:
-            mapper.OutputSolutionStep()
+            mapper.output_solution_step()
 
-    def PrintInfo(self, pre):
-        tools.Print(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
-        tools.PrintStructureInfo(pre, self.mappers)
+    def print_components_info(self, pre):
+        tools.print(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
+        tools.print_components_info(pre, self.mappers)

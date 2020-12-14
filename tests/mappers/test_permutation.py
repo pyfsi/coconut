@@ -23,13 +23,13 @@ class TestMapperPermutation(unittest.TestCase):
 
             # model_part_from given
             mapper = CreateInstance(parameters['mapper'])
-            model_part_to = mapper.Initialize(model_part_from, forward=True)
+            model_part_to = mapper.initialize(model_part_from, forward=True)
             node = model_part_to.Nodes[0]
             self.assertListEqual([node.X, node.Y, node.Z], [2., 0., 1.])
 
             # model_part_to given
             mapper = CreateInstance(parameters['mapper'])
-            model_part_from = mapper.Initialize(model_part_to, forward=False)
+            model_part_from = mapper.initialize(model_part_to, forward=False)
             node = model_part_from.Nodes[0]
             self.assertListEqual([node.X, node.Y, node.Z], [0., 1., 2.])
 
@@ -45,7 +45,7 @@ class TestMapperPermutation(unittest.TestCase):
                 node.SetSolutionStepValue(var, 0, np.random.rand())
 
             mapper = CreateInstance(parameters['mapper'])
-            model_part_to = mapper.Initialize(model_part_from, forward=True)
+            model_part_to = mapper.initialize(model_part_from, forward=True)
             mapper((model_part_from, var), (model_part_to, var))
 
             for node_from, node_to in zip(model_part_from.Nodes, model_part_to.Nodes):
@@ -65,7 +65,7 @@ class TestMapperPermutation(unittest.TestCase):
                 node.SetSolutionStepValue(var, 0, list(np.random.rand(3)))
 
             mapper = CreateInstance(parameters['mapper'])
-            model_part_to = mapper.Initialize(model_part_from, forward=True)
+            model_part_to = mapper.initialize(model_part_from, forward=True)
             mapper((model_part_from, var), (model_part_to, var))
 
             for node_from, node_to in zip(model_part_from.Nodes, model_part_to.Nodes):

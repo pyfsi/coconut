@@ -46,28 +46,28 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
             solver_2 = CreateInstance(parameters_solver)
             solvers = [solver_1, solver_2]
             for solver in solvers:
-                solver.Initialize()
-                solver.InitializeSolutionStep()
+                solver.initialize()
+                solver.initialize_solution_step()
 
             # change solver_1 to end pressure and solve
             mp = solver_1.model['wall']
             for node in mp.Nodes:
                 node.SetSolutionStepValue(pressure, 0, get_dp(node.X0))
-            output1_end = solver_1.SolveSolutionStep(solver_1.GetInterfaceInput()).deepcopy()
+            output1_end = solver_1.solve_solution_step(solver_1.GetInterfaceInput()).deepcopy()
 
             # change solver_2 to intermediate pressure and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(pressure, 0, 0.5 * get_dp(node.X0))
-            solver_2.SolveSolutionStep(solver_2.GetInterfaceInput()).deepcopy()
+            solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
 
             # change solver_2 to end pressure and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(pressure, 0, get_dp(node.X0))
-            output2_end = solver_2.SolveSolutionStep(solver_2.GetInterfaceInput()).deepcopy()
+            output2_end = solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
 
             for solver in solvers:
-                solver.FinalizeSolutionStep()
-                solver.Finalize()
+                solver.finalize_solution_step()
+                solver.finalize()
 
             # compare
             a1 = output1_end.GetNumpyArray()

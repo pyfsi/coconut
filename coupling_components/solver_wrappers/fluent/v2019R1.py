@@ -30,6 +30,8 @@ class SolverWrapperFluent2019R1(Component):
         path_src = os.path.realpath(os.path.dirname(__file__))
         self.cores = self.settings['cores'].GetInt()
         self.case_file = self.settings['case_file'].GetString()  # file must be in self.dir_cfd
+        if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
+            raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face'].GetInt()
         self.dimensions = self.settings['dimensions'].GetInt()
         self.unsteady = self.settings['unsteady'].GetBool()
@@ -230,13 +232,13 @@ class SolverWrapperFluent2019R1(Component):
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
-        self.OutputSolutionStep()
+        self.output_solution_step()
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.iteration = 0
         self.timestep += 1
@@ -244,8 +246,8 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('next')
         self.wait_message('next_ready')
 
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input):
+    @tools.Timesolve_solution_step
+    def solve_solution_step(self, interface_input):
         self.iteration += 1
 
         # store incoming displacements
@@ -316,15 +318,15 @@ class SolverWrapperFluent2019R1(Component):
         # return interface_output object
         return self.interface_output.deepcopy()
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
         if not self.timestep % self.settings['save_iterations'].GetInt():
             self.send_message('save')
             self.wait_message('save_ready')
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()

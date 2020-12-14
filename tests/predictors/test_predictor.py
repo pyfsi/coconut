@@ -54,25 +54,25 @@ class TestPredictor(unittest.TestCase):
         with open(parameter_file_name, 'r') as parameter_file:
             settings = json.loads(parameter_file.read())
         predictor_cubic = create_instance(settings)
-        predictor_cubic.Initialize(interface)
+        predictor_cubic.initialize(interface)
         interface_as_array = interface.get_interface_data()
 
         # Test predictor: a linear relation should be predicted in the same way
         # by linear, quadratic and cubic predictors
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.initialize_solution_step()
         interface.set_interface_data(a1 * interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
+        predictor_cubic.initialize_solution_step()
         interface.set_interface_data(a2 * interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
+        predictor_cubic.initialize_solution_step()
         interface.set_interface_data(a3 * interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
 
-        predictor_cubic.InitializeSolutionStep()
+        predictor_cubic.initialize_solution_step()
         prediction_linear = predictor_cubic.linear(interface).get_interface_data()
         prediction_quadratic = predictor_cubic.quadratic(interface).get_interface_data()
         prediction_cubic = predictor_cubic.cubic(interface).get_interface_data()
@@ -83,22 +83,22 @@ class TestPredictor(unittest.TestCase):
 
         # Test predictor: error if no update
         with self.assertRaises(Exception):
-            predictor_cubic.InitializeSolutionStep()
-            predictor_cubic.FinalizeSolutionStep()
+            predictor_cubic.initialize_solution_step()
+            predictor_cubic.finalize_solution_step()
 
         # Test predictor: error if updated twice
         with self.assertRaises(Exception):
-            predictor_cubic.InitializeSolutionStep()
+            predictor_cubic.initialize_solution_step()
             prediction = predictor_cubic.predict(interface)
             prediction = predictor_cubic.predict(interface)
-            predictor_cubic.FinalizeSolutionStep()
+            predictor_cubic.finalize_solution_step()
 
         # Test predictor: error if prediction after update
         with self.assertRaises(Exception):
-            predictor_cubic.InitializeSolutionStep()
-            prediction = predictor_cubic.Update(interface)
+            predictor_cubic.initialize_solution_step()
+            prediction = predictor_cubic.update(interface)
             prediction = predictor_cubic.predict(interface)
-            predictor_cubic.FinalizeSolutionStep()
+            predictor_cubic.finalize_solution_step()
 
 
 if __name__ == '__main__':

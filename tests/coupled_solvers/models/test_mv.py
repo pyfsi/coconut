@@ -47,8 +47,8 @@ class TestModelMV(unittest.TestCase):
         mv = CreateInstance(settings)
         mv.size_in = mv.size_out = m
         mv.out = interface.deepcopy()
-        mv.Initialize()
-        mv.InitializeSolutionStep()
+        mv.initialize()
+        mv.initialize_solution_step()
 
         r = interface.deepcopy()
         xt = interface.deepcopy()
@@ -219,9 +219,9 @@ class TestModelMV(unittest.TestCase):
         nprev = w @ np.linalg.inv(v.T @ v) @ v.T
 
         # New solution step
-        mv.FinalizeSolutionStep()
+        mv.finalize_solution_step()
         np.testing.assert_array_equal(mv.nprev.flatten(), nprev.flatten())
-        mv.InitializeSolutionStep()
+        mv.initialize_solution_step()
         self.assertIsNone(mv.rref)
         self.assertFalse(mv.added)
         self.assertEqual(mv.v.shape, (m, 0))

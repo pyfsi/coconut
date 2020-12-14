@@ -52,8 +52,8 @@ class TestModelLS(unittest.TestCase):
         ls = CreateInstance(settings["setting1"])
         ls.size_in = ls.size_out = m
         ls.out = interface.deepcopy()
-        ls.Initialize()
-        ls.InitializeSolutionStep()
+        ls.initialize()
+        ls.initialize_solution_step()
 
         r = interface.deepcopy()
         xt = interface.deepcopy()
@@ -210,10 +210,10 @@ class TestModelLS(unittest.TestCase):
         w1 = ls.wcurr
 
         # New solution step
-        ls.FinalizeSolutionStep()
+        ls.finalize_solution_step()
         np.testing.assert_array_equal(ls.vprev[0].flatten(), v1.flatten())
         np.testing.assert_array_equal(ls.wprev[0].flatten(), w1.flatten())
-        ls.InitializeSolutionStep()
+        ls.initialize_solution_step()
         self.assertIsNone(ls.rref)
         self.assertFalse(ls.added)
         self.assertEqual(ls.vcurr.shape, (m, 0))
@@ -252,18 +252,18 @@ class TestModelLS(unittest.TestCase):
         w2 = ls.wcurr
 
         # New solution step
-        ls.FinalizeSolutionStep()
+        ls.finalize_solution_step()
         np.testing.assert_array_equal(np.hstack(ls.vprev).flatten(), np.hstack([v2, v1[:, :2], v1[:, 3:]]).flatten())
         np.testing.assert_array_equal(np.hstack(ls.wprev).flatten(), np.hstack([w2, w1[:, :2], w1[:, 3:]]).flatten())
-        ls.InitializeSolutionStep()
+        ls.initialize_solution_step()
 
         # New solution step
-        ls.FinalizeSolutionStep()
+        ls.finalize_solution_step()
         np.testing.assert_array_equal(np.hstack(ls.vprev).flatten(), np.hstack([np.empty((m, 0)), v2]).flatten())
         np.testing.assert_array_equal(np.hstack(ls.wprev).flatten(), np.hstack([np.empty((m, 0)), w2]).flatten())
         self.assertEqual(len(ls.vprev), q)
         self.assertEqual(len(ls.wprev), q)
-        ls.InitializeSolutionStep()
+        ls.initialize_solution_step()
 
         # Without reuse
 
@@ -273,8 +273,8 @@ class TestModelLS(unittest.TestCase):
         ls = CreateInstance(settings["setting2"])
         ls.size_in = ls.size_out = m
         ls.out = interface.deepcopy()
-        ls.Initialize()
-        ls.InitializeSolutionStep()
+        ls.initialize()
+        ls.initialize_solution_step()
 
         r.SetNumpyArray(r1)
         xt.SetNumpyArray(xt1)
@@ -316,10 +316,10 @@ class TestModelLS(unittest.TestCase):
         np.testing.assert_array_equal(w.T.flatten(), np.hstack((xt10 - xt9, xt9 - xt8, xt8 - xt7, xt7 - xt6, xt6 - xt5)))
 
         # New solution step
-        ls.FinalizeSolutionStep()
+        ls.finalize_solution_step()
         np.testing.assert_array_equal(np.hstack(ls.vprev).flatten(), np.hstack((np.empty((m, 0)))).flatten())
         np.testing.assert_array_equal(np.hstack(ls.wprev).flatten(), np.hstack((np.empty((m, 0)))).flatten())
-        ls.InitializeSolutionStep()
+        ls.initialize_solution_step()
         self.assertIsNone(ls.rref)
         self.assertFalse(ls.added)
         self.assertEqual(ls.vcurr.shape, (m, 0))

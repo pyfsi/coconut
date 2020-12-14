@@ -313,8 +313,8 @@ class SolverWrapperOpenFOAM_41(Component):
         # run time
         self.run_time = 0.0
              
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
                 
         # Define timestep and physical time
         self.timestep=0
@@ -342,8 +342,8 @@ class SolverWrapperOpenFOAM_41(Component):
         
                                         
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
         
         # Prepare new time step folder and reset the number of iterations
         self.timestep += 1
@@ -360,8 +360,8 @@ class SolverWrapperOpenFOAM_41(Component):
         self.send_message('next') # Let OpenFOAM go to next time step
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
     
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
+    @tools.Timesolve_solution_step
+    def solve_solution_step(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
         print(f'\t\tIteration {self.iteration}')
 
@@ -390,8 +390,8 @@ class SolverWrapperOpenFOAM_41(Component):
         return self.interface_output.deepcopy()
 
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
         # Let OpenFOAM check whether it needs to save this timestep (in OF-solver: runTime.write())
         
         if not(self.timestep % self.write_interval):
@@ -403,15 +403,15 @@ class SolverWrapperOpenFOAM_41(Component):
 #             pass     
             
             
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
         
         self.send_message('stop')
         self.wait_message('stop_ready')
         
         self.openfoam_process.kill()
                 
-        print("OpenFOAM was stopped with the Finalize() method defined in CoCoNuT.")
+        print("OpenFOAM was stopped with the finalize() method defined in CoCoNuT.")
 
 
     def GetInterfaceInput(self):

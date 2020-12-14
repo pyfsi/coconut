@@ -5,7 +5,7 @@ from coconut.data_structure import Model, Interface
 import numpy as np
 import os.path as path
 from scipy.linalg import solve_banded
-
+import json
 
 def create(parameters):
     return SolverWrapperTubeFlow(parameters)
@@ -25,7 +25,8 @@ class SolverWrapperTubeFlow(Component):
         input_file = self.settings["input_file"]
         case_file_name = path.join(self.working_directory, input_file)
         with open(case_file_name, 'r') as case_file:
-            self.settings.update(case_file.read())  # TODO: inversed priority
+            new_settings = json.loads(case_file.read())
+            self.settings.update(new_settings)  # TODO: inversed priority
 
         # Settings
         self.unsteady = self.settings.get("unsteady", True)
@@ -35,6 +36,7 @@ class SolverWrapperTubeFlow(Component):
         self.rhof = self.settings["rhof"]  # Density
 
         self.ureference = self.settings["ureference"]  # Reference velocity
+        self.preference = self.settings.get("preference", 0.0)
         self.u0 = self.settings.get("u0", self.ureference)  # Initial velocity
         self.inlet_boundary = self.settings["inlet_boundary"]
         self.inlet_variable = self.inlet_boundary["variable"]  # Variable upon which boundary condition is specified
@@ -43,7 +45,7 @@ class SolverWrapperTubeFlow(Component):
         elif self.inlet_variable == "pressure":
             self.inlet_reference = self.inlet_boundary.get("reference", self.preference)  # Reference of pressure inlet boundary condition
         elif self.inlet_variable == "total_pressure":
-            self.inlet_reference = self.inlet_boundary.get("reference", self.preference + self.ureference ** 2 / 2)  # Reference of total_pressure inlet boundary condition
+            self.inlet_reference = self.inlet_boundary.get("reference", self.preference + self.rhof * self.ureference ** 2 / 2)  # Reference of total_pressure inlet boundary condition
         else:
             raise ValueError(f"The inlet_variable \'{self.inlet_variable}\' is not implemented,"
                              f" choose between \'pressure\', \'total_pressure\' and \'velocity\'")
@@ -63,11 +65,11 @@ class SolverWrapperTubeFlow(Component):
         self.outlet_amplitude = self.outlet_amplitude / self.rhof
         self.preference = self.preference / self.rhof
 
-        e = self.settings["e"].GetDouble()  # Young"s modulus of structure
-        h = self.settings["h"].GetDouble()  # Thickness of structure
+        e = self.settings["e"]  # Young"s modulus of structure
+        h = self.settings["h"]  # Thickness of structure
         self.cmk2 = (e * h) / (self.rhof * self.d)  # Wave speed squared of outlet boundary condition
 
-        self.m = self.settings["m"].GetInt()  # Number of segments
+        self.m = self.settings["m"]  # Number of segments
         self.dz = l / self.m  # Segment length
         axial_offset = self.settings.get("axial_offset", 0)  # Start position along axis
         self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # Data is stored in cell centers
@@ -80,6 +82,8 @@ class SolverWrapperTubeFlow(Component):
         else:
             self.dt = 1  # Time step size default value
             self.alpha = np.pi * self.d ** 2 / 4 / self.ureference  # Numerical damping parameter due to central discretization of pressure in momentum equation
+            if self.outlet_type == 1:
+                raise ValueError("Outlet type 1 can not be used for steady calculation")
 
         self.newtonmax = self.settings["newtonmax"]  # Maximal number of Newton iterations
         self.newtontol = self.settings["newtontol"]  # Tolerance of Newton iterations
@@ -106,10 +110,10 @@ class SolverWrapperTubeFlow(Component):
         # Interfaces
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_input.set_variable_data("wall", "displacement", self.disp)
-        self.interface_output = Interface(self.model, self.settings["interface_output"])
-        self.interface_input.set_variable_data("wall", "pressure", self.pres)
-        self.interface_input.set_variable_data("wall", "traction", self.trac)
-        
+        self.interface_output = Interface(self.settings["interface_output"], self.model)
+        self.interface_output.set_variable_data("wall", "pressure", self.pres.reshape(-1,1))
+        self.interface_output.set_variable_data("wall", "traction", self.trac)
+
         # run time
         self.run_time = 0
 
@@ -125,9 +129,10 @@ class SolverWrapperTubeFlow(Component):
 
         self.k = 0
         self.n += 1
-        self.un = np.array(self.u)
-        self.pn = np.array(self.p)
-        self.an = np.array(self.a)
+        if self.unsteady:
+            self.un = np.array(self.u)
+            self.pn = np.array(self.p)
+            self.an = np.array(self.a)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):

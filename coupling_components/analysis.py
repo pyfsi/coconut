@@ -13,24 +13,24 @@ class Analysis:
         self.coupled_solver = create_instance(self.parameters["coupled_solver"])
 
     def Run(self):
-        self.Initialize()
+        self.initialize()
         self.RunSolutionStep()
-        self.Finalize()
+        self.finalize()
 
-    def Initialize(self):
-        self.coupled_solver.Initialize()
-        self.coupled_solver.Check()
-        self.coupled_solver.PrintInfo(' ')
+    def initialize(self):
+        self.coupled_solver.initialize()
+        self.coupled_solver.check()
+        self.coupled_solver.print_components_info(' ')
 
     def RunSolutionLoop(self):
         for _ in range(self.number_of_timesteps):
             self.coupled_solver.initializeSolutionStep()
-            self.coupled_solver.SolveSolutionStep()
-            self.coupled_solver.FinalizeSolutionStep()
-            self.coupled_solver.OutputSolutionStep()
+            self.coupled_solver.solve_solution_step()
+            self.coupled_solver.finalize_solution_step()
+            self.coupled_solver.output_solution_step()
 
-    def Finalize(self):
-        self.coupled_solver.Finalize()
+    def finalize(self):
+        self.coupled_solver.finalize()
 
 
 

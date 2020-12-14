@@ -49,22 +49,22 @@ for node in mp.Nodes:
     node.SetSolutionStepValue(traction, 0, [0, 0, 0])
 print(f"Assigned uniform pressure ({p} Pa) and 0 traction at the interface ")
 
-AbaqusSolver0.Initialize()
+AbaqusSolver0.initialize()
 
 # Step 1, Coupling 1
-AbaqusSolver0.InitializeSolutionStep()
-AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.initialize_solution_step()
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
 
 os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
 
 # Step 1, Coupling 2
-AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-AbaqusSolver0.FinalizeSolutionStep()
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.finalize_solution_step()
 
 #Step 2, Coupling 1
-AbaqusSolver0.InitializeSolutionStep()
-AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-AbaqusSolver0.FinalizeSolutionStep()
+AbaqusSolver0.initialize_solution_step()
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.finalize_solution_step()
 
 #Iterate until deformation is approximately steady
 mp_out = AbaqusSolver0.model['BEAMINSIDEMOVING2_nodes']  # interface input modelpart
@@ -80,9 +80,9 @@ for node in mp_out.Nodes:
 
 diffMax = 1000
 while diffMax > tol:
-    AbaqusSolver0.InitializeSolutionStep()
-    AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-    AbaqusSolver0.FinalizeSolutionStep()
+    AbaqusSolver0.initialize_solution_step()
+    AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+    AbaqusSolver0.finalize_solution_step()
     diffMax = 0
     maxDisp = 0
     for node in mp_out.Nodes:
@@ -96,6 +96,6 @@ while diffMax > tol:
     print(diffMax)
 
 
-AbaqusSolver0.Finalize()
+AbaqusSolver0.finalize()
 
 print_colored("Finished",'green')

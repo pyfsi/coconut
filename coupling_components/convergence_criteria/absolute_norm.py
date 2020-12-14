@@ -18,18 +18,18 @@ class ConvergenceCriterionAbsoluteNorm(Component):
         self.last_norm = 0.0
         self.is_updated = False
 
-    def InitializeSolutionStep(self): #TODO: change to lower case
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.last_norm = 0.0
         self.is_updated = False
 
-    def Update(self, r): #TODO: change to lower case
+    def update(self, r):
         self.last_norm = np.linalg.norm(r.get_interface_data(), self.order)
         self.is_updated = True
 
-    def IsSatisfied(self): #TODO: change to lower case
-        # tools.PrintInfo("Norm: " + str(self.last_norm))
+    def is_satisfied(self):
+        # tools.print_Info("Norm: " + str(self.last_norm))
         if not self.is_updated:
             return False
         else:

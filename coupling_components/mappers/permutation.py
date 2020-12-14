@@ -45,8 +45,8 @@ class MapperPermutation(Component):
         for par in self.settings['permutation']:
             self.permutation.append(par.GetInt())
 
-    def Initialize(self, model_part_in, forward):
-        super().Initialize()
+    def initialize(self, model_part_in, forward):
+        super().initialize()
 
         permutation = self.permutation
         if not forward:

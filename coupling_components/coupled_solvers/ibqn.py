@@ -23,8 +23,8 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         self.u = self.w = None
         self.ready = None
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
         self.dxtemp = self.x.deepcopy()
         self.dytemp = self.y.deepcopy()
@@ -37,7 +37,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         self.model_s.out = self.x.deepcopy()
         models = [self.model_f, self.model_s]
         for model in models:
-            model.Initialize()
+            model.initialize()
             self.components += [model]
 
     def lop_f(self, dx):
@@ -54,7 +54,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
     def callback(self, rk):
         pass
 
-    def SolveSolutionStep(self):
+    def solve_solution_step(self):
         iu = LinearOperator((self.u, self.u), self.identity_matvec)
         iw = LinearOperator((self.w, self.w), self.identity_matvec)
         dx = self.x.deepcopy()
@@ -62,15 +62,15 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         # Initial value
         self.x = self.predictor.Predict(self.x)
         # First coupling iteration
-        yt = self.solver_wrappers[0].SolveSolutionStep(self.x)
+        yt = self.solver_wrappers[0].solve_solution_step(self.x)
         self.model_f.Add(self.x, yt)
         self.y = yt
-        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+        xt = self.solver_wrappers[1].solve_solution_step(self.y)
         self.model_s.Add(self.y, xt)
         r = xt - self.x
-        self.FinalizeIteration(r)
+        self.finalize_Iteration(r)
         # Coupling iteration loop
-        while not self.convergence_criterion.IsSatisfied():
+        while not self.convergence_criterion.is_satisfied():
             if not self.model_s.IsReady() or not self.model_f.IsReady:
                 dx = self.omega * r
             else:
@@ -83,7 +83,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                     RuntimeError("GMRES failed")
                 dx.SetNumpyArray(dx_sol)
             self.x += dx
-            yt = self.solver_wrappers[0].SolveSolutionStep(self.x)
+            yt = self.solver_wrappers[0].solve_solution_step(self.x)
             self.model_f.Add(self.x, yt)
             if not self.model_s.IsReady() or not self.model_f.IsReady:
                 dy = yt - self.y
@@ -95,7 +95,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                     RuntimeError("GMRES failed")
                 dy.SetNumpyArray(dy_sol)
             self.y += dy
-            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+            xt = self.solver_wrappers[1].solve_solution_step(self.y)
             self.model_s.Add(self.y, xt)
             r = xt - self.x
-            self.FinalizeIteration(r)
+            self.finalize_Iteration(r)

@@ -27,7 +27,7 @@ parameter|type|description
 `interface_input`|dict|Keys are names of ModelParts. The values are (lists of) names of Variables. <br>For a flow solver:`"DISPLACEMENT"`. <br>For a structure solver:`["PRESSURE","TRACTION"]`.
 `interface_output`|dict|Analogous to `interface_input`, but for the flow solver output. <br>For a flow solver:`["PRESSURE","TRACTION"]`. <br>For a structure solver:`"DISPLACEMENT"`.
 `unsteady`|bool|(optional) Indicates if case is steady or unsteady. If omitted, `true` is assumed.
-`working_directory`|string|Absolute path to the working directory or relative path w.r.t the current directory.
+<nobr>`working_directory`</nobr>|string|Absolute path to the working directory or relative path w.r.t the current directory.
 
 `delta_t` is a necessary parameter, but is usually defined in a higher Component. However, it can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If it is defined both in higher Component and in the solver wrapper, then the former value is used and a warning is printed.
 
@@ -75,7 +75,7 @@ parameter|type|description
 `m`|int|Number of cells for discretization. The values are calculated in the cell centers.
 `newtonmax`|double|Maximum number of Newton-Raphson iterations for the flow solver calculation.
 `newtontol`|double|Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.
-`outlet_boundary`|dict|Dictionary containing all information with respect to the outlet boundary condition.
+<nobr>`outlet_boundary`</nobr>|dict|Dictionary containing all information with respect to the outlet boundary condition.
 `preference`|double|(optional) Reference pressure and initial pressure. If not provided, the value of this parameter is 0.
 `u0`|double|(optional) Initial velocity. If omitted, `ureference` is used.
 `ureference`|double|Reference velocity used for determination of pressure stabilization term.
@@ -87,7 +87,7 @@ This section describes all parameters that need to be specified in the dictionar
 
 parameter|type|description
 ---:|:---:|---
-`amplitude`|double|Amplitude of the inlet boundary condition.
+<nobr>`amplitude`</nobr>|double|Amplitude of the inlet boundary condition.
 `period`|double|Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type 4).
 `reference`|double|(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `ureference`^2.
 `type`|int|Type of inlet boundary condition. <br>If 1, a sine wave is used with amplitude, reference and period as specified. <br>If 2, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If 3, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If 4, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.
@@ -99,7 +99,7 @@ This section describes all parameters that need to be specified in the dictionar
 
 parameter|type|description
 ---:|:---:|---
-`type`|int|Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. <br>If other, a fixed value equal to the reference pressure is applied.
+`type`|int|Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. This type can not be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.
 
 ### TubeRingModel
 
@@ -133,7 +133,7 @@ Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the 
 
 parameter|type|description
 ---:|:---:|---
-`axial_offset`|double|(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.
+<nobr>`axial_offset`</nobr>|double|(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.
 `d`|double|Nominal diameter of the tube.
 `e`|double|Modulus of elasticity of the tube wall.
 `h`|double|Thickness of tube wall.
@@ -191,7 +191,7 @@ parameter|type|description
 `preference`|double|(optional) Reference pressure. If not provided, the value of this parameter is 0.
 `rhof`|double|Density of the fluid.
 `rhos`|double|Density of the tube wall.
-`time_disretization`|string|(optional) Either 'Newmark' or 'backward Euler'. If not provided, backward Euler is used.
+<nobr>`time_disretization`</nobr>|string|(optional) Either 'Newmark' or 'backward Euler'. If not provided, backward Euler is used.
 
 The equations are discretized in time with the Newmark-beta method or backward Euler method.
 In the former case, two Newmark parameters $\beta$ and $\gamma$ are required, which result in an un-conditionally stable integration scheme if

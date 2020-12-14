@@ -28,8 +28,8 @@ class ModelLS(Component):
         self.vprev = None
         self.wprev = None
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
         self.vcurr = np.empty((self.size_in, 0))
         self.wcurr = np.empty((self.size_out, 0))
@@ -48,7 +48,7 @@ class ModelLS(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.Print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
+                tools.print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
                 if i < self.vcurr.shape[1]:
                     self.vcurr = np.delete(self.vcurr, i, 1)
                     self.wcurr = np.delete(self.wcurr, i, 1)
@@ -111,8 +111,8 @@ class ModelLS(Component):
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         return v.shape[1]
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.rref = None
         self.xtref = None
@@ -120,8 +120,8 @@ class ModelLS(Component):
         self.wcurr = np.empty((self.size_out, 0))
         self.added = False
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
         if self.q > 0:
             self.vprev = [self.vcurr] + self.vprev

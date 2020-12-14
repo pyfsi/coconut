@@ -47,36 +47,36 @@ class TestConvergenceCriterionAbsoluteNorm(unittest.TestCase):
             settings = json.loads(parameter_file.read())
 
         convergence_criterion_absolute_norm = create_instance(settings)
-        convergence_criterion_absolute_norm.Initialize()
+        convergence_criterion_absolute_norm.initialize()
         for i in range(3):
-            convergence_criterion_absolute_norm.InitializeSolutionStep()
-            is_satisfied = convergence_criterion_absolute_norm.IsSatisfied()
+            convergence_criterion_absolute_norm.initialize_solution_step()
+            is_satisfied = convergence_criterion_absolute_norm.is_satisfied()
             self.assertFalse(is_satisfied)
             # for node in model_part.Nodes:
             #     node.SetSolutionStepValue(variable, step, a0)
             interface.set_variable_data(model_part_name, variable, a0_array)
-            convergence_criterion_absolute_norm.Update(interface)
-            is_satisfied = convergence_criterion_absolute_norm.IsSatisfied()
+            convergence_criterion_absolute_norm.update(interface)
+            is_satisfied = convergence_criterion_absolute_norm.is_satisfied()
             self.assertFalse(is_satisfied)
             # for node in model_part.Nodes:
             #     node.SetSolutionStepValue(variable, step, a1)
             interface.set_variable_data(model_part_name, variable, a1_array)
-            convergence_criterion_absolute_norm.Update(interface)
-            is_satisfied = convergence_criterion_absolute_norm.IsSatisfied()
+            convergence_criterion_absolute_norm.update(interface)
+            is_satisfied = convergence_criterion_absolute_norm.is_satisfied()
             self.assertFalse(is_satisfied)
             # for node in model_part.Nodes:
             #     node.SetSolutionStepValue(variable, step, a2)
             interface.set_variable_data(model_part_name, variable, a2_array)
-            convergence_criterion_absolute_norm.Update(interface)
-            is_satisfied = convergence_criterion_absolute_norm.IsSatisfied()
+            convergence_criterion_absolute_norm.update(interface)
+            is_satisfied = convergence_criterion_absolute_norm.is_satisfied()
             self.assertTrue(is_satisfied)
             # for node in model_part.Nodes:
             #     node.SetSolutionStepValue(variable, step, a1)
             interface.set_variable_data(model_part_name, variable, a1_array)
-            convergence_criterion_absolute_norm.Update(interface)
-            is_satisfied = convergence_criterion_absolute_norm.IsSatisfied()
+            convergence_criterion_absolute_norm.update(interface)
+            is_satisfied = convergence_criterion_absolute_norm.is_satisfied()
             self.assertFalse(is_satisfied)
-            convergence_criterion_absolute_norm.FinalizeSolutionStep()
+            convergence_criterion_absolute_norm.finalize_solution_step()
 
 
 if __name__ == '__main__':

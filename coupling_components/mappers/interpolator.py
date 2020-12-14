@@ -1,6 +1,6 @@
 from coconut.coupling_components.component import Component
 from coconut.data_structure.variables import variables_dimensions
-from coconut.coupling_components.tools import Print
+from coconut.coupling_components.tools import print
 
 from scipy.spatial import cKDTree
 import numpy as np
@@ -39,7 +39,7 @@ class MapperInterpolator(Component):
                 raise ValueError(f'"{direction}" is not a valid direction.')
             if direction.lower() != direction:
                 # *** I would later remove this and only accept lowercase directions
-                Print('directions must be lowercase', layout='warning')
+                print('directions must be lowercase', layout='warning')
             self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
                 raise ValueError(f'too many directions given')
@@ -51,8 +51,8 @@ class MapperInterpolator(Component):
             if self.scaling.size != len(self.directions):
                 raise ValueError(f'scaling must have same length as directions')
 
-    def Initialize(self, model_part_from, model_part_to):  # *** make all methods lowercase
-        super().Initialize()
+    def initialize(self, model_part_from, model_part_to):  # *** make all methods lowercase
+        super().initialize()
 
         # get coords_from
         self.n_from = model_part_from.size

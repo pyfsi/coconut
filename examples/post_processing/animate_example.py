@@ -40,7 +40,7 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
             mask_x = (coordinates[::3] > -np.inf)
             mask_y = (abs(coordinates[1::3]) > 0)
             mask_z = (coordinates[2::3] > -np.inf)
-            absicissa = 2  # z-axis
+            abscissa = 2  # z-axis
             component = 1  # y-component
 
         # example 2: fluent solver (XY-plane)
@@ -50,10 +50,10 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
             mask_y = (coordinates[1::3] > 0)
             mask_z = (abs(coordinates[2::3]) < 1e-16)
             # mask_z = (coordinates[2::3] > 0) & (coordinates[2::3] < 0.0005)
-            absicissa = 0  # x-axis
+            abscissa = 0  # x-axis
             component = 1  # y-component
 
-        animation.Initialize(mask_x, mask_y, mask_z, absicissa, component)
+        animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
         animation.line.set_color(colors[j % len(colors)])
         animation.line.set_linestyle(line_styles[0])
         animation.line.set_marker('o')

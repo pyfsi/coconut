@@ -27,39 +27,39 @@ settings = parameters['solver_wrappers'][0]['settings']
 
 # steady test
 if 0:
-    solver.Initialize()
-    solver.InitializeSolutionStep()
+    solver.initialize()
+    solver.initialize_solution_step()
 
     interface_input = solver.GetInterfaceInput()
     for iteration in range(3):
         iteration += 1
         print(f'\niteration {iteration}')
-        solver.SolveSolutionStep(interface_input)
+        solver.solve_solution_step(interface_input)
         interface_input = solver.GetInterfaceInput()
         for key in settings['interface_input'].keys():
             for node in interface_input.model[key].Nodes:
                 dy = (1 - np.cos(2 * np.pi * node.X)) * 0.5 * 0.01
                 node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
 
-    solver.FinalizeSolutionStep()
-    solver.Finalize()
+    solver.finalize_solution_step()
+    solver.finalize()
 
 # unsteady test
 else:
-    solver.Initialize()
+    solver.initialize()
 
     interface_input = solver.GetInterfaceInput()
     for timestep in range(1, 5):
         f = 0.005 * (-1) ** (timestep + 1)
         f = 0.05
-        solver.InitializeSolutionStep()
+        solver.initialize_solution_step()
         for iteration in range(1, 3):
-            solver.SolveSolutionStep(interface_input)
+            solver.solve_solution_step(interface_input)
             interface_input = solver.GetInterfaceInput()
             for key in settings['interface_input'].keys():
                 for node in interface_input.model[key].Nodes:
                     dy = (1 - np.cos(2 * np.pi * (node.X - timestep / 4 - iteration / 16))) * 0.5 * f
                     node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
-        solver.FinalizeSolutionStep()
+        solver.finalize_solution_step()
 
-    solver.Finalize()
+    solver.finalize()
