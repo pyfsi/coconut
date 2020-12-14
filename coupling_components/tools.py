@@ -151,7 +151,7 @@ def quicktimer(name=None, t=0, n=0, ms=False):
 
 
 # Run time measuring function
-def TimeSolveSolutionStep(SolveSolutionStep):
+def time_solve_solution_step(SolveSolutionStep):
     def wrapper(*args):
         self = args[0]
         if not hasattr(self, 'run_time'):

@@ -3,7 +3,7 @@ from coconut.coupling_components.component import Component
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     return ConvergenceCriterionRelativeNorm(parameters)
 
 
@@ -12,8 +12,8 @@ class ConvergenceCriterionRelativeNorm(Component):
         super().__init__()
 
         settings = parameters["settings"]
-        self.tolerance = settings["tolerance"].GetDouble()
-        self.order = settings["order"].GetInt()
+        self.tolerance = settings["tolerance"]
+        self.order = settings["order"]
 
         self.initial_norm = 0.0
         self.last_norm = 0.0
@@ -27,7 +27,7 @@ class ConvergenceCriterionRelativeNorm(Component):
         self.is_initial_norm_set = False
 
     def Update(self, r):
-        self.last_norm = np.linalg.norm(r.GetNumpyArray(), self.order)
+        self.last_norm = np.linalg.norm(r.get_interface_data(), self.order)
         if not self.is_initial_norm_set:
             self.initial_norm = self.last_norm
             self.is_initial_norm_set = True

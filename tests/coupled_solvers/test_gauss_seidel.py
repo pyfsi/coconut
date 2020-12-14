@@ -1,8 +1,8 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 import numpy as np
-
+import json
 
 class TestCoupledSolverGaussSeidel(unittest.TestCase):
 
@@ -21,9 +21,9 @@ class TestCoupledSolverGaussSeidel(unittest.TestCase):
     def test_coupled_solver_gauss_seidel(self):
         parameter_file_name = "coupled_solvers/test_gauss_seidel.json"
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = data_structure.Parameters(parameter_file.read())
+            settings = json.loads(parameter_file.read())
 
-        coupled_solver = CreateInstance(settings)
+        coupled_solver = create_instance(settings)
         coupled_solver.Initialize()
         coupled_solver.Check()
 

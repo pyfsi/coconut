@@ -1,13 +1,14 @@
 from coconut.coupling_components import tools
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.component import Component
 
 import numpy as np
 import time
 import pickle
+import json
 
 
-def Create(parameters):
+def create(parameters):
     return CoupledSolverGaussSeidel(parameters)
 
 
@@ -18,28 +19,28 @@ class CoupledSolverGaussSeidel(Component):
         self.parameters = parameters
         self.settings = parameters["settings"]
 
-        self.timestep_start = self.settings["timestep_start"].GetInt()  # Time step where calculation is started
+        self.timestep_start = self.settings["timestep_start"]  # Time step where calculation is started
         self.n = self.timestep_start  # Time step
-        self.delta_t = self.settings["delta_t"].GetDouble()  # Time step size
+        self.delta_t = self.settings["delta_t"]  # Time step size
 
-        self.predictor = CreateInstance(self.parameters["predictor"])
-        self.convergence_criterion = CreateInstance(self.parameters["convergence_criterion"])
+        self.predictor = create_instance(self.parameters["predictor"])
+        self.convergence_criterion = create_instance(self.parameters["convergence_criterion"])
         self.solver_wrappers = []
         for index in range(2):
             # Add timestep_start and delta_t to solver_wrapper settings
             parameters = self.parameters["solver_wrappers"][index]
-            if parameters["type"].GetString() == "solver_wrappers.mapped":
+            if parameters["type"] == "solver_wrappers.mapped":
                 settings = parameters["settings"]["solver_wrapper"]["settings"]
             else:
                 settings = parameters["settings"]
 
             for key in ["timestep_start", "delta_t"]:
-                if settings.Has(key):
+                if key in settings:
                     tools.Print(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
                     settings.RemoveValue(key)
-                settings.AddValue(key, self.settings[key])
+                settings[key] = self.settings[key]
 
-            self.solver_wrappers.append(CreateInstance(parameters))
+            self.solver_wrappers.append(create_instance(parameters))
 
         self.components = [self.predictor, self.convergence_criterion, self.solver_wrappers[0], self.solver_wrappers[1]]
 
@@ -53,7 +54,7 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = []
         if self.settings.Has("save_results"):
             # Set True in order to save for every iteration
-            self.save_results = self.settings["save_results"].GetBool()
+            self.save_results = self.settings["save_results"]
         else:
             self.save_results = False
         if self.save_results:
@@ -61,7 +62,7 @@ class CoupledSolverGaussSeidel(Component):
             self.complete_solution_y = None
             self.residual = []
             if self.settings.Has("name"):
-                self.case_name = self.settings["name"].GetString()  # case name
+                self.case_name = self.settings["name"]  # case name
             else:
                 self.case_name = "results"
 
@@ -75,7 +76,7 @@ class CoupledSolverGaussSeidel(Component):
         index_mapped = None
         index_other = None
         for i in range(2):
-            type = self.parameters["solver_wrappers"][i]["type"].GetString()
+            type = self.parameters["solver_wrappers"][i]["type"]
             if type == "solver_wrappers.mapped":
                 index_mapped = i
             else:
@@ -97,8 +98,8 @@ class CoupledSolverGaussSeidel(Component):
         self.predictor.Initialize(self.x)
 
         if self.save_results:
-            self.complete_solution_x = self.x.GetNumpyArray().reshape(-1, 1)
-            self.complete_solution_y = self.y.GetNumpyArray().reshape(-1, 1)
+            self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
+            self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
         self.start_time = time.time()
 
     def InitializeSolutionStep(self):
@@ -123,17 +124,19 @@ class CoupledSolverGaussSeidel(Component):
 
     def SolveSolutionStep(self):
         # Initial value
-        self.x = self.predictor.Predict(self.x)
+        self.x = self.predictor.predict(self.x)
         # First coupling iteration
-        self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+        y = self.solver_wrappers[0].SolveSolutionStep(self.x.copy())
+        self.y = y.copy()
+        xt = self.solver_wrappers[1].SolveSolutionStep(y)
         r = xt - self.x
         self.FinalizeIteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.IsSatisfied():
             self.x += r
-            self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+            y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+            self.y = y.copy()
+            xt = self.solver_wrappers[1].SolveSolutionStep(y)
             r = xt - self.x
             self.FinalizeIteration(r)
 
@@ -141,20 +144,20 @@ class CoupledSolverGaussSeidel(Component):
         self.iteration += 1
         self.convergence_criterion.Update(r)
         # Print iteration information
-        norm = np.linalg.norm(r.GetNumpyArray())
+        norm = np.linalg.norm(r.get_interface_data())
         out = f"{self.iteration:<9d}\t{norm:<22.17e}"
         tools.Print(' │' * self.solver_level, out)
 
         if self.save_results:
-            self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
+            self.residual[self.n - 1].append(np.linalg.norm(r.get_interface_data()))
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
 
         self.iterations.append(self.iteration)
         if self.save_results:
-            self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.GetNumpyArray().reshape(-1, 1)))
-            self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.GetNumpyArray().reshape(-1, 1)))
+            self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.get_interface_data().reshape(-1, 1)))
+            self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.get_interface_data().reshape(-1, 1)))
 
         self.predictor.Update(self.x)
         for component in self.components:

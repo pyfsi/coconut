@@ -1,5 +1,5 @@
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import CreateInstance, PrintStructureInfo
+from coconut.coupling_components.tools import create_instance, PrintStructureInfo
 
 
 class ConvergenceCriterionCombined(Component):
@@ -9,28 +9,28 @@ class ConvergenceCriterionCombined(Component):
         settings = parameters["settings"]
         self.convergence_criteria = []
         for criterion in settings["criteria_list"]:
-            self.convergence_criteria.append(CreateInstance(criterion))
+            self.convergence_criteria.append(create_instance(criterion))
 
 
-    def Initialize(self):
+    def Initialize(self): #TODO: change to lower case
         super().Initialize()
 
         for convergence_criterion in self.convergence_criteria:
             convergence_criterion.Initialize()
 
-    def Finalize(self):
+    def Finalize(self): #TODO: change to lower case
         super().Finalize()
 
         for convergence_criterion in self.convergence_criteria:
             convergence_criterion.Finalize()
 
-    def InitializeSolutionStep(self):
+    def InitializeSolutionStep(self): #TODO: change to lower case
         super().InitializeSolutionStep()
 
         for convergence_criterion in self.convergence_criteria:
             convergence_criterion.InitializeSolutionStep()
 
-    def FinalizeSolutionStep(self):
+    def FinalizeSolutionStep(self): #TODO: change to lower case
         super().FinalizeSolutionStep()
 
         for convergence_criterion in self.convergence_criteria:

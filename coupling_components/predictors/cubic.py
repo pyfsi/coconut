@@ -1,7 +1,7 @@
 from coconut.coupling_components.predictors.predictor import Predictor
 
 
-def Create(parameters):
+def create(parameters):
     return PredictorCubic(parameters)
 
 
@@ -12,10 +12,10 @@ class PredictorCubic(Predictor):
 
         self.order = 3
 
-    def Predict(self, x):
+    def predict(self, x):
         if len(self.dataprev) < 3:
-            return self.Linear(x)
+            return self.linear(x)
         elif len(self.dataprev) == 3:
-            return self.Quadratic(x)
+            return self.quadratic(x)
         else:
-            return self.Cubic(x)
+            return self.cubic(x)

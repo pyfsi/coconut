@@ -1,7 +1,7 @@
 from coconut.coupling_components.convergence_criteria.combined import ConvergenceCriterionCombined
 
 
-def Create(parameters):
+def create(parameters):
     return ConvergenceCriterionOr(parameters)
 
 

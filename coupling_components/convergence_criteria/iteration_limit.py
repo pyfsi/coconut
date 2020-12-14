@@ -1,7 +1,7 @@
 from coconut.coupling_components.component import Component
 
 
-def Create(parameters):
+def create(parameters):
     return ConvergenceCriterionIterationLimit(parameters)
 
 
@@ -10,7 +10,7 @@ class ConvergenceCriterionIterationLimit(Component):
         super().__init__()
 
         settings = parameters["settings"]
-        self.maximum = settings["maximum"].GetInt()
+        self.maximum = settings["maximum"]
 
         self.iteration = 0
 

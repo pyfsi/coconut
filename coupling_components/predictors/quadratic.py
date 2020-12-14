@@ -1,7 +1,7 @@
 from coconut.coupling_components.predictors.predictor import Predictor
 
 
-def Create(parameters):
+def create(parameters):
     return PredictorQuadratic(parameters)
 
 
@@ -12,8 +12,8 @@ class PredictorQuadratic(Predictor):
 
         self.order = 2
 
-    def Predict(self, x):
+    def predict(self, x):
         if len(self.dataprev) < 3:
-            return self.Linear(x)
+            return self.linear(x)
         else:
-            return self.Quadratic(x)
+            return self.linear(x)

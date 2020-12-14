@@ -1,7 +1,7 @@
 from coconut.coupling_components.component import Component
 
 
-def Create(parameters):
+def create(parameters):
     return Predictor(parameters)
 
 
@@ -18,7 +18,7 @@ class Predictor(Component):
     def Initialize(self, x):
         super().Initialize()
 
-        self.dataprev = [x.GetNumpyArray()]
+        self.dataprev = [x.get_interface_data()]
 
     def InitializeSolutionStep(self):
         super().InitializeSolutionStep()
@@ -30,57 +30,61 @@ class Predictor(Component):
         if not self.updated:
             raise Exception("Not updated")
 
-    def Linear(self, x_in):
-        x = x_in.deepcopy()
+    def linear(self, x_in):
+        #x = x_in.deepcopy() ##TODO: do we need this
+        x = x_in
         if not self.updated:
             if len(self.dataprev) == 1:
                 y = self.dataprev[0]
             else:
                 y = 2 * self.dataprev[0] - self.dataprev[1]
-            x.SetNumpyArray(y)
+            x.set_interface_data(y)
             return x
         else:
             raise Exception("Already updated")
 
-    def Quadratic(self, x_in):
-        x = x_in.deepcopy()
+    def quadratic(self, x_in):
+        # x = x_in.deepcopy() ##TODO: do we need this
+        x = x_in
         if not self.updated:
             if len(self.dataprev) < 3:
                 raise Exception("Not sufficient information for quadratic extrapolation")
             y = 3.0 * self.dataprev[0] - 3.0 * self.dataprev[1] + 1.0 * self.dataprev[2]
-            x.SetNumpyArray(y)
+            x.set_interface_data(y)
             return x
         else:
             raise Exception("Already updated")
 
-    def Legacy(self, x_in):
-        x = x_in.deepcopy()
+    def legacy(self, x_in):
+        # x = x_in.deepcopy() ##TODO: do we need this
+        x = x_in
         if not self.updated:
             if len(self.dataprev) < 3:
                 raise Exception("Not sufficient information for quadratic extrapolation")
             y = 2.5 * self.dataprev[0] - 2.0 * self.dataprev[1] + 0.5 * self.dataprev[2]
-            x.SetNumpyArray(y)
+            x.set_interface_data(y)
             return x
         else:
             raise Exception("Already updated")
 
-    def Cubic(self, x_in):
-        x = x_in.deepcopy()
+    def cubic(self, x_in):
+        # x = x_in.deepcopy() ##TODO: do we need this
+        x = x_in
         if not self.updated:
             if len(self.dataprev) < 4:
                 raise Exception("Not sufficient information for cubic extrapolation")
             y = 4.0 * self.dataprev[0] - 6.0 * self.dataprev[1] + 4.0 * self.dataprev[2] - 1.0 * self.dataprev[3]
-            x.SetNumpyArray(y)
+            x.set_interface_data(y)
             return x
         else:
             raise Exception("Already updated")
 
-    def Predict(self, x):
+    def predict(self, x):
         pass
 
     def Update(self, x):
         if not self.updated:
-            self.dataprev = [x.GetNumpyArray()] + self.dataprev
+            self.dataprev = [x.get_interface_data()] + self.dataprev
             if len(self.dataprev) > self.order + 1:
                 self.dataprev.pop()
             self.updated = True

@@ -1,7 +1,7 @@
 from coconut.coupling_components.predictors.predictor import Predictor
 
 
-def Create(parameters):
+def create(parameters):
     return PredictorLinear(parameters)
 
 
@@ -12,5 +12,5 @@ class PredictorLinear(Predictor):
 
         self.order = 1
 
-    def Predict(self, x):
-        return self.Linear(x)
+    def predict(self, x):
+        return self.linear(x)

@@ -1,12 +1,12 @@
 from coconut.coupling_components.convergence_criteria.combined import ConvergenceCriterionCombined
 
 
-def Create(parameters):
+def create(parameters):
     return ConvergenceCriterionAnd(parameters)
 
 
 class ConvergenceCriterionAnd(ConvergenceCriterionCombined):
-    def IsSatisfied(self):
+    def IsSatisfied(self): #TODO: change to lower case
         is_satisfied = True
         for convergence_criterion in self.convergence_criteria:
             is_satisfied = is_satisfied and convergence_criterion.IsSatisfied()
