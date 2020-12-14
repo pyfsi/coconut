@@ -54,32 +54,35 @@ class SolverWrapperTubeStructure(Component):
         self.k = 0  # Iteration
         self.n = 0  # Time step (no restart implemented)
         if self.unsteady:
-            self.dt = self.settings["delta_t"].GetDouble()  # Time step size
+            self.dt = self.settings["delta_t"]  # Time step size
+            self.time_discretization = self.settings.get("time_discretization", "backward euler").lower()
+            if self.time_discretization == "newmark":
+                self.gamma = self.settings["gamma"]  # Newmark parameter: gamma >= 1/2
+                self.beta = self.settings["beta"]  # Newmark parameter: beta >= 1/4 * (1/2 + gamma) ^ 2
+                self.nm = True
+                if not self.gamma >= 0.5 or not self.beta >= 0.25 * (0.5 + self.gamma) ** 2:
+                    raise Exception("Inadequate Newmark parameteres")
+            elif self.time_discretization == "backward euler":
+                self.gamma = 1
+                self.beta = 1
+                self.nm = False  # used to set rnddot to zero
+            else:
+                raise ValueError("Time discretization should be 'Newmark' or 'backward Euler'.")
         else:
-            self.dt = 1.0  # Time step size default
-        self.time_discretization = self.settings.get("time_discretization", "backward euler").lower()
-        if self.time_discretization == "newmark":
-            self.gamma = self.settings["gamma"]  # Newmark parameter: gamma >= 1/2
-            self.beta = self.settings["beta"]  # Newmark parameter: beta >= 1/4 * (1/2 + gamma) ^ 2
-            self.nm = True
-            if not self.gamma >= 0.5 or not self.beta >= 0.25 * (0.5 + self.gamma) ** 2:
-                raise Exception("Inadequate Newmark parameteres")
-        elif self.time_discretization == "backward euler":
-            self.gamma = 1.0
-            self.beta = 1.0
-            self.nm = False  # used to set rnddot to zero
-        else:
-            raise ValueError("Time discretization should be 'Newmark' or 'backward Euler'.")
+            # not used
+            self.dt = 1  # Time step size default
+            self.beta = 1
+            self.nm = False
 
         # Initialization
         self.areference = np.pi * self.rreference ** 2  # Reference area of cross section
         self.p = np.ones(self.m) * self.preference  # Pressure
         self.a = np.ones(self.m) * self.areference  # Area of cross section
         self.r = np.ones(self.m + 4) * self.rreference  # Radius of cross section
+        if self.unsteady:
+            self.rdot = np.zeros(self.m)  # First derivative of the radius with respect to time in current timestep
+            self.rddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in current timestep
         self.rn = np.array(self.r)  # Previous radius of cross section
-
-        self.rdot = np.zeros(self.m)  # First derivative of the radius with respect to time in current timestep
-        self.rddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in current timestep
         self.rndot = np.zeros(self.m)  # First derivative of the radius with respect to time in previous timestep
         self.rnddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in previous timestep
 
@@ -117,9 +120,10 @@ class SolverWrapperTubeStructure(Component):
 
         self.k = 0
         self.n += 1
-        self.rn = np.array(self.r)
-        self.rndot = np.array(self.rdot)
-        self.rnddot = np.array(self.rddot)
+        if self.unsteady:
+            self.rn = np.array(self.r)
+            self.rndot = np.array(self.rdot)
+            self.rnddot = np.array(self.rddot)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -160,9 +164,10 @@ class SolverWrapperTubeStructure(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        self.rddot = ((self.r[2:self.m + 2] - self.rn[2:self.m + 2]) / (self.beta * self.dt ** 2)
-                      - self.rndot / (self.beta * self.dt) - self.rnddot * (1 / (2 * self.beta) - 1) * self.nm)
-        self.rdot = self.rndot + self.dt * (1 - self.gamma) * self.rnddot + self.dt * self.gamma * self.rddot
+        if self.unsteady:
+            self.rddot = ((self.r[2:self.m + 2] - self.rn[2:self.m + 2]) / (self.beta * self.dt ** 2)
+                          - self.rndot / (self.beta * self.dt) - self.rnddot * (1 / (2 * self.beta) - 1) * self.nm)
+            self.rdot = self.rndot + self.dt * (1 - self.gamma) * self.rnddot + self.dt * self.gamma * self.rddot
 
     def finalize(self):
         super().finalize()

@@ -44,5 +44,5 @@ class Component(object):
     def Check(self):
         pass
 
-    def PrintInfo(self, pre):
+    def PrintComponentsInfo(self, pre):
         tools.Print(pre, "The component ", self.__class__.__name__)

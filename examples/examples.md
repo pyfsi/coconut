@@ -1,6 +1,6 @@
-# Test examples
+# Examples
 
-This documentation describes the different test examples.
+This documentation describes the different example cases.
 Currently all these examples calculate the flow in a flexible tube.
 
 ## Folder and file structure
@@ -24,7 +24,7 @@ The second is `coupled_solver` in which all parameters related to solver algorit
 
 ## Running a case
 
-In order to run a test example, first, the setup files have to be run to create the working directories.
+In order to run an example case, first, the setup files have to be run to create the working directories.
 Then, the calculation is started by running `run_simulation.py` with the parameter file as argument.
 Note that for Abaqus, the setup file must be *sourced*. 
 

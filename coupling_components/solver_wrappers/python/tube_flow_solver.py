@@ -43,7 +43,7 @@ class SolverWrapperTubeFlow(Component):
         elif self.inlet_variable == "pressure":
             self.inlet_reference = self.inlet_boundary.get("reference", self.preference)  # Reference of pressure inlet boundary condition
         elif self.inlet_variable == "total_pressure":
-            self.inlet_reference = self.inlet_boundary.get("reference", self.preference + self.ureference ** 2 / 2)  # Reference of total_pressure inlet boundary condition
+            self.inlet_reference = self.inlet_boundary.get("reference", self.preference + self.rhof * self.ureference ** 2 / 2)  # Reference of total_pressure inlet boundary condition
         else:
             raise ValueError(f"The inlet_variable \'{self.inlet_variable}\' is not implemented,"
                              f" choose between \'pressure\', \'total_pressure\' and \'velocity\'")
@@ -80,6 +80,8 @@ class SolverWrapperTubeFlow(Component):
         else:
             self.dt = 1  # Time step size default value
             self.alpha = np.pi * self.d ** 2 / 4 / self.ureference  # Numerical damping parameter due to central discretization of pressure in momentum equation
+            if self.outlet_type == 1:
+                raise ValueError("Outlet type 1 can not be used for steady calculation")
 
         self.newtonmax = self.settings["newtonmax"]  # Maximal number of Newton iterations
         self.newtontol = self.settings["newtontol"]  # Tolerance of Newton iterations
@@ -109,7 +111,7 @@ class SolverWrapperTubeFlow(Component):
         self.interface_output = Interface(self.model, self.settings["interface_output"])
         self.interface_input.set_variable_data("wall", "pressure", self.pres)
         self.interface_input.set_variable_data("wall", "traction", self.trac)
-        
+
         # run time
         self.run_time = 0
 
@@ -125,9 +127,10 @@ class SolverWrapperTubeFlow(Component):
 
         self.k = 0
         self.n += 1
-        self.un = np.array(self.u)
-        self.pn = np.array(self.p)
-        self.an = np.array(self.a)
+        if self.unsteady:
+            self.un = np.array(self.u)
+            self.pn = np.array(self.p)
+            self.an = np.array(self.a)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):

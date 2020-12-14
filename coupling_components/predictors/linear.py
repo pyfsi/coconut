@@ -13,4 +13,7 @@ class PredictorLinear(Predictor):
         self.order = 1
 
     def Predict(self, x):
-        return self.Linear(x)
+        if len(self.dataprev) == 1:
+            return self.Constant(x)
+        else:
+            return self.Linear(x)
