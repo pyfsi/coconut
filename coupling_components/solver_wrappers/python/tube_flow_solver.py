@@ -63,11 +63,11 @@ class SolverWrapperTubeFlow(Component):
         self.outlet_amplitude = self.outlet_amplitude / self.rhof
         self.preference = self.preference / self.rhof
 
-        e = self.settings["e"].GetDouble()  # Young"s modulus of structure
-        h = self.settings["h"].GetDouble()  # Thickness of structure
+        e = self.settings["e"]  # Young"s modulus of structure
+        h = self.settings["h"]  # Thickness of structure
         self.cmk2 = (e * h) / (self.rhof * self.d)  # Wave speed squared of outlet boundary condition
 
-        self.m = self.settings["m"].GetInt()  # Number of segments
+        self.m = self.settings["m"]  # Number of segments
         self.dz = l / self.m  # Segment length
         axial_offset = self.settings.get("axial_offset", 0)  # Start position along axis
         self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # Data is stored in cell centers
