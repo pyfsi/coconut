@@ -1,10 +1,10 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.interface import Interface
 
 
-class TestPredictorLinear(KratosUnittest.TestCase):
+class TestPredictorLinear(unittest.TestCase):
     def test_predictor_linear(self):
         m = 10
         dz = 3.0
@@ -56,4 +56,4 @@ class TestPredictorLinear(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

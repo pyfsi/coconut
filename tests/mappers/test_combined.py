@@ -1,11 +1,11 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
 import os
 
-class TestMapperCombined(KratosUnittest.TestCase):
+class TestMapperCombined(unittest.TestCase):
     def test_mapper_combined(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_combined.json')
         with open(parameter_file_name, 'r') as parameter_file:
@@ -50,4 +50,4 @@ class TestMapperCombined(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

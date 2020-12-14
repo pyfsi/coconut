@@ -1,5 +1,6 @@
 from coconut.coupling_components.component import Component
 from coconut.data_structure.variables import variables_dimensions
+from coconut.coupling_components.tools import Print
 
 from scipy.spatial import cKDTree
 import numpy as np
@@ -31,10 +32,15 @@ class MapperInterpolator(Component):
 
         # get list with directions
         self.directions = []
+        if type(self.settings['directions']) != list:
+            raise TypeError('directions must be a list')
         for direction in self.settings['directions']:
-            if direction not in ['x', 'y', 'z']:  # *** cast to lowercase?
+            if direction.lower() not in ['x', 'y', 'z']:
                 raise ValueError(f'"{direction}" is not a valid direction.')
-            self.directions.append(direction + '0')
+            if direction.lower() != direction:
+                # *** I would later remove this and only accept lowercase directions
+                Print('directions must be lowercase', layout='warning')
+            self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
                 raise ValueError(f'too many directions given')
 

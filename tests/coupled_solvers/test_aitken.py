@@ -1,12 +1,12 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
 
 
-class TestCoupledSolverAitken(KratosUnittest.TestCase):
+class TestCoupledSolverAitken(unittest.TestCase):
     def test_coupled_solver_aitken(self):
         m = 10
         dz = 2.0
@@ -125,4 +125,4 @@ class TestCoupledSolverAitken(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

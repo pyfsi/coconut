@@ -1,11 +1,11 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 
 
 from os.path import join
 import copy
 
-class TestPyKratosVariables(KratosUnittest.TestCase):
+class TestPyKratosVariables(unittest.TestCase):
     def test_pykratos_variables(self):
         parameter_file_name = "test_parameters.json"
 
@@ -50,4 +50,4 @@ class TestPyKratosVariables(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

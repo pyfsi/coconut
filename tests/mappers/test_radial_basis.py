@@ -1,12 +1,12 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
 from coconut.coupling_components.tools import quicktimer
 
 import os
 
 
-class TestMapperRadialBasis(KratosUnittest.TestCase):
+class TestMapperRadialBasis(unittest.TestCase):
 
     def test_mapper_radial_basis(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_radial_basis.json')
@@ -104,4 +104,4 @@ class TestMapperRadialBasis(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

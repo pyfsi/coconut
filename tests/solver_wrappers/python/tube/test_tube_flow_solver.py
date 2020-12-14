@@ -1,12 +1,12 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
 import os
 import subprocess
 
-class TestSolverWrapperTubeFlowSolver(KratosUnittest.TestCase):
+class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
     def assertArrayAlmostEqual(self, a1, a2, delta=None):
         ls1 = list(a1)
         ls2 = list(a2)
@@ -71,8 +71,8 @@ class TestSolverWrapperTubeFlowSolver(KratosUnittest.TestCase):
             a1 = output1_end.GetNumpyArray()
             a2 = output2_end.GetNumpyArray()
 
-            self.assertArrayAlmostEqual(a1, a2, delta=1e-12)
+            np.testing.assert_allclose(a1, a2, atol=1e-12)
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

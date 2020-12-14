@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
 
 import numpy as np
@@ -7,7 +7,7 @@ from copy import deepcopy
 import os
 
 
-class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
+class TestSolverWrapperAbaqus614(unittest.TestCase):
     def test_solver_wrapper_abaqus_614(self):
         self.test_solver_wrapper_abaqus_614_tube2d()
         self.test_solver_wrapper_abaqus_614_tube3d()
@@ -372,4 +372,4 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

@@ -1,9 +1,10 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
+import unittest
 from coconut.coupling_components.tools import CreateInstance
+import numpy as np
 
 
-class TestCoupledSolverIBQN(KratosUnittest.TestCase):
+class TestCoupledSolverIBQN(unittest.TestCase):
 
     def assertArrayAlmostEqual(self, a1, a2):
         ls1 = list(a1)
@@ -36,7 +37,7 @@ class TestCoupledSolverIBQN(KratosUnittest.TestCase):
                  0.00000e+00, 0.00000e+00, 2.45726e-07, 0.00000e+00,
                  0.00000e+00, 2.37273e-07, 0.00000e+00, 0.00000e+00,
                  2.28979e-07, 0.00000e+00]
-        self.assertArrayAlmostEqual(coupled_solver.x.GetNumpyArray(), sol_x)
+        np.testing.assert_allclose(coupled_solver.x.GetNumpyArray(), sol_x, rtol=1e-5)
 
         coupled_solver.FinalizeSolutionStep()
         coupled_solver.OutputSolutionStep()
@@ -44,4 +45,4 @@ class TestCoupledSolverIBQN(KratosUnittest.TestCase):
         coupled_solver.Finalize()
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()
