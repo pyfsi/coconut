@@ -12,6 +12,7 @@
     "settings": {
       "timestep_start": 0,
       "delta_t": 0.0001,
+      "save_results": true,
       "omega": 0.01,
       "model": {
         "type": "coupled_solvers.models.ls",
