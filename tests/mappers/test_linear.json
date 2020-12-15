@@ -3,9 +3,9 @@
     "type": "mappers.linear",
     "settings": {
       "directions": [
-        "X",
-        "Y",
-        "Z"
+        "x",
+        "y",
+        "z"
       ],
       "parallel": true
     }

@@ -18,11 +18,7 @@ def split(coords):
 
 class TestMapperInterpolator(unittest.TestCase):
     def test_mapper_interpolator(self):
-
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_interpolator.json')
-
-        with open(parameter_file_name, 'r') as parameter_file:
+        with open('mappers/test_interpolator.json') as parameter_file:
             parameters = json.load(parameter_file)
         par_mapper_0 = parameters['mapper']
 
@@ -78,22 +74,22 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.vstack((coords, np.array([[0, 0, 1.1]])))
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, 1.25]])))
             mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, -.25]])))
             mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[0, 0, 2], [0, 0, -1]])))
             mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             # check 2D errors and warnings
@@ -120,22 +116,22 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.vstack((coords, np.array([[1.1, 0, 1.1]])))
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.25, 0, 1.25]])))
             mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[-.25, 0, -.25]])))
             mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[2, 0, 2], [-1, 0, -1]])))
             mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             # check 3D errors and warnings
@@ -162,22 +158,22 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.vstack((coords, np.array([[1.1, 1.1, 1.1]])))
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[1.25, 1.25, 1.25]])))
             mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[-.25, -.25, -.25]])))
             mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.vstack((coords, np.array([[2, 2, 2], [-1, -1, -1]])))
             mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             # check if method works for lines aligned with coordinate axes in 2D
@@ -195,17 +191,17 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.array([[0, .85, 0], [1, 1.15, 0]])
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             # check if method works for planes aligned with coordinate axes in 3D
@@ -223,17 +219,17 @@ class TestMapperInterpolator(unittest.TestCase):
 
             coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
             mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
             mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
-            self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
             coords = np.array([[0, .85, 0], [1, 1.15, 0]])
             mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
             mapper.finalize()
 
         # test check_duplicate_points method
@@ -247,12 +243,12 @@ class TestMapperInterpolator(unittest.TestCase):
 
         coords = np.vstack((coords, np.array([[1e-10, 0., 0.]])))
         mp_from = model.create_model_part('mp_from_1', *split(coords), np.arange(3))
-        self.assertRaises(Warning, mapper.Initialize, *(mp_from, mp_to))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
         mapper.finalize()
 
         coords = np.vstack((coords, np.array([[1e-14, 0., 0.]])))
         mp_from = model.create_model_part('mp_from_2', *split(coords), np.arange(4))
-        self.assertRaises(ValueError, mapper.Initialize, *(mp_from, mp_to))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
         mapper.finalize()
 
         # *** TODO: check tree? check __call__ method?

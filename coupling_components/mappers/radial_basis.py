@@ -7,7 +7,7 @@ import numpy as np
 from multiprocessing import Pool, cpu_count
 
 
-def Create(parameters):
+def create(parameters):
     return MapperRadialBasis(parameters)
 
 
@@ -19,17 +19,14 @@ class MapperRadialBasis(MapperInterpolator):
         self.coeffs = None
 
         # check and store settings
-        self.parallel = self.settings['parallel'].GetBool() if self.settings.Has('parallel') else False
-        self.shape_parameter = self.settings['shape_parameter'].GetInt() if self.settings.Has('shape_parameter') \
-            else 200
+        self.parallel = self.settings['parallel'] if 'parallel' in self.settings else False
+        self.shape_parameter = (self.settings['shape_parameter'] if
+                                'shape_parameter' in self.settings else 200)
         if self.shape_parameter < 2:
             tools.print(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
 
         # determine number of nearest neighbours
-        if len(self.directions) == 3:
-            self.n_nearest = 81
-        else:
-            self.n_nearest = 9
+        self.n_nearest = 81 if len(self.directions) == 3 else 9
 
     def initialize(self, model_part_from, model_part_to):
         super().initialize(model_part_from, model_part_to)

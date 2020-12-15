@@ -3,9 +3,9 @@
     "type": "mappers.radial_basis",
     "settings": {
       "directions": [
-        "X",
-        "Y",
-        "Z"
+        "x",
+        "y",
+        "z"
       ],
       "parallel": true
     }

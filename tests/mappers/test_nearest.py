@@ -2,7 +2,6 @@ from coconut import data_structure
 from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
 
 import unittest
-import os
 import json
 
 variables = vars(data_structure)
@@ -10,9 +9,7 @@ variables = vars(data_structure)
 
 class TestMapperNearest(unittest.TestCase):
     def test_mapper_nearest(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           'test_nearest.json')
-        with open(parameter_file_name, 'r') as parameter_file:
+        with open('mappers/test_nearest.json') as parameter_file:
             parameters = json.load(parameter_file)
         par_mapper = parameters['mapper']
 
