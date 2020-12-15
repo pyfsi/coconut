@@ -41,12 +41,15 @@ class SolverWrapperTubeFlow(Component):
         self.inlet_boundary = self.settings["inlet_boundary"]
         self.inlet_variable = self.inlet_boundary["variable"]  # variable upon which boundary condition is specified
         if self.inlet_variable == "velocity":
-            self.inlet_reference = self.inlet_boundary.get("reference", self.ureference)  # reference of velocity inlet boundary condition
+            self.inlet_reference = self.inlet_boundary.get("reference", self.ureference)  # reference of velocity
+            # inlet boundary condition
         elif self.inlet_variable == "pressure":
-            self.inlet_reference = self.inlet_boundary.get("reference", self.preference)  # reference of pressure inlet boundary condition
+            self.inlet_reference = self.inlet_boundary.get("reference", self.preference)  # reference of pressure
+            # inlet boundary condition
         elif self.inlet_variable == "total_pressure":
             self.inlet_reference = self.inlet_boundary.get("reference", self.preference
-                                                           + self.rhof * self.ureference ** 2 / 2)  # reference of total_pressure inlet boundary condition
+                                                           + self.rhof * self.ureference ** 2 / 2)  # reference of
+            # total_pressure inlet boundary condition
         else:
             raise ValueError(f"The inlet_variable \'{self.inlet_variable}\' is not implemented,"
                              f" choose between \'pressure\', \'total_pressure\' and \'velocity\'")
@@ -57,7 +60,8 @@ class SolverWrapperTubeFlow(Component):
 
         self.outlet_boundary = self.settings["outlet_boundary"]
         self.outlet_type = self.outlet_boundary["type"]  # type of outlet boundary condition
-        self.outlet_amplitude = self.outlet_boundary.get("amplitude", self.preference)  # amplitude of outlet boundary condition
+        self.outlet_amplitude = self.outlet_boundary.get("amplitude", self.preference)  # amplitude of outlet boundary
+        # condition
 
         # adjust to kinematic pressure
         if self.inlet_variable in {"pressure", "total_pressure"}:
@@ -79,10 +83,12 @@ class SolverWrapperTubeFlow(Component):
         self.n = 0  # time step (no restart implemented)
         if self.unsteady:
             self.dt = self.settings["delta_t"]  # time step size
-            self.alpha = np.pi * self.d ** 2 / 4 / (self.ureference + self.dz / self.dt)  # Numerical damping parameter due to central discretization of pressure in momentum equation
+            self.alpha = np.pi * self.d ** 2 / 4 / (self.ureference + self.dz / self.dt)  # Numerical damping
+            # parameter due to central discretization of pressure in momentum equation
         else:
             self.dt = 1  # time step size default value
-            self.alpha = np.pi * self.d ** 2 / 4 / self.ureference  # numerical damping parameter due to central discretization of pressure in momentum equation
+            self.alpha = np.pi * self.d ** 2 / 4 / self.ureference  # numerical damping parameter due to central
+            # discretization of pressure in momentum equation
             if self.outlet_type == 1:
                 raise ValueError("Outlet type 1 can not be used for steady calculation")
 

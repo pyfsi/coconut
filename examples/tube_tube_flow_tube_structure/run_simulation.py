@@ -20,4 +20,4 @@ if __name__ == '__main__':
         parameters = json.load(parameter_file)
 
     simulation = Analysis(parameters)
-    simulation.Run()
+    simulation.run()

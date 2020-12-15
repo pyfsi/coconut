@@ -1,4 +1,3 @@
-from coconut import data_structure
 from coconut.coupling_components.tools import create_instance
 import json
 
@@ -12,9 +11,9 @@ class Analysis:
 
         self.coupled_solver = create_instance(self.parameters["coupled_solver"])
 
-    def Run(self):
+    def run(self):
         self.initialize()
-        self.RunSolutionStep()
+        self.run_solution_loop()
         self.finalize()
 
     def initialize(self):
@@ -22,9 +21,9 @@ class Analysis:
         self.coupled_solver.check()
         self.coupled_solver.print_components_info(' ')
 
-    def RunSolutionLoop(self):
+    def run_solution_loop(self):
         for _ in range(self.number_of_timesteps):
-            self.coupled_solver.initializeSolutionStep()
+            self.coupled_solver.initialize_solution_step()
             self.coupled_solver.solve_solution_step()
             self.coupled_solver.finalize_solution_step()
             self.coupled_solver.output_solution_step()
@@ -33,12 +32,12 @@ class Analysis:
         self.coupled_solver.finalize()
 
 
-
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='The main file which runs the coupled simulation')
-    parser.add_argument('parameter_file_name', help='Name of the parameter file containing coupling information.', type=str, nargs=1)
+    parser.add_argument('parameter_file_name', help='Name of the parameter file containing coupling information',
+                        type=str, nargs=1)
 
     # # Check number of command line arguments
     # if len(argv) != 2:
@@ -55,4 +54,4 @@ if __name__ == '__main__':
         parameters = json.load(parameter_file)
 
     simulation = Analysis(parameters)
-    simulation.Run()
+    simulation.run()
