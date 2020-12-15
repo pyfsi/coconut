@@ -7,6 +7,7 @@ import os.path as path
 from scipy.linalg import solve_banded
 import json
 
+
 def create(parameters):
     return SolverWrapperTubeStructure(parameters)
 
@@ -18,44 +19,43 @@ class SolverWrapperTubeStructure(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        # Reading
+        # reading
         self.parameters = parameters
         self.settings = parameters["settings"]
         self.working_directory = self.settings["working_directory"]
         input_file = self.settings["input_file"]
         case_file_name = path.join(self.working_directory, input_file)
         with open(case_file_name, 'r') as case_file:
-            new_settings = json.loads(case_file.read())
-            self.settings.update(new_settings)  # TODO: inversed priority
+            self.settings.update(json.load(case_file))  # TODO: inversed priority
 
-        # Settings
+        # settings
         self.unsteady = self.settings.get("unsteady", True)
 
-        l = self.settings["l"]  # Length
-        d = self.settings["d"]  # Diameter
-        self.rreference = d / 2  # Reference radius of cross section
-        self.rhof = self.settings["rhof"]  # Fluid density
+        l = self.settings["l"]  # length
+        d = self.settings["d"]  # diameter
+        self.rreference = d / 2  # reference radius of cross section
+        self.rhof = self.settings["rhof"]  # fluid density
 
-        self.preference = self.settings.get("preference", 0)  # Reference pressure
+        self.preference = self.settings.get("preference", 0)  # reference pressure
 
         e = self.settings["e"]  # Young's modulus of structure
         nu = self.settings["nu"]  # Poisson's ratio
-        self.h = self.settings["h"]  # Thickness of structure
-        self.rhos = self.settings["rhos"]  # Structure density
-        self.cmk2 = (e * self.h) / (self.rhof * d)  # Wave speed squared
+        self.h = self.settings["h"]  # thickness of structure
+        self.rhos = self.settings["rhos"]  # structure density
+        self.cmk2 = (e * self.h) / (self.rhof * d)  # wave speed squared
         self.b1 = (self.h * e) / (1 - nu ** 2) * (self.h ** 2) / 12
         self.b2 = self.b1 * (2 * nu) / self.rreference ** 2
         self.b3 = (self.h * e) / (1 - nu ** 2) * 1 / self.rreference ** 2
 
-        self.m = self.settings["m"]  # Number of segments
-        self.dz = l / self.m  # Segment length
-        axial_offset = self.settings.get("axial_offset", 0)  # Start position along axis
-        self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # Data is stored in cell centers
+        self.m = self.settings["m"]  # number of segments
+        self.dz = l / self.m  # segment length
+        axial_offset = self.settings.get("axial_offset", 0)  # start position along axis
+        self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # data is stored in cell centers
 
-        self.k = 0  # Iteration
-        self.n = 0  # Time step (no restart implemented)
+        self.k = 0  # iteration
+        self.n = 0  # time step (no restart implemented)
         if self.unsteady:
-            self.dt = self.settings["delta_t"]  # Time step size
+            self.dt = self.settings["delta_t"]  # time step size
             self.time_discretization = self.settings.get("time_discretization", "backward euler").lower()
             if self.time_discretization == "newmark":
                 self.gamma = self.settings["gamma"]  # Newmark parameter: gamma >= 1/2
@@ -68,49 +68,49 @@ class SolverWrapperTubeStructure(Component):
                 self.beta = 1
                 self.nm = False  # used to set rnddot to zero
             else:
-                raise ValueError("Time discretization should be 'Newmark' or 'backward Euler'.")
+                raise ValueError("Time discretization should be 'Newmark' or 'backward Euler'")
         else:
             # not used
             self.dt = 1  # Time step size default
             self.beta = 1
             self.nm = False
 
-        # Initialization
-        self.areference = np.pi * self.rreference ** 2  # Reference area of cross section
-        self.p = np.ones(self.m) * self.preference  # Pressure
-        self.a = np.ones(self.m) * self.areference  # Area of cross section
-        self.r = np.ones(self.m + 4) * self.rreference  # Radius of cross section
+        # initialization
+        self.areference = np.pi * self.rreference ** 2  # reference area of cross section
+        self.p = np.ones(self.m) * self.preference  # pressure
+        self.a = np.ones(self.m) * self.areference  # area of cross section
+        self.r = np.ones(self.m + 4) * self.rreference  # radius of cross section
         if self.unsteady:
-            self.rdot = np.zeros(self.m)  # First derivative of the radius with respect to time in current timestep
-            self.rddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in current timestep
-        self.rn = np.array(self.r)  # Previous radius of cross section
-        self.rndot = np.zeros(self.m)  # First derivative of the radius with respect to time in previous timestep
-        self.rnddot = np.zeros(self.m)  # Second derivative of the radius with respect to time in previous timestep
+            self.rdot = np.zeros(self.m)  # first derivative of the radius with respect to time in current timestep
+            self.rddot = np.zeros(self.m)  # second derivative of the radius with respect to time in current timestep
+        self.rn = np.array(self.r)  # previous radius of cross section
+        self.rndot = np.zeros(self.m)  # first derivative of the radius with respect to time in previous timestep
+        self.rnddot = np.zeros(self.m)  # second derivative of the radius with respect to time in previous timestep
 
-        self.disp = np.zeros((self.m, 3))  # Displacement
-        self.trac = np.zeros((self.m, 3))  # Traction (always zero)
+        self.disp = np.zeros((self.m, 3))  # displacement
+        self.trac = np.zeros((self.m, 3))  # traction (always zero)
 
         self.conditioning = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.unsteady
                              + 6.0 * self.b1 / self.dz ** 4
-                             + 2.0 * self.b2 / self.dz ** 2 + self.b3)  # Factor for conditioning Jacobian
+                             + 2.0 * self.b2 / self.dz ** 2 + self.b3)  # factor for conditioning Jacobian
 
-        # ModelParts
+        # modelParts
         self.model = Model()
         self.model_part = self.model.create_model_part("wall", np.zeros(self.m), self.rreference * np.ones(self.m),
                                                        self.z, np.arange(self.m))  # TODO not use hardcoded mp name
 
-        # Interfaces
+        # interfaces
         self.interface_input = Interface(self.settings["interface_input"], self.model)
-        self.interface_input.set_variable_data("wall", "pressure", self.p)
+        self.interface_input.set_variable_data("wall", "pressure", self.p.reshape(-1, 1))
         self.interface_input.set_variable_data("wall", "traction", self.trac)
-        self.interface_output = Interface(self.model, self.settings["interface_output"])
-        self.interface_input.set_variable_data("wall", "displacement", self.disp)
+        self.interface_output = Interface(self.settings["interface_output"], self.model)
+        self.interface_output.set_variable_data("wall", "displacement", self.disp)
 
         # run time
         self.run_time = 0.0
 
-        # Debug
-        self.debug = False  # Set on True to save input and output of each iteration of every time step
+        # debug
+        self.debug = False  # set on True to save input and output of each iteration of every time step
         self.output_solution_step()
 
     def initialize(self):
@@ -128,11 +128,11 @@ class SolverWrapperTubeStructure(Component):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
-        # Input
+        # input
         self.interface_input = interface_input.copy()
         self.p = interface_input.get_variable_data("wall", "pressure")
 
-        # Solve system
+        # solve system
         f = self.get_residual()
         residual0 = np.linalg.norm(f)
         if residual0:
@@ -185,13 +185,13 @@ class SolverWrapperTubeStructure(Component):
         return self.interface_input.copy()
 
     def set_interface_input(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping.")
+        raise Exception("This solver interface provides no mapping")
 
     def get_interface_output(self):  # TODO: need to have latest data?
         return self.interface_output.copy()
 
     def set_interface_output(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping.")
+        raise Exception("This solver interface provides no mapping")
 
     def get_residual(self):
         f = np.zeros(self.m + 4)

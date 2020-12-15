@@ -19,7 +19,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.parameters = parameters
         self.settings = parameters["settings"]
         self.working_directory = self.settings["working_directory"]
-        input_file = self.settings["input_file"].GetString()
+        input_file = self.settings["input_file"]
         case_file_name = path.join(self.working_directory, input_file)
         with open(case_file_name, 'r') as case_file:
             self.settings.update(json.load(case_file))  # TODO: inversed priority
@@ -62,7 +62,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_input.set_variable_data("wall", "pressure", self.p.reshape(-1, 1))
         self.interface_input.set_variable_data("wall", "traction", self.trac)
-        self.interface_output = Interface(self.model, self.settings["interface_output"])
+        self.interface_output = Interface(self.settings["interface_output"], self.model)
         self.interface_output.set_variable_data("wall", "displacement", self.disp)
 
         # run time
