@@ -167,9 +167,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             tools.print_info(header)
 
     def print_iteration_info(self, r):
-        normx = np.linalg.norm(self.x.GetNumpyArray())
-        normy = np.linalg.norm(self.y.GetNumpyArray())
-        info = f"{self.n:<16d}{normx:<28.17e}{normy:<28.17e}"
+        info = f"{self.n:<16d}{self.x.norm():<28.17e}{self.y.norm():<28.17e}"
         tools.print_info(' │' * self.solver_level, info)
 
 

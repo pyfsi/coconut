@@ -85,7 +85,7 @@ def print_components_info(pre, component_list):
 
 # timer-function
 @contextmanager
-def quicktimer(name=None, t=0, n=0, ms=False):
+def quick_timer(name=None, t=0, n=0, ms=False):
     """
     Contextmanager that prints the time to execute a piece of code.
 
