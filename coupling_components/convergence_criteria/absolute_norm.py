@@ -1,7 +1,5 @@
 from coconut.coupling_components.component import Component
 
-import numpy as np
-
 
 def create(parameters):
     return ConvergenceCriterionAbsoluteNorm(parameters)
@@ -15,17 +13,17 @@ class ConvergenceCriterionAbsoluteNorm(Component):
         self.tolerance = settings["tolerance"]
         self.order = settings["order"]
 
-        self.last_norm = 0.0
+        self.last_norm = 0
         self.is_updated = False
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        self.last_norm = 0.0
+        self.last_norm = 0
         self.is_updated = False
 
     def update(self, r):
-        self.last_norm = np.linalg.norm(r.get_interface_data(), self.order)
+        self.last_norm = r.norm(order=self.order)
         self.is_updated = True
 
     def is_satisfied(self):

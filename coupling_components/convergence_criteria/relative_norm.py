@@ -15,19 +15,19 @@ class ConvergenceCriterionRelativeNorm(Component):
         self.tolerance = settings["tolerance"]
         self.order = settings["order"]
 
-        self.initial_norm = 0.0
-        self.last_norm = 0.0
+        self.initial_norm = 0
+        self.last_norm = 0
         self.is_initial_norm_set = False
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        self.initial_norm = 0.0
-        self.last_norm = 0.0
+        self.initial_norm = 0
+        self.last_norm = 0
         self.is_initial_norm_set = False
 
     def update(self, r):
-        self.last_norm = np.linalg.norm(r.get_interface_data(), self.order)
+        self.last_norm = r.norm(order=self.order)
         if not self.is_initial_norm_set:
             self.initial_norm = self.last_norm
             self.is_initial_norm_set = True
@@ -38,4 +38,4 @@ class ConvergenceCriterionRelativeNorm(Component):
         if not self.is_initial_norm_set:
             return False
         else:
-            return self.last_norm/self.initial_norm < self.tolerance
+            return self.last_norm / self.initial_norm < self.tolerance

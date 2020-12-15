@@ -11,7 +11,6 @@ class ConvergenceCriterionCombined(Component):
         for criterion in settings["criteria_list"]:
             self.convergence_criteria.append(create_instance(criterion))
 
-
     def initialize(self):
         super().initialize()
 
