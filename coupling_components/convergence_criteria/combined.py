@@ -48,8 +48,8 @@ class ConvergenceCriterionCombined(Component):
         for convergence_criterion in self.convergence_criteria:
             convergence_criterion.check()
 
-    def print_Info(self, pre):
-        super().print_Info(pre)
+    def print_components_info(self, pre):
+        super().print_components_info(pre)
 
         print_components_info(pre, self.convergence_criteria)
 
