@@ -53,17 +53,17 @@ AbaqusSolver0.initialize()
 
 # Step 1, Coupling 1
 AbaqusSolver0.initialize_solution_step()
-AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 
 os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
 
 # Step 1, Coupling 2
-AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
 
 #Step 2, Coupling 1
 AbaqusSolver0.initialize_solution_step()
-AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
 
 #Iterate until deformation is approximately steady
@@ -81,7 +81,7 @@ for node in mp_out.Nodes:
 diffMax = 1000
 while diffMax > tol:
     AbaqusSolver0.initialize_solution_step()
-    AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+    AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
     AbaqusSolver0.finalize_solution_step()
     diffMax = 0
     maxDisp = 0

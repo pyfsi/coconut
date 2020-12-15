@@ -128,11 +128,11 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         # Initialize variables
         if self.solver_index == 1:
-            self.x = self.solver_wrapper.GetInterfaceOutput()
-            self.y = self.solver_wrapper.GetInterfaceInput()
+            self.x = self.solver_wrapper.get_interface_output()
+            self.y = self.solver_wrapper.get_interface_input()
         else:
-            self.x = self.solver_wrapper.GetInterfaceInput()
-            self.y = self.solver_wrapper.GetInterfaceOutput()
+            self.x = self.solver_wrapper.get_interface_input()
+            self.y = self.solver_wrapper.get_interface_output()
 
         if self.save_results:
             self.complete_solution_x = self.x.GetNumpyArray().reshape(-1, 1)

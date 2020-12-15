@@ -60,10 +60,10 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
 
             # Step 1, Coupling 1
             AbaqusSolver0.initialize_solution_step()
-            output1_1 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+            output1_1 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
             os.system("cp -r test_614_tube2D/CSM/CSM_Time1.odb test_614_tube2D/CSM/CSM_Time1_Iter1.odb")
             # Step 1, Coupling 2
-            output1_2 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+            output1_2 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input()).deepcopy()
             AbaqusSolver0.finalize_solution_step()
 
             # Compare output, as input hasn't changed these should be the same
@@ -83,11 +83,11 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
             # Step 2 and 3
             for i in range(2):
                 AbaqusSolver0.initialize_solution_step()
-                AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+                AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
                 AbaqusSolver0.finalize_solution_step()
             # Step 4
             AbaqusSolver0.initialize_solution_step()
-            output_single_run = AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+            output_single_run = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input()).deepcopy()
             AbaqusSolver0.finalize_solution_step()
             AbaqusSolver0.finalize()
 
@@ -108,7 +108,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
 
             for i in range(2):
                 AbaqusSolver1.initialize_solution_step()
-                output_restart = AbaqusSolver1.solve_solution_step(AbaqusSolver1.GetInterfaceInput()).deepcopy()
+                output_restart = AbaqusSolver1.solve_solution_step(AbaqusSolver1.get_interface_input()).deepcopy()
                 AbaqusSolver1.finalize_solution_step()
             AbaqusSolver1.finalize()
 
@@ -142,7 +142,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
             AbaqusSolver2.initialize()
             for i in range(4):
                 AbaqusSolver2.initialize_solution_step()
-                output_4cores = AbaqusSolver2.solve_solution_step(AbaqusSolver2.GetInterfaceInput()).deepcopy()
+                output_4cores = AbaqusSolver2.solve_solution_step(AbaqusSolver2.get_interface_input()).deepcopy()
                 AbaqusSolver2.finalize_solution_step()
             AbaqusSolver2.finalize()
 
@@ -168,7 +168,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
             AbaqusSolver2.initialize()
             for i in range(4):
                 AbaqusSolver2.initialize_solution_step()
-                output_shear = AbaqusSolver2.solve_solution_step(AbaqusSolver2.GetInterfaceInput()).deepcopy()
+                output_shear = AbaqusSolver2.solve_solution_step(AbaqusSolver2.get_interface_input()).deepcopy()
                 AbaqusSolver2.finalize_solution_step()
             AbaqusSolver2.finalize()
 
@@ -238,10 +238,10 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
 
                 # Step 1, Coupling 1
                 AbaqusSolver0.initialize_solution_step()
-                output1_1 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+                output1_1 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
                 os.system("cp -r test_614_tube3D/CSM/CSM_Time1.odb test_614_tube3D/CSM/CSM_Time1_Iter1.odb")
                 # Step 1, Coupling 2
-                output1_2 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+                output1_2 = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input()).deepcopy()
                 AbaqusSolver0.finalize_solution_step()
 
                 # Compare output, as input hasn't changed these should be the same
@@ -261,11 +261,11 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
                 # Step 2 and 3
                 for i in range(2):
                     AbaqusSolver0.initialize_solution_step()
-                    AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+                    AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
                     AbaqusSolver0.finalize_solution_step()
                 # Step 4
                 AbaqusSolver0.initialize_solution_step()
-                output_single_run = AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput()).deepcopy()
+                output_single_run = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input()).deepcopy()
                 AbaqusSolver0.finalize_solution_step()
                 AbaqusSolver0.finalize()
 
@@ -288,7 +288,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
 
                 for i in range(2):
                     AbaqusSolver1.initialize_solution_step()
-                    output_restart = AbaqusSolver1.solve_solution_step(AbaqusSolver1.GetInterfaceInput()).deepcopy()
+                    output_restart = AbaqusSolver1.solve_solution_step(AbaqusSolver1.get_interface_input()).deepcopy()
                     AbaqusSolver1.finalize_solution_step()
                 AbaqusSolver1.finalize()
 
@@ -322,7 +322,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
                 AbaqusSolver2.initialize()
                 for i in range(4):
                     AbaqusSolver2.initialize_solution_step()
-                    output_4cores = AbaqusSolver2.solve_solution_step(AbaqusSolver2.GetInterfaceInput()).deepcopy()
+                    output_4cores = AbaqusSolver2.solve_solution_step(AbaqusSolver2.get_interface_input()).deepcopy()
                     AbaqusSolver2.finalize_solution_step()
                 AbaqusSolver2.finalize()
 
@@ -348,7 +348,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
                 AbaqusSolver2.initialize()
                 for i in range(4):
                     AbaqusSolver2.initialize_solution_step()
-                    output_shear = AbaqusSolver2.solve_solution_step(AbaqusSolver2.GetInterfaceInput()).deepcopy()
+                    output_shear = AbaqusSolver2.solve_solution_step(AbaqusSolver2.get_interface_input()).deepcopy()
                     AbaqusSolver2.finalize_solution_step()
                 AbaqusSolver2.finalize()
 

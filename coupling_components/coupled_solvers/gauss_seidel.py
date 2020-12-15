@@ -85,16 +85,16 @@ class CoupledSolverGaussSeidel(Component):
             raise ValueError("Not both solvers may be mapped solvers.")
         if index_mapped is not None:
             # Construct input mapper
-            interface_input_from = self.solver_wrappers[index_other].GetInterfaceOutput()
-            self.solver_wrappers[index_mapped].SetInterfaceInput(interface_input_from)
+            interface_input_from = self.solver_wrappers[index_other].get_interface_output()
+            self.solver_wrappers[index_mapped].set_interface_input(interface_input_from)
 
             # Construct output mapper
-            interface_output_to = self.solver_wrappers[index_other].GetInterfaceInput()
-            self.solver_wrappers[index_mapped].SetInterfaceOutput(interface_output_to)
+            interface_output_to = self.solver_wrappers[index_other].get_interface_input()
+            self.solver_wrappers[index_mapped].set_interface_output(interface_output_to)
 
         # Initialize variables
-        self.x = self.solver_wrappers[1].GetInterfaceOutput()
-        self.y = self.solver_wrappers[0].GetInterfaceOutput()
+        self.x = self.solver_wrappers[1].get_interface_output()
+        self.y = self.solver_wrappers[0].get_interface_output()
         self.predictor.initialize(self.x)
 
         if self.save_results:

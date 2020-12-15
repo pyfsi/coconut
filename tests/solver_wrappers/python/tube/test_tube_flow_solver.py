@@ -51,17 +51,17 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
             mp = solver_1.model['wall']
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output1_end = solver_1.solve_solution_step(solver_1.GetInterfaceInput()).deepcopy()
+            output1_end = solver_1.solve_solution_step(solver_1.get_interface_input()).deepcopy()
 
             # change solver_2 to intermediate position and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., -get_dy(node.X0), 0.])
-            solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
+            solver_2.solve_solution_step(solver_2.get_interface_input()).deepcopy()
 
             # change solver_2 to end position and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output2_end = solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
+            output2_end = solver_2.solve_solution_step(solver_2.get_interface_input()).deepcopy()
 
             for solver in solvers:
                 solver.finalize_solution_step()

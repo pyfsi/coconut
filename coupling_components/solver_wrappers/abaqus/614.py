@@ -600,16 +600,16 @@ class SolverWrapperAbaqus614(Component):
     def finalize(self):
         super().finalize()
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         return self.interface_input.deepcopy()
 
-    def SetInterfaceInput(self):
+    def set_interface_input(self):
         Exception("This solver interface provides no mapping.")
 
-    def GetInterfaceOutput(self):
+    def get_interface_output(self):
         return self.interface_output.deepcopy()
 
-    def SetInterfaceOutput(self):
+    def set_interface_output(self):
         Exception("This solver interface provides no mapping.")
 
     def makeElements(self, face_file, output_file):

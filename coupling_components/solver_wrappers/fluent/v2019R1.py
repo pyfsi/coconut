@@ -331,16 +331,16 @@ class SolverWrapperFluent2019R1(Component):
         self.wait_message('stop_ready')
         self.fluent_process.wait()
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         return self.interface_input.deepcopy()
 
-    def SetInterfaceInput(self):
+    def set_interface_input(self):
         Exception("This solver interface provides no mapping.")
 
-    def GetInterfaceOutput(self):
+    def get_interface_output(self):
         return self.interface_output.deepcopy()
 
-    def SetInterfaceOutput(self):
+    def set_interface_output(self):
         Exception("This solver interface provides no mapping.")
 
     def set_fluent_version(self):

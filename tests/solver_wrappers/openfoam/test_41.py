@@ -65,7 +65,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             # update position by iterating once in solver
             solver.initialize()
             solver.initialize_solution_step()
-            solver.solve_solution_step(solver.GetInterfaceInput())
+            solver.solve_solution_step(solver.get_interface_input())
             solver.finalize_solution_step()
             solver.finalize()
  
@@ -115,17 +115,17 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             mp = solver.model['beamoutside_nodes']
 #             for node in mp.Nodes:
 #                 node.Y = 0.005 + 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-#             output1 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
+#             output1 = solver.solve_solution_step(solver.get_interface_input()).deepcopy()
 # 
 #             # change grid to position 2
 #             for node in mp.Nodes:
 #                 node.Y = 0.005 - 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-#             output2 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
+#             output2 = solver.solve_solution_step(solver.get_interface_input()).deepcopy()
 # 
 #             # change grid back to position 1
 #             for node in mp.Nodes:
 #                 node.Y = 0.005 + 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-#             output3 = solver.solve_solution_step(solver.GetInterfaceInput()).deepcopy()
+#             output3 = solver.solve_solution_step(solver.get_interface_input()).deepcopy()
 # 
 #             solver.finalize_solution_step()
 #             solver.finalize()
@@ -166,7 +166,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             for i in range(timesteps):
 #                 solver.initialize_solution_step()
 #                 for j in range(iterations):
-#                     solver.solve_solution_step(solver.GetInterfaceInput())
+#                     solver.solve_solution_step(solver.get_interface_input())
 #                 solver.finalize_solution_step()
 #             solver.finalize()
 # 
@@ -202,12 +202,12 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             for i in range(4):
 #                 solver.initialize_solution_step()
 #                 for j in range(2):
-#                     solver.solve_solution_step(solver.GetInterfaceInput())
+#                     solver.solve_solution_step(solver.get_interface_input())
 #                 solver.finalize_solution_step()
 #             solver.finalize()
 # 
 #             # get data for solver without restart
-#             interface1 = solver.GetInterfaceOutput().deepcopy()
+#             interface1 = solver.get_interface_output().deepcopy()
 #             data1 = interface1.GetNumpyArray().copy()
 # 
 #             # create solver which restarts at timestep 2
@@ -225,12 +225,12 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             for i in range(2):
 #                 solver.initialize_solution_step()
 #                 for j in range(2):
-#                     solver.solve_solution_step(solver.GetInterfaceInput())
+#                     solver.solve_solution_step(solver.get_interface_input())
 #                 solver.finalize_solution_step()
 #             solver.finalize()
 # 
 #             # get data for solver with restart
-#             interface2 = solver.GetInterfaceOutput().deepcopy()
+#             interface2 = solver.get_interface_output().deepcopy()
 #             data2 = interface2.GetNumpyArray().copy()
 # 
 #             # compare coordinates of Nodes

@@ -4,8 +4,8 @@ from coconut.coupling_components import tools
 
 """ proposed changes to mapped.py
 - do initialization of mappers in Initialize method, would be more logical
-- remove all SetInterfaceInput/Output methods?
-- use copy in GetInterfaceInput/Output methods?
+- remove all set_interface_input/Output methods?
+- use copy in get_interface_input/Output methods?
     and just refer to actual solver wrapper in SolverWrapperMapped
 - all Interfaces are stored in this mapper, e.g. self.interface_output_to and 3 others;
     I see no reason for this; furthermore, it is only useful to store it if you take copies all the time
@@ -68,28 +68,28 @@ class SolverWrapperMapped(Component):
         self.mapper_interface_input.output_solution_step()
         self.mapper_interface_output.output_solution_step()
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         # Does not contain most recent data
         # *** shouldn't this just call the underlying solver wrapper?
         return self.interface_input_from
 
-    def SetInterfaceInput(self, interface_input_from):
+    def set_interface_input(self, interface_input_from):
         # Create input mapper
         self.interface_input_from = interface_input_from.deepcopy()
-        self.interface_input_to = self.solver_wrapper.GetInterfaceInput()
+        self.interface_input_to = self.solver_wrapper.get_interface_input()
 
         self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
         self.mapper_interface_input.initialize(self.interface_input_from, self.interface_input_to)
 
-    def GetInterfaceOutput(self):
-        self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
+    def get_interface_output(self):
+        self.interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
         return self.interface_output_to.deepcopy()
 
-    def SetInterfaceOutput(self, interface_output_to):
+    def set_interface_output(self, interface_output_to):
         # Create output mapper
         self.interface_output_to = interface_output_to.deepcopy()
-        self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
+        self.interface_output_from = self.solver_wrapper.get_interface_output()
 
         self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
         self.mapper_interface_output.initialize(self.interface_output_from, self.interface_output_to)

@@ -414,19 +414,19 @@ class SolverWrapperOpenFOAM_41(Component):
         print("OpenFOAM was stopped with the finalize() method defined in CoCoNuT.")
 
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         return self.interface_input.deepcopy()
 
 
-    def SetInterfaceInput(self):
+    def set_interface_input(self):
         Exception("This solver interface provides no mapping.")
 
 
-    def GetInterfaceOutput(self):
+    def get_interface_output(self):
         return self.interface_output.deepcopy()
 
 
-    def SetInterfaceOutput(self):
+    def set_interface_output(self):
         Exception("This solver interface provides no mapping.")
 
     

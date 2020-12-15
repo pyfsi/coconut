@@ -53,17 +53,17 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
             mp = solver_1.model['wall']
             for node in mp.Nodes:
                 node.SetSolutionStepValue(pressure, 0, get_dp(node.X0))
-            output1_end = solver_1.solve_solution_step(solver_1.GetInterfaceInput()).deepcopy()
+            output1_end = solver_1.solve_solution_step(solver_1.get_interface_input()).deepcopy()
 
             # change solver_2 to intermediate pressure and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(pressure, 0, 0.5 * get_dp(node.X0))
-            solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
+            solver_2.solve_solution_step(solver_2.get_interface_input()).deepcopy()
 
             # change solver_2 to end pressure and solve
             for node in mp.Nodes:
                 node.SetSolutionStepValue(pressure, 0, get_dp(node.X0))
-            output2_end = solver_2.solve_solution_step(solver_2.GetInterfaceInput()).deepcopy()
+            output2_end = solver_2.solve_solution_step(solver_2.get_interface_input()).deepcopy()
 
             for solver in solvers:
                 solver.finalize_solution_step()
