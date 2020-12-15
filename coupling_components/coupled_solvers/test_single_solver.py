@@ -82,7 +82,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.test_class is None:
             self.zero_input = True
             tools.print_info("No test class specified, zero input will be used")
-            for model_part_name, variable_names in interface_input.model_parts_variables:
+            for model_part_name, variable_names in interface_input.model_part_variable_pairs:
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
                     if variable.Type() == "Double":
@@ -95,7 +95,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.zero_input = False
             tools.print_info(f"The functions from {self.test_class} will be used to calculate the following inputs:")
             self.dummy_solver = getattr(sys.modules[__name__], self.test_class)()
-            for model_part_name, variable_names in interface_input.model_parts_variables:
+            for model_part_name, variable_names in interface_input.model_part_variable_pairs:
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
                     if variable.Type() == "Double":
@@ -143,7 +143,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         interface_input = self.solver_wrapper.interface_input
         # Generation of the input data
         if not self.zero_input:
-            for model_part_name, variable_names in interface_input.model_parts_variables:
+            for model_part_name, variable_names in interface_input.model_part_variable_pairs:
                 model_part = interface_input.model.GetModelPart(model_part_name)
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]

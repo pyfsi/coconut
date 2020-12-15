@@ -23,8 +23,8 @@ class MapperInterface(Component):
         # Loop over ModelParts and create mappers
         self.mappers = []
         self.keys = []
-        for item_from, item_to in zip(interface_from.model_parts_variables,
-                                      interface_to.model_parts_variables):
+        for item_from, item_to in zip(interface_from.model_part_variable_pairs,
+                                      interface_to.model_part_variable_pairs):
             key_from = item_from[0]
             key_to = item_to[0]
             self.keys.append((key_from, key_to))  # for PrintInfo
@@ -42,8 +42,8 @@ class MapperInterface(Component):
     def __call__(self, interface_from, interface_to):
         # Loop over ModelParts and Variables to interpolate
         for i, mapper in enumerate(self.mappers):
-            key_from, variables_from = interface_from.model_parts_variables[i]
-            key_to, variables_to = interface_to.model_parts_variables[i]
+            key_from, variables_from = interface_from.model_part_variable_pairs[i]
+            key_to, variables_to = interface_to.model_part_variable_pairs[i]
             model_part_from = interface_from.model[key_from]
             model_part_to = interface_to.model[key_to]
             for var_from, var_to in zip(variables_from.list(), variables_to.list()):

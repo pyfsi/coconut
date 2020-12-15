@@ -369,7 +369,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.interface_input.SetPythonList(interface_input.GetPythonList())
 
         # update X,Y,Z in interface
-        for key in [_[0] for _ in self.interface_input.model_parts_variables]:
+        for key in [_[0] for _ in self.interface_input.model_part_variable_pairs]:
             for node in self.model[key].Nodes:
                 disp = node.GetSolutionStepValue(self.displacement)
                 node.X = node.X0 + disp[0]
