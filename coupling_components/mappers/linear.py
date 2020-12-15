@@ -29,15 +29,10 @@ class MapperLinear(MapperInterpolator):
         super().__init__(parameters)
 
         # store settings
-        self.parallel = False
-        if self.settings.Has('parallel'):
-            self.parallel = self.settings['parallel'].GetBool()
+        self.parallel = self.settings['parallel'] if 'parallel' in self.settings else False
 
         # determine number of nearest neighbours
-        if len(self.directions) == 3:
-            self.n_nearest = 3
-        else:
-            self.n_nearest = 2
+        self.n_nearest = 3 if len(self.directions) == 3 else 2
 
     def initialize(self, model_part_from, model_part_to):
         super().initialize(model_part_from, model_part_to)
