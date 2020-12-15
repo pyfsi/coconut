@@ -1,4 +1,5 @@
 from coconut import data_structure
+from coconut.data_structure import tools
 import unittest
 from coconut.coupling_components.tools import CreateInstance
 
@@ -14,7 +15,7 @@ def print_box(text):
     top = '\n┌─' + n * '─' + '─┐'
     mid = '\n│ ' + text + ' │'
     bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
+    tools.print_info(top + mid + bottom)
 
 
 class TestSolverWrapperFluent2019R1(unittest.TestCase):
@@ -36,7 +37,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
         tmp = os.path.join(os.path.dirname(__file__),
                                            f'test_v{self.version}/tube2d',
                                            'test_solver_wrapper.json')
-        print(f'\ncorrect path? \n{tmp}\n')
+        tools.print_info(f'\ncorrect path? \n{tmp}\n')
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
                                            f'test_v{self.version}/tube2d',
@@ -61,7 +62,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             print_box('setup Fluent case')
             dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
                                    f'test_v{self.version}/tube2d')
-            print(f'dir_tmp = {dir_tmp}')
+            tools.print_info(f'dir_tmp = {dir_tmp}')
             p = subprocess.Popen(os.path.join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 

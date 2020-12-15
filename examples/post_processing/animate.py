@@ -121,7 +121,7 @@ class Animation:
             if self.variable == 'COORDINATES':
                 raise Exception(out)
             else:
-                tools.print(out, layout='warning')
+                tools.print_info(out, layout='warning')
 
         if index != self.complete_solution.shape[0]:
             raise Exception("Size of provided solution data does not match interface.")

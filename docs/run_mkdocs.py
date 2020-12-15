@@ -50,7 +50,7 @@ for file in files:
 
 for i, filename in enumerate(filenames):
     if filenames.count(filename) > 1:
-        print(f'WARNING - duplicate filename "{files[i]}"')
+        tools.print_info(f'WARNING - duplicate filename "{files[i]}"')
 
 # copy all MarkDown files to docs folder
 for file in files:

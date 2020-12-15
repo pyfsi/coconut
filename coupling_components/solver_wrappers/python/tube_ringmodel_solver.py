@@ -1,10 +1,10 @@
-from coconut import data_structure
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.interface import Interface
 from coconut.coupling_components import tools
+from coconut.data_structure import Model, Interface
 
 import numpy as np
 import os.path as path
+import json
 
 
 def create(parameters):
@@ -15,69 +15,61 @@ class SolverWrapperTubeRingmodel(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        # Reading
+        # reading
         self.parameters = parameters
         self.settings = parameters["settings"]
         self.working_directory = self.settings["working_directory"]
         input_file = self.settings["input_file"].GetString()
-        settings_file_name = path.join(self.working_directory, input_file)
-        with open(settings_file_name, 'r') as settings_file:
-            self.settings.AddMissingParameters(data_structure.Parameters(settings_file.read()))
+        case_file_name = path.join(self.working_directory, input_file)
+        with open(case_file_name, 'r') as case_file:
+            self.settings.update(json.load(case_file))  # TODO: inversed priority
 
-        # Settings
-        l = self.settings["l"].GetDouble()  # Length
-        self.d = self.settings["d"].GetDouble()  # Diameter
-        self.rhof = self.settings["rhof"].GetDouble()  # Fluid density
+        # settings
+        l = self.settings["l"]  # length
+        d = self.settings["d"]  # diameter
+        self.rreference = d / 2  # reference radius of cross section
+        self.rhof = self.settings["rhof"]  # fluid density
 
-        self.preference = self.settings["preference"].GetDouble() if self.settings.Has("preference") else 0.0  # Reference pressure
+        self.preference = self.settings.get("preference", 0)  # reference pressure
 
-        e = self.settings["e"].GetDouble()  # Young's modulus of structure
-        h = self.settings["h"].GetDouble()  # Thickness of structure
-        self.cmk2 = (e * h) / (self.rhof * self.d)  # Wave speed squared
+        e = self.settings["e"]  # Young's modulus of structure
+        h = self.settings["h"]  # thickness of structure
+        self.cmk2 = (e * h) / (self.rhof * d)  # wave speed squared
 
-        self.m = self.settings["m"].GetInt()  # Number of segments
-        self.dz = l / self.m  # Segment length
-        axial_offset = self.settings["axial_offset"].GetDouble() if self.settings.Has("axial_offset") else 0.0  # Start position along axis
-        self.z = axial_offset + np.arange(self.dz / 2.0, l, self.dz)  # Data is stored in cell centers
+        self.m = self.settings["m"]  # number of segments
+        self.dz = l / self.m  # segment length
+        axial_offset = self.settings.get("axial_offset", 0)  # start position along axis
+        self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # data is stored in cell centers
 
-        self.k = 0  # Iteration
-        self.n = 0  # Time step (no restart implemented)
+        self.k = 0  # iteration
+        self.n = 0  # time step (no restart implemented)
 
-        # Initialization
-        self.areference = np.pi * self.d ** 2 / 4  # Reference area of cross section
-        self.p = np.ones(self.m) * self.preference  # Kinematic pressure
-        self.a = np.ones(self.m) * self.areference  # Area of cross section
-        self.c02 = self.cmk2 - self.preference / 2.0  # Wave speed squared with reference pressure
+        # initialization
+        self.areference = np.pi * d ** 2 / 4  # reference area of cross section
+        self.p = np.ones(self.m) * self.preference  # kinematic pressure
+        self.a = np.ones(self.m) * self.areference  # area of cross section
+        self.c02 = self.cmk2 - self.preference / 2  # wave speed squared with reference pressure
 
-        self.disp = np.zeros((self.m, 3))  # Displacement
-        self.trac = np.zeros((self.m, 3))  # Traction (always zero)
+        self.disp = np.zeros((self.m, 3))  # displacement
+        self.trac = np.zeros((self.m, 3))  # traction (always zero)
 
-        # ModelParts
-        self.variable_pres = vars(data_structure)["PRESSURE"]
-        self.variable_trac = vars(data_structure)["TRACTION"]
-        self.variable_disp = vars(data_structure)["DISPLACEMENT"]
-        self.model = data_structure.Model()
-        self.model_part = self.model.CreateModelPart("wall")
-        self.model_part.AddNodalSolutionStepVariable(self.variable_pres)
-        self.model_part.AddNodalSolutionStepVariable(self.variable_disp)
-        self.model_part.AddNodalSolutionStepVariable(self.variable_trac)
-        for i in range(len(self.z)):
-            self.model_part.CreateNewNode(i, 0.0, self.d / 2, self.z[i])
-        step = 0
-        for node in self.model_part.Nodes:
-            node.SetSolutionStepValue(self.variable_pres, step, self.p[0])
-            node.SetSolutionStepValue(self.variable_disp, step, self.disp[0, :].tolist())
-            node.SetSolutionStepValue(self.variable_trac, step, self.trac[0, :].tolist())
+        # modelParts
+        self.model = Model()
+        self.model_part = self.model.create_model_part("wall", np.zeros(self.m), self.rreference * np.ones(self.m),
+                                                       self.z, np.arange(self.m))  # TODO not use hardcoded mp name
 
-        # Interfaces
-        self.interface_input = Interface(self.model, self.settings["interface_input"])
+        # interfaces
+        self.interface_input = Interface(self.settings["interface_input"], self.model)
+        self.interface_input.set_variable_data("wall", "pressure", self.p.reshape(-1, 1))
+        self.interface_input.set_variable_data("wall", "traction", self.trac)
         self.interface_output = Interface(self.model, self.settings["interface_output"])
+        self.interface_output.set_variable_data("wall", "displacement", self.disp)
 
         # run time
         self.run_time = 0.0
 
-        # Debug
-        self.debug = False  # Set on True to save input and output of each iteration of every time step
+        # debug
+        self.debug = False  # set on True to save input and output of each iteration of every time step
         self.output_solution_step()
 
     def initialize(self):
@@ -91,17 +83,15 @@ class SolverWrapperTubeRingmodel(Component):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
-        # Input
-        input = interface_input.GetNumpyArray()
-        self.p = input[:self.m] / self.rhof  # Kinematic pressure
-        self.trac = input[self.m:].reshape(-1, 3)
-        self.interface_input.SetNumpyArray(input)
+        # input
+        self.interface_input = interface_input.copy()
+        self.p = interface_input.get_variable_data("wall", "pressure")
 
-        # Independent rings model
+        # independent rings model
         for i in range(len(self.p)):
-            if self.p[i] > 2.0 * self.c02 + self.preference:
+            if self.p[i] > 2 * self.c02 + self.preference:
                 raise ValueError("Unphysical pressure")
-        self.a = self.areference * (2.0 / (2.0 + (self.preference - self.p) / self.c02)) ** 2
+        self.a = self.areference * (2 / (2 + (self.preference - self.p) / self.c02)) ** 2
 
         self.k += 1
         if self.debug:
@@ -119,10 +109,10 @@ class SolverWrapperTubeRingmodel(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-        # Output
-        self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.d / 2
-        self.interface_output.SetNumpyArray(self.disp.flatten())
-        return self.interface_output.deepcopy()
+        # output
+        self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.rreference
+        self.interface_output.set_variable_data("wall", "pressure", self.disp)
+        return self.interface_output  # TODO: make copy?
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
@@ -138,14 +128,14 @@ class SolverWrapperTubeRingmodel(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-    def GetInterfaceInput(self):
-        return self.interface_input.deepcopy()
+    def get_interface_input(self):  # TODO: need to have latest data?
+        return self.interface_input.copy()
 
-    def SetInterfaceInput(self):
-        raise Exception("This solver wrapper provides no mapping.")
+    def set_interface_input(self):  # TODO: remove?
+        raise Exception("This solver interface provides no mapping")
 
-    def GetInterfaceOutput(self):
-        return self.interface_output.deepcopy()
+    def get_interface_output(self):  # TODO: need to have latest data?
+        return self.interface_output.copy()
 
-    def SetInterfaceOutput(self):
-        raise Exception("This solver wrapper provides no mapping.")
+    def set_interface_output(self):  # TODO: remove?
+        raise Exception("This solver interface provides no mapping")
