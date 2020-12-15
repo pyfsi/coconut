@@ -1,8 +1,8 @@
-from coconut import data_structure
 import unittest
 from coconut.coupling_components.tools import create_instance
 import numpy as np
 import json
+
 
 class TestCoupledSolverGaussSeidel(unittest.TestCase):
 
@@ -38,12 +38,13 @@ class TestCoupledSolverGaussSeidel(unittest.TestCase):
                  0.00000e+00, 2.37273e-07, 0.00000e+00, 0.00000e+00,
                  2.28979e-07, 0.00000e+00]
 
-        np.testing.assert_allclose(coupled_solver.x.GetNumpyArray(), sol_x, rtol=1e-5)
+        np.testing.assert_allclose(coupled_solver.x.get_interface_data(), sol_x, rtol=1e-5)
 
         coupled_solver.finalize_solution_step()
         coupled_solver.output_solution_step()
 
         coupled_solver.finalize()
+
 
 if __name__ == '__main__':
     unittest.main()
