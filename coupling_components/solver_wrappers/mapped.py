@@ -75,7 +75,7 @@ class SolverWrapperMapped(Component):
 
     def set_interface_input(self, interface_input_from):
         # Create input mapper
-        self.interface_input_from = interface_input_from.deepcopy()
+        self.interface_input_from = interface_input_from.copy()
         self.interface_input_to = self.solver_wrapper.get_interface_input()
 
         self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
@@ -84,11 +84,11 @@ class SolverWrapperMapped(Component):
     def get_interface_output(self):
         self.interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
-        return self.interface_output_to.deepcopy()
+        return self.interface_output_to.copy()
 
     def set_interface_output(self, interface_output_to):
         # Create output mapper
-        self.interface_output_to = interface_output_to.deepcopy()
+        self.interface_output_to = interface_output_to.copy()
         self.interface_output_from = self.solver_wrapper.get_interface_output()
 
         self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
