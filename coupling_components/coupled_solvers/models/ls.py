@@ -48,7 +48,7 @@ class ModelLS(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
+                tools.print_info("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
                 if i < self.vcurr.shape[1]:
                     self.vcurr = np.delete(self.vcurr, i, 1)
                     self.wcurr = np.delete(self.wcurr, i, 1)

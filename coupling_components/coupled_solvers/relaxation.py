@@ -18,11 +18,11 @@ class CoupledSolverRelaxation(CoupledSolverGaussSeidel):
         self.y = self.solver_wrappers[0].solve_solution_step(self.x)
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         r = xt - self.x
-        self.finalize_Iteration(r)
+        self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += self.omega * r
             self.y = self.solver_wrappers[0].solve_solution_step(self.x)
             xt = self.solver_wrappers[1].solve_solution_step(self.y)
             r = xt - self.x
-            self.finalize_Iteration(r)
+            self.finalize_iteration(r)

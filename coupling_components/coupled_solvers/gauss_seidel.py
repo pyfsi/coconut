@@ -126,7 +126,7 @@ class CoupledSolverGaussSeidel(Component):
         self.y = y.copy()
         xt = self.solver_wrappers[1].solve_solution_step(y)
         r = xt - self.x
-        self.finalize_Iteration(r)
+        self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += r
@@ -134,9 +134,9 @@ class CoupledSolverGaussSeidel(Component):
             self.y = y.copy()
             xt = self.solver_wrappers[1].solve_solution_step(y)
             r = xt - self.x
-            self.finalize_Iteration(r)
+            self.finalize_iteration(r)
 
-    def finalize_Iteration(self, r):
+    def finalize_iteration(self, r):
         self.iteration += 1
         self.convergence_criterion.update(r)
         # Print iteration information

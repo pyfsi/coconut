@@ -51,7 +51,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         r = xt - self.x
         self.update(self.x, xt)
-        self.finalize_Iteration(r)
+        self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += self.Predict(r)
@@ -59,7 +59,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
             xt = self.solver_wrappers[1].solve_solution_step(self.y)
             r = xt - self.x
             self.update(self.x, xt)
-            self.finalize_Iteration(r)
+            self.finalize_iteration(r)
 
     def IsReady(self):
         return self.added

@@ -29,7 +29,7 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         r = xt - self.x
         self.model.Add(r, xt)
-        self.finalize_Iteration(r)
+        self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             if not self.model.IsReady():
@@ -42,4 +42,4 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
             xt = self.solver_wrappers[1].solve_solution_step(self.y)
             r = xt - self.x
             self.model.Add(r, xt)
-            self.finalize_Iteration(r)
+            self.finalize_iteration(r)

@@ -158,15 +158,15 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         else:
             self.x = interface_input
             self.y = self.solver_wrapper.solve_solution_step(interface_input)
-        self.finalize_Iteration(self.x * 0)
+        self.finalize_iteration(self.x * 0)
 
-    def PrintHeader(self):
+    def print_header(self):
         if self.n == self.timestep_start + 1:
             header = f"════════════════════════════════════════════════════════════════════════════════\n" \
                 f"{'Time step':<16}{'Norm x':<28}{'Norm y':<28}"
             tools.print(header)
 
-    def print_Info(self, r):
+    def print_iteration_info(self, r):
         normx = np.linalg.norm(self.x.GetNumpyArray())
         normy = np.linalg.norm(self.y.GetNumpyArray())
         info = f"{self.n:<16d}{normx:<28.17e}{normy:<28.17e}"

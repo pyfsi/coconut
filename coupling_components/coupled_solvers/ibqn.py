@@ -68,7 +68,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         self.model_s.Add(self.y, xt)
         r = xt - self.x
-        self.finalize_Iteration(r)
+        self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             if not self.model_s.IsReady() or not self.model_f.IsReady:
@@ -98,4 +98,4 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
             xt = self.solver_wrappers[1].solve_solution_step(self.y)
             self.model_s.Add(self.y, xt)
             r = xt - self.x
-            self.finalize_Iteration(r)
+            self.finalize_iteration(r)
