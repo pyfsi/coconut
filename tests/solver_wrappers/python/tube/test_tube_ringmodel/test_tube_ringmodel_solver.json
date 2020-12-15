@@ -5,15 +5,23 @@
       "settings": {
         "working_directory": "solver_wrappers/python/tube/test_tube_ringmodel/CSM",
         "input_file": "solver_parameters.json",
-        "interface_input": {
-          "wall": [
-            "PRESSURE",
-            "TRACTION"
-          ]
-        },
-        "interface_output": {
-          "wall": "DISPLACEMENT"
-        }
+        "interface_input": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "pressure",
+              "traction"
+            ]
+          }
+        ],
+        "interface_output": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "displacement"
+            ]
+          }
+        ]
       }
     }
   ]

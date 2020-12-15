@@ -95,7 +95,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         self.x = None
         self.y = None
-        self.iteration = None  # Iteration
+        self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
 
         self.start_time = None
@@ -106,7 +106,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.test_settings.get("name", "results")  # Case name
+            self.case_name = self.test_settings.get("name", "results")  # case name
             self.case_name += "_" + cur_wd
 
     def initialize(self):
@@ -133,10 +133,9 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.dummy_solver is not None:
             for model_part_name, variable in interface_input.model_parts_variables:
                 model_part = interface_input.get_model_part(model_part_name)
-                data = []
-                for i in range(model_part.size):
-                    data[i] = getattr(self.dummy_solver, f"calculate_{variable}")(model_part.X0[i], model_part.Y0[i],
-                                                                                  model_part.Z0[i], self.n)
+                data = [getattr(self.dummy_solver, f"calculate_{variable}")(model_part.X0[i], model_part.Y0[i],
+                                                                            model_part.Z0[i], self.n)
+                        for i in range(model_part.size)]
                 interface_input.set_varialbe_data(model_part_name, variable, np.array(data))
         # store data in self.x and self.y
         if self.solver_index == 1:
