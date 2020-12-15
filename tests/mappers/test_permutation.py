@@ -1,78 +1,108 @@
 from coconut import data_structure
-import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
+from coconut.coupling_components.mappers.permutation import MapperPermutation
 
+import unittest
 import numpy as np
-import os
 
 
 class TestMapperPermutation(unittest.TestCase):
-    def test_mapper_permutation(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_permutation.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = data_structure.Parameters(parameter_file.read())
 
-        # check if method Initialize works
-        if True:
-            var = vars(data_structure)["TEMPERATURE"]
-            model = data_structure.Model()
-            model_part_from = model.CreateModelPart('wall_from')
-            model_part_from.AddNodalSolutionStepVariable(var)
+    def setUp(self):
+        self.parameters = {'type': 'mappers.permutation',
+                           'settings': {'permutation': [2, 0, 1]}}
 
-            model_part_from.CreateNewNode(0, 0., 1., 2.)
+    def test_instantiation(self):
+        self.parameters['settings']['permutation'] = "some string"
+        self.assertRaises(TypeError, MapperPermutation, self.parameters)
 
-            # model_part_from given
-            mapper = CreateInstance(parameters['mapper'])
-            model_part_to = mapper.initialize(model_part_from, forward=True)
-            node = model_part_to.Nodes[0]
-            self.assertListEqual([node.X, node.Y, node.Z], [2., 0., 1.])
+        self.parameters['settings']['permutation'] = [0, 1]
+        self.assertRaises(ValueError, MapperPermutation, self.parameters)
 
-            # model_part_to given
-            mapper = CreateInstance(parameters['mapper'])
-            model_part_from = mapper.initialize(model_part_to, forward=False)
-            node = model_part_from.Nodes[0]
-            self.assertListEqual([node.X, node.Y, node.Z], [0., 1., 2.])
+        self.parameters['settings']['permutation'] = [1, 2, 3]
+        self.assertRaises(ValueError, MapperPermutation, self.parameters)
 
-        # check if method __call__ works for Double Variable
-        if True:
-            var = vars(data_structure)["TEMPERATURE"]
-            model = data_structure.Model()
-            model_part_from = model.CreateModelPart('wall_from')
-            model_part_from.AddNodalSolutionStepVariable(var)
+        self.parameters['settings']['permutation'] = [0, 1, 1]
+        self.assertRaises(ValueError, MapperPermutation, self.parameters)
 
-            for i in range(10):
-                node = model_part_from.CreateNewNode(i, i * 1., i * 2., i * 3.)
-                node.SetSolutionStepValue(var, 0, np.random.rand())
+    def test_initialize(self):
+        mp_name_in = 'wall_in'
+        mp_name_out_f = 'wall_out_f'
+        mp_name_out_b = 'wall_out_b'
 
-            mapper = CreateInstance(parameters['mapper'])
-            model_part_to = mapper.initialize(model_part_from, forward=True)
-            mapper((model_part_from, var), (model_part_to, var))
+        n = 10
+        x, y, z = np.random.rand(n), np.random.rand(n), np.random.rand(n)
 
-            for node_from, node_to in zip(model_part_from.Nodes, model_part_to.Nodes):
-                val_from = node_from.GetSolutionStepValue(var)
-                val_to = node_to.GetSolutionStepValue(var)
-                self.assertEqual(val_from, val_to)
+        model = data_structure.Model()
+        model.create_model_part(mp_name_in, x, y, z, np.arange(n))
 
-        # check if method __call__ works for Array Variable
-        if True:
-            var = vars(data_structure)["DISPLACEMENT"]
-            model = data_structure.Model()
-            model_part_from = model.CreateModelPart('wall_from')
-            model_part_from.AddNodalSolutionStepVariable(var)
+        # model_part_from given
+        mapper = create_instance(self.parameters)
+        mapper.initialize(model, mp_name_in, mp_name_out_f, forward=True)
+        mp_out = model.get_model_part(mp_name_out_f)
+        coords_out = np.column_stack((mp_out.x0, mp_out.y0, mp_out.z0))
+        np.testing.assert_array_equal(coords_out, np.column_stack((z, x, y)))
 
-            for i in range(10):
-                node = model_part_from.CreateNewNode(i, i * 1., i * 2., i * 3.)
-                node.SetSolutionStepValue(var, 0, list(np.random.rand(3)))
+        # model_part_to given
+        mapper = create_instance(self.parameters)
+        mapper.initialize(model, mp_name_in, mp_name_out_b, forward=False)
+        mp_out = model.get_model_part(mp_name_out_b)
+        coords_out = np.column_stack((mp_out.x0, mp_out.y0, mp_out.z0))
+        np.testing.assert_array_equal(coords_out, np.column_stack((y, z, x)))
 
-            mapper = CreateInstance(parameters['mapper'])
-            model_part_to = mapper.initialize(model_part_from, forward=True)
-            mapper((model_part_from, var), (model_part_to, var))
+    def test_call_1d_var(self):
+        var = 'pressure'
+        mp_name_in = 'wall_in'
+        mp_name_out = 'wall_out'
 
-            for node_from, node_to in zip(model_part_from.Nodes, model_part_to.Nodes):
-                val_from = node_from.GetSolutionStepValue(var)
-                val_from = list(np.array(val_from)[mapper.permutation])
-                val_to = node_to.GetSolutionStepValue(var)
-                self.assertListEqual(val_from, val_to)
+        n = 10
+        x, y, z = np.random.rand(n), np.random.rand(n), np.random.rand(n)
+        v_in = np.random.rand(n, 1)
+
+        model = data_structure.Model()
+        model.create_model_part(mp_name_in, x, y, z, np.arange(n))
+        parameters_in= [{'model_part': mp_name_in, 'variables': [var]}]
+        interface_in = data_structure.Interface(parameters_in, model)
+        interface_in.set_variable_data(mp_name_in, var, v_in)
+
+        mapper = create_instance(self.parameters)
+        mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
+
+        parameters_out = [{'model_part': mp_name_out, 'variables': [var]}]
+        interface_out = data_structure.Interface(parameters_out, model)
+        mapper((interface_in, mp_name_in, var),
+               (interface_out, mp_name_out, var))
+
+        v_out = interface_out.get_variable_data(mp_name_out, var)
+        np.testing.assert_array_equal(v_in, v_out)
+
+    def test_call_3d_var(self):
+        var = 'displacement'
+        mp_name_in = 'wall_in'
+        mp_name_out = 'wall_out'
+
+        n = 10
+        x, y, z = np.random.rand(n), np.random.rand(n), np.random.rand(n)
+        v_in = np.random.rand(n, 3)
+
+        model = data_structure.Model()
+        model.create_model_part(mp_name_in, x, y, z, np.arange(n))
+        parameters_in= [{'model_part': mp_name_in, 'variables': [var]}]
+        interface_in = data_structure.Interface(parameters_in, model)
+        interface_in.set_variable_data(mp_name_in, var, v_in)
+
+        mapper = create_instance(self.parameters)
+        mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
+
+        parameters_out = [{'model_part': mp_name_out, 'variables': [var]}]
+        interface_out = data_structure.Interface(parameters_out, model)
+        mapper((interface_in, mp_name_in, var),
+               (interface_out, mp_name_out, var))
+
+        v_out = interface_out.get_variable_data(mp_name_out, var)
+        np.testing.assert_array_equal(v_in[:, 0], v_out[:, 1])
+        np.testing.assert_array_equal(v_in[:, 1], v_out[:, 2])
+        np.testing.assert_array_equal(v_in[:, 2], v_out[:, 0])
 
 
 if __name__ == '__main__':
