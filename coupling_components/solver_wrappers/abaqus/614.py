@@ -11,7 +11,7 @@ import numpy as np
 import re
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperAbaqus614(parameters)
 
 
@@ -486,7 +486,7 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = 0
         self.timestep += 1
 
-    @tools.Timesolve_solution_step
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.iteration += 1
 

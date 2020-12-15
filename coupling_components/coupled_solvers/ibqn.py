@@ -4,7 +4,7 @@ from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolv
 from scipy.sparse.linalg import gmres, LinearOperator
 
 
-def Create(parameters):
+def create(parameters):
     return CoupledSolverIBQN(parameters)
 
 

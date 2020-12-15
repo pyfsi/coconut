@@ -6,7 +6,7 @@ from scipy.spatial import cKDTree
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
 

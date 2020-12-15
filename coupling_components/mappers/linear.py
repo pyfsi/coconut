@@ -5,7 +5,7 @@ from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
 
 
-def Create(parameters):
+def create(parameters):
     return MapperLinear(parameters)
 
 

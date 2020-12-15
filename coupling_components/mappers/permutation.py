@@ -5,7 +5,7 @@ import numpy as np
 import copy
 
 
-def Create(parameters):
+def create(parameters):
     return MapperPermutation(parameters)
 
 

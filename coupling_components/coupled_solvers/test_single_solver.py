@@ -15,7 +15,7 @@ except ImportError:
     dummy_solver_present = False
 
 
-def Create(parameters):
+def create(parameters):
     return CoupledSolverTestSingleSolver(parameters)
 
 

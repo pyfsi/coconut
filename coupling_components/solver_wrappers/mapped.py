@@ -13,7 +13,7 @@ from coconut.coupling_components import tools
 """
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperMapped(parameters)
 
 
@@ -41,7 +41,7 @@ class SolverWrapperMapped(Component):
 
         self.solver_wrapper.initialize_solution_step()
 
-    @tools.Timesolve_solution_step
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input_from):
         self.interface_input_from = interface_input_from
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)

@@ -2,7 +2,7 @@ from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 
-def Create(parameters):
+def create(parameters):
     return CoupledSolverIQNI(parameters)
 
 

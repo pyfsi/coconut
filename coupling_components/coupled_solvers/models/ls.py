@@ -5,7 +5,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 
-def Create(parameters):
+def create(parameters):
     return ModelLS(parameters)
 
 

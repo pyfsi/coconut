@@ -12,7 +12,7 @@ import sys
 import shutil
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperFluent2019R1(parameters)
 
 
@@ -246,7 +246,7 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('next')
         self.wait_message('next_ready')
 
-    @tools.Timesolve_solution_step
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.iteration += 1
 

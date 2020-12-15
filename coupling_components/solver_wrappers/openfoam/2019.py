@@ -1,7 +1,7 @@
 from coconut.coupling_components.component import Component
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperOpenFOAM2019(parameters)
 
 

@@ -3,7 +3,7 @@ from coconut.coupling_components.component import Component
 from coconut.coupling_components.tools import CreateInstance
 
 
-def Create(parameters):
+def create(parameters):
     return MapperCombined(parameters)
 
 

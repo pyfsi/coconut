@@ -4,7 +4,7 @@ from coconut.coupling_components import tools
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     return ModelMV(parameters)
 
 

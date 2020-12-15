@@ -4,7 +4,7 @@ from coconut.coupling_components import tools
 from coconut.coupling_components.tools import CreateInstance
 
 
-def Create(parameters):
+def create(parameters):
     return MapperInterface(parameters)
 
 

@@ -3,7 +3,7 @@ from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolv
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     return CoupledSolverAITKEN(parameters)
 
 

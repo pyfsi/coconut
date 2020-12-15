@@ -11,7 +11,7 @@ import copy
 import subprocess
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperOpenFOAM_41(parameters)
 
 
@@ -360,7 +360,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.send_message('next') # Let OpenFOAM go to next time step
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
     
-    @tools.Timesolve_solution_step
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
         print(f'\t\tIteration {self.iteration}')
