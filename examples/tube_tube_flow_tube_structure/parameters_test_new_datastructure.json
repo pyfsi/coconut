@@ -1,0 +1,122 @@
+{
+  "settings": {
+    "number_of_timesteps": 100
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.gauss_seidel",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.0001,
+      "omega": 0.05,
+      "name": "results",
+      "save_results": true,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-12,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 15
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-6,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.python.tube_flow_solver",
+        "settings": {
+          "working_directory": "CFD",
+          "input_file": "solver_parameters.json",
+          "interface_input": [
+            {
+              "model_part": "wall",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "wall",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.python.tube_structure_solver",
+            "settings": {
+              "working_directory": "CSM",
+              "input_file": "solver_parameters.json",
+              "interface_input": [
+                {
+                  "model_part": "wall",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "wall",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.nearest",
+              "settings": {
+                "directions": [
+                  "z"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.nearest",
+              "settings": {
+                "directions": [
+                  "z"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

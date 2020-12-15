@@ -5,7 +5,6 @@ from coconut.coupling_components.component import Component
 import numpy as np
 import time
 import pickle
-import json
 
 
 def create(parameters):
@@ -52,19 +51,12 @@ class CoupledSolverGaussSeidel(Component):
         self.start_time = None
         self.elapsed_time = None
         self.iterations = []
-        if self.settings.Has("save_results"):
-            # Set True in order to save for every iteration
-            self.save_results = self.settings["save_results"]
-        else:
-            self.save_results = False
+        self.save_results = self.settings.get("save_results", False)  # set True in order to save for every iteration
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            if self.settings.Has("name"):
-                self.case_name = self.settings["name"]  # case name
-            else:
-                self.case_name = "results"
+            self.case_name = self.settings.get("name", "results")  # case name
 
     def initialize(self):
         super().initialize()
@@ -212,8 +204,7 @@ class CoupledSolverGaussSeidel(Component):
         tools.print_info(header)
 
     def print_iteration_info(self, r):
-        norm = np.linalg.norm(r.GetNumpyArray())
-        info = f"{self.iteration:<16d}{norm:<28.17e}"
+        info = f"{self.iteration:<16d}{r.norm():<28.17e}"
         tools.print_info(' │' * self.solver_level, info)
 
     def check(self):

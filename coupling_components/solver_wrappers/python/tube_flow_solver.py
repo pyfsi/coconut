@@ -112,7 +112,7 @@ class SolverWrapperTubeFlow(Component):
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_input.set_variable_data("wall", "displacement", self.disp)
         self.interface_output = Interface(self.settings["interface_output"], self.model)
-        self.interface_output.set_variable_data("wall", "pressure", self.pres.reshape(-1,1))
+        self.interface_output.set_variable_data("wall", "pressure", self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data("wall", "traction", self.trac)
 
         # run time
@@ -189,7 +189,7 @@ class SolverWrapperTubeFlow(Component):
 
         # output does not contain boundary conditions
         self.pres = self.p[1:self.m + 1] * self.rhof
-        self.interface_output.set_variable_data("wall", "pressure", self.pres)
+        self.interface_output.set_variable_data("wall", "pressure", self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data("wall", "traction", self.trac)
         return self.interface_output  # TODO: make copy?
 

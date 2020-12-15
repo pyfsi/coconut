@@ -85,7 +85,7 @@ class SolverWrapperTubeRingmodel(Component):
     def solve_solution_step(self, interface_input):
         # input
         self.interface_input = interface_input.copy()
-        self.p = interface_input.get_variable_data("wall", "pressure")
+        self.p = interface_input.get_variable_data("wall", "pressure").flatten()
 
         # independent rings model
         for i in range(len(self.p)):
@@ -111,7 +111,7 @@ class SolverWrapperTubeRingmodel(Component):
 
         # output
         self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.rreference
-        self.interface_output.set_variable_data("wall", "pressure", self.disp)
+        self.interface_output.set_variable_data("wall", "displacement", self.disp)
         return self.interface_output  # TODO: make copy?
 
     def finalize_solution_step(self):

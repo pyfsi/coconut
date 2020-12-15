@@ -130,7 +130,7 @@ class SolverWrapperTubeStructure(Component):
     def solve_solution_step(self, interface_input):
         # input
         self.interface_input = interface_input.copy()
-        self.p = interface_input.get_variable_data("wall", "pressure")
+        self.p = interface_input.get_variable_data("wall", "pressure").flatten()
 
         # solve system
         f = self.get_residual()
@@ -159,7 +159,7 @@ class SolverWrapperTubeStructure(Component):
         # output does not contain boundary conditions
         self.a = self.r[2:self.m + 2] ** 2 * np.pi
         self.disp[:, 1] = self.r[2:self.m + 2] - self.rreference
-        self.interface_output.set_variable_data("wall", "pressure", self.disp)
+        self.interface_output.set_variable_data("wall", "displacement", self.disp)
         return self.interface_output  # TODO: make copy?
 
     def finalize_solution_step(self):
