@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 import os
@@ -42,8 +42,8 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
         # test if same pressure always give same displacement
         if True:
             # create solver
-            solver_1 = CreateInstance(parameters_solver)
-            solver_2 = CreateInstance(parameters_solver)
+            solver_1 = create_instance(parameters_solver)
+            solver_2 = create_instance(parameters_solver)
             solvers = [solver_1, solver_2]
             for solver in solvers:
                 solver.initialize()

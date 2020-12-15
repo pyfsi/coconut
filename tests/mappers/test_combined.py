@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 import os
@@ -35,7 +35,7 @@ class TestMapperCombined(unittest.TestCase):
             # create mappers, get output data
             data = []
             for mapper_name in ['mapper_nearest', 'mapper_combined_a', 'mapper_combined_b']:
-                mapper = CreateInstance(parameters[mapper_name])
+                mapper = create_instance(parameters[mapper_name])
                 mapper.initialize(model_part_from, model_part_to)
                 mapper((model_part_from, var_from), (model_part_to, var_to))
 

@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 from copy import deepcopy
@@ -44,7 +44,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
         if True:
             # Create the solver (__init__)
             print("Creating an AbaqusSolver")
-            AbaqusSolver0 = CreateInstance(par_solver_0)
+            AbaqusSolver0 = create_instance(par_solver_0)
             print("AbaqusSolver0 created")
 
         # Test start and restart
@@ -96,7 +96,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
             # With restart
             # create solver which restarts at timestep 2
             par_solver['settings'].SetInt('timestep_start', 2)
-            AbaqusSolver1 = CreateInstance(par_solver)
+            AbaqusSolver1 = create_instance(par_solver)
             mp = AbaqusSolver1.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
@@ -131,7 +131,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
             # Test whether using 4 cpus gives the same results as using a single one.
             par_solver = deepcopy(par_solver_0)
             par_solver["settings"].SetInt("cores", 4)
-            AbaqusSolver2 = CreateInstance(par_solver)
+            AbaqusSolver2 = create_instance(par_solver)
             mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
@@ -222,7 +222,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
         if True:
             # Create the solver (__init__)
             print("Creating an AbaqusSolver")
-            AbaqusSolver0 = CreateInstance(par_solver_0)
+            AbaqusSolver0 = create_instance(par_solver_0)
             print("AbaqusSolver0 created")
 
             # Test start and restart
@@ -276,7 +276,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
                 # With restart
                 # create solver which restarts at timestep 2
                 par_solver['settings'].SetInt('timestep_start', 2)
-                AbaqusSolver1 = CreateInstance(par_solver)
+                AbaqusSolver1 = create_instance(par_solver)
                 mp = AbaqusSolver1.model['WALLOUTSIDE_load_points']
                 for node in mp.Nodes:
                     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
@@ -311,7 +311,7 @@ class TestSolverWrapperAbaqus614(unittest.TestCase):
                 # Test whether using 4 cpus gives the same results as using a single one.
                 par_solver = deepcopy(par_solver_0)
                 par_solver["settings"].SetInt("cores", 4)
-                AbaqusSolver2 = CreateInstance(par_solver)
+                AbaqusSolver2 = create_instance(par_solver)
                 mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
                 for node in mp.Nodes:
                     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005

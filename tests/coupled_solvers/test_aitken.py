@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
@@ -38,7 +38,7 @@ class TestCoupledSolverAitken(unittest.TestCase):
 
         omega_max = settings["settings"]["omega_max"].GetDouble()
 
-        coupled_solver = CreateInstance(settings)
+        coupled_solver = create_instance(settings)
         coupled_solver.initialize()
         coupled_solver.initialize_solution_step()
 

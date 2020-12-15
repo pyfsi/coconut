@@ -63,7 +63,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
                 settings.RemoveValue(key)
             settings.AddValue(key, self.test_settings[key])
 
-        self.solver_wrapper = tools.CreateInstance(parameters)
+        self.solver_wrapper = tools.create_instance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
 
         # working directory will be changed to a test_working_directory

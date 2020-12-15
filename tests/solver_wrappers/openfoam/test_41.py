@@ -41,7 +41,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         if False:
             print_box("Testing basic solver_wrapper creation and initialization")
             par_solver = deepcopy(par_solver_0)
-            solver=cs_tools.CreateInstance(par_solver)
+            solver=cs_tools.create_instance(par_solver)
             solver.initialize()
 
         # test if nodes are moved to the correct position
@@ -49,7 +49,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             print_box("Testing imposed node (radial) displacement")
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
-            solver = cs_tools.CreateInstance(par_solver)
+            solver = cs_tools.create_instance(par_solver)
             
             # give value to DISPLACEMENT variable -  radial displacement all points on tube wall by 0.01m (sinusoidally changing in time)
             mp = solver.model['walls_input']
@@ -71,7 +71,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
  
             # create solver to check new coordinates
             par_solver['settings'].SetDouble('start_time', 0.1)
-            solver = cs_tools.CreateInstance(par_solver)
+            solver = cs_tools.create_instance(par_solver)
             solver.initialize()
             solver.finalize()
     
@@ -88,7 +88,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             model_parts = []
 #             for cores in [1, multiprocessing.cpu_count()]:
 #                 par_solver['settings'].SetInt('cores', cores)
-#                 solver = cs_tools.CreateInstance(par_solver)
+#                 solver = cs_tools.create_instance(par_solver)
 #                 solver.initialize()
 #                 solver.finalize()
 #                 model_parts.append(deepcopy(solver.model['beamoutside_nodes']))
@@ -107,7 +107,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             par_solver = deepcopy(par_solver_0)
 #             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
 #             par_solver['settings'].SetInt('flow_iterations', 500)
-#             solver = cs_tools.CreateInstance(par_solver)
+#             solver = cs_tools.create_instance(par_solver)
 #             solver.initialize()
 #             solver.initialize_solution_step()
 # 
@@ -151,7 +151,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             # adapt Parameters, create solver
 #             par_solver = deepcopy(par_solver_0)
 #             par_solver['settings'].SetInt('flow_iterations', 5)
-#             solver = cs_tools.CreateInstance(par_solver)
+#             solver = cs_tools.create_instance(par_solver)
 # 
 #             # give value to DISPLACEMENT variable
 #             mp = solver.model['beamoutside_nodes']
@@ -172,7 +172,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 # 
 #             # create solver to check coordinates at last timestep
 #             par_solver['settings'].SetInt('timestep_start', timesteps)
-#             solver = cs_tools.CreateInstance(par_solver)
+#             solver = cs_tools.create_instance(par_solver)
 #             solver.initialize()
 #             solver.finalize()
 # 
@@ -189,7 +189,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 #             par_solver = deepcopy(par_solver_0)
 #             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
 #             par_solver['settings'].SetInt('flow_iterations', 500)
-#             solver = cs_tools.CreateInstance(par_solver)
+#             solver = cs_tools.create_instance(par_solver)
 # 
 #             # give value to DISPLACEMENT variable
 #             mp = solver.model['beamoutside_nodes']
@@ -212,7 +212,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 # 
 #             # create solver which restarts at timestep 2
 #             par_solver['settings'].SetInt('timestep_start', 2)
-#             solver = cs_tools.CreateInstance(par_solver)
+#             solver = cs_tools.create_instance(par_solver)
 # 
 #             # give value to DISPLACEMENT variable
 #             mp = solver.model['beamoutside_nodes']

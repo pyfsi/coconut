@@ -1,6 +1,6 @@
 from coconut.coupling_components import tools
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 
 def create(parameters):
@@ -26,7 +26,7 @@ class MapperCombined(Component):
         # create all mappers
         self.mappers = []
         for par in self.settings['mappers'].list():
-            self.mappers.append(CreateInstance(par))
+            self.mappers.append(create_instance(par))
 
         # initialization
         self.model_parts = None

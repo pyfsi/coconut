@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
@@ -49,7 +49,7 @@ class TestModelLS(unittest.TestCase):
         min_significant = settings["setting1"]["settings"]["min_significant"].GetDouble()
         q = settings["setting1"]["settings"]["q"].GetDouble()
 
-        ls = CreateInstance(settings["setting1"])
+        ls = create_instance(settings["setting1"])
         ls.size_in = ls.size_out = m
         ls.out = interface.deepcopy()
         ls.initialize()
@@ -270,7 +270,7 @@ class TestModelLS(unittest.TestCase):
         min_significant = settings["setting2"]["settings"]["min_significant"].GetDouble()
         q = settings["setting2"]["settings"]["q"].GetDouble()
 
-        ls = CreateInstance(settings["setting2"])
+        ls = create_instance(settings["setting2"])
         ls.size_in = ls.size_out = m
         ls.out = interface.deepcopy()
         ls.initialize()

@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 from sys import argv
@@ -33,7 +33,7 @@ with open(parameter_file_name, 'r') as parameter_file:
 
 # Create the solver (__init__)
 print("Creating an AbaqusSolver")
-AbaqusSolver0 = CreateInstance(parameters["solver_wrappers"][0])
+AbaqusSolver0 = create_instance(parameters["solver_wrappers"][0])
 print_colored("AbaqusSolver0 created", "green")
 
 # Assign loads to the Input-Nodes

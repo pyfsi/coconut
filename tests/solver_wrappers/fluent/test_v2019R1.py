@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.data_structure import tools
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 from copy import deepcopy
@@ -73,7 +73,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('flow_iterations', 1)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
 
             # give value to DISPLACEMENT variable
             mp = solver.model['beamoutside_nodes']
@@ -90,7 +90,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
 
             # create solver to check new coordinates
             par_solver['settings'].SetInt('timestep_start', 1)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
             solver.initialize()
             solver.finalize()
 
@@ -109,7 +109,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             model_parts = []
             for cores in [1, multiprocessing.cpu_count()]:
                 par_solver['settings'].SetInt('cores', cores)
-                solver = CreateInstance(par_solver)
+                solver = create_instance(par_solver)
                 solver.initialize()
                 solver.finalize()
                 model_parts.append(deepcopy(solver.model['beamoutside_nodes']))
@@ -130,7 +130,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
             par_solver['settings'].SetInt('flow_iterations', 500)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
             solver.initialize()
             solver.initialize_solution_step()
 
@@ -177,7 +177,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('cores', 1)
             par_solver['settings'].SetInt('flow_iterations', 30)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
 
             # run solver for 4 timesteps
             solver.initialize()
@@ -196,7 +196,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
 
             # create solver which restarts at timestep 2
             par_solver['settings'].SetInt('timestep_start', 2)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
 
             # run solver for 2 more timesteps
             solver.initialize()
@@ -274,7 +274,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('flow_iterations', 1)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
 
             # give value to DISPLACEMENT variable
             mp = solver.model['wall_nodes']
@@ -292,7 +292,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
 
             # create solver to check new coordinates
             par_solver['settings'].SetInt('timestep_start', 1)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
             solver.initialize()
             solver.finalize()
 
@@ -314,7 +314,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             model_parts = []
             for cores in [1, multiprocessing.cpu_count()]:
                 par_solver['settings'].SetInt('cores', cores)
-                solver = CreateInstance(par_solver)
+                solver = create_instance(par_solver)
                 solver.initialize()
                 solver.finalize()
                 model_parts.append(deepcopy(solver.model['wall_nodes']))
@@ -334,7 +334,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
             par_solver['settings'].SetInt('flow_iterations', 500)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
             solver.initialize()
             solver.initialize_solution_step()
 
@@ -384,7 +384,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('cores', 1)
             par_solver['settings'].SetInt('flow_iterations', 30)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
 
             # run solver for 4 timesteps
             solver.initialize()
@@ -404,7 +404,7 @@ class TestSolverWrapperFluent2019R1(unittest.TestCase):
 
             # create solver which restarts at timestep 2
             par_solver['settings'].SetInt('timestep_start', 2)
-            solver = CreateInstance(par_solver)
+            solver = create_instance(par_solver)
 
             # run solver for 2 more timesteps
             solver.initialize()

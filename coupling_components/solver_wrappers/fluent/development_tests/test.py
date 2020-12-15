@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 from sys import argv
@@ -20,7 +20,7 @@ parameter_file_name = argv[1]
 with open(parameter_file_name, 'r') as parameter_file:
     parameters = data_structure.Parameters(parameter_file.read())
 
-solver = CreateInstance(parameters['solver_wrappers'][0])
+solver = create_instance(parameters['solver_wrappers'][0])
 
 
 settings = parameters['solver_wrappers'][0]['settings']

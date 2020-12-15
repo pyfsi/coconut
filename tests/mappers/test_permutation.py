@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 import os
@@ -22,13 +22,13 @@ class TestMapperPermutation(unittest.TestCase):
             model_part_from.CreateNewNode(0, 0., 1., 2.)
 
             # model_part_from given
-            mapper = CreateInstance(parameters['mapper'])
+            mapper = create_instance(parameters['mapper'])
             model_part_to = mapper.initialize(model_part_from, forward=True)
             node = model_part_to.Nodes[0]
             self.assertListEqual([node.X, node.Y, node.Z], [2., 0., 1.])
 
             # model_part_to given
-            mapper = CreateInstance(parameters['mapper'])
+            mapper = create_instance(parameters['mapper'])
             model_part_from = mapper.initialize(model_part_to, forward=False)
             node = model_part_from.Nodes[0]
             self.assertListEqual([node.X, node.Y, node.Z], [0., 1., 2.])
@@ -44,7 +44,7 @@ class TestMapperPermutation(unittest.TestCase):
                 node = model_part_from.CreateNewNode(i, i * 1., i * 2., i * 3.)
                 node.SetSolutionStepValue(var, 0, np.random.rand())
 
-            mapper = CreateInstance(parameters['mapper'])
+            mapper = create_instance(parameters['mapper'])
             model_part_to = mapper.initialize(model_part_from, forward=True)
             mapper((model_part_from, var), (model_part_to, var))
 
@@ -64,7 +64,7 @@ class TestMapperPermutation(unittest.TestCase):
                 node = model_part_from.CreateNewNode(i, i * 1., i * 2., i * 3.)
                 node.SetSolutionStepValue(var, 0, list(np.random.rand(3)))
 
-            mapper = CreateInstance(parameters['mapper'])
+            mapper = create_instance(parameters['mapper'])
             model_part_to = mapper.initialize(model_part_from, forward=True)
             mapper((model_part_from, var), (model_part_to, var))
 

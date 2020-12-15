@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 import numpy as np
 
 
@@ -23,7 +23,7 @@ class TestCoupledSolverIBQN(unittest.TestCase):
         with open(parameter_file_name, 'r') as parameter_file:
             settings = data_structure.Parameters(parameter_file.read())
 
-        coupled_solver = CreateInstance(settings)
+        coupled_solver = create_instance(settings)
         coupled_solver.initialize()
         coupled_solver.check()
 

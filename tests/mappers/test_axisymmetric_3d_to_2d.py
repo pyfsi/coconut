@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 import os
@@ -46,7 +46,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                 i_from += 1
 
             # initialize mapper to get model_part_out
-            mapper = CreateInstance(parameters['mapper'])
+            mapper = create_instance(parameters['mapper'])
             model_part_out = mapper.initialize(model_part_in, forward=False)
 
             # get mapped geometry from 3D model_part_out
@@ -89,7 +89,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                 model_part_to.CreateNewNode(i, x, 1. + 0.2 * np.sin(x), 0.)
 
             # initialize mapper to get model_part_from (3D)
-            mapper = CreateInstance(parameters['mapper'])
+            mapper = create_instance(parameters['mapper'])
             model_part_from = mapper.initialize(model_part_to, forward=False)
 
             for node in model_part_from.Nodes:
@@ -127,7 +127,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                     model_part_to.CreateNewNode(i, i / n, 1. + 0.2 * np.sin(2 * np.pi * i / n), 0.)
 
                 # get model_part_from (3D) from mapper
-                mapper = CreateInstance(parameters['mapper'])
+                mapper = create_instance(parameters['mapper'])
                 model_part_from = mapper.initialize(model_part_to, forward=False)
 
                 # for model_part_from (3D): get geometry, set historical variables

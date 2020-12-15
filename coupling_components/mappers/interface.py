@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components import tools
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 
 def create(parameters):
@@ -29,7 +29,7 @@ class MapperInterface(Component):
             key_to = item_to[0]
             self.keys.append((key_from, key_to))  # for PrintInfo
 
-            self.mappers.append(CreateInstance(self.settings))
+            self.mappers.append(create_instance(self.settings))
             self.mappers[-1].initialize(interface_from.model[key_from],
                                         interface_to.model[key_to])
 

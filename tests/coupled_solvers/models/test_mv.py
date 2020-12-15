@@ -1,6 +1,6 @@
 from coconut import data_structure
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.interface import Interface
 
 import numpy as np
@@ -44,7 +44,7 @@ class TestModelMV(unittest.TestCase):
 
         min_significant = settings["settings"]["min_significant"].GetDouble()
 
-        mv = CreateInstance(settings)
+        mv = create_instance(settings)
         mv.size_in = mv.size_out = m
         mv.out = interface.deepcopy()
         mv.initialize()

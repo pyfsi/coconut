@@ -1,4 +1,4 @@
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 from scipy.sparse.linalg import gmres, LinearOperator
@@ -12,8 +12,8 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.model_f = CreateInstance(self.parameters["settings"]["model_f"])
-        self.model_s = CreateInstance(self.parameters["settings"]["model_s"])
+        self.model_f = create_instance(self.parameters["settings"]["model_f"])
+        self.model_s = create_instance(self.parameters["settings"]["model_s"])
         self.omega = self.settings["omega"].GetDouble()
         self.atol = self.settings["absolute_tolerance_gmres"].GetDouble()
         self.rtol = self.settings["relative_tolerance_gmres"].GetDouble()

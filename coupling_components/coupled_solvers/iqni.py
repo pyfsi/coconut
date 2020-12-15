@@ -1,4 +1,4 @@
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 
@@ -10,7 +10,7 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.model = CreateInstance(self.parameters["settings"]["model"])
+        self.model = create_instance(self.parameters["settings"]["model"])
         self.omega = self.settings["omega"].GetDouble()
 
     def initialize(self):
