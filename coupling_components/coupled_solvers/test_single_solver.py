@@ -5,13 +5,6 @@ from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolv
 
 import time
 import os
-import sys
-
-try:
-    from dummy_solver import *
-    dummy_solver_present = True
-except ImportError:
-    dummy_solver_present = False
 
 
 def create(parameters):
@@ -55,16 +48,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             parameters = parameters["settings"]["solver_wrapper"]  # for mapped solver: the solver_wrapper itself tested
         settings = parameters["settings"]
 
-        for key in ["timestep_start", "delta_t"]:  # add delta_t and timestep_start to solver_wrapper settings
-            if key in settings:
-                tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-            settings[key] = self.test_settings[key]
-
-        self.solver_wrapper = tools.create_instance(parameters)
-        self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
-
-        # working directory will be changed to a test_working_directory
-        orig_wd = settings["working_directory"]
+        orig_wd = settings["working_directory"]  # working directory changed to a test_working_directory
         i = 0
         while os.path.exists(f"{orig_wd}_test{i}"):
             i += 1
@@ -73,26 +57,37 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         os.system(f"cp -r {orig_wd} {cur_wd}")
         tools.print_info(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
 
+        for key in ["timestep_start", "delta_t"]:  # add delta_t and timestep_start to solver_wrapper settings
+            if key in settings:
+                tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
+            settings[key] = self.test_settings[key]
+
+        self.solver_wrapper = tools.create_instance(parameters)
+        self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
+
         self.components = [self.solver_wrapper]  # will only contain 1 solver wrapper
 
-        interface_input = self.solver_wrapper.interface_input  # TODO: to be adapted
+        # initialize test_class
+        interface_input = self.solver_wrapper.interface_input
         if self.test_class is None:
-            self.zero_input = True
+            self.dummy_solver = None
             tools.print_info("No test class specified, zero input will be used")
-            for model_part_name, variable_names in interface_input.model_part_variable_pairs:
+            for model_part_name, variable_names in interface_input.model_parts_variables:
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
                     if variable.Type() == "Double":
                         tools.print_info(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
                     elif variable.Type() == "Array":
                         tools.print_info(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
-        elif not dummy_solver_present:
-            raise FileNotFoundError(f"Test class specified, but no file named dummy_solver.py in {os.getcwd()}")
         else:
-            self.zero_input = False
+            if not os.path.isfile('dummy_solver.py'):
+                raise ModuleNotFoundError(f"Test class specified, but no file named dummy_solver.py in {os.getcwd()}")
+            module = __import__('dummy_solver')
+            if not hasattr(module, self.test_class):
+                raise NameError(f"Module dummy_solver has no class {self.test_class}")
+            self.dummy_solver = getattr(module, self.test_class)()
             tools.print_info(f"The functions from {self.test_class} will be used to calculate the following inputs:")
-            self.dummy_solver = getattr(sys.modules[__name__], self.test_class)()
-            for model_part_name, variable_names in interface_input.model_part_variable_pairs:
+            for model_part_name, variable_names in interface_input.model_parts_variables:
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
                     if variable.Type() == "Double":
@@ -138,8 +133,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
     def solve_solution_step(self):
         interface_input = self.solver_wrapper.interface_input
         # generation of the input data
-        if not self.zero_input:
-            for model_part_name, variable_names in interface_input.model_part_variable_pairs:
+        if self.dummy_solver is not None:
+            for model_part_name, variable_names in interface_input.model_parts_variables:
                 model_part = interface_input.model.GetModelPart(model_part_name)
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
