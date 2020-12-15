@@ -1,61 +1,49 @@
 from coconut import data_structure
-import unittest
-from coconut.coupling_components.tools import create_instance
 from coconut.data_structure.interface import Interface
+from coconut.coupling_components.tools import create_instance
 
-import numpy as np
+import unittest
+import os
 import json
+import numpy as np
+
 
 class TestPredictorLinear(unittest.TestCase):
+
     def test_predictor_linear(self):
         m = 10
-        dz = 3.0
-        a0 = 1.0
-        p1 = 1.0
-        a1 = 2.0
-        p2 = 3.0
+        dz = 3
+        a0 = 1
+        p1 = 1
+        a1 = 2
+        p2 = 3
         variable = 'area'
-        mp_name = 'wall'
-        interface_settings = [{'model_part': 'wall', 'variables': ['area']}]
+        model_part_name = 'wall'
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
-        # Create interface
-
+        # create model and model_part
         model = data_structure.Model()
         ids = np.arange(0, m)
         x0 = np.zeros(m)
         y0 = np.zeros(m)
         z0 = np.arange(0, m * dz, dz)
-
-        model.create_model_part(mp_name, x0, y0, z0, ids)
+        model.create_model_part(model_part_name, x0, y0, z0, ids)
 
         a0_array = np.full((m, 1), a0)
 
         # create interface
         interface = Interface(interface_settings, model)
-        interface.set_variable_data(mp_name, variable, a0_array)
-        # interface_settings = json.loads('{"wall": "AREA"}')
-        #
-        # # Create interface
-        # variable = vars(data_structure)["AREA"]
-        # model = data_structure.Model()
-        # model_part = model.CreateModelPart("wall")
-        # model_part.AddNodalSolutionStepVariable(variable)
-        # for i in range(m):
-        #     model_part.CreateNewNode(i, 0.0, 0.0, i * dz)
-        # step = 0
-        # for node in model_part.Nodes:
-        #     node.SetSolutionStepValue(variable, step, a0)
-        # interface = Interface(model, interface_settings)
+        interface.set_variable_data(model_part_name, variable, a0_array)
 
-        # Create predictor
-        parameter_file_name = "predictors/test_linear.json"
+        # read settings
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_linear.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.loads(parameter_file.read())
+            settings = json.load(parameter_file)
 
         predictor_linear = create_instance(settings)
         predictor_linear.initialize(interface)
 
-        # Test predictor: first prediction needs to be equal to initialized value
+        # first prediction needs to be equal to initialized value
         predictor_linear.initialize_solution_step()
         prediction = predictor_linear.predict(interface)
         self.assertIsInstance(prediction, Interface)
@@ -67,7 +55,7 @@ class TestPredictorLinear(unittest.TestCase):
         predictor_linear.update(interface)
         predictor_linear.finalize_solution_step()
 
-        # Test predictor: second prediction needs to be linear
+        # second prediction needs to be linear
         predictor_linear.initialize_solution_step()
         prediction = predictor_linear.predict(interface)
         self.assertIsInstance(prediction, Interface)

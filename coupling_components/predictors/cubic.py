@@ -5,7 +5,7 @@ def create(parameters):
     return PredictorCubic(parameters)
 
 
-# Class PredictorCubic: Cubic extrapolation based on the last four time steps, assuming constant time step size.
+# cubic extrapolation based on the last four time steps, assuming constant time step size
 class PredictorCubic(Predictor):
     def __init__(self, _unused):
         super().__init__(_unused)

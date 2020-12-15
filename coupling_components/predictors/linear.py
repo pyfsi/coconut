@@ -5,7 +5,7 @@ def create(parameters):
     return PredictorLinear(parameters)
 
 
-# Class PredictorLinear: Linear extrapolation based on the last two time steps, assuming constant time step size.
+# linear extrapolation based on the last two time steps, assuming constant time step size
 class PredictorLinear(Predictor):
     def __init__(self, _unused):
         super().__init__(_unused)

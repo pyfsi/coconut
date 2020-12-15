@@ -5,8 +5,8 @@ def create(parameters):
     return Predictor(parameters)
 
 
-# Class Predictor: Base class for extrapolation based on the last two (linear), three (quadratic) or four (cubic) time steps,
-# assuming constant time step size.
+# base class for extrapolation based on the last two (linear), three (quadratic) or four (cubic) time steps,
+# assuming constant time step size
 class Predictor(Component):
     def __init__(self, _unused):
         super().__init__()
