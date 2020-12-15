@@ -95,10 +95,10 @@ class SolverWrapperMapped(Component):
         self.mapper_interface_output.initialize(self.interface_output_from, self.interface_output_to)
 
     def print_components_info(self, pre):
-        tools.print(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
+        tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
         pre = tools.update_pre(pre)
         self.solver_wrapper.print_components_info(pre + '├─')
-        tools.print(pre, '├─', "Input mapper:")
+        tools.print_info(pre, '├─', "Input mapper:")
         self.mapper_interface_input.print_components_info(pre + '│ └─')
-        tools.print(pre, '└─', "Output mapper:")
+        tools.print_info(pre, '└─', "Output mapper:")
         self.mapper_interface_output.print_components_info(pre + '  └─')

@@ -36,7 +36,7 @@ class CoupledSolverGaussSeidel(Component):
 
             for key in ["timestep_start", "delta_t"]:
                 if key in settings:
-                    tools.print(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
+                    tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
                     settings.RemoveValue(key)
                 settings[key] = self.settings[key]
 
@@ -170,7 +170,7 @@ class CoupledSolverGaussSeidel(Component):
             out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
                   f"║\tSummary\n" \
                   f"╠═══════════════════════════════════════════════════════════════════════════════"
-            tools.print(out)
+            tools.print_info(out)
 
         for component in self.components:
             component.finalize()
@@ -202,19 +202,19 @@ class CoupledSolverGaussSeidel(Component):
         out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
         if self.solver_level == 0:
             out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
-        tools.print(out)
+        tools.print_info(out)
 
     def print_header(self):
         header = f"════════════════════════════════════════════════════════════════════════════════\n" \
                  f"\tTime step {self.n}\n" \
                  f"════════════════════════════════════════════════════════════════════════════════\n" \
                  f"Iteration\tNorm residual"
-        tools.print(header)
+        tools.print_info(header)
 
     def print_iteration_info(self, r):
         norm = np.linalg.norm(r.GetNumpyArray())
         info = f"{self.iteration:<16d}{norm:<28.17e}"
-        tools.print(' │' * self.solver_level, info)
+        tools.print_info(' │' * self.solver_level, info)
 
     def check(self):
         super().check()
@@ -223,5 +223,5 @@ class CoupledSolverGaussSeidel(Component):
             component.check()
 
     def print_components_info(self, pre):
-        tools.print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
+        tools.print_info(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
         tools.print_components_info(pre, self.components)

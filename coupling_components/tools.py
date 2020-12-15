@@ -9,38 +9,6 @@ def create_instance(settings):
     return object_module.create(settings)
 
 
-# PrintInfo: Printing information with a label
-#
-#  @param label         The label for the print
-#  @param args          The arguments to be printed
-def print_Info(label, *args):
-    print(label, " ".join(map(str, args)))
-
-
-# print_warning: Printing a warning with a label
-#
-#  @param label         The label for the print
-#  @param args          The arguments to be printed
-def print_warning(label, *args):
-    print(label, " ".join(map(str, args)))
-
-
-# Class contains definition of colors. This is to be used as a struct.
-#
-# Example usage: print(bcolors.HEADER + "This is a header in header color" + bcolors.ENDC)
-# IMPORTANT: The end of the print statement should always contain bcolor.ENDC
-class bcolors:
-    HEADER    = '\033[95m'
-    BLUE      = '\033[94m'
-    GREEN     = '\033[92m'
-    MEGENTA   = '\033[96m'
-    WARNING   = '\033[93m'
-    FAIL      = '\033[91m'
-    ENDC      = '\033[0m'
-    BOLD      = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
 class LayoutStyles:
     styles = {'header':    '\033[95m',
               'blue':      '\033[94m',
@@ -66,18 +34,17 @@ class LayoutStyles:
 layout_style = LayoutStyles()
 
 
-# Print: Printing with color
-#
+# print_info: Printing with color
 #  @param args          The arguments to be printed
 #  @param layout        The layout to be used: header, blue, green, red, warning, fail, bold, underline or plain
-def print(*args, layout=None):
+def print_info(*args, layout=None):
     if layout is None:
         print("".join(map(str, args)))
     else:
         print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'))
 
 
-# UpdatePre: Update preceding text, used in structure printing
+# updatePre: Update preceding text, used in structure printing
 #  @param pre         Preceding text ending with '├─' or '└─'
 def update_pre(pre):
     """
@@ -99,7 +66,7 @@ def update_pre(pre):
     return pre
 
 
-# PrintInfoStructure: Print information from a list of Comonents in a strucutred way
+# printInfoStructure: Print information from a list of Comonents in a strucutred way
 #  @param label         Preceding text ending with '├─' or '└─'
 #  @param compent_list  List of Components from which the info is printed
 def print_components_info(pre, component_list):
@@ -116,7 +83,7 @@ def print_components_info(pre, component_list):
     component_list[-1].print_components_info(pre + '└─')
 
 
-# Timer-function
+# timer-function
 @contextmanager
 def quicktimer(name=None, t=0, n=0, ms=False):
     """
@@ -136,21 +103,21 @@ def quicktimer(name=None, t=0, n=0, ms=False):
         with tools.quicktimer('test', ms=True):
             a = 1 / 3
     """
-    startTime = time.time()
+    start_time = time.time()
     yield
-    elapsedTime = time.time() - startTime
+    elapsed_time = time.time() - start_time
     if ms:
-        s = '\n' * n + '\t' * t + f'{elapsedTime * 1000:.2f}ms'
+        s = '\n' * n + '\t' * t + f'{elapsed_time * 1000:.2f}ms'
         s.replace(',', ' ')
     else:
-        s = '\n' * n + '\t' * t + f'{elapsedTime:.1f}s'
+        s = '\n' * n + '\t' * t + f'{elapsed_time:.1f}s'
     if name is not None:
         s += f' - {name}'
     s += '\n' * n
     print(s)
 
 
-# Run time measuring function
+# run time measuring function
 def time_solve_solution_step(solve_solution_step):
     def wrapper(*args):
         self = args[0]

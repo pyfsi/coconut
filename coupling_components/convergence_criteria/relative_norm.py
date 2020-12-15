@@ -35,7 +35,6 @@ class ConvergenceCriterionRelativeNorm(Component):
                 raise Exception("Initial norm is too small")
 
     def is_satisfied(self):
-        # tools.print_Info("Norm: " + str(self.last_norm))
         if not self.is_initial_norm_set:
             return False
         else:

@@ -29,7 +29,6 @@ class ConvergenceCriterionAbsoluteNorm(Component):
         self.is_updated = True
 
     def is_satisfied(self):
-        # tools.print_Info("Norm: " + str(self.last_norm))
         if not self.is_updated:
             return False
         else:

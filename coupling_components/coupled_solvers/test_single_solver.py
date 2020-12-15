@@ -47,7 +47,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.test_settings.SetInt("timestep_start", self.timestep_start)
         self.n = self.timestep_start
         self.delta_t = self.test_settings["delta_t"].GetDouble()
-        tools.print(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start}")
+        tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start}")
 
         self.predictor = DummyComponent()
         self.convergence_criterion = DummyComponent()
@@ -59,7 +59,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         for key in ["timestep_start", "delta_t"]:  # add delta_t and timestep_start to solver_wrapper settings
             if settings.Has(key):
-                tools.print(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
+                tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
                 settings.RemoveValue(key)
             settings.AddValue(key, self.test_settings[key])
 
@@ -74,35 +74,35 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         cur_wd = f"{orig_wd}_test{i}"
         settings.SetString("working_directory", cur_wd)
         os.system(f"cp -r {orig_wd} {cur_wd}")
-        tools.print(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
+        tools.print_info(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
 
         self.components = [self.solver_wrapper]  # will only contain 1 solver wrapper
 
         interface_input = self.solver_wrapper.interface_input
         if self.test_class is None:
             self.zero_input = True
-            tools.print("No test class specified, zero input will be used")
+            tools.print_info("No test class specified, zero input will be used")
             for model_part_name, variable_names in interface_input.model_parts_variables:
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
                     if variable.Type() == "Double":
-                        tools.print(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
+                        tools.print_info(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
                     elif variable.Type() == "Array":
-                        tools.print(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
+                        tools.print_info(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
         elif not dummy_solver_present:
             raise FileNotFoundError(f"Test class specified, but no file named dummy_solver.py in {os.getcwd()}")
         else:
             self.zero_input = False
-            tools.print(f"The functions from {self.test_class} will be used to calculate the following inputs:")
+            tools.print_info(f"The functions from {self.test_class} will be used to calculate the following inputs:")
             self.dummy_solver = getattr(sys.modules[__name__], self.test_class)()
             for model_part_name, variable_names in interface_input.model_parts_variables:
                 for variable_name in variable_names.list():
                     variable = vars(data_structure)[variable_name.GetString()]
                     if variable.Type() == "Double":
-                        tools.print(f"\t{variable_name.GetString()} [Scalar] on {model_part_name}")
+                        tools.print_info(f"\t{variable_name.GetString()} [Scalar] on {model_part_name}")
                     elif variable.Type() == "Array":
-                        tools.print(f"\t{variable_name.GetString()} [3D array] on {model_part_name}")
-        tools.print()
+                        tools.print_info(f"\t{variable_name.GetString()} [3D array] on {model_part_name}")
+        tools.print_info()
 
         self.x = None
         self.y = None
@@ -164,13 +164,13 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.n == self.timestep_start + 1:
             header = f"════════════════════════════════════════════════════════════════════════════════\n" \
                 f"{'Time step':<16}{'Norm x':<28}{'Norm y':<28}"
-            tools.print(header)
+            tools.print_info(header)
 
     def print_iteration_info(self, r):
         normx = np.linalg.norm(self.x.GetNumpyArray())
         normy = np.linalg.norm(self.y.GetNumpyArray())
         info = f"{self.n:<16d}{normx:<28.17e}{normy:<28.17e}"
-        tools.print(' │' * self.solver_level, info)
+        tools.print_info(' │' * self.solver_level, info)
 
 
 class DummyComponent:

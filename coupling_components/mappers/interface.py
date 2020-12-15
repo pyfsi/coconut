@@ -55,10 +55,10 @@ class MapperInterface(Component):
             mapper.output_solution_step()
 
     def print_components_info(self, pre):
-        tools.print(pre, "The component ", self.__class__.__name__, " maps the following model parts:")
+        tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following model parts:")
         pre = tools.update_pre(pre)
         for i, mapper in enumerate(self.mappers[:-1]):
-            tools.print(pre, f"├─ModelPart '{self.keys[i][0]}' to ModelPart '{self.keys[i][1]}' with the mapper:")
+            tools.print_info(pre, f"├─ModelPart '{self.keys[i][0]}' to ModelPart '{self.keys[i][1]}' with the mapper:")
             mapper.print_components_info(pre + '│ └─')
-        tools.print(pre, f"└─ModelPart '{self.keys[-1][0]}' to ModelPart '{self.keys[-1][1]}' with the mapper:")
+        tools.print_info(pre, f"└─ModelPart '{self.keys[-1][0]}' to ModelPart '{self.keys[-1][1]}' with the mapper:")
         self.mappers[-1].print_components_info(pre + '  └─')

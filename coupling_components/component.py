@@ -45,4 +45,4 @@ class Component(object):
         pass
 
     def print_components_info(self, pre):
-        tools.print(pre, "The component ", self.__class__.__name__)
+        tools.print_info(pre, "The component ", self.__class__.__name__)
