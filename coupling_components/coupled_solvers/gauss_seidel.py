@@ -113,11 +113,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # Print time step
         if not self.solver_level:
-            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"\tTime step {self.n}\n" \
-                  f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"Iteration\tNorm residual"
-            tools.print(out)
+            self.print_header()
 
         if self.save_results:
             self.residual.append([])
@@ -144,9 +140,7 @@ class CoupledSolverGaussSeidel(Component):
         self.iteration += 1
         self.convergence_criterion.update(r)
         # Print iteration information
-        norm = np.linalg.norm(r.get_interface_data())
-        out = f"{self.iteration:<9d}\t{norm:<22.17e}"
-        tools.print(' │' * self.solver_level, out)
+        self.print_iteration_info(r)
 
         if self.save_results:
             self.residual[self.n - 1].append(np.linalg.norm(r.get_interface_data()))
@@ -210,12 +204,24 @@ class CoupledSolverGaussSeidel(Component):
             out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
         tools.print(out)
 
+    def print_header(self):
+        header = f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"\tTime step {self.n}\n" \
+                 f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"Iteration\tNorm residual"
+        tools.print(header)
+
+    def print_iteration_info(self, r):
+        norm = np.linalg.norm(r.GetNumpyArray())
+        info = f"{self.iteration:<16d}{norm:<28.17e}"
+        tools.print(' │' * self.solver_level, info)
+
     def check(self):
         super().check()
 
         for component in self.components:
             component.check()
 
-    def print_Info(self, pre):
+    def print_components_info(self, pre):
         tools.print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        tools.PrintStructureInfo(pre, self.components)
+        tools.print_components_info(pre, self.components)
