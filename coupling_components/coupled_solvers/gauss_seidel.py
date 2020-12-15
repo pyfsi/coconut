@@ -26,7 +26,7 @@ class CoupledSolverGaussSeidel(Component):
         self.convergence_criterion = create_instance(self.parameters["convergence_criterion"])
         self.solver_wrappers = []
         for index in range(2):
-            # Add timestep_start and delta_t to solver_wrapper settings
+            # add timestep_start and delta_t to solver_wrapper settings
             parameters = self.parameters["solver_wrappers"][index]
             if parameters["type"] == "solver_wrappers.mapped":
                 settings = parameters["settings"]["solver_wrapper"]["settings"]
@@ -36,7 +36,6 @@ class CoupledSolverGaussSeidel(Component):
             for key in ["timestep_start", "delta_t"]:
                 if key in settings:
                     tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-                    settings.RemoveValue(key)
                 settings[key] = self.settings[key]
 
             self.solver_wrappers.append(create_instance(parameters))

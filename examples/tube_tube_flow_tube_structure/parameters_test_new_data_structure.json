@@ -3,12 +3,12 @@
     "number_of_timesteps": 100
   },
   "coupled_solver": {
-    "type": "coupled_solvers.gauss_seidel",
+    "type": "coupled_solvers.iqni",
     "settings": {
       "timestep_start": 0,
       "delta_t": 0.0001,
       "omega": 0.05,
-      "name": "results",
+      "name": "results_new",
       "save_results": true,
       "model": {
         "type": "coupled_solvers.models.ls",
@@ -96,7 +96,7 @@
           "mapper_interface_input": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.nearest",
+              "type": "mappers.linear",
               "settings": {
                 "directions": [
                   "z"
@@ -107,7 +107,7 @@
           "mapper_interface_output": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.nearest",
+              "type": "mappers.linear",
               "settings": {
                 "directions": [
                   "z"

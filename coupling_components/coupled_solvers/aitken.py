@@ -12,25 +12,25 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         super().__init__(parameters)
 
         self.settings = parameters["settings"]
-        self.omega_max = self.settings["omega_max"].GetDouble()
+        self.omega_max = self.settings["omega_max"]
 
         self.omega = self.omega_max
         self.added = False
         self.rcurr = None
 
-    def Predict(self, r_in):
-        r = r_in.GetNumpyArray()
+    def predict(self, r_in):
+        r = r_in.get_interface_data()
         # Calculate return value if sufficient data available
         if not self.added:
             raise RuntimeError("No information to predict")
         dx = self.omega * r
-        dx_out = r_in.deepcopy()
-        dx_out.SetNumpyArray(dx)
+        dx_out = r_in.copy()
+        dx_out.set_interface_data(dx)
         return dx_out
 
     def update(self, x_in, xt_in):
-        x = x_in.GetNumpyArray().reshape(-1, 1)
-        xt = xt_in.GetNumpyArray().reshape(-1, 1)
+        x = x_in.get_interface_data().reshape(-1, 1)
+        xt = xt_in.get_interface_data().reshape(-1, 1)
         r = xt - x
         rprev = self.rcurr
         self.rcurr = r
@@ -45,7 +45,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
 
     def solve_solution_step(self):
         # Initial value
-        self.x = self.predictor.Predict(self.x)
+        self.x = self.predictor.predict(self.x)
         # First coupling iteration
         self.y = self.solver_wrappers[0].solve_solution_step(self.x)
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
@@ -54,14 +54,14 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
-            self.x += self.Predict(r)
+            self.x += self.predict(r)
             self.y = self.solver_wrappers[0].solve_solution_step(self.x)
             xt = self.solver_wrappers[1].solve_solution_step(self.y)
             r = xt - self.x
             self.update(self.x, xt)
             self.finalize_iteration(r)
 
-    def IsReady(self):
+    def is_ready(self):
         return self.added
 
     def initialize_solution_step(self):

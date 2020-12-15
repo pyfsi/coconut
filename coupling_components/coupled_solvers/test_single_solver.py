@@ -6,7 +6,6 @@ from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolv
 import time
 import os
 import sys
-import numpy as np
 
 try:
     from dummy_solver import *
@@ -26,48 +25,46 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         Component.__init__(self)
 
         self.parameters = parameters
-        self.settings = parameters["settings"] if self.parameters.Has("settings") else None  # settings is optional as long as the necessary parameters are in test_settings
+        self.settings = parameters.get("settings", None)  # settings is optional as long as the necessary parameters
+        # are in test_settings
 
         if "test_settings" not in self.parameters.keys():  # requires a new parameter input "test_settings"
             raise KeyError('The coupled_solver "test_single_solver" requires "test_settings" which was not detected.')
         self.test_settings = parameters["test_settings"]
-        self.solver_index = self.test_settings["solver_index"].GetInt()  # solver to be tested; starts at 0
-        self.test_class = self.test_settings["test_class"].GetString() if self.test_settings.Has("test_class") else None
-        if self.test_class == "None":
-            self.test_class = None
+        self.solver_index = self.test_settings["solver_index"]  # solver to be tested; starts at 0
+        self.test_class = self.test_settings.get("test_class", None)
 
         # copy value of settings to test_settings (test_settings are prioritized)
         if self.settings is not None:
-            self.test_settings.AddMissingParameters(self.settings)
+            updated_settings = self.settings.update(self.test_settings)
+            self.test_settings = updated_settings.copy()
 
         # delta_t and timestep_start
-        self.timestep_start = self.test_settings["timestep_start"].GetInt() if self.test_settings.Has("timestep_start")\
-            else 0
+        self.timestep_start = self.test_settings.get("timestep_start", 0)
         self.test_settings.AddEmptyValue("timestep_start")
         self.test_settings.SetInt("timestep_start", self.timestep_start)
         self.n = self.timestep_start
-        self.delta_t = self.test_settings["delta_t"].GetDouble()
+        self.delta_t = self.test_settings["delta_t"]
         tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start}")
 
         self.predictor = DummyComponent()
         self.convergence_criterion = DummyComponent()
         # solver wrapper settings
         parameters = self.parameters["solver_wrappers"][self.solver_index]
-        if parameters["type"].GetString() == "solver_wrappers.mapped":
+        if parameters["type"] == "solver_wrappers.mapped":
             parameters = parameters["settings"]["solver_wrapper"]  # for mapped solver: the solver_wrapper itself tested
         settings = parameters["settings"]
 
         for key in ["timestep_start", "delta_t"]:  # add delta_t and timestep_start to solver_wrapper settings
-            if settings.Has(key):
+            if key in settings:
                 tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-                settings.RemoveValue(key)
-            settings.AddValue(key, self.test_settings[key])
+            settings[key] = self.test_settings[key]
 
         self.solver_wrapper = tools.create_instance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
 
         # working directory will be changed to a test_working_directory
-        orig_wd = settings["working_directory"].GetString()
+        orig_wd = settings["working_directory"]
         i = 0
         while os.path.exists(f"{orig_wd}_test{i}"):
             i += 1
@@ -78,7 +75,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         self.components = [self.solver_wrapper]  # will only contain 1 solver wrapper
 
-        interface_input = self.solver_wrapper.interface_input
+        interface_input = self.solver_wrapper.interface_input  # TODO: to be adapted
         if self.test_class is None:
             self.zero_input = True
             tools.print_info("No test class specified, zero input will be used")
@@ -112,13 +109,12 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.start_time = None
         self.elapsed_time = None
         self.iterations = []
-        self.save_results = self.test_settings["save_results"].GetBool() if self.test_settings.Has("save_results") \
-            else False
+        self.save_results = self.test_settings.get("save_results", False)
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.test_settings["name"].GetString() if self.test_settings.Has("name") else "results"  # Case name
+            self.case_name = self.test_settings.get("name", "results")  # Case name
             self.case_name += "_" + cur_wd
 
     def initialize(self):
@@ -126,7 +122,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         self.solver_wrapper.initialize()
 
-        # Initialize variables
+        # initialize variables
         if self.solver_index == 1:
             self.x = self.solver_wrapper.get_interface_output()
             self.y = self.solver_wrapper.get_interface_input()
@@ -135,13 +131,13 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.y = self.solver_wrapper.get_interface_output()
 
         if self.save_results:
-            self.complete_solution_x = self.x.GetNumpyArray().reshape(-1, 1)
-            self.complete_solution_y = self.y.GetNumpyArray().reshape(-1, 1)
+            self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
+            self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
         self.start_time = time.time()
 
     def solve_solution_step(self):
         interface_input = self.solver_wrapper.interface_input
-        # Generation of the input data
+        # generation of the input data
         if not self.zero_input:
             for model_part_name, variable_names in interface_input.model_part_variable_pairs:
                 model_part = interface_input.model.GetModelPart(model_part_name)
@@ -151,7 +147,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
                         value = getattr(self.dummy_solver, f"calculate_{variable_name.GetString()}")(node.X0, node.Y0,
                                                                                                      node.Z0, self.n)
                         node.SetSolutionStepValue(variable, 0, value)
-        # Store data in self.x and self.y
+        # store data in self.x and self.y
         if self.solver_index == 1:
             self.y = interface_input
             self.x = self.solver_wrapper.solve_solution_step(interface_input)
