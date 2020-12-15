@@ -5,6 +5,7 @@ from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolv
 
 import time
 import os
+import numpy as np
 
 
 def create(parameters):
@@ -72,13 +73,11 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.test_class is None:
             self.dummy_solver = None
             tools.print_info("No test class specified, zero input will be used")
-            for model_part_name, variable_names in interface_input.model_parts_variables:
-                for variable_name in variable_names.list():
-                    variable = vars(data_structure)[variable_name.GetString()]
-                    if variable.Type() == "Double":
-                        tools.print_info(f"\t0 is used as {variable_name.GetString()} input to {model_part_name}")
-                    elif variable.Type() == "Array":
-                        tools.print_info(f"\t[0 0 0] is used as {variable_name.GetString()} input to {model_part_name}")
+            for model_part_name, variable in interface_input.model_part_variable_pairs:
+                if data_structure.variables_dimensions[variable] == 1:
+                    tools.print_info(f"\t0 is used as {variable} input to {model_part_name}")
+                elif data_structure.variables_dimensions[variable] == 3:
+                    tools.print_info(f"\t[0 0 0] is used as {variable} input to {model_part_name}")
         else:
             if not os.path.isfile('dummy_solver.py'):
                 raise ModuleNotFoundError(f"Test class specified, but no file named dummy_solver.py in {os.getcwd()}")
@@ -87,13 +86,11 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
                 raise NameError(f"Module dummy_solver has no class {self.test_class}")
             self.dummy_solver = getattr(module, self.test_class)()
             tools.print_info(f"The functions from {self.test_class} will be used to calculate the following inputs:")
-            for model_part_name, variable_names in interface_input.model_parts_variables:
-                for variable_name in variable_names.list():
-                    variable = vars(data_structure)[variable_name.GetString()]
-                    if variable.Type() == "Double":
-                        tools.print_info(f"\t{variable_name.GetString()} [Scalar] on {model_part_name}")
-                    elif variable.Type() == "Array":
-                        tools.print_info(f"\t{variable_name.GetString()} [3D array] on {model_part_name}")
+            for model_part_name, variable in interface_input.model_part_variable_pairs:
+                if data_structure.variables_dimensions[variable] == 1:
+                    tools.print_info(f"\t{variable} [Scalar] on {model_part_name}")
+                elif data_structure.variables_dimensions[variable] == 3:
+                    tools.print_info(f"\t{variable} [3D array] on {model_part_name}")
         tools.print_info()
 
         self.x = None
@@ -134,14 +131,13 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         interface_input = self.solver_wrapper.interface_input
         # generation of the input data
         if self.dummy_solver is not None:
-            for model_part_name, variable_names in interface_input.model_parts_variables:
-                model_part = interface_input.model.GetModelPart(model_part_name)
-                for variable_name in variable_names.list():
-                    variable = vars(data_structure)[variable_name.GetString()]
-                    for node in model_part.Nodes:
-                        value = getattr(self.dummy_solver, f"calculate_{variable_name.GetString()}")(node.X0, node.Y0,
-                                                                                                     node.Z0, self.n)
-                        node.SetSolutionStepValue(variable, 0, value)
+            for model_part_name, variable in interface_input.model_parts_variables:
+                model_part = interface_input.get_model_part(model_part_name)
+                data = []
+                for i in range(model_part.size):
+                    data[i] = getattr(self.dummy_solver, f"calculate_{variable}")(model_part.X0[i], model_part.Y0[i],
+                                                                                  model_part.Z0[i], self.n)
+                interface_input.set_varialbe_data(model_part_name, variable, np.array(data))
         # store data in self.x and self.y
         if self.solver_index == 1:
             self.y = interface_input
