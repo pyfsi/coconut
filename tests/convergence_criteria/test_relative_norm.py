@@ -9,6 +9,7 @@ import numpy as np
 
 
 class TestConvergenceCriterionRelativeNorm(unittest.TestCase):
+
     def test_convergence_criterion_relative_norm(self):
         m = 10
         dz = 2
@@ -17,7 +18,7 @@ class TestConvergenceCriterionRelativeNorm(unittest.TestCase):
         a2 = 1e-6
         variable = 'area'
         model_part_name = 'wall'
-        interface_settings = [{'model_part': 'wall', 'variables': ['area']}]
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
         # create model and model_part
         model = data_structure.Model()
@@ -37,7 +38,7 @@ class TestConvergenceCriterionRelativeNorm(unittest.TestCase):
         # read settings
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_relative_norm.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.loads(parameter_file.read())
+            settings = json.load(parameter_file)
 
         convergence_criterion_relative_norm = create_instance(settings)
         convergence_criterion_relative_norm.initialize()

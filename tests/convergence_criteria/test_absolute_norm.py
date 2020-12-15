@@ -9,6 +9,7 @@ import numpy as np
 
 
 class TestConvergenceCriterionAbsoluteNorm(unittest.TestCase):
+
     def test_convergence_criterion_absolute_norm(self):
         m = 10
         dz = 2
@@ -17,7 +18,7 @@ class TestConvergenceCriterionAbsoluteNorm(unittest.TestCase):
         a2 = 1e-7
         variable = 'area'
         model_part_name = 'wall'
-        interface_settings = [{'model_part': 'wall', 'variables': ['area']}]
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
         # create model and model_part
         model = data_structure.Model()

@@ -9,13 +9,14 @@ import numpy as np
 
 
 class TestConvergenceCriterionOr(unittest.TestCase):
+
     def test_convergence_criterion_or(self):
         m = 10
         dz = 2
         a0 = 1
         variable = 'area'
         model_part_name = 'wall'
-        interface_settings = [{'model_part': 'wall', 'variables': ['area']}]
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
         # create model and model_part
         model = data_structure.Model()
@@ -34,7 +35,7 @@ class TestConvergenceCriterionOr(unittest.TestCase):
         # read settings
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_or.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.loads(parameter_file.read())
+            settings = json.load(parameter_file)
 
         convergence_criterion_or = create_instance(settings)
         convergence_criterion_or.initialize()

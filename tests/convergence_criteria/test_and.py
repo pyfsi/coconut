@@ -9,13 +9,14 @@ import numpy as np
 
 
 class TestConvergenceCriterionAnd(unittest.TestCase):
+
     def test_convergence_criterion_and(self):
         m = 10
         dz = 2
         a0 = 1
         variable = 'area'
         model_part_name = 'wall'
-        interface_settings = [{'model_part': 'wall', 'variables': ['area']}]
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
         # create model and model_part
         model = data_structure.Model()
