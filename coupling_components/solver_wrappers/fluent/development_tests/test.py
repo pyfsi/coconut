@@ -24,7 +24,7 @@ if 0:
         interface_input = solver.get_interface_input()
         for key in settings['interface_input'].keys():
             for node in interface_input.model[key].Nodes:
-                dy = (1 - np.cos(2 * np.pi * node.X)) * 0.5 * 0.01
+                dy = (1 - np.cos(2 * np.pi * node.X0)) * 0.5 * 0.01  # this used node.X before
                 node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
 
     solver.finalize_solution_step()
@@ -44,7 +44,7 @@ else:
             interface_input = solver.get_interface_input()
             for key in settings['interface_input'].keys():
                 for node in interface_input.model[key].Nodes:
-                    dy = (1 - np.cos(2 * np.pi * (node.X - timestep / 4 - iteration / 16))) * 0.5 * f
+                    dy = (1 - np.cos(2 * np.pi * (node.X0 - timestep / 4 - iteration / 16))) * 0.5 * f  # this used node.X before
                     node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
         solver.finalize_solution_step()
 
