@@ -1,0 +1,33 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : writeCellCentres -time 0
+Date   : Dec 16 2020
+Time   : 10:47:39
+Host   : "cfdclu27.ugent.be"
+PID    : 7440
+Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/wireDrawing_OpenFoam_abaqus6/CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Time = 0
+Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0
+Writing cellVolumes and patch faceAreas to V in 0
+Time = 0.000000
+Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0.000000
+Writing cellVolumes and patch faceAreas to V in 0.000000
+
+End
+

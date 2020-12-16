@@ -1,0 +1,1292 @@
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:08:45 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:08:46 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:08:48 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:08:49 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:08:49 AM CET
+Run pre
+Wed 16 Dec 2020 10:08:51 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:08:51 AM CET
+Run standard
+Wed 16 Dec 2020 10:08:53 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:08:53 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:08:54 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:08:54 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:08:55 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:08:55 AM CET
+Wed 16 Dec 2020 10:08:56 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:08:58 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:08:59 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:09:03 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:09:05 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:09:05 AM CET
+Run pre
+Wed 16 Dec 2020 10:09:06 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:09:06 AM CET
+Run standard
+Wed 16 Dec 2020 10:09:08 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:09:53 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:09:54 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:09:56 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:09:57 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:09:57 AM CET
+Run pre
+Wed 16 Dec 2020 10:09:58 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:09:58 AM CET
+Run standard
+Wed 16 Dec 2020 10:10:00 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:10:01 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:10:01 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:10:01 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:10:02 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:10:02 AM CET
+Wed 16 Dec 2020 10:10:03 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:10:05 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:10:07 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:10:15 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:10:17 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:10:17 AM CET
+Run pre
+Wed 16 Dec 2020 10:10:19 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:10:19 AM CET
+Run standard
+Wed 16 Dec 2020 10:10:20 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:13:40 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:13:41 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:13:43 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:13:44 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:13:44 AM CET
+Run pre
+Wed 16 Dec 2020 10:13:46 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:13:46 AM CET
+Run standard
+Wed 16 Dec 2020 10:13:48 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:13:48 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:13:49 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:13:49 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:13:50 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:13:50 AM CET
+Wed 16 Dec 2020 10:13:51 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:13:53 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:13:54 AM CET
+Abaqus JOB usr.f COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:14:46 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:14:47 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:14:49 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:14:50 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:14:50 AM CET
+Run pre
+Wed 16 Dec 2020 10:14:52 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:14:52 AM CET
+Run standard
+Wed 16 Dec 2020 10:14:54 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:14:54 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:14:55 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:14:55 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:14:56 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:14:56 AM CET
+Wed 16 Dec 2020 10:14:57 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:14:59 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:15:00 AM CET
+Abaqus JOB usr.f COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:27 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:28 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:30 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:31 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:17:31 AM CET
+Run pre
+Wed 16 Dec 2020 10:17:32 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:17:32 AM CET
+Run standard
+Wed 16 Dec 2020 10:17:34 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:17:35 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:17:36 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:17:36 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:17:36 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:17:36 AM CET
+Wed 16 Dec 2020 10:17:37 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:39 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:41 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:49 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:17:51 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:17:51 AM CET
+Run pre
+Wed 16 Dec 2020 10:17:53 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:17:53 AM CET
+Run standard
+Wed 16 Dec 2020 10:17:55 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:22:41 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:22:42 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<183 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:22:44 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:22:45 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:22:45 AM CET
+Run pre
+Wed 16 Dec 2020 10:22:47 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:22:47 AM CET
+Run standard
+Wed 16 Dec 2020 10:22:49 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:22:49 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:22:50 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:22:50 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:22:51 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:22:51 AM CET
+Wed 16 Dec 2020 10:22:52 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:22:54 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:22:55 AM CET
+Abaqus JOB usr.f COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:01 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:02 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:04 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:05 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:24:05 AM CET
+Run pre
+Wed 16 Dec 2020 10:24:07 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:24:07 AM CET
+Run standard
+Wed 16 Dec 2020 10:24:09 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:24:09 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:24:10 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:24:10 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:24:11 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:24:11 AM CET
+Wed 16 Dec 2020 10:24:12 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:14 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:15 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:36 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:24:38 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:24:38 AM CET
+Run pre
+Wed 16 Dec 2020 10:24:40 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:24:40 AM CET
+Run standard
+Wed 16 Dec 2020 10:24:42 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:25:46 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:25:48 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:25:49 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:25:50 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:25:50 AM CET
+Run pre
+Wed 16 Dec 2020 10:25:52 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:25:52 AM CET
+Run standard
+Wed 16 Dec 2020 10:25:54 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:25:55 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:25:56 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:25:56 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:25:56 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:25:56 AM CET
+Wed 16 Dec 2020 10:25:57 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:26:00 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:26:01 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:07 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:08 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:27:08 AM CET
+Run pre
+Wed 16 Dec 2020 10:27:10 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:27:10 AM CET
+Run standard
+Wed 16 Dec 2020 10:27:12 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:39 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:40 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:42 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:43 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:27:43 AM CET
+Run pre
+Wed 16 Dec 2020 10:27:44 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:27:44 AM CET
+Run standard
+Wed 16 Dec 2020 10:27:46 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:27:47 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:27:48 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:27:48 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:27:48 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:27:48 AM CET
+Wed 16 Dec 2020 10:27:49 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:51 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:27:53 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:28:44 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:28:46 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:28:46 AM CET
+Run pre
+Wed 16 Dec 2020 10:28:48 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:28:48 AM CET
+Run standard
+Wed 16 Dec 2020 10:28:50 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:03 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:04 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<183 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:05 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:06 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:32:06 AM CET
+Run pre
+Wed 16 Dec 2020 10:32:08 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:32:08 AM CET
+Run standard
+Wed 16 Dec 2020 10:32:10 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:32:11 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:32:12 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:32:12 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:32:12 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:32:12 AM CET
+Wed 16 Dec 2020 10:32:13 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:15 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:17 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<183 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:49 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:32:50 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:32:50 AM CET
+Run pre
+Wed 16 Dec 2020 10:32:52 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:32:52 AM CET
+Run standard
+Wed 16 Dec 2020 10:32:54 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+3  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+3  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+3  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:46:30 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:46:31 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:46:33 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:46:34 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:46:34 AM CET
+Run pre
+Wed 16 Dec 2020 10:46:36 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:46:36 AM CET
+Run standard
+Wed 16 Dec 2020 10:46:38 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:46:38 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:46:39 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:46:39 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:46:39 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:46:39 AM CET
+Wed 16 Dec 2020 10:46:41 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:46:43 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:46:44 AM CET
+Abaqus JOB usr.f COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usrInit.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:47:40 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:47:41 AM CET
+Abaqus JOB usrInit.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:47:43 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:47:44 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:47:44 AM CET
+Run pre
+Wed 16 Dec 2020 10:47:45 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:47:45 AM CET
+Run standard
+Wed 16 Dec 2020 10:47:47 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+Abaqus JOB GetOutput
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:47:48 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:47:49 AM CET
+Begin Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:47:49 AM CET
+End Compiling User Post-Processing Program
+Wed 16 Dec 2020 10:47:49 AM CET
+Begin Linking User Post-Processing Program
+Wed 16 Dec 2020 10:47:49 AM CET
+Wed 16 Dec 2020 10:47:51 AM CET
+End Linking User Post-Processing Program
+Abaqus JOB GetOutput COMPLETED
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+Abaqus JOB usr.f
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:47:53 AM CET
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:47:54 AM CET
+Abaqus JOB usr.f COMPLETED
+Abaqus JOB CSM_Time1
+Abaqus 6.14-1
+Abaqus License Manager checked out the following licenses:
+Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
+<196 out of 395 licenses remain available>.
+Begin Compiling Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:48:20 AM CET
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+ Intel(R) Fortran 15.0-1812
+End Compiling Abaqus/Standard User Subroutines
+Begin Linking Abaqus/Standard User Subroutines
+Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+ifort: command line remark #10148: option '-i-dynamic' not supported
+
+GNU ld version 2.20.51.0.2-5.34.el6 20100205
+End Linking Abaqus/Standard User Subroutines
+Wed 16 Dec 2020 10:48:22 AM CET
+Begin Analysis Input File Processor
+Wed 16 Dec 2020 10:48:22 AM CET
+Run pre
+Wed 16 Dec 2020 10:48:23 AM CET
+End Analysis Input File Processor
+Begin Abaqus/Standard Analysis
+Wed 16 Dec 2020 10:48:23 AM CET
+Run standard
+Wed 16 Dec 2020 10:48:25 AM CET
+End Abaqus/Standard Analysis
+Abaqus JOB CSM_Time1 COMPLETED
+ANALYSIS SUMMARY:
+TOTAL OF          1  INCREMENTS
+0  CUTBACKS IN AUTOMATIC INCREMENTATION
+4  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+4  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+4  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+0  DECOMPOSITION(S) OF THE MASS MATRIX
+1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
+0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
+0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
+1  WARNING MESSAGES DURING USER INPUT PROCESSING
+0  WARNING MESSAGES DURING ANALYSIS
+0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
+0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
+0  ERROR MESSAGES

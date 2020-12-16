@@ -1,0 +1,85 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1
+Exec   : blockMesh
+Date   : Dec 16 2020
+Time   : 10:08:31
+Host   : "cfdclu27.ugent.be"
+PID    : 2386
+Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/wireDrawing_OpenFoam_abaqus6/CFD
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Creating block mesh from
+    "/lusers/temp/mathieu/PycharmProjects/coconut/test_examples/wireDrawing_OpenFoam_abaqus6/CFD/system/blockMeshDict"
+Creating curved edges
+Creating topology blocks
+Creating topology patches
+
+Creating block mesh topology
+
+Check topology
+
+	Basic statistics
+		Number of internal faces : 2
+		Number of boundary faces : 14
+		Number of defined boundary faces : 14
+		Number of undefined boundary faces : 0
+	Checking patch -> block consistency
+
+Creating block offsets
+Creating merge list .
+
+Creating polyMesh from blockMesh
+Creating points with scale 0.001
+    Block 0 cell size :
+        i : 3.51241e-05 .. 3.51241e-05
+        j : 2.14914e-05 .. 2.14914e-05
+        k : 6.52546e-05 .. 6.52546e-05
+
+    Block 1 cell size :
+        i : 3.24824e-05 .. 3.24824e-05
+        j : 2.46885e-06 .. 2.46885e-06
+        k : 6.52546e-05 .. 6.52546e-05
+
+    Block 2 cell size :
+        i : 3.33333e-05 .. 3.33333e-05
+        j : 2.13437e-06 .. 2.13437e-06
+        k : 5.63562e-05 .. 5.63562e-05
+
+Creating cells
+Creating patches
+
+Writing polyMesh
+----------------
+Mesh Information
+----------------
+  boundingBox: (-0.003 0.000645385 -3.54396e-05) (0.0005 0.000811701 3.54396e-05)
+  nPoints: 848
+  nCells: 315
+  nFaces: 1368
+  nInternalFaces: 522
+----------------
+Patches
+----------------
+  patch 0 (start: 522 size: 105) name: dieWall
+  patch 1 (start: 627 size: 3) name: outlet
+  patch 2 (start: 630 size: 30) name: upWire
+  patch 3 (start: 660 size: 60) name: deformWire
+  patch 4 (start: 720 size: 15) name: finalWire
+  patch 5 (start: 735 size: 3) name: inlet
+  patch 6 (start: 738 size: 315) name: back
+  patch 7 (start: 1053 size: 315) name: front
+
+End
+

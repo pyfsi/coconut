@@ -1,0 +1,70 @@
+*HEADING 
+*RESTART, READ 
+** ----------------------------------------------------------------
+** 
+** STEP: Step-1
+** 
+*Step, name=Step-1, nlgeom=YES, inc=1
+*Static
+1., 1., 0.0001, 1.
+** 
+** BOUNDARY CONDITIONS
+** 
+** Name: BC-1 Type: Displacement/Rotation
+*Boundary
+Set-4, 1, 1
+Set-4, 2, 2
+Set-4, 6, 6
+** 
+** LOADS
+** 
+** Name: DistributedPressure0   Type: Pressure
+*Dsload, op=NEW
+MOVINGSURFACE0, PNU, 1.
+** Name: DistributedPressure1   Type: Pressure
+*Dsload, op=NEW
+MOVINGSURFACE1, PNU, 1.
+** Name: DistributedPressure2   Type: Pressure
+*Dsload, op=NEW
+MOVINGSURFACE2, PNU, 1.
+** Name: DistributedShear0   Type: Surface traction
+*Dsload, op=NEW
+MOVINGSURFACE0, TRVECNU, 1., 1., 0., 0.
+** Name: DistributedShear1   Type: Surface traction
+*Dsload, op=NEW
+MOVINGSURFACE1, TRVECNU, 1., 1., 0., 0.
+** Name: DistributedShear2   Type: Surface traction
+*Dsload, op=NEW
+MOVINGSURFACE2, TRVECNU, 1., 1., 0., 0.
+** Name: Pull   Type: Pressure
+*Dsload, op=NEW
+Surf-6, P, -3.01358e+08
+** 
+** OUTPUT REQUESTS
+** 
+*Restart, write, frequency=0
+** 
+** FIELD OUTPUT: F-Output-0
+** 
+*Output, field, frequency=99999
+*Node Output, nset=WALLOUTSIDE0
+COORD, U
+** 
+** FIELD OUTPUT: F-Output-1
+** 
+*Node Output, nset=WALLOUTSIDE1
+COORD, U
+** 
+** FIELD OUTPUT: F-Output-2
+** 
+*Node Output, nset=WALLOUTSIDE2
+COORD, U
+** 
+** FIELD OUTPUT: F-Output-4
+** 
+*Output, field, variable=PRESELECT, frequency=99999
+** 
+** HISTORY OUTPUT: H-Output-1
+** 
+*Output, history, variable=PRESELECT, frequency=99999
+*End Step

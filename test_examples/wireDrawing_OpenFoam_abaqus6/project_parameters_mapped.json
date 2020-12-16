@@ -1,0 +1,213 @@
+{
+    "settings" :
+    {
+        "number_of_timesteps": 1
+    },
+    "coupled_solver" :
+    {
+        "type" : "coupled_solvers.gauss_seidel",
+        "test_settings" :
+        {
+            "solver_index": 0 ,
+            "check_mapping": 0,
+            "test_class": "Transient_test"
+        },
+        "settings" :
+        {
+            "save_results": true,
+            "name": "results_openfoam",
+            "timestep_start":0,
+            "delta_t": 0.000001,
+            "omega" : 0.000001,
+            "model" :
+            {
+                "type": "coupled_solvers.models.ls",
+                "settings":
+                {
+                    "min_significant": 1e-09,
+                    "q": 10
+                }
+            }
+        },
+        "predictor" :
+        {
+            "type" : "predictors.linear"
+        },
+        "convergence_criterion" :
+        {
+            "type" : "convergence_criteria.or",
+            "settings" :
+            {
+                "convergence_criterion0" :
+                {
+                    "type": "convergence_criteria.iteration_limit",
+                    "settings":
+                    {
+                        "maximum": 1
+                    }
+                },
+                "convergence_criterion1" :
+                {
+                    "type" : "convergence_criteria.relative_norm",
+                    "settings" :
+                    {
+                        "tolerance" : 1e-3,
+                        "order" : 2
+                    }
+                }
+            }
+        },
+        "solver_wrappers" :
+        [
+            {
+                "type": "solver_wrappers.openfoam.v41.v41_wireDrawing",
+                "settings":
+                {
+                    "working_directory" : "CFD",
+                    "application" :  "CoCoNuT_pimpleFoam",
+                    "dimensions": 3,
+                    "dt" : 0.000001,
+                    "boundary_names": ["upWire", "deformWire","finalWire"],
+                    "start_time":0,
+                    "end_time":0.000001,
+                    "interface_input":
+                    {
+                        "upWire_input": "DISPLACEMENT", "deformWire_input": "DISPLACEMENT", "finalWire_input": "DISPLACEMENT"
+                    },
+                    "interface_output":
+                    {
+                        "upWire_output": ["PRESSURE", "TRACTION"], "deformWire_output": ["PRESSURE", "TRACTION"], "finalWire_output": ["PRESSURE", "TRACTION"]
+                    },
+                    "cores": 1,
+                    "decomposeMethod" : "scotch",
+                    "write_interval" : 1,
+                    "write_precision" : 6,
+                    "time_precision" : 6,
+                    "adjust_time" : "no",
+		    "Courant_nr" : 0.2,
+                    "meshmotion_solver": "displacementLaplacian",
+                    "diffusivity" : "directional",
+                    "diffusivityX" : 1,
+       		    "diffusivityY" : 1,
+                    "diffusivityZ" : 0,
+		    "density" : 1000,
+                    "displacementX" : 0.0,
+                    "displacementY" : 0.0,
+    		    "displacementZ" : 0.0
+                }
+            },
+            {
+                "type": "solver_wrappers.mapped",
+                "settings":
+                {
+                    "solver_wrapper" :
+                    {
+                        "type": "solver_wrappers.abaqus.614",
+                        "settings": {
+                            "working_directory" : "CSM",
+                            "cores": 1,
+                            "dimensions": 2,
+                            "arraysize": 10e5,
+                            "surfaces": 1,
+                            "ramp": 0,
+                            "surfaceIDs": ["WALLOUTSIDE0", "WALLOUTSIDE1", "WALLOUTSIDE2"],
+                            "interface_input":
+                            {
+                                "WALLOUTSIDE0_load_points": ["PRESSURE", "TRACTION"], "WALLOUTSIDE1_load_points": ["PRESSURE", "TRACTION"], "WALLOUTSIDE2_load_points": ["PRESSURE", "TRACTION"]
+                            },
+                            "interface_output":
+                            {
+                                "WALLOUTSIDE0_nodes": "DISPLACEMENT", "WALLOUTSIDE1_nodes": "DISPLACEMENT", "WALLOUTSIDE2_nodes": "DISPLACEMENT"
+                            },
+			    "mp_mode": "THREADS",
+                            "input_file": "wireDeform.inp",
+                            "save_iterations": 1
+                        }
+                    },
+                    "mapper_interface_input":
+                    {
+						"type" : "mappers.interface",
+						"settings" :
+						{
+			    "type": "mappers.combined",
+			    "settings":
+			    {
+			     "mappers":
+		 [
+		    
+		    { 
+                            "type" : "mappers.wedge_3d_to_2d_axisymmetric",
+                            "settings" :
+                            {
+                                 "direction_axial": "X",
+            			 "direction_radial": "Y",
+            			 "points": false
+                            }
+                    },
+		    { 
+                            "type" : "mappers.permutation",
+                            "settings" :
+                            {
+                                "permutation" : [1, 0, 2]
+                            }
+                    },
+		    {
+			"type" : "mappers.linear",
+			"settings":
+			{
+				"directions": ["X","Y"]
+			}
+		    }
+		]
+			}
+					}
+		},
+                    "mapper_interface_output":
+                    {
+						"type" : "mappers.interface",
+						"settings" :
+						{
+	                    "type" : "mappers.combined",
+                            "settings" :
+                            {
+                                "mappers":
+		
+		[
+
+		   {
+			    "type": "mappers.linear",
+			    "settings":
+			    {
+				"directions": ["X","Y"]
+                            }
+		   },
+	          
+		   {
+			   "type": "mappers.permutation",
+                           "settings":
+                   	    { 
+			        "permutation": [1, 0, 2]
+                            }
+                   },
+                   {
+			  "type": "mappers.2d_axisymmetric_to_wedge_3d",
+		 	  "settings":
+			    {
+				"direction_axial": "X",
+				"direction_radial": "Y"
+
+			    }
+
+		   }
+	        ]
+            }		    
+        
+   	               				}
+		}
+	}
+	}
+]
+}
+}
+		
+
