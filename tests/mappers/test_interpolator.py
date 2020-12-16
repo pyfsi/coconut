@@ -2,9 +2,6 @@ from coconut import data_structure
 from coconut.coupling_components.tools import create_instance
 
 import unittest
-import json
-import os
-from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -17,225 +14,221 @@ def split(coords):
 
 
 class TestMapperInterpolator(unittest.TestCase):
-    def test_mapper_interpolator(self):
-        with open('mappers/test_interpolator.json') as parameter_file:
-            parameters = json.load(parameter_file)
-        par_mapper_0 = parameters['mapper']
+    def setUp(self):
+        self.parameters = {'type': 'mappers.nearest',
+                           'settings': {'directions': ['z']}}
 
-        # test if directions are set correctly in __init__
-        par_mapper = deepcopy(par_mapper_0)
+    # TODO: check tree? check __call__ method?
 
-        par_mapper['settings']['directions'] = ['z']
-        mapper = create_instance(par_mapper)
+    def test_instantiation(self):
+        self.parameters['settings']['directions'] = ['z']
+        mapper = create_instance(self.parameters)
         self.assertListEqual(mapper.directions, ['z0'])
 
-        par_mapper['settings']['directions'] = ['z', 'y', 'x']
-        mapper = create_instance(par_mapper)
+        self.parameters['settings']['directions'] = ['z', 'y', 'x']
+        mapper = create_instance(self.parameters)
         self.assertListEqual(mapper.directions, ['z0', 'y0', 'x0'])
 
-        # *** add this again later
-        # par_mapper['settings'].SetArray('directions', ['Z'])
-        # self.assertRaises(ValueError, create_instance, par_mapper)
+        # TODO: add this again, after all capitals have been removed
+        # self.parameters['settings'].SetArray('directions', ['Z'])
+        # self.assertRaises(ValueError, create_instance, self.parameters)
 
-        par_mapper['settings']['directions'] = ['z0']
-        self.assertRaises(ValueError, create_instance, par_mapper)
+        self.parameters['settings']['directions'] = ['z0']
+        self.assertRaises(ValueError, create_instance, self.parameters)
 
-        par_mapper['settings']['directions'] = ['z', 'y', 'x', 'z']
-        self.assertRaises(ValueError, create_instance, par_mapper)
+        self.parameters['settings']['directions'] = ['z', 'y', 'x', 'z']
+        self.assertRaises(ValueError, create_instance, self.parameters)
 
-        par_mapper['settings']['directions'] = 'z'
-        self.assertRaises(TypeError, create_instance, par_mapper)
+        self.parameters['settings']['directions'] = 'z'
+        self.assertRaises(TypeError, create_instance, self.parameters)
 
-        # test check_bounding_box method
-        if True:
-            par_mapper = deepcopy(par_mapper_0)
+    def test_bounding_box_1d(self):
+        self.parameters['settings']['directions'] = ['z']
+        mapper = create_instance(self.parameters)
 
-            # check 1D errors and warnings
-            par_mapper['settings']['directions'] = ['z']
-            mapper = create_instance(par_mapper)
+        model = data_structure.Model()
 
-            model = data_structure.Model()
+        coords = np.array([[0, 0, 0], [0, 0, 1]])
+        mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
+        mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.array([[0, 0, 0], [0, 0, 1]])
-            mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
-            mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[0, 0, 1.01]])))
+        mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[0, 0, 1.01]])))
-            mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[0, 0, -.01]])))
+        mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[0, 0, -.01]])))
-            mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[0, 0, 1.1]])))
+        mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[0, 0, 1.1]])))
-            mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[0, 0, 1.25]])))
+        mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[0, 0, 1.25]])))
-            mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[0, 0, -.25]])))
+        mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[0, 0, -.25]])))
-            mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[0, 0, 2], [0, 0, -1]])))
+        mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[0, 0, 2], [0, 0, -1]])))
-            mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+    def test_bounding_box_2d(self):
+        self.parameters['settings']['directions'] = ['z', 'x']
+        mapper = create_instance(self.parameters)
 
-            # check 2D errors and warnings
-            par_mapper['settings']['directions'] = ['z', 'x']
-            mapper = create_instance(par_mapper)
+        model = data_structure.Model()
 
-            model = data_structure.Model()
+        coords = np.array([[0, 0, 0], [1, 0, 1]])
+        mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
+        mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.array([[0, 0, 0], [1, 0, 1]])
-            mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
-            mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[1.01, 0, 1.01]])))
+        mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[1.01, 0, 1.01]])))
-            mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[-.01, 0, -.01]])))
+        mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[-.01, 0, -.01]])))
-            mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[1.1, 0, 1.1]])))
+        mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[1.1, 0, 1.1]])))
-            mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[1.25, 0, 1.25]])))
+        mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[1.25, 0, 1.25]])))
-            mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[-.25, 0, -.25]])))
+        mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[-.25, 0, -.25]])))
-            mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[2, 0, 2], [-1, 0, -1]])))
+        mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[2, 0, 2], [-1, 0, -1]])))
-            mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+    def test_bounding_box_3d(self):
+        self.parameters['settings']['directions'] = ['z', 'x', 'y']
+        mapper = create_instance(self.parameters)
 
-            # check 3D errors and warnings
-            par_mapper['settings']['directions'] = ['z', 'x', 'y']
-            mapper = create_instance(par_mapper)
+        model = data_structure.Model()
 
-            model = data_structure.Model()
+        coords = np.array([[0, 0, 0], [1, 1, 1]])
+        mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
+        mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.array([[0, 0, 0], [1, 1, 1]])
-            mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
-            mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[1.01, 1.01, 1.01]])))
+        mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[1.01, 1.01, 1.01]])))
-            mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(3))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[-.01, -.01, -.01]])))
+        mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[-.01, -.01, -.01]])))
-            mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(4))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[1.1, 1.1, 1.1]])))
+        mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[1.1, 1.1, 1.1]])))
-            mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(5))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[1.25, 1.25, 1.25]])))
+        mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[1.25, 1.25, 1.25]])))
-            mp_to = model.create_model_part('mp_to_5', *split(coords), np.arange(6))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[-.25, -.25, -.25]])))
+        mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[-.25, -.25, -.25]])))
-            mp_to = model.create_model_part('mp_to_6', *split(coords), np.arange(7))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.vstack((coords, np.array([[2, 2, 2], [-1, -1, -1]])))
+        mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.vstack((coords, np.array([[2, 2, 2], [-1, -1, -1]])))
-            mp_to = model.create_model_part('mp_to_7', *split(coords), np.arange(9))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+    def test_bounding_box_lines(self):
+        # check if method works for lines aligned with coordinate axes in 2D
+        self.parameters['settings']['directions'] = ['x', 'y']
+        mapper = create_instance(self.parameters)
 
-            # check if method works for lines aligned with coordinate axes in 2D
-            par_mapper['settings']['directions'] = ['x', 'y']
-            mapper = create_instance(par_mapper)
+        model = data_structure.Model()
+        coords = np.array([[0, 1, 0], [1, 1, 0]])
+        mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
 
-            model = data_structure.Model()
-            coords = np.array([[0, 1, 0], [1, 1, 0]])
-            mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
+        coords = np.array([[0, 1, 0], [1.01, 1.01, 0.]])
+        mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.array([[0, 1, 0], [1.01, 1.01, 0.]])
-            mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
+        mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
-            mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
+        mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
-            mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.array([[0, .85, 0], [1, 1.15, 0]])
+        mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.array([[0, .85, 0], [1, 1.15, 0]])
-            mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+    def test_bounding_box_planes(self):
+        # check if method works for planes aligned with coordinate axes in 3D
+        self.parameters['settings']['directions'] = ['x', 'y', 'z']
+        mapper = create_instance(self.parameters)
 
-            # check if method works for planes aligned with coordinate axes in 3D
-            par_mapper['settings']['directions'] = ['x', 'y', 'z']
-            mapper = create_instance(par_mapper)
+        model = data_structure.Model()
+        coords = np.array([[0, 1, 0], [1, 1, 0]])
+        mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
 
-            model = data_structure.Model()
-            coords = np.array([[0, 1, 0], [1, 1, 0]])
-            mp_from = model.create_model_part('mp_from', *split(coords), np.arange(2))
+        coords = np.array([[0, 1, 0], [1.01, 1.01, 0.]])
+        mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
+        mapper.initialize(mp_from, mp_to)
+        mapper.finalize()
 
-            coords = np.array([[0, 1, 0], [1.01, 1.01, 0.]])
-            mp_to = model.create_model_part('mp_to_1', *split(coords), np.arange(2))
-            mapper.initialize(mp_from, mp_to)
-            mapper.finalize()
+        coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
+        mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.array([[0, 1.05, 0], [1, 1.05, 0]])
-            mp_to = model.create_model_part('mp_to_2', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
+        mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
+        self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.array([[0, 1.25, 0], [1, 1.25, 0]])
-            mp_to = model.create_model_part('mp_to_3', *split(coords), np.arange(2))
-            self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
+        coords = np.array([[0, .85, 0], [1, 1.15, 0]])
+        mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
+        self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
+        mapper.finalize()
 
-            coords = np.array([[0, .85, 0], [1, 1.15, 0]])
-            mp_to = model.create_model_part('mp_to_4', *split(coords), np.arange(2))
-            self.assertRaises(Warning, mapper.initialize, *(mp_from, mp_to))
-            mapper.finalize()
-
-        # test check_duplicate_points method
-        par_mapper = deepcopy(par_mapper_0)
-        par_mapper['settings']['directions'] = ['x', 'y', 'z']
-        mapper = create_instance(par_mapper)
+    def test_check_duplicate_points(self):
+        self.parameters['settings']['directions'] = ['x', 'y', 'z']
+        mapper = create_instance(self.parameters)
 
         model = data_structure.Model()
         coords = np.array([[0, 0, 0], [1, 0, 0]])
@@ -250,8 +243,6 @@ class TestMapperInterpolator(unittest.TestCase):
         mp_from = model.create_model_part('mp_from_2', *split(coords), np.arange(4))
         self.assertRaises(ValueError, mapper.initialize, *(mp_from, mp_to))
         mapper.finalize()
-
-        # *** TODO: check tree? check __call__ method?
 
 
 class Case1D:

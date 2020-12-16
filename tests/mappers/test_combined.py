@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 import json
 
+
 class TestMapperCombined(unittest.TestCase):
     def test_mapper_combined(self):
         with open('mappers/test_combined.json') as parameter_file:
@@ -12,7 +13,6 @@ class TestMapperCombined(unittest.TestCase):
 
         # compare 3 mappers: nearest, combined_a, combined_b
         for var in ['pressure', 'displacement']:
-            var = 'pressure'
             mp_name_from = 'wall_from'
             mp_name_to = 'wall_to'
             model = data_structure.Model()
@@ -20,7 +20,7 @@ class TestMapperCombined(unittest.TestCase):
             n = 100
             tmp = np.linspace(0, 1, n)
             x, y, z = tmp, tmp ** 1.1, tmp ** 1.2
-            v_from = np.random.rand(n, 1)
+            v_from = np.random.rand(n, data_structure.variables_dimensions[var])
             mp_from = model.create_model_part(mp_name_from, x, y, z, np.arange(n))
             mp_to = model.create_model_part(mp_name_to, np.flip(x), np.flip(y), np.flip(z), np.arange(n))
 
