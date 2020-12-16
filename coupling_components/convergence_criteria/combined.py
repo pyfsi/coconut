@@ -1,5 +1,5 @@
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import CreateInstance, PrintStructureInfo
+from coconut.coupling_components.tools import CreateInstance, PrintComponentsInfo
 
 
 class ConvergenceCriterionCombined(Component):
@@ -48,10 +48,10 @@ class ConvergenceCriterionCombined(Component):
         for convergence_criterion in self.convergence_criteria:
             convergence_criterion.Check()
 
-    def PrintInfo(self, pre):
-        super().PrintInfo(pre)
+    def PrintComponentsInfo(self, pre):
+        super().PrintComponentsInfo(pre)
 
-        PrintStructureInfo(pre, self.convergence_criteria)
+        PrintComponentsInfo(pre, self.convergence_criteria)
 
     def Update(self, r):
         for convergence_criterion in self.convergence_criteria:

@@ -113,11 +113,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # Print time step
         if not self.solver_level:
-            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"\tTime step {self.n}\n" \
-                  f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"Iteration\tNorm residual"
-            tools.Print(out)
+            self.PrintHeader()
 
         if self.save_results:
             self.residual.append([])
@@ -142,9 +138,7 @@ class CoupledSolverGaussSeidel(Component):
         self.iteration += 1
         self.convergence_criterion.Update(r)
         # Print iteration information
-        norm = np.linalg.norm(r.GetNumpyArray())
-        out = f"{self.iteration:<9d}\t{norm:<22.17e}"
-        tools.Print(' │' * self.solver_level, out)
+        self.PrintInfo(r)
 
         if self.save_results:
             self.residual[self.n - self.timestep_start - 1].append(np.linalg.norm(r.GetNumpyArray()))
@@ -208,12 +202,24 @@ class CoupledSolverGaussSeidel(Component):
             out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
         tools.Print(out)
 
+    def PrintHeader(self):
+        header = f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"\tTime step {self.n}\n" \
+                 f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"Iteration\tNorm residual"
+        tools.Print(header)
+
+    def PrintInfo(self, r):
+        norm = np.linalg.norm(r.GetNumpyArray())
+        info = f"{self.iteration:<16d}{norm:<28.17e}"
+        tools.Print(' │' * self.solver_level, info)
+
     def Check(self):
         super().Check()
 
         for component in self.components:
             component.Check()
 
-    def PrintInfo(self, pre):
+    def PrintComponentsInfo(self, pre):
         tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        tools.PrintStructureInfo(pre, self.components)
+        tools.PrintComponentsInfo(pre, self.components)

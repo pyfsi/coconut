@@ -24,6 +24,7 @@ from coconut.tests.mappers.test_axisymmetric_3d_to_2d import TestMapperAxisymmet
 from coconut.tests.mappers.test_combined import TestMapperCombined
 
 from coconut.tests.predictors.test_predictor import TestPredictor
+from coconut.tests.predictors.test_constant import TestPredictorConstant
 from coconut.tests.predictors.test_linear import TestPredictorLinear
 from coconut.tests.predictors.test_legacy import TestPredictorLegacy
 from coconut.tests.predictors.test_quadratic import TestPredictorQuadratic
@@ -83,6 +84,7 @@ def AssembleTestSuites():
     smallSuite.addTest(TestMapperCombined("test_mapper_combined"))
 
     smallSuite.addTest(TestPredictor("test_predictor"))
+    smallSuite.addTest(TestPredictorConstant("test_predictor_constant"))
     smallSuite.addTest(TestPredictorLinear("test_predictor_linear"))
     smallSuite.addTest(TestPredictorLegacy("test_predictor_legacy"))
     smallSuite.addTest(TestPredictorQuadratic("test_predictor_quadratic"))

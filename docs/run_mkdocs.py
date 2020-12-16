@@ -2,6 +2,8 @@ import glob
 import os
 import shutil
 from sys import argv
+import re
+import fileinput
 
 """
 README
@@ -69,6 +71,23 @@ for filename in filenames:
 for file in unused:
     print(f'WARNING - file "{file}" is not used in mkdocs.yml')
 
+# fix links to MarkDown files
+for filename in filenames:
+    with fileinput.FileInput('docs/' + filename, inplace=True) as file:
+        for line in file:
+            matches = []
+            for match in re.finditer(r'\([a-zA-Z0-9_./\-]+\.md\)', line):
+                matches.append(match)
+            if len(matches) > 0:
+                for match in matches[::-1]:
+                    tmp = match[0][1:-4].split('/')[-1]
+                    if tmp == 'README':
+                        url = '(https://pyfsi.github.io/coconut/)'
+                    else:
+                        url = '(https://pyfsi.github.io/coconut/' + tmp + '/)'
+                    line = line[:match.start()] + url + line[match.end():]
+            print(line, end='')
+
 # find all relevant images in CoCoNuT
 extensions = ['png', 'jpg', 'jpeg']
 images = []
@@ -98,10 +117,13 @@ if len(argv) > 1:
     if argv[1] == '--preview':
         os.system('mkdocs build --clean')
         cwd = os.getcwd()
-        if len(argv) == 3:
-            cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2], 'index.html &')
-        else:
+        if len(argv) == 2:
             cmd = 'firefox ' + os.path.join(cwd, 'site', 'index.html &')
+        else:
+            if argv[2] == 'README':
+                cmd = 'firefox ' + os.path.join(cwd, 'site', 'index.html &')
+            else:
+                cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2], 'index.html &')
         os.system(cmd)
     elif argv[1] == '--deploy':
         os.system('mkdocs gh-deploy')
