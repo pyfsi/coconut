@@ -44,7 +44,7 @@ class Animation:
         self.animation_figure = animation_figure
         self.complete_solution = solution
         self.interface = interface
-        self.info = interface.model_parts_variables
+        self.info = interface.model_part_variable_pairs
         self.coordinates = interface.GetInitialCoordinates()
         self.m = int(self.coordinates.size / 3)  # number of nodes
         self.time_steps = solution.shape[1] - 1  # number of times steps
@@ -121,7 +121,7 @@ class Animation:
             if self.variable == 'COORDINATES':
                 raise Exception(out)
             else:
-                tools.print(out, layout='warning')
+                tools.print_info(out, layout='warning')
 
         if index != self.complete_solution.shape[0]:
             raise Exception("Size of provided solution data does not match interface.")

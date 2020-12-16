@@ -4,7 +4,7 @@ from coconut.coupling_components import tools
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     return ModelMV(parameters)
 
 
@@ -13,11 +13,11 @@ class ModelMV(Component):
         super().__init__()
 
         self.settings = parameters["settings"]
-        self.min_significant = self.settings["min_significant"].GetDouble()
+        self.min_significant = self.settings["min_significant"]
 
         self.size_in = None
         self.size_out = None
-        self.out = None  # Interface of output
+        self.out = None  # interface of output
         self.added = False
         self.rref = None
         self.xtref = None
@@ -33,10 +33,10 @@ class ModelMV(Component):
         self.w = np.empty((self.size_out, 0))
         self.nprev = np.zeros((self.size_out, self.size_in))
 
-    def Filter(self):
+    def filter(self):
         if self.v.shape[1] == 0:
             raise RuntimeError("No information to filter")
-        # Remove columns resulting in small diagonal elements in R
+        # remove columns resulting in small diagonal elements in R
         singular = True
         while singular and self.v.shape[1]:
             rr = np.linalg.qr(self.v, mode='r')
@@ -44,44 +44,44 @@ class ModelMV(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
+                tools.print_info("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
                 self.v = np.delete(self.v, i, 1)
                 self.w = np.delete(self.w, i, 1)
             else:
                 singular = False
-        # Remove columns if number of columns exceeds number of rows
+        # remove columns if number of columns exceeds number of rows
         if self.v.shape[0] < self.v.shape[1]:
             self.v = np.delete(self.v, -1, 1)
             self.w = np.delete(self.w, -1, 1)
 
-    def Predict(self, dr_in):
-        dr = dr_in.GetNumpyArray().reshape(-1, 1)
+    def predict(self, dr_in):
+        dr = dr_in.get_interface_data().reshape(-1, 1)
         if self.ncurr is None:
             raise RuntimeError("No information to predict")
-        # Approximation for the inverse of the Jacobian from a multiple vector model
+        # approximation for the inverse of the Jacobian from a multiple vector model
         dxt = self.ncurr @ dr
-        dxt_out = self.out.deepcopy()
-        dxt_out.SetNumpyArray(dxt.flatten())
+        dxt_out = self.out.copy()
+        dxt_out.set_interface_data(dxt.flatten())
         return dxt_out
 
-    def Add(self, r_in, xt_in):
-        r = r_in.GetNumpyArray().reshape(-1, 1)
-        xt = xt_in.GetNumpyArray().reshape(-1, 1)
+    def add(self, r_in, xt_in):
+        r = r_in.get_interface_data().reshape(-1, 1)
+        xt = xt_in.get_interface_data().reshape(-1, 1)
         if self.added:
             dr = r - self.rref
             dxt = xt - self.xtref
-            # Update V and W matrices
+            # update V and W matrices
             self.v = np.hstack((dr, self.v))
             self.w = np.hstack((dxt, self.w))
-            self.Filter()
-            # Update of the matrix N
+            self.filter()
+            # update of the matrix N
             self.ncurr = self.nprev + (self.w - self.nprev @ self.v) @ np.linalg.inv(self.v.T @ self.v) @ self.v.T
         else:
             self.added = True
         self.rref = r
         self.xtref = xt
 
-    def IsReady(self):
+    def is_ready(self):
         return self.ncurr is not None
 
     def initialize_solution_step(self):
@@ -98,11 +98,11 @@ class ModelMV(Component):
 
         self.nprev = self.ncurr
 
-    def FilterQ(self, r_in):
-        r = r_in.GetNumpyArray().reshape(-1, 1)
-        r_out = r_in.deepcopy()
+    def filter_q(self, r_in):
+        r = r_in.get_interface_data().reshape(-1, 1)
+        r_out = r_in.copy()
         qt, *_ = np.linalg.qr(self.ncurr.T)
         q = qt[:, :np.linalg.matrix_rank(self.ncurr)]
         r = r - q @ (q.T @ r)
-        r_out.SetNumpyArray(r.flatten())
+        r_out.set_interface_data(r.flatten())
         return r_out

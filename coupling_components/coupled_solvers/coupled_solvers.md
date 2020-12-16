@@ -298,9 +298,9 @@ The `type` for this `coupled_solver` is `coupled_solvers.test_single_solver`.
 To test only one solver, a dummy solver must be used.
 Such a dummy solver is implemented by a test class in the file `dummy_solver.py`, which has to be on the same folder level as `run_simulation.py`.
 Upon run-time an instance of this class is made.
-The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `DISPLACEMENT`, `PRESSURE` or `TRACTION`.
+The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `displacement`, `pressure` or `traction`.
 How these variables are defined inside these methods, is up to the user.
-However, the methods need to return the right format: a 3-element list of floats for vector variables and a single float for scalar variables.
+However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
 Some examples are given in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md)
 The test class name is provided in the JSON settings as a string.
 If no test class is provided or the value `None` is used, zero input will be used.

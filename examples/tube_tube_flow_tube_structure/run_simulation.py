@@ -1,5 +1,6 @@
-from coconut import data_structure
 from coconut.coupling_components.analysis import Analysis
+
+import json
 
 if __name__ == '__main__':
     from sys import argv
@@ -16,7 +17,7 @@ if __name__ == '__main__':
 
     # Import parameters using the data structure
     with open(parameter_file_name, 'r') as parameter_file:
-        parameters = data_structure.Parameters(parameter_file.read())
+        parameters = json.load(parameter_file)
 
     simulation = Analysis(parameters)
-    simulation.Run()
+    simulation.run()

@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 from sys import argv
 
@@ -19,5 +19,5 @@ with open(parameter_file_name, 'r') as parameter_file:
     parameters = data_structure.Parameters(parameter_file.read())
 
 print("Going to create AbaqusSolver")
-AbaqusSolver0  = CreateInstance(parameters["solver_wrappers"][0])
+AbaqusSolver0  = create_instance(parameters["solver_wrappers"][0])
 print("AbaqusSolver0 created")

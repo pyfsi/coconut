@@ -1,12 +1,12 @@
 from coconut.coupling_components.component import Component
 from coconut.data_structure.variables import variables_dimensions
-from coconut.coupling_components.tools import print
+from coconut.coupling_components import tools
 
 from scipy.spatial import cKDTree
 import numpy as np
 
 
-def Create(parameters):
+def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
 
@@ -39,7 +39,7 @@ class MapperInterpolator(Component):
                 raise ValueError(f'"{direction}" is not a valid direction.')
             if direction.lower() != direction:
                 # *** I would later remove this and only accept lowercase directions
-                print('directions must be lowercase', layout='warning')
+                tools.print_info('directions must be lowercase', layout='warning')
             self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
                 raise ValueError(f'too many directions given')

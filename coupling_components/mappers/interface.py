@@ -42,22 +42,14 @@ class MapperInterface(Component):
             mapper((interface_from, *pair_from), (interface_to, *pair_to))
 
     def output_solution_step(self):
-        for mapper in self.mappers:
+        for mapper in self.mappers.values():
             mapper.output_solution_step()
 
     def print_components_info(self, pre):
-        tools.print(pre, "The component ", self.__class__.__name__, " maps the following model parts:")
+        tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following model parts:")
         pre = tools.update_pre(pre)
         for i, mapper in enumerate(self.mappers.values()):
             name_from, name_to = mapper.model_part_names
             tmp1, tmp2 = ('└─', '  └─') if i == len(self.mappers.values()) - 1 else ('├─', '│ └─')
-            tools.print(pre, f"{tmp1}ModelPart '{name_from}' to " + f"ModelPart '{name_to}' with the mapper:")
+            tools.print_info(pre, f"{tmp1}ModelPart '{name_from}' to " + f"ModelPart '{name_to}' with the mapper:")
             mapper.print_components_info(pre + tmp2)
-
-
-        #     tools.Print(pre, f"├─ModelPart '{mapper.mp_from.name}' to " +
-        #                 f"ModelPart '{mapper.mp_to.name}' with the mapper:")
-        #     mapper.PrintInfo(pre + '│ └─')
-        # tools.Print(pre, f"└─ModelPart '{self.mappers[-1].mp_from.name}' to " +
-        #             f"ModelPart '{self.mappers[-1].mp_to.name}' with the mapper:")
-        # self.mappers[-1].PrintInfo(pre + '  └─')

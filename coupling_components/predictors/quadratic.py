@@ -5,7 +5,7 @@ def create(parameters):
     return PredictorQuadratic(parameters)
 
 
-# Class PredictorQuadratic: Quadratic extrapolation based on the last three time steps, assuming constant time step size.
+# quadratic extrapolation based on the last three time steps, assuming constant time step size
 class PredictorQuadratic(Predictor):
     def __init__(self, _unused):
         super().__init__(_unused)
@@ -16,4 +16,4 @@ class PredictorQuadratic(Predictor):
         if len(self.dataprev) < 3:
             return self.linear(x)
         else:
-            return self.linear(x)
+            return self.quadratic(x)

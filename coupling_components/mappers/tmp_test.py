@@ -37,7 +37,7 @@ mapper.initialize(interface_from, interface_to)
 
 mapper(interface_from, interface_to)
 
-mapper.print_Info('')
+mapper.print_components_info('')
 
 print('------------------')
 

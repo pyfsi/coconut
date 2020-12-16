@@ -1,28 +1,20 @@
-from coconut import data_structure
+from coconut.coupling_components.tools import create_instance
+
 import unittest
-from coconut.coupling_components.tools import CreateInstance
+import os
+import json
 import numpy as np
+
 
 class TestCoupledSolverRelaxation(unittest.TestCase):
 
-    def assertArrayAlmostEqual(self, a1, a2):
-        ls1 = list(a1)
-        ls2 = list(a2)
-        try:
-            self.assertEqual(ls1, ls2)
-        except AssertionError:
-            for i in range(len(ls1)):
-                self.assertAlmostEqual(ls1[i], ls2[i])
-
-    def assertArrayEqual(self, a1, a2):
-        self.assertEqual(list(a1), list(a2))
-
     def test_coupled_solver_relaxation(self):
-        parameter_file_name = "coupled_solvers/test_relaxation.json"
+        # read settings
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_relaxation.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = data_structure.Parameters(parameter_file.read())
+            settings = json.load(parameter_file)
 
-        coupled_solver = CreateInstance(settings)
+        coupled_solver = create_instance(settings)
         coupled_solver.initialize()
         coupled_solver.check()
 
@@ -36,9 +28,8 @@ class TestCoupledSolverRelaxation(unittest.TestCase):
                  0.00000e+00, 0.00000e+00, 2.45726e-07, 0.00000e+00,
                  0.00000e+00, 2.37273e-07, 0.00000e+00, 0.00000e+00,
                  2.28979e-07, 0.00000e+00]
-
         # TODO: The reference solution has to be modified. Future work: mock solver
-        np.testing.assert_allclose(coupled_solver.x.GetNumpyArray(), sol_x, rtol=1e-1)
+        np.testing.assert_allclose(coupled_solver.x.get_interface_data(), sol_x, rtol=1e-1)
 
         coupled_solver.finalize_solution_step()
         coupled_solver.output_solution_step()

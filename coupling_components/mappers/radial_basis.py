@@ -23,7 +23,7 @@ class MapperRadialBasis(MapperInterpolator):
         self.shape_parameter = (self.settings['shape_parameter'] if
                                 'shape_parameter' in self.settings else 200)
         if self.shape_parameter < 2:
-            tools.print(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
+            tools.print_info(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
 
         # determine number of nearest neighbours
         self.n_nearest = 81 if len(self.directions) == 3 else 9
@@ -57,7 +57,7 @@ class MapperRadialBasis(MapperInterpolator):
         # check condition number
         cond = max(cond)
         if cond > 1e13:
-            tools.print(f'The highest condition number of the interpolation matrices is {cond:.2e} > 1e13\n'
+            tools.print_info(f'The highest condition number of the interpolation matrices is {cond:.2e} > 1e13\n'
                         f'Decrease the shape parameter to decrease the condition number', layout='warning')
 
 

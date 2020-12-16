@@ -41,15 +41,23 @@
       "settings": {
         "working_directory": "coupled_solvers/CFD",
         "input_file": "solver_parameters.json",
-        "interface_input": {
-          "wall": "DISPLACEMENT"
-        },
-        "interface_output": {
-          "wall": [
-            "PRESSURE",
-            "TRACTION"
-          ]
-        }
+        "interface_input": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "displacement"
+            ]
+          }
+        ],
+        "interface_output": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "pressure",
+              "traction"
+            ]
+          }
+        ]
       }
     },
     {
@@ -57,19 +65,24 @@
       "settings": {
         "working_directory": "coupled_solvers/CSM",
         "input_file": "solver_parameters.json",
-        "interface_input": {
-          "wall": [
-            "PRESSURE",
-            "TRACTION"
-          ]
-        },
-        "interface_output": {
-          "wall": "DISPLACEMENT"
-        }
+        "interface_input": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "pressure",
+              "traction"
+            ]
+          }
+        ],
+        "interface_output": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "displacement"
+            ]
+          }
+        ]
       }
     }
   ]
 }
-
-
-

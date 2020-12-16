@@ -12,7 +12,7 @@ import sys
 import shutil
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperFluent2019R1(parameters)
 
 
@@ -246,7 +246,7 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('next')
         self.wait_message('next_ready')
 
-    @tools.Timesolve_solution_step
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.iteration += 1
 
@@ -254,7 +254,7 @@ class SolverWrapperFluent2019R1(Component):
         self.interface_input.SetPythonList(interface_input.GetPythonList())
 
         # update X,Y,Z in interface
-        for key in [_[0] for _ in self.interface_input.model_parts_variables]:
+        for key in [_[0] for _ in self.interface_input.model_part_variable_pairs]:
             for node in self.model[key].Nodes:
                 disp = node.GetSolutionStepValue(self.displacement)
                 node.X = node.X0 + disp[0]
@@ -331,16 +331,16 @@ class SolverWrapperFluent2019R1(Component):
         self.wait_message('stop_ready')
         self.fluent_process.wait()
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         return self.interface_input.deepcopy()
 
-    def SetInterfaceInput(self):
+    def set_interface_input(self):
         Exception("This solver interface provides no mapping.")
 
-    def GetInterfaceOutput(self):
+    def get_interface_output(self):
         return self.interface_output.deepcopy()
 
-    def SetInterfaceOutput(self):
+    def set_interface_output(self):
         Exception("This solver interface provides no mapping.")
 
     def set_fluent_version(self):

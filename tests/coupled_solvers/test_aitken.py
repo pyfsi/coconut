@@ -1,74 +1,78 @@
 from coconut import data_structure
-import unittest
-from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.interface import Interface
+from coconut.data_structure.interface import Interface
+from coconut.coupling_components.tools import create_instance
 
+import unittest
+import os
+import json
 import numpy as np
 
 
 class TestCoupledSolverAitken(unittest.TestCase):
+
     def test_coupled_solver_aitken(self):
         m = 10
-        dz = 2.0
+        dz = 2
         r = 0.1
-        x = 10.0
+        x = 10
         xt0 = 10.5
         xt1 = 10.2
         xt2 = 10.1
         xt3 = 10.7
         xt4 = 9.9
+        variable = 'area'  # TODO: does not match JSON setings
+        model_part_name = 'wall'
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
-        interface_settings = data_structure.Parameters('{"wall": "DISPLACEMENT"}')
-
-        # Create interface
-        variable = vars(data_structure)["DISPLACEMENT"]
+        # create model and model_part
         model = data_structure.Model()
-        model_part = model.CreateModelPart("wall")
-        model_part.AddNodalSolutionStepVariable(variable)
-        for i in range(m):
-            model_part.CreateNewNode(i, 0.0, 0.0, i * dz)
-        step = 0
-        for node in model_part.Nodes:
-            node.SetSolutionStepValue(variable, step, x)
-        interface = Interface(model, interface_settings)
-
-        parameter_file_name = "coupled_solvers/test_aitken.json"
+        ids = np.arange(0, m)
+        x0 = np.zeros(m)
+        y0 = np.zeros(m)
+        z0 = np.arange(0, m * dz, dz)
+        model.create_model_part(model_part_name, x0, y0, z0, ids)
+        
+        # create interface
+        interface = Interface(interface_settings, model)
+        
+        # read settings
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_aitken.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = data_structure.Parameters(parameter_file.read())
+            settings = json.load(parameter_file)
 
-        omega_max = settings["settings"]["omega_max"].GetDouble()
+        omega_max = settings["settings"]["omega_max"]
 
-        coupled_solver = CreateInstance(settings)
+        coupled_solver = create_instance(settings)
         coupled_solver.initialize()
         coupled_solver.initialize_solution_step()
 
-        interface_r = interface.deepcopy()
-        interface_r.SetNumpyArray(r * np.ones(m))
-        interface_x = interface.deepcopy()
-        interface_x.SetNumpyArray(x * np.ones(m))
-        interface_xt0 = interface.deepcopy()
-        interface_xt0.SetNumpyArray(xt0 * np.ones(m))
-        interface_xt1 = interface.deepcopy()
-        interface_xt1.SetNumpyArray(xt1 * np.ones(m))
-        interface_xt2 = interface.deepcopy()
-        interface_xt2.SetNumpyArray(xt2 * np.ones(m))
-        interface_xt3 = interface.deepcopy()
-        interface_xt3.SetNumpyArray(xt3 * np.ones(m))
-        interface_xt4 = interface.deepcopy()
-        interface_xt4.SetNumpyArray(xt4 * np.ones(m))
+        interface_r = interface.copy()
+        interface_r.set_interface_data(np.full(m, r))
+        interface_x = interface.copy()
+        interface_x.set_interface_data(x * np.ones(m))
+        interface_xt0 = interface.copy()
+        interface_xt0.set_interface_data(xt0 * np.ones(m))
+        interface_xt1 = interface.copy()
+        interface_xt1.set_interface_data(xt1 * np.ones(m))
+        interface_xt2 = interface.copy()
+        interface_xt2.set_interface_data(xt2 * np.ones(m))
+        interface_xt3 = interface.copy()
+        interface_xt3.set_interface_data(xt3 * np.ones(m))
+        interface_xt4 = interface.copy()
+        interface_xt4.set_interface_data(xt4 * np.ones(m))
 
-        # Test value of self.added
-        is_ready = coupled_solver.IsReady()
+        # test value of self.added
+        is_ready = coupled_solver.is_ready()
         self.assertFalse(is_ready)
 
-        # Test update()
+        # test update()
         coupled_solver.update(interface_x, interface_xt0)
-        is_ready = coupled_solver.IsReady()
+        is_ready = coupled_solver.is_ready()
         self.assertTrue(is_ready)
         omega = coupled_solver.omega
         self.assertEqual(omega, omega_max)
         coupled_solver.update(interface_x, interface_xt1)
-        is_ready = coupled_solver.IsReady()
+        is_ready = coupled_solver.is_ready()
         self.assertTrue(is_ready)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, 5 / 3 * omega_max, 10)
@@ -76,25 +80,25 @@ class TestCoupledSolverAitken(unittest.TestCase):
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, 10 / 3 * omega_max, 10)
 
-        # Test Predict()
-        interface_dx = coupled_solver.Predict(interface_r)
-        omega = interface_dx.GetNumpyArray()[0] / r
+        # test predict()
+        interface_dx = coupled_solver.predict(interface_r)
+        omega = interface_dx.get_interface_data()[0] / r
         self.assertEqual(omega, coupled_solver.omega)
-        coupled_solver.Predict(interface_r)
+        coupled_solver.predict(interface_r)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, 10 / 3 * omega_max, 10)
 
-        # New solution step
+        # new solution step
         coupled_solver.finalize_solution_step()
         coupled_solver.initialize_solution_step()
 
-        # Test value of self.added
-        is_ready = coupled_solver.IsReady()
+        # test value of self.added
+        is_ready = coupled_solver.is_ready()
         self.assertFalse(is_ready)
 
-        # Test update()
+        # test update()
         coupled_solver.update(interface_x, interface_xt0)
-        is_ready = coupled_solver.IsReady()
+        is_ready = coupled_solver.is_ready()
         self.assertTrue(is_ready)
         omega = coupled_solver.omega
         self.assertEqual(omega, omega_max)
@@ -102,11 +106,11 @@ class TestCoupledSolverAitken(unittest.TestCase):
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 2 * omega_max, 10)
 
-        # New solution step
+        # new solution step
         coupled_solver.finalize_solution_step()
         coupled_solver.initialize_solution_step()
 
-        # Test update()
+        # test update()
         coupled_solver.update(interface_x, interface_xt0)
         omega = coupled_solver.omega
         self.assertEqual(omega, -omega_max)
@@ -114,11 +118,11 @@ class TestCoupledSolverAitken(unittest.TestCase):
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 6 * omega_max, 10)
 
-        # New solution step
+        # new solution step
         coupled_solver.finalize_solution_step()
         coupled_solver.initialize_solution_step()
 
-        # Test update()
+        # test update()
         coupled_solver.update(interface_x, interface_xt0)
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 6 * omega_max, 10)

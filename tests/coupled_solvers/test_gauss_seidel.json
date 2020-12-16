@@ -33,14 +33,15 @@
       "settings": {
         "working_directory": "coupled_solvers/CFD",
         "input_file": "solver_parameters.json",
-         "interface_input": [
+        "interface_input": [
           {
             "model_part": "wall",
             "variables": [
-              "displacement"]
+              "displacement"
+            ]
           }
         ],
-         "interface_output": [
+        "interface_output": [
           {
             "model_part": "wall",
             "variables": [
@@ -64,16 +65,16 @@
               "traction"
             ]
           }
+        ],
+        "interface_output": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "displacement"
+            ]
+          }
         ]
-      },
-      "interface_output": [
-        {
-          "model_part": "wall",
-          "variables": [
-            "displacement"
-          ]
-        }
-      ]
+      }
     }
   ]
 }

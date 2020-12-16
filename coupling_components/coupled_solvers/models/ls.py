@@ -5,7 +5,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 
-def Create(parameters):
+def create(parameters):
     return ModelLS(parameters)
 
 
@@ -14,12 +14,12 @@ class ModelLS(Component):
         super().__init__()
 
         self.settings = parameters["settings"]
-        self.min_significant = self.settings["min_significant"].GetDouble()
-        self.q = self.settings["q"].GetDouble()
+        self.min_significant = self.settings["min_significant"]
+        self.q = self.settings["q"]
 
         self.size_in = None
         self.size_out = None
-        self.out = None  # Interface of output
+        self.out = None  # interface of output
         self.added = False
         self.rref = None
         self.xtref = None
@@ -36,11 +36,11 @@ class ModelLS(Component):
         self.vprev = [np.empty((self.size_in, 0))]
         self.wprev = [np.empty((self.size_out, 0))]
 
-    def Filter(self):
+    def filter(self):
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         if not v.shape[1]:
             raise RuntimeError("No information to filter")
-        # Remove columns resulting in small diagonal elements in R
+        # remove columns resulting in small diagonal elements in R
         singular = True
         while singular and v.shape[1]:
             rr = np.linalg.qr(v, mode='r')
@@ -48,7 +48,7 @@ class ModelLS(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
+                tools.print_info("Removing column " + str(i) + ": " + str(m) + " < min_significant", layout='warning')
                 if i < self.vcurr.shape[1]:
                     self.vcurr = np.delete(self.vcurr, i, 1)
                     self.wcurr = np.delete(self.wcurr, i, 1)
@@ -64,7 +64,7 @@ class ModelLS(Component):
                 v = np.hstack((self.vcurr, np.hstack(self.vprev)))
             else:
                 singular = False
-        # Remove columns if number of columns exceeds number of rows
+        # remove columns if number of columns exceeds number of rows
         while v.shape[0] < v.shape[1]:
             if self.vcurr.shape[0] < self.vcurr.shape[1]:
                 self.vcurr = np.delete(self.vcurr, -1, 1)
@@ -77,37 +77,37 @@ class ModelLS(Component):
                 self.wprev[i] = np.delete(self.wprev[i], -1, 1)
             v = np.hstack((self.vcurr, np.hstack(self.vprev)))
 
-    def Predict(self, dr_in):
-        dr = dr_in.GetNumpyArray().reshape(-1, 1)
+    def predict(self, dr_in):
+        dr = dr_in.get_interface_data().reshape(-1, 1)
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         w = np.hstack((self.wcurr, np.hstack(self.wprev)))
         if not v.shape[1]:
             raise RuntimeError("No information to predict")
-        # Approximation for the inverse of the Jacobian from a least-squares model
+        # approximation for the inverse of the Jacobian from a least-squares model
         qq, rr = np.linalg.qr(v, mode='reduced')
         b = qq.T @ dr
         c = solve_triangular(rr, b)
         dxt = w @ c
-        dxt_out = self.out.deepcopy()
-        dxt_out.SetNumpyArray(dxt.flatten())
+        dxt_out = self.out.copy()
+        dxt_out.set_interface_data(dxt.flatten())
         return dxt_out
 
-    def Add(self, r_in, xt_in):
-        r = r_in.GetNumpyArray().reshape(-1, 1)
-        xt = xt_in.GetNumpyArray().reshape(-1, 1)
+    def add(self, r_in, xt_in):
+        r = r_in.get_interface_data().reshape(-1, 1)
+        xt = xt_in.get_interface_data().reshape(-1, 1)
         if self.added:
             dr = r - self.rref
             dxt = xt - self.xtref
             # Update V and W matrices
             self.vcurr = np.hstack((dr, self.vcurr))
             self.wcurr = np.hstack((dxt, self.wcurr))
-            self.Filter()
+            self.filter()
         else:
             self.added = True
         self.rref = r
         self.xtref = xt
 
-    def IsReady(self):
+    def is_ready(self):
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         return v.shape[1]
 
@@ -130,12 +130,12 @@ class ModelLS(Component):
                 self.vprev.pop()
                 self.wprev.pop()
 
-    def FilterQ(self, r_in):
-        r = r_in.GetNumpyArray().reshape(-1, 1)
-        r_out = r_in.deepcopy()
+    def filter_q(self, r_in):
+        r = r_in.get_interface_data().reshape(-1, 1)
+        r_out = r_in.copy()
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         if v.shape[1]:
             qq, *_ = np.linalg.qr(v, mode='reduced')
             r = r - qq @ (qq.T @ r)
-            r_out.SetNumpyArray(r.flatten())
+            r_out.set_interface_data(r.flatten())
         return r_out

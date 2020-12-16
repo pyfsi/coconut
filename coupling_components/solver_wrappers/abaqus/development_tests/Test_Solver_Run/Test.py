@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 from sys import argv
@@ -32,7 +32,7 @@ with open(parameter_file_name, 'r') as parameter_file:
 
 # Create the solver (__init__)
 print("Creating an AbaqusSolver")
-AbaqusSolver0 = CreateInstance(parameters["solver_wrappers"][0])
+AbaqusSolver0 = create_instance(parameters["solver_wrappers"][0])
 print_colored("AbaqusSolver0 created", "green")
 
 # Assign loads to the Input-Nodes
@@ -52,17 +52,17 @@ AbaqusSolver0.initialize()
 
 # Step 1, Coupling 1
 AbaqusSolver0.initialize_solution_step()
-AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 
 os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
 
 # Step 1, Coupling 2
-AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
 
 #Step 2, Coupling 1
 AbaqusSolver0.initialize_solution_step()
-AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
 
 #Iterate until deformation is approximately steady
@@ -76,7 +76,7 @@ tol = 1e-06
 diffMax = 1000
 while diffMax > tol:
     AbaqusSolver0.initialize_solution_step()
-    AbaqusSolver0.solve_solution_step(AbaqusSolver0.GetInterfaceInput())
+    AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
     AbaqusSolver0.finalize_solution_step()
     diffMax = 0
     for node in mp_out.Nodes:

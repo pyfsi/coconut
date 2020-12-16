@@ -11,7 +11,7 @@ import copy
 import subprocess
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperOpenFOAM_41(parameters)
 
 
@@ -360,7 +360,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.send_message('next') # Let OpenFOAM go to next time step
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
     
-    @tools.Timesolve_solution_step
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
         print(f'\t\tIteration {self.iteration}')
@@ -369,7 +369,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.interface_input.SetPythonList(interface_input.GetPythonList())
 
         # update X,Y,Z in interface
-        for key in [_[0] for _ in self.interface_input.model_parts_variables]:
+        for key in [_[0] for _ in self.interface_input.model_part_variable_pairs]:
             for node in self.model[key].Nodes:
                 disp = node.GetSolutionStepValue(self.displacement)
                 node.X = node.X0 + disp[0]
@@ -414,19 +414,19 @@ class SolverWrapperOpenFOAM_41(Component):
         print("OpenFOAM was stopped with the finalize() method defined in CoCoNuT.")
 
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         return self.interface_input.deepcopy()
 
 
-    def SetInterfaceInput(self):
+    def set_interface_input(self):
         Exception("This solver interface provides no mapping.")
 
 
-    def GetInterfaceOutput(self):
+    def get_interface_output(self):
         return self.interface_output.deepcopy()
 
 
-    def SetInterfaceOutput(self):
+    def set_interface_output(self):
         Exception("This solver interface provides no mapping.")
 
     

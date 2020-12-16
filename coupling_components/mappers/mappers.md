@@ -7,7 +7,7 @@
 ### Hierarchy of mapping-related objects
 
 CoCoNuT interacts with the mappers through the `SolverWrapperMapped` object. This solver-wrapper appears and behaves exactly the same as real solver-wrappers.
-It contains 3 `Components`: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the `SetInterfaceInput` and `SetInterfaceOutput` methods respectively, by providing them with the `Interfaces` that will be respectively the input and output of the `SolverWrapperMapped` object.
+It contains 3 `Components`: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the `set_interface_input` and `set_interface_output` methods respectively, by providing them with the `Interfaces` that will be respectively the input and output of the `SolverWrapperMapped` object.
 
 The two mappers in the `SolverWrapperMapped` are also of a special type: they work on the level of `Interfaces`. They are some sort of _mapper-wrapper_ around the actual mappers which work on `ModelPart` level.
 Currently only one such mapper is available, aptly called `MapperInterface`.

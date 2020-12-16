@@ -1,7 +1,7 @@
 from coconut.coupling_components.solver_wrappers.fluent.v2019R3 import SolverWrapperFluent2019R3
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperFluent2020R1(parameters)
 
 

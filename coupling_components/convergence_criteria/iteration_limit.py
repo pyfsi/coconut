@@ -23,5 +23,4 @@ class ConvergenceCriterionIterationLimit(Component):
         self.iteration += 1
 
     def is_satisfied(self):
-        # tools.print_Info("Iteration: " + str(self.iteration))
         return self.iteration >= self.maximum

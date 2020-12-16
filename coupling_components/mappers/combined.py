@@ -106,5 +106,5 @@ class MapperCombined(Component):
             mapper.output_solution_step()
 
     def print_components_info(self, pre):
-        tools.print(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
+        tools.print_info(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
         tools.print_components_info(pre, self.mappers)

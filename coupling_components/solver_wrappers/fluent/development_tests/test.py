@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
 import numpy as np
 from sys import argv
@@ -20,7 +20,7 @@ parameter_file_name = argv[1]
 with open(parameter_file_name, 'r') as parameter_file:
     parameters = data_structure.Parameters(parameter_file.read())
 
-solver = CreateInstance(parameters['solver_wrappers'][0])
+solver = create_instance(parameters['solver_wrappers'][0])
 
 
 settings = parameters['solver_wrappers'][0]['settings']
@@ -30,12 +30,12 @@ if 0:
     solver.initialize()
     solver.initialize_solution_step()
 
-    interface_input = solver.GetInterfaceInput()
+    interface_input = solver.get_interface_input()
     for iteration in range(3):
         iteration += 1
         print(f'\niteration {iteration}')
         solver.solve_solution_step(interface_input)
-        interface_input = solver.GetInterfaceInput()
+        interface_input = solver.get_interface_input()
         for key in settings['interface_input'].keys():
             for node in interface_input.model[key].Nodes:
                 dy = (1 - np.cos(2 * np.pi * node.X)) * 0.5 * 0.01
@@ -48,14 +48,14 @@ if 0:
 else:
     solver.initialize()
 
-    interface_input = solver.GetInterfaceInput()
+    interface_input = solver.get_interface_input()
     for timestep in range(1, 5):
         f = 0.005 * (-1) ** (timestep + 1)
         f = 0.05
         solver.initialize_solution_step()
         for iteration in range(1, 3):
             solver.solve_solution_step(interface_input)
-            interface_input = solver.GetInterfaceInput()
+            interface_input = solver.get_interface_input()
             for key in settings['interface_input'].keys():
                 for node in interface_input.model[key].Nodes:
                     dy = (1 - np.cos(2 * np.pi * (node.X - timestep / 4 - iteration / 16))) * 0.5 * f

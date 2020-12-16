@@ -5,7 +5,6 @@ from coconut.coupling_components.component import Component
 import numpy as np
 import time
 import pickle
-import json
 
 
 def create(parameters):
@@ -27,7 +26,7 @@ class CoupledSolverGaussSeidel(Component):
         self.convergence_criterion = create_instance(self.parameters["convergence_criterion"])
         self.solver_wrappers = []
         for index in range(2):
-            # Add timestep_start and delta_t to solver_wrapper settings
+            # add timestep_start and delta_t to solver_wrapper settings
             parameters = self.parameters["solver_wrappers"][index]
             if parameters["type"] == "solver_wrappers.mapped":
                 settings = parameters["settings"]["solver_wrapper"]["settings"]
@@ -36,8 +35,7 @@ class CoupledSolverGaussSeidel(Component):
 
             for key in ["timestep_start", "delta_t"]:
                 if key in settings:
-                    tools.print(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-                    settings.RemoveValue(key)
+                    tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
                 settings[key] = self.settings[key]
 
             self.solver_wrappers.append(create_instance(parameters))
@@ -52,19 +50,12 @@ class CoupledSolverGaussSeidel(Component):
         self.start_time = None
         self.elapsed_time = None
         self.iterations = []
-        if self.settings.Has("save_results"):
-            # Set True in order to save for every iteration
-            self.save_results = self.settings["save_results"]
-        else:
-            self.save_results = False
+        self.save_results = self.settings.get("save_results", False)  # set True in order to save for every iteration
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            if self.settings.Has("name"):
-                self.case_name = self.settings["name"]  # case name
-            else:
-                self.case_name = "results"
+            self.case_name = self.settings.get("name", "results")  # case name
 
     def initialize(self):
         super().initialize()
@@ -85,16 +76,16 @@ class CoupledSolverGaussSeidel(Component):
             raise ValueError("Not both solvers may be mapped solvers.")
         if index_mapped is not None:
             # Construct input mapper
-            interface_input_from = self.solver_wrappers[index_other].GetInterfaceOutput()
-            self.solver_wrappers[index_mapped].SetInterfaceInput(interface_input_from)
+            interface_input_from = self.solver_wrappers[index_other].get_interface_output()
+            self.solver_wrappers[index_mapped].set_interface_input(interface_input_from)
 
             # Construct output mapper
-            interface_output_to = self.solver_wrappers[index_other].GetInterfaceInput()
-            self.solver_wrappers[index_mapped].SetInterfaceOutput(interface_output_to)
+            interface_output_to = self.solver_wrappers[index_other].get_interface_input()
+            self.solver_wrappers[index_mapped].set_interface_output(interface_output_to)
 
         # Initialize variables
-        self.x = self.solver_wrappers[1].GetInterfaceOutput()
-        self.y = self.solver_wrappers[0].GetInterfaceOutput()
+        self.x = self.solver_wrappers[1].get_interface_output()
+        self.y = self.solver_wrappers[0].get_interface_output()
         self.predictor.initialize(self.x)
 
         if self.save_results:
@@ -113,11 +104,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # Print time step
         if not self.solver_level:
-            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"\tTime step {self.n}\n" \
-                  f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"Iteration\tNorm residual"
-            tools.print(out)
+            self.print_header()
 
         if self.save_results:
             self.residual.append([])
@@ -130,7 +117,7 @@ class CoupledSolverGaussSeidel(Component):
         self.y = y.copy()
         xt = self.solver_wrappers[1].solve_solution_step(y)
         r = xt - self.x
-        self.finalize_Iteration(r)
+        self.finalize_iteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += r
@@ -138,15 +125,13 @@ class CoupledSolverGaussSeidel(Component):
             self.y = y.copy()
             xt = self.solver_wrappers[1].solve_solution_step(y)
             r = xt - self.x
-            self.finalize_Iteration(r)
+            self.finalize_iteration(r)
 
-    def finalize_Iteration(self, r):
+    def finalize_iteration(self, r):
         self.iteration += 1
         self.convergence_criterion.update(r)
         # Print iteration information
-        norm = np.linalg.norm(r.get_interface_data())
-        out = f"{self.iteration:<9d}\t{norm:<22.17e}"
-        tools.print(' │' * self.solver_level, out)
+        self.print_iteration_info(r)
 
         if self.save_results:
             self.residual[self.n - 1].append(np.linalg.norm(r.get_interface_data()))
@@ -176,7 +161,7 @@ class CoupledSolverGaussSeidel(Component):
             out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
                   f"║\tSummary\n" \
                   f"╠═══════════════════════════════════════════════════════════════════════════════"
-            tools.print(out)
+            tools.print_info(out)
 
         for component in self.components:
             component.finalize()
@@ -208,7 +193,18 @@ class CoupledSolverGaussSeidel(Component):
         out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
         if self.solver_level == 0:
             out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
-        tools.print(out)
+        tools.print_info(out)
+
+    def print_header(self):
+        header = f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"\tTime step {self.n}\n" \
+                 f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"Iteration\tNorm residual"
+        tools.print_info(header)
+
+    def print_iteration_info(self, r):
+        info = f"{self.iteration:<16d}{r.norm():<28.17e}"
+        tools.print_info(' │' * self.solver_level, info)
 
     def check(self):
         super().check()
@@ -216,6 +212,6 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.check()
 
-    def print_Info(self, pre):
-        tools.print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        tools.PrintStructureInfo(pre, self.components)
+    def print_components_info(self, pre):
+        tools.print_info(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
+        tools.print_components_info(pre, self.components)
