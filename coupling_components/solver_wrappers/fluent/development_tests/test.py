@@ -2,30 +2,16 @@ from coconut import data_structure
 from coconut.coupling_components.tools import create_instance
 
 import numpy as np
-from sys import argv
+import json
 
 
-# Check number of command line arguments
-if len(argv) != 2:
-    err_msg = 'Wrong number of input arguments!\n'
-    err_msg += 'Use this script in the following way:\n'
-    err_msg += '    "python co_simulation_analysis.py <cosim-parameter-file>.json"\n'
-    raise Exception(err_msg)
+with open('parameters.json') as parameter_file:
+    parameters = json.load(parameter_file)
 
+solver = create_instance(parameters)
+settings = parameters['settings']
 
-# Import data structure
-parameter_file_name = argv[1]
-
-# Import parameters using the data structure
-with open(parameter_file_name, 'r') as parameter_file:
-    parameters = data_structure.Parameters(parameter_file.read())
-
-solver = create_instance(parameters['solver_wrappers'][0])
-
-
-settings = parameters['solver_wrappers'][0]['settings']
-
-# steady test
+# steady test  *** not converted
 if 0:
     solver.initialize()
     solver.initialize_solution_step()
@@ -44,7 +30,7 @@ if 0:
     solver.finalize_solution_step()
     solver.finalize()
 
-# unsteady test
+# unsteady test  *** being converted
 else:
     solver.initialize()
 

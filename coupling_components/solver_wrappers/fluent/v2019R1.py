@@ -1,11 +1,11 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.interface import Interface
 from coconut.coupling_components import tools
 
 import os
 from os.path import join
 import subprocess
+import multiprocessing
 import time
 import numpy as np
 import sys
@@ -21,28 +21,29 @@ class SolverWrapperFluent2019R1(Component):
     def __init__(self, parameters):
         super().__init__()
 
+        # set parameters
         self.set_fluent_version()
         self.settings = parameters['settings']
         self.check_software()
-        self.dir_cfd = join(os.getcwd(), self.settings['working_directory'].GetString())
+        self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
         self.remove_all_messages()
-
-        path_src = os.path.realpath(os.path.dirname(__file__))
-        self.cores = self.settings['cores'].GetInt()
-        self.case_file = self.settings['case_file'].GetString()  # file must be in self.dir_cfd
+        self.dir_src = os.path.realpath(os.path.dirname(__file__))
+        self.cores = self.settings['cores']
+        if self.cores < 1 or self.cores > multiprocessing.cpu_count():
+            self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
+        self.case_file = self.settings['case_file']
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
             raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
-        self.mnpf = self.settings['max_nodes_per_face'].GetInt()
-        self.dimensions = self.settings['dimensions'].GetInt()
-        self.unsteady = self.settings['unsteady'].GetBool()
-        self.hybrid_initialization = self.settings['hybrid_initialization'].GetBool()
-        self.flow_iterations = self.settings['flow_iterations'].GetInt()
-        self.delta_t = self.settings['delta_t'].GetDouble()
-        self.timestep_start = self.settings['timestep_start'].GetInt()
+        self.mnpf = self.settings['max_nodes_per_face']
+        self.dimensions = self.settings['dimensions']
+        self.unsteady = self.settings['unsteady']
+        self.hybrid_initialization = self.settings['hybrid_initialization']
+        self.flow_iterations = self.settings['flow_iterations']
+        self.delta_t = self.settings['delta_t']
+        self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
         self.iteration = None
-
-        self.thread_names = [_.GetString() for _ in self.settings['thread_names'].list()]
+        self.thread_names = self.settings['thread_names']
         self.n_threads = len(self.thread_names)
         self.thread_ids = [None] * self.n_threads
         self.fluent_process = None
@@ -58,7 +59,7 @@ class SolverWrapperFluent2019R1(Component):
         hybrid_initialization = '#f'
         if self.hybrid_initialization:
             hybrid_initialization = '#t'
-        with open(join(path_src, journal), 'r') as infile:
+        with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
@@ -73,7 +74,7 @@ class SolverWrapperFluent2019R1(Component):
         # prepare Fluent UDF
         if self.timestep_start == 0:
             udf = f'v{self.version}.c'
-            with open(join(path_src, udf), 'r') as infile:
+            with open(join(self.dir_src, udf)) as infile:
                 with open(join(self.dir_cfd, udf), 'w') as outfile:
                     for line in infile:
                         line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
@@ -84,7 +85,7 @@ class SolverWrapperFluent2019R1(Component):
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
-        if self.settings['fluent_gui'].GetBool():
+        if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
         else:
             cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'
@@ -142,9 +143,36 @@ class SolverWrapperFluent2019R1(Component):
         # create Model
         self.model = data_structure.Model()
 
+        # *** add vars: later!
+
         # create ModelParts
-        for key, value in (self.settings['interface_input'].items() +
-                           self.settings['interface_output'].items()):
+        for item in (self.settings['interface_input'] + self.settings['interface_output']):
+
+            mp_name = item['model_part']
+
+
+
+
+
+            x0 =
+            y0 =
+            z0 =
+            ids =
+
+
+            mp = self.model.create_model_part(mp_name, x0, y0, z0, ids)
+
+            for i in range(self.n_threads):
+                if self.thread_names[i] in key:
+                    mp.thread_name = self.thread_names[i]
+                    mp.thread_id = self.thread_ids[i]
+            if 'thread_id' not in dir(mp):
+                raise AttributeError(f'Could not find thread name corresponding to ModelPart {mp_name}')
+
+            raise RuntimeError
+
+
+
             # add ModelPart to Model
             self.model.CreateModelPart(key)
             mp = self.model[key]
@@ -154,13 +182,6 @@ class SolverWrapperFluent2019R1(Component):
                 var = vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
 
-            # add information to ModelPart
-            for i in range(self.n_threads):
-                if self.thread_names[i] in key:
-                    mp.thread_name = self.thread_names[i]
-                    mp.thread_id = self.thread_ids[i]
-            if 'thread_id' not in dir(mp):
-                raise AttributeError('could not find thread name corresponding to key')
 
         # add Nodes to input ModelParts (nodes)
         for key in self.settings['interface_input'].keys():
