@@ -1,23 +1,17 @@
+from coconut.tests.solver_wrappers.fluent.test_v2019R1 \
+    import TestSolverWrapperFluent2019R1Tube2D, TestSolverWrapperFluent2019R1Tube3D
+
 import unittest
-from coconut.tests.solver_wrappers.fluent.test_v2019R3 import TestSolverWrapperFluent2019R3
 
 
-class TestSolverWrapperFluent2020R1(TestSolverWrapperFluent2019R3):
-    """
-    Only 1 Fluent version can be tested at a time,
-    because the correct software version must be
-    preloaded.
-
-    Another consequence is that this version cannot
-    be tested independentely (i.e. in this folder),
-    because of inheritance.
-    """
-
+class TestSolverWrapperFluent2020R1Tube2D(TestSolverWrapperFluent2019R1Tube2D):
     version = '2020R1'
+    setup_case = True
 
-    def test_solver_wrapper_fluent_2020R1(self):
-        self.test_solver_wrapper_fluent_2019R1_tube2d()
-        self.test_solver_wrapper_fluent_2019R1_tube3d()
+
+class TestSolverWrapperFluent2020R1Tube3D(TestSolverWrapperFluent2019R1Tube3D):
+    version = '2020R1'
+    setup_case = True
 
 
 if __name__ == '__main__':
