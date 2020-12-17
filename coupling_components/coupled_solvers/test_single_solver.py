@@ -150,11 +150,11 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.n == self.timestep_start + 1:
             header = f"════════════════════════════════════════════════════════════════════════════════\n" \
                 f"{'Time step':<16}{'Norm x':<28}{'Norm y':<28}"
-            tools.print_info(header, flush=True)
+            tools.print_info(header)
 
     def print_iteration_info(self, r):
         info = f"{self.n:<16d}{self.x.norm():<28.17e}{self.y.norm():<28.17e}"
-        tools.print_info(' │' * self.solver_level, info, flush=True)
+        tools.print_info(' │' * self.solver_level, info)
 
 
 class DummyComponent:
