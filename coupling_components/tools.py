@@ -10,15 +10,22 @@ def create_instance(settings):
 
 
 class LayoutStyles:
-    styles = {'header':    '\033[95m',
-              'blue':      '\033[94m',
-              'green':     '\033[92m',
-              'red':       '\033[96m',
-              'warning':   '\033[1;33;41m',
-              'fail':      '\033[91m',
-              'bold':      '\033[1m',
+    styles = {'plain': '\033[0m',
+              'bold': '\033[1m',
               'underline': '\033[4m',
-              'plain':     '\033[0m'
+              'inverse': '\033[7m',
+              'negative': '\033[97m',
+              'warning': '\033[91m',
+              'fail': '\033[41m',
+              'grey': '\033[90m',
+              'red': '\033[91m',
+              'green': '\033[92m',
+              'yellow': '\033[93m',
+              'blue': '\033[94m',
+              'magenta': '\033[95m',
+              'cyan': '\033[96m',
+              'white': '\033[1;8m',
+              'black': '\033[1;90m',
               }
 
     def get(self, layout):
