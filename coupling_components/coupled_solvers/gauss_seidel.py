@@ -200,11 +200,11 @@ class CoupledSolverGaussSeidel(Component):
                  f"\tTime step {self.n}\n" \
                  f"════════════════════════════════════════════════════════════════════════════════\n" \
                  f"Iteration\tNorm residual"
-        tools.print_info(header, flush=True)
+        tools.print_info(header)
 
     def print_iteration_info(self, r):
         info = f"{self.iteration:<16d}{r.norm():<28.17e}"
-        tools.print_info(' │' * self.solver_level, info, flush=True)
+        tools.print_info(' │' * self.solver_level, info)
 
     def check(self):
         super().check()
