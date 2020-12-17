@@ -34,17 +34,17 @@ class LayoutStyles:
 layout_style = LayoutStyles()
 
 
-# print_info: Printing with color
+# print_info: printing with color
 #  @param args          The arguments to be printed
 #  @param layout        The layout to be used: header, blue, green, red, warning, fail, bold, underline or plain
-def print_info(*args, layout=None):
+def print_info(*args, layout=None, **kwargs):
     if layout is None:
-        print("".join(map(str, args)))
+        print("".join(map(str, args)), **kwargs)
     else:
-        print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'))
+        print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'), **kwargs)
 
 
-# updatePre: Update preceding text, used in structure printing
+# updatePre: update preceding text, used in structure printing
 #  @param pre         Preceding text ending with '├─' or '└─'
 def update_pre(pre):
     """
@@ -66,7 +66,7 @@ def update_pre(pre):
     return pre
 
 
-# printInfoStructure: Print information from a list of Comonents in a strucutred way
+# printInfoStructure: print information from a list of Components in a structured way
 #  @param label         Preceding text ending with '├─' or '└─'
 #  @param compent_list  List of Components from which the info is printed
 def print_components_info(pre, component_list):
