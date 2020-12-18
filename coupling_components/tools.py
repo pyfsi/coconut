@@ -10,15 +10,22 @@ def create_instance(settings):
 
 
 class LayoutStyles:
-    styles = {'header':    '\033[95m',
-              'blue':      '\033[94m',
-              'green':     '\033[92m',
-              'red':       '\033[96m',
-              'warning':   '\033[1;33;41m',
-              'fail':      '\033[91m',
-              'bold':      '\033[1m',
+    styles = {'plain': '\033[0m',
+              'bold': '\033[1m',
               'underline': '\033[4m',
-              'plain':     '\033[0m'
+              'inverse': '\033[7m',
+              'negative': '\033[97m',
+              'warning': '\033[91m',
+              'fail': '\033[41m',
+              'grey': '\033[90m',
+              'red': '\033[91m',
+              'green': '\033[92m',
+              'yellow': '\033[93m',
+              'blue': '\033[94m',
+              'magenta': '\033[95m',
+              'cyan': '\033[96m',
+              'white': '\033[1;8m',
+              'black': '\033[1;90m',
               }
 
     def get(self, layout):
@@ -34,17 +41,17 @@ class LayoutStyles:
 layout_style = LayoutStyles()
 
 
-# print_info: Printing with color
+# print_info: printing with color
 #  @param args          The arguments to be printed
 #  @param layout        The layout to be used: header, blue, green, red, warning, fail, bold, underline or plain
-def print_info(*args, layout=None):
+def print_info(*args, layout=None, **kwargs):
     if layout is None:
-        print("".join(map(str, args)))
+        print("".join(map(str, args)), **kwargs)
     else:
-        print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'))
+        print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'), **kwargs)
 
 
-# updatePre: Update preceding text, used in structure printing
+# updatePre: update preceding text, used in structure printing
 #  @param pre         Preceding text ending with '├─' or '└─'
 def update_pre(pre):
     """
@@ -66,7 +73,7 @@ def update_pre(pre):
     return pre
 
 
-# printInfoStructure: Print information from a list of Comonents in a strucutred way
+# printInfoStructure: print information from a list of Components in a structured way
 #  @param label         Preceding text ending with '├─' or '└─'
 #  @param compent_list  List of Components from which the info is printed
 def print_components_info(pre, component_list):
