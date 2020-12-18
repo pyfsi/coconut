@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.mappers.transformer import MapperTransformer
 from coconut.data_structure import variables_dimensions
 
 import numpy as np
@@ -8,9 +8,9 @@ def create(parameters):
     return MapperPermutation(parameters)
 
 
-class MapperPermutation(Component):
+class MapperPermutation(MapperTransformer):
     def __init__(self, parameters):
-        """
+        """ TODO: move all this info to docs
         This is not an interpolator, but a transformer.
         This is denoted by setting the self.interpolator
         attribute to False in the __init__.
@@ -34,10 +34,7 @@ class MapperPermutation(Component):
         permutation parameter (list of ints) in the
         JSON file.
         """
-        super().__init__()
-
-        self.settings = parameters['settings']
-        self.interpolator = False
+        super().__init__(parameters)
 
         self.permutation = self.settings['permutation']
         if type(self.permutation) != list:
@@ -57,22 +54,16 @@ class MapperPermutation(Component):
                                 coords_out[:, 1], coords_out[:, 2], np.arange(mp_in.size))
 
     def __call__(self, args_from, args_to):
-        # unpack arguments
-        interface_from, mp_name_from, var_from = args_from
-        interface_to, mp_name_to, var_to = args_to
+        super().__call__(args_from, args_to)
 
-        # check variables
-        if var_from not in variables_dimensions:
-            raise NameError(f'variable "{var_from}" does not exist')
-        if var_from != var_to:
-            raise TypeError('variables must be equal')
+        interface_from, mp_name_from, var = args_from
+        interface_to, mp_name_to, _ = args_to
 
-        # map values
-        dimensions = variables_dimensions[var_from]
-        data = interface_from.get_variable_data(mp_name_from, var_from)
+        dimensions = variables_dimensions[var]
+        data = interface_from.get_variable_data(mp_name_from, var)
         if dimensions == 1:
-            interface_to.set_variable_data(mp_name_to, var_to, data)
+            interface_to.set_variable_data(mp_name_to, var, data)
         elif dimensions == 3:
-            interface_to.set_variable_data(mp_name_to, var_to, data[:, self.permutation])
+            interface_to.set_variable_data(mp_name_to, var, data[:, self.permutation])
         else:
             raise NotImplementedError(f'Permutation not implemented for variable of dimension {dimensions}')

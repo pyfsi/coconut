@@ -12,7 +12,7 @@ from coconut.tests.solver_wrappers.python.tube.test_tube_structure_solver import
 
 test_cases = (
     # TestSolverWrapperAbaqus614,
-    TestSolverWrapperFluent2019R1Tube2D, TestSolverWrapperFluent2019R1Tube3D,
+    # TestSolverWrapperFluent2019R1Tube2D, TestSolverWrapperFluent2019R1Tube3D,
     # TestSolverWrapperFluent2019R2Tube2D, TestSolverWrapperFluent2019R2Tube2D,
     # TestSolverWrapperFluent2019R3Tube2D, TestSolverWrapperFluent2019R3Tube2D,
     # TestSolverWrapperFluent2020R1Tube2D, TestSolverWrapperFluent2020R1Tube3D,

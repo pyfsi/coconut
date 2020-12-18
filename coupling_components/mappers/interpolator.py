@@ -9,8 +9,8 @@ import numpy as np
 def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
+# TODO: warnings now crash the code... this should not happen
 
-# Class MapperInterpolator: base class for interpolators.
 class MapperInterpolator(Component):
     def __init__(self, parameters):
         super().__init__()
@@ -38,7 +38,7 @@ class MapperInterpolator(Component):
             if direction.lower() not in ['x', 'y', 'z']:
                 raise ValueError(f'"{direction}" is not a valid direction.')
             if direction.lower() != direction:
-                # *** I would later remove this and only accept lowercase directions
+                # TODO: I would later remove this and only accept lowercase directions
                 tools.print_info('directions must be lowercase', layout='warning')
             self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
@@ -51,7 +51,7 @@ class MapperInterpolator(Component):
             if self.scaling.size != len(self.directions):
                 raise ValueError(f'scaling must have same length as directions')
 
-    def initialize(self, model_part_from, model_part_to):  # *** make all methods lowercase
+    def initialize(self, model_part_from, model_part_to):
         super().initialize()
 
         # get coords_from
@@ -110,7 +110,7 @@ class MapperInterpolator(Component):
         interface_to.set_variable_data(mp_name_to, var_to, data_to)
 
     def check_bounding_box(self, model_part_from, model_part_to):
-        # set tolerances  #*** overwrite tolerances from parameters?
+        # set tolerances  # TODO: overwrite tolerances from parameters?
         tol_center_warning = 0.02
         tol_center_error = 0.1
         tol_minmax_warning = 0.1
@@ -160,7 +160,7 @@ class MapperInterpolator(Component):
 
     def check_duplicate_points(self, model_part_from):
         # checks only from-points
-        tol_warning = 1e-8  # *** create optional parameter for this?
+        tol_warning = 1e-8  # TODO: create optional parameter for this?
         tol_error = 1e-12
 
         # calculate reference distance (diagonal of bounding box)

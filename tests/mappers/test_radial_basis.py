@@ -4,8 +4,9 @@ import unittest
 
 
 class TestMapperRadialBasis(unittest.TestCase):
+    gui = False
+
     def setUp(self):
-        self.gui = 0
         self.parameters = {'type': 'mappers.radial_basis',
                            'settings': {
                                'directions': ['x', 'y', 'z'], 

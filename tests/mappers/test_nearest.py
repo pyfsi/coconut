@@ -4,8 +4,9 @@ import unittest
 
 
 class TestMapperNearest(unittest.TestCase):
+    gui = False
+
     def setUp(self):
-        self.gui = 0
         self.parameters = {'type': 'mappers.nearest',
                            'settings': {'directions': ['x', 'y', 'z']}}
 
