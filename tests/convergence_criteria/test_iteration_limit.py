@@ -3,8 +3,6 @@ from coconut.data_structure.interface import Interface
 from coconut.coupling_components.tools import create_instance
 
 import unittest
-import os
-import json
 import numpy as np
 
 
@@ -32,13 +30,13 @@ class TestConvergenceCriterionIterationLimit(unittest.TestCase):
         interface = Interface(interface_settings, model)
         interface.set_variable_data(model_part_name, variable, a0_array)
 
-        # read settings
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_iteration_limit.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.load(parameter_file)
-
-        convergence_criterion_iteration_limit = create_instance(settings)
+        # create convergence criterion
+        parameters = {'type': 'convergence_criteria.iteration_limit',
+                      'settings': {'maximum': 2}}
+        convergence_criterion_iteration_limit = create_instance(parameters)
         convergence_criterion_iteration_limit.initialize()
+
+        # test convergence criterion
         for i in range(3):
             convergence_criterion_iteration_limit.initialize_solution_step()
             is_satisfied = convergence_criterion_iteration_limit.is_satisfied()

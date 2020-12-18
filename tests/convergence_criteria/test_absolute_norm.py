@@ -3,8 +3,6 @@ from coconut.data_structure.interface import Interface
 from coconut.coupling_components.tools import create_instance
 
 import unittest
-import os
-import json
 import numpy as np
 
 
@@ -35,13 +33,13 @@ class TestConvergenceCriterionAbsoluteNorm(unittest.TestCase):
         # create interface
         interface = Interface(interface_settings, model)
 
-        # read settings
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_absolute_norm.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.load(parameter_file)
-
-        convergence_criterion_absolute_norm = create_instance(settings)
+        # create convergence criterion
+        parameters = {'type': 'convergence_criteria.absolute_norm',
+                      'settings': {'tolerance': 1e-6, 'order': 2}}
+        convergence_criterion_absolute_norm = create_instance(parameters)
         convergence_criterion_absolute_norm.initialize()
+
+        # test convergence criterion
         for i in range(3):
             convergence_criterion_absolute_norm.initialize_solution_step()
             is_satisfied = convergence_criterion_absolute_norm.is_satisfied()

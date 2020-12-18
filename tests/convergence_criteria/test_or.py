@@ -3,7 +3,6 @@ from coconut.data_structure.interface import Interface
 from coconut.coupling_components.tools import create_instance
 
 import unittest
-import os
 import json
 import numpy as np
 
@@ -33,11 +32,11 @@ class TestConvergenceCriterionOr(unittest.TestCase):
         interface.set_variable_data(model_part_name, variable, a0_array)
 
         # read settings
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_or.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.load(parameter_file)
+        parameter_file_name = 'convergence_criteria/test_or.json'
+        with open(parameter_file_name) as parameter_file:
+            parameters = json.load(parameter_file)
 
-        convergence_criterion_or = create_instance(settings)
+        convergence_criterion_or = create_instance(parameters)
         convergence_criterion_or.initialize()
         for i in range(3):
             convergence_criterion_or.initialize_solution_step()
