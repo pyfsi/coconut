@@ -58,29 +58,29 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             print_box('test start and restart')
 
             # Create the solver (__init__)
-            AbaqusSolver0 = CreateInstance(par_solver_0)
+            solver = CreateInstance(par_solver)
 
             # give value to variables
-            mp = AbaqusSolver0.model['BEAMINSIDEMOVING_load_points']
+            mp = solver.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-            AbaqusSolver0.Initialize()
+            solver.Initialize()
 
             # Step 1, Coupling 1
-            AbaqusSolver0.InitializeSolutionStep()
-            output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-            # TODO: this could break down, depending on cwd check
-            os.system('cp -r test_v614/tube2d/CSM/CSM_Time1.odb test_v614/tube2d/CSM/CSM_Time1_Iter1.odb')
+            solver.InitializeSolutionStep()
+            output1_1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            os.system(f'cp {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube2d/CSM/CSM_Time1.odb '
+                      f'{os.path.realpath(os.path.dirname(__file__))}/test_v614/tube2d/CSM/CSM_Time1_Iter1.odb')
             # Step 1, Coupling 2
-            output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
-            AbaqusSolver0.FinalizeSolutionStep()
+            output1_2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            solver.FinalizeSolutionStep()
 
             # compare output, as input hasn't changed these should be the same
-            a1 = output1_1.GetNumpyArray()
-            a2 = output1_2.GetNumpyArray()
+            a1 = output1_1.GetNumpyArray().copy()
+            a2 = output1_2.GetNumpyArray().copy()
 
             # normalize data and compare
             mean = np.mean(a1)
@@ -92,43 +92,43 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             for i in range(a1.size):
                 self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
 
-            # Step 2 and 3
-            for i in range(2):
-                AbaqusSolver0.InitializeSolutionStep()
-                AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-                AbaqusSolver0.FinalizeSolutionStep()
+            # Step 2 to 4
+            for i in range(3):
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
-            # Step 4
-            AbaqusSolver0.InitializeSolutionStep()
-            output_single_run = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
-            AbaqusSolver0.FinalizeSolutionStep()
-            AbaqusSolver0.Finalize()
-            # TODO: this could break down, depending on cwd check
-            os.system('cp test_v614/tube2d/CSM/CSM_Time4Surface0Output.dat'
-                      ' test_v614/tube2d/CSM/CSM_Time4Surface0Output_Single.dat')
+            os.system(f'cp {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube2d/CSM/'
+                      f'CSM_Time4Surface0Output.dat {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube2d/'
+                      f'CSM/CSM_Time4Surface0Output_Single.dat')
+
+            # get data for solver without restart
+            output_single_run = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a1 = output_single_run.GetNumpyArray().copy()
 
             # With restart
             # create solver which restarts at time step 2
             par_solver['settings'].SetInt('timestep_start', 2)
-            AbaqusSolver1 = CreateInstance(par_solver)
-            mp = AbaqusSolver1.model['BEAMINSIDEMOVING_load_points']
+            solver = CreateInstance(par_solver)
+            mp = solver.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-            AbaqusSolver1.Initialize()
+            solver.Initialize()
 
             # do step 3 and 4
             for i in range(2):
-                AbaqusSolver1.InitializeSolutionStep()
-                output_restart = AbaqusSolver1.SolveSolutionStep(AbaqusSolver1.GetInterfaceInput()).deepcopy()
-                AbaqusSolver1.FinalizeSolutionStep()
-            AbaqusSolver1.Finalize()
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
-            # Compare output, as input hasn't changed these should be the same
-            a1 = output_single_run.GetNumpyArray()
-            a2 = output_restart.GetNumpyArray()
+            # get data for solver with restart
+            output_restart = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a2 = output_restart.GetNumpyArray().copy()
 
             # normalize data and compare
             mean = np.mean(a1)
@@ -147,26 +147,26 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('cores', 4)
-            AbaqusSolver2 = CreateInstance(par_solver)
+            solver = CreateInstance(par_solver)
 
             # give value to variables
-            mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
+            mp = solver.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
             # do 4 steps
-            AbaqusSolver2.Initialize()
+            solver.Initialize()
             for i in range(4):
-                AbaqusSolver2.InitializeSolutionStep()
-                output_4cores = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
-                AbaqusSolver2.FinalizeSolutionStep()
-            AbaqusSolver2.Finalize()
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
-            # Compare output, as input hasn't changed these should be the same
             # normalize data and compare
-            a4 = output_4cores.GetNumpyArray()
+            output_4cores = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a4 = output_4cores.GetNumpyArray().copy()
             a4n = (a4 - mean)/ref
 
             for i in range(a1.size):
@@ -179,23 +179,24 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             shear_y = 5
 
             # give value to variables
-            mp = AbaqusSolver2.model['BEAMINSIDEMOVING_load_points']
+            mp = solver.model['BEAMINSIDEMOVING_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
             # do 4 steps
-            AbaqusSolver2.Initialize()
+            solver.Initialize()
             for i in range(4):
-                AbaqusSolver2.InitializeSolutionStep()
-                output_shear = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
-                AbaqusSolver2.FinalizeSolutionStep()
-            AbaqusSolver2.Finalize()
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
             # Compare output, as shear input has changed these should be different
             # normalize data and compare
-            a5 = output_shear.GetNumpyArray()
+            output_shear = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a5 = output_shear.GetNumpyArray().copy()
 
             mean_disp_y_no_shear = 0
             mean_disp_y_shear = 0
@@ -247,29 +248,32 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
         # test start and restart
         if True:
+            print_box('test start and restart')
+
             # Create the solver (__init__)
-            AbaqusSolver0 = CreateInstance(par_solver_0)
+            solver = CreateInstance(par_solver)
 
             # give value to variables
-            mp = AbaqusSolver0.model['WALLOUTSIDE_load_points']
+            mp = solver.model['WALLOUTSIDE_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-            AbaqusSolver0.Initialize()
+            solver.Initialize()
 
             # Step 1, Coupling 1
-            AbaqusSolver0.InitializeSolutionStep()
-            output1_1 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-            os.system('cp -r test_v614/tube3d/CSM/CSM_Time1.odb test_v614/tube3d/CSM/CSM_Time1_Iter1.odb')
+            solver.InitializeSolutionStep()
+            output1_1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            os.system(f'cp {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube3d/CSM/CSM_Time1.odb'
+                      f' {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube3d/CSM/CSM_Time1_Iter1.odb')
             # Step 1, Coupling 2
-            output1_2 = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
-            AbaqusSolver0.FinalizeSolutionStep()
+            output1_2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            solver.FinalizeSolutionStep()
 
             # Compare output, as input hasn't changed these should be the same
-            a1 = output1_1.GetNumpyArray()
-            a2 = output1_2.GetNumpyArray()
+            a1 = output1_1.GetNumpyArray().copy()
+            a2 = output1_2.GetNumpyArray().copy()
 
             # normalize data and compare
             mean = np.mean(a1)
@@ -281,44 +285,47 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             for i in range(a1.size):
                 self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
 
-            # Step 2 and 3
-            for i in range(2):
-                AbaqusSolver0.InitializeSolutionStep()
-                AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-                AbaqusSolver0.FinalizeSolutionStep()
+            # Step 2 to 4
+            for i in range(3):
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
             # Step 4
-            AbaqusSolver0.InitializeSolutionStep()
-            output_single_run = AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput()).deepcopy()
-            AbaqusSolver0.FinalizeSolutionStep()
-            AbaqusSolver0.Finalize()
+            solver.Finalize()
 
-            os.system('cp test_v614/tube3d/CSM/CSM_Time4Surface0Output.dat '
-                      'test_v614/tube3d/CSM/CSM_Time4Surface0Output_Single.dat')
+            # get data for solver without restart
+            output_single_run = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a1 = output_single_run.GetNumpyArray().copy()
+
+            os.system(f'cp {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube3d/CSM/'
+                      f'CSM_Time4Surface0Output.dat {os.path.realpath(os.path.dirname(__file__))}/test_v614/tube3d/CSM/'
+                      f'CSM_Time4Surface0Output_Single.dat')
 
             # With restart
             # create solver which restarts at time step 2
             par_solver['settings'].SetInt('timestep_start', 2)
-            AbaqusSolver1 = CreateInstance(par_solver)
+            solver = CreateInstance(par_solver)
 
             # give value to variables
-            mp = AbaqusSolver1.model['WALLOUTSIDE_load_points']
+            mp = solver.model['WALLOUTSIDE_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
-            AbaqusSolver1.Initialize()
+            solver.Initialize()
 
             # do step 3 and 4
             for i in range(2):
-                AbaqusSolver1.InitializeSolutionStep()
-                output_restart = AbaqusSolver1.SolveSolutionStep(AbaqusSolver1.GetInterfaceInput()).deepcopy()
-                AbaqusSolver1.FinalizeSolutionStep()
-            AbaqusSolver1.Finalize()
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
             # Compare output, as input hasn't changed these should be the same
-            a1 = output_single_run.GetNumpyArray()
-            a2 = output_restart.GetNumpyArray()
+            # get data for solver with restart
+            output_restart = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a2 = output_restart.GetNumpyArray().copy()
 
             # normalize data and compare
             mean = np.mean(a1)
@@ -337,26 +344,27 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             # adapt Parameters, create solver
             par_solver = deepcopy(par_solver_0)
             par_solver['settings'].SetInt('cores', 4)
-            AbaqusSolver2 = CreateInstance(par_solver)
+            solver = CreateInstance(par_solver)
 
             # give value to variables
-            mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
+            mp = solver.model['WALLOUTSIDE_load_points']
             for node in mp.Nodes:
                 # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
                 node.SetSolutionStepValue(pressure, 0, p)
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
             # do 4 steps
-            AbaqusSolver2.Initialize()
+            solver.Initialize()
             for i in range(4):
-                AbaqusSolver2.InitializeSolutionStep()
-                output_4cores = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
-                AbaqusSolver2.FinalizeSolutionStep()
-            AbaqusSolver2.Finalize()
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
             # Compare output, as input hasn't changed these should be the same
             # normalize data and compare
-            a4 = output_4cores.GetNumpyArray()
+            output_4cores = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a4 = output_4cores.GetNumpyArray().copy()
             a4n = (a4 - mean) / ref
 
             for i in range(a1.size):
@@ -368,7 +376,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             print_box('test whether shear is also applied')
 
             shear_x = 5
-            mp = AbaqusSolver2.model['WALLOUTSIDE_load_points']
+            mp = solver.model['WALLOUTSIDE_load_points']
 
             # give value to variables
             for node in mp.Nodes:
@@ -377,16 +385,17 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
 
             # do 4 steps
-            AbaqusSolver2.Initialize()
+            solver.Initialize()
             for i in range(4):
-                AbaqusSolver2.InitializeSolutionStep()
-                output_shear = AbaqusSolver2.SolveSolutionStep(AbaqusSolver2.GetInterfaceInput()).deepcopy()
-                AbaqusSolver2.FinalizeSolutionStep()
-            AbaqusSolver2.Finalize()
+                solver.InitializeSolutionStep()
+                solver.SolveSolutionStep(solver.GetInterfaceInput())
+                solver.FinalizeSolutionStep()
+            solver.Finalize()
 
             # Compare output, as shear input has changed these should be different
             # normalize data and compare
-            a5 = output_shear.GetNumpyArray()
+            output_shear = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            a5 = output_shear.GetNumpyArray().copy()
 
             mean_disp_x_no_shear = 0
             mean_disp_x_shear = 0

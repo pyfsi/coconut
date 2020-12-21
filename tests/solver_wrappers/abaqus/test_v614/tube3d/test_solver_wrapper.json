@@ -3,7 +3,7 @@
     {
       "type": "solver_wrappers.abaqus.614",
       "settings": {
-        "working_directory": "solver_wrappers/abaqus/test_614_tube2D/CSM",
+        "working_directory": "solver_wrappers/abaqus/test_v614/tube3d/CSM",
         "cores": 1,
         "dimensions": 3,
         "arraysize": 10e5,
