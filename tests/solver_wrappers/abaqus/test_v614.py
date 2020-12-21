@@ -176,6 +176,11 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         # test whether shear is also applied
         if True:
             print_box('test whether shear is also applied')
+
+            # create solver
+            par_solver = deepcopy(par_solver_0)
+            solver = CreateInstance(par_solver)
+
             shear_y = 5
 
             # give value to variables
@@ -374,6 +379,10 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         # test whether shear is also applied (x is the axial direction)
         if True:
             print_box('test whether shear is also applied')
+
+            # create solver
+            par_solver = deepcopy(par_solver_0)
+            solver = CreateInstance(par_solver)
 
             shear_x = 5
             mp = solver.model['WALLOUTSIDE_load_points']
