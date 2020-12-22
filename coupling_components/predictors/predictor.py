@@ -30,11 +30,20 @@ class Predictor(Component):
         if not self.updated:
             raise Exception("Not updated")
 
+    def Constant(self, x_in):
+        x = x_in.deepcopy()
+        if not self.updated:
+            y = self.dataprev[0]
+            x.SetNumpyArray(y)
+            return x
+        else:
+            raise Exception("Already updated")
+
     def Linear(self, x_in):
         x = x_in.deepcopy()
         if not self.updated:
             if len(self.dataprev) == 1:
-                y = self.dataprev[0]
+                raise Exception("Not sufficient information for linear extrapolation")
             else:
                 y = 2 * self.dataprev[0] - self.dataprev[1]
             x.SetNumpyArray(y)

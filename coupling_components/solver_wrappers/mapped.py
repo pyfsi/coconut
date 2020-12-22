@@ -18,6 +18,9 @@ class SolverWrapperMapped(Component):
         # Create solver
         self.solver_wrapper = CreateInstance(self.settings["solver_wrapper"])
 
+        # run time
+        self.run_time = 0.0
+
     def Initialize(self):
         super().Initialize()
 
@@ -28,6 +31,7 @@ class SolverWrapperMapped(Component):
 
         self.solver_wrapper.InitializeSolutionStep()
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input_from):
         self.interface_input_from = interface_input_from.deepcopy()
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
@@ -79,11 +83,11 @@ class SolverWrapperMapped(Component):
         self.mapper_interface_output = CreateInstance(self.settings["mapper_interface_output"])
         self.mapper_interface_output.Initialize(self.interface_output_from, self.interface_output_to)
 
-    def PrintInfo(self, pre):
+    def PrintComponentsInfo(self, pre):
         tools.Print(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
         pre = tools.UpdatePre(pre)
-        self.solver_wrapper.PrintInfo(pre + '├─')
+        self.solver_wrapper.PrintComponentsInfo(pre + '├─')
         tools.Print(pre, '├─', "Input mapper:")
-        self.mapper_interface_input.PrintInfo(pre + '│ └─')
+        self.mapper_interface_input.PrintComponentsInfo(pre + '│ └─')
         tools.Print(pre, '└─', "Output mapper:")
-        self.mapper_interface_output.PrintInfo(pre + '  └─')
+        self.mapper_interface_output.PrintComponentsInfo(pre + '  └─')

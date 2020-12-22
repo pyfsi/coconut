@@ -78,10 +78,10 @@ class Interface(object):
             for variable_name in variable_names.list():
                 variable = vars(data_structure)[variable_name.GetString()]
                 for node in model_part.Nodes:
-                    if variable.Type() is "Double":
+                    if variable.Type() == "Double":
                         value = data[index]
                         index += 1
-                    elif variable.Type() is "Array":
+                    elif variable.Type() == "Array":
                         value = data[index:index + 3]
                         index += 3
                     else:

@@ -66,13 +66,13 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = None
 
         if "subcycling" in self.settings.keys():
-            self.subcycling = self.settings["subcycling"].GetInt()
+            self.subcycling = self.settings["subcycling"].GetBool()
             if self.subcycling:
                 self.minInc = self.settings["minInc"].GetDouble()
                 self.initialInc = self.settings["initialInc"].GetDouble()
                 self.maxNumInc = self.settings["maxNumInc"].GetInt()
                 self.maxInc = self.settings["maxInc"].GetInt()
-                self.ramp = self.settings["ramp"].GetInt()
+                self.ramp = 1 if self.settings["ramp"].GetBool() else 0
             else:
                 self.maxNumInc = 1
                 self.maxInc = self.delta_t
@@ -468,6 +468,9 @@ class SolverWrapperAbaqus614(Component):
         self.traction = vars(data_structure)['TRACTION']
         self.displacement = vars(data_structure)['DISPLACEMENT']
 
+        # run time
+        self.run_time = 0.0
+
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
 
@@ -480,6 +483,7 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = 0
         self.timestep += 1
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):
         self.iteration += 1
 
@@ -737,7 +741,20 @@ class SolverWrapperAbaqus614(Component):
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
-                    line = f.readline()  # need to skip the next line
+                    f.readline()  # need to skip the next line
+                    of.write(line_2)  # Change the time step in the Abaqus step
+                    if bool_restart:
+                        rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                    line = f.readline()
+                elif "*static" in line.lower():
+                    of.write(line)
+                    if bool_restart:
+                        rf.write(line)
+                    f.readline()  # need to skip the next line
+                    if not self.subcycling:
+                        raise NotImplementedError("Only Static with subcycling is implemented for the Abaqus wrapper")
+                    line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                    f.readline()
                     of.write(line_2)  # Change the time step in the Abaqus step
                     if bool_restart:
                         rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
@@ -768,7 +785,14 @@ class SolverWrapperAbaqus614(Component):
                     else:
                         file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
 
-            # Start of a simulation with ramp, needs an initial load at time 0
-            if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
-                cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
-                self.run_shell(self.dir_csm, [cmd], name='GetOutput')
+            # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
+            if self.iteration == 1 and self.timestep == 1 and self.ramp:
+                tmp = f'CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat'
+                file_name = join(self.dir_csm, tmp)
+                with open(file_name, 'w') as file:
+                    file.write(f'{mp.NumberOfNodes()}\n')
+                    for _ in mp.Nodes:
+                        if self.dimensions == 2:
+                            file.write(f'{0:27.17e}{0:27.17e}{0:27.17e}\n')
+                        else:
+                            file.write(f'{0:27.17e}{0:27.17e}{0:27.17e}{0:27.17e}\n')

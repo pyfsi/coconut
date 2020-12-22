@@ -10,4 +10,3 @@ class SolverWrapperFluent2020R1(SolverWrapperFluent2019R3):
     def set_fluent_version(self):
         self.version = '2020R1'
         self.version_bis = '20.1.0'
-        print(f'\n\nFluent version = {self.version}\n\n')  # *** rm

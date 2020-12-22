@@ -24,6 +24,7 @@ from coconut.tests.mappers.test_axisymmetric_3d_to_2d import TestMapperAxisymmet
 from coconut.tests.mappers.test_combined import TestMapperCombined
 
 from coconut.tests.predictors.test_predictor import TestPredictor
+from coconut.tests.predictors.test_constant import TestPredictorConstant
 from coconut.tests.predictors.test_linear import TestPredictorLinear
 from coconut.tests.predictors.test_legacy import TestPredictorLegacy
 from coconut.tests.predictors.test_quadratic import TestPredictorQuadratic
@@ -36,6 +37,7 @@ from coconut.tests.solver_wrappers.fluent.test_v2019R1 import TestSolverWrapperF
 from coconut.tests.solver_wrappers.fluent.test_v2019R2 import TestSolverWrapperFluent2019R2
 from coconut.tests.solver_wrappers.fluent.test_v2019R3 import TestSolverWrapperFluent2019R3
 from coconut.tests.solver_wrappers.fluent.test_v2020R1 import TestSolverWrapperFluent2020R1
+from coconut.tests.solver_wrappers.abaqus.test_v614 import TestSolverWrapperAbaqus614
 
 from coconut.tests.data_structure.test_parameters import TestPyKratosParameters
 from coconut.tests.data_structure.test_variables import TestPyKratosVariables
@@ -83,6 +85,7 @@ def AssembleTestSuites():
     smallSuite.addTest(TestMapperCombined("test_mapper_combined"))
 
     smallSuite.addTest(TestPredictor("test_predictor"))
+    smallSuite.addTest(TestPredictorConstant("test_predictor_constant"))
     smallSuite.addTest(TestPredictorLinear("test_predictor_linear"))
     smallSuite.addTest(TestPredictorLegacy("test_predictor_legacy"))
     smallSuite.addTest(TestPredictorQuadratic("test_predictor_quadratic"))
@@ -94,7 +97,8 @@ def AssembleTestSuites():
     # smallSuite.addTest(TestSolverWrapperFluent2019R1("test_solver_wrapper_fluent_2019R1"))  # duration ~500s
     # smallSuite.addTest(TestSolverWrapperFluent2019R2("test_solver_wrapper_fluent_2019R2"))
     # smallSuite.addTest(TestSolverWrapperFluent2019R3("test_solver_wrapper_fluent_2019R3"))
-    smallSuite.addTest(TestSolverWrapperFluent2020R1("test_solver_wrapper_fluent_2020R1"))
+    # smallSuite.addTest(TestSolverWrapperFluent2020R1("test_solver_wrapper_fluent_2020R1"))
+    # smallSuite.addTest(TestSolverWrapperAbaqus614("test_solver_wrapper_abaqus_614"))  # duration ~500s
 
     smallSuite.addTest(TestPyKratosParameters("test_pykratos_parameters"))
     smallSuite.addTest(TestPyKratosVariables("test_pykratos_variables"))

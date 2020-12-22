@@ -5,6 +5,7 @@ from coconut.coupling_components.component import Component
 import numpy as np
 import time
 import pickle
+import os
 
 
 def Create(parameters):
@@ -46,24 +47,24 @@ class CoupledSolverGaussSeidel(Component):
         self.x = None
         self.y = None
         self.iteration = None  # Iteration
-        self.solver_level = 0  # 0 is main solver (time step is printed)
+        self.solver_level = 0  # 0 is main solver (indication of time step is printed)
 
         self.start_time = None
-        self.stop_time = None
+        self.elapsed_time = None
         self.iterations = []
-        if self.settings.Has("save_results"):
-            # Set True in order to save for every iteration
-            self.save_results = self.settings["save_results"].GetBool()
-        else:
-            self.save_results = False
+
+        # Set True in order to save for every iteration
+        self.save_results = self.settings["save_results"].GetBool() if self.settings.Has("save_results") else False
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            if self.settings.Has("name"):
-                self.case_name = self.settings["name"].GetString()  # case name
-            else:
-                self.case_name = "results"
+            self.case_name = self.settings["name"].GetString() if self.settings.Has("name") else "results"  # Case name
+            if self.case_name + '.pickle' in os.listdir(os.getcwd()):
+                i = 1
+                while self.case_name + str(i) + '.pickle' in os.listdir(os.getcwd()):
+                    i += 1
+                self.case_name += str(i)
 
     def Initialize(self):
         super().Initialize()
@@ -112,11 +113,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # Print time step
         if not self.solver_level:
-            out = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"\tTime step {self.n}\n" \
-                  f"════════════════════════════════════════════════════════════════════════════════\n" \
-                  f"Iteration\tNorm residual"
-            tools.Print(out)
+            self.PrintHeader()
 
         if self.save_results:
             self.residual.append([])
@@ -141,12 +138,10 @@ class CoupledSolverGaussSeidel(Component):
         self.iteration += 1
         self.convergence_criterion.Update(r)
         # Print iteration information
-        norm = np.linalg.norm(r.GetNumpyArray())
-        out = f"{self.iteration:<9d}\t{norm:<22.17e}"
-        tools.Print(' │' * self.solver_level, out)
+        self.PrintInfo(r)
 
         if self.save_results:
-            self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
+            self.residual[self.n - self.timestep_start - 1].append(np.linalg.norm(r.GetNumpyArray()))
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
@@ -169,19 +164,55 @@ class CoupledSolverGaussSeidel(Component):
     def Finalize(self):
         super().Finalize()
 
+        if self.solver_level == 0:
+            out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
+                  f"║\tSummary\n" \
+                  f"╠═══════════════════════════════════════════════════════════════════════════════"
+            tools.Print(out)
+
         for component in self.components:
             component.Finalize()
 
-        self.stop_time = time.time()
-        elapsed_time = self.stop_time - self.start_time
-        print(f"\nElapsed time: {elapsed_time:0.3f}s\n"
-              f"Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}")
+        self.elapsed_time = time.time() - self.start_time
+        self.PrintSummary()
         if self.save_results:
             output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
                       "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
-                      "time": elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
+                      "time": self.elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
                       "timestep_start": self.timestep_start}
             pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
+
+    def PrintSummary(self):
+        solver_run_times = []
+        pre = '║' + ' │' * self.solver_level
+        out = ""
+        if self.solver_level == 0:
+            out += f"{pre}Elapsed time: {self.elapsed_time:0.3f}s\n"
+        out += f"{pre}Percentage of total calculation time:\n"
+        for solver in self.solver_wrappers:
+            solver_run_times.append(solver.run_time / self.elapsed_time * 100)
+            out += f"{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n"
+            if solver.__class__.__name__ == "SolverWrapperMapped":
+                out += f"{pre}\t└─{solver.solver_wrapper.__class__.__name__}: " \
+                       f"{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n"
+        if self.solver_level == 0:
+            out += f"{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n"
+        out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
+        if self.solver_level == 0:
+            out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
+        tools.Print(out)
+
+    def PrintHeader(self):
+        header = f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"\tTime step {self.n}\n" \
+                 f"════════════════════════════════════════════════════════════════════════════════\n" \
+                 f"Iteration\tNorm residual"
+        tools.Print(header)
+
+    def PrintInfo(self, r):
+        norm = np.linalg.norm(r.GetNumpyArray())
+        info = f"{self.iteration:<16d}{norm:<28.17e}"
+        tools.Print(' │' * self.solver_level, info)
 
     def Check(self):
         super().Check()
@@ -189,6 +220,6 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.Check()
 
-    def PrintInfo(self, pre):
+    def PrintComponentsInfo(self, pre):
         tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        tools.PrintStructureInfo(pre, self.components)
+        tools.PrintComponentsInfo(pre, self.components)
