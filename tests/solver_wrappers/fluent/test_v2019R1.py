@@ -34,8 +34,8 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
         print_box('started tests for Fluent Tube2D')
 
         tmp = os.path.join(os.path.dirname(__file__),
-                                           f'test_v{self.version}/tube2d',
-                                           'test_solver_wrapper.json')
+                           f'test_v{self.version}/tube2d',
+                           'test_solver_wrapper.json')
         print(f'\ncorrect path? \n{tmp}\n')
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
@@ -53,6 +53,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
         # "global" definitions
         displacement = vars(data_structure)['DISPLACEMENT']
+
         def get_dy(x):
             return 0.0001 * np.sin(2 * np.pi / 0.05 * x)
 
