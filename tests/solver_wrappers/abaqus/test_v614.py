@@ -99,7 +99,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             solver.Finalize()
 
             # get data for solver without restart
-            output_single_run = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_single_run = solver.GetInterfaceOutput().deepcopy()
             a1 = output_single_run.GetNumpyArray().copy()
 
             # create solver which restarts at time step 2
@@ -125,7 +125,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
             # compare output, as input hasn't changed these should be the same
             # get data for solver with restart
-            output_restart = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_restart = solver.GetInterfaceOutput().deepcopy()
             a2 = output_restart.GetNumpyArray().copy()
 
             # normalize data and compare
@@ -164,7 +164,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
             # compare output, as input hasn't changed these should be the same
             # normalize data and compare
-            output_4cores = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_4cores = solver.GetInterfaceOutput().deepcopy()
             a4 = output_4cores.GetNumpyArray().copy()
             a4n = (a4 - mean) / ref
 
@@ -199,7 +199,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             solver.Finalize()
 
             # compare output, as shear input has changed these should be different
-            output_shear = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_shear = solver.GetInterfaceOutput().deepcopy()
             a5 = output_shear.GetNumpyArray().copy()
 
             # normalize data and compare
@@ -296,7 +296,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             solver.Finalize()
 
             # get data for solver without restart
-            output_single_run = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_single_run = solver.GetInterfaceOutput().deepcopy()
             a1 = output_single_run.GetNumpyArray().copy()
 
             # create solver which restarts at time step 2
@@ -322,7 +322,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
             # compare output, as input hasn't changed these should be the same
             # get data for solver with restart
-            output_restart = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_restart = solver.GetInterfaceOutput().deepcopy()
             a2 = output_restart.GetNumpyArray().copy()
 
             # normalize data and compare
@@ -361,7 +361,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
             # compare output, as input hasn't changed these should be the same
             # normalize data and compare
-            output_4cores = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_4cores = solver.GetInterfaceOutput().deepcopy()
             a4 = output_4cores.GetNumpyArray().copy()
             a4n = (a4 - mean) / ref
 
@@ -396,7 +396,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
             solver.Finalize()
 
             # compare output, as shear input has changed these should be different
-            output_shear = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+            output_shear = solver.GetInterfaceOutput().deepcopy()
             a5 = output_shear.GetNumpyArray().copy()
 
             # normalize data and compare
