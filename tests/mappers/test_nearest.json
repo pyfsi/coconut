@@ -1,11 +1,13 @@
 {
-    "mapper" :
-    {
-        "type": "mappers.nearest",
-        "settings":
-        {
-            "directions" : ["X", "Y", "Z"],
-            "balanced_tree" : false
-        }
+  "mapper": {
+    "type": "mappers.nearest",
+    "settings": {
+      "directions": [
+        "X",
+        "Y",
+        "Z"
+      ],
+      "balanced_tree": false
     }
+  }
 }

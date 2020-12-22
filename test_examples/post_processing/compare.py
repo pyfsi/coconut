@@ -25,7 +25,7 @@ case_reference = legend_entries[0]
 time_steps = len(results[case_reference]["iterations"])
 for case in legend_entries:
     if not len(results[case]["iterations"]) == time_steps:
-        raise Exception(f"Number of time steps for case {case} ({len(results[case]['iterations'])})"
+        raise Exception(f"Number of time steps for case {case} ({len(results[case]['iterations'])}) "
                         f"differs from number of time steps of reference case ({time_steps}).")
 
 for case in legend_entries:

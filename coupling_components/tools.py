@@ -179,3 +179,17 @@ def quicktimer(name=None, t=0, n=0, ms=False):
         s += f' - {name}'
     s += '\n' * n
     Print(s)
+
+
+# Run time measuring function
+def TimeSolveSolutionStep(SolveSolutionStep):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'run_time'):
+            self.run_time = 0.0
+        start_time = time.time()
+        interface_output = SolveSolutionStep(*args)
+        self.run_time += time.time() - start_time
+        return interface_output
+
+    return wrapper

@@ -51,8 +51,8 @@ file start-transcript "transcript.txt"
         (ti-menu-load-string "solve set expert y n y")
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
-        (ti-menu-load-string "define user-defined compiled-functions compile \"2019R1\" y \"2019R1.c\" \"\" \"\"")
-        (ti-menu-load-string "define user-defined compiled-functions load \"2019R1\"")
+        (ti-menu-load-string "define user-defined compiled-functions compile \"v2020R1\" y \"v2020R1.c\" \"\" \"\"")
+        (ti-menu-load-string "define user-defined compiled-functions load \"v2020R1\"")
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
@@ -63,7 +63,7 @@ report summary y "report.sum"
 ;
 ;   GET_THREAD_IDS IN UDF AND JOURNAL
 (wait_message "thread_ids_written_to_file")
-define user-defined execute-on-demand "get_thread_ids::2019R1"
+define user-defined execute-on-demand "get_thread_ids::v2020R1"
 (define face_threads (list|THREAD_NAMES|))
 ;
 ;   SETUP DYNAMIC MESH
@@ -71,7 +71,7 @@ define user-defined execute-on-demand "get_thread_ids::2019R1"
     (begin
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
-                user-defined \"move_nodes::2019R1\"" (list-ref face_threads k)))
+                user-defined \"move_nodes::v2020R1\"" (list-ref face_threads k)))
         )
         (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1")
         (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1")
@@ -84,18 +84,18 @@ define user-defined execute-on-demand "get_thread_ids::2019R1"
 ;   STORE COORDINATES AND IDS
 ;(if (= timestep_start 0)
 ;    (begin
-;        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::2019R1\"")
+;        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2020R1\"")
 ;        (send_message "nodes_and_faces_stored")
 ;    )
 ;)
-define user-defined execute-on-demand "store_coordinates_id::2019R1"
+define user-defined execute-on-demand "store_coordinates_id::v2020R1"
 (send_message "nodes_and_faces_stored")
 ;
 ;   INITIALIZE SOLUTION
 (if (= timestep_start 0)
     (if |HYBRID_INITIALIZATION|
-        (ti-menu-load-string "solve initialize hyb-initialization y")
-        (ti-menu-load-string "solve initialize initialize-flow y")
+        (ti-menu-load-string "solve initialize hyb-initialization")
+        (ti-menu-load-string "solve initialize initialize-flow")
     )
 )
 ;
@@ -144,13 +144,13 @@ define user-defined execute-on-demand "store_coordinates_id::2019R1"
                     (ti-menu-load-string "solve iterate flow_iterations")
                 )
             )
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::2019R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::v2020R1\"")
             (send_message "continue_ready")
         )
     )
     (if (check_message "store_grid")
         (begin
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::2019R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2020R1\"")
             (send_message "store_grid_ready")
         )
     )

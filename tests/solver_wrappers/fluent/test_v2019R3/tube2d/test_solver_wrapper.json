@@ -2,22 +2,22 @@
     "solver_wrappers":
     [
         {
-            "type": "solver_wrappers.fluent.2019R1",
+            "type": "solver_wrappers.fluent.v2019R3",
             "settings": {
-                "working_directory" : "solver_wrappers/fluent/test_2019R1_tube3d/CFD",
-                "case_file": "case_tube3d.cas",
-                "dimensions": 3,
+                "working_directory" : "solver_wrappers/fluent/test_v2019R3/tube2d/CFD",
+                "case_file": "case_tube2d.cas",
+                "dimensions": 2,
                 "unsteady": true,
                 "delta_t": 0.0001,
                 "timestep_start": 0,
-                "thread_names": ["wall"],
+                "thread_names": ["beamoutside"],
                 "interface_input":
                 {
-                    "wall_nodes": "DISPLACEMENT"
+                    "beamoutside_nodes": "DISPLACEMENT"
                 },
                 "interface_output":
                 {
-                    "wall_faces": ["PRESSURE", "TRACTION"]
+                    "beamoutside_faces": ["PRESSURE", "TRACTION"]
                 },
                 "cores": 4,
                 "fluent_gui": false,

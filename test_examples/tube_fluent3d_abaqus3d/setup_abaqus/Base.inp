@@ -425,7 +425,7 @@
 *Elset, elset=_PickedSet8, internal, generate
   1,  96,   1
 ** Section: ShellSection
-*Shell Section, elset=_PickedSet8, material=Material, offset=0.5
+*Shell Section, elset=_PickedSet8, material=Material, offset=-0.5
 0.001, 5
 *End Part
 **  

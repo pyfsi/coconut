@@ -18,6 +18,9 @@ class SolverWrapperMapped(Component):
         # Create solver
         self.solver_wrapper = CreateInstance(self.settings["solver_wrapper"])
 
+        # run time
+        self.run_time = 0.0
+
     def Initialize(self):
         super().Initialize()
 
@@ -28,6 +31,7 @@ class SolverWrapperMapped(Component):
 
         self.solver_wrapper.InitializeSolutionStep()
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input_from):
         self.interface_input_from = interface_input_from.deepcopy()
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)

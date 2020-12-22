@@ -1,61 +1,69 @@
 {
-    "mapper_nearest" :
-    {
-        "type": "mappers.nearest",
-        "settings":
-        {
-            "directions" : ["X", "Y", "Z"],
-            "balanced_tree" : false
-        }
-    },
-    "mapper_combined_a" :
-    {
-        "type" : "mappers.combined",
-        "settings" :
-        {
-            "mappers" :
-            [
-                {
-                    "type": "mappers.nearest",
-                    "settings":
-                    {
-                        "directions" : ["X", "Y", "Z"],
-                        "balanced_tree" : false
-                    }
-                }
-            ]
-        }
-    },
-    "mapper_combined_b" :
-    {
-        "type" : "mappers.combined",
-        "settings" :
-        {
-            "mappers" :
-            [
-                {
-                    "type" :   "mappers.permutation",
-                    "settings" :
-                    {
-                        "permutation" : [1, 0, 2]
-                    }
-                },
-                {
-                    "type": "mappers.nearest",
-                    "settings":
-                    {
-                        "directions" : ["X", "Y", "Z"],
-                        "balanced_tree" : false
-                    }
-                },
-                {
-                    "type" :   "mappers.permutation",
-                    "settings" :
-                    {
-                        "permutation" : [1, 0, 2]
-                    }
-                }
-            ]
-        }
+  "mapper_nearest": {
+    "type": "mappers.nearest",
+    "settings": {
+      "directions": [
+        "X",
+        "Y",
+        "Z"
+      ],
+      "balanced_tree": false
     }
+  },
+  "mapper_combined_a": {
+    "type": "mappers.combined",
+    "settings": {
+      "mappers": [
+        {
+          "type": "mappers.nearest",
+          "settings": {
+            "directions": [
+              "X",
+              "Y",
+              "Z"
+            ],
+            "balanced_tree": false
+          }
+        }
+      ]
+    }
+  },
+  "mapper_combined_b": {
+    "type": "mappers.combined",
+    "settings": {
+      "mappers": [
+        {
+          "type": "mappers.permutation",
+          "settings": {
+            "permutation": [
+              1,
+              0,
+              2
+            ]
+          }
+        },
+        {
+          "type": "mappers.nearest",
+          "settings": {
+            "directions": [
+              "X",
+              "Y",
+              "Z"
+            ],
+            "balanced_tree": false
+          }
+        },
+        {
+          "type": "mappers.permutation",
+          "settings": {
+            "permutation": [
+              1,
+              0,
+              2
+            ]
+          }
+        }
+      ]
+    }
+  }
 }
