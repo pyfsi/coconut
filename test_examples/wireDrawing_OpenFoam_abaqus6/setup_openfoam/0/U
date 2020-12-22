@@ -42,13 +42,13 @@ boundaryField
     
     upWire
     {
-     	type            fixedValue;
+     	type            movingWallVelocity;
         value           uniform (7.5 0 0);
      }
 
     deformWire
     {
-     	type            fixedValue;
+     	type            movingWallVelocity;
         value 		nonuniform List<vector>
       60
 	(
@@ -119,7 +119,7 @@ boundaryField
 
    finalWire
     {
-     	type            fixedValue;
+     	type            movingWallVelocity;
         value           uniform (10 0 0);
      }
 

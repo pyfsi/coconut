@@ -762,10 +762,10 @@ class SolverWrapperOpenFOAM_41(Component):
                 f = interpolate.interp1d(x_axis, delta_x)
                 g = interpolate.interp1d(x_axis, delta_y)
 
-                plt.plot(x_axis, delta_x, 'o' '-')
-                plt.plot(x_axis, delta_y, 'o' '-')
-
-                plt.show()
+                # plt.plot(x_axis, delta_x, 'o' '-')
+                # plt.plot(x_axis, delta_y, 'o' '-')
+                #
+                # plt.show()
 
 
                 with open('tempDisp', 'a+') as file:
@@ -774,13 +774,13 @@ class SolverWrapperOpenFOAM_41(Component):
                     file.write('\t\t value \t nonuniform List<vector> ( \n')
                     for node in mp.Nodes:
                         coord_x = node.X0
-                        print(coord_x)
+                        # print(coord_x)
                         dispX =f(coord_x)
-                        print(f'{dispX:27.17e}')
+                        # print(f'{dispX:27.17e}')
                         dispY = g(coord_x)
-                        print(f'{dispY:27.17e}')
-                        plt.plot(coord_x, dispX, 'o' '-')
-                        plt.plot(coord_x, dispY, 'o' '-')
+                        # print(f'{dispY:27.17e}')
+                        # plt.plot(coord_x, dispX, 'o' '-')
+                        # plt.plot(coord_x, dispY, 'o' '-')
                         dispZ = self.displacementZ
                         file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}' + ') \n')
                         # print("ynodes")
@@ -790,7 +790,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     # file.write(' (' + f'{node.X:27.17e} {node.Y:27.17e} {node.Z:27.17e}' + ') \n')
                     file.write(');\n')
 
-                plt.show()
+                # plt.show()
                 os.system("wc -l " + disp_file + " > lengthDisp")
                 lengthDisp_file = open("lengthDisp", 'r')
                 length_disp = int(lengthDisp_file.readline().split(" ")[0])
