@@ -388,12 +388,12 @@ class SolverWrapperOpenFOAM_41(Component):
         self.interface_input.SetPythonList(interface_input.GetPythonList())
 
         # update X,Y,Z in interface
-        for key in [_[0] for _ in self.interface_input.model_parts_variables]:
-            for node in self.model[key].Nodes:
-                disp = node.GetSolutionStepValue(self.displacement)
-                node.X = node.X0 + disp[0]
-                node.Y = node.Y0 + disp[1]
-                node.Z = node.Z0 + disp[2]
+        # for key in [_[0] for _ in self.interface_input.model_parts_variables]:
+        #     for node in self.model[key].Nodes:
+        #         disp = node.GetSolutionStepValue(self.displacement)
+        #         node.X = node.X0 + disp[0]
+        #         Y = node.Y0 + disp[1]
+        #         Z = node.Z0 + disp[2]
 
 
 
@@ -631,9 +631,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 file.write("\t\t type  \t fixedValue; \n")
                 file.write('\t\t value \t nonuniform List<vector> ( \n')
                 for node in mp.Nodes:
-                    dispX = node.X - node.X0
-                    dispY = node.Y - node.Y0
-                    dispZ = node.Z - node.Z0
+                    dispX, dispY, dispZ = node.GetSolutionStepValue(self.displacement)
+
                     file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}' + ') \n')
 
 
