@@ -5,6 +5,7 @@ import numpy as np
 from sys import argv
 import os
 
+
 def print_colored(string, color):
     if color=='green':
         print('\x1b[0;30;42m'+string+'\x1b[0m')
@@ -36,14 +37,13 @@ AbaqusSolver0 = CreateInstance(parameters["solver_wrappers"][0])
 print_colored("AbaqusSolver0 created", "green")
 
 # Assign loads to the Input-Nodes
-# give value to DISPLACEMENT variable
-mp = AbaqusSolver0.model['BEAMINSIDEMOVING_load_points']  # interface input modelpart
+# give value to PRESSURE variable
+mp = AbaqusSolver0.model['BEAMINSIDEMOVING2_load_points']  # interface input modelpart
 pressure = vars(data_structure)['PRESSURE']
 traction = vars(data_structure)['TRACTION']
-p = 10000
+p = 10
 for node in mp.Nodes:
     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-    # print(node.Y)
     node.SetSolutionStepValue(pressure, 0, p)
     node.SetSolutionStepValue(traction, 0, [0, 0, 0])
 print(f"Assigned uniform pressure ({p} Pa) and 0 traction at the interface ")
@@ -66,24 +66,32 @@ AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
 AbaqusSolver0.FinalizeSolutionStep()
 
 #Iterate until deformation is approximately steady
-mp_out = AbaqusSolver0.model['BEAMINSIDEMOVING_nodes']  # interface input modelpart
+mp_out = AbaqusSolver0.model['BEAMINSIDEMOVING2_nodes']  # interface input modelpart
 displacement = vars(data_structure)['DISPLACEMENT']
+tol = 1e-07
 
 n_out = mp_out.NumberOfNodes()
 prev_displacement = np.zeros((n_out, 3))*0.
 diff = np.zeros((n_out,3))*0.
-tol = 1e-06
+for node in mp_out.Nodes:
+    prev_displacement[int(node.Id), :] = np.array(node.GetSolutionStepValue(displacement))
+
+
 diffMax = 1000
 while diffMax > tol:
     AbaqusSolver0.InitializeSolutionStep()
     AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
     AbaqusSolver0.FinalizeSolutionStep()
     diffMax = 0
+    maxDisp = 0
     for node in mp_out.Nodes:
         diff = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement))-prev_displacement[int(node.Id), :])
         prev_displacement[int(node.Id), :] = np.array(node.GetSolutionStepValue(displacement))
+        if np.linalg.norm(np.array(node.GetSolutionStepValue(displacement))) > maxDisp:
+            maxDisp = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement)))
         if diff > diffMax:
             diffMax = diff
+    print(maxDisp)
     print(diffMax)
 
 
