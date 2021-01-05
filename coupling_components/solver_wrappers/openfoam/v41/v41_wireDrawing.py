@@ -749,18 +749,21 @@ class SolverWrapperOpenFOAM_41(Component):
             # TODO: check if the IF-function is necessary?!
             if self.iteration == 1:
 
-                a = np.loadtxt('displacement.dat')
+                a = np.loadtxt('displacement2.dat')
                 b = np.hsplit(a,3)
                 x = b[0]
                 y = b[1]
                 z = b[2]
+                z2 = b[3]
 
                 x_axis = x.flatten()
                 delta_x = y.flatten()
                 delta_y = z.flatten()
+                delta_z = z2.flatten()
 
                 f = interpolate.interp1d(x_axis, delta_x)
                 g = interpolate.interp1d(x_axis, delta_y)
+                h = interpolate.interp1d(x_axis, delta_z)
 
                 # plt.plot(x_axis, delta_x, 'o' '-')
                 # plt.plot(x_axis, delta_y, 'o' '-')
@@ -774,6 +777,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     file.write('\t\t value \t nonuniform List<vector> ( \n')
                     for node in mp.Nodes:
                         coord_x = node.X0
+                        coord_z = node.Z0
                         # print(coord_x)
                         dispX =f(coord_x)
                         # print(f'{dispX:27.17e}')
@@ -781,7 +785,11 @@ class SolverWrapperOpenFOAM_41(Component):
                         # print(f'{dispY:27.17e}')
                         # plt.plot(coord_x, dispX, 'o' '-')
                         # plt.plot(coord_x, dispY, 'o' '-')
-                        dispZ = self.displacementZ
+                        # dispZ= self.displacementZ
+                        if coord_z < 0:
+                            dispZ = -h(coord_x)
+                        else:
+                            dispZ = h(coord_x)
                         file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}' + ') \n')
                         # print("ynodes")
                         # print(node.Y)
