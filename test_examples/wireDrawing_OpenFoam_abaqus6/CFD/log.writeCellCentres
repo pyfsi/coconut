@@ -7,10 +7,10 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
 Exec   : writeCellCentres -time 0
-Date   : Dec 16 2020
-Time   : 10:47:39
+Date   : Dec 23 2020
+Time   : 15:58:38
 Host   : "cfdclu27.ugent.be"
-PID    : 7440
+PID    : 31188
 Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/wireDrawing_OpenFoam_abaqus6/CFD
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
@@ -25,9 +25,6 @@ Create mesh for time = 0
 Time = 0
 Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0
 Writing cellVolumes and patch faceAreas to V in 0
-Time = 0.000000
-Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0.000000
-Writing cellVolumes and patch faceAreas to V in 0.000000
 
 End
 

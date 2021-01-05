@@ -2311,9 +2311,9 @@ _Surf-5_S4, S4
 ** 
 ** STEP: Step-1
 ** 
-*Step, name=Step-1, nlgeom=YES, inc=1
+*Step, name=Step-1, nlgeom=NO, inc=1
 *Static
-1., 1., 0.0001, 1.
+0.000001,0.000001, 0.0000000001,0.000001
 ** 
 ** BOUNDARY CONDITIONS
 ** 

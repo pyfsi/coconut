@@ -1,9 +1,9 @@
 1
 
-   Abaqus 6.14-1                                  Date 16-Dec-2020   Time 10:48:25
+   Abaqus 6.14-1                                  Date 23-Dec-2020   Time 15:59:30
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
- wireNotDeform                                                                   
+                                                                                 
                                                                                  
  STEP    1     INCREMENT     1     STEP TIME    0.00    
 
@@ -14,10 +14,10 @@
                                                                                           
 
      AUTOMATIC TIME CONTROL WITH -
-          A SUGGESTED INITIAL TIME INCREMENT OF                 1.00    
-          AND A TOTAL TIME PERIOD OF                            1.00    
-          THE MINIMUM TIME INCREMENT ALLOWED IS                1.000E-04
-          THE MAXIMUM TIME INCREMENT ALLOWED IS                 1.00    
+          A SUGGESTED INITIAL TIME INCREMENT OF                1.000E-06
+          AND A TOTAL TIME PERIOD OF                           1.000E-06
+          THE MINIMUM TIME INCREMENT ALLOWED IS                1.000E-10
+          THE MAXIMUM TIME INCREMENT ALLOWED IS                1.000E-06
 
      LINEAR EQUATION SOLVER TYPE         DIRECT SPARSE
 
@@ -76,8 +76,6 @@
 
      THE MAXIMUM NUMBER OF INCREMENTS IN THIS STEP IS                       1
 
-          LARGE DISPLACEMENT THEORY WILL BE USED
-
      LINEAR EXTRAPOLATION WILL BE USED
 
      CHARACTERISTIC ELEMENT LENGTH     5.000E-05
@@ -93,7 +91,7 @@
      COLLECTING STEP CONSTRAINT INFORMATION FOR OVERCONSTRAINT CHECKS
 
 
-  INCREMENT     1 STARTS. ATTEMPT NUMBER  1, TIME INCREMENT   1.00    
+  INCREMENT     1 STARTS. ATTEMPT NUMBER  1, TIME INCREMENT  1.000E-06
 
   NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
 
@@ -101,20 +99,46 @@
 
      CHECK POINT  END OF SOLVER       
 
-       ELAPSED USER TIME (SEC)      =  1.00000E-02
+       ELAPSED USER TIME (SEC)      =  2.00000E-02
        ELAPSED SYSTEM TIME (SEC)    =  1.00000E-02
-       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
+       ELAPSED TOTAL CPU TIME (SEC) =  3.00000E-02
        ELAPSED WALLCLOCK TIME (SEC) =          0
 
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     1
 
 
- AVERAGE FORCE                       11.1       TIME AVG. FORCE        11.1    
- LARGEST RESIDUAL FORCE              38.7       AT NODE       1077   DOF  1
+ AVERAGE FORCE                       23.7       TIME AVG. FORCE        23.7    
+ LARGEST RESIDUAL FORCE              19.9       AT NODE        995   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.         1.298E-05   AT NODE          1   DOF  2
+ LARGEST INCREMENT OF DISP.         2.292E-05   AT NODE         72   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.        1.298E-05   AT NODE          1   DOF  2
+ LARGEST CORRECTION TO DISP.        2.292E-05   AT NODE         72   DOF  2
+   INSTANCE: PART-1-1                                                                        
+          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+
+  NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
+
+     CHECK POINT   START OF SOLVER    
+
+     CHECK POINT  END OF SOLVER       
+
+       ELAPSED USER TIME (SEC)      =  2.00000E-02
+       ELAPSED SYSTEM TIME (SEC)    =  1.00000E-02
+       ELAPSED TOTAL CPU TIME (SEC) =  3.00000E-02
+       ELAPSED WALLCLOCK TIME (SEC) =          0
+
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 1 POINTS
+
+               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     2
+
+
+ AVERAGE FORCE                       28.8       TIME AVG. FORCE        28.8    
+ LARGEST RESIDUAL FORCE             -350.       AT NODE       1106   DOF  1
+   INSTANCE: PART-1-1                                                                        
+ LARGEST INCREMENT OF DISP.         6.882E-04   AT NODE       1066   DOF  2
+   INSTANCE: PART-1-1                                                                        
+ LARGEST CORRECTION TO DISP.        6.653E-04   AT NODE       1066   DOF  2
    INSTANCE: PART-1-1                                                                        
           FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
 
@@ -129,38 +153,18 @@
        ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
        ELAPSED WALLCLOCK TIME (SEC) =          0
 
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     2
-
-
- AVERAGE FORCE                       11.1       TIME AVG. FORCE        11.1    
- LARGEST RESIDUAL FORCE              2.34       AT NODE       1078   DOF  2
-   INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.         1.211E-05   AT NODE         72   DOF  2
-   INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.       -8.906E-07   AT NODE          1   DOF  2
-   INSTANCE: PART-1-1                                                                        
-          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
-
-  NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
-
-     CHECK POINT   START OF SOLVER    
-
-     CHECK POINT  END OF SOLVER       
-
-       ELAPSED USER TIME (SEC)      =  1.00000E-02
-       ELAPSED SYSTEM TIME (SEC)    =   0.0000    
-       ELAPSED TOTAL CPU TIME (SEC) =  1.00000E-02
-       ELAPSED WALLCLOCK TIME (SEC) =          0
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 91 POINTS
 
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     3
 
 
- AVERAGE FORCE                       11.1       TIME AVG. FORCE        11.1    
- LARGEST RESIDUAL FORCE             0.255       AT NODE       1077   DOF  1
+ AVERAGE FORCE                       27.4       TIME AVG. FORCE        27.4    
+ LARGEST RESIDUAL FORCE              126.       AT NODE        686   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.         1.216E-05   AT NODE         72   DOF  2
+ LARGEST INCREMENT OF DISP.         9.547E-04   AT NODE          1   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.        7.624E-08   AT NODE       1066   DOF  2
+ LARGEST CORRECTION TO DISP.        3.308E-04   AT NODE          8   DOF  2
    INSTANCE: PART-1-1                                                                        
           FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
 
@@ -175,23 +179,130 @@
        ELAPSED TOTAL CPU TIME (SEC) =  1.00000E-02
        ELAPSED WALLCLOCK TIME (SEC) =          0
 
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 93 POINTS
+
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     4
 
 
- AVERAGE FORCE                       11.1       TIME AVG. FORCE        11.1    
- LARGEST RESIDUAL FORCE             1.816E-02   AT NODE       1078   DOF  2
+ AVERAGE FORCE                       26.6       TIME AVG. FORCE        26.6    
+ LARGEST RESIDUAL FORCE             -99.8       AT NODE       1117   DOF  1
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.         1.216E-05   AT NODE         72   DOF  2
+ LARGEST INCREMENT OF DISP.         1.028E-03   AT NODE          1   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.       -7.224E-09   AT NODE          1   DOF  2
+ LARGEST CORRECTION TO DISP.        9.196E-05   AT NODE         23   DOF  2
+   INSTANCE: PART-1-1                                                                        
+          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+
+  NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
+
+     CHECK POINT   START OF SOLVER    
+
+     CHECK POINT  END OF SOLVER       
+
+       ELAPSED USER TIME (SEC)      =  2.00000E-02
+       ELAPSED SYSTEM TIME (SEC)    =   0.0000    
+       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
+       ELAPSED WALLCLOCK TIME (SEC) =          0
+
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 85 POINTS
+
+               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     5
+
+
+ AVERAGE FORCE                       26.5       TIME AVG. FORCE        26.5    
+ LARGEST RESIDUAL FORCE              24.5       AT NODE        973   DOF  2
+   INSTANCE: PART-1-1                                                                        
+ LARGEST INCREMENT OF DISP.         1.050E-03   AT NODE          1   DOF  2
+   INSTANCE: PART-1-1                                                                        
+ LARGEST CORRECTION TO DISP.        2.558E-05   AT NODE         27   DOF  2
+   INSTANCE: PART-1-1                                                                        
+          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+
+  NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
+
+     CHECK POINT   START OF SOLVER    
+
+     CHECK POINT  END OF SOLVER       
+
+       ELAPSED USER TIME (SEC)      =  1.00000E-02
+       ELAPSED SYSTEM TIME (SEC)    =   0.0000    
+       ELAPSED TOTAL CPU TIME (SEC) =  1.00000E-02
+       ELAPSED WALLCLOCK TIME (SEC) =          0
+
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 85 POINTS
+
+               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     6
+
+
+ AVERAGE FORCE                       26.5       TIME AVG. FORCE        26.5    
+ LARGEST RESIDUAL FORCE             -4.78       AT NODE       1044   DOF  1
+   INSTANCE: PART-1-1                                                                        
+ LARGEST INCREMENT OF DISP.         1.054E-03   AT NODE          1   DOF  2
+   INSTANCE: PART-1-1                                                                        
+ LARGEST CORRECTION TO DISP.        4.316E-06   AT NODE         30   DOF  2
+   INSTANCE: PART-1-1                                                                        
+          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+
+  NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
+
+     CHECK POINT   START OF SOLVER    
+
+     CHECK POINT  END OF SOLVER       
+
+       ELAPSED USER TIME (SEC)      =  2.00000E-02
+       ELAPSED SYSTEM TIME (SEC)    =   0.0000    
+       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
+       ELAPSED WALLCLOCK TIME (SEC) =          0
+
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 85 POINTS
+
+               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     7
+
+
+ AVERAGE FORCE                       26.5       TIME AVG. FORCE        26.5    
+ LARGEST RESIDUAL FORCE            -0.731       AT NODE       1117   DOF  1
+   INSTANCE: PART-1-1                                                                        
+ LARGEST INCREMENT OF DISP.         1.054E-03   AT NODE          1   DOF  2
+   INSTANCE: PART-1-1                                                                        
+ LARGEST CORRECTION TO DISP.        3.443E-07   AT NODE         32   DOF  2
+   INSTANCE: PART-1-1                                                                        
+          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+
+  NUMBER OF EQUATIONS =     2272     NUMBER OF FLOATING PT. OPERATIONS =  4.01E+06
+
+     CHECK POINT   START OF SOLVER    
+
+     CHECK POINT  END OF SOLVER       
+
+       ELAPSED USER TIME (SEC)      =  1.00000E-02
+       ELAPSED SYSTEM TIME (SEC)    =  1.00000E-02
+       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
+       ELAPSED WALLCLOCK TIME (SEC) =          0
+
+ ***WARNING: THE STRAIN INCREMENT HAS EXCEEDED FIFTY TIMES THE STRAIN TO CAUSE 
+             FIRST YIELD AT 85 POINTS
+
+               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     8
+
+
+ AVERAGE FORCE                       26.5       TIME AVG. FORCE        26.5    
+ LARGEST RESIDUAL FORCE             1.106E-02   AT NODE       1045   DOF  1
+   INSTANCE: PART-1-1                                                                        
+ LARGEST INCREMENT OF DISP.         1.054E-03   AT NODE          1   DOF  2
+   INSTANCE: PART-1-1                                                                        
+ LARGEST CORRECTION TO DISP.       -2.527E-08   AT NODE       1044   DOF  1
    INSTANCE: PART-1-1                                                                        
           THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
 
- ITERATION SUMMARY FOR THE INCREMENT:   4 TOTAL ITERATIONS, OF WHICH
-   0 ARE SEVERE DISCONTINUITY ITERATIONS AND  4 ARE EQUILIBRIUM ITERATIONS.
+ ITERATION SUMMARY FOR THE INCREMENT:   8 TOTAL ITERATIONS, OF WHICH
+   0 ARE SEVERE DISCONTINUITY ITERATIONS AND  8 ARE EQUILIBRIUM ITERATIONS.
 
- TIME INCREMENT COMPLETED   1.00    ,  FRACTION OF STEP COMPLETED   1.00    
- STEP TIME COMPLETED        1.00    ,  TOTAL TIME COMPLETED         1.00    
+ TIME INCREMENT COMPLETED  1.000E-06,  FRACTION OF STEP COMPLETED   1.00    
+ STEP TIME COMPLETED       1.000E-06,  TOTAL TIME COMPLETED        1.000E-06
 
 
           THE ANALYSIS HAS BEEN COMPLETED
@@ -201,15 +312,15 @@
      ANALYSIS SUMMARY:
      TOTAL OF          1  INCREMENTS
                        0  CUTBACKS IN AUTOMATIC INCREMENTATION
-                       4  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
-                       4  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
-                       4  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+                       8  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+                       8  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+                       8  INVOLVE MATRIX DECOMPOSITION, INCLUDING
                        0  DECOMPOSITION(S) OF THE MASS MATRIX
                        1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
                        0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
                        0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
                        1  WARNING MESSAGES DURING USER INPUT PROCESSING
-                       0  WARNING MESSAGES DURING ANALYSIS
+                       7  WARNING MESSAGES DURING ANALYSIS
                        0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
                        0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
                        0  ERROR MESSAGES
@@ -217,7 +328,7 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.45000    
-       SYSTEM TIME (SEC)    =  4.00000E-02
-       TOTAL CPU TIME (SEC) =  0.49000    
-       WALLCLOCK TIME (SEC) =          0
+       USER TIME (SEC)      =  0.96000    
+       SYSTEM TIME (SEC)    =  6.00000E-02
+       TOTAL CPU TIME (SEC) =   1.0200    
+       WALLCLOCK TIME (SEC) =          1

@@ -1,6 +1,6 @@
 1
 
-   Abaqus 6.14-1                                  Date 16-Dec-2020   Time 10:48:23
+   Abaqus 6.14-1                                  Date 23-Dec-2020   Time 15:59:28
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
 
@@ -82,47 +82,44 @@
 
 
   *Heading
-          wireNotDeform                                                                                                                                                                                                                                                   
   *Node
   *Element, type=CAX4R
   *Nset, nset=ASSEMBLY_PART-1-1_SET-1
   *Elset, elset=ASSEMBLY_PART-1-1_SET-1
-  *Nset, nset=ASSEMBLY_SET-4
+  *Nset, nset=ASSEMBLY_SET-1
+  *Nset, nset=ASSEMBLY_SET-5
   *Nset, nset=ASSEMBLY_WALLOUTSIDE0
   *Nset, nset=ASSEMBLY_WALLOUTSIDE1
   *Nset, nset=ASSEMBLY_WALLOUTSIDE2
-  *Elset, elset=ASSEMBLY_SET-4
-  *Elset, elset=ASSEMBLY__INLET_S2
+  *Elset, elset=ASSEMBLY_SET-1
+  *Elset, elset=ASSEMBLY_SET-5
   *Elset, elset=ASSEMBLY__MOVINGSURFACE0_S3
   *Elset, elset=ASSEMBLY__MOVINGSURFACE1_S3
   *Elset, elset=ASSEMBLY__MOVINGSURFACE2_S3
-  *Elset, elset=ASSEMBLY__OUTLET_S4
-  *Elset, elset=ASSEMBLY__SURF-6_S4
-  *surface, type=ELEMENT, name=ASSEMBLY_INLET
+  *Elset, elset=ASSEMBLY__SURF-1_S4
+  *Elset, elset=ASSEMBLY__SURF-5_S4
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE0
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE1
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE2
-  *surface, type=ELEMENT, name=ASSEMBLY_OUTLET
-  *surface, type=ELEMENT, name=ASSEMBLY_SURF-6
-  *surface, type=ELEMENT, name=ASSEMBLY_INLET
+  *surface, type=ELEMENT, name=ASSEMBLY_SURF-1
+  *surface, type=ELEMENT, name=ASSEMBLY_SURF-5
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE0
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE1
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE2
-  *surface, type=ELEMENT, name=ASSEMBLY_OUTLET
-  *surface, type=ELEMENT, name=ASSEMBLY_SURF-6
-  *material, name=STEEL
+  *surface, type=ELEMENT, name=ASSEMBLY_SURF-1
+  *surface, type=ELEMENT, name=ASSEMBLY_SURF-5
+  *material, name=MATERIAL-1
   *density
   *elastic
   *plastic
-  *solidsection, elset=ASSEMBLY_PART-1-1_SET-1, material=STEEL
+  *solidsection, elset=ASSEMBLY_PART-1-1_SET-1, material=MATERIAL-1
   *boundary
-  *solidsection, elset=ASSEMBLY_PART-1-1_SET-1, material=STEEL
-  *surface, type=ELEMENT, name=ASSEMBLY_INLET
+  *solidsection, elset=ASSEMBLY_PART-1-1_SET-1, material=MATERIAL-1
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE0
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE1
   *surface, type=ELEMENT, name=ASSEMBLY_MOVINGSURFACE2
-  *surface, type=ELEMENT, name=ASSEMBLY_OUTLET
-  *surface, type=ELEMENT, name=ASSEMBLY_SURF-6
+  *surface, type=ELEMENT, name=ASSEMBLY_SURF-1
+  *surface, type=ELEMENT, name=ASSEMBLY_SURF-5
   *output, field, frequency=99999
   *output, field, variable=PRESELECT, frequency=99999
   *output, history, variable=PRESELECT, frequency=99999
@@ -132,12 +129,12 @@
   *output, field, frequency=99999
   *output, field, variable=PRESELECT, frequency=99999
   *output, history, variable=PRESELECT, frequency=99999
-  *Step, name=Step-1, nlgeom=YES, inc=1
+  *Step, name=Step-1, nlgeom=NO, inc=1
   *output, field, frequency=99999
   *output, field, variable=PRESELECT, frequency=99999
   *output, history, variable=PRESELECT, frequency=99999
-  *Step, name=Step-1, nlgeom=YES, inc=1
-  *Step, name=Step-1, nlgeom=YES, inc=1
+  *Step, name=Step-1, nlgeom=NO, inc=1
+  *Step, name=Step-1, nlgeom=NO, inc=1
   *static
   *boundary
   *dsload, op=NEW
@@ -154,7 +151,7 @@
   *output, field, variable=PRESELECT, frequency=99999
   *output, history, variable=PRESELECT, frequency=99999
   *endstep
-  *Step, name=Step-1, nlgeom=YES, inc=1
+  *Step, name=Step-1, nlgeom=NO, inc=1
   *static
   *boundary
 
@@ -195,16 +192,16 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.18000    
-       SYSTEM TIME (SEC)    =  4.00000E-02
-       TOTAL CPU TIME (SEC) =  0.22000    
+       USER TIME (SEC)      =  0.22000    
+       SYSTEM TIME (SEC)    =  3.00000E-02
+       TOTAL CPU TIME (SEC) =  0.25000    
        WALLCLOCK TIME (SEC) =          0
 1
 
-   Abaqus 6.14-1                                  Date 16-Dec-2020   Time 10:48:25
+   Abaqus 6.14-1                                  Date 23-Dec-2020   Time 15:59:30
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
-     wireNotDeform                                                                             STEP    1  INCREMENT    1
+                                                                                               STEP    1  INCREMENT    1
                                                                                           TIME COMPLETED IN THIS STEP   0.00    
 
 
@@ -214,14 +211,12 @@
                                                                                           
 
      AUTOMATIC TIME CONTROL WITH -
-          A SUGGESTED INITIAL TIME INCREMENT OF                 1.00    
-          AND A TOTAL TIME PERIOD OF                            1.00    
-          THE MINIMUM TIME INCREMENT ALLOWED IS                1.000E-04
-          THE MAXIMUM TIME INCREMENT ALLOWED IS                 1.00    
+          A SUGGESTED INITIAL TIME INCREMENT OF                1.000E-06
+          AND A TOTAL TIME PERIOD OF                           1.000E-06
+          THE MINIMUM TIME INCREMENT ALLOWED IS                1.000E-10
+          THE MAXIMUM TIME INCREMENT ALLOWED IS                1.000E-06
 
      LINEAR EQUATION SOLVER TYPE         DIRECT SPARSE
-
-          LARGE DISPLACEMENT THEORY WILL BE USED
   
                    M E M O R Y   E S T I M A T E
   
@@ -268,11 +263,12 @@
 
                               ANALYSIS COMPLETE
                               WITH      1 WARNING MESSAGES ON THE DAT FILE
+                              AND       7 WARNING MESSAGES ON THE MSG FILE
 
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.45000    
-       SYSTEM TIME (SEC)    =  4.00000E-02
-       TOTAL CPU TIME (SEC) =  0.49000    
-       WALLCLOCK TIME (SEC) =          0
+       USER TIME (SEC)      =  0.96000    
+       SYSTEM TIME (SEC)    =  6.00000E-02
+       TOTAL CPU TIME (SEC) =   1.0200    
+       WALLCLOCK TIME (SEC) =          1
