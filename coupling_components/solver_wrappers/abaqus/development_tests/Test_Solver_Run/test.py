@@ -43,7 +43,6 @@ traction = vars(data_structure)['TRACTION']
 p = 10000
 for node in mp.Nodes:
     # Domain extends from Y -0.025 to 0.025, default x-position is 0.005
-    # print(node.Y)
     node.SetSolutionStepValue(pressure, 0, p)
     node.SetSolutionStepValue(traction, 0, [0, 0, 0])
 print(f"Assigned uniform pressure ({p} Pa) and 0 traction at the interface ")

@@ -14,14 +14,15 @@ from fractions import Fraction
 # After adding to an AimationFigure,animation has to initialized, specifying which plane of the 3D space to plot in as
 # well as which coordinate on the x-axis and possibly which component of the variable has to be plotted.
 # An AnimationFigure can hold different Animations from different cases. The code is able to handle different time
-# steps. The case data is supplied using a results file. To generate such a result file, include a boolean
-# "save_results" in the settings of the coupled solver, set on True. Give a name to the case by including the string
-# {"name": "a_name"} in the settings of the coupled solver.
+# step sizes and starting time steps. The case data is supplied using a results file. To generate such a result file,
+# include a boolean "save_results" in the settings of the coupled solver, set on True.
+# Give a name to the case by including the string {"name": "a_name"} in the settings of the coupled solver.
 
 
 class Animation:
 
-    def __init__(self, animation_figure, solution, interface, dt, model_part=None, variable=None, name=None):
+    def __init__(self, animation_figure, solution, interface, dt, time_step_start,
+                 model_part=None, variable=None, name=None):
         """
         Creates Animation instance
             self.info: list e.g. [("mp_a", ["PRESSURE", "TRACTION"]), ("mp_b, "DISPLACEMENT")]
@@ -37,6 +38,7 @@ class Animation:
         :param solution : (np.array) contains as columns the solution of each time step, order is dictated by self.info
         :param interface: (Interface) object interface to be plotted
         :param dt: (float) time step size
+        :param time_step_start: (int) starting time step (typically zero)
         :param model_part: (string) model part to be plotted (optional if there is only one)
         :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
         :param name: (string) the name in the legend (optional)
@@ -49,7 +51,7 @@ class Animation:
         self.m = int(self.coordinates.size / 3)  # number of nodes
         self.time_steps = solution.shape[1] - 1  # number of times steps
         self.dt = dt
-        self.time_step_start = 0  # currently not used
+        self.time_step_start = time_step_start
         self.variable = None
         self.animation = None
         self.mask = None
@@ -181,11 +183,13 @@ class Animation:
         return self.line,
 
     def case_animate(self, ts):
+        if ts < self.time_step_start or ts > self.time_steps + self.time_step_start:
+            return self.case_init()
         if self.displacement_available:
-            self.line.set_xdata(self.abscissa + self.displacement[ts])
+            self.line.set_xdata(self.abscissa + self.displacement[ts - self.time_step_start])
         else:
             self.line.set_xdata(self.abscissa)
-        self.line.set_ydata(self.solution[ts])
+        self.line.set_ydata(self.solution[ts - self.time_step_start])
         return self.line,
 
 
@@ -193,29 +197,32 @@ class AnimationFigure:
 
     def __init__(self):
         self.animations_list = []
+        self.animation = None
         self.base_dt = None  # common minimal time step size
         self.dt_ratio_list = []  # ratio of the animation's time step size to the base_dt (list of ints)
         self.time_steps = None  # number of time steps
-        self.timestep_start = 0  # currently not used
+        self.time_step_start = None
         self.figure = plt.figure()
         self.number = self.figure.number
         self.text = None
         self.min = None
         self.max = None
 
-    def AddAnimation(self, solution, interface, dt, model_part=None, variable=None, name=None):
+    def AddAnimation(self, solution, interface, dt, time_step_start, model_part=None, variable=None, name=None):
         """
-        Creates and adds Animation instance to self
+        Creates and adds Animation instance to self.animations_list.
 
         :param solution : (np.array) contains as columns the solution of each time step, order is dictated by self.info
         :param interface: (Interface) object interface to be plotted
         :param dt: (float) time step size
+        :param time_step_start: (int) starting time step
         :param model_part: (string) model part to be plotted (optional if there is only one)
         :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
                          Use 'COORDINATES' to plot the coordinates of the interface
         :param name: (string) the name in the legend (optional)
         """
-        animation = Animation(self, solution, interface, dt, model_part=model_part, variable=variable, name=name)
+        animation = Animation(self, solution, interface, dt, time_step_start,
+                              model_part=model_part, variable=variable, name=name)
 
         # add animation instance to class list
         self.animations_list.append(animation)
@@ -228,19 +235,22 @@ class AnimationFigure:
             return multiple
 
         # update base time step size and time steps for previously defined animations
+        # update starting time step and number of time steps
         if self.base_dt is None:
             self.base_dt = animation.dt
             self.dt_ratio_list.append(1)
+            self.time_step_start = animation.time_step_start
+            self.time_steps = animation.time_steps
         else:
             base_dt_prev = self.base_dt
             self.base_dt = 1 / common_denominator(self.base_dt, animation.dt)
             update_factor = int(base_dt_prev / self.base_dt)
             self.dt_ratio_list = [int(dt_ratio * update_factor) for dt_ratio in self.dt_ratio_list]
             self.dt_ratio_list.append(int(animation.dt / self.base_dt))
-
-        # update number of time steps
-        self.time_steps = animation.time_steps if self.time_steps is None \
-            else min(self.time_steps * update_factor, (animation.time_steps + 1) * int(animation.dt / self.base_dt) - 1)
+            self.time_steps = max(self.time_step_start + (self.time_steps + 1) * update_factor - 1,
+                                  animation.time_step_start + (animation.time_steps + 1)
+                                  * int(animation.dt / self.base_dt) - 1)
+            self.time_step_start = min(self.time_step_start, animation.time_step_start)
 
         return animation
 
@@ -281,16 +291,17 @@ class AnimationFigure:
             if not animation.initialized:
                 raise Exception(f"Animate object {animation.name} has not yet been initialized.")
         if frames is None:
-            frames = self.time_steps + 1
+            frames = range(self.time_step_start, self.time_step_start + self.time_steps + 1)
         elif type(frames) is int:
-            if frames > self.time_steps + 1:
+            if not (0 < frames <= self.time_steps + 1):
                 raise Exception(f"Time step out of range: maximum number of frames is {self.time_steps + 1} (number of "
-                                f"time steps + 1), with time step size {self.base_dt}.")
+                                f"time steps + 1), with time step size {self.base_dt} "
+                                f"and starting time step {self.time_step_start}.")
             else:
-                pass
-        elif max(frames) > self.time_steps:
+                frames = range(self.time_step_start, self.time_step_start + frames)
+        elif min(frames) < self.time_step_start or max(frames) > self.time_step_start + self.time_steps:
             raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
-                            f"with time step size {self.base_dt}.")
+                            f"with time step size {self.base_dt} and starting time step {self.time_step_start}.")
         self.animation = ani.FuncAnimation(self.figure, self.animate, init_func=self.init, interval=interval,
                                            blit=blit, save_count=save_count, repeat=repeat, frames=frames)
 
@@ -301,7 +312,8 @@ class AnimationFigure:
         for animation in self.animations_list:
             if not animation.initialized:
                 raise Exception("Animate object has not yet been initialized.")
-        if time_step > self.time_steps:
-            raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
-                            f"with time step size {self.base_dt}.")
+        if time_step < self.time_step_start or self.time_steps > self.time_steps:
+            raise Exception(f"Time step out of range: \nminimum time step: {self.time_step_start}"
+                            f"\nmaximum time step: {self.time_steps + self.time_step_start}"
+                            f"\nwith time step size {self.base_dt}.")
         self.animate(time_step)
