@@ -1,6 +1,6 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.interface import Interface
+# from coconut.coupling_components.interface import Interface
 from coconut.coupling_components import tools
 
 import os
@@ -45,23 +45,23 @@ class SolverWrapperAbaqus614(Component):
         """
 
         self.settings = parameters['settings']
-        self.dir_csm = join(os.getcwd(), self.settings['working_directory'].GetString())  # *** alternative for getcwd?
+        self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
         path_src = os.path.realpath(os.path.dirname(__file__))
 
-        self.cores = self.settings['cores'].GetInt()  # number of cpus Abaqus has to use
-        self.dimensions = self.settings['dimensions'].GetInt()
+        self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
+        self.dimensions = self.settings['dimensions']
         if self.dimensions == 2:
             tools.print_info("Warning for axisymmetric cases:\n\tIn Abaqus these have to be constructed around the "
                              "y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be "
                              "accomplished by using an appropriate mapper.", layout='warning')
-        self.array_size = self.settings["arraysize"].GetInt()
-        self.delta_t = self.settings["delta_t"].GetDouble()
-        self.timestep_start = self.settings["timestep_start"].GetDouble()
-        self.surfaceIDs = [_.GetString() for _ in self.settings['surfaceIDs'].list()]
+        self.array_size = self.settings["arraysize"]
+        self.delta_t = self.settings["delta_t"]
+        self.timestep_start = self.settings["timestep_start"]
+        self.surfaceIDs = self.settings['surfaceIDs']
         self.n_surfaces = len(self.surfaceIDs)
         self.thread_ids = [i for i in range(0, self.n_surfaces)]  # list(range(self.n_surfaces))?
-        self.mp_mode = self.settings["mp_mode"].GetString()
-        self.input_file = self.settings["input_file"].GetString()
+        self.mp_mode = self.settings["mp_mode"]
+        self.input_file = self.settings["input_file"]
         self.timestep = self.timestep_start
         self.iteration = None
 
@@ -104,7 +104,7 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|MP_MODE|", self.mp_mode)
                     line = line.replace("|PID|", str(os.getpid()))
                     line = line.replace("|PWD|", os.path.abspath(os.path.join(self.dir_csm, os.pardir)))
-                    line = line.replace("|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = line.replace("|CSM_dir|", self.settings["working_directory"])
                     if "|" in line:
                         raise ValueError(f"The following line in abaqus_v6.env still contains a \"|\" after "
                                          f"substitution: \n \t{line} \n Probably a parameter was not substituted")
@@ -125,7 +125,7 @@ class SolverWrapperAbaqus614(Component):
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                     line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
                     if "|" in line:
                         raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: "
                                          f"\n \t{line} \n Probably a parameter was not substituted")
@@ -209,7 +209,7 @@ class SolverWrapperAbaqus614(Component):
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                     line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
                     if "|" in line:
                         raise ValueError(f"The following line in USR.f still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
                     outfile.write(line)
