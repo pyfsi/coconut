@@ -18,11 +18,16 @@
                 "surfaceIDs": ["BEAMINSIDEMOVING"],
                 "interface_input":
                 {
-                    "BEAMINSIDEMOVING_load_points": ["PRESSURE", "TRACTION"]
+                    "model_part": "BEAMINSIDEMOVING_load_points",
+                    "variables": [
+                        "pressure",
+                        "traction"
+                    ]
                 },
                 "interface_output":
                 {
-                    "BEAMINSIDEMOVING_nodes": "DISPLACEMENT"
+                    "model_part": "BEAMINSIDEMOVING_nodes",
+                    "variables": ["displacement"]
                 },
                 "mp_mode": "THREADS",
                 "input_file": "Base.inp",

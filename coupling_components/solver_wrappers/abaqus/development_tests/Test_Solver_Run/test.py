@@ -4,6 +4,8 @@ from coconut.coupling_components.tools import create_instance
 import numpy as np
 from sys import argv
 import os
+import json
+
 
 def print_colored(string, color):
     if color=='green':
@@ -27,8 +29,8 @@ if len(argv) != 2:
 parameter_file_name = argv[1]
 
 # Import parameters using the data structure
-with open(parameter_file_name, 'r') as parameter_file:
-    parameters = data_structure.Parameters(parameter_file.read())
+with open('parameters.json') as parameter_file:
+    parameters = json.load(parameter_file)
 
 # Create the solver (__init__)
 print("Creating an AbaqusSolver")
