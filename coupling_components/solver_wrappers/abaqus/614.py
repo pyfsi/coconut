@@ -11,7 +11,7 @@ import numpy as np
 import re
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperAbaqus614(parameters)
 
 
@@ -124,8 +124,8 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|cpus|", str(self.cores))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
+                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
                         raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: "
                                          f"\n \t{line} \n Probably a parameter was not substituted")
@@ -193,7 +193,7 @@ class SolverWrapperAbaqus614(Component):
             # Create elements file per surface
             face_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat")
             output_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Elements.dat")
-            self.makeElements(face_file, output_file)
+            self.make_elements(face_file, output_file)
 
         # prepare Abaqus USR.f
         usr = "USR.f"
@@ -208,8 +208,8 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|deltaT|", str(self.delta_t))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.FORT_replace(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.FORT_replace(line, "|CSM_dir|", self.settings["working_directory"].GetString())
+                    line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
+                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"].GetString())
                     if "|" in line:
                         raise ValueError(f"The following line in USR.f still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
                     outfile.write(line)
@@ -471,16 +471,16 @@ class SolverWrapperAbaqus614(Component):
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.iteration = 0
         self.timestep += 1
 
-    def SolveSolutionStep(self, interface_input):
+    def solve_solution_step(self, interface_input):
         self.iteration += 1
 
         # store incoming loads
@@ -580,8 +580,8 @@ class SolverWrapperAbaqus614(Component):
 
         return self.interface_output
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
         if self.timestep and (self.timestep-1) % self.settings['save_iterations'].GetInt():
             to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
                                     "Surface0Cpu0Input.dat", "Surface0Output.dat"]
@@ -590,22 +590,22 @@ class SolverWrapperAbaqus614(Component):
                 cmd.append(f"rm CSM_Time{self.timestep - 1}{suffix}")
             self.run_shell(self.dir_csm, cmd, name="Remove_previous")
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
 
-    def GetInterfaceInput(self):
+    def get_interface_input(self):
         return self.interface_input.deepcopy()
 
-    def SetInterfaceInput(self):
+    def set_interface_input(self):
         Exception("This solver interface provides no mapping.")
 
-    def GetInterfaceOutput(self):
+    def get_interface_output(self):
         return self.interface_output.deepcopy()
 
-    def SetInterfaceOutput(self):
+    def set_interface_output(self):
         Exception("This solver interface provides no mapping.")
 
-    def makeElements(self, face_file, output_file):
+    def make_elements(self, face_file, output_file):
         firstLoop = 1
         # element = 0
         element_prev = -1
@@ -661,7 +661,7 @@ class SolverWrapperAbaqus614(Component):
             os.system("rm " + script)
         return p
 
-    def FORT_replace(self, line, orig, new):
+    def replace_fortran(self, line, orig, new):
         """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
         This functions splits these strings over multiple lines."""
 
