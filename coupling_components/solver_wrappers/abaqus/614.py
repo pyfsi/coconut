@@ -142,17 +142,19 @@ class SolverWrapperAbaqus614(Component):
         # Get loadpoints from usrInit.f
         if self.timestep_start == 0:
             cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
-            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat CSM_Time{self.timestep_start}Surface*FacesBis.dat"
+            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
+                f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
             # The output files will have a name with a higher time step  ("job=") than the input file ("input=")
-            cmd3 = f"abaqus job=CSM_Time{self.timestep_start+1} input=CSM_Time{self.timestep_start} cpus=1 user=usrInit.f" \
-                f" output_precision=full interactive >> AbaqusSolver.log 2>&1"
+            cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} " \
+                f"cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name='Abaqus_USRInit_Time0')
         else:
             cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
-            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat CSM_Time{self.timestep_start}Surface*FacesBis.dat"
-            cmd3 = f"abaqus job=CSM_Time{self.timestep_start+1} oldjob=CSM_Time{self.timestep_start} input=CSM_Restart cpus=1 user=usrInit.f" \
-                f" output_precision=full interactive >> AbaqusSolver.log 2>&1"
+            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
+                f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
+            cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} " \
+                f"input=CSM_Restart cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name=f'Abaqus_USRInit_Restart')
 
@@ -170,7 +172,8 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|surfaceIDs|", temp_str)
                     line = line.replace("|dimension|", str(self.dimensions))
                     if "|" in line:
-                        raise ValueError(f"The following line in GetOutput.cpp still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
+                        raise ValueError(f"The following line in GetOutput.cpp still contains a \"|\" after "
+                                         f"substitution: \n \t{line} \n Probably a parameter was not subsituted")
                     outfile.write(line)
 
         # compile GetOutput.cpp
@@ -178,8 +181,8 @@ class SolverWrapperAbaqus614(Component):
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='Compile_GetOutput')
 
-        # Get node positions (not load points) at startTimeStep
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"  # 0 is an argument to GetOutput.exe
+        # Get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
+        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='GetOutput_Start')
 
@@ -211,7 +214,8 @@ class SolverWrapperAbaqus614(Component):
                     line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
                     line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
                     if "|" in line:
-                        raise ValueError(f"The following line in USR.f still contains a \"|\" after substitution: \n \t{line} \n Probably a parameter was not subsituted")
+                        raise ValueError(f"The following line in USR.f still contains a \"|\" after substitution: "
+                                         f"\n \t{line} \n Probably a parameter was not subsituted")
                     outfile.write(line)
 
         # compile Abaqus USR.f
@@ -221,72 +225,52 @@ class SolverWrapperAbaqus614(Component):
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='Compile_USR')
 
-### --- Create Model --- ###
+        # create Model
         self.model = data_structure.Model()
 
-        # create ModelParts
-        for key, value in (self.settings['interface_input'].items() +
-                           self.settings['interface_output'].items()):
-            # add ModelPart to Model
-            self.model.CreateModelPart(key)  # Can those two lines be combined in mp = self.model.CreateModelPart(key)?
-            mp = self.model[key]
+        # create input ModelParts (load points)
+        for item in (self.settings['interface_input']):
+            mp_name = item['model_part']
 
-            # add historical variables to ModelPart
-            for var_name in value.list():
-                var = vars(data_structure)[var_name.GetString()]
-                mp.AddNodalSolutionStepVariable(var)
-
-            # add information to ModelPart
-            bool_found = 0
-            for i in range(self.n_surfaces):
-                if self.surfaceIDs[i] in key:
-                    mp.thread_name = self.surfaceIDs[i]
-                    mp.thread_id = self.thread_ids[i]  # This is just a number from 0 to n_surfaces
-                    if 'thread_id' not in dir(mp):
-                        raise AttributeError(f'Could not find thread id corresponding to {key}')
-                    bool_found = 1
-            if bool_found == 0:
-                raise AttributeError(f'Could not identify surfaceID corresponding to key {key}. Check parameter file.')
-
-        # add Nodes to input ModelParts (load_points)
-        # elements line 1 contains number of elements
-        # elements line 2 contains number of load points per element
-        # elements remainder contains element numbers involved in interface
-
-        geom_min = np.array([np.Inf, np.Inf, np.Inf])
-        geom_max = np.array([np.NINF, np.NINF, np.NINF])
-
-        for key in self.settings['interface_input'].keys():
-            mp = self.model[key]
+            bool_found = False
+            for i, surfaceID in enumerate(self.surfaceIDs):
+                if surfaceID in mp_name:
+                    mp_id = i
+                    bool_found = True
+                    break
+            if not bool_found:
+                raise AttributeError(f'Could not identify surfaceID corresponding to key {mp_name}. '
+                                     f'Check parameter file.')
 
             # read in elements file
-            tmp = f'CSM_Time{self.timestep_start}Surface{mp.thread_id}Elements.dat'
+            tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat'
             elem_file = join(self.dir_csm, tmp)
             elements = np.loadtxt(elem_file)
 
             if self.timestep_start > 0:
-                tmp0 = f'CSM_Time0Surface{mp.thread_id}Elements.dat'
+                tmp0 = f'CSM_Time0Surface{mp_id}Elements.dat'
                 elem0_file = join(self.dir_csm, tmp0)
                 elements0 = np.loadtxt(elem0_file)
             elif self.timestep_start == 0:
                 elements0 = elements
 
-            n_elem = int(elements[0])
-            n_lp = int(elements[1])
-            if elements.shape[0]-2 != int(n_elem):
+            n_elem = int(elements[0])  # elements line 1 contains number of elements
+            n_lp = int(elements[1])  # elements line 2 contains number of load points per element
+            if elements.shape[0]-2 != int(n_elem):  # elements remainder contains element numbers involved in interface
                 raise ValueError(f"Number of lines ({elements.shape[0]}) in {elem_file} does not correspond with the "
                                  f"number of elements ({n_elem})")
 
             if int(elements0[0]) != n_elem or int(elements0[1]) != n_lp:
-                raise ValueError(f"Number of load points has changed for {key}")
+                raise ValueError(f"Number of load points has changed for {mp_id}")
 
             # read in Faces file for load points and also file at time 0 for original positions for the mappers
-            tmp = f'CSM_Time{self.timestep_start}Surface{mp.thread_id}Cpu0Faces.dat'
+            # TODO: do we need the current list of faces?
+            tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Cpu0Faces.dat'
             faces_file = join(self.dir_csm, tmp)
             faces = np.loadtxt(faces_file)
 
             if self.timestep_start > 0:
-                tmp0 = f'CSM_Time0Surface{mp.thread_id}Cpu0Faces.dat'
+                tmp0 = f'CSM_Time0Surface{mp_id}Cpu0Faces.dat'
                 faces0_file = join(self.dir_csm, tmp0)
                 faces0 = np.loadtxt(faces0_file)
             elif self.timestep_start == 0:
@@ -298,9 +282,8 @@ class SolverWrapperAbaqus614(Component):
             # get load point coordinates and ids of load points
             prev_elem = 0
             prev_lp = 0
-            ids_tmp = np.zeros(n_elem*n_lp).astype(str)  # create string ids element_loadpoint
-            coords_tmp = np.zeros((n_elem*n_lp, 3)).astype(float)  # Framework also requires z-coordinate which is 0.0 for 2D
-            coords0_tmp = np.zeros((n_elem * n_lp, 3)).astype(float)
+            ids = np.arange(n_elem*n_lp)
+            coords_tmp = np.zeros((n_elem * n_lp, 3)).astype(float)  # z-coordinate mandatory: 0.0 for 2D
             for i in range(0, n_elem*n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
@@ -309,39 +292,22 @@ class SolverWrapperAbaqus614(Component):
                 elif elem == prev_elem and lp != prev_lp+1:
                     raise ValueError(f"Next line for same element ({elem}) does not contain next load point")
                 elif elem > prev_elem and lp != 1:
-                    raise ValueError(f"First line for Element ({elem}) does not contain its first load point")
+                    raise ValueError(f"First line for element ({elem}) does not contain its first load point")
                 if lp > n_lp:
                     raise ValueError(f"lp ({lp}) exceeds the number of load points per element {n_lp}")
 
-                ids_tmp[i] = f"{elem}_{lp}"
-                coords0_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last "dimensions" columns from the file
-                coords_tmp[i, :self.dimensions] = faces[i, -self.dimensions:]
+                # ids_tmp[i] = f"{elem}_{lp}"
+                coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last "dimensions" columns
 
                 prev_elem = elem
                 prev_lp = lp
 
-            # create Nodes for load points
-            # Also keep track of min and max of the nodes to verify that surfaces are consistent
-            mp.min = np.array([np.Inf, np.Inf, np.Inf])
-            mp.max = np.array([np.NINF, np.NINF, np.NINF])  # -np.inf == np.NINF
-            for i in range(ids_tmp.size):
-                # Store node.X0, node.Y0 and node.Z0 for mappers
-                node = mp.CreateNewNode(ids_tmp[i], coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2])
+            x0 = coords_tmp[:, 0]
+            y0 = coords_tmp[:, 1]
+            z0 = coords_tmp[:, 2]
 
-                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
-                if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
-                if coords0_tmp[i, 2] < mp.min[2]: mp.min[2] = coords0_tmp[i, 2]
-                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i, 0]
-                if coords0_tmp[i, 1] > mp.max[1]: mp.max[1] = coords0_tmp[i, 1]
-                if coords0_tmp[i, 2] > mp.max[2]: mp.max[2] = coords0_tmp[i, 2]
-
-            # Find the bounding box of the complete structure based on the interface_input
-            if mp.min[0] < geom_min[0]: geom_min[0] = mp.min[0]
-            if mp.min[1] < geom_min[1]: geom_min[1] = mp.min[1]
-            if mp.min[2] < geom_min[2]: geom_min[2] = mp.min[2]
-            if mp.max[0] > geom_max[0]: geom_max[0] = mp.max[0]
-            if mp.max[1] > geom_max[1]: geom_max[1] = mp.max[1]
-            if mp.max[2] > geom_max[2]: geom_max[2] = mp.max[2]
+            # create ModelPart
+            self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # add Nodes to output ModelParts (surface_points)
         # first line is a header, remaining lines are x, y (and z) coordinates
@@ -773,3 +739,6 @@ class SolverWrapperAbaqus614(Component):
             if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
                 cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
                 self.run_shell(self.dir_csm, [cmd], name='GetOutput')
+
+    def check_bounding_box(self, tol=0.02):
+        pass

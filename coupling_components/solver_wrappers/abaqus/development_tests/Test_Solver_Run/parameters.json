@@ -16,19 +16,21 @@
                 "delta_t": 1e-3,
                 "timestep_start": 0,
                 "surfaceIDs": ["BEAMINSIDEMOVING"],
-                "interface_input":
+                "interface_input": [
                 {
                     "model_part": "BEAMINSIDEMOVING_load_points",
                     "variables": [
                         "pressure",
                         "traction"
                     ]
-                },
-                "interface_output":
+                }
+                ],
+                "interface_output": [
                 {
                     "model_part": "BEAMINSIDEMOVING_nodes",
                     "variables": ["displacement"]
-                },
+                }
+                ],
                 "mp_mode": "THREADS",
                 "input_file": "Base.inp",
                 "save_iterations": 50
