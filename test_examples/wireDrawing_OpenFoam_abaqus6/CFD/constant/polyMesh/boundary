@@ -22,54 +22,54 @@ FoamFile
         type            wall;
         inGroups        1(wall);
         nFaces          105;
-        startFace       522;
+        startFace       104;
     }
     outlet
     {
         type            patch;
-        nFaces          3;
-        startFace       627;
+        nFaces          1;
+        startFace       209;
     }
     upWire
     {
         type            wall;
         inGroups        1(wall);
         nFaces          30;
-        startFace       630;
+        startFace       210;
     }
     deformWire
     {
         type            wall;
         inGroups        1(wall);
         nFaces          60;
-        startFace       660;
+        startFace       240;
     }
     finalWire
     {
         type            wall;
         inGroups        1(wall);
         nFaces          15;
-        startFace       720;
+        startFace       300;
     }
     inlet
     {
         type            patch;
-        nFaces          3;
-        startFace       735;
+        nFaces          1;
+        startFace       315;
     }
     back
     {
         type            wedge;
         inGroups        1(wedge);
-        nFaces          315;
-        startFace       738;
+        nFaces          105;
+        startFace       316;
     }
     front
     {
         type            wedge;
         inGroups        1(wedge);
-        nFaces          315;
-        startFace       1053;
+        nFaces          105;
+        startFace       421;
     }
 )
 

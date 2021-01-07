@@ -64,7 +64,7 @@ solvers
 PIMPLE
 {
     correctPhi          yes;
-    nOuterCorrectors    5;
+    nOuterCorrectors    7;
     nCorrectors         10;
     nNonOrthogonalCorrectors 1;
 }

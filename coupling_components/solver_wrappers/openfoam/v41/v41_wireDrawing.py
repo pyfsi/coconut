@@ -750,7 +750,7 @@ class SolverWrapperOpenFOAM_41(Component):
             if self.iteration == 1:
 
                 a = np.loadtxt('displacement2.dat')
-                b = np.hsplit(a,3)
+                b = np.hsplit(a,4)
                 x = b[0]
                 y = b[1]
                 z = b[2]
