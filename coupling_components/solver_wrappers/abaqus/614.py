@@ -139,7 +139,7 @@ class SolverWrapperAbaqus614(Component):
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='Compile_USRInit')
 
-        # Get loadpoints from usrInit.f
+        # Get load points from usrInit.f
         if self.timestep_start == 0:
             cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
             cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
@@ -294,7 +294,7 @@ class SolverWrapperAbaqus614(Component):
                 elif elem > prev_elem and lp != 1:
                     raise ValueError(f"First line for element ({elem}) does not contain its first load point")
                 if lp > n_lp:
-                    raise ValueError(f"lp ({lp}) exceeds the number of load points per element {n_lp}")
+                    raise ValueError(f"Load point ({lp}) exceeds the number of load points per element {n_lp}")
 
                 # ids_tmp[i] = f"{elem}_{lp}"
                 coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last "dimensions" columns
@@ -309,130 +309,55 @@ class SolverWrapperAbaqus614(Component):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
-        # add Nodes to output ModelParts (surface_points)
-        # first line is a header, remaining lines are x, y (and z) coordinates
-        # Abaqus does not use node ids but maintains the output order
-        for key in self.settings['interface_output'].keys():
-            mp = self.model[key]
-            # read in Nodes0 file for mapper and Nodes file for surface node positions
-            tmp = f'CSM_Time{self.timestep_start}Surface{mp.thread_id}Nodes.dat'
+        # create output ModelParts (geometrical nodes)
+        for item in (self.settings['interface_output']):
+            mp_name = item['model_part']
+
+            bool_found = False
+            for i, surfaceID in enumerate(self.surfaceIDs):
+                if surfaceID in mp_name:
+                    mp_id = i
+                    bool_found = True
+                    break
+            if not bool_found:
+                raise AttributeError(f'Could not identify surfaceID corresponding to key {mp_name}. '
+                                     f'Check parameter file.')
+
+            # read in Nodes0 file
+            tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat'
             nodes_file = join(self.dir_csm, tmp)
-            nodes = np.loadtxt(nodes_file, skiprows=1)
+            nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
+
             if self.timestep_start > 0:
-                tmp0 = f'CSM_Time0Surface{mp.thread_id}Nodes.dat'
+                tmp0 = f'CSM_Time0Surface{mp_id}Nodes.dat'
                 nodes0_file = join(self.dir_csm, tmp0)
                 nodes0 = np.loadtxt(nodes0_file, skiprows=1)
             elif self.timestep_start == 0:
                 nodes0 = nodes
 
             if nodes.shape[1] != self.dimensions:
-                raise ValueError(f'given dimension does not match coordinates')
+                raise ValueError(f'Given dimension does not match coordinates.')
 
-            # get surface node coordinates and ids
+            # get geometrical node coordinates
             n_nodes = nodes.shape[0]
             n_nodes0 = nodes0.shape[0]
             if n_nodes != n_nodes0:
-                raise ValueError(f"Number of interface nodes has changed for {key}")
+                raise ValueError(f"Number of interface nodes has changed for {mp_name}")
 
-            ids_tmp = np.zeros(n_nodes).astype(str)
+            ids = np.arange(n_nodes)  # Abaqus does not use node ids but maintains the output order
+            coords_tmp = np.zeros((n_nodes, 3)).astype(float)  # z-coordinate mandatory: 0.0 for 2D
+            coords_tmp[:, :self.dimensions] = nodes0
 
-            coords_tmp = np.zeros((n_nodes, 3)).astype(float)  # Framework also requires z-coordinate which is 0.0 for 2D
-            coords0_tmp = np.zeros((n_nodes, 3)).astype(float)
+            x0 = coords_tmp[:, 0]
+            y0 = coords_tmp[:, 1]
+            z0 = coords_tmp[:, 2]
 
-            for i in range(0, n_nodes):
-                ids_tmp[i] = str(i)
-                coords_tmp[i, :self.dimensions] = nodes[i, :]
-                coords0_tmp[i, :self.dimensions] = nodes0[i, :]
-
-            # create Nodes for surface points
-            # Also keep track of min and max of the nodes to verify that surfaces are consistent
-            mp.min = np.array([np.Inf, np.Inf, np.Inf])
-            mp.max = np.array([np.NINF, np.NINF, np.NINF])
-            for i in range(ids_tmp.size):
-                node = mp.CreateNewNode(ids_tmp[i], coords0_tmp[i, 0], coords0_tmp[i, 1], coords0_tmp[i, 2])
-
-                if coords0_tmp[i, 0] < mp.min[0]: mp.min[0] = coords0_tmp[i, 0]
-                if coords0_tmp[i, 1] < mp.min[1]: mp.min[1] = coords0_tmp[i, 1]
-                if coords0_tmp[i, 2] < mp.min[2]: mp.min[2] = coords0_tmp[i, 2]
-                if coords0_tmp[i, 0] > mp.max[0]: mp.max[0] = coords0_tmp[i, 0]
-                if coords0_tmp[i, 1] > mp.max[1]: mp.max[1] = coords0_tmp[i, 1]
-                if coords0_tmp[i, 2] > mp.max[2]: mp.max[2] = coords0_tmp[i, 2]
-
-            # Check the bounding boxes for input interface versus output interface
-            # This will be based on the original coordinates at time 0
-            tol_center = 0.02
-            tol_BB = 0.1
-            tol_geom = 0.01
-            AR_plane = 1e-08
-            abs_tol_plane = 1e-06
-
-            # Find corresponding Input modelpart based on thread_id
-            bool_corresponds = 0
-            for key_temp in self.settings['interface_input'].keys():
-                mp_temp = self.model[key_temp]
-                if mp_temp.thread_id == mp.thread_id:
-                    mp_input = mp_temp
-                    bool_corresponds = 1
-                    break
-            if bool_corresponds == 0:
-                raise ValueError(f"Found no interface_input object corresponding to the interface_output object ({key})")
-            else:
-                diff_Out = mp.max - mp.min
-                diff_In = mp_input.max - mp_input.min
-                ref = np.array([max(diff_Out[0], diff_In[0]), max(diff_Out[1], diff_In[1]),
-                                max(diff_Out[2], diff_In[2])])
-                geom_diff = geom_max-geom_min
-                for i in range(0, self.dimensions):
-                    if self.dimensions == 3:
-                        bool_A = ref[i] < AR_plane*ref[i-1] and ref[i] < AR_plane*ref[i-2]  # Identifies as plane perpendicular to coordinate direction
-                        bool_B = (geom_diff[i] < AR_plane*geom_diff[i-1] and geom_diff[i] < AR_plane*geom_diff[i-2])
-                    elif self.dimensions == 2:
-                        bool_A = ref[i] < AR_plane*ref[(i+1) % 2]  # Identifies as plane perpendicular to coordinate direction
-                        bool_B = geom_diff[i] < AR_plane*geom_diff[(i+1) % 2]
-
-                    if bool_A:
-                        if not bool_B:
-                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > tol_geom*geom_diff[i]:
-                                tools.print_info(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
-                                            f"differ by more than {tol_geom*100}% of the bounding box for the complete interface geometry in the {i}-direction", layout='red')
-                                tools.print_info(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
-                                tools.print_info(f"Output interface center: {(mp.max + mp.min) / 2.0}")
-                        else:
-                            if np.abs((mp.max[i]+mp.min[i])/2.0-(mp_input.max[i]+mp_input.min[i])/2.0) > abs_tol_plane:
-                                tools.print_info(f"Warning: The bounding box center of the input and output for the face {mp.thread_name} "
-                                            f"differ by more than {abs_tol_plane}m in the {i}-direction", layout='red')
-                                tools.print_info(f"Input interface center: {(mp_input.max+mp_input.min)/2.0}")
-                                tools.print_info(f"Output interface center: {(mp.max + mp.min) / 2.0}")
-                    else:
-                        if np.abs(mp.min[i]-mp_input.min[i]) > tol_BB*ref[i]:
-                            tools.print_info(f"Warning: The minima of the bounding boxes of the input and output for "
-                                             f"{mp.thread_name} differ by more than {tol_BB*100}% of the corresponding "
-                                             f"bounding box in the {i}-direction", layout='red')
-                            tools.print_info(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
-                            tools.print_info(f"Output interface bounding box: {mp.min} to {mp.max}")
-                        if np.abs(mp.max[i] - mp_input.max[i]) > tol_BB * ref[i]:
-                            tools.print_info(f"Warning: The maxima of the bounding boxes of the input and output for "
-                                             f"{mp.thread_name} differ by more than {tol_BB*100}% of the corresponding "
-                                             f"bounding box in the {i}-direction", layout='red')
-                            tools.print_info(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
-                            tools.print_info(f"Output interface bounding box: {mp.min} to {mp.max}")
-                        if np.abs((mp.max[i]+mp.min[i])/2.0 - (mp_input.max[i]+mp_input.min[i])/2.0) > tol_center * ref[i]:
-                            tools.print_info(f"Warning: The geometric centers of the input and output for "
-                                             f"{mp.thread_name} differ by more than {tol_center*100}% of the "
-                                             f"corresponding bounding box in the {i}-direction", layout='red')
-                            tools.print_info(f"Input interface center: {(mp_input.max + mp_input.min) / 2.0}")
-                            tools.print_info(f"Output interface center: {(mp.max + mp.min) / 2.0}")
-                            tools.print_info(f"Input interface bounding box: {mp_input.min} to {mp_input.max}")
-                            tools.print_info(f"Output interface bounding box: {mp.min} to {mp.max}")
+            # create ModelPart
+            self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create Interfaces
-        self.interface_input = Interface(self.model, self.settings['interface_input'])
-        self.interface_output = Interface(self.model, self.settings['interface_output'])
-
-        # create Variables
-        self.pressure = vars(data_structure)['PRESSURE']
-        self.traction = vars(data_structure)['TRACTION']
-        self.displacement = vars(data_structure)['DISPLACEMENT']
+        self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
+        self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
@@ -606,7 +531,7 @@ class SolverWrapperAbaqus614(Component):
                             point_0 = point
                             firstLoop = 0
                     else:
-                        raise ValueError(f"loadpoint number does not start at 1 for element {element}")
+                        raise ValueError(f"Load point number does not start at 1 for element {element}")
 
         element_str = f"{count}\n{point_prev}\n" + element_str
         with open(output_file, "w") as file:
@@ -740,5 +665,7 @@ class SolverWrapperAbaqus614(Component):
                 cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
                 self.run_shell(self.dir_csm, [cmd], name='GetOutput')
 
-    def check_bounding_box(self, tol=0.02):
+    def check_bounding_box(self, tol_center=0.02, tol_bb=0.1, tol_geom=0.01, ar_plane=1e-08, abs_tol_plane=1e-06):
+        """Check the bounding boxes for input interface versus output interface."""
+        # TODO: create bounding box check based on code Lucas which has temporarily been removed (07-01-2021)
         pass
