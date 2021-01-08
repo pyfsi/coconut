@@ -259,7 +259,7 @@ class SolverWrapperAbaqus614(Component):
                                  f"number of elements ({n_elem})")
 
             if int(elements0[0]) != n_elem or int(elements0[1]) != n_lp:
-                raise ValueError(f"Number of load points has changed for {mp_id}")
+                raise ValueError(f"Number of load points has changed for {mp_name}")
 
             # read in Faces file for load points and also file at time 0 for original positions for the mappers
             # TODO: do we need the current list of faces?
@@ -639,7 +639,21 @@ class SolverWrapperAbaqus614(Component):
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
-                    line = f.readline()  # need to skip the next line
+                        f.readline()  # need to skip the next line
+                        of.write(line_2)  # Change the time step in the Abaqus step
+                        if bool_restart:
+                            rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                        line = f.readline()
+                    elif "*static" in line.lower():
+                        of.write(line)
+                        if bool_restart:
+                            rf.write(line)
+                        f.readline()  # need to skip the next line
+                        if not self.subcycling:
+                            raise NotImplementedError(
+                                "Only Static with subcycling is implemented for the Abaqus wrapper")
+                        line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                        f.readline()
                     of.write(line_2)  # Change the time step in the Abaqus step
                     if bool_restart:
                         rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
