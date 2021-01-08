@@ -66,13 +66,13 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = None
 
         if "subcycling" in self.settings.keys():
-            self.subcycling = self.settings["subcycling"].GetInt()
+            self.subcycling = self.settings["subcycling"]
             if self.subcycling:
-                self.minInc = self.settings["minInc"].GetDouble()
-                self.initialInc = self.settings["initialInc"].GetDouble()
-                self.maxNumInc = self.settings["maxNumInc"].GetInt()
-                self.maxInc = self.settings["maxInc"].GetInt()
-                self.ramp = self.settings["ramp"].GetInt()
+                self.minInc = self.settings["minInc"]
+                self.initialInc = self.settings["initialInc"]
+                self.maxNumInc = self.settings["maxNumInc"]
+                self.maxInc = self.settings["maxInc"]
+                self.ramp = self.settings["ramp"]
             else:
                 self.maxNumInc = 1
                 self.maxInc = self.delta_t
@@ -479,7 +479,7 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep and (self.timestep-1) % self.settings['save_iterations'].GetInt():
+        if self.timestep and (self.timestep-1) % self.settings['save_iterations']:
             to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
                                     "Surface0Cpu0Input.dat", "Surface0Output.dat"]
             cmd = []
