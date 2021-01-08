@@ -1,5 +1,7 @@
 import time
 from contextlib import contextmanager
+import numpy as np
+import warnings
 
 
 def create_instance(settings):
@@ -136,3 +138,68 @@ def time_solve_solution_step(solve_solution_step):
         return interface_output
 
     return wrapper
+
+
+# compare bounding box of ModelParts
+def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
+                       tol_minmax_warning=.1, tol_minmax_error=.3):
+    """
+    Use this function to compare the bounding boxes of 2 ModelParts.
+
+    mp_a and mp_b are the two ModelParts.
+
+    There are 4 keyword arguments, to overwrite the
+    default tolerances:
+        tol_center_warning = 0.02
+        tol_center_error = 0.1
+        tol_minmax_warning = 0.1
+        tol_minmax_error = 0.3
+
+    Returns nothing.
+    """
+    # extract coordinate data
+    mp_a_coords = np.column_stack((mp_a.x0, mp_a.y0, mp_a.z0))
+    mp_b_coords = np.column_stack((mp_b.x0, mp_b.y0, mp_b.z0))
+
+    # get bounding boxes
+    mp_a_min = mp_a_coords.min(axis=0)
+    mp_a_max = mp_a_coords.max(axis=0)
+    mp_b_min = mp_b_coords.min(axis=0)
+    mp_b_max = mp_b_coords.max(axis=0)
+    mp_a_center = (mp_a_min + mp_a_max) / 2
+    mp_b_center = (mp_b_min + mp_b_max) / 2
+
+    # get reference distance (= average length of bounding box diagonal)
+    mp_a_diag = mp_a_max - mp_a_min
+    mp_b_diag = mp_b_max - mp_b_min
+    d_ref = np.linalg.norm((mp_a_diag + mp_b_diag) / 2)
+
+    # calculate errors on bounding boxes
+    error_center = np.linalg.norm(mp_a_center - mp_b_center) / d_ref
+    error_min = np.linalg.norm(mp_a_min - mp_b_min) / d_ref
+    error_max = np.linalg.norm(mp_a_max - mp_b_max) / d_ref
+
+    # raise warning or error if necessary
+    msg_1 = f'ModelParts "{mp_a.name}", "{mp_b.name}": '
+    msg_2 = ' values differ by '
+    msg_3 = f'\n\t"{mp_a.name}": minimal values = {mp_a_min} and maximal values = {mp_a_max}' \
+            f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
+
+    msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
+    if error_center > tol_center_error:
+        raise ValueError(msg)
+    if error_center > tol_center_warning:
+        warnings.warn(msg, Warning)
+
+    msg = f'{msg_1}min{msg_2}{100 * error_min:.1f}%' + msg_3
+    if error_min > tol_minmax_error:
+        raise ValueError(msg)
+    if error_min > tol_minmax_warning:
+        warnings.warn(msg, Warning)
+
+    msg = f'{msg_1}max{msg_2}{100 * error_max:.1f}%' + msg_3
+    if error_max > tol_minmax_error:
+        raise ValueError(msg)
+    if error_max > tol_minmax_warning:
+        warnings.warn(msg, Warning)
+
