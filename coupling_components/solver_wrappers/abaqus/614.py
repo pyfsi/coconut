@@ -1,6 +1,5 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
-# from coconut.coupling_components.interface import Interface
 from coconut.coupling_components import tools
 
 import os
@@ -352,7 +351,18 @@ class SolverWrapperAbaqus614(Component):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
-        # TODO: check bounding boxes
+        # check whether the ModelParts and output ModelParts have proper overlap
+        for surfaceID in self.surfaceIDs:
+            for item in self.settings['interface_input']:
+                mp_name = item['model_part']
+                if surfaceID in mp_name:
+                    mp_in = self.model.get_model_part(mp_name)
+                    break
+            for item in self.settings['interface_output']:
+                mp_name = item['model_part']
+                if surfaceID in mp_name:
+                    mp_out = self.model.get_model_part(mp_name)
+            tools.check_bounding_box(mp_in, mp_out)
 
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
@@ -665,8 +675,3 @@ class SolverWrapperAbaqus614(Component):
                 tmp = f'CSM_Time{self.timestep-1}Surface{mp_id}Cpu0Input.dat'
                 file_name = join(self.dir_csm, tmp)
                 np.savetxt(file_name, data * 0.0, fmt=fmt, header=f'{model_part.size}', comments='')
-
-    def check_bounding_box(self, tol_center=0.02, tol_bb=0.1, tol_geom=0.01, ar_plane=1e-08, abs_tol_plane=1e-06):
-        """Check the bounding boxes for input interface versus output interface."""
-        # TODO: method will be implemented in tools.py, remove this piece of code
-        pass
