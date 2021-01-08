@@ -355,6 +355,8 @@ class SolverWrapperAbaqus614(Component):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
+        # TODO: check bounding boxes
+
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
@@ -670,5 +672,5 @@ class SolverWrapperAbaqus614(Component):
 
     def check_bounding_box(self, tol_center=0.02, tol_bb=0.1, tol_geom=0.01, ar_plane=1e-08, abs_tol_plane=1e-06):
         """Check the bounding boxes for input interface versus output interface."""
-        # TODO: create bounding box check based on code Lucas which has temporarily been removed (07-01-2021)
+        # TODO: method will be implemented in tools.py, remove this piece of code
         pass
