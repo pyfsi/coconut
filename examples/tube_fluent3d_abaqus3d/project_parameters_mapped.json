@@ -118,9 +118,9 @@
               "type": "mappers.radial_basis",
               "settings": {
                 "directions": [
-                  "X",
-                  "Y",
-                  "Z"
+                  "x",
+                  "y",
+                  "z"
                 ]
               }
             }
@@ -131,9 +131,9 @@
               "type": "mappers.radial_basis",
               "settings": {
                 "directions": [
-                  "X",
-                  "Y",
-                  "Z"
+                  "x",
+                  "y",
+                  "z"
                 ]
               }
             }
