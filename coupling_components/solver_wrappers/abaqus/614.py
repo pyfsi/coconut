@@ -66,13 +66,13 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = None
 
         if "subcycling" in self.settings.keys():
-            self.subcycling = self.settings["subcycling"].GetInt()
+            self.subcycling = self.settings["subcycling"]
             if self.subcycling:
-                self.minInc = self.settings["minInc"].GetDouble()
-                self.initialInc = self.settings["initialInc"].GetDouble()
-                self.maxNumInc = self.settings["maxNumInc"].GetInt()
-                self.maxInc = self.settings["maxInc"].GetInt()
-                self.ramp = self.settings["ramp"].GetInt()
+                self.minInc = self.settings["minInc"]
+                self.initialInc = self.settings["initialInc"]
+                self.maxNumInc = self.settings["maxNumInc"]
+                self.maxInc = self.settings["maxInc"]
+                self.ramp = self.settings["ramp"]
             else:
                 self.maxNumInc = 1
                 self.maxInc = self.delta_t
@@ -355,9 +355,14 @@ class SolverWrapperAbaqus614(Component):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
+        # TODO: check bounding boxes
+
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
+
+        # run time
+        self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
@@ -375,9 +380,9 @@ class SolverWrapperAbaqus614(Component):
         self.iteration += 1
 
         # store incoming loads
-        self.interface_input.SetPythonList(interface_input.GetPythonList())
+        self.interface_input.set_interface_data(interface_input.get_interface_data())
 
-        # write loads (from interface data to a file that will be read by USR.f
+        # write loads (from interface data to a file that will be read by USR.f)
         self.write_loads()
 
         # copy input data for debugging
@@ -474,7 +479,7 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep and (self.timestep-1) % self.settings['save_iterations'].GetInt():
+        if self.timestep and (self.timestep-1) % self.settings['save_iterations']:
             to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
                                     "Surface0Cpu0Input.dat", "Surface0Output.dat"]
             cmd = []
@@ -486,16 +491,16 @@ class SolverWrapperAbaqus614(Component):
         super().finalize()
 
     def get_interface_input(self):
-        return self.interface_input.deepcopy()
+        return self.interface_input
 
     def set_interface_input(self):
-        Exception("This solver interface provides no mapping.")
+        Exception("This solver interface provides no mapping.")  # TODO: remove?
 
     def get_interface_output(self):
-        return self.interface_output.deepcopy()
+        return self.interface_output
 
     def set_interface_output(self):
-        Exception("This solver interface provides no mapping.")
+        Exception("This solver interface provides no mapping.")  # TODO: remove?
 
     def make_elements(self, face_file, output_file):
         firstLoop = 1
@@ -645,27 +650,38 @@ class SolverWrapperAbaqus614(Component):
         of.close()
 
     def write_loads(self):
-        for key in self.settings['interface_input'].keys():
-            mp = self.model[key]
-            tmp = f'CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat'
+        for dct in self.interface_input.parameters:
+            mp_name = dct['model_part']
+            model_part = self.model.get_model_part(mp_name)
 
+            bool_found = False
+            for i, surfaceID in enumerate(self.surfaceIDs):
+                if surfaceID in mp_name:
+                    mp_id = i
+                    bool_found = True
+                    break
+            if not bool_found:
+                raise AttributeError(f'Could not identify surfaceID corresponding to key {mp_name}. '
+                                     f'Check parameter file.')
+
+            pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
+            traction = self.interface_input.get_variable_data(mp_name, 'traction')
+            data = np.hstack((pressure, traction[:, :self.dimensions]))
+            if self.dimensions == 2:
+                fmt = 3 * '%27.17e'
+            else:
+                fmt = 4 * '%27.17e'
+            tmp = f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat'
             file_name = join(self.dir_csm, tmp)
-            with open(file_name, 'w') as file:
-                file.write(f'{mp.NumberOfNodes()}\n')
-                for node in mp.Nodes:
-                    pressure = node.GetSolutionStepValue(self.pressure)
-                    traction = node.GetSolutionStepValue(self.traction)
-                    if self.dimensions == 2:
-                        file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}\n')
-                    else:
-                        file.write(f'{pressure:27.17e}{traction[0]:27.17e}{traction[1]:27.17e}{traction[2]:27.17e}\n')
+            np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-            # Start of a simulation with ramp, needs an initial load at time 0
-            if self.iteration == 1 and self.timestep == 1 and self.settings['ramp'].GetInt() == 1:
-                cmd = f"cp CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat"
-                self.run_shell(self.dir_csm, [cmd], name='GetOutput')
+            # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
+            if self.iteration == 1 and self.timestep == 1 and self.ramp:
+                tmp = f'CSM_Time{self.timestep-1}Surface{mp_id}Cpu0Input.dat'
+                file_name = join(self.dir_csm, tmp)
+                np.savetxt(file_name, data * 0.0, fmt=fmt, header=f'{model_part.size}', comments='')
 
     def check_bounding_box(self, tol_center=0.02, tol_bb=0.1, tol_geom=0.01, ar_plane=1e-08, abs_tol_plane=1e-06):
         """Check the bounding boxes for input interface versus output interface."""
-        # TODO: create bounding box check based on code Lucas which has temporarily been removed (07-01-2021)
+        # TODO: method will be implemented in tools.py, remove this piece of code
         pass
