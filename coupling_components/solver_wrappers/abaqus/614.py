@@ -362,7 +362,7 @@ class SolverWrapperAbaqus614(Component):
         self.run_time = 0.0
 
         # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
+        self.debug = True  # set on True to save copy of input and output files in every iteration
 
     def initialize(self):
         super().initialize()
@@ -440,38 +440,34 @@ class SolverWrapperAbaqus614(Component):
         self.run_shell(self.dir_csm, [cmd], name='GetOutput')
 
         # Read Abaqus output data
-        for key in self.settings['interface_output'].keys():
-            mp = self.model[key]
-            # read in Nodes file for surface nodes
-            tmp = f"CSM_Time{self.timestep}Surface{mp.thread_id}Output.dat"
-            disp_file = join(self.dir_csm, tmp)
-            disp = np.loadtxt(disp_file, skiprows=1)
+        for dct in self.interface_output.parameters:
+            mp_name = dct['model_part']
+
+            # read in output file for surface nodes
+            mp_id = self.model_part_surface_ids[mp_name]
+            tmp = f"CSM_Time{self.timestep}Surface{mp_id}Output.dat"
+            file_name = join(self.dir_csm, tmp)
+            data = np.loadtxt(file_name, skiprows=1)
 
             # copy output data for debugging
             if self.debug:
-                tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Output_Iter{self.iteration}.dat"
-                cmd = f"cp {disp_file} {join(self.dir_csm,tmp2)}"
+                tmp2 = f"CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat"
+                cmd = f"cp {file_name} {join(self.dir_csm,tmp2)}"
                 os.system(cmd)
 
-            if disp.shape[1] != self.dimensions:
+            if data.shape[1] != self.dimensions:
                 raise ValueError(f"given dimension does not match coordinates")
 
             # get surface node displacements
-            n_nodes = disp.shape[0]
-            if n_nodes != mp.NumberOfNodes():
-                raise ValueError("number of nodes does not match size of data")
+            n_nodes = data.shape[0]
+            model_part = self.model.get_model_part(mp_name)
+            if n_nodes != model_part.size:
+                raise ValueError('size of data does not match size of ModelPart')
 
-            ids_tmp = np.array(range(0, n_nodes)).astype(int).astype(str)
-            disp_tmp = np.zeros((n_nodes, 3))  # also require z-input for 2D cases
-            disp_tmp[:, :self.dimensions] = disp
+            displacement = np.zeros((n_nodes, 3))  # also require z-input for 2D cases
+            displacement[:, :self.dimensions] = data
 
-            index = 0
-            for node in mp.Nodes:
-                if ids_tmp[index] != node.Id:
-                    raise ValueError(f"node IDs do not match: {ids_tmp[index]}, {node.Id}")
-
-                node.SetSolutionStepValue(self.displacement, 0, disp_tmp[index, :].tolist())
-                index += 1
+            self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
 
         return self.interface_output
 
