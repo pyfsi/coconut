@@ -383,6 +383,7 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = 0
         self.timestep += 1
 
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.iteration += 1
 
