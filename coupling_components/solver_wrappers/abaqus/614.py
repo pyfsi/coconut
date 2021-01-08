@@ -677,10 +677,7 @@ class SolverWrapperAbaqus614(Component):
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             data = np.hstack((pressure, traction[:, :self.dimensions]))
-            if self.dimensions == 2:
-                fmt = 3 * '%27.17e'
-            else:
-                fmt = 4 * '%27.17e'
+            fmt = (self.dimensions + 1) * '%27.17e'  # format of load input file should be exactly this for USR.f
             tmp = f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat'
             file_name = join(self.dir_csm, tmp)
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
