@@ -380,9 +380,9 @@ class SolverWrapperAbaqus614(Component):
         self.iteration += 1
 
         # store incoming loads
-        self.interface_input.SetPythonList(interface_input.GetPythonList())
+        self.interface_input.set_interface_data(interface_input.get_interface_data())
 
-        # write loads (from interface data to a file that will be read by USR.f
+        # write loads (from interface data to a file that will be read by USR.f)
         self.write_loads()
 
         # copy input data for debugging
@@ -491,16 +491,16 @@ class SolverWrapperAbaqus614(Component):
         super().finalize()
 
     def get_interface_input(self):
-        return self.interface_input.deepcopy()
+        return self.interface_input
 
     def set_interface_input(self):
-        Exception("This solver interface provides no mapping.")
+        Exception("This solver interface provides no mapping.")  # TODO: remove?
 
     def get_interface_output(self):
-        return self.interface_output.deepcopy()
+        return self.interface_output
 
     def set_interface_output(self):
-        Exception("This solver interface provides no mapping.")
+        Exception("This solver interface provides no mapping.")  # TODO: remove?
 
     def make_elements(self, face_file, output_file):
         firstLoop = 1
