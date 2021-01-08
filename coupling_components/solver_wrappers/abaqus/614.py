@@ -64,6 +64,7 @@ class SolverWrapperAbaqus614(Component):
         self.input_file = self.settings["input_file"]
         self.timestep = self.timestep_start
         self.iteration = None
+        self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
 
         if "subcycling" in self.settings.keys():
             self.subcycling = self.settings["subcycling"]
@@ -232,15 +233,13 @@ class SolverWrapperAbaqus614(Component):
         for item in (self.settings['interface_input']):
             mp_name = item['model_part']
 
-            bool_found = False
             for i, surfaceID in enumerate(self.surfaceIDs):
                 if surfaceID in mp_name:
-                    mp_id = i
-                    bool_found = True
+                    self.model_part_surface_ids[mp_name] = i
                     break
-            if not bool_found:
-                raise AttributeError(f'Could not identify surfaceID corresponding to key {mp_name}. '
-                                     f'Check parameter file.')
+            if mp_name not in self.model_part_surface_ids:
+                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}.')
+            mp_id = self.model_part_surface_ids[mp_name]
 
             # read in elements file
             tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat'
@@ -313,15 +312,13 @@ class SolverWrapperAbaqus614(Component):
         for item in (self.settings['interface_output']):
             mp_name = item['model_part']
 
-            bool_found = False
             for i, surfaceID in enumerate(self.surfaceIDs):
                 if surfaceID in mp_name:
-                    mp_id = i
-                    bool_found = True
+                    self.model_part_surface_ids[mp_name] = i
                     break
-            if not bool_found:
-                raise AttributeError(f'Could not identify surfaceID corresponding to key {mp_name}. '
-                                     f'Check parameter file.')
+            if mp_name not in self.model_part_surface_ids:
+                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}.')
+            mp_id = self.model_part_surface_ids[mp_name]
 
             # read in Nodes0 file
             tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat'
@@ -387,10 +384,11 @@ class SolverWrapperAbaqus614(Component):
 
         # copy input data for debugging
         if self.debug:
-            for key in self.settings['interface_input'].keys():
-                mp = self.model[key]
-                tmp = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input.dat"
-                tmp2 = f"CSM_Time{self.timestep}Surface{mp.thread_id}Cpu0Input_Iter{self.iteration}.dat"
+            for dct in self.interface_input.parameters:
+                mp_name = dct['model_part']
+                mp_id = self.model_part_surface_ids[mp_name]
+                tmp = f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat"
+                tmp2 = f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input_Iter{self.iteration}.dat"
                 cmd = f"cp {join(self.dir_csm, tmp)} {join(self.dir_csm, tmp2)}"
                 os.system(cmd)
 
@@ -420,9 +418,9 @@ class SolverWrapperAbaqus614(Component):
             # Check log for completion and or errors
             cmd = "tail -n 10 AbaqusSolver.log > Temp_log.coco"
             self.run_shell(self.dir_csm, [cmd], name='Temp_log')
-            templog = os.path.join(self.dir_csm, "Temp_log.coco")
+            log_tmp = os.path.join(self.dir_csm, "Temp_log.coco")
             bool_lic = 1
-            with open(templog, "r") as fp:
+            with open(log_tmp, "r") as fp:
                 for line in fp:
                     if any(x in line for x in ["Licensing error", "license error", "Error checking out Abaqus license"]):
                         bool_lic = 0
@@ -652,17 +650,8 @@ class SolverWrapperAbaqus614(Component):
     def write_loads(self):
         for dct in self.interface_input.parameters:
             mp_name = dct['model_part']
+            mp_id = self.model_part_surface_ids[mp_name]
             model_part = self.model.get_model_part(mp_name)
-
-            bool_found = False
-            for i, surfaceID in enumerate(self.surfaceIDs):
-                if surfaceID in mp_name:
-                    mp_id = i
-                    bool_found = True
-                    break
-            if not bool_found:
-                raise AttributeError(f'Could not identify surfaceID corresponding to key {mp_name}. '
-                                     f'Check parameter file.')
 
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
