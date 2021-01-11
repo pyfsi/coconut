@@ -46,9 +46,6 @@ class SolverWrapperOpenFOAM_41(Component):
         self.meshmotion_solver=self.settings["meshmotion_solver"].GetString()
         self.diffusivity=self.settings["diffusivity"].GetString()
         self.density=self.settings["density"].GetInt()
-        self.displacementX = self.settings["displacementX"].GetDouble()
-        self.displacementY = self.settings["displacementY"].GetDouble()
-        self.displacementZ = self.settings["displacementZ"].GetDouble()
 
         # debug
         self.debug = True  # set on True to save copy of input and output files in every iteration
@@ -178,6 +175,7 @@ class SolverWrapperOpenFOAM_41(Component):
             for var_name in value.list():
                 var=vars(data_structure)[var_name.GetString()]
                 mp.AddNodalSolutionStepVariable(var)
+                #Todo: new data structure changes
 
         # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         os.system("cd "+ self.working_directory + "; writeCellCentres -time " + str(self.start_time) + " &> log.writeCellCentres;")
@@ -191,6 +189,7 @@ class SolverWrapperOpenFOAM_41(Component):
             mp_input = self.model[boundary + "_input"]
             for i in np.arange(0,len(node_ids)):
                 mp_input.CreateNewNode(i, node_coords[i, 0], node_coords[i, 1], node_coords[i, 2])
+                #Todo: new data structure
 
             #output model part
             name_X= os.path.join(self.working_directory,"0/ccx")
@@ -238,8 +237,10 @@ class SolverWrapperOpenFOAM_41(Component):
         # Create CoSimulationInterfaces
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
+        #Todo
 
         # Create Variables
+        #Todo:remove
         self.pressure=vars(data_structure)['PRESSURE']
         self.shear=vars(data_structure)['TRACTION']
         self.displacement=vars(data_structure)['DISPLACEMENT']
@@ -381,10 +382,12 @@ class SolverWrapperOpenFOAM_41(Component):
     
 
     def SolveSolutionStep(self, interface_input):
+        #Todo: Change name => check fluent
         self.iteration += 1
         print(f'\t\tIteration {self.iteration}')
 
         # store incoming displacements
+        #Todo: check fluent
         self.interface_input.SetPythonList(interface_input.GetPythonList())
 
         # update X,Y,Z in interface
@@ -502,6 +505,7 @@ class SolverWrapperOpenFOAM_41(Component):
         f.close()
         
     def read_node_output(self):
+        #Todo: Check fluent
         ''' This is to be verified but it might be important that when a calculation is started from a prior time step while there is still
         data in the postprocessing folder for that time step from a previous run, that then the checks to see whether the file is completely updated might fail
         and consequently cause the simulation to crash
@@ -604,6 +608,8 @@ class SolverWrapperOpenFOAM_41(Component):
     
     
     def write_node_input(self):
+        #Todo: check fluent
+
         # The displacement of the FSI interface is passed through the file "pointDisplacement_Next"
         # This function will prepare that file in a "serial format" and then decompose it for parallel operation
 
