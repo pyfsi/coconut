@@ -58,7 +58,6 @@ class SolverWrapperAbaqus614(Component):
         self.timestep_start = self.settings["timestep_start"]
         self.surfaceIDs = self.settings['surfaceIDs']
         self.n_surfaces = len(self.surfaceIDs)
-        self.thread_ids = [i for i in range(0, self.n_surfaces)]  # list(range(self.n_surfaces))?
         self.mp_mode = self.settings["mp_mode"]
         self.input_file = self.settings["input_file"]
         self.timestep = self.timestep_start
