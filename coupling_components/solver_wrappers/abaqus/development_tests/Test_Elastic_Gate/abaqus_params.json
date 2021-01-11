@@ -11,26 +11,56 @@
                 "cores": 1,
                 "dimensions": 2,
                 "timestep_start": 0,
-                "delta_T": 1e-03,
+                "delta_t": 1e-03,
                 "arraysize": 10e5,
                 "surfaces": 3,
                 "surfaceIDs": ["BEAMINSIDEMOVING0","BEAMINSIDEMOVING1","BEAMINSIDEMOVING2"],
-                "interface_input":
-                {
-                    "BEAMINSIDEMOVING0_load_points": ["PRESSURE", "TRACTION"],
-                    "BEAMINSIDEMOVING1_load_points": ["PRESSURE", "TRACTION"],
-                    "BEAMINSIDEMOVING2_load_points": ["PRESSURE", "TRACTION"]
-                },
-                "interface_output":
-                {
-                    "BEAMINSIDEMOVING0_nodes": "DISPLACEMENT",
-                    "BEAMINSIDEMOVING1_nodes": "DISPLACEMENT",
-                    "BEAMINSIDEMOVING2_nodes": "DISPLACEMENT"
-                },
+                "interface_input": [
+                    {
+                        "model_part": "BEAMINSIDEMOVING0_load_points",
+                        "variables": [
+                            "pressure",
+                            "traction"
+                        ]
+                    },
+                    {
+                        "model_part": "BEAMINSIDEMOVING1_load_points",
+                        "variables": [
+                            "pressure",
+                            "traction"
+                        ]
+                    },
+                    {
+                        "model_part": "BEAMINSIDEMOVING2_load_points",
+                        "variables": [
+                            "pressure",
+                            "traction"
+                        ]
+                    }
+                ],
+                "interface_output": [
+                    {
+                        "model_part": "BEAMINSIDEMOVING0_nodes",
+                        "variables": [
+                            "displacement"
+                        ]
+                    },
+                    {
+                        "model_part": "BEAMINSIDEMOVING1_nodes",
+                        "variables": [
+                            "displacement"
+                        ]
+                    },
+                    {
+                        "model_part": "BEAMINSIDEMOVING2_nodes",
+                        "variables": [
+                            "displacement"
+                        ]
+                    }
+                ],
                 "mp_mode": "THREADS",
                 "input_file": "Base.inp",
                 "save_iterations": 1,
-
                 "subcycling": 1,
                 "initialInc": 1e-6,
                 "minInc": 1e-12,
