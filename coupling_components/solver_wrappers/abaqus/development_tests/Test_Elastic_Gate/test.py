@@ -21,7 +21,7 @@ def print_colored(string, color):
 if len(argv) != 2:
     err_msg = 'Wrong number of input arguments!\n'
     err_msg += 'Use this script in the following way:\n'
-    err_msg += '    "python Test.py <parameter-file>.json"\n'
+    err_msg += '    \'python Test.py <parameter-file>.json\'\n'
     raise Exception(err_msg)
 
 # Import data structure
@@ -32,17 +32,17 @@ with open('abaqus_params.json') as parameter_file:
     parameters = json.load(parameter_file)
 
 # Create the solver (__init__)
-print("Creating an AbaqusSolver")
-AbaqusSolver0 = create_instance(parameters["solver_wrappers"][0])
-print_colored("AbaqusSolver0 created", "green")
+print('Creating an AbaqusSolver')
+AbaqusSolver0 = create_instance(parameters['solver_wrappers'][0])
+print_colored('AbaqusSolver0 created', 'green')
 
 # Assign loads to the Input-Nodes
 # give value to PRESSURE variable
 
 interface_input = AbaqusSolver0.get_interface_input()
-model_part_0_name = "BEAMINSIDEMOVING0_load_points"
-model_part_1_name = "BEAMINSIDEMOVING1_load_points"
-model_part_2_name = "BEAMINSIDEMOVING2_load_points"
+model_part_0_name = 'BEAMINSIDEMOVING0_load_points'
+model_part_1_name = 'BEAMINSIDEMOVING1_load_points'
+model_part_2_name = 'BEAMINSIDEMOVING2_load_points'
 model_part_0 = interface_input.get_model_part(model_part_0_name)
 model_part_1 = interface_input.get_model_part(model_part_1_name)
 model_part_2 = interface_input.get_model_part(model_part_2_name)
@@ -57,7 +57,7 @@ traction = interface_input.get_variable_data(model_part_2_name, 'traction')
 traction[:, :] = t
 interface_input.set_variable_data(model_part_2_name, 'traction', traction)
 
-print(f"Assigned uniform pressure ({p} Pa) and 0 traction at the interface ")
+print(f'Assigned uniform pressure ({p} Pa) and 0 traction at the interface ')
 
 AbaqusSolver0.initialize()
 
@@ -65,7 +65,7 @@ AbaqusSolver0.initialize()
 AbaqusSolver0.initialize_solution_step()
 AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 
-os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
+os.system('cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb')
 
 # Step 1, Coupling 2
 AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
@@ -76,7 +76,7 @@ AbaqusSolver0.initialize_solution_step()
 interface_output = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
 
-displacement = interface_output.get_variable_data('BEAMINSIDEMOVING2_nodes', "displacement")
+displacement = interface_output.get_variable_data('BEAMINSIDEMOVING2_nodes', 'displacement')
 mp_out = interface_output.get_model_part('BEAMINSIDEMOVING2_nodes')
 
 tol = 1e-07
@@ -88,7 +88,7 @@ while max_diff > tol:
     AbaqusSolver0.initialize_solution_step()
     interface_output = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
     AbaqusSolver0.finalize_solution_step()
-    displacement = interface_output.get_variable_data('BEAMINSIDEMOVING2_nodes', "displacement")  # points to new values
+    displacement = interface_output.get_variable_data('BEAMINSIDEMOVING2_nodes', 'displacement')  # points to new values
     diff = np.linalg.norm(displacement - prev_displacement, axis=1)
     max_disp = np.max(np.linalg.norm(displacement, axis=1))
     max_diff = np.max(diff)
@@ -98,4 +98,4 @@ while max_diff > tol:
 
 AbaqusSolver0.finalize()
 
-print_colored("Finished", 'green')
+print_colored('Finished', 'green')
