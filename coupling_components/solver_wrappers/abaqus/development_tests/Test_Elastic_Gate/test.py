@@ -1,4 +1,3 @@
-from coconut import data_structure
 from coconut.coupling_components.tools import create_instance
 
 import numpy as np
@@ -6,15 +5,16 @@ from sys import argv
 import os
 import json
 
+
 def print_colored(string, color):
-    if color=='green':
-        print('\x1b[0;30;42m'+string+'\x1b[0m')
-    elif color=='orange':
+    if color == 'green':
+        print('\x1b[0;30;42m' + string + '\x1b[0m')
+    elif color == 'orange':
         print('\x1b[0;30;43m' + string + '\x1b[0m')
-    elif color=='red':
+    elif color == 'red':
         print('\x1b[0;30;41m' + string + '\x1b[0m')
     else:
-        print(string+f'(color {color} not implemented)')
+        print(string + f'(color {color} not implemented)')
 
 
 # Check number of command line arguments
@@ -71,7 +71,7 @@ os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
 AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
 
-#Step 2, Coupling 1
+# Step 2, Coupling 1
 AbaqusSolver0.initialize_solution_step()
 interface_output = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 AbaqusSolver0.finalize_solution_step()
