@@ -51,8 +51,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.time_format = "fixed"
         self.adjust_time = self.settings["adjust_time"].GetString()
         self.courant_nr = self.settings["Courant_nr"].GetInt()
-        self.boundary_names = [_.GetString() for _ in self.settings[
-            'boundary_names'].list()]  # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
+        self.boundary_names = [_.GetString() for _ in self.settings['boundary_names'].list()]  # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
         self.meshmotion_solver = self.settings["meshmotion_solver"].GetString()
         self.diffusivity = self.settings["diffusivity"].GetString()
         self.diffusivityX = self.settings["diffusivityX"].GetInt()
@@ -749,7 +748,7 @@ class SolverWrapperOpenFOAM_41(Component):
             # TODO: check if the IF-function is necessary?!
             if self.iteration == 1:
 
-                a = np.loadtxt('displacement2.dat')
+                a = np.loadtxt('displacement1_5_iteration.dat')
                 b = np.hsplit(a,4)
                 x = b[0]
                 y = b[1]

@@ -8,19 +8,19 @@ Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
 GNU ld version 2.20.51.0.2-5.34.el6 20100205
 Abaqus JOB usrInit.f
 Begin Compiling Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:10 PM CET
+Thu 07 Jan 2021 04:08:05 PM CET
 End Compiling Abaqus/Standard User Subroutines
 Begin Linking Abaqus/Standard User Subroutines
 End Linking Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:15 PM CET
+Thu 07 Jan 2021 04:08:10 PM CET
 Abaqus JOB usrInit.f COMPLETED
 Abaqus JOB CSM_Time1
 Abaqus 6.14-1
 Abaqus License Manager checked out the following licenses:
 Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
-<293 out of 395 licenses remain available>.
+<303 out of 395 licenses remain available>.
 Begin Compiling Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:19 PM CET
+Thu 07 Jan 2021 04:08:13 PM CET
 Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
 Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
 
@@ -33,30 +33,30 @@ ifort: command line remark #10148: option '-i-dynamic' not supported
 
 GNU ld version 2.20.51.0.2-5.34.el6 20100205
 End Linking Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:23 PM CET
+Thu 07 Jan 2021 04:08:18 PM CET
 Begin Analysis Input File Processor
-Thu 07 Jan 2021 02:05:23 PM CET
+Thu 07 Jan 2021 04:08:18 PM CET
 Run pre
-Thu 07 Jan 2021 02:05:26 PM CET
+Thu 07 Jan 2021 04:08:21 PM CET
 End Analysis Input File Processor
 Begin Abaqus/Standard Analysis
-Thu 07 Jan 2021 02:05:26 PM CET
+Thu 07 Jan 2021 04:08:21 PM CET
 Run standard
-Thu 07 Jan 2021 02:05:29 PM CET
+Thu 07 Jan 2021 04:08:23 PM CET
 End Abaqus/Standard Analysis
 Abaqus JOB CSM_Time1 COMPLETED
 Abaqus JOB GetOutput
 Begin Compiling User Post-Processing Program
-Thu 07 Jan 2021 02:05:30 PM CET
+Thu 07 Jan 2021 04:08:24 PM CET
 End Compiling User Post-Processing Program
-Thu 07 Jan 2021 02:05:31 PM CET
+Thu 07 Jan 2021 04:08:26 PM CET
 Begin Compiling User Post-Processing Program
-Thu 07 Jan 2021 02:05:31 PM CET
+Thu 07 Jan 2021 04:08:26 PM CET
 End Compiling User Post-Processing Program
-Thu 07 Jan 2021 02:05:32 PM CET
+Thu 07 Jan 2021 04:08:27 PM CET
 Begin Linking User Post-Processing Program
-Thu 07 Jan 2021 02:05:32 PM CET
-Thu 07 Jan 2021 02:05:34 PM CET
+Thu 07 Jan 2021 04:08:27 PM CET
+Thu 07 Jan 2021 04:08:29 PM CET
 End Linking User Post-Processing Program
 Abaqus JOB GetOutput COMPLETED
 Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
@@ -69,19 +69,19 @@ Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
 GNU ld version 2.20.51.0.2-5.34.el6 20100205
 Abaqus JOB usr.f
 Begin Compiling Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:38 PM CET
+Thu 07 Jan 2021 04:08:33 PM CET
 End Compiling Abaqus/Standard User Subroutines
 Begin Linking Abaqus/Standard User Subroutines
 End Linking Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:44 PM CET
+Thu 07 Jan 2021 04:08:38 PM CET
 Abaqus JOB usr.f COMPLETED
 Abaqus JOB CSM_Time1
 Abaqus 6.14-1
 Abaqus License Manager checked out the following licenses:
 Abaqus/Standard checked out 5 tokens from Flexnet server bump.ugent.be.
-<293 out of 395 licenses remain available>.
+<315 out of 395 licenses remain available>.
 Begin Compiling Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:50 PM CET
+Thu 07 Jan 2021 04:08:44 PM CET
 Intel(R) Fortran Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 15.0.3.187 Build 20150407
 Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
 
@@ -94,30 +94,30 @@ ifort: command line remark #10148: option '-i-dynamic' not supported
 
 GNU ld version 2.20.51.0.2-5.34.el6 20100205
 End Linking Abaqus/Standard User Subroutines
-Thu 07 Jan 2021 02:05:56 PM CET
+Thu 07 Jan 2021 04:08:50 PM CET
 Begin Analysis Input File Processor
-Thu 07 Jan 2021 02:05:56 PM CET
+Thu 07 Jan 2021 04:08:50 PM CET
 Run pre
-Thu 07 Jan 2021 02:05:59 PM CET
+Thu 07 Jan 2021 04:08:52 PM CET
 End Analysis Input File Processor
 Begin Abaqus/Standard Analysis
-Thu 07 Jan 2021 02:05:59 PM CET
+Thu 07 Jan 2021 04:08:52 PM CET
 Run standard
-Thu 07 Jan 2021 02:06:02 PM CET
+Thu 07 Jan 2021 04:08:55 PM CET
 End Abaqus/Standard Analysis
 Abaqus JOB CSM_Time1 COMPLETED
 ANALYSIS SUMMARY:
 TOTAL OF          1  INCREMENTS
 0  CUTBACKS IN AUTOMATIC INCREMENTATION
-7  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
-7  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
-7  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+1  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+1  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+1  INVOLVE MATRIX DECOMPOSITION, INCLUDING
 0  DECOMPOSITION(S) OF THE MASS MATRIX
 1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
 0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
 0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
 1  WARNING MESSAGES DURING USER INPUT PROCESSING
-5  WARNING MESSAGES DURING ANALYSIS
+0  WARNING MESSAGES DURING ANALYSIS
 0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
 0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
 0  ERROR MESSAGES
