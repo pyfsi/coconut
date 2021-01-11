@@ -81,20 +81,20 @@ mp_out = interface_output.get_model_part('BEAMINSIDEMOVING2_nodes')
 
 tol = 1e-07
 
-prev_displacement = displacement
+prev_displacement = displacement  # copy not needed, keeps pointing to old values when displacement is overwritten
 
 max_diff = 1000
 while max_diff > tol:
     AbaqusSolver0.initialize_solution_step()
     interface_output = AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
     AbaqusSolver0.finalize_solution_step()
-    displacement = interface_output.get_variable_data('BEAMINSIDEMOVING2_nodes', "displacement")
+    displacement = interface_output.get_variable_data('BEAMINSIDEMOVING2_nodes', "displacement")  # points to new values
     diff = np.linalg.norm(displacement - prev_displacement, axis=1)
     max_disp = np.max(np.linalg.norm(displacement, axis=1))
     max_diff = np.max(diff)
     print(f'max_disp: {max_disp}')
     print(f'max_diff: {max_diff}')
-    prev_displacement = displacement
+    prev_displacement = displacement  # copy not needed, keeps pointing to old values when displacement is overwritten
 
 AbaqusSolver0.finalize()
 
