@@ -73,6 +73,7 @@ class SolverWrapperAbaqus614(Component):
             self.ramp = self.settings["ramp"]
         else:
             self.ramp = 0
+            self.maxNumInc = 1
 
         # Upon (re)starting Abaqus needs to run USRInit.f
         # A restart requires Abaqus to be booted with a restart file

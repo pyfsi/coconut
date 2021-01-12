@@ -1,11 +1,11 @@
-from coconut import data_structure
-from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.coupling_components.tools import create_instance
 
+import unittest
 import numpy as np
-from copy import deepcopy
 import os
+from os.path import join
 import subprocess
+import json
 
 
 def print_box(text):
@@ -16,128 +16,105 @@ def print_box(text):
     print(top + mid + bottom)
 
 
-class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
-    def test_solver_wrapper_abaqus_614(self):
-        self.test_solver_wrapper_abaqus_614_tube2d()
-        self.test_solver_wrapper_abaqus_614_tube3d()
+class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
+    setup_case = True
 
-    def test_solver_wrapper_abaqus_614_tube2d(self):
-        print_box('started tests for Abaqus Tube2D')
-        # axial direction is the y-direction
-
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_v614/tube2d', 'test_solver_wrapper.json')
-
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = data_structure.Parameters(parameter_file.read())
-        par_solver_0 = parameters['solver_wrappers'][0]
-
-        # if running from this folder
-        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory', 'test_v614/tube2d/CSM')
-
-        par_solver = deepcopy(par_solver_0)
-
-        # "global" definitions
-        pressure = vars(data_structure)['PRESSURE']
-        traction = vars(data_structure)['TRACTION']
-
-        p = 1500
-        shear_x = 0
-        shear_y = 0
-        shear_z = 0
-
-        # setup Abaqus case
-        if True:
-            print_box('setup Abaqus case')
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_v614/tube2d')
-            print(f'dir_tmp = {dir_tmp}')
+    @classmethod
+    def setUpClass(cls):
+        if cls.setup_case:
+            dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), 'test_v614/tube2d')
             p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
 
-        # test start and restart
-        if True:
-            print_box('test start and restart')
+    def setUp(self):
+        file_name = join(os.path.dirname(__file__), 'test_v614/tube2d/parameters.json')
+        with open(file_name, 'r') as parameter_file:
+            self.parameters = json.load(parameter_file)
+        self.p = 1500
+        self.shear = np.array([0, 0, 0])
+        self.mp_name_in = 'BEAMINSIDEMOVING_load_points'
+        self.mp_name_out = 'BEAMINSIDEMOVING_nodes'
 
-            # create the solver (__init__)
-            solver = CreateInstance(par_solver)
+    def test_restart(self):
+        # test if restart option works correctly
 
-            # give value to variables
-            mp = solver.model['BEAMINSIDEMOVING_load_points']
-            for node in mp.Nodes:
-                # domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                node.SetSolutionStepValue(pressure, 0, p)
-                node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
+        # create the solver
+        solver = create_instance(self.parameters)
+        interface_input = solver.get_interface_input()
 
-            solver.Initialize()
+        # give value to variables
+        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
+        pressure[:] = self.p
+        interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
+        traction = interface_input.get_variable_data(self.mp_name_in, 'traction')
+        traction[:, :] = self.shear
+        interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
-            # step 1, coupling 1
-            solver.InitializeSolutionStep()
-            output1_1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
-            # step 1, coupling 2
-            output1_2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
-            solver.FinalizeSolutionStep()
+        solver.initialize()
+        # step 1, coupling 1
+        solver.initialize_solution_step()
+        output1_1 = solver.solve_solution_step(interface_input)
+        # step 1, coupling 2
+        output1_2 = solver.solve_solution_step(interface_input)
+        solver.finalize_solution_step()
 
-            # compare output, as input hasn't changed these should be the same
-            a1 = output1_1.GetNumpyArray().copy()
-            a2 = output1_2.GetNumpyArray().copy()
+        # compare output, as input hasn't changed these should be the same
+        a1 = output1_1.get_variable_data(self.mp_name_out, 'displacement')
+        a2 = output1_2.get_variable_data(self.mp_name_out, 'displacement')
 
-            # normalize data and compare
-            mean = np.mean(a1)
-            ref = np.abs(a1 - mean).max()
+        # normalize data and compare
+        mean = np.mean(a1)
+        ref = np.abs(a1 - mean).max()
+        a1n = (a1 - mean) / ref
+        a2n = (a2 - mean) / ref
+        np.testing.assert_allclose(a1n, a2n, rtol=1e-12)
 
-            a1n = (a1 - mean) / ref
-            a2n = (a2 - mean) / ref
+        # step 2 to 4
+        for i in range(3):
+            solver.initialize_solution_step()
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        solver.finalize()
 
-            for i in range(a1.size):
-                self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
+        # get data for solver without restart
+        output_single_run = solver.get_interface_output()
+        a1 = output_single_run.get_variable_data(self.mp_name_out, 'displacement')
 
-            # step 2 to 4
-            for i in range(3):
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            solver.Finalize()
+        # create solver which restarts at time step 2
+        self.parameters['settings']['timestep_start'] = 2
+        solver = create_instance(self.parameters)
+        interface_input = solver.get_interface_input()
 
-            # get data for solver without restart
-            output_single_run = solver.GetInterfaceOutput().deepcopy()
-            a1 = output_single_run.GetNumpyArray().copy()
+        # give value to variables
+        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
+        pressure[:] = self.p
+        interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
+        traction = interface_input.get_variable_data(self.mp_name_in, 'traction')
+        traction[:, :] = self.shear
+        interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
-            # create solver which restarts at time step 2
-            par_solver['settings'].SetInt('timestep_start', 2)
-            solver = CreateInstance(par_solver)
+        solver.initialize()
+        # do step 3 and 4
+        for i in range(2):
+            solver.initialize_solution_step()
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        solver.finalize()
 
-            mp = solver.model['BEAMINSIDEMOVING_load_points']
+        # compare output, as input hasn't changed these should be the same
+        # get data for solver with restart
+        output_restart = solver.get_interface_output()
+        a2 = output_restart.get_variable_data(self.mp_name_out, 'displacement')
 
-            # give value to variables
-            for node in mp.Nodes:
-                # domain extends from Y -0.025 to 0.025, default x-position is 0.005
-                node.SetSolutionStepValue(pressure, 0, p)
-                node.SetSolutionStepValue(traction, 0, [shear_x, shear_y, shear_z])
+        # normalize data and compare
+        mean = np.mean(a1)
+        ref = np.abs(a1 - mean).max()
+        a1n = (a1 - mean) / ref
+        a2n = (a2 - mean) / ref
 
-            solver.Initialize()
+        np.testing.assert_allclose(a1n, a2n, rtol=1e-12)
 
-            # do step 3 and 4
-            for i in range(2):
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            solver.Finalize()
-
-            # compare output, as input hasn't changed these should be the same
-            # get data for solver with restart
-            output_restart = solver.GetInterfaceOutput().deepcopy()
-            a2 = output_restart.GetNumpyArray().copy()
-
-            # normalize data and compare
-            mean = np.mean(a1)
-            ref = np.abs(a1 - mean).max()
-
-            a1n = (a1 - mean) / ref
-            a2n = (a2 - mean) / ref
-
-            for i in range(a1.size):
-                self.assertAlmostEqual(a1n[i] - a2n[i], 0., delta=1e-12)
-
+    def test_partitioning(self):
         # test whether using 4 CPUs gives the same results as using a single one
         if True:
             print_box('test whether using 4 CPUs gives the same results as using a single one')
@@ -222,7 +199,7 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
         print_box('started tests for Abaqus Tube3D')
         # axial direction is the x-direction
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_v614/tube3d', 'test_solver_wrapper.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_v614/tube3d', 'parameters.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
@@ -417,4 +394,4 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()
