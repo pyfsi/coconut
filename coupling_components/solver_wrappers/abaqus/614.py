@@ -64,21 +64,14 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
 
-        if "subcycling" in self.settings.keys():
-            self.subcycling = self.settings["subcycling"]
-            if self.subcycling:
-                self.minInc = self.settings["minInc"]
-                self.initialInc = self.settings["initialInc"]
-                self.maxNumInc = self.settings["maxNumInc"]
-                self.maxInc = self.settings["maxInc"]
-                self.ramp = self.settings["ramp"]
-            else:
-                self.maxNumInc = 1
-                self.maxInc = self.delta_t
-                self.ramp = 0
+        self.subcycling = self.settings.get("subcycling", 0)
+        if self.subcycling:
+            self.minInc = self.settings["minInc"]
+            self.initialInc = self.settings["initialInc"]
+            self.maxNumInc = self.settings["maxNumInc"]
+            self.maxInc = self.settings["maxInc"]
+            self.ramp = self.settings["ramp"]
         else:
-            self.subcycling = 0
-            self.maxNumInc = 1
             self.ramp = 0
 
         # Upon (re)starting Abaqus needs to run USRInit.f
@@ -180,7 +173,7 @@ class SolverWrapperAbaqus614(Component):
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='Compile_GetOutput')
 
-        # Get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
+        # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
         cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='GetOutput_Start')
@@ -236,57 +229,40 @@ class SolverWrapperAbaqus614(Component):
                     self.model_part_surface_ids[mp_name] = i
                     break
             if mp_name not in self.model_part_surface_ids:
-                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}.')
+                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}')
             mp_id = self.model_part_surface_ids[mp_name]
 
             # read in elements file
-            tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat'
-            elem_file = join(self.dir_csm, tmp)
-            elements = np.loadtxt(elem_file)
+            elem0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
+            elements0 = np.loadtxt(elem0_file)
+            n_elem = int(elements0[0])  # elements line 1 contains number of elements
+            n_lp = int(elements0[1])  # elements line 2 contains number of load points per element
+            if elements0.shape[0] - 2 != int(n_elem):  # elements remainder contains element numbers in interface
+                raise ValueError(f"Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with"
+                                 f"the number of elements ({n_elem})")
+            if self.timestep_start != 0:  # check if elements0 corresponds to timestep_start
+                elem_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
+                elements = np.loadtxt(elem_file)
+                if int(elements[0]) != n_elem or int(elements[1]) != n_lp:
+                    raise ValueError(f"Number of load points has changed for {mp_name}")
 
-            if self.timestep_start > 0:
-                tmp0 = f'CSM_Time0Surface{mp_id}Elements.dat'
-                elem0_file = join(self.dir_csm, tmp0)
-                elements0 = np.loadtxt(elem0_file)
-            elif self.timestep_start == 0:
-                elements0 = elements
-
-            n_elem = int(elements[0])  # elements line 1 contains number of elements
-            n_lp = int(elements[1])  # elements line 2 contains number of load points per element
-            if elements.shape[0]-2 != int(n_elem):  # elements remainder contains element numbers involved in interface
-                raise ValueError(f"Number of lines ({elements.shape[0]}) in {elem_file} does not correspond with the "
-                                 f"number of elements ({n_elem})")
-
-            if int(elements0[0]) != n_elem or int(elements0[1]) != n_lp:
-                raise ValueError(f"Number of load points has changed for {mp_name}")
-
-            # read in Faces file for load points and also file at time 0 for original positions for the mappers
-            # TODO: do we need the current list of faces?
-            tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Cpu0Faces.dat'
-            faces_file = join(self.dir_csm, tmp)
-            faces = np.loadtxt(faces_file)
-
-            if self.timestep_start > 0:
-                tmp0 = f'CSM_Time0Surface{mp_id}Cpu0Faces.dat'
-                faces0_file = join(self.dir_csm, tmp0)
-                faces0 = np.loadtxt(faces0_file)
-            elif self.timestep_start == 0:
-                faces0 = faces
-
-            if faces.shape[1] != self.dimensions + 2:
-                raise ValueError(f'given dimension does not match coordinates')
+            # read in faces file for load points
+            faces0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
+            faces0 = np.loadtxt(faces0_file)
+            if faces0.shape[1] != self.dimensions + 2:
+                raise ValueError(f'Given dimension does not match coordinates')
 
             # get load point coordinates and ids of load points
             prev_elem = 0
             prev_lp = 0
-            ids = np.arange(n_elem*n_lp)
-            coords_tmp = np.zeros((n_elem * n_lp, 3)).astype(float)  # z-coordinate mandatory: 0.0 for 2D
+            ids = np.arange(n_elem * n_lp)
+            coords_tmp = np.zeros((n_elem * n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
             for i in range(0, n_elem*n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
                     raise ValueError(f"Element sequence is wrong ({elem}<{prev_elem})")
-                elif elem == prev_elem and lp != prev_lp+1:
+                elif elem == prev_elem and lp != prev_lp + 1:
                     raise ValueError(f"Next line for same element ({elem}) does not contain next load point")
                 elif elem > prev_elem and lp != 1:
                     raise ValueError(f"First line for element ({elem}) does not contain its first load point")
@@ -318,29 +294,22 @@ class SolverWrapperAbaqus614(Component):
                 raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}.')
             mp_id = self.model_part_surface_ids[mp_name]
 
-            # read in Nodes0 file
-            tmp = f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat'
-            nodes_file = join(self.dir_csm, tmp)
-            nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
-
-            if self.timestep_start > 0:
-                tmp0 = f'CSM_Time0Surface{mp_id}Nodes.dat'
-                nodes0_file = join(self.dir_csm, tmp0)
-                nodes0 = np.loadtxt(nodes0_file, skiprows=1)
-            elif self.timestep_start == 0:
-                nodes0 = nodes
-
-            if nodes.shape[1] != self.dimensions:
+            # read in nodes file
+            nodes0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Nodes.dat')
+            nodes0 = np.loadtxt(nodes0_file, skiprows=1)   # first line is a header
+            n_nodes0 = nodes0.shape[0]
+            if nodes0.shape[1] != self.dimensions:
                 raise ValueError(f'Given dimension does not match coordinates.')
+            if self.timestep_start != 0:  # check if nodes0 corresponds to timestep_start
+                nodes_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
+                nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
+                n_nodes = nodes.shape[0]
+                if n_nodes != n_nodes0:
+                    raise ValueError(f"Number of interface nodes has changed for {mp_name}")
 
             # get geometrical node coordinates
-            n_nodes = nodes.shape[0]
-            n_nodes0 = nodes0.shape[0]
-            if n_nodes != n_nodes0:
-                raise ValueError(f"Number of interface nodes has changed for {mp_name}")
-
-            ids = np.arange(n_nodes)  # Abaqus does not use node ids but maintains the output order
-            coords_tmp = np.zeros((n_nodes, 3)).astype(float)  # z-coordinate mandatory: 0.0 for 2D
+            ids = np.arange(n_nodes0)  # Abaqus does not use node ids but maintains the output order
+            coords_tmp = np.zeros((n_nodes0, 3))  # z-coordinate mandatory: 0.0 for 2D
             coords_tmp[:, :self.dimensions] = nodes0
 
             x0 = coords_tmp[:, 0]
@@ -350,7 +319,7 @@ class SolverWrapperAbaqus614(Component):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
-        # check whether the ModelParts and output ModelParts have proper overlap
+        # check whether the input ModelParts and output ModelParts have proper overlap
         for surfaceID in self.surfaceIDs:
             for item in self.settings['interface_input']:
                 mp_name = item['model_part']
@@ -361,6 +330,7 @@ class SolverWrapperAbaqus614(Component):
                 mp_name = item['model_part']
                 if surfaceID in mp_name:
                     mp_out = self.model.get_model_part(mp_name)
+                    break
             tools.check_bounding_box(mp_in, mp_out)
 
         # create Interfaces
@@ -397,9 +367,10 @@ class SolverWrapperAbaqus614(Component):
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 mp_id = self.model_part_surface_ids[mp_name]
-                tmp = f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat"
-                tmp2 = f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input_Iter{self.iteration}.dat"
-                cmd = f"cp {join(self.dir_csm, tmp)} {join(self.dir_csm, tmp2)}"
+                file_name1 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat")
+                file_name2 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input"
+                                                f"_Iter{self.iteration}.dat")
+                cmd = f"cp {file_name1} {file_name2}"
                 os.system(cmd)
 
         # Run Abaqus and check for (licensing) errors
@@ -408,7 +379,7 @@ class SolverWrapperAbaqus614(Component):
         while not bool_completed and attempt < 10000:
             attempt += 1
             if attempt > 1:
-                tools.print_info(f"Warning attempt {attempt-1} in AbaqusSolver failed, new attempt in one minute",
+                tools.print_info(f"Warning attempt {attempt - 1} in AbaqusSolver failed, new attempt in one minute",
                                  layout='warning')
                 time.sleep(60)
                 tools.print_info(f"Starting attempt {attempt}")
@@ -439,10 +410,12 @@ class SolverWrapperAbaqus614(Component):
             elif "COMPLETED" in line:  # Check final line for completed
                 bool_completed = 1
             elif bool_lic:  # Final line did not contain "COMPLETED" but also no licensing error detected
-                raise RuntimeError("Abaqus did not COMPLETE, unclassified error, see AbaqusSolver.log for extra information")
+                raise RuntimeError("Abaqus did not COMPLETE, unclassified error, see AbaqusSolver.log "
+                                   "for extra information")
 
             # Append additional information to log file
-            cmd = f"tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' >> AbaqusSolver.log 2>&1"
+            cmd = f"tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\'" \
+                f" >> AbaqusSolver.log 2>&1"
             self.run_shell(self.dir_csm, [cmd], name='Append_log')
 
         # Write Abaqus output
@@ -455,14 +428,13 @@ class SolverWrapperAbaqus614(Component):
 
             # read in output file for surface nodes
             mp_id = self.model_part_surface_ids[mp_name]
-            tmp = f"CSM_Time{self.timestep}Surface{mp_id}Output.dat"
-            file_name = join(self.dir_csm, tmp)
+            file_name = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Output.dat")
             data = np.loadtxt(file_name, skiprows=1)
 
             # copy output data for debugging
             if self.debug:
-                tmp2 = f"CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat"
-                cmd = f"cp {file_name} {join(self.dir_csm,tmp2)}"
+                file_name2 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat")
+                cmd = f"cp {file_name} {file_name2}"
                 os.system(cmd)
 
             if data.shape[1] != self.dimensions:
@@ -483,7 +455,7 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep and (self.timestep-1) % self.settings['save_iterations']:
+        if self.timestep and (self.timestep - 1) % self.settings['save_iterations']:
             to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
                                     "Surface0Cpu0Input.dat", "Surface0Output.dat"]
             cmd = []
@@ -610,7 +582,8 @@ class SolverWrapperAbaqus614(Component):
                         if s.strip().startswith("inc="):
                             numbers = re.findall("\d+", s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
-                                raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested but maxNumInc > 1.")
+                                raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested "
+                                                          f"but maxNumInc > 1.")
                             else:
                                 line_new += f" inc={self.maxNumInc},"
                         else:
@@ -634,7 +607,8 @@ class SolverWrapperAbaqus614(Component):
                                     line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
                             else:
                                 raise NotImplementedError(
-                                    f"{contents_B[1]} not available: Currently only quasi-static and moderate dissipation are implemented for the Abaqus wrapper")
+                                    f"{contents_B[1]} not available: Currently only quasi-static and "
+                                    f"moderate dissipation are implemented for the Abaqus wrapper")
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
@@ -677,12 +651,10 @@ class SolverWrapperAbaqus614(Component):
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             data = np.hstack((pressure, traction[:, :self.dimensions]))
             fmt = (self.dimensions + 1) * '%27.17e'  # format of load input file should be exactly this for USR.f
-            tmp = f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat'
-            file_name = join(self.dir_csm, tmp)
+            file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
             # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
             if self.iteration == 1 and self.timestep == 1 and self.ramp:
-                tmp = f'CSM_Time{self.timestep-1}Surface{mp_id}Cpu0Input.dat'
-                file_name = join(self.dir_csm, tmp)
-                np.savetxt(file_name, data * 0.0, fmt=fmt, header=f'{model_part.size}', comments='')
+                file_name = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Input.dat')
+                np.savetxt(file_name, data * 0, fmt=fmt, header=f'{model_part.size}', comments='')
