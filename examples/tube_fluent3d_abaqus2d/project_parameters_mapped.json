@@ -51,15 +51,23 @@
           "thread_names": [
             "wall"
           ],
-          "interface_input": {
-            "wall_nodes": "DISPLACEMENT"
-          },
-          "interface_output": {
-            "wall_faces": [
-              "PRESSURE",
-              "TRACTION"
-            ]
-          },
+          "interface_input": [
+            {
+              "model_part": "wall_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "wall_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
           "cores": 6,
           "fluent_gui": false,
           "max_nodes_per_face": 4,
@@ -82,15 +90,23 @@
               "surfaceIDs": [
                 "BEAMINSIDEMOVING"
               ],
-              "interface_input": {
-                "BEAMINSIDEMOVING_load_points": [
-                  "PRESSURE",
-                  "TRACTION"
-                ]
-              },
-              "interface_output": {
-                "BEAMINSIDEMOVING_nodes": "DISPLACEMENT"
-              },
+              "interface_input": [
+                {
+                  "model_part": "BEAMINSIDEMOVING_load_points",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "BEAMINSIDEMOVING_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
               "mp_mode": "THREADS",
               "input_file": "Base.inp",
               "save_iterations": 1
@@ -116,17 +132,17 @@
                     "type": "mappers.radial_basis",
                     "settings": {
                       "directions": [
-                        "X",
-                        "Y",
-                        "Z"
+                        "x",
+                        "y",
+                        "z"
                       ]
                     }
                   },
                   {
                     "type": "mappers.axisymmetric_3d_to_2d",
                     "settings": {
-                      "direction_axial": "Y",
-                      "direction_radial": "X",
+                      "direction_axial": "y",
+                      "direction_radial": "x",
                       "n_tangential": 8
                     }
                   }
@@ -143,8 +159,8 @@
                   {
                     "type": "mappers.axisymmetric_2d_to_3d",
                     "settings": {
-                      "direction_axial": "Y",
-                      "direction_radial": "X",
+                      "direction_axial": "y",
+                      "direction_radial": "x",
                       "n_tangential": 8
                     }
                   },
@@ -152,9 +168,9 @@
                     "type": "mappers.radial_basis",
                     "settings": {
                       "directions": [
-                        "X",
-                        "Y",
-                        "Z"
+                        "x",
+                        "y",
+                        "z"
                       ]
                     }
                   },

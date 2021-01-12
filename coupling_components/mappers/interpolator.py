@@ -71,7 +71,7 @@ class MapperInterpolator(Component):
             raise ValueError(f'not enough from-points: {self.n_from} < {self.n_nearest}')
 
         # check bounding boxes
-        self.check_bounding_box(model_part_from, model_part_to)
+        tools.check_bounding_box(model_part_from, model_part_to)
 
         # apply scaling to coordinates
         if self.scaling is not None:
@@ -108,55 +108,6 @@ class MapperInterpolator(Component):
             for j in range(data_to.shape[1]):
                 data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest[i, :], j])
         interface_to.set_variable_data(mp_name_to, var_to, data_to)
-
-    def check_bounding_box(self, model_part_from, model_part_to):
-        # set tolerances  # TODO: overwrite tolerances from parameters?
-        tol_center_warning = 0.02
-        tol_center_error = 0.1
-        tol_minmax_warning = 0.1
-        tol_minmax_error = 0.3
-
-        # get bounding boxes
-        from_min = self.coords_from.min(axis=0)
-        from_max = self.coords_from.max(axis=0)
-        to_min = self.coords_to.min(axis=0)
-        to_max = self.coords_to.max(axis=0)
-        from_center = (from_min + from_max) / 2
-        to_center = (to_min + to_max) / 2
-
-        # get reference distance (= average length of bounding box diagonal)
-        diag_from = from_max - from_min
-        diag_to = to_max - to_min
-        d_ref = np.linalg.norm((diag_from + diag_to) / 2)
-
-        # calculate errors on bounding boxes
-        error_center = np.linalg.norm(from_center - to_center) / d_ref
-        error_min = np.linalg.norm(from_min - to_min) / d_ref
-        error_max = np.linalg.norm(from_max - to_max) / d_ref
-
-        # raise warning or error if necessary
-        msg_1 = f'ModelParts "{model_part_from.name}", "{model_part_to.name}": '
-        msg_2 = ' values differ by '
-        msg_3 = f'\n\t"{model_part_from.name}": minimal values = {from_min} and maximal values = {from_max}' \
-                f'\n\t"{model_part_to.name}": minimal values = {to_min} and maximal values = {to_max}'
-
-        msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
-        if error_center > tol_center_error:
-            raise ValueError(msg)
-        if error_center > tol_center_warning:
-            raise Warning(msg)
-
-        msg = f'{msg_1}min{msg_2}{100 * error_min:.1f}%' + msg_3
-        if error_min > tol_minmax_error:
-            raise ValueError(msg)
-        if error_min > tol_minmax_warning:
-            raise Warning(msg)
-
-        msg = f'{msg_1}max{msg_2}{100 * error_max:.1f}%' + msg_3
-        if error_max > tol_minmax_error:
-            raise ValueError(msg)
-        if error_max > tol_minmax_warning:
-            raise Warning(msg)
 
     def check_duplicate_points(self, model_part_from):
         # checks only from-points
