@@ -10,21 +10,23 @@ import json
 
 class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     setup_case = True
-    dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), 'test_v614/tube2d')
-    file_name = join(os.path.dirname(__file__), 'test_v614/tube2d/parameters.json')
+    dimension = 2
     p = 1500
     shear = np.array([0, 0, 0])
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
     mp_name_out = 'BEAMINSIDEMOVING_nodes'
+    radial = [0, 1, 2]
 
     @classmethod
     def setUpClass(cls):
         if cls.setup_case:
-            p_setup_abaqus = subprocess.Popen(os.path.join(cls.dir_tmp, 'setup_abaqus.sh'), cwd=cls.dir_tmp, shell=True)
+            dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), f'test_v614/tube{int(cls.dimension)}d')
+            p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
 
         # perform reference calculation
-        with open(cls.file_name, 'r') as parameter_file:
+        file_name = join(os.path.dirname(__file__), f'test_v614/tube{int(cls.dimension)}d/parameters.json')
+        with open(file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
 
         # create the solver
@@ -51,12 +53,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         a1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement').copy()
         a2 = output1_2.get_variable_data(cls.mp_name_out, 'displacement').copy()
 
-        # normalize data and compare
-        mean = np.mean(a1, axis=0)
-        ref = np.abs(a1 - mean).max()
-        a1n = (a1 - mean) / ref
-        a2n = (a2 - mean) / ref
-        np.testing.assert_allclose(a1n, a2n, atol=1e-12)
+        # compare
+        np.testing.assert_allclose(a2, a1, rtol=1e-12)
 
         # step 2 to 4
         for i in range(3):
@@ -69,13 +67,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         output_single_run = solver.get_interface_output()
         cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement').copy()
         cls.mean = np.mean(cls.a1, axis=0)
-        cls.ref = np.abs(cls.a1 - cls.mean).max()
-        cls.a1n = (cls.a1 - cls.mean) / cls.ref
+        cls.ref = np.abs(cls.a1 - cls.mean).max(axis=0)
+        cls.a1n = np.divide(cls.a1 - cls.mean, cls.ref, out=np.zeros(cls.a1.shape, dtype=float), where=cls.ref != 0)
         cls.mean_disp_y_no_shear = np.mean(cls.a1[:, 1])/cls.a1.shape[0]
         cls.mean_disp_x_no_shear = np.mean(cls.a1[:, 0])/cls.a1.shape[0]   # needed for 3D test case
+        print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
 
     def setUp(self):
-        with open(self.file_name, 'r') as parameter_file:
+        file_name = join(os.path.dirname(__file__), f'test_v614/tube{int(self.dimension)}d/parameters.json')
+        with open(file_name, 'r') as parameter_file:
             self.parameters = json.load(parameter_file)
 
     def test_restart(self):
@@ -108,10 +108,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement').copy()
 
         # normalize data and compare
-        self.a3n = (self.a3 - self.mean) / self.ref
-        print(f"Max diff between a1n and a3n: {np.abs(self.a1n - self.a3n).max()} \n")
+        self.a3n = np.divide(self.a3 - self.mean, self.ref, out=np.zeros(self.a3.shape, dtype=float),
+                             where=self.ref != 0)
+        print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
+        print(f"Max diff between a1n and a3n: {np.abs(self.a1n - self.a3n).max(axis=0)}")
+        print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
-        np.testing.assert_allclose(self.a1n, self.a3n, atol=1e-12)  # correct to consider absolute tolerance only?
+        # np.testing.assert_allclose(self.a1n, self.a3n, atol=1e-12)  # correct to consider absolute tolerance only?
+        for i in self.radial:
+            np.testing.assert_allclose(self.a3[:, i], self.a1[:, i], rtol=1e-12)
 
     def test_partitioning(self):
         # test whether using 4 CPUs gives the same results as using a single one
@@ -142,10 +147,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement').copy()
 
         # normalize data and compare
-        self.a4n = (self.a4 - self.mean) / self.ref
-        print(f"Max diff between a1n and a4n: {np.abs(self.a1n - self.a4n).max()} \n")
+        self.a4n = np.divide(self.a4 - self.mean, self.ref, out=np.zeros(self.a4.shape, dtype=float),
+                             where=self.ref != 0)
+        print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
+        print(f"Max diff between a1n and a4n: {np.abs(self.a1n - self.a4n).max(axis=0)}")
+        print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
-        np.testing.assert_allclose(self.a4n, self.a1n, atol=1e-12)  # correct to consider absolute tolerance only?
+        # np.testing.assert_allclose(self.a4n, self.a1n, atol=1e-12)  # correct to consider absolute tolerance only?
+        for i in self.radial:
+            np.testing.assert_allclose(self.a4[:, i], self.a1[:, i], rtol=1e-12)
 
     def test_shear(self):
         # test whether shear is also applied (y is the axial direction)
@@ -188,12 +198,10 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
 class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
     setup_case = True
-    file_name = join(os.path.dirname(__file__), 'test_v614/tube3d/parameters.json')
-    dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), 'test_v614/tube3d')
-    p = 1500
-    shear = np.array([0, 0, 0])
+    dimension = 3
     mp_name_in = 'WALLOUTSIDE_load_points'
     mp_name_out = 'WALLOUTSIDE_nodes'
+    radial = [0, 1, 2]
 
     def test_shear(self):
         # test whether shear is also applied (x is the axial direction)
