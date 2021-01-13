@@ -15,7 +15,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     shear = np.array([0, 0, 0])
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
     mp_name_out = 'BEAMINSIDEMOVING_nodes'
-    radial = [0, 1, 2]
 
     @classmethod
     def setUpClass(cls):
@@ -66,11 +65,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # get data for solver without restart
         output_single_run = solver.get_interface_output()
         cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement').copy()
-        cls.mean = np.mean(cls.a1, axis=0)
-        cls.ref = np.abs(cls.a1 - cls.mean).max(axis=0)
-        cls.a1n = np.divide(cls.a1 - cls.mean, cls.ref, out=np.zeros(cls.a1.shape, dtype=float), where=cls.ref != 0)
-        cls.mean_disp_y_no_shear = np.mean(cls.a1[:, 1])/cls.a1.shape[0]
-        cls.mean_disp_x_no_shear = np.mean(cls.a1[:, 0])/cls.a1.shape[0]   # needed for 3D test case
+        cls.mean_disp_y_no_shear = np.mean(np.abs(cls.a1[:, 1]))
+        cls.mean_disp_x_no_shear = np.mean(np.abs(cls.a1[:, 0]))  # needed for 3D test case
         print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
 
     def setUp(self):
@@ -94,8 +90,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         traction[:, :] = self.shear
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
-        solver.initialize()
         # do step 3 and 4
+        solver.initialize()
         for i in range(2):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
@@ -106,17 +102,10 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # get data for solver with restart
         output_restart = solver.get_interface_output()
         self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement').copy()
-
-        # normalize data and compare
-        self.a3n = np.divide(self.a3 - self.mean, self.ref, out=np.zeros(self.a3.shape, dtype=float),
-                             where=self.ref != 0)
         print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
-        print(f"Max diff between a1n and a3n: {np.abs(self.a1n - self.a3n).max(axis=0)}")
         print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
-        # np.testing.assert_allclose(self.a1n, self.a3n, atol=1e-12)  # correct to consider absolute tolerance only?
-        for i in self.radial:
-            np.testing.assert_allclose(self.a3[:, i], self.a1[:, i], rtol=1e-12)
+        np.testing.assert_allclose(self.a3, self.a1, rtol=0, atol=1e-12)
 
     def test_partitioning(self):
         # test whether using 4 CPUs gives the same results as using a single one
@@ -145,17 +134,10 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as input hasn't changed these should be the same
         output_4cores = solver.get_interface_output()
         self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement').copy()
-
-        # normalize data and compare
-        self.a4n = np.divide(self.a4 - self.mean, self.ref, out=np.zeros(self.a4.shape, dtype=float),
-                             where=self.ref != 0)
         print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
-        print(f"Max diff between a1n and a4n: {np.abs(self.a1n - self.a4n).max(axis=0)}")
         print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
-        # np.testing.assert_allclose(self.a4n, self.a1n, atol=1e-12)  # correct to consider absolute tolerance only?
-        for i in self.radial:
-            np.testing.assert_allclose(self.a4[:, i], self.a1[:, i], rtol=1e-12)
+        np.testing.assert_allclose(self.a4, self.a1, rtol=0, atol=1e-12)
 
     def test_shear(self):
         # test whether shear is also applied (y is the axial direction)
@@ -186,9 +168,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
         self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement').copy()
-
-        # normalize data and compare
-        self.mean_disp_y_shear = np.mean(self.a5[:, 1])/self.a5.shape[0]
+        self.mean_disp_y_shear = np.mean(np.abs(self.a5[:, 1]))
 
         print(f'Mean y-displacement without shear = {self.mean_disp_y_no_shear} m')
         print(f'Mean y-displacement with shear = {self.mean_disp_y_shear} m')
@@ -201,7 +181,6 @@ class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
     dimension = 3
     mp_name_in = 'WALLOUTSIDE_load_points'
     mp_name_out = 'WALLOUTSIDE_nodes'
-    radial = [0, 1, 2]
 
     def test_shear(self):
         # test whether shear is also applied (x is the axial direction)
@@ -233,9 +212,7 @@ class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
         self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement').copy()
-
-        # normalize data and compare
-        self.mean_disp_x_shear = np.mean(self.a5[:, 0])/self.a5.shape[0]
+        self.mean_disp_x_shear = np.mean(np.abs(self.a5[:, 0]))
 
         print(f'Mean x-displacement without shear = {self.mean_disp_x_no_shear} m')
         print(f'Mean x-displacement with shear = {self.mean_disp_x_shear} m')
