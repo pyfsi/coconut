@@ -27,7 +27,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         with open(cls.file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
 
-        print(f"Working directory reference: {parameters['settings']['working_directory']}")
         # create the solver
         solver = create_instance(parameters)
         interface_input = solver.get_interface_input()
@@ -81,7 +80,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     def test_restart(self):
         # test if restart option works correctly
-        print(f"Working directory for test_restart: {self.parameters['settings']['working_directory']}")
 
         # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
@@ -117,7 +115,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     def test_partitioning(self):
         # test whether using 4 CPUs gives the same results as using a single one
-        print(f"Working directory for test_partitioning: {self.parameters['settings']['working_directory']}")
 
         # adapt Parameters, create solver
         self.parameters['settings']['cores'] = 4
@@ -152,7 +149,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     def test_shear(self):
         # test whether shear is also applied (y is the axial direction)
-        print(f"Working directory for test_shear: {self.parameters['settings']['working_directory']}")
 
         # create solver
         solver = create_instance(self.parameters)
