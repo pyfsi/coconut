@@ -49,8 +49,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver.finalize_solution_step()
 
         # compare output, as input hasn't changed these should be the same
-        a1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement').copy()
-        a2 = output1_2.get_variable_data(cls.mp_name_out, 'displacement').copy()
+        a1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement')
+        a2 = output1_2.get_variable_data(cls.mp_name_out, 'displacement')
 
         # compare
         np.testing.assert_allclose(a2, a1, rtol=1e-15)
@@ -64,9 +64,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # get data for solver without restart
         output_single_run = solver.get_interface_output()
-        cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement').copy()
-        cls.mean_disp_y_no_shear = np.mean(np.abs(cls.a1[:, 1]))
-        cls.mean_disp_x_no_shear = np.mean(np.abs(cls.a1[:, 0]))  # needed for 3D test case
+        cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement')
         print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
 
     def setUp(self):
@@ -109,7 +107,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as input hasn't changed these should be the same
         # get data for solver with restart
         output_restart = solver.get_interface_output()
-        self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement')
         print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
         print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
@@ -148,7 +146,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # compare output, as input hasn't changed these should be the same
         output_4cores = solver.get_interface_output()
-        self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement')
         print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
         print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
@@ -182,11 +180,9 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
-        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement')
         self.mean_disp_y_shear = np.mean(np.abs(self.a5[:, 1]))
-
-        print(f'Mean y-displacement without shear = {self.mean_disp_y_no_shear} m')
-        print(f'Mean y-displacement with shear = {self.mean_disp_y_shear} m')
+        self.mean_disp_y_no_shear = np.mean(np.abs(self.a1[:, 1]))
 
         self.assertNotAlmostEqual(self.mean_disp_y_no_shear - self.mean_disp_y_shear, 0., delta=1e-12)
 
@@ -226,8 +222,9 @@ class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
 
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
-        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement')
         self.mean_disp_x_shear = np.mean(np.abs(self.a5[:, 0]))
+        self.mean_disp_x_no_shear = np.mean(np.abs(self.a1[:, 0]))
 
         print(f'Mean x-displacement without shear = {self.mean_disp_x_no_shear} m')
         print(f'Mean x-displacement with shear = {self.mean_disp_x_shear} m')
