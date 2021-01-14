@@ -8,7 +8,7 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
         self.parameters = {'type': 'mappers.2d_axisymmetric_to_wedge_3d',
@@ -110,9 +110,9 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         var_s = 'pressure'
         var_v = 'displacement'
 
-        n_in = 4
+        n_in = 10
         n_to = n_in *2
-        tmp = np.linspace(0, 5, n_to)
+        tmp = np.linspace(0, 5, n_in)
         r_tmp = (1. + 0.2 * np.sin(2 * np.pi / 5 * tmp))
 
         # create model_part_to (3D)
@@ -178,9 +178,9 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
             ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1, colors='r', linewidth=3)
+                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.05, colors='r', linewidth=3)
             ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1)
+                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.05)
 
             for ax in [ax_s, ax_v]:
                 ax.set_xlabel('x')
@@ -188,6 +188,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
+            plt.xlim(0,6)
+            plt.ylim(0.7,1.5)
             plt.show()
             plt.close()
 
