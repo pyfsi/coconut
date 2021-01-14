@@ -11,7 +11,7 @@ from sketch import *
 from visualization import *
 from connectorBehavior import *
 from makeSurface import *
-import os
+
 mdb = Mdb(pathName='CSM_Time0.cae')
 tubeModel = mdb.ModelFromInputFile(name='Model-1',inputFileName='Base.inp')
 tubeMaterial = tubeModel.Material(name = 'Material');
@@ -24,7 +24,7 @@ tubePart.setValues(space = AXISYMMETRIC, type = DEFORMABLE_BODY)
 tubeModel.HomogeneousSolidSection(material='Material', name='TubeSection', thickness=1.0)
 tubePart.SectionAssignment(offset=0.0, region=Region(elements=tubePart.elements), sectionName='TubeSection')
 step1 = tubeModel.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=0.0001, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=0.0001, minInc=0.0001, maxInc=0.0001, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
-step1.Restart(frequency = 99999, overlay  = ON)
+step1.Restart(frequency = 99999, overlay = ON)
 movingSurface0 = SurfaceFromNodeSet(tubeAssembly, tubeInstance, 'BEAMINSIDEMOVING', 'MOVINGSURFACE0')
 tubeModel.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distributionType = USER_DEFINED, field = '', magnitude = 1, region=movingSurface0)
 tubeModel.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)
