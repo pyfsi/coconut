@@ -112,7 +112,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
         if self.dimension == 2:
-            np.testing.assert_array_equal(self.a3[2], self.a3[2] * 0.0)
+            np.testing.assert_array_equal(self.a3[:, 2], self.a3[:, 2] * 0.0)
             np.testing.assert_allclose(self.a3[:, :2], self.a1[:, :2], rtol=1e-10, atol=1e-17)
         else:
             np.testing.assert_allclose(self.a3, self.a1, rtol=1e-10, atol=1e-17)
@@ -155,7 +155,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
         if self.dimension == 2:
-            np.testing.assert_array_equal(self.a4[2], self.a4[2] * 0.0)
+            np.testing.assert_array_equal(self.a4[:, 2], self.a4[:, 2] * 0.0)
             np.testing.assert_allclose(self.a4[:, :2], self.a1[:, :2], rtol=1e-10, atol=1e-17)
         else:
             np.testing.assert_allclose(self.a4, self.a1, rtol=1e-10, atol=1e-17)
