@@ -53,7 +53,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         a2 = output1_2.get_variable_data(cls.mp_name_out, 'displacement').copy()
 
         # compare
-        np.testing.assert_allclose(a2, a1, rtol=1e-12)
+        np.testing.assert_allclose(a2, a1, rtol=1e-15)
 
         # step 2 to 4
         for i in range(3):
@@ -75,7 +75,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
             self.parameters = json.load(parameter_file)
 
     def test_restart(self):
-        # test if restart option works correctly
+        """
+        Test whether restarting at time step 2 and simulating 2 time steps yields the same displacement as when the
+        simulation is ran from time step 0 until time step 4. A constant pressure is applied and no shear, on the tube
+        examples. For the test the relative difference between displacements is checked, but it is required to also use
+        a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e. whenever one of the
+        original coordinates is 0), because those have a near-zero displacement after applying a uniform pressure an no
+        shear. This near-zero value is a noise and has large relative differences between runs, but a very low absolute
+        value, they are successfully filtered with an absolute tolerance.
+        """
 
         # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
@@ -105,10 +113,17 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
         print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
-        np.testing.assert_allclose(self.a3, self.a1, rtol=0, atol=1e-12)
+        np.testing.assert_allclose(self.a3, self.a1, rtol=1e-10, atol=1e-17)
 
     def test_partitioning(self):
-        # test whether using 4 CPUs gives the same results as using a single one
+        """
+        Test whether using 4 CPUs yields the same results as using a single one. A constant pressure is applied and no
+        shear, on the tube examples. For the test the relative difference between displacements is checked, but it is
+        required to also use a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e.
+        whenever one of the original coordinates is 0), because those have a near-zero displacement after applying a
+        uniform pressure an no shear. This near-zero value is a noise and has large relative differences between runs,
+        but a very low absolute value, they are successfully filtered with an absolute tolerance.
+        """
 
         # adapt Parameters, create solver
         self.parameters['settings']['cores'] = 4
@@ -137,7 +152,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
         print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
-        np.testing.assert_allclose(self.a4, self.a1, rtol=0, atol=1e-12)
+        np.testing.assert_allclose(self.a4, self.a1, rtol=1e-10, atol=1e-17)
 
     def test_shear(self):
         # test whether shear is also applied (y is the axial direction)
