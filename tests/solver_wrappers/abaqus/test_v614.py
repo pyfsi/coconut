@@ -13,6 +13,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     dimension = 2
     p = 1500
     shear = np.array([0, 0, 0])
+    shear_dir = 1   # y-direction is axial direction
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
     mp_name_out = 'BEAMINSIDEMOVING_nodes'
 
@@ -161,16 +162,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
             np.testing.assert_allclose(self.a4, self.a1, rtol=1e-10, atol=1e-17)
 
     def test_shear(self):
-        # test whether shear is also applied (y is the axial direction)
+        # test whether shear is also applied
 
         # create solver
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
 
-        if self.dimension == 2:  # define a non-zero shear in y-direction
-            local_shear = self.shear + np.array([0, 5, 0])
-        else:  # define a non-zero shear in x-direction
-            local_shear = self.shear + np.array([5, 0, 0])
+        # apply non-zero shear in shear_dir (y for 2D, x for 3D)
+        local_shear = self.shear
+        local_shear[self.shear_dir] = 5
 
         # give value to variables
         pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
@@ -191,23 +191,17 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
         self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement')
-        if self.dimension == 2:
-            self.mean_disp_y_shear = np.mean(np.abs(self.a5[:, 1]))
-            self.mean_disp_y_no_shear = np.mean(np.abs(self.a1[:, 1]))
-            print(f'Mean y-displacement without shear = {self.mean_disp_y_no_shear} m')
-            print(f'Mean y-displacement with shear = {self.mean_disp_y_shear} m')
-            self.assertNotAlmostEqual(self.mean_disp_y_no_shear - self.mean_disp_y_shear, 0., delta=1e-12)
-        else:
-            self.mean_disp_x_shear = np.mean(np.abs(self.a5[:, 0]))
-            self.mean_disp_x_no_shear = np.mean(np.abs(self.a1[:, 0]))
-            print(f'Mean x-displacement without shear = {self.mean_disp_x_no_shear} m')
-            print(f'Mean x-displacement with shear = {self.mean_disp_x_shear} m')
-            self.assertNotAlmostEqual(self.mean_disp_x_no_shear - self.mean_disp_x_shear, 0., delta=1e-12)
+        self.mean_disp_shear = np.mean(np.abs(self.a5[:, self.shear_dir]))
+        self.mean_disp_no_shear = np.mean(np.abs(self.a1[:, self.shear_dir]))
+        print(f'Mean displacement in axial direction without shear = {self.mean_disp_no_shear} m')
+        print(f'Mean displacement in axial direction with shear = {self.mean_disp_shear} m')
+        self.assertNotAlmostEqual(self.mean_disp_no_shear - self.mean_disp_shear, 0., delta=1e-12)
 
 
 class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
     setup_case = True
     dimension = 3
+    shear_dir = 0   # x-direction is axial direction
     mp_name_in = 'WALLOUTSIDE_load_points'
     mp_name_out = 'WALLOUTSIDE_nodes'
 
