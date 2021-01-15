@@ -108,6 +108,7 @@ class SolverWrapperTubeFlow(Component):
         self.trac = np.zeros((self.m, 3))  # traction
 
         self.conditioning = self.alpha  # factor for conditioning Jacobian
+        self.residual0 = None  # initial residual for Newton-Raphson
 
         # modelParts
         self.model = Model()
@@ -136,6 +137,7 @@ class SolverWrapperTubeFlow(Component):
 
         self.k = 0
         self.n += 1
+        self.residual0 = None
         if self.unsteady:
             self.un = np.array(self.u)
             self.pn = np.array(self.p)
@@ -153,11 +155,14 @@ class SolverWrapperTubeFlow(Component):
         self.a[0] = self.a[1]
         self.a[self.m + 1] = self.a[self.m]
 
+        self.k += 1
+
         # Newton iterations
         converged = False
         f = self.get_residual()
-        residual0 = np.linalg.norm(f)
-        if residual0:
+        if self.k == 1:
+            self.residual0 = np.linalg.norm(f)
+        if self.residual0:
             for s in range(self.newtonmax):
                 j = self.get_jacobian()
                 b = -f
@@ -170,13 +175,13 @@ class SolverWrapperTubeFlow(Component):
                     self.p[0] = self.get_inlet_boundary()
                 f = self.get_residual()
                 residual = np.linalg.norm(f)
-                if residual / residual0 < self.newtontol:
+                print(self.residual0, residual, residual / self.residual0, s)
+                if residual / self.residual0 < self.newtontol:
                     converged = True
                     break
             if not converged:
-                Exception("Newton failed to converge")
+                raise Exception("Newton failed to converge")
 
-        self.k += 1
         if self.debug:
             file_name = self.working_directory + f"/Input_Displacement_TS{self.n}_IT{self.k}.txt"
             with open(file_name, 'w') as file:
