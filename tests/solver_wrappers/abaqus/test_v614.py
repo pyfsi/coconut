@@ -191,11 +191,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
         self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement')
-        self.mean_disp_shear = np.mean(np.abs(self.a5[:, self.shear_dir]))
-        self.mean_disp_no_shear = np.mean(np.abs(self.a1[:, self.shear_dir]))
-        print(f'Mean displacement in axial direction without shear = {self.mean_disp_no_shear} m')
-        print(f'Mean displacement in axial direction with shear = {self.mean_disp_shear} m')
-        self.assertNotAlmostEqual(self.mean_disp_no_shear - self.mean_disp_shear, 0., delta=1e-12)
+
+        # calculate mean displacement
+        # no absolute value is used on purpose to filter out the axial displacement due to pressure only
+        self.mean_displacement_shear = np.mean(self.a5[:, self.axial_dir])
+        self.mean_displacement_no_shear = np.mean(self.a1[:, self.axial_dir])
+
+        print(f'Mean displacement in axial direction without shear = {self.mean_displacement_no_shear} m')
+        print(f'Mean displacement in axial direction with shear = {self.mean_displacement_shear} m')
+        self.assertNotAlmostEqual(self.mean_displacement_no_shear - self.mean_displacement_shear, 0., delta=1e-12)
 
 
 class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
