@@ -13,7 +13,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     dimension = 2
     p = 1500
     shear = np.array([0, 0, 0])
-    shear_dir = 1   # y-direction is axial direction
+    axial_dir = 1   # y-direction is axial direction
+    radial_dirs = [0]
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
     mp_name_out = 'BEAMINSIDEMOVING_nodes'
 
@@ -115,11 +116,10 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
         print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
-        if self.dimension == 2:
-            np.testing.assert_array_equal(self.a3[:, 2], self.a3[:, 2] * 0.0)
-            np.testing.assert_allclose(self.a3[:, :2], self.a1[:, :2], rtol=1e-10, atol=1e-17)
-        else:
-            np.testing.assert_allclose(self.a3, self.a1, rtol=1e-10, atol=1e-17)
+        indices = sorted([self.axial_dir] + self.radial_dirs)
+        a3_extra = np.delete(self.a3, indices, axis=1)
+        np.testing.assert_array_equal(a3_extra, a3_extra * 0.0)
+        np.testing.assert_allclose(self.a3[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)
 
     def test_partitioning(self):
         """
@@ -158,11 +158,10 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
         print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
-        if self.dimension == 2:
-            np.testing.assert_array_equal(self.a4[:, 2], self.a4[:, 2] * 0.0)
-            np.testing.assert_allclose(self.a4[:, :2], self.a1[:, :2], rtol=1e-10, atol=1e-17)
-        else:
-            np.testing.assert_allclose(self.a4, self.a1, rtol=1e-10, atol=1e-17)
+        indices = sorted([self.axial_dir] + self.radial_dirs)
+        a4_extra = np.delete(self.a4, indices, axis=1)
+        np.testing.assert_array_equal(a4_extra, a4_extra * 0.0)
+        np.testing.assert_allclose(self.a4[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)
 
     def test_shear(self):
         """
@@ -210,7 +209,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
     setup_case = True
     dimension = 3
-    shear_dir = 0   # x-direction is axial direction
+    axial_dir = 0   # x-direction is axial direction
+    radial_dirs = [1, 2]
     mp_name_in = 'WALLOUTSIDE_load_points'
     mp_name_out = 'WALLOUTSIDE_nodes'
 
