@@ -168,9 +168,9 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
 
-        # apply non-zero shear in shear_dir (y for 2D, x for 3D)
-        local_shear = self.shear
-        local_shear[self.shear_dir] = 5
+        # apply non-zero shear in axial_dir (y for 2D, x for 3D)
+        local_shear = self.shear.copy()
+        local_shear[self.axial_dir] = 5
 
         # give value to variables
         pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
