@@ -49,12 +49,9 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         output1_2 = solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
 
-        # compare output, as input hasn't changed these should be the same
-        a1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement')
-        a2 = output1_2.get_variable_data(cls.mp_name_out, 'displacement')
-
-        # compare
-        np.testing.assert_allclose(a2, a1, rtol=1e-15)
+        # save output for comparison, as input hasn't changed these should be the same
+        cls.a1_1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement')
+        cls.a2_1 = output1_2.get_variable_data(cls.mp_name_out, 'displacement')
 
         # step 2 to 4
         for i in range(3):
@@ -72,6 +69,12 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         file_name = join(os.path.dirname(__file__), f'test_v614/tube{int(self.dimension)}d/parameters.json')
         with open(file_name, 'r') as parameter_file:
             self.parameters = json.load(parameter_file)
+
+    def test_repeat_iteration(self):
+        """
+        Test whether repeating the same iteration yields the same results.
+        """
+        np.testing.assert_allclose(self.a2_1, self.a1_1, rtol=1e-15)
 
     def test_restart(self):
         """
@@ -162,7 +165,9 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
             np.testing.assert_allclose(self.a4, self.a1, rtol=1e-10, atol=1e-17)
 
     def test_shear(self):
-        # test whether shear is also applied
+        """
+        Test whether shear is also applied.
+        """
 
         # create solver
         solver = create_instance(self.parameters)
