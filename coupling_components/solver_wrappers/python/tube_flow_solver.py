@@ -175,7 +175,6 @@ class SolverWrapperTubeFlow(Component):
                     self.p[0] = self.get_inlet_boundary()
                 f = self.get_residual()
                 residual = np.linalg.norm(f)
-                print(self.residual0, residual, residual / self.residual0, s)
                 if residual / self.residual0 < self.newtontol:
                     converged = True
                     break
