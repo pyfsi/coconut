@@ -179,7 +179,7 @@ class SolverWrapperTubeFlow(Component):
                     converged = True
                     break
             if not converged:
-                raise Exception("Newton failed to converge")
+                Exception("Newton failed to converge")
 
         if self.debug:
             file_name = self.working_directory + f"/Input_Displacement_TS{self.n}_IT{self.k}.txt"
