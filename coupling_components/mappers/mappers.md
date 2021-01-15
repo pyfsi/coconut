@@ -85,8 +85,8 @@ Scalar variables are simply mapped from the 2D `Node` to all corresponding 3D `N
 
 JSON setting|type|description
 ------:|:----:|-----------
-`direction_axial`|string|Must be `"X"`, `"Y"` or `"Z"`, specifies the symmetry axis.
-<nobr>`direction_radial`</nobr>|string|Must be `"X"`, `"Y"` or `"Z"`, specifies the second (radial) axis in 2D.
+`direction_axial`|string|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+<nobr>`direction_radial`</nobr>|string|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
 `n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. Must be $\geq 6$.
 
 ### MapperAxisymmetric3DTo2D
@@ -107,7 +107,7 @@ Base-class for all interpolators (currently `MapperNearest`, `MapperLinear` and 
 
 JSON setting|type|description
 ------:|:----:|-----------
-`directions`|list|List of coordinate directions, maximum three entries, may contain `"X"`, `"Y"`, `"Z"`.
+`directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
 `scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
 <nobr>`balanced_tree`</nobr>|bool|Optional, default `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.
 

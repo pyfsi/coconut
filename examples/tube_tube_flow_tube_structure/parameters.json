@@ -99,7 +99,7 @@
               "type": "mappers.linear",
               "settings": {
                 "directions": [
-                  "Z"
+                  "z"
                 ]
               }
             }
@@ -110,7 +110,7 @@
               "type": "mappers.linear",
               "settings": {
                 "directions": [
-                  "Z"
+                  "z"
                 ]
               }
             }
