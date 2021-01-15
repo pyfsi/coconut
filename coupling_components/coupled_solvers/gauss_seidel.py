@@ -1,5 +1,5 @@
-from coconut.coupling_components import tools
-from coconut.coupling_components.tools import create_instance
+from coconut import tools
+from coconut.tools import create_instance
 from coconut.coupling_components.component import Component
 
 import numpy as np

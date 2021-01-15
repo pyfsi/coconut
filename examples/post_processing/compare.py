@@ -1,4 +1,4 @@
-from coconut.coupling_components import tools
+from coconut import tools
 
 import numpy as np
 import os

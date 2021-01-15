@@ -1,6 +1,6 @@
 from coconut.coupling_components.component import Component
 from coconut.data_structure.variables import variables_dimensions
-from coconut.coupling_components import tools
+from coconut import tools
 
 from scipy.spatial import cKDTree
 import numpy as np

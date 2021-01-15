@@ -1,6 +1,6 @@
-from coconut.coupling_components import tools
+from coconut import tools
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 from coconut import data_structure
 from coconut.data_structure import variables_dimensions
 

@@ -1,4 +1,4 @@
-from coconut.coupling_components.analysis import Analysis
+import coconut
 
 import json
 
@@ -19,5 +19,5 @@ if __name__ == '__main__':
     with open(parameter_file_name, 'r') as parameter_file:
         parameters = json.load(parameter_file)
 
-    simulation = Analysis(parameters)
+    simulation = coconut.Analysis(parameters)
     simulation.run()

@@ -1,6 +1,6 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
-from coconut.coupling_components import tools
+from coconut import tools
 
 import os
 from os.path import join

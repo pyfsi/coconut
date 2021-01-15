@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components import tools
+from coconut import tools
 
 import numpy as np
 import matplotlib.pyplot as plt
