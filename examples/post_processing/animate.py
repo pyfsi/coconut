@@ -8,7 +8,7 @@ from fractions import Fraction
 
 # This file contains the class Animation, which can be used to make an animation, showing a variable on the interface
 # for different time steps. Also a plot of the variable on a certain time step can be made. Alternatively, the
-# the coordinates of the interface can also be animated using 'COORDINATES' as variable.
+# the coordinates of the interface can also be animated using 'coordinates' as variable.
 # These Animation instances have to be added to an AnimationFigure instance. All Animations added to the same
 # AnimationFigure will be plotted in the same Figure.
 # After adding to an AimationFigure,animation has to initialized, specifying which plane of the 3D space to plot in as
@@ -22,7 +22,7 @@ from fractions import Fraction
 class Animation:
 
     def __init__(self, animation_figure, solution, interface, dt, time_step_start,
-                 model_part=None, variable=None, name=None):
+                 model_part_name=None, variable=None, name=None):
         """
         Creates Animation instance
             self.info: list e.g. [("mp_a", ["PRESSURE", "TRACTION"]), ("mp_b, "DISPLACEMENT")]
@@ -39,7 +39,7 @@ class Animation:
         :param interface: (Interface) object interface to be plotted
         :param dt: (float) time step size
         :param time_step_start: (int) starting time step (typically zero)
-        :param model_part: (string) model part to be plotted (optional if there is only one)
+        :param model_part_name: (string) model part to be plotted (optional if there is only one)
         :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
         :param name: (string) the name in the legend (optional)
         """
@@ -47,12 +47,41 @@ class Animation:
         self.complete_solution = solution
         self.interface = interface
         self.info = interface.model_part_variable_pairs
-        self.coordinates = interface.GetInitialCoordinates()
-        self.m = int(self.coordinates.size / 3)  # number of nodes
         self.time_steps = solution.shape[1] - 1  # number of times steps
         self.dt = dt
         self.time_step_start = time_step_start
-        self.variable = None
+
+        # check that model_part_name or variable are given if not unique
+        if model_part_name is None:
+            if len(set(_[0] for _ in self.info)) > 1:
+                raise Exception(f"Specify model_part_name: more than one present: {self.info}")
+            else:
+                model_part_name = self.info[0][0]
+        elif model_part_name not in [_[0] for _ in self.info]:
+            raise Exception(f"Given model_part_name '{model_part_name}' is not found")
+        self.model_part = self.interface.get_model_part(model_part_name)
+        mp_vars = [pair for pair in self.info if pair[0] == model_part_name]
+        if variable is None:
+            if len(mp_vars) > 1:
+                raise Exception(f"Specify variable: more than one present: {[_[1] for _ in mp_vars]}")
+            else:
+                self.variable = mp_vars[0][1]
+        else:
+            if variable != variable.lower():
+                raise Exception(f"Variable '{variable}' should be lower case")
+            if variable not in [_[1] for _ in mp_vars] + ['coordinates']:
+                raise Exception(f"Given variable '{variable}' is not found")
+            else:
+                self.variable = variable
+
+        self.name = name if name is not None else model_part_name + ': ' + variable
+
+        self.coordinates = np.zeros((self.model_part.size, 3))
+        for j, direction in enumerate(['x0', 'y0', 'z0']):
+            self.coordinates[:, j] = getattr(self.model_part, direction)
+        
+        self.m = self.model_part.size  # number of nodes
+
         self.animation = None
         self.mask = None
         self.argsort = None
@@ -63,70 +92,36 @@ class Animation:
         self.line = None
         self.initialized = False
 
-        # check that model_part or variables are given if not unique
-        if model_part is None:
-            if len(self.info) > 1:
-                raise Exception(f"Specify model_part: more than one present: {self.info}")
-            else:
-                model_part_name = self.info[0][0]
-                index = 0
-        elif model_part not in [t[0] for t in self.info]:
-            raise Exception(f"Given model_part '{model_part}' is not found")
-        else:
-            model_part_name = model_part
-            index = self.info[self.info.find(model_part)]
-        if variable is None:
-            if len(self.info[index][1].list()) > 1:
-                raise Exception(f"Specify variable: more than one present: {self.info[index][1].list()}")
-            else:
-                variable_name = self.info[index][1].list()[0].GetString()
-        else:
-            variable = variable.upper()
-            if variable not in [var.GetString() for var in self.info[index][1].list()] + ['COORDINATES']:
-                raise Exception(f"Given variable '{variable}' is not found")
-            else:
-                variable_name = variable
-                self.variable = variable
-
-        self.name = name if name is not None else model_part_name + ': ' + variable_name
-
         # find location of data
         index = 0
         self.displacement_available = False
-        for mp_name, var_names in self.info:
-            mp = interface.model.GetModelPart(mp_name)
-            number_of_nodes = sum(1 for _ in mp.Nodes)
-            for var_name in [var.GetString() for var in var_names.list()]:
-                correct_location = True if var_name == variable_name and mp_name == model_part_name else False
-                displacement_location = True if var_name == "DISPLACEMENT" and mp_name == model_part_name else False
-                var = vars(data_structure)[var_name]
-                if var.Type() == "Double":
-                    dimension = 1
-                elif var.Type() == "Array":
-                    dimension = 3
-                else:
-                    raise NotImplementedError('Only "Double" and "Array" Variables implemented.')
-                if correct_location:
-                    self.start_index = index
-                    self.dimension = dimension
-                    self.end_index = index + self.dimension * self.m
-                    if self.m != number_of_nodes:
-                        raise Exception("Number of coordinates do not match.")
-                if displacement_location:
-                    self.start_index_displacement = index
-                    self.end_index_displacement = index + 3 * self.m
-                    self.displacement_available = True
-                index += dimension * number_of_nodes
+        for mp_name, var in self.info:
+            mp = interface.get_model_part(mp_name)
+            dimension = data_structure.variables_dimensions[var]
+            if var == variable and mp_name == model_part_name:  # correct location
+                self.start_index = index
+                self.dimension = dimension
+                self.end_index = index + self.dimension * self.m
+                if self.m != mp.size:
+                    raise Exception("Number of coordinates do not match")
+            if var == "displacement" and mp_name == model_part_name:  # displacement location
+                self.start_index_displacement = index
+                self.end_index_displacement = index + 3 * self.m
+                self.displacement_available = True
+                if self.m != mp.size:
+                    raise Exception("Number of coordinates do not match")
+            index += dimension * mp.size
 
         if not self.displacement_available:
-            out = f"{self.name}: Nodes positions are not updated, because no 'DISPLACEMENT' available."
-            if self.variable == 'COORDINATES':
+            out = f"{self.name} ({model_part_name}: {variable}): Nodes positions are not updated, because no " \
+                f"'displacement' available"
+            if self.variable == 'coordinates':
                 raise Exception(out)
             else:
                 tools.print_info(out, layout='warning')
 
         if index != self.complete_solution.shape[0]:
-            raise Exception("Size of provided solution data does not match interface.")
+            raise Exception("Size of provided solution data does not match interface")
 
     def initialize(self, mask_x, mask_y, mask_z, abscissa, component):
         """
@@ -147,11 +142,11 @@ class Animation:
                             f"\tmask_z selects {sum(mask_z)} points")
 
         # chose sort direction
-        self.argsort = np.argsort(self.coordinates[abscissa::3][self.mask])
-        self.abscissa = self.coordinates[abscissa::3][self.mask][self.argsort]
+        self.argsort = np.argsort(self.coordinates[self.mask, abscissa])
+        self.abscissa = self.coordinates[self.mask, abscissa][self.argsort]
 
-        if self.variable == 'COORDINATES':
-            self.initial_position = self.coordinates[component::3][self.mask][self.argsort]
+        if self.variable == 'coordinates':
+            self.initial_position = self.coordinates[self.mask, component][self.argsort]
             self.solution = [self.select_displacement(self.complete_solution[:, i], component) + self.initial_position
                              for i in range(self.time_steps + 1)]
         else:
@@ -166,7 +161,7 @@ class Animation:
         self.line, = plt.plot(self.abscissa, self.solution[0], label=self.name)
 
         # adjust scale
-        self.animation_figure.UpdateScale(self)
+        self.animation_figure.update_scale(self)
 
         self.initialized = True
 
@@ -208,21 +203,21 @@ class AnimationFigure:
         self.min = None
         self.max = None
 
-    def AddAnimation(self, solution, interface, dt, time_step_start, model_part=None, variable=None, name=None):
+    def add_animation(self, solution, interface, dt, time_step_start, model_part_name=None, variable=None, name=None):
         """
         Creates and adds Animation instance to self.animations_list.
 
-        :param solution : (np.array) contains as columns the solution of each time step, order is dictated by self.info
+        :param solution : (np.array) contains as columns the solution of each time step, order is dictated by info
         :param interface: (Interface) object interface to be plotted
         :param dt: (float) time step size
         :param time_step_start: (int) starting time step
-        :param model_part: (string) model part to be plotted (optional if there is only one)
+        :param model_part_name: (string) model part to be plotted (optional if there is only one)
         :param variable: (string) variable to be plotted (optional if there is only one corresponding to the model part)
-                         Use 'COORDINATES' to plot the coordinates of the interface
+                         Use 'coordinates' to plot the coordinates of the interface
         :param name: (string) the name in the legend (optional)
         """
         animation = Animation(self, solution, interface, dt, time_step_start,
-                              model_part=model_part, variable=variable, name=name)
+                              model_part_name=model_part_name, variable=variable, name=name)
 
         # add animation instance to class list
         self.animations_list.append(animation)
@@ -254,7 +249,7 @@ class AnimationFigure:
 
         return animation
 
-    def UpdateScale(self, animation):
+    def update_scale(self, animation):
         # adjust scale
         minimum = min([s.min() for s in animation.solution])
         maximum = max([s.max() for s in animation.solution])
@@ -281,39 +276,39 @@ class AnimationFigure:
         self.text.set_text(f"time = {ts * self.base_dt:.5f} s")
         return lines
 
-    def MakeAnimation(self, interval=100, blit=False, save_count=100, repeat=True, frames=None):
+    def make_animation(self, interval=100, blit=False, save_count=100, repeat=True, frames=None):
         # inteval: interval between frames in ms
         # frames: (int) number of frames (<= number of time steps + 1)
         #         (iterable) frames to plot (index <= number of time steps)
         if not self.animations_list:
-            raise Exception("No Animations have been added to this AnimationFigure.")
+            raise Exception("No Animations have been added to this AnimationFigure")
         for animation in self.animations_list:
             if not animation.initialized:
-                raise Exception(f"Animate object {animation.name} has not yet been initialized.")
+                raise Exception(f"Animate object {animation.name} has not yet been initialized")
         if frames is None:
             frames = range(self.time_step_start, self.time_step_start + self.time_steps + 1)
         elif type(frames) is int:
             if not (0 < frames <= self.time_steps + 1):
                 raise Exception(f"Time step out of range: maximum number of frames is {self.time_steps + 1} (number of "
                                 f"time steps + 1), with time step size {self.base_dt} "
-                                f"and starting time step {self.time_step_start}.")
+                                f"and starting time step {self.time_step_start}")
             else:
                 frames = range(self.time_step_start, self.time_step_start + frames)
         elif min(frames) < self.time_step_start or max(frames) > self.time_step_start + self.time_steps:
             raise Exception(f"Time step out of range: maximum time step is {self.time_steps}, "
-                            f"with time step size {self.base_dt} and starting time step {self.time_step_start}.")
+                            f"with time step size {self.base_dt} and starting time step {self.time_step_start}")
         self.animation = ani.FuncAnimation(self.figure, self.animate, init_func=self.init, interval=interval,
                                            blit=blit, save_count=save_count, repeat=repeat, frames=frames)
 
-    def MakePlot(self, time_step):
+    def make_plot(self, time_step):
         # time_step: time step at which plot is made
         if not self.animations_list:
-            raise Exception("No Animations have been added to this AnimationFigure.")
+            raise Exception("No Animations have been added to this AnimationFigure")
         for animation in self.animations_list:
             if not animation.initialized:
-                raise Exception("Animate object has not yet been initialized.")
+                raise Exception("Animate object has not yet been initialized")
         if time_step < self.time_step_start or self.time_steps > self.time_steps:
             raise Exception(f"Time step out of range: \nminimum time step: {self.time_step_start}"
                             f"\nmaximum time step: {self.time_steps + self.time_step_start}"
-                            f"\nwith time step size {self.base_dt}.")
+                            f"\nwith time step size {self.base_dt}")
         self.animate(time_step)
