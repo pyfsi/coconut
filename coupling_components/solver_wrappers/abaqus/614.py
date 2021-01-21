@@ -581,7 +581,7 @@ class SolverWrapperAbaqus614(Component):
                     line_new = ''
                     for s in contents:
                         if s.strip().startswith("inc="):
-                            numbers = re.findall("\d+", s)
+                            numbers = re.findall(r"\d+", s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
                                 raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested "
                                                           f"but maxNumInc > 1.")
