@@ -21,8 +21,8 @@ class TestSolverWrapperTubeStructureSolver(unittest.TestCase):
             parameters_solver['settings'].SetString('working_directory', 'test_tube_structure/CSM')
 
         # setup case
-        dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_tube_ringmodel')
-        p = subprocess.Popen(os.path.join(dir_tmp, 'setup_tube_ringmodel.sh'), cwd=dir_tmp, shell=True)
+        dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_tube_structure')
+        p = subprocess.Popen(os.path.join(dir_tmp, 'setup_tube_structure.sh'), cwd=dir_tmp, shell=True)
         p.wait()
 
         def get_dp(x):
