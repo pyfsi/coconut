@@ -20,14 +20,13 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        dir_tmp = join(os.getcwd(), f'solver_wrappers/abaqus/test_v614/tube{int(cls.dimension)}d')
         if cls.setup_case:
-            dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), f'test_v614/tube{int(cls.dimension)}d')
-            p_setup_abaqus = subprocess.Popen(os.path.join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
+            p_setup_abaqus = subprocess.Popen(join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
 
         # perform reference calculation
-        file_name = join(os.path.dirname(__file__), f'test_v614/tube{int(cls.dimension)}d/parameters.json')
-        with open(file_name, 'r') as parameter_file:
+        with open(join(dir_tmp, 'parameters.json')) as parameter_file:
             parameters = json.load(parameter_file)
 
         # create the solver
@@ -67,8 +66,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
 
     def setUp(self):
-        file_name = join(os.path.dirname(__file__), f'test_v614/tube{int(self.dimension)}d/parameters.json')
-        with open(file_name, 'r') as parameter_file:
+        dir_tmp = join(os.getcwd(), f'solver_wrappers/abaqus/test_v614/tube{int(self.dimension)}d')
+        with open(join(dir_tmp, 'parameters.json')) as parameter_file:
             self.parameters = json.load(parameter_file)
 
     def test_repeat_iteration(self):
