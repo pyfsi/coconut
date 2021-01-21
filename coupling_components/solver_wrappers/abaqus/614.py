@@ -5,6 +5,8 @@ from coconut.coupling_components import tools
 import os
 from os.path import join
 import subprocess
+import shutil
+import sys
 import time
 import numpy as np
 import re
@@ -15,6 +17,8 @@ def create(parameters):
 
 
 class SolverWrapperAbaqus614(Component):
+    version = '6.14'
+
     def __init__(self, parameters):
         super().__init__()
         # settings
@@ -43,6 +47,7 @@ class SolverWrapperAbaqus614(Component):
                     save_iterations         number of time steps between consecutive saves of Abaqus-files
         """
 
+        self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
         path_src = os.path.realpath(os.path.dirname(__file__))
@@ -478,6 +483,24 @@ class SolverWrapperAbaqus614(Component):
 
     def set_interface_output(self):
         Exception("This solver interface provides no mapping.")  # TODO: remove?
+
+    def check_software(self):
+        # Python version: 3.6 or higher
+        if sys.version_info < (3, 6):
+            raise RuntimeError('Python version 3.6 or higher required.')
+
+        # Abaqus availability
+        if shutil.which('abaqus') is None:
+            raise RuntimeError('Abaqus must be available.')
+
+        # Abaqus version
+        result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE)
+        if self.version not in str(result.stdout):
+            raise RuntimeError(f'Abaqus version {self.version} is required.')
+
+        # Compilers
+        if shutil.which('ifort') is None:
+            raise RuntimeError('Intel compiler ifort must be available.')
 
     def make_elements(self, face_file, output_file):
         firstLoop = 1
