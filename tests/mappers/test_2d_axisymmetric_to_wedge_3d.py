@@ -8,7 +8,7 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.2d_axisymmetric_to_wedge_3d',
