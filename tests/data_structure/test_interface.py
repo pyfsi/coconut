@@ -36,6 +36,7 @@ class TestInterface(unittest.TestCase):
         self.traction = np.random.rand(model_part_size, self.vector_size)
         self.temperature = np.random.rand(model_part_size, self.scalar_size)
         self.density = np.random.rand(model_part_size, self.scalar_size)
+        self.displacement = np.random.rand(model_part_size, self.vector_size)
         self.interface_data = np.random.rand(model_part_size * 5)
 
     def test_instantiation(self):
