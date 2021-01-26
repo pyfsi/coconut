@@ -572,23 +572,31 @@ class SolverWrapperOpenFOAM_41(Component):
             f.close()
 
             # store pressure and traction in Nodes
-            index = 0
-            position=[]
+            # index = 0
+            # position=[]
 
 
-            for node in mp.Nodes:
-                if self.cores>1:
-                    pos=mp.sequence[index]
-                    position.append(pos)
-
+            # for node in mp.Nodes:
+            #     if self.cores>1:
+            #         pos=mp.sequence[index]
+            #         position.append(pos)
+            #
+            #     else:
+            #         pos=index
+            #         position.append(pos)
+            #
+            #     node.SetSolutionStepValue(self.shear, 0, (wss_tmp[pos, :]*-self.density).tolist())
+            #     node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos] * self.density)
+            #     index += 1
+            for index in range(0,nFaces_tot):
+                if self.cores >1:
+                    pos = mp.sequence[index]
                 else:
                     pos=index
-                    position.append(pos)
 
-                node.SetSolutionStepValue(self.shear, 0, (wss_tmp[pos, :]*-self.density).tolist())
-                node.SetSolutionStepValue(self.pressure, 0, pres_tmp[pos] * self.density)
-                index += 1
-
+                #shear stress on the structure has poosite sign
+                mp.Nodes[pos].SetSolutionStepValue(self.shear, 0, (wss_tmp[index,:]*-self.density).tolist())
+                mp.Nodes[pos].SetSolutionStepValue(self.pressure, 0, float(pres_tmp[index]) * self.density)
 
 
             # go to next interface

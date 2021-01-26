@@ -6,11 +6,11 @@
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
-Exec   : decomposePar -fields -cellDist -time 0.0039
-Date   : Dec 01 2020
-Time   : 11:41:37
+Exec   : decomposePar -fields -cellDist -time 0.0099
+Date   : Jan 25 2021
+Time   : 17:41:15
 Host   : "cfdclu27.ugent.be"
-PID    : 44621
+PID    : 13970
 Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/tube_OpenFoam3d_abaqus3d2Cores/CFD
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
@@ -25,10 +25,16 @@ Create time
 Decomposing mesh region0
 
 Create mesh
-Time = 0.0039
+Time = 0.0099
 
 Processor 0: field transfer
 Processor 1: field transfer
+Processor 2: field transfer
+Processor 3: field transfer
+Processor 4: field transfer
+Processor 5: field transfer
+Processor 6: field transfer
+Processor 7: field transfer
 
 End
 

@@ -1,6 +1,6 @@
 1
 
-   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 10:43:59
+   Abaqus 6.14-1                                  Date 25-Jan-2021   Time 16:33:30
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
  Tube                                                                            
@@ -104,31 +104,38 @@
 
      CHECK POINT  END OF SOLVER       
 
-       ELAPSED USER TIME (SEC)      =  5.00000E-02
+       ELAPSED USER TIME (SEC)      =  4.00000E-02
        ELAPSED SYSTEM TIME (SEC)    =  1.00000E-02
-       ELAPSED TOTAL CPU TIME (SEC) =  6.00000E-02
+       ELAPSED TOTAL CPU TIME (SEC) =  5.00000E-02
        ELAPSED WALLCLOCK TIME (SEC) =          0
 
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     1
 
 
- AVERAGE FORCE                      2.136E-04   TIME AVG. FORCE       2.136E-04
- LARGEST RESIDUAL FORCE            -1.801E-05   AT NODE        303   DOF  2
+ AVERAGE FORCE                      1.245E-04   TIME AVG. FORCE       1.245E-04
+ LARGEST RESIDUAL FORCE             2.763E-06   AT NODE         44   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.        -3.949E-05   AT NODE         90   DOF  3
+ LARGEST INCREMENT OF DISP.        -8.849E-06   AT NODE        269   DOF  3
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.       -7.536E-06   AT NODE        119   DOF  3
+ LARGEST CORRECTION TO DISP.       -1.140E-06   AT NODE         44   DOF  2
    INSTANCE: PART-1-1                                                                        
           FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
 
- AVERAGE MOMENT                     2.925E-07   TIME AVG. MOMENT      2.925E-07
- LARGEST RESIDUAL MOMENT            1.287E-08   AT NODE        303   DOF  4
+ AVERAGE MOMENT                     7.832E-08   TIME AVG. MOMENT      1.000E-02
+ LARGEST RESIDUAL MOMENT            3.691E-09   AT NODE        223   DOF  6
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF ROTATION      1.587E-02   AT NODE         39   DOF  4
+ LARGEST INCREMENT OF ROTATION      3.243E-03   AT NODE          7   DOF  5
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO ROTATION     2.845E-03   AT NODE         40   DOF  4
+ LARGEST CORRECTION TO ROTATION     7.689E-04   AT NODE          5   DOF  6
    INSTANCE: PART-1-1                                                                        
-          MOMENT    EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+          THERE IS ZERO MOMENT    EVERYWHERE
+ 
+
+ ***WARNING: THERE IS ZERO MOMENT EVERYWHERE IN THE MODEL BASED ON THE DEFAULT 
+             CRITERION. PLEASE CHECK THE VALUE OF THE AVERAGE MOMENT DURING THE 
+             CURRENT ITERATION TO VERIFY THAT THE MOMENT IS SMALL ENOUGH TO BE 
+             TREATED AS ZERO. IF NOT, PLEASE USE THE SOLUTION CONTROLS TO RESET 
+             THE CRITERION FOR ZERO MOMENT.
 
   NUMBER OF EQUATIONS =     1824     NUMBER OF FLOATING PT. OPERATIONS =  4.65E+07
 
@@ -136,31 +143,38 @@
 
      CHECK POINT  END OF SOLVER       
 
-       ELAPSED USER TIME (SEC)      =  2.00000E-02
+       ELAPSED USER TIME (SEC)      =  1.00000E-02
        ELAPSED SYSTEM TIME (SEC)    =  1.00000E-02
-       ELAPSED TOTAL CPU TIME (SEC) =  3.00000E-02
+       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
        ELAPSED WALLCLOCK TIME (SEC) =          0
 
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     2
 
 
- AVERAGE FORCE                      2.136E-04   TIME AVG. FORCE       2.136E-04
- LARGEST RESIDUAL FORCE            -5.721E-08   AT NODE        155   DOF  1
+ AVERAGE FORCE                      1.245E-04   TIME AVG. FORCE       1.245E-04
+ LARGEST RESIDUAL FORCE            -6.234E-09   AT NODE        178   DOF  3
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.        -3.949E-05   AT NODE         90   DOF  3
+ LARGEST INCREMENT OF DISP.        -8.849E-06   AT NODE        269   DOF  3
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.       -1.472E-08   AT NODE        303   DOF  2
+ LARGEST CORRECTION TO DISP.        1.880E-09   AT NODE         44   DOF  2
    INSTANCE: PART-1-1                                                                        
           THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
 
- AVERAGE MOMENT                     2.924E-07   TIME AVG. MOMENT      2.924E-07
- LARGEST RESIDUAL MOMENT            9.874E-11   AT NODE        304   DOF  4
+ AVERAGE MOMENT                     7.832E-08   TIME AVG. MOMENT      1.000E-02
+ LARGEST RESIDUAL MOMENT            9.045E-12   AT NODE        270   DOF  5
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF ROTATION      1.587E-02   AT NODE         39   DOF  4
+ LARGEST INCREMENT OF ROTATION      3.240E-03   AT NODE          7   DOF  5
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO ROTATION     1.421E-05   AT NODE        126   DOF  6
+ LARGEST CORRECTION TO ROTATION    -2.878E-06   AT NODE          1   DOF  6
    INSTANCE: PART-1-1                                                                        
-          THE MOMENT    EQUILIBRIUM EQUATIONS HAVE CONVERGED
+          THERE IS ZERO MOMENT    EVERYWHERE
+ 
+
+ ***WARNING: THERE IS ZERO MOMENT EVERYWHERE IN THE MODEL BASED ON THE DEFAULT 
+             CRITERION. PLEASE CHECK THE VALUE OF THE AVERAGE MOMENT DURING THE 
+             CURRENT ITERATION TO VERIFY THAT THE MOMENT IS SMALL ENOUGH TO BE 
+             TREATED AS ZERO. IF NOT, PLEASE USE THE SOLUTION CONTROLS TO RESET 
+             THE CRITERION FOR ZERO MOMENT.
 
  ITERATION SUMMARY FOR THE INCREMENT:   2 TOTAL ITERATIONS, OF WHICH
    0 ARE SEVERE DISCONTINUITY ITERATIONS AND  2 ARE EQUILIBRIUM ITERATIONS.
@@ -178,15 +192,15 @@
      ANALYSIS SUMMARY:
      TOTAL OF         13  INCREMENTS
                        0  CUTBACKS IN AUTOMATIC INCREMENTATION
-                      26  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
-                      26  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
-                      26  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+                      24  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+                      24  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+                      24  INVOLVE MATRIX DECOMPOSITION, INCLUDING
                        0  DECOMPOSITION(S) OF THE MASS MATRIX
                        1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
                        0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
                        0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
                        0  WARNING MESSAGES DURING USER INPUT PROCESSING
-                      12  WARNING MESSAGES DURING ANALYSIS
+                      24  WARNING MESSAGES DURING ANALYSIS
                        0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
                        0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
                        0  ERROR MESSAGES
@@ -194,7 +208,7 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.40000    
-       SYSTEM TIME (SEC)    =  6.00000E-02
-       TOTAL CPU TIME (SEC) =  0.46000    
+       USER TIME (SEC)      =  0.24000    
+       SYSTEM TIME (SEC)    =  3.00000E-02
+       TOTAL CPU TIME (SEC) =  0.27000    
        WALLCLOCK TIME (SEC) =          0

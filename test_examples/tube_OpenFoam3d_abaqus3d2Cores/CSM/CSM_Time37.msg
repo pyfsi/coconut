@@ -1,6 +1,6 @@
 1
 
-   Abaqus 6.14-1                                  Date 01-Dec-2020   Time 11:35:55
+   Abaqus 6.14-1                                  Date 25-Jan-2021   Time 16:54:05
    For use at UNIVERSITEIT GENT VZW under license from Dassault Systemes or its subsidiary.
 
  Tube                                                                            
@@ -112,21 +112,22 @@
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     1
 
 
- AVERAGE FORCE                      2.290E-03   TIME AVG. FORCE       2.290E-03
- LARGEST RESIDUAL FORCE             3.711E-03   AT NODE        238   DOF  1
+ AVERAGE FORCE                      2.478E-04   TIME AVG. FORCE       2.478E-04
+ LARGEST RESIDUAL FORCE             7.637E-07   AT NODE        267   DOF  3
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.        -3.440E-04   AT NODE        133   DOF  2
+ LARGEST INCREMENT OF DISP.        -9.920E-06   AT NODE         44   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.       -1.359E-04   AT NODE        271   DOF  3
+ LARGEST CORRECTION TO DISP.       -9.202E-07   AT NODE        113   DOF  3
    INSTANCE: PART-1-1                                                                        
-          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
+ ESTIMATE OF DISP.    CORRECTION    6.184E-10
+ FORCE     EQUILIB. ACCEPTED BASED ON SMALL RESIDUAL AND ESTIMATED CORRECTION
 
- AVERAGE MOMENT                     3.967E-06   TIME AVG. MOMENT      3.967E-06
- LARGEST RESIDUAL MOMENT            5.004E-06   AT NODE        300   DOF  4
+ AVERAGE MOMENT                     3.337E-07   TIME AVG. MOMENT      3.337E-07
+ LARGEST RESIDUAL MOMENT            2.341E-09   AT NODE        173   DOF  5
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF ROTATION      0.129       AT NODE        179   DOF  4
+ LARGEST INCREMENT OF ROTATION      6.418E-03   AT NODE          5   DOF  6
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO ROTATION     7.007E-02   AT NODE        294   DOF  4
+ LARGEST CORRECTION TO ROTATION     6.535E-04   AT NODE        129   DOF  6
    INSTANCE: PART-1-1                                                                        
           MOMENT    EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
 
@@ -144,90 +145,26 @@
                CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     2
 
 
- AVERAGE FORCE                      2.289E-03   TIME AVG. FORCE       2.289E-03
- LARGEST RESIDUAL FORCE             2.295E-04   AT NODE         62   DOF  1
+ AVERAGE FORCE                      2.478E-04   TIME AVG. FORCE       2.478E-04
+ LARGEST RESIDUAL FORCE            -1.205E-09   AT NODE        268   DOF  3
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.        -3.472E-04   AT NODE        133   DOF  2
+ LARGEST INCREMENT OF DISP.        -9.920E-06   AT NODE         44   DOF  2
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.       -3.986E-06   AT NODE         62   DOF  3
-   INSTANCE: PART-1-1                                                                        
-          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
-
- AVERAGE MOMENT                     3.973E-06   TIME AVG. MOMENT      3.973E-06
- LARGEST RESIDUAL MOMENT           -2.797E-07   AT NODE        300   DOF  4
-   INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF ROTATION      0.130       AT NODE        179   DOF  4
-   INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO ROTATION    -8.587E-03   AT NODE         18   DOF  6
-   INSTANCE: PART-1-1                                                                        
-          MOMENT    EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
-
-  NUMBER OF EQUATIONS =     1824     NUMBER OF FLOATING PT. OPERATIONS =  4.65E+07
-
-     CHECK POINT   START OF SOLVER    
-
-     CHECK POINT  END OF SOLVER       
-
-       ELAPSED USER TIME (SEC)      =  2.00000E-02
-       ELAPSED SYSTEM TIME (SEC)    =   0.0000    
-       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
-       ELAPSED WALLCLOCK TIME (SEC) =          0
-
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     3
-
-
- AVERAGE FORCE                      2.289E-03   TIME AVG. FORCE       2.289E-03
- LARGEST RESIDUAL FORCE             2.074E-05   AT NODE         62   DOF  2
-   INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.        -3.472E-04   AT NODE        133   DOF  2
-   INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.        2.268E-07   AT NODE         62   DOF  2
-   INSTANCE: PART-1-1                                                                        
-          FORCE     EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
-
- AVERAGE MOMENT                     3.972E-06   TIME AVG. MOMENT      3.972E-06
- LARGEST RESIDUAL MOMENT            1.989E-08   AT NODE        179   DOF  4
-   INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF ROTATION      0.131       AT NODE        179   DOF  4
-   INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO ROTATION     3.056E-04   AT NODE         25   DOF  4
-   INSTANCE: PART-1-1                                                                        
-          MOMENT    EQUILIBRIUM NOT ACHIEVED WITHIN TOLERANCE.
-
-  NUMBER OF EQUATIONS =     1824     NUMBER OF FLOATING PT. OPERATIONS =  4.65E+07
-
-     CHECK POINT   START OF SOLVER    
-
-     CHECK POINT  END OF SOLVER       
-
-       ELAPSED USER TIME (SEC)      =  2.00000E-02
-       ELAPSED SYSTEM TIME (SEC)    =   0.0000    
-       ELAPSED TOTAL CPU TIME (SEC) =  2.00000E-02
-       ELAPSED WALLCLOCK TIME (SEC) =          0
-
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION     4
-
-
- AVERAGE FORCE                      2.289E-03   TIME AVG. FORCE       2.289E-03
- LARGEST RESIDUAL FORCE             2.537E-06   AT NODE         62   DOF  2
-   INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF DISP.        -3.472E-04   AT NODE        133   DOF  2
-   INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO DISP.        2.504E-08   AT NODE         62   DOF  2
+ LARGEST CORRECTION TO DISP.       -1.030E-09   AT NODE         33   DOF  1
    INSTANCE: PART-1-1                                                                        
           THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
 
- AVERAGE MOMENT                     3.972E-06   TIME AVG. MOMENT      3.972E-06
- LARGEST RESIDUAL MOMENT            2.482E-09   AT NODE        179   DOF  4
+ AVERAGE MOMENT                     3.337E-07   TIME AVG. MOMENT      3.337E-07
+ LARGEST RESIDUAL MOMENT           -1.098E-11   AT NODE        173   DOF  5
    INSTANCE: PART-1-1                                                                        
- LARGEST INCREMENT OF ROTATION      0.131       AT NODE        179   DOF  4
+ LARGEST INCREMENT OF ROTATION      6.417E-03   AT NODE          5   DOF  6
    INSTANCE: PART-1-1                                                                        
- LARGEST CORRECTION TO ROTATION     3.759E-05   AT NODE        179   DOF  4
+ LARGEST CORRECTION TO ROTATION    -2.017E-06   AT NODE        127   DOF  5
    INSTANCE: PART-1-1                                                                        
           THE MOMENT    EQUILIBRIUM EQUATIONS HAVE CONVERGED
 
- ITERATION SUMMARY FOR THE INCREMENT:   4 TOTAL ITERATIONS, OF WHICH
-   0 ARE SEVERE DISCONTINUITY ITERATIONS AND  4 ARE EQUILIBRIUM ITERATIONS.
+ ITERATION SUMMARY FOR THE INCREMENT:   2 TOTAL ITERATIONS, OF WHICH
+   0 ARE SEVERE DISCONTINUITY ITERATIONS AND  2 ARE EQUILIBRIUM ITERATIONS.
 
  TIME INCREMENT COMPLETED  1.000E-04,  FRACTION OF STEP COMPLETED   1.00    
  STEP TIME COMPLETED       1.000E-04,  TOTAL TIME COMPLETED        3.700E-03
@@ -242,15 +179,15 @@
      ANALYSIS SUMMARY:
      TOTAL OF         37  INCREMENTS
                        0  CUTBACKS IN AUTOMATIC INCREMENTATION
-                      89  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
-                      89  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
-                      89  INVOLVE MATRIX DECOMPOSITION, INCLUDING
+                      72  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
+                      72  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
+                      72  INVOLVE MATRIX DECOMPOSITION, INCLUDING
                        0  DECOMPOSITION(S) OF THE MASS MATRIX
                        1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
                        0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
                        0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
                        0  WARNING MESSAGES DURING USER INPUT PROCESSING
-                      12  WARNING MESSAGES DURING ANALYSIS
+                      28  WARNING MESSAGES DURING ANALYSIS
                        0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
                        0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
                        0  ERROR MESSAGES
@@ -258,7 +195,7 @@
 
 
      JOB TIME SUMMARY
-       USER TIME (SEC)      =  0.45000    
-       SYSTEM TIME (SEC)    =  6.00000E-02
-       TOTAL CPU TIME (SEC) =  0.51000    
+       USER TIME (SEC)      =  0.23000    
+       SYSTEM TIME (SEC)    =  5.00000E-02
+       TOTAL CPU TIME (SEC) =  0.28000    
        WALLCLOCK TIME (SEC) =          0

@@ -60,7 +60,7 @@
         "solver_wrappers" :
         [
             {
-                "type": "solver_wrappers.openfoam.v41",
+                "type": "solver_wrappers.openfoam.v41.v41",
                 "settings":
                 {
                     "working_directory" : "CFD",
@@ -78,7 +78,7 @@
                     {
                         "mantle_output": ["PRESSURE", "TRACTION"]
                     },
-                    "cores": 1,
+                    "cores": 2,
                     "decomposeMethod" : "scotch",
                     "write_interval" : 1,
                     "write_precision" : 5,
