@@ -13,7 +13,6 @@ class TestInterface(unittest.TestCase):
                            [
                             {'model_part': 'mp1', 'variables': ['pressure', 'traction']},
                             {'model_part': 'mp2', 'variables': ['density']},
-                            {'model_part': 'mp3', 'variables': ['displacement']}
                             ]
                            }
 
@@ -37,8 +36,7 @@ class TestInterface(unittest.TestCase):
         self.traction = np.random.rand(model_part_size, self.vector_size)
         self.temperature = np.random.rand(model_part_size, self.scalar_size)
         self.density = np.random.rand(model_part_size, self.scalar_size)
-        self.displacement = np.random.rand(model_part_size, self.vector_size)
-        self.interface_data = np.random.rand(model_part_size * 8)
+        self.interface_data = np.random.rand(model_part_size * 5)
 
     def test_instantiation(self):
         parameters = {'mp1': ['pressure']}
@@ -55,11 +53,11 @@ class TestInterface(unittest.TestCase):
         self.assertEqual(self.interface.parameters, self.parameters['interface_a'])
 
     def test_model_part_variable_pairs(self):
-        ref_result = [('mp1', 'pressure'), ('mp1', 'traction'), ('mp2', 'density'), ('mp3', 'displacement')]
+        ref_result = [('mp1', 'pressure'), ('mp1', 'traction'), ('mp2', 'density')]
         self.assertListEqual(ref_result, self.interface.model_part_variable_pairs)
 
     def test_size(self):
-        self.assertEqual(self.interface.size, 8 * self.model_part_size)
+        self.assertEqual(self.interface.size, 5 * self.model_part_size)
 
     def test_attribute_change(self):
         with self.assertRaises(AttributeError):
@@ -116,8 +114,7 @@ class TestInterface(unittest.TestCase):
         self.interface.set_variable_data('mp1', 'pressure', self.pressure)
         self.interface.set_variable_data('mp1', 'traction', self.traction)
         self.interface.set_variable_data('mp2', 'density', self.density)
-        self.interface.set_variable_data('mp3', 'displacement', self.displacement)
-        interface_data = np.concatenate((self.pressure.flatten(), self.traction.flatten(), self.density.flatten(), self.displacement.flatten()))
+        interface_data = np.concatenate((self.pressure.flatten(), self.traction.flatten(), self.density.flatten()))
         np.testing.assert_equal(self.interface.get_interface_data(), interface_data)
         # correct output from interface data
         self.interface.set_interface_data(self.interface_data)
@@ -133,14 +130,9 @@ class TestInterface(unittest.TestCase):
         np.testing.assert_array_equal(self.interface._Interface__data['mp1']['traction'].flatten(),
                                       self.interface_data[self.scalar_size * self.model_part_size:
                                                           (self.scalar_size + self.vector_size) * self.model_part_size])
-        print('toeme')
         np.testing.assert_array_equal(self.interface._Interface__data['mp2']['density'].flatten(),
                                       self.interface_data[(self.scalar_size + self.vector_size)
                                                           * self.model_part_size:])
-        print('toeme2')
-        np.testing.assert_array_equal(self.interface._Interface__data['mp3']['displacement'].flatten(),
-                                      self.interface_data[self.scalar_size * self.model_part_size:
-                                                          (self.scalar_size + self.vector_size) * self.model_part_size])
         # input is array with correct shape
         self.assertRaises(ValueError, self.interface.set_interface_data, self.pressure)
         self.assertRaises(ValueError, self.interface.set_interface_data, self.interface_data.reshape(-1, 1))
