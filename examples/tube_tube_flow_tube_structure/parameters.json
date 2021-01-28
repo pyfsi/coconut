@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 100
+    "number_of_timesteps": 10
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
@@ -94,7 +94,7 @@
             }
           },
           "mapper_interface_input": {
-            "type": "mappers.interface",
+            "type": "mappers.interface_new_mp",
             "settings": {
               "type": "mappers.linear",
               "settings": {
