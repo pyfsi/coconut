@@ -50,16 +50,6 @@ class MapperInterfaceNewMP(Component):
         # loop over ModelParts and variables and interpolate
         for pair_from, pair_to in zip(interface_from.model_part_variable_pairs,
                                       interface_to.model_part_variable_pairs):
-            # r = interface_from.get_model_part(pair_from['model_part'])
-            variable_data = interface_from.get_variable_data(interface_from.model_part_variable_pairs[0])
-            # print(interface_from.model_part_variable_pairs[0])
-            # axial_out = r.x0
-            # radial_out = r.y0
-            # print("axial0")
-            # print(axial_out)
-            print(pair_from)
-            print(pair_to)
-            print(variable_data)
             mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
             mapper((interface_from, *pair_from), (interface_to, *pair_to))
 
