@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  4.x                                   |
+|  \\    /   O peration     | Version:  4.1                                   |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     pimpleDyMFoam;
+application     CoCoNuT_pimpleFoam;
 
 startFrom       startTime;
 
@@ -23,13 +23,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         0.0001;
+endTime         1e-06;
 
-deltaT          1e-10;
+deltaT          1e-06;
 
 writeControl    timeStep;
 
-writeInterval   2;
+writeInterval   1;
 
 purgeWrite      0;
 
@@ -37,31 +37,21 @@ writeFormat     ascii;
 
 writePrecision  6;
 
-writeCompression off;
+writeCompression uncompressed;
 
-timeFormat      general;
+timeFormat      fixed;
 
-timePrecision   9;
+timePrecision   6;
 
-runTimeModifiable true;
+runTimeModifiable false;
 
-adjustTimeStep  yes;
+adjustTimeStep  no;
 
-maxCo           0.2;
+boundary_names  ( upWire deformWire finalWire );
 
 functions
 {
-  Co1
-{
-    // Mandatory entries (unmodifiable)
-    type                CourantNo;
-        libs                ("libfieldFunctionObjects.so");
-        executeControl      timeStep;
-        executeInterval     2;
-        writeControl        writeTime;
-}
-
-PRESSURE_upWire
+    PRESSURE_upWire
     {
         type            surfaceRegion;
         libs            ( "libfieldFunctionObjects.so" );
@@ -70,7 +60,7 @@ PRESSURE_upWire
         writeControl    timeStep;
         writeInterval   1;
         timeFormat      fixed;
-        timePrecision   5;
+        timePrecision   6;
         operation       none;
         writeFields     true;
         surfaceFormat   raw;
@@ -78,8 +68,19 @@ PRESSURE_upWire
         name            upWire;
         fields          ( p );
     }
-
-PRESSURE_deformWireWire
+    wallShearStress
+    {
+        type            wallShearStress;
+        libs            ( "libfieldFunctionObjects.so" );
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    timeStep;
+        writeInterval   1;
+        timeFormat      fixed;
+        timePrecision   6;
+        log             false;
+    }
+    TRACTION_upWire
     {
         type            surfaceRegion;
         libs            ( "libfieldFunctionObjects.so" );
@@ -88,7 +89,24 @@ PRESSURE_deformWireWire
         writeControl    timeStep;
         writeInterval   1;
         timeFormat      fixed;
-        timePrecision   5;
+        timePrecision   6;
+        operation       none;
+        writeFields     true;
+        surfaceFormat   raw;
+        regionType      patch;
+        name            upWire;
+        fields          ( wallShearStress );
+    }
+    PRESSURE_deformWire
+    {
+        type            surfaceRegion;
+        libs            ( "libfieldFunctionObjects.so" );
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    timeStep;
+        writeInterval   1;
+        timeFormat      fixed;
+        timePrecision   6;
         operation       none;
         writeFields     true;
         surfaceFormat   raw;
@@ -96,7 +114,7 @@ PRESSURE_deformWireWire
         name            deformWire;
         fields          ( p );
     }
-PRESSURE_finalWire
+    TRACTION_deformWire
     {
         type            surfaceRegion;
         libs            ( "libfieldFunctionObjects.so" );
@@ -105,7 +123,24 @@ PRESSURE_finalWire
         writeControl    timeStep;
         writeInterval   1;
         timeFormat      fixed;
-        timePrecision   5;
+        timePrecision   6;
+        operation       none;
+        writeFields     true;
+        surfaceFormat   raw;
+        regionType      patch;
+        name            deformWire;
+        fields          ( wallShearStress );
+    }
+    PRESSURE_finalWire
+    {
+        type            surfaceRegion;
+        libs            ( "libfieldFunctionObjects.so" );
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    timeStep;
+        writeInterval   1;
+        timeFormat      fixed;
+        timePrecision   6;
         operation       none;
         writeFields     true;
         surfaceFormat   raw;
@@ -113,7 +148,24 @@ PRESSURE_finalWire
         name            finalWire;
         fields          ( p );
     }
-
+    TRACTION_finalWire
+    {
+        type            surfaceRegion;
+        libs            ( "libfieldFunctionObjects.so" );
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    timeStep;
+        writeInterval   1;
+        timeFormat      fixed;
+        timePrecision   6;
+        operation       none;
+        writeFields     true;
+        surfaceFormat   raw;
+        regionType      patch;
+        name            finalWire;
+        fields          ( wallShearStress );
+    }
 }
+
 
 // ************************************************************************* //
