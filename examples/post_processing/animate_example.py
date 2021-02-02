@@ -31,26 +31,26 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
         dt = results[name]["delta_t"]
         time_step_start = results[name]["timestep_start"]
         # create animate object
-        animation = ani_fig.AddAnimation(solution, interface, dt, time_step_start, variable=var, name=name)
+        animation = ani_fig.add_animation(solution, interface, dt, time_step_start, variable=var, name=name)
         # select points and component of variable to plot
         coordinates = animation.coordinates
 
         # example 1: python solver (YZ-plane)
         python_solver = True
         if python_solver:
-            mask_x = (coordinates[::3] > -np.inf)
-            mask_y = (abs(coordinates[1::3]) > 0)
-            mask_z = (coordinates[2::3] > -np.inf)
+            mask_x = (coordinates[:, 0] > -np.inf)
+            mask_y = (abs(coordinates[:, 1]) > 0)
+            mask_z = (coordinates[:, 2] > -np.inf)
             abscissa = 2  # z-axis
             component = 1  # y-component
 
         # example 2: fluent solver (XY-plane)
         fluent = False
         if fluent:
-            mask_x = (coordinates[::3] > -np.inf)
-            mask_y = (coordinates[1::3] > 0)
-            mask_z = (abs(coordinates[2::3]) < 1e-16)
-            # mask_z = (coordinates[2::3] > 0) & (coordinates[2::3] < 0.0005)
+            mask_x = (coordinates[:, 0] > -np.inf)
+            mask_y = (coordinates[:, 1] > 0)
+            mask_z = (abs(coordinates[:, 2]) < 1e-16)
+            # mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)
             abscissa = 0  # x-axis
             component = 1  # y-component
 
@@ -66,10 +66,10 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
     ani_fig.figure.tight_layout()
     # or make figure active using plt.figure(ani_fig.number) and use plt.xlabel("") type commands etc.
 
-animation_figure_displacement.MakeAnimation()
-animation_figure_pressure.MakeAnimation()
-animation_figure_coordinates.MakeAnimation()
-# animation_figure_pressure.MakePlot(50)
+animation_figure_displacement.make_animation()
+animation_figure_pressure.make_animation()
+animation_figure_coordinates.make_animation()
+# animation_figure_pressure.make_plot(50)
 
 save = False
 animation_figure = animation_figure_displacement

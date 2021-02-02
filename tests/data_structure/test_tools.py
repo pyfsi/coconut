@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import check_bounding_box
+from coconut.tools import check_bounding_box
 
 import unittest
 import numpy as np

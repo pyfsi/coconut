@@ -1,5 +1,5 @@
 from coconut.coupling_components.component import Component
-from coconut.coupling_components import tools
+from coconut import tools
 
 import numpy as np
 

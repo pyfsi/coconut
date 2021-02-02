@@ -1,5 +1,5 @@
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import create_instance, print_components_info
+from coconut.tools import create_instance, print_components_info
 
 
 class ConvergenceCriterionCombined(Component):

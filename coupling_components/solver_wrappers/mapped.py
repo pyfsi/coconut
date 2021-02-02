@@ -1,6 +1,6 @@
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 from coconut.coupling_components.component import Component
-from coconut.coupling_components import tools
+from coconut import tools
 
 """ proposed changes to mapped.py
 - do initialization of mappers in Initialize method, would be more logical

@@ -1,7 +1,7 @@
 from coconut.data_structure.model import Model
 from coconut.data_structure.model_part import ModelPart
 from coconut.data_structure.interface import Interface
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 
 import numpy as np
 
