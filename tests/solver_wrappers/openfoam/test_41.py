@@ -44,7 +44,7 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
 
     def clean_case(self):
         os.system('sh ' + os.path.join(self.folder_path, 'Allclean'))
-        os.system('rm -r ' + os.path.join(self.folder_path, f'{0:.{self.t_prec}f}'))
+        os.system('rm -rf ' + os.path.join(self.folder_path, f'{0:.{self.t_prec}f}'))
 
     def set_up_case(self):
         os.system('sh ' + os.path.join(self.folder_path, 'Allrun'))
@@ -101,7 +101,7 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
             solver.Finalize()
 
             if cores > 1:
-                os.system(f'cd {self.folder_path} && reconstructPar -latestTime -noFields && cd -')
+                os.system(f'cd {self.folder_path} && reconstructPar -latestTime -noFields > log.reconstructPar && cd -')
 
             node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.dt:.{self.t_prec}f}', 'mantle')
 
