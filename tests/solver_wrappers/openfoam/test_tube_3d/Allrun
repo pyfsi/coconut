@@ -7,7 +7,7 @@ cd ${0%/*} || exit 1    # Run from this directory
 # Get application directory
 application=`getApplication`
 
-runApplication blockMesh
+runApplication blockMesh 1> /dev/null
 
 
 #------------------------------------------------------------------------------

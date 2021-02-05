@@ -326,9 +326,9 @@ class SolverWrapperOpenFOAM_41(Component):
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
         path = os.path.join(self.working_directory, timestamp)
         if self.cores > 1:
-            os.system('mkdir ' + path)
+            os.system('mkdir -p ' + path)
         elif self.physical_time == 0:  # for serial also need to make a folder 0.0000 with specified precision
-            os.system('mkdir ' + path)
+            os.system('mkdir -p ' + path)
 
         # # The displacement of the FSI interface is passed through pointDisplacement_Next, which is prepared here
         # pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
@@ -350,7 +350,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     newPath) + ". \n\n\n")
                 time.sleep(5)
                 os.system("rm -rf " + newPath)
-            os.system("mkdir " + newPath)
+            os.system("mkdir -p " + newPath)
         else:
             for i in np.arange(self.cores):
                 newPath = os.path.join(self.working_directory, "processor" + str(i), self.cur_timestamp)
@@ -360,7 +360,7 @@ class SolverWrapperOpenFOAM_41(Component):
                             "\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in processor-subfolders. \n\n\n")
                         time.sleep(5)
                     os.system("rm -rf " + newPath)
-                os.system("mkdir " + newPath)
+                os.system("mkdir -p " + newPath)
         print('\t Time step ' + str(self.timestep))
 
         self.send_message('next')  # Let OpenFOAM go to next time step
@@ -414,9 +414,9 @@ class SolverWrapperOpenFOAM_41(Component):
             pres_file = os.path.join(self.working_directory, "postProcessing", pressureName, "surface",
                                      self.cur_timestamp, "p_patch_" + boundary + ".raw")
             if os.path.isfile(wss_file):
-                os.system(f"rm -r {wss_file}")
+                os.system(f"rm -rf {wss_file}")
             if os.path.isfile(pres_file):
-                os.system(f"rm -r {pres_file}")
+                os.system(f"rm -rf {pres_file}")
 
         self.send_message('continue')
         self.wait_message('continue_ready')
@@ -436,7 +436,7 @@ class SolverWrapperOpenFOAM_41(Component):
             if self.cores > 1:  # Remove folder that was used for pointDisplacement_Next
                 # at end of time step if parallel run if not writeInterval
                 path = os.path.join(self.working_directory, self.prev_timestamp)
-                os.system("rm -r " + path)
+                os.system("rm -rf " + path)
             self.send_message('save')
             self.wait_message('save_ready')
 
