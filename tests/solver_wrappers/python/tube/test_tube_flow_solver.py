@@ -17,16 +17,20 @@ class TestSolverWrapperTubeFlowSolver(KratosUnittest.TestCase):
                 self.assertAlmostEqual(ls1[i], ls2[i], delta=delta)
 
     def test_solver_wrapper_tube_flow_solver(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_flow_solver.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_flow', 'test_tube_flow_solver.json')
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
         parameters_solver = parameters['solver_wrappers'][0]
+
+        # if running from this folder
+        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
+            parameters_solver['settings'].SetString('working_directory', 'test_tube_flow/CFD')
 
         # "global" definitions
         displacement = vars(data_structure)['DISPLACEMENT']
 
         # setup case
-        dir_tmp = os.path.realpath(os.path.dirname(__file__))
+        dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_tube_flow')
         p = subprocess.Popen(os.path.join(dir_tmp, 'setup_tube_flow.sh'), cwd=dir_tmp, shell=True)
         p.wait()
 

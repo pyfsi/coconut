@@ -3,26 +3,20 @@ from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.interface import Interface
 from coconut.coupling_components.tools import CreateInstance
 
+import os
+
 
 class TestConvergenceCriterionAbsoluteNorm(KratosUnittest.TestCase):
     def test_convergence_criterion_absolute_norm(self):
-        parameter_file_name = "test_parameters.json"
-
         m = 10
         dz = 2.0
         a0 = 10.0
         a1 = 1.0e-4
         a2 = 1.0e-7
-
-        # Make Parameters object from JSON string
         interface_settings = data_structure.Parameters('{"wall": "AREA"}')
 
         # Create interface
         variable = vars(data_structure)["AREA"]
-        # only names defined in Variables.py are allowed, otherwise they are not global
-        #   so just add whatever names you like! :D
-        #   (that seems like the easiest fix...)
-        # *** TODO: actually, I found a way to do this, adapt code...
         model = data_structure.Model()
         model_part = model.CreateModelPart("wall")
         model_part.AddNodalSolutionStepVariable(variable)
@@ -33,7 +27,7 @@ class TestConvergenceCriterionAbsoluteNorm(KratosUnittest.TestCase):
             node.SetSolutionStepValue(variable, step, a0)
         interface = Interface(model, interface_settings)
 
-        parameter_file_name = "convergence_criteria/test_absolute_norm.json"
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_absolute_norm.json')
         with open(parameter_file_name, 'r') as parameter_file:
             settings = data_structure.Parameters(parameter_file.read())
 

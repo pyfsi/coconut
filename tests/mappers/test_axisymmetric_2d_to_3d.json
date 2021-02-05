@@ -1,12 +1,10 @@
 {
-    "mapper" :
-    {
-        "type": "mappers.axisymmetric_2d_to_3d",
-        "settings":
-        {
-            "direction_axial": "X",
-            "direction_radial": "Y",
-            "n_tangential": 13
-        }
+  "mapper": {
+    "type": "mappers.axisymmetric_2d_to_3d",
+    "settings": {
+      "direction_axial": "X",
+      "direction_radial": "Y",
+      "n_tangential": 13
     }
+  }
 }

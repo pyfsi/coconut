@@ -1,0 +1,33 @@
+{
+  "solver_wrappers": [
+    {
+      "type": "solver_wrappers.fluent.v2019R2",
+      "settings": {
+        "working_directory": "solver_wrappers/fluent/test_v2019R2/tube3d/CFD",
+        "case_file": "case_tube3d.cas",
+        "dimensions": 3,
+        "unsteady": true,
+        "delta_t": 0.0001,
+        "timestep_start": 0,
+        "thread_names": [
+          "wall"
+        ],
+        "interface_input": {
+          "wall_nodes": "DISPLACEMENT"
+        },
+        "interface_output": {
+          "wall_faces": [
+            "PRESSURE",
+            "TRACTION"
+          ]
+        },
+        "cores": 4,
+        "fluent_gui": false,
+        "max_nodes_per_face": 4,
+        "hybrid_initialization": false,
+        "flow_iterations": 200,
+        "save_iterations": 1
+      }
+    }
+  ]
+}
