@@ -7,6 +7,7 @@ from copy import deepcopy
 import os
 import math
 import multiprocessing
+from subprocess import check_call, DEVNULL
 
 import coconut.coupling_components.solver_wrappers.openfoam.open_foam_io as of_io
 
@@ -43,11 +44,11 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
         self.set_up_case()
 
     def clean_case(self):
-        os.system('sh ' + os.path.join(self.folder_path, 'Allclean'))
-        os.system('rm -rf ' + os.path.join(self.folder_path, f'{0:.{self.t_prec}f}'))
+        check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True)
+        check_call('rm -rf ' + os.path.join(self.folder_path, f'{0:.{self.t_prec}f}'), shell=True)
 
     def set_up_case(self):
-        os.system('sh ' + os.path.join(self.folder_path, 'Allrun'))
+        check_call('sh ' + os.path.join(self.folder_path, 'Allrun'), shell=True)
 
     # Test if order of nodes vary with different decomposition
     def test_model_part_nodes_with_different_cores(self):
@@ -101,7 +102,8 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
             solver.Finalize()
 
             if cores > 1:
-                os.system(f'cd {self.folder_path} && reconstructPar -latestTime -noFields > log.reconstructPar && cd -')
+                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL)
+
 
             node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.dt:.{self.t_prec}f}', 'mantle')
 
