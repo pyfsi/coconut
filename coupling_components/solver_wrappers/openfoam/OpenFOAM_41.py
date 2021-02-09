@@ -2,6 +2,7 @@ from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
 from coconut.coupling_components import tools
+from subprocess import check_call
 
 import numpy as np
 import os
@@ -108,11 +109,8 @@ class SolverWrapperOpenFOAM_41(Component):
                         line = line.replace('|CORES|', str(self.cores))
                         line = line.replace('|DECOMPOSEMETHOD|', str(self.decomposeMethod))
                         newFile.write(line)
-            # rawFile.close()
-            # newFile.close()
+
             self.write_footer(decomposeParDict_name)
-            # # OpenFOAM-fields are decomposed automatically if you work in parallel
-            # os.system("cd " + self.working_directory + "; decomposePar -force -time "+ str(self.start_time) + " &> log.decomposePar;")
 
         # ControlDict: replace raw settings by actual settings defined by user in json-file AND add function objects to write pressure and wall shear stress
         controlDict_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "controlDict_raw")
@@ -138,8 +136,7 @@ class SolverWrapperOpenFOAM_41(Component):
                         boundary_name_temp += ")"
                         line = line.replace('|BOUNDARY_NAMES|', boundary_name_temp)
                     newFile.write(line)
-        # rawFile.close()
-        # newFile.close()
+
         nKey = 0
         if len(self.boundary_names) == 1:
             for key in self.boundary_names:
@@ -183,9 +180,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     line = line.replace('|NUM_INTERFACE_INPUT|', str(len(self.settings['boundary_names'].list())))
                     line = line.replace('|INTERFACE_INPUT|', strBoundary)
                     newFile.write(line)
-        # rawFile.close()
-        # newFile.close()
-        nKey = 0
+
         self.write_footer(dynamicMeshDict_name)
 
         # Creating Model
@@ -202,10 +197,10 @@ class SolverWrapperOpenFOAM_41(Component):
                 mp.AddNodalSolutionStepVariable(var)
 
         # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
-        os.system("cd " + self.working_directory + "; writeCellCentres -time " + str(
-            self.start_time) + " &> log.writeCellCentres;")
+        check_call("cd " + self.working_directory + "; writeCellCentres -time " + str(
+            self.start_time) + " &> log.writeCellCentres;", shell=True)
+
         # Want "cellCentres for face boundaries"
-        nKey = 0
         for boundary in self.boundary_names:
             source_file = self.working_directory + "/constant/polyMesh"
             node_ids, node_coords, face_centres, start_face, nFaces, self.total_nFaces = self.Get_Point_IDs(boundary,
@@ -281,8 +276,8 @@ class SolverWrapperOpenFOAM_41(Component):
         Normally no doubles should be encountered on an interface as these faces are not shared by processors
         '''
         if self.cores > 1:
-            os.system("cd " + self.working_directory + "; decomposePar -force -time " + str(
-                self.start_time) + " &> log.decomposePar;")
+            check_call("cd " + self.working_directory + "; decomposePar -force -time " + str(
+                self.start_time) + " &> log.decomposePar;", shell=True)
             for boundary in self.boundary_names:
                 mp_output = self.model[boundary + "_output"]
                 mp_output.sequence = []
@@ -326,9 +321,9 @@ class SolverWrapperOpenFOAM_41(Component):
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
         path = os.path.join(self.working_directory, timestamp)
         if self.cores > 1:
-            os.system('mkdir ' + path)
+            os.system('mkdir -p ' + path)
         elif self.physical_time == 0:  # for serial also need to make a folder 0.0000 with specified precision
-            os.system('mkdir ' + path)
+            os.system('mkdir -p ' + path)
 
         # # The displacement of the FSI interface is passed through pointDisplacement_Next, which is prepared here
         # pointDisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
@@ -350,7 +345,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     newPath) + ". \n\n\n")
                 time.sleep(5)
                 os.system("rm -rf " + newPath)
-            os.system("mkdir " + newPath)
+            os.system("mkdir -p " + newPath)
         else:
             for i in np.arange(self.cores):
                 newPath = os.path.join(self.working_directory, "processor" + str(i), self.cur_timestamp)
@@ -360,7 +355,7 @@ class SolverWrapperOpenFOAM_41(Component):
                             "\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in processor-subfolders. \n\n\n")
                         time.sleep(5)
                     os.system("rm -rf " + newPath)
-                os.system("mkdir " + newPath)
+                os.system("mkdir -p " + newPath)
         print('\t Time step ' + str(self.timestep))
 
         self.send_message('next')  # Let OpenFOAM go to next time step
@@ -372,14 +367,6 @@ class SolverWrapperOpenFOAM_41(Component):
 
         # store incoming displacements
         self.interface_input.SetPythonList(interface_input.GetPythonList())
-
-        # update X,Y,Z in interface
-        for key in [_[0] for _ in self.interface_input.model_parts_variables]:
-            for node in self.model[key].Nodes:
-                disp = node.GetSolutionStepValue(self.displacement)
-                node.X = node.X0 + disp[0]
-                node.Y = node.Y0 + disp[1]
-                node.Z = node.Z0 + disp[2]
 
         # write interface data to OpenFOAM-file
         self.write_node_input()
@@ -413,9 +400,9 @@ class SolverWrapperOpenFOAM_41(Component):
             pres_file = os.path.join(self.working_directory, "postProcessing", pressureName, "surface",
                                      self.cur_timestamp, "p_patch_" + boundary + ".raw")
             if os.path.isfile(wss_file):
-                os.system(f"rm -r {wss_file}")
+                os.system(f"rm -rf {wss_file}")
             if os.path.isfile(pres_file):
-                os.system(f"rm -r {pres_file}")
+                os.system(f"rm -rf {pres_file}")
 
         self.send_message('continue')
         self.wait_message('continue_ready')
@@ -435,7 +422,7 @@ class SolverWrapperOpenFOAM_41(Component):
             if self.cores > 1:  # Remove folder that was used for pointDisplacement_Next
                 # at end of time step if parallel run if not writeInterval
                 path = os.path.join(self.working_directory, self.prev_timestamp)
-                os.system("rm -r " + path)
+                os.system("rm -rf " + path)
             self.send_message('save')
             self.wait_message('save_ready')
 
@@ -603,10 +590,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 file.write("\t\t type  \t fixedValue; \n")
                 file.write('\t\t value \t nonuniform List<vector> ( \n')
                 for node in mp.Nodes:
-                    dispX = node.X - node.X0
-                    dispY = node.Y - node.Y0
-                    dispZ = node.Z - node.Z0
-                    file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}' + ') \n')
+                    disp = node.GetSolutionStepValue(self.displacement, 0)
+                    file.write(' (' + f'{disp[0]:27.17e} {disp[1]:27.17e} {disp[2]:27.17e}' + ') \n')
                 file.write(');\n')
 
             os.system("wc -l " + disp_file + " > lengthDisp")
@@ -621,8 +606,10 @@ class SolverWrapperOpenFOAM_41(Component):
             nKey += 1
 
         if self.cores > 1:
-            os.system(
-                "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp + " &> log.decomposePar;")
+            check_call(
+                "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp + " &> log.decomposePar;",
+                shell=True)
+
 
     def write_controlDict_function(self, filename, funcname, libname, varname, patchname, writeStart, writeEnd):
         with open(filename, 'a+') as file:
