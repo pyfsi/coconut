@@ -54,7 +54,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.diffusivity = self.settings["diffusivity"].GetString()
 
         # debug
-        self.debug = True  # set on True to save copy of input and output files in every iteration
+        self.debug = False  # set on True to save copy of input and output files in every iteration
 
         # Check that the boundary_names and the interface_input and interface_output are defined consistently in the JSON-file
         # For every boundary_name element, there should be one interface_input (boundary_name+"_input") element and one interface_output (boundary_name+"_output") element.
@@ -369,7 +369,6 @@ class SolverWrapperOpenFOAM_41(Component):
     @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):  # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
-        print(f'\t\tIteration {self.iteration}')
 
         # store incoming displacements
         self.interface_input.SetPythonList(interface_input.GetPythonList())

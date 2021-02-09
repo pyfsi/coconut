@@ -1,5 +1,6 @@
 # Tube case with OpenFOAM3D and Abaqus3D
 !! Should still be adapted to OpenFOAM, was copied from Fluent!!
+
 This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
 This done by using OpenFOAM and Abaqus, both with a fully 3D case.
 
@@ -7,7 +8,7 @@ This done by using OpenFOAM and Abaqus, both with a fully 3D case.
 
 The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
 
-## Predictors
+## Predictor
 
 The initial guess in every time step is done using the linear predictor.
 
@@ -21,9 +22,9 @@ When either criterion is satisfied the simulation stops.
  
 ## Solvers
 
-The flow solver is Fluent, used to solve a fully 3D tube,
+The flow solver is OpenFoam, used to solve a fully 3D tube,
 with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
-When setting up the case, the mesh is build based on the file `mesh.jou` using Gambit.
+When setting up the case, the mesh is build based on the file `blockMeshDict`.
 The displacements are applied in the nodes. 
 In contrast, the loads (pressure and traction) are calculated in the cell centers.
 The axial direction is along the x-axis,

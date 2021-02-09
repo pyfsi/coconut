@@ -102,7 +102,7 @@ def AssembleTestSuites():
     # # smallSuite.addTest(TestSolverWrapperAbaqus614("test_solver_wrapper_abaqus_614"))  # duration ~500s
     # smallSuite.addTest(TestSolverWrapperOpenFoam41('test_model_part_nodes_with_different_cores'))
     # smallSuite.addTest(TestSolverWrapperOpenFoam41('test_displacement_on_nodes'))
-    # smallSuite.addTest(TestSolverWrapperOpenFoam41('test_displacement_on_nodes'))
+    # smallSuite.addTest(TestSolverWrapperOpenFoam41('test_pressure_wall_shear_on_nodes_parallel'))
     #
     smallSuite.addTest(TestPyKratosParameters("test_pykratos_parameters"))
     smallSuite.addTest(TestPyKratosVariables("test_pykratos_variables"))

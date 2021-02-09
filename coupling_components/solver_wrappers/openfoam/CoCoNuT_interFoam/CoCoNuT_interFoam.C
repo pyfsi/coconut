@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
         	remove("next.coco");
         	runTime++;
         	OFstream outfile ("next_ready.coco");
-        	outfile << "Joris says: good job on next.coco" << endl;
+        	outfile << "next.coco" << endl;
     		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
     	}
         
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
                 
             runTime.run();
             OFstream outfile ("continue_ready.coco");
-            outfile << "Joris says good job on continue.coco" << endl;
+            outfile << "continue.coco" << endl;
         
     			            
     	}
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
     	{
         	remove("stop.coco");
         	OFstream outfile ("stop_ready.coco"); 
-        	outfile << "Joris says: good job on stop.coco" << endl;
+        	outfile << "stop.coco" << endl;
         	break;
     	} 
        

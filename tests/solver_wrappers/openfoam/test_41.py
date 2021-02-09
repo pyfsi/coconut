@@ -44,7 +44,7 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
 
     def clean_case(self):
         os.system('sh ' + os.path.join(self.folder_path, 'Allclean'))
-        os.system('rm -r ' + os.path.join(self.folder_path, f'{0:.{self.t_prec}f}'))
+        os.system('rm -rf ' + os.path.join(self.folder_path, f'{0:.{self.t_prec}f}'))
 
     def set_up_case(self):
         os.system('sh ' + os.path.join(self.folder_path, 'Allrun'))
