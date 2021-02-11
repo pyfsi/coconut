@@ -9,6 +9,8 @@ import subprocess
 import time
 import numpy as np
 import re
+import textwrap
+from pathlib import Path
 
 
 def Create(parameters):
@@ -610,10 +612,10 @@ class SolverWrapperAbaqus614(Component):
         Exception("This solver interface provides no mapping.")
 
     def makeElements(self, face_file, output_file):
-        firstLoop = 1
-        # element = 0
+        face_file = Path(face_file)
+        output_file = Path(output_file)
+        first_loop = True
         element_prev = -1
-        # point = 0
         point_prev = -1
         element_0 = -1
         point_0 = -1
@@ -621,29 +623,46 @@ class SolverWrapperAbaqus614(Component):
         element_str = ""
 
         with open(face_file, 'r') as file:
-            for line in file:
+            for num, line in enumerate(file, start=1):
                 values = line.strip().split()
                 element = int(values[0])
                 point = int(values[1])
-                if element == element_0 and point == point_0:
+                if element == element_0 and point == point_0:  # all values multiple times in file, only once needed
                     break
-                if element == element_prev:
-                    if point == point_prev + 1:
+                if element == element_prev:  # load points of same element
+                    if point == point_prev + 1:  # deviation from ascending order indicates mistake
                         point_prev = point
                     else:
-                        raise ValueError(f"loadpoint number increases by more than one per line for element {element}")
-                else:
+                        if point > point_prev:
+                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
+                                                f" increases by more 1 one per line for element {element}, found "
+                                                f"{point} but {point_prev + 1} was expected.", width=80)
+                            raise ValueError(msg)
+                        elif point == 1:
+                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
+                                                f" {point} is lower than previous ({point_prev}). Check if surface "
+                                                f"contains element with multiple faces in surface, for example at "
+                                                f"corners. This is not allowed.", width=80)
+                            raise ValueError(msg)
+                        else:
+                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
+                                                f" {point} is lower than previous ({point_prev}).", width=80)
+                            raise ValueError(msg)
+                else:  # new element started
                     if point == 1:
                         point_prev = point
                         element_prev = element
                         element_str += str(element) + "\n"
                         count += 1
-                        if firstLoop:  # Faces contains all values multiple times, but we only want it once
+                        if first_loop:
                             element_0 = element
                             point_0 = point
-                            firstLoop = 0
+                            first_loop = False
                     else:
-                        raise ValueError(f"loadpoint number does not start at 1 for element {element}")
+                        msg = textwrap.fill(
+                            f"Error while processing {face_file.name} line {num}: Load point number does not start at 1"
+                            f" for element {element}, {point} was found instead.", width=80)
+                        raise ValueError(msg)
 
         element_str = f"{count}\n{point_prev}\n" + element_str
         with open(output_file, "w") as file:
