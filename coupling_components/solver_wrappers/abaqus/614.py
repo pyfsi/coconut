@@ -475,14 +475,8 @@ class SolverWrapperAbaqus614(Component):
     def get_interface_input(self):
         return self.interface_input
 
-    def set_interface_input(self):
-        Exception("This solver interface provides no mapping.")  # TODO: remove?
-
     def get_interface_output(self):
         return self.interface_output
-
-    def set_interface_output(self):
-        Exception("This solver interface provides no mapping.")  # TODO: remove?
 
     def check_software(self):
         # Python version: 3.6 or higher

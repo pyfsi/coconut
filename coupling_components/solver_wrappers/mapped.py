@@ -3,8 +3,6 @@ from coconut.coupling_components.component import Component
 from coconut import tools
 
 """ proposed changes to mapped.py
-- do initialization of mappers in Initialize method, would be more logical
-- remove all set_interface_input/Output methods?
 - use copy in get_interface_input/Output methods?
     and just refer to actual solver wrapper in SolverWrapperMapped
 - all Interfaces are stored in this mapper, e.g. self.interface_output_to and 3 others;
@@ -89,12 +87,12 @@ class SolverWrapperMapped(Component):
 
     def get_interface_input(self):
         # does not contain most recent data
-        return self.interface_input_from.copy()
+        return self.interface_input_from
 
     def get_interface_output(self):
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
-        return self.interface_output_to.copy()
+        return self.interface_output_to
 
     def print_components_info(self, pre):
         tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")

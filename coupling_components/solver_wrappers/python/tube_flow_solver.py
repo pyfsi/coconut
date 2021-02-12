@@ -123,7 +123,7 @@ class SolverWrapperTubeFlow(Component):
         self.interface_output.set_variable_data("wall", "traction", self.trac)
 
         # run time
-        self.run_time = 0
+        self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save input and output of each iteration of every time step
@@ -220,16 +220,10 @@ class SolverWrapperTubeFlow(Component):
                     file.write(f"{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n")
 
     def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input.copy()
-
-    def set_interface_input(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping.")
+        return self.interface_input
 
     def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output.copy()
-
-    def set_interface_output(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping.")
+        return self.interface_output
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:

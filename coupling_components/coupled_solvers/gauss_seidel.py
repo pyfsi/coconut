@@ -19,6 +19,7 @@ class CoupledSolverGaussSeidel(Component):
         self.parameters = parameters
         self.settings = parameters["settings"]
 
+        # read parameters
         self.timestep_start = self.settings["timestep_start"]  # time step where calculation is started
         self.time_step = self.timestep_start  # time step
         self.delta_t = self.settings["delta_t"]  # time step size
@@ -29,18 +30,9 @@ class CoupledSolverGaussSeidel(Component):
         self.index_mapped = None
         self.index_other = None
         for index in range(2):
-            # add timestep_start and delta_t to solver_wrapper settings
             parameters = self.parameters["solver_wrappers"][index]
-            if parameters["type"] == "solver_wrappers.mapped":
-                settings = parameters["settings"]["solver_wrapper"]["settings"]
-            else:
-                settings = parameters["settings"]
-
-            for key in ["timestep_start", "delta_t"]:
-                if key in settings:
-                    tools.print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-                settings[key] = self.settings[key]
-
+            # add timestep_start and delta_t to solver_wrapper settings
+            tools.pass_on_parameters(self.settings, parameters["settings"], ["timestep_start", "delta_t"])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
             if parameters["type"] == "solver_wrappers.mapped":
@@ -52,14 +44,15 @@ class CoupledSolverGaussSeidel(Component):
 
         self.components = [self.predictor, self.convergence_criterion, self.solver_wrappers[0], self.solver_wrappers[1]]
 
-        self.x = None
-        self.y = None
+        self.x = None  # input interface of solver 0
+        self.y = None  # input interface of solver 1
         self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
-
         self.start_time = None
         self.elapsed_time = None
         self.iterations = []
+
+        # save results variables
         self.save_results = self.settings.get("save_results", False)  # set True in order to save for every iteration
         if self.save_results:
             self.complete_solution_x = None
@@ -89,25 +82,28 @@ class CoupledSolverGaussSeidel(Component):
         self.y = self.solver_wrappers[0].get_interface_output()
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
+        self.start_time = time.time()
 
+        # update save results
         if self.save_results:
             self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
             self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
-        self.start_time = time.time()
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        for component in self.components:
-            component.initialize_solution_step()
-
-        self.n += 1  # increment time step
+        # update time step and iteration
+        self.time_step += 1
         self.iteration = 0
 
         # print time step
         if not self.solver_level:
             self.print_header()
 
+        for component in self.components:
+            component.initialize_solution_step()
+
+        # update save results
         if self.save_results:
             self.residual.append([])
 
@@ -130,25 +126,26 @@ class CoupledSolverGaussSeidel(Component):
             self.finalize_iteration(r)
 
     def finalize_iteration(self, r):
-        self.iteration += 1
-        self.convergence_criterion.update(r)
-        # print iteration information
-        self.print_iteration_info(r)
+        self.iteration += 1  # increment iteration
+        self.convergence_criterion.update(r)  # update convergence criterion
+        self.print_iteration_info(r)  # print iteration information
 
+        # update save results
         if self.save_results:
-            self.residual[self.n - 1].append(np.linalg.norm(r.get_interface_data()))
+            self.residual[self.time_step - 1].append(r.norm())
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
+        self.predictor.update(self.x)
+        for component in self.components:
+            component.finalize_solution_step()
+
+        # update save results
         self.iterations.append(self.iteration)
         if self.save_results:
             self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.get_interface_data().reshape(-1, 1)))
             self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.get_interface_data().reshape(-1, 1)))
-
-        self.predictor.update(self.x)
-        for component in self.components:
-            component.finalize_solution_step()
 
     def output_solution_step(self):
         super().output_solution_step()
@@ -159,6 +156,7 @@ class CoupledSolverGaussSeidel(Component):
     def finalize(self):
         super().finalize()
 
+        # print summary header
         if self.solver_level == 0:
             out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
                   f"║\tSummary\n" \
@@ -199,7 +197,7 @@ class CoupledSolverGaussSeidel(Component):
 
     def print_header(self):
         header = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                 f"\tTime step {self.n}\n" \
+                 f"\tTime step {self.time_step}\n" \
                  f"════════════════════════════════════════════════════════════════════════════════\n" \
                  f"{'Iteration':<16}{'Norm residual':<28}"
         tools.print_info(header, flush=True)

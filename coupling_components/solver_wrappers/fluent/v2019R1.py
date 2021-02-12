@@ -218,11 +218,10 @@ class SolverWrapperFluent2019R1(Component):
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
         # run time
-        self.run_time = 0.0  # TODO: what is the purpose of this? Nicolas?
+        self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
-        self.output_solution_step()  # TODO: what is the purpose of this? Nicolas?
 
     def initialize(self):
         super().initialize()
@@ -319,14 +318,8 @@ class SolverWrapperFluent2019R1(Component):
     def get_interface_input(self):
         return self.interface_input
 
-    def set_interface_input(self):
-        Exception("This solver interface provides no mapping.")  # TODO: remove?
-
     def get_interface_output(self):
         return self.interface_output
-
-    def set_interface_output(self):
-        Exception("This solver interface provides no mapping.")  # TODO: remove?
 
     def set_fluent_version(self):
         self.version = '2019R1'

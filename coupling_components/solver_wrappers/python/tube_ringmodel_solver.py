@@ -129,13 +129,7 @@ class SolverWrapperTubeRingmodel(Component):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
     def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input.copy()
-
-    def set_interface_input(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping")
+        return self.interface_input
 
     def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output.copy()
-
-    def set_interface_output(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping")
+        return self.interface_output

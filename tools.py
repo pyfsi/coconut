@@ -140,6 +140,14 @@ def time_solve_solution_step(solve_solution_step):
     return wrapper
 
 
+# pass on parameters
+def pass_on_parameters(settings_from, settings_to, keys):
+    for key in keys:
+        if key in settings_to:
+            print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
+        settings_to[key] = settings_from[key]
+
+
 # compare bounding box of ModelParts
 def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
                        tol_minmax_warning=.1, tol_minmax_error=.3):
@@ -202,4 +210,3 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
         raise ValueError(msg)
     if error_max > tol_minmax_warning:
         warnings.warn(msg, Warning)
-
