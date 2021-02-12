@@ -7,11 +7,13 @@ import KratosMultiphysics
 from KratosMultiphysics import StructuralMechanicsApplication
 import structural_mechanics_analysis
 
+
 import os
 from os.path import join
-import numpy as np
+import json
+from contextlib import contextmanager
 import sys
-import shutil
+
 
 
 def Create(parameters):
@@ -19,41 +21,23 @@ def Create(parameters):
 
 
 class SolverWrapperKratosStructure6_0(Component):
+
     def __init__(self, parameters):
         super().__init__()
 
         self.settings = parameters["settings"]
-        dir_structure = join(os.getcwd(), self.settings["working_directory"].GetString())
+        self.working_directory = join(os.getcwd(), self.settings["working_directory"].GetString())
         delta_t = self.settings["delta_t"].GetDouble()
         timestep_start = self.settings["timestep_start"].GetDouble()
-        time_integration_method = self.settings["time_integration_method"].GetString()
-        time_integration_scheme = self.settings["time_integration_scheme"].GetString()
-        input_file_path =  join(dir_structure,self.settings["input_file"].GetString())
+
+        input_file_path = join(self.working_directory, self.settings["input_file"].GetString())
 
         with open(input_file_path, "r") as parameter_file:
             kratos_parameters = KratosMultiphysics.Parameters(parameter_file.read())
 
         kratos_solver_settings = kratos_parameters["solver_settings"]
-
-        if not delta_t: #### Steady state
-            kratos_solver_settings["solver_type"].SetString("static")
-            kratos_parameters["problem_data"]["time_step"].SetDouble(1.0)
-        else:
-            kratos_parameters["problem_data"]["start_time"].SetDouble(timestep_start)
-            kratos_solver_settings["solver_type"].SetString("dynamic")
-            kratos_parameters["problem_data"]["time_step"].SetDouble(delta_t)
-
-            if kratos_solver_settings.Has("time_integration_method"):
-                kratos_solver_settings["time_integration_method"].SetString(time_integration_method)
-            else:
-                kratos_solver_settings.AddEmptyValue("time_integration_method")
-                kratos_solver_settings["time_integration_method"].SetString(time_integration_method)
-
-            if kratos_solver_settings.Has("scheme_type"):
-                kratos_solver_settings["scheme_type"].SetString(time_integration_scheme)
-            else:
-                kratos_solver_settings.AddEmptyValue("scheme_type")
-                kratos_solver_settings["scheme_type"].SetString(time_integration_scheme)
+        kratos_parameters["problem_data"]["start_time"].SetDouble(timestep_start)
+        kratos_parameters["problem_data"]["time_step"].SetDouble(delta_t)
 
         mesh_file_type = kratos_solver_settings["model_import_settings"]["input_type"].GetString()
 
@@ -61,15 +45,21 @@ class SolverWrapperKratosStructure6_0(Component):
             raise Exception("Only mesh file of mdpa type is supported")
 
         mdpa_file_name = kratos_solver_settings["model_import_settings"]["input_filename"].GetString()
-        mdpa_file_path = os.path.join(dir_structure, mdpa_file_name)
+        mdpa_file_path = os.path.join(self.working_directory, mdpa_file_name)
         kratos_solver_settings["model_import_settings"]["input_filename"].SetString(mdpa_file_path)
 
         material_file_name = kratos_solver_settings["material_import_settings"]["materials_filename"].GetString()
-        material_file_path = os.path.join(dir_structure, material_file_name)
+        material_file_path = os.path.join(self.working_directory, material_file_name)
         kratos_solver_settings["material_import_settings"]["materials_filename"].SetString(material_file_path)
+
+        json_string = kratos_parameters.PrettyPrintJsonString()
+        with open(os.path.join(self.working_directory, 'ProjectParameters.json'), 'w') as f:
+            f.write(json_string)
+
         kratos_model = KratosMultiphysics.Model()
         self.structural_analysis = structural_mechanics_analysis.StructuralMechanicsAnalysis(kratos_model, kratos_parameters)
         self.structural_analysis.Initialize()
+
         self.kratos_sub_model_part_list = []
         for kratos_sub_mp_name in self.settings["sub_model_parts_from_str_solver"].list():
             input_sub_mp_name = "Structure." + kratos_sub_mp_name.GetString()
@@ -127,7 +117,6 @@ class SolverWrapperKratosStructure6_0(Component):
         # # Interfaces
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
-
 
     def Initialize(self):
         super().Initialize()

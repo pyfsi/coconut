@@ -2,10 +2,10 @@ from coconut import data_structure
 from coconut.data_structure import KratosUnittest
 from coconut.coupling_components.tools import CreateInstance
 from coconut.coupling_components.interface import Interface
-from coconut.coupling_components import output_vtk_process
 
 import numpy as np
 import os
+import subprocess
 
 
 def print_box(text):
@@ -19,10 +19,14 @@ class TestSolverWrapperKratosStructure6_0(KratosUnittest.TestCase):
 
     def test_solver_wrapper_kratos_structure_6_0_tube3d_static(self):
 
-        print_box('started tests for Kratos Tube3D static')
-
         # Create set up files for kratos
-        os.system("cd test_kratos_structure_6_0_tube3d_static; sh set_up_kratos.sh")
+        print_box('setup Kratos static case')
+
+        dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), f'test_kratos_structure_6_0_tube3d_static')
+        set_up_file = os.path.join(dir_tmp, 'set_up_kratos.sh')
+        p = subprocess.Popen(f'sh {set_up_file}', cwd=dir_tmp, shell=True)
+        p.wait()
+
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
                                            'test_kratos_structure_6_0_tube3d_static', 'test_solver_wrapper.json')
@@ -30,6 +34,14 @@ class TestSolverWrapperKratosStructure6_0(KratosUnittest.TestCase):
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
         solver_param = parameters['solver_wrappers'][0]
+
+        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
+            solver_param['settings'].SetString('working_directory',
+                                               f'test_kratos_structure_6_0_tube3d_static/kratos_structure')
+
+        print_box('started tests for Kratos Tube3D static')
+
+
         solver = CreateInstance(solver_param)
 
         load_interface = solver.GetInterfaceInput()
@@ -40,61 +52,67 @@ class TestSolverWrapperKratosStructure6_0(KratosUnittest.TestCase):
 
         initial_pressure = 10000
 
-        self.pressure = initial_pressure
+        pressure = initial_pressure
         traction_x = 100.0
         traction_y = 0.0
         traction_z = 0.0
-        self.traction = np.array([traction_x, traction_y, traction_z])
-        self.ApplyUniformLoad()
-        load_interface.SetPythonList(self.load_list)
+        traction = np.array([traction_x, traction_y, traction_z])
+        load_list = self.GetUniformLoadList(pressure, traction)
+        load_interface.SetPythonList(load_list)
 
         solver.Initialize()
 
-        out_obj = output_vtk_process.OutputInterfaceProcess(load_interface,'test_kratos_structure_6_0_tube3d_static/kratos_structure')
-
         solver.InitializeSolutionStep()
-        disp_out_1 = solver.SolveSolutionStep(load_interface).GetNumpyArray()
+        output_1 = solver.SolveSolutionStep(load_interface).deepcopy()
         solver.FinalizeSolutionStep()
-        out_obj.Write()
 
-        self.pressure *= 0.5
-        self.traction *= 0.5
+        pressure *= 0.5
+        traction *= 0.5
 
-        self.ApplyUniformLoad()
-        load_interface.SetPythonList(self.load_list)
+        load_list = self.GetUniformLoadList(pressure, traction)
+        load_interface.SetPythonList(load_list)
         solver.InitializeSolutionStep()
-        solver.SolveSolutionStep(load_interface)
+        output_2 = solver.SolveSolutionStep(load_interface).deepcopy()
         solver.FinalizeSolutionStep()
-        out_obj.Write()
 
-        self.pressure = initial_pressure
-        self.traction = np.array([traction_x, traction_y, traction_z])
+        pressure = initial_pressure
+        traction = np.array([traction_x, traction_y, traction_z])
 
-        self.ApplyUniformLoad()
-        load_interface.SetPythonList(self.load_list)
+        load_list = self.GetUniformLoadList(pressure, traction)
+        load_interface.SetPythonList(load_list)
         solver.InitializeSolutionStep()
-        disp_out_2 = solver.SolveSolutionStep(load_interface).GetNumpyArray()
+        output_3 = solver.SolveSolutionStep(load_interface).deepcopy()
         solver.FinalizeSolutionStep()
-        out_obj.Write()
 
         solver.Finalize()
-        os.system("mv *.msh test_kratos_structure_6_0_tube3d_static/kratos_structure; mv *.res test_kratos_structure_6_0_tube3d_static/kratos_structure; mv *.lst  test_kratos_structure_6_0_tube3d_static/kratos_structure")
-        #os.system("cd test_kratos_structure_6_0_tube3d_static/kratos_structure; python3 convert_gid_to_vtk.py; cd -")
 
-        norm_disp_out_1 = np.linalg.norm(disp_out_1.size)
-        #norm_disp_diff = np.linalg.norm(disp_out_1 - disp_out_2)
-        # print('Relative norm difference: ', norm_disp_diff / norm_disp_out_1)
-        # print('Absolute norm difference: ', norm_disp_diff)
+        # normalize data and compare
+        a1 = output_1.GetNumpyArray()
+        a2 = output_2.GetNumpyArray()
+        a3 = output_3.GetNumpyArray()
 
-        for i in range(disp_out_1.size):
-            self.assertAlmostEqual((disp_out_1[i] - disp_out_2[i])/norm_disp_out_1, 0., delta=1e-12)
+        mean = np.mean(a1)
+        ref = np.abs(a1 - mean).max()
+
+        a1n = (a1 - mean) / ref
+        a2n = (a2 - mean) / ref
+        a3n = (a3 - mean) / ref
+
+        self.assertNotAlmostEqual(np.sum(np.abs(a1n - a2n)) / a1n.size, 0., delta=1e-06)
+        for i in range(a1.size):
+            self.assertAlmostEqual(a1n[i] - a3n[i], 0., delta=1e-07)
 
     def test_solver_wrapper_kratos_structure_6_0_tube3d_dynamic(self):
 
-        print_box('started tests for Kratos Tube3D Dynamic')
+        print_box('setup Kratos dynamic case')
+
+        dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                               f'test_kratos_structure_6_0_tube3d_dynamic')
+        set_up_file = os.path.join(dir_tmp, 'set_up_kratos.sh')
+        p = subprocess.Popen(f'sh {set_up_file}', cwd=dir_tmp, shell=True)
+        p.wait()
 
         # Create set up files for kratos
-        os.system("cd test_kratos_structure_6_0_tube3d_dynamic; sh set_up_kratos.sh")
 
         parameter_file_name = os.path.join(os.path.dirname(__file__),
                                            'test_kratos_structure_6_0_tube3d_dynamic', 'test_solver_wrapper.json')
@@ -102,61 +120,77 @@ class TestSolverWrapperKratosStructure6_0(KratosUnittest.TestCase):
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = data_structure.Parameters(parameter_file.read())
         solver_param = parameters['solver_wrappers'][0]
+
+        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
+            solver_param['settings'].SetString('working_directory',
+                                               f'test_kratos_structure_6_0_tube3d_dynamic/kratos_structure')
+
+        print_box('started tests for Kratos Tube3D Dynamic')
+
         solver = CreateInstance(solver_param)
 
         load_interface = solver.GetInterfaceInput()
 
         load_interface_list = load_interface.GetPythonList()
         self.nr_of_nodes = int(len(load_interface_list) / 4)
-        self.load_list = []
 
         initial_pressure = 10000
 
-        self.pressure = initial_pressure
+        pressure = initial_pressure
         traction_x = 100.0
         traction_y = 0.0
         traction_z = 0.0
-        self.traction = np.array([traction_x, traction_y, traction_z])
-        self.ApplyUniformLoad()
-        load_interface.SetPythonList(self.load_list)
+        traction = np.array([traction_x, traction_y, traction_z])
+        load_list = self.GetUniformLoadList(pressure, traction)
+        load_interface.SetPythonList(load_list)
 
         solver.Initialize()
 
         solver.InitializeSolutionStep()
-        disp_out_1 = solver.SolveSolutionStep(load_interface).GetNumpyArray()
-        #solver.FinalizeSolutionStep()
+        output_1 = solver.SolveSolutionStep(load_interface).deepcopy()
 
+        pressure *= 0.5
+        traction *= 0.5
+        load_list = self.GetUniformLoadList(pressure, traction)
+        load_interface.SetPythonList(load_list)
+        output_2 = solver.SolveSolutionStep(load_interface).deepcopy()
 
-        self.ApplyUniformLoad()
-        load_interface.SetPythonList(self.load_list)
-        #solver.InitializeSolutionStep()
-        disp_out_2 = solver.SolveSolutionStep(load_interface).GetNumpyArray()
+        pressure = initial_pressure
+        traction = np.array([traction_x, traction_y, traction_z])
+        load_list = self.GetUniformLoadList(pressure, traction)
+        load_interface.SetPythonList(load_list)
+        output_3 = solver.SolveSolutionStep(load_interface).deepcopy()
         solver.FinalizeSolutionStep()
 
+
         solver.Finalize()
-        os.system("mv *.msh test_kratos_structure_6_0_tube3d_dynamic/kratos_structure; mv *.res test_kratos_structure_6_0_tube3d_dynamic/kratos_structure; mv *.lst  test_kratos_structure_6_0_tube3d_dynamic/kratos_structure")
-        os.system("cd test_kratos_structure_6_0_tube3d_dynamic/kratos_structure; python3 convert_gid_to_vtk.py; cd -")
 
-        norm_disp_out_1 = np.linalg.norm(disp_out_1.size)
-        # norm_disp_diff = np.linalg.norm(disp_out_1 - disp_out_2)
-        # print('Relative norm difference: ', norm_disp_diff / norm_disp_out_1)
-        # print('Absolute norm difference: ', norm_disp_diff)
+        # normalize data and compare
+        a1 = output_1.GetNumpyArray()
+        a2 = output_2.GetNumpyArray()
+        a3 = output_3.GetNumpyArray()
 
-        for i in range(disp_out_1.size):
-            self.assertAlmostEqual((disp_out_1[i] - disp_out_2[i]) / norm_disp_out_1, 0., delta=1e-12)
+        mean = np.mean(a1)
+        ref = np.abs(a1 - mean).max()
 
-    def ApplyUniformLoad(self):
-        self.load_list = []
+        a1n = (a1 - mean) / ref
+        a2n = (a2 - mean) / ref
+        a3n = (a3 - mean) / ref
+
+        self.assertNotAlmostEqual(np.sum(np.abs(a1n - a2n)) / a1n.size, 0., delta=1e-06)
+        for i in range(a1.size):
+            self.assertAlmostEqual(a1n[i] - a3n[i], 0., delta=1e-07)
+
+    def GetUniformLoadList(self, pressure, traction):
+        load = []
         for i in range(0, self.nr_of_nodes):
-            self.load_list.append(self.pressure)
+            load.append(pressure)
         for i in range(0, self.nr_of_nodes):
-            self.load_list +=  self.traction.tolist()
+            load += traction.tolist()
+
+        return load
 
 
 
 if __name__ == '__main__':
-    test_obj = TestSolverWrapperKratosStructure6_0()
-    test_obj.test_solver_wrapper_kratos_structure_6_0_tube3d_static()
-    test_obj.test_solver_wrapper_kratos_structure_6_0_tube3d_dynamic()
-
-
+    KratosUnittest.main()

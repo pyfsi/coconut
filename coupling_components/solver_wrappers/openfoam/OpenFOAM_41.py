@@ -309,7 +309,9 @@ class SolverWrapperOpenFOAM_41(Component):
         self.pressure=vars(data_structure)['PRESSURE']
         self.shear=vars(data_structure)['WALLSHEARSTRESS']  # @Laurent: longer definition does not exist anymore
         self.displacement=vars(data_structure)['DISPLACEMENT']
-        
+
+        # run time
+        self.run_time = 0.0
              
     def Initialize(self):
         super().Initialize()
@@ -357,8 +359,8 @@ class SolverWrapperOpenFOAM_41(Component):
         
         self.send_message('next') # Let OpenFOAM go to next time step
         self.wait_message('next_ready') # Let OpenFOAM wait for input data
-    
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input): # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
         self.iteration += 1
         print(f'\t\tIteration {self.iteration}')

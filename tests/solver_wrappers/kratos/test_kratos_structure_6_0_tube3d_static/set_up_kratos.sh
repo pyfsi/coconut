@@ -5,14 +5,7 @@
 # clean working directory
 if [ -d ./kratos_structure ]
 then
-    echo "Removing kratos_structure folder"
     rm -rf ./kratos_structure
 fi
-
 # create new CSM folder
-echo "Copying kratos_structure and set up files"
 cp -r kratos_setp_up_files kratos_structure
-cd kratos_structure
-
-ml Kratos
-cd ..

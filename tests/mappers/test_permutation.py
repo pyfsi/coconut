@@ -25,13 +25,13 @@ class TestMapperPermutation(KratosUnittest.TestCase):
             mapper = CreateInstance(parameters['mapper'])
             model_part_to = mapper.Initialize(model_part_from, forward=True)
             node = model_part_to.Nodes[0]
-            self.assertListEqual([node.X, node.Y, node.Z], [2., 0., 1.])
+            self.assertListEqual([node.X0, node.Y0, node.Z0], [2., 0., 1.])
 
             # model_part_to given
             mapper = CreateInstance(parameters['mapper'])
             model_part_from = mapper.Initialize(model_part_to, forward=False)
             node = model_part_from.Nodes[0]
-            self.assertListEqual([node.X, node.Y, node.Z], [0., 1., 2.])
+            self.assertListEqual([node.X0, node.Y0, node.Z0], [0., 1., 2.])
 
         # check if method __call__ works for Double Variable
         if True:

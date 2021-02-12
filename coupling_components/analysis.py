@@ -19,7 +19,7 @@ class Analysis:
     def Initialize(self):
         self.coupled_solver.Initialize()
         self.coupled_solver.Check()
-        self.coupled_solver.PrintInfo(0)
+        self.coupled_solver.PrintComponentsInfo(' ')
 
     def RunSolutionLoop(self):
         for _ in range(self.number_of_timesteps):

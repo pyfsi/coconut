@@ -1,4 +1,5 @@
 from coconut.coupling_components.mappers.interpolator import MapperInterpolator
+from coconut.coupling_components import tools
 
 from scipy.spatial import distance
 from scipy.linalg import solve
@@ -15,8 +16,14 @@ class MapperRadialBasis(MapperInterpolator):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        # store settings
-        self.parallel = self.settings['parallel'].GetBool()
+        self.coeffs = None
+
+        # check and store settings
+        self.parallel = self.settings['parallel'].GetBool() if self.settings.Has('parallel') else False
+        self.shape_parameter = self.settings['shape_parameter'].GetInt() if self.settings.Has('shape_parameter') \
+            else 200
+        if self.shape_parameter < 2:
+            tools.Print(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
 
         # determine number of nearest neighbours
         if len(self.directions) == 3:
@@ -29,27 +36,39 @@ class MapperRadialBasis(MapperInterpolator):
 
         # calculate coefficients
         iterable = []
+        cond = []
         for i_to in range(self.n_to):
             nearest = self.nearest[i_to, :]
             iterable.append((self.distances[i_to, :],
-                             self.coords_from[nearest, :]))
+                             self.coords_from[nearest, :],
+                             self.shape_parameter))
 
         if self.parallel:
             processes = cpu_count()
             with Pool(processes=processes) as pool:
                 # optimal chunksize automatically calculated
                 out = pool.starmap(get_coeffs, iterable)
-            self.coeffs = np.vstack(tuple(out))
+            self.coeffs = np.vstack(tuple(zip(*out))[0])
+            cond = list(zip(*out))[1]
         else:
             self.coeffs = np.zeros(self.nearest.shape)
             for i_to, tup in enumerate(iterable):
-                self.coeffs[i_to, :] = get_coeffs(*tup).flatten()
+                out = get_coeffs(*tup)
+                self.coeffs[i_to, :] = out[0].flatten()
+                cond.append(out[1])
 
-def get_coeffs(distances, coords_from):
+        # check condition number
+        cond = max(cond)
+        if cond > 1e13:
+            tools.Print(f'The highest condition number of the interpolation matrices is {cond:.2e} > 1e13\n'
+                        f'Decrease the shape parameter to decrease the condition number', layout='warning')
+
+
+def get_coeffs(distances, coords_from, shape_parameter):
     def phi(r):
         return (1 - r) ** 4 * (1 + 4 * r) * np.heaviside(1 - r, 0)
 
-    d_ref = distances[-1] * 2  # *** add parameter for this?
+    d_ref = distances[-1] * shape_parameter
 
     # create column Phi_to, based on distances to from-points
     d_to = distances.reshape(-1, 1)
@@ -59,7 +78,10 @@ def get_coeffs(distances, coords_from):
     d = distance.squareform(distance.pdist(coords_from))
     Phi = phi(d / d_ref)
 
+    # calculate condition number
+    cond = np.linalg.cond(Phi)
+
     # solve system Phi^T c = Phi_t for c (Phi is symmetric)
     coeffs = solve(Phi, Phi_to, sym_pos=True)
 
-    return coeffs.reshape(1, -1)
+    return coeffs.reshape(1, -1), cond

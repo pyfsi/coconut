@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
+from coconut.coupling_components import tools
 
 import numpy as np
 import os.path as path
@@ -72,8 +73,11 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_input = Interface(self.model, self.settings["interface_input"])
         self.interface_output = Interface(self.model, self.settings["interface_output"])
 
+        # run time
+        self.run_time = 0.0
+
         # Debug
-        self.debug = False  # Set on true to save solution of each time step
+        self.debug = False  # Set on True to save input and output of each iteration of every time step
         self.OutputSolutionStep()
 
     def Initialize(self):
@@ -85,6 +89,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.k = 0
         self.n += 1
 
+    @tools.TimeSolveSolutionStep
     def SolveSolutionStep(self, interface_input):
         # Input
         input = interface_input.GetNumpyArray()
@@ -100,7 +105,15 @@ class SolverWrapperTubeRingmodel(Component):
 
         self.k += 1
         if self.debug:
-            file_name = self.working_directory + f"/Area_TS{self.n}_IT{self.k}"
+            p = self.p * self.rhof
+            file_name = self.working_directory + f"/Input_Pressure_Traction_TS{self.n}_IT{self.k}.txt"
+            with open(file_name, 'w') as file:
+                file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'x-traction':<22}"
+                           f"\t{'y-traction':<22}\t{'z-traction':<22}\n")
+                for i in range(len(self.z)):
+                    file.write(f"{self.z[i]:<22}\t{p[i]:<22}\t{self.trac[i, 0]:<22}"
+                               f"\t{self.trac[i, 1]:<22}\t{self.trac[i, 2]:<22}\n")
+            file_name = self.working_directory + f"/Output_Area_TS{self.n}_IT{self.k}.txt"
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
@@ -119,7 +132,7 @@ class SolverWrapperTubeRingmodel(Component):
 
     def OutputSolutionStep(self):
         if self.debug:
-            file_name = self.working_directory + f"/Area_TS{self.n}"
+            file_name = self.working_directory + f"/Area_TS{self.n}.txt"
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):

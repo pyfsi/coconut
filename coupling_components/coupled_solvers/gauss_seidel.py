@@ -4,6 +4,8 @@ from coconut.coupling_components.component import Component
 
 import numpy as np
 import time
+import pickle
+import os
 
 
 def Create(parameters):
@@ -17,7 +19,8 @@ class CoupledSolverGaussSeidel(Component):
         self.parameters = parameters
         self.settings = parameters["settings"]
 
-        self.n = self.settings["timestep_start"].GetInt()  # Time step
+        self.timestep_start = self.settings["timestep_start"].GetInt()  # Time step where calculation is started
+        self.n = self.timestep_start  # Time step
         self.delta_t = self.settings["delta_t"].GetDouble()  # Time step size
 
         self.predictor = CreateInstance(self.parameters["predictor"])
@@ -41,17 +44,27 @@ class CoupledSolverGaussSeidel(Component):
 
         self.components = [self.predictor, self.convergence_criterion, self.solver_wrappers[0], self.solver_wrappers[1]]
 
-        self.x = []
+        self.x = None
+        self.y = None
         self.iteration = None  # Iteration
+        self.solver_level = 0  # 0 is main solver (indication of time step is printed)
 
-        self.save_iterations = False  # Set True in order to save iteration related information
-        if self.save_iterations:
-            self.complete_solution = None
+        self.start_time = None
+        self.elapsed_time = None
+        self.iterations = []
+
+        # Set True in order to save for every iteration
+        self.save_results = self.settings["save_results"].GetBool() if self.settings.Has("save_results") else False
+        if self.save_results:
+            self.complete_solution_x = None
             self.complete_solution_y = None
-            self.iterations = []
-            self.start_time = None
-            self.stop_time = None
             self.residual = []
+            self.case_name = self.settings["name"].GetString() if self.settings.Has("name") else "results"  # Case name
+            if self.case_name + '.pickle' in os.listdir(os.getcwd()):
+                i = 1
+                while self.case_name + str(i) + '.pickle' in os.listdir(os.getcwd()):
+                    i += 1
+                self.case_name += str(i)
 
     def Initialize(self):
         super().Initialize()
@@ -81,10 +94,13 @@ class CoupledSolverGaussSeidel(Component):
 
         # Initialize variables
         self.x = self.solver_wrappers[1].GetInterfaceOutput()
+        self.y = self.solver_wrappers[0].GetInterfaceOutput()
         self.predictor.Initialize(self.x)
 
-        if self.save_iterations:
-            self.start_time = time.time()
+        if self.save_results:
+            self.complete_solution_x = self.x.GetNumpyArray().reshape(-1, 1)
+            self.complete_solution_y = self.y.GetNumpyArray().reshape(-1, 1)
+        self.start_time = time.time()
 
     def InitializeSolutionStep(self):
         super().InitializeSolutionStep()
@@ -95,31 +111,26 @@ class CoupledSolverGaussSeidel(Component):
         self.n += 1  # Increment time step
         self.iteration = 0
 
-        # Print timestep
-        out = f"=======================================" \
-              f"====================\n" \
-              f"\tTime step {self.n}\n" \
-              f"=======================================" \
-              f"====================\n" \
-              f"Iteration\tNorm residual"
-        tools.PrintInfo(out)
+        # Print time step
+        if not self.solver_level:
+            self.PrintHeader()
 
-        if self.save_iterations:
+        if self.save_results:
             self.residual.append([])
 
     def SolveSolutionStep(self):
         # Initial value
         self.x = self.predictor.Predict(self.x)
         # First coupling iteration
-        y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-        xt = self.solver_wrappers[1].SolveSolutionStep(y)
+        self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
         r = xt - self.x
         self.FinalizeIteration(r)
         # Coupling iteration loop
         while not self.convergence_criterion.IsSatisfied():
             self.x += r
-            y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            xt = self.solver_wrappers[1].SolveSolutionStep(y)
+            self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
+            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
             r = xt - self.x
             self.FinalizeIteration(r)
 
@@ -127,27 +138,18 @@ class CoupledSolverGaussSeidel(Component):
         self.iteration += 1
         self.convergence_criterion.Update(r)
         # Print iteration information
-        norm = np.linalg.norm(r.GetNumpyArray())
-        out = f"{self.iteration:<9d}\t{norm:<22.17e}"
-        tools.PrintInfo(out)
+        self.PrintInfo(r)
 
-        if self.save_iterations:
-            self.residual[self.n - 1].append(np.linalg.norm(r.GetNumpyArray()))
+        if self.save_results:
+            self.residual[self.n - self.timestep_start - 1].append(np.linalg.norm(r.GetNumpyArray()))
 
     def FinalizeSolutionStep(self):
         super().FinalizeSolutionStep()
 
-        if self.save_iterations:
-            timestep_solution = self.x.GetNumpyArray().reshape(-1, 1)
-            y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            timestep_solution_y = y.GetNumpyArray().reshape(-1, 1)
-            if self.complete_solution is None:
-                self.complete_solution = timestep_solution
-                self.complete_solution_y = timestep_solution_y
-            else:
-                self.complete_solution = np.hstack((self.complete_solution, timestep_solution))
-                self.complete_solution_y = np.hstack((self.complete_solution_y, timestep_solution_y))
-            self.iterations.append(self.iteration)
+        self.iterations.append(self.iteration)
+        if self.save_results:
+            self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.GetNumpyArray().reshape(-1, 1)))
+            self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.GetNumpyArray().reshape(-1, 1)))
 
         self.predictor.Update(self.x)
         for component in self.components:
@@ -162,31 +164,55 @@ class CoupledSolverGaussSeidel(Component):
     def Finalize(self):
         super().Finalize()
 
+        if self.solver_level == 0:
+            out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
+                f"║\tSummary\n" \
+                f"╠═══════════════════════════════════════════════════════════════════════════════"
+            tools.Print(out)
+
         for component in self.components:
             component.Finalize()
 
-        if self.save_iterations:
-            self.stop_time = time.time()
-            type = self.parameters["type"].GetString()
-            if self.parameters["settings"].Has("model"):
-                model = '_' + self.parameters["settings"]["model"]["type"].GetString()
-                if self.parameters["settings"]["model"]["settings"].Has("q") and model == "_coupled_solvers.models.ls":
-                    q = '_q' + str(self.parameters["settings"]["model"]["settings"]["q"].GetDouble())
-                else:
-                    q = ''
-            else:
-                model = ''
-                q = ''
-            if self.parameters["settings"].Has("surrogate"):
-                sur = '_' + self.parameters["settings"]["surrogate"]["type"].GetString()[23:]
-            else:
-                sur = ''
+        self.elapsed_time = time.time() - self.start_time
+        self.PrintSummary()
+        if self.save_results:
+            output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
+                      "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
+                      "time": self.elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
+                      "timestep_start": self.timestep_start}
+            pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
 
-            output_name = 'result.' + type + model + q + sur
-            output = {"solution": self.complete_solution, "solution_y": self.complete_solution_y,
-                      "iterations": self.iterations, "time": self.stop_time - self.start_time,
-                      "residual": self.residual}
-            np.save(output_name, output)
+    def PrintSummary(self):
+        solver_run_times = []
+        pre = '║' + ' │' * self.solver_level
+        out = ""
+        if self.solver_level == 0:
+            out += f"{pre}Elapsed time: {self.elapsed_time:0.3f}s\n"
+        out += f"{pre}Percentage of total calculation time:\n"
+        for solver in self.solver_wrappers:
+            solver_run_times.append(solver.run_time / self.elapsed_time * 100)
+            out += f"{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n"
+            if solver.__class__.__name__ == "SolverWrapperMapped":
+                out += f"{pre}\t└─{solver.solver_wrapper.__class__.__name__}: " \
+                    f"{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n"
+        if self.solver_level == 0:
+            out += f"{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n"
+        out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
+        if self.solver_level == 0:
+            out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
+        tools.Print(out)
+
+    def PrintHeader(self):
+        header = f"════════════════════════════════════════════════════════════════════════════════\n" \
+            f"\tTime step {self.n}\n" \
+            f"════════════════════════════════════════════════════════════════════════════════\n" \
+            f"Iteration\tNorm residual"
+        tools.Print(header)
+
+    def PrintInfo(self, r):
+        norm = np.linalg.norm(r.GetNumpyArray())
+        info = f"{self.iteration:<16d}{norm:<28.17e}"
+        tools.Print(' │' * self.solver_level, info)
 
     def Check(self):
         super().Check()
@@ -194,7 +220,6 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.Check()
 
-    def PrintInfo(self, indent):
-        tools.Print('\n', '\t' * indent, "The coupled solver ", self.__class__.__name__, " has the following components:")
-        for component in self.components:
-            component.PrintInfo(indent + 1)
+    def PrintComponentsInfo(self, pre):
+        tools.Print(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
+        tools.PrintComponentsInfo(pre, self.components)

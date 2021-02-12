@@ -1,0 +1,184 @@
+{
+  "problem_data": {
+    "problem_name": "tube",
+    "model_part_name": "Structure",
+    "domain_size": 3,
+    "parallel_type": "OpenMP",
+    "time_step": 0.0,
+    "start_time": 0.0,
+    "end_time": 1e9,
+    "echo_level": 0
+  },
+  "solver_settings": {
+    "solver_type": "static",
+    "echo_level": 1,
+    "analysis_type": "non_linear",
+    "model_import_settings": {
+      "input_type": "mdpa",
+      "input_filename": "tube"
+    },
+    "material_import_settings": {
+      "materials_filename": "StructuralMaterials.json"
+    },
+    "line_search": false,
+    "convergence_criterion": "and_criterion",
+    "displacement_relative_tolerance": 1e-9,
+    "displacement_absolute_tolerance": 1e-9,
+    "residual_relative_tolerance": 1e-9,
+    "residual_absolute_tolerance": 1e-9,
+    "max_iteration": 100,
+    "move_mesh_flag": true,
+    "linear_solver_settings": {
+      "solver_type": "Super_LU",
+      "scaling": false,
+      "verbosity": 0
+    },
+    "problem_domain_sub_model_part_list": [
+      "Parts_tube"
+    ],
+    "processes_sub_model_part_list": [
+      "DISPLACEMENT_inlet",
+      "DISPLACEMENT_outlet",
+      "ROTATION_inlet",
+      "ROTATION_outlet",
+      "SurfaceLoad3D_tube"
+    ],
+    "rotation_dofs": true
+  },
+  "constraints_process_list": [
+    {
+      "python_module": "assign_vector_variable_process",
+      "kratos_module": "KratosMultiphysics",
+      "Parameters": {
+        "mesh_id": 0,
+        "model_part_name": "DISPLACEMENT_inlet",
+        "variable_name": "DISPLACEMENT",
+        "constrained": [
+          true,
+          true,
+          true
+        ],
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "python_module": "assign_vector_variable_process",
+      "kratos_module": "KratosMultiphysics",
+      "Parameters": {
+        "mesh_id": 0,
+        "model_part_name": "DISPLACEMENT_outlet",
+        "variable_name": "DISPLACEMENT",
+        "constrained": [
+          true,
+          true,
+          true
+        ],
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "python_module": "assign_vector_variable_process",
+      "kratos_module": "KratosMultiphysics",
+      "Parameters": {
+        "mesh_id": 0,
+        "model_part_name": "ROTATION_inlet",
+        "variable_name": "ROTATION",
+        "constrained": [
+          true,
+          true,
+          true
+        ],
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "python_module": "assign_vector_variable_process",
+      "kratos_module": "KratosMultiphysics",
+      "process_name": "AssignVectorVariableProcess",
+      "Parameters": {
+        "mesh_id": 0,
+        "model_part_name": "ROTATION_outlet",
+        "variable_name": "ROTATION",
+        "constrained": [
+          true,
+          true,
+          true
+        ],
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "loads_process_list": [
+    {
+      "python_module": "assign_scalar_variable_process",
+      "kratos_module": "KratosMultiphysics",
+      "process_name": "AssignScalarVariableProcess",
+      "Parameters": {
+        "mesh_id": 0,
+        "model_part_name": "SurfaceLoad3D_tube",
+        "variable_name": "POSITIVE_FACE_PRESSURE",
+        "value": 0.0
+      }
+    },
+    {
+      "python_module": "assign_vector_variable_process",
+      "kratos_module": "KratosMultiphysics",
+      "process_name": "AssignVectorVariableProcess",
+      "Parameters": {
+        "mesh_id": 0,
+        "model_part_name": "SurfaceLoad3D_tube",
+        "variable_name": "SURFACE_LOAD",
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "output_configuration": {
+    "result_file_configuration": {
+      "gidpost_flags": {
+        "GiDPostMode": "GiD_PostAscii",
+        "WriteDeformedMeshFlag": "WriteDeformed",
+        "WriteConditionsFlag": "WriteElementsOnly",
+        "MultiFileFlag": "MultipleFiles"
+      },
+      "file_label": "step",
+      "output_control_type": "step",
+      "output_frequency": 1,
+      "body_output": true,
+      "node_output": false,
+      "skin_output": false,
+      "plane_output": [],
+      "nodal_results": [
+        "DISPLACEMENT",
+        "POSITIVE_FACE_PRESSURE",
+        "SURFACE_LOAD"
+      ],
+      "gauss_point_results": []
+    }
+  },
+  "interface_input_sub_mp_list": [
+    "SurfaceLoad3D_tube"
+  ],
+  "interface_output_sub_mp_list": [
+    "SurfaceLoad3D_tube"
+  ]
+}

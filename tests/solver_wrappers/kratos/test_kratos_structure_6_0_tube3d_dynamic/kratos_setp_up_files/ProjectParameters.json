@@ -6,11 +6,11 @@
         "parallel_type"   : "OpenMP",
         "time_step"       : 0.0,
         "start_time"      : 0.0,
-        "end_time"        : 1.0,
+      "end_time": 1e9,
         "echo_level"      : 0
     },
     "solver_settings"          : {
-        "solver_type"                        : "",
+      "solver_type": "dynamic",
         "echo_level"                         : 0,
         "analysis_type"                      : "non_linear",
         "model_import_settings"              : {
@@ -22,11 +22,11 @@
         },
         "line_search"                        : false,
         "convergence_criterion"              : "and_criterion",
-        "displacement_relative_tolerance"    : 1e-6,
+      "displacement_relative_tolerance": 1e-9,
         "displacement_absolute_tolerance"    : 1e-9,
-        "residual_relative_tolerance"        : 1e-6,
+      "residual_relative_tolerance": 1e-9,
         "residual_absolute_tolerance"        : 1e-9,
-        "max_iteration"                      : 20,
+      "max_iteration": 100,
 		"move_mesh_flag"					 : true,
         "linear_solver_settings"             : {
             "solver_type" : "Super_LU",
@@ -35,7 +35,9 @@
         },
         "problem_domain_sub_model_part_list" : ["Parts_tube"],
         "processes_sub_model_part_list"      : ["DISPLACEMENT_inlet","DISPLACEMENT_outlet","ROTATION_inlet","ROTATION_outlet","SurfaceLoad3D_tube"],
-        "rotation_dofs"                      : true
+      "rotation_dofs": true,
+      "time_integration_method": "implicit",
+      "scheme_type": "newmark"
     },
         "constraints_process_list" : [{
             "python_module" : "assign_vector_variable_process",
@@ -120,6 +122,12 @@
                 "nodal_results"       : ["DISPLACEMENT","POSITIVE_FACE_PRESSURE","SURFACE_LOAD"],
                 "gauss_point_results" : []
         }
-    }
+    },
+  "interface_input_sub_mp_list": [
+    "SurfaceLoad3D_tube"
+  ],
+  "interface_output_sub_mp_list": [
+    "SurfaceLoad3D_tube"
+  ]
 
 }

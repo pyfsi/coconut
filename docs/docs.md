@@ -1,6 +1,6 @@
-# Guide to the documentation
+# Documentation
 
-This website is a collection of all MarkDown (MD) files found in the CoSimulationApplication folder and its subfolders.
+This website is a collection of all MarkDown (MD) files found in the `coconut` package.
 These files are converted to a static website using [MkDocs][1], based on the outline defined in the `mkdocs.yml` file.
 
 
@@ -11,10 +11,19 @@ MD files are easy to write and read in raw form, and can easily be converted to 
 
 The MD documents for the CoCoNuT documentation must be written in the [Python-Markdown](https://python-markdown.github.io/) flavor, because they are processed by [MkDocs][1]. This flavor stays very close to the [reference implementation](reference implementation) of MD. Pay attention to lists: they should be indented with 4 spaces (contrary to GFM). 
 
-Some important rules for writing MD files for this documentation website:
+An important rule for writing MD files for this documentation website is that the name of the file must be unique: use names like `fluent.md` or `examples.md`, not `readme.md`.
 
-*   The name of the file must be unique: use names like `fluent.md` or `test_examples.md`, not `readme.md`.
-*   Links to other MD files: I have yet to test this... probably only works on website, not on GitHub because paths change. Possible fix: automatically replace all names `example.md` with a proper link. 
+
+### Links to other MarkDown files
+It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax
+```markdown
+[link description](relative_path)
+```
+where `relative_path` is the relative path to another MarkDown file, e.g. `../coupling_components/mappers/mappers.md`. 
+
+These links can be used in rendered MarkDown, e.g. in PyCharm, but also on GitHub itself (see [this blogpost](https://github.blog/2013-01-31-relative-links-in-markup-files/)). 
+These links also work on the documentation website, as they are automatically replaced by the correct URL. 
+Take for example a look at the documentation of the [mappers](../coupling_components/mappers/mappers.md) or the [examples](../examples/examples.md). 
 
 ### Math
 For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. $E = m c^2$), block-style equations in double dolar signs, e.g.
@@ -23,7 +32,7 @@ $$
 e^{i \pi} + 1 = 0.
 $$
 
-LaTeX expressions will **not** be rendered on GitHub, but only on the documentation website. For the latter, the MD extension [Arithmatex](Arithmatex) is used to render the expressions with MathJax. Note that [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/) is a little more restrictive than a real LaTeX installation. 
+LaTeX expressions will **not** be rendered on GitHub, but only on the documentation website. For the latter, the MD extension [Arithmatex](https://facelessuser.github.io/pymdown-extensions/extensions/arithmatex/) is used to render the expressions with MathJax. Note that [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/) is a little more restrictive than a real LaTeX installation. 
 
 ### Images
 External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory `images` next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. 
@@ -67,7 +76,7 @@ The structure/outline of the website is dictated by the `nav` variable in `mkdoc
 
 The complete process to create the documentation website is automated by `run_mkdocs.py`. This does the following things:
 
-*   Copy all MD files in the CoSimulationApplication folder and its subfolders to folder `docs`. 
+*   Copy all MD files in `coconut` and its subfolders to folder `docs`. 
 *   Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.
 *   Check if each MD file is mentioned in `mkdocs.yml`. If a file is not mentioned, a warning is given.
 *   Build static HTML website using `mkdocs build`. 
@@ -77,7 +86,7 @@ The behavior of `run_mkdocs.py` can be altered by adding an extra command line a
 ```bash
 python run_mkdocs.py --deploy
 ```
-deploys the website on GitHub Pages using `mkdocs gh-deploy`. 
+deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  
 
 ```bash
 python run_mkdocs.py --preview example

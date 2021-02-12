@@ -12,6 +12,7 @@ def CreateInstance(settings):
     object_module = __import__("coconut.coupling_components." + object_type, fromlist=[object_type])
     return object_module.Create(settings)
 
+
 # InnerProduct: Computes the inner product for two given vectors (as python lists)
 #
 #  @param list_one   First vector (as a list)
@@ -37,6 +38,22 @@ def CalculateNorm(list):
         norm += value*value
 
     return norm
+
+
+# PrintInfo: Printing information with a label
+#
+#  @param label         The label for the print
+#  @param args          The arguments to be printed
+def PrintInfo(label, *args):
+    print(label, " ".join(map(str, args)))
+
+
+# PrintWarning: Printing a warning with a label
+#
+#  @param label         The label for the print
+#  @param args          The arguments to be printed
+def PrintWarning(label, *args):
+    print(label, " ".join(map(str, args)))
 
 
 # Class contains definition of colors. This is to be used as a struct.
@@ -76,30 +93,58 @@ class LayoutStyles:
             raise ValueError("Layout style is not implemented, correct layout styles are:"
                              "header, blue, green, red, warning, fail, bold, underline and plain.")
 
-layoutstyle = LayoutStyles()
+
+layout_style = LayoutStyles()
+
+
 # Print: Printing with color
 #
 #  @param args          The arguments to be printed
 #  @param layout        The layout to be used: header, blue, green, red, warning, fail, bold, underline or plain
-def Print(*args, layout='plain'):
-    print(layoutstyle.get(layout), "".join(map(str, args)), layoutstyle.get('plain'))
+def Print(*args, layout=None):
+    if layout is None:
+        print("".join(map(str, args)))
+    else:
+        print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'))
 
 
-# PrintInfo: Printing information with a label
-#
-#  @param label         The label for the print
-#  @param args          The arguments to be printed
-def PrintInfo(label, *args):
-    print(label, " ".join(map(str, args)))
+# UpdatePre: Update preceding text, used in structure printing
+#  @param pre         Preceding text ending with '├─' or '└─'
+def UpdatePre(pre):
+    """
+    This function is used to update the preceding string in a structured tree-like format as such:
+    Name
+    ├─Name
+    │ XXX
+    └─Name
+      XXX
+    """
+    if pre[-2:] == '├─':
+        pre = pre[:-2] + '│ '
+    elif pre[-2:] == '└─':
+        pre = pre[:-2] + '  '
+    elif len(pre) < 2 or pre[-2] == '  ':
+        pass
+    else:
+        raise Exception(f"Info structure failed: last two characters not recognized: '{pre}'")
+    return pre
 
 
-# PrintWarning: Printing a warning with a label
-#
-#  @param label         The label for the print
-#  @param args          The arguments to be printed
-def PrintWarning(label, *args):
-    print(label, " ".join(map(str, args)))
-
+# PrintInfoStructure: Print information from a list of Comonents in a strucutred way
+#  @param label         Preceding text ending with '├─' or '└─'
+#  @param compent_list  List of Components from which the info is printed
+def PrintComponentsInfo(pre, component_list):
+    """
+    This function accepts a list of Components and print their info in a structured tree-like format as such:
+    ├─Component0.PrintInfo
+    │ XXX
+    └─Component1.PrintInfo
+      XXX
+    """
+    pre = UpdatePre(pre)
+    for component in component_list[:-1]:
+        component.PrintComponentsInfo(pre + '├─')
+    component_list[-1].PrintComponentsInfo(pre + '└─')
 
 
 # Timer-function
@@ -134,3 +179,17 @@ def quicktimer(name=None, t=0, n=0, ms=False):
         s += f' - {name}'
     s += '\n' * n
     Print(s)
+
+
+# Run time measuring function
+def TimeSolveSolutionStep(SolveSolutionStep):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'run_time'):
+            self.run_time = 0.0
+        start_time = time.time()
+        interface_output = SolveSolutionStep(*args)
+        self.run_time += time.time() - start_time
+        return interface_output
+
+    return wrapper
