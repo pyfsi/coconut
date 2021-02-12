@@ -45,10 +45,12 @@ class SolverWrapperKratosStructure6_0(Component):
         input_interface_names = self.settings["interface_input"].keys()
         output_interface_names = self.settings["interface_output"].keys()
 
-        rel_path = 'coconut/coupling_components/solver_wrappers/kratos/run_kratos_structural.py'
-        python_file = os.path.join(os.environ['COCONUT_PATH'], rel_path)
-        log_file = os.path.join(self.working_directory, 'log')
-        self.kratos_process = Popen(f'python3 {python_file} {input_file_name} &> {log_file}', shell=True,
+        kratos_load_cmd = self.settings["solver_load_cmd"].GetString()
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        run_script_file = os.path.join(dir_path, 'run_kratos_structural.py')
+
+        self.kratos_process = Popen(f'{kratos_load_cmd} && python3 {run_script_file} {input_file_name} &> log',
+                                    shell=True,
                                     cwd=self.working_directory)
 
         self.wait_message('start_ready')
@@ -92,14 +94,10 @@ class SolverWrapperKratosStructure6_0(Component):
     def InitializeSolutionStep(self):
         super().InitializeSolutionStep()
 
-        self.iteration = 0
-
         self.send_message('next')
         self.wait_message('next_ready')
 
     def SolveSolutionStep(self, interface_input):
-
-        self.iteration += 1
 
         self.interface_input.SetPythonList(interface_input.GetPythonList())
         self.WriteInputData()

@@ -80,6 +80,7 @@
               "delta_t": 0.0,
               "timestep_start": 0,
               "input_file": "ProjectParameters.json",
+              "solver_load_cmd": "ml Kratos",
               "sub_model_parts_from_str_solver": [
                 "SurfaceLoad3D_tube"
               ],
