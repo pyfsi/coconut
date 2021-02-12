@@ -6,7 +6,7 @@ class Component(object):
         self.initialized = False
         self.initialized_solution_step = False
 
-    def initialize(self):
+    def initialize(self, *args):
         if self.initialized:
             raise Exception("Already initialized")
         else:
