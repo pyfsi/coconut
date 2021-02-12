@@ -212,12 +212,6 @@ class CoupledSolverGaussSeidel(Component):
         info = f"{self.iteration:<16d}{r.norm():<28.17e}"
         tools.print_info(' │' * self.solver_level, info, flush=True)
 
-    def check(self):
-        super().check()
-
-        for component in self.components:
-            component.check()
-
     def print_components_info(self, pre):
         tools.print_info(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
         tools.print_components_info(pre, self.components)

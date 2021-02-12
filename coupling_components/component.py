@@ -41,8 +41,5 @@ class Component(object):
     def output_solution_step(self):
         pass
 
-    def check(self):
-        pass
-
     def print_components_info(self, pre):
         tools.print_info(pre, "The component ", self.__class__.__name__)
