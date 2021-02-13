@@ -65,6 +65,10 @@ class CoupledSolverGaussSeidel(Component):
                     i += 1
                 self.case_name += str(i)
 
+        self.debug = False  # save results each iteration including residual interfaces
+        if self.debug:
+            self.complete_solution_r = None
+
     def initialize(self):
         super().initialize()
 
@@ -86,8 +90,13 @@ class CoupledSolverGaussSeidel(Component):
 
         # update save results
         if self.save_results:
-            self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
-            self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
+            if self.debug:
+                self.complete_solution_x = np.empty((self.x.get_interface_data().shape[0], 0))
+                self.complete_solution_y = np.empty((self.y.get_interface_data().shape[0], 0))
+                self.complete_solution_r = np.empty((self.x.get_interface_data().shape[0], 0))
+            else:
+                self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
+                self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -133,6 +142,11 @@ class CoupledSolverGaussSeidel(Component):
         # update save results
         if self.save_results:
             self.residual[self.time_step - 1].append(r.norm())
+            if self.debug:
+                self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.get_interface_data().reshape(-1, 1)))
+                self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.get_interface_data().reshape(-1, 1)))
+                self.complete_solution_r = np.hstack((self.complete_solution_r, r.get_interface_data().reshape(-1, 1)))
+                self.output_solution_step()
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
@@ -144,11 +158,22 @@ class CoupledSolverGaussSeidel(Component):
         # update save results
         self.iterations.append(self.iteration)
         if self.save_results:
-            self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.get_interface_data().reshape(-1, 1)))
-            self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.get_interface_data().reshape(-1, 1)))
+            if not self.debug:
+                self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.get_interface_data().reshape(-1, 1)))
+                self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.get_interface_data().reshape(-1, 1)))
 
     def output_solution_step(self):
         super().output_solution_step()
+
+        self.elapsed_time = time.time() - self.start_time
+        if self.save_results:
+            output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
+                      "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
+                      "time": self.elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
+                      "timestep_start": self.timestep_start}
+            if self.debug:
+                output.update({"solution_r": self.complete_solution_r})
+            pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
 
         for component in self.components:
             component.output_solution_step()
@@ -163,17 +188,10 @@ class CoupledSolverGaussSeidel(Component):
                   f"╠═══════════════════════════════════════════════════════════════════════════════"
             tools.print_info(out)
 
+        self.print_summary()
+
         for component in self.components:
             component.finalize()
-
-        self.elapsed_time = time.time() - self.start_time
-        self.print_summary()
-        if self.save_results:
-            output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
-                      "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
-                      "time": self.elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
-                      "timestep_start": self.timestep_start}
-            pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
 
     def print_summary(self):
         solver_run_times = []
