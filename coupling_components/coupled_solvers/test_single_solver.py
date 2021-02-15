@@ -104,6 +104,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.case_name = self.settings.get("name", "results")  # case name
             self.case_name += "_" + cur_wd
 
+        self.debug = False
+
     def initialize(self):
         Component.initialize(self)
 
