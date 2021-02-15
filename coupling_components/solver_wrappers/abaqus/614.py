@@ -787,7 +787,7 @@ class SolverWrapperAbaqus614(Component):
 
             # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
             if self.iteration == 1 and self.timestep == 1 and self.ramp:
-                tmp = f'CSM_Time{self.timestep-1}Surface{mp.thread_id}Cpu0Input.dat'
+                tmp = f'CSM_Time{self.timestep - 1}Surface{mp.thread_id}Cpu0Input.dat'
                 file_name = join(self.dir_csm, tmp)
                 with open(file_name, 'w') as file:
                     file.write(f'{mp.NumberOfNodes()}\n')

@@ -210,8 +210,8 @@ class TestSolverWrapperAbaqus614(KratosUnittest.TestCase):
                 mean_disp_y_no_shear += a2[i]
                 mean_disp_y_shear += a5[i]
 
-            mean_disp_y_no_shear /= (a1.size/3)
-            mean_disp_y_shear /= (a1.size/3)
+            mean_disp_y_no_shear /= (a1.size / 3)
+            mean_disp_y_shear /= (a1.size / 3)
 
             print(f'Mean y-displacement without shear = {mean_disp_y_no_shear} m')
             print(f'Mean y-displacement with shear = {mean_disp_y_shear} m')

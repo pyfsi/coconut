@@ -38,6 +38,7 @@ from coconut.tests.solver_wrappers.fluent.test_v2019R2 import TestSolverWrapperF
 from coconut.tests.solver_wrappers.fluent.test_v2019R3 import TestSolverWrapperFluent2019R3
 from coconut.tests.solver_wrappers.fluent.test_v2020R1 import TestSolverWrapperFluent2020R1
 from coconut.tests.solver_wrappers.abaqus.test_v614 import TestSolverWrapperAbaqus614
+from coconut.tests.solver_wrappers.openfoam.test_41 import TestSolverWrapperOpenFoam41
 
 from coconut.tests.data_structure.test_parameters import TestPyKratosParameters
 from coconut.tests.data_structure.test_variables import TestPyKratosVariables
@@ -99,7 +100,10 @@ def AssembleTestSuites():
     # smallSuite.addTest(TestSolverWrapperFluent2019R3("test_solver_wrapper_fluent_2019R3"))
     # smallSuite.addTest(TestSolverWrapperFluent2020R1("test_solver_wrapper_fluent_2020R1"))
     # smallSuite.addTest(TestSolverWrapperAbaqus614("test_solver_wrapper_abaqus_614"))  # duration ~500s
-
+    smallSuite.addTest(TestSolverWrapperOpenFoam41('test_model_part_nodes_with_different_cores'))
+    smallSuite.addTest(TestSolverWrapperOpenFoam41('test_displacement_on_nodes'))
+    smallSuite.addTest(TestSolverWrapperOpenFoam41('test_pressure_wall_shear_on_nodes_parallel'))
+    #
     smallSuite.addTest(TestPyKratosParameters("test_pykratos_parameters"))
     smallSuite.addTest(TestPyKratosVariables("test_pykratos_variables"))
     smallSuite.addTest(TestInterface("test_cosimulation_interface"))

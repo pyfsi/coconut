@@ -19,7 +19,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         Component.__init__(self)
 
         self.parameters = parameters
-        self.settings = parameters["settings"] if self.parameters.Has("settings") else None  # settings is optional as long as the necessary parameters are in test_settings
+        self.settings = parameters["settings"] if self.parameters.Has(
+            "settings") else None  # settings is optional as long as the necessary parameters are in test_settings
 
         if "test_settings" not in self.parameters.keys():  # requires a new parameter input "test_settings"
             raise KeyError('The coupled_solver "test_single_solver" requires "test_settings" which was not detected.')
@@ -34,7 +35,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.test_settings.AddMissingParameters(self.settings)
 
         # delta_t and timestep_start
-        self.timestep_start = self.test_settings["timestep_start"].GetInt() if self.test_settings.Has("timestep_start")\
+        self.timestep_start = self.test_settings["timestep_start"].GetInt() if self.test_settings.Has("timestep_start") \
             else 0
         self.test_settings.AddEmptyValue("timestep_start")
         self.test_settings.SetInt("timestep_start", self.timestep_start)
@@ -113,7 +114,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.test_settings["name"].GetString() if self.test_settings.Has("name") else "results"  # Case name
+            self.case_name = self.test_settings["name"].GetString() if self.test_settings.Has(
+                "name") else "results"  # Case name
             self.case_name += "_" + cur_wd
 
     def Initialize(self):

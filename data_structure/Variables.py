@@ -117,4 +117,3 @@ CreateVectorVariable("EXTERNAL_FORCES_VECTOR")
 
 CreateDoubleVariable("AREA")
 CreateArray3Variable("TRACTION")
-CreateArray3Variable("WALLSHEARSTRESS")  # to be removed in favor of TRACTION

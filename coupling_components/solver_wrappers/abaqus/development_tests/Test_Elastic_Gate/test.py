@@ -7,14 +7,14 @@ import os
 
 
 def print_colored(string, color):
-    if color=='green':
-        print('\x1b[0;30;42m'+string+'\x1b[0m')
-    elif color=='orange':
+    if color == 'green':
+        print('\x1b[0;30;42m' + string + '\x1b[0m')
+    elif color == 'orange':
         print('\x1b[0;30;43m' + string + '\x1b[0m')
-    elif color=='red':
+    elif color == 'red':
         print('\x1b[0;30;41m' + string + '\x1b[0m')
     else:
-        print(string+f'(color {color} not implemented)')
+        print(string + f'(color {color} not implemented)')
 
 
 # Check number of command line arguments
@@ -60,22 +60,21 @@ os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
 AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
 AbaqusSolver0.FinalizeSolutionStep()
 
-#Step 2, Coupling 1
+# Step 2, Coupling 1
 AbaqusSolver0.InitializeSolutionStep()
 AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
 AbaqusSolver0.FinalizeSolutionStep()
 
-#Iterate until deformation is approximately steady
+# Iterate until deformation is approximately steady
 mp_out = AbaqusSolver0.model['BEAMINSIDEMOVING2_nodes']  # interface input modelpart
 displacement = vars(data_structure)['DISPLACEMENT']
 tol = 1e-07
 
 n_out = mp_out.NumberOfNodes()
-prev_displacement = np.zeros((n_out, 3))*0.
-diff = np.zeros((n_out,3))*0.
+prev_displacement = np.zeros((n_out, 3)) * 0.
+diff = np.zeros((n_out, 3)) * 0.
 for node in mp_out.Nodes:
     prev_displacement[int(node.Id), :] = np.array(node.GetSolutionStepValue(displacement))
-
 
 diffMax = 1000
 while diffMax > tol:
@@ -85,7 +84,7 @@ while diffMax > tol:
     diffMax = 0
     maxDisp = 0
     for node in mp_out.Nodes:
-        diff = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement))-prev_displacement[int(node.Id), :])
+        diff = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement)) - prev_displacement[int(node.Id), :])
         prev_displacement[int(node.Id), :] = np.array(node.GetSolutionStepValue(displacement))
         if np.linalg.norm(np.array(node.GetSolutionStepValue(displacement))) > maxDisp:
             maxDisp = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement)))
@@ -94,7 +93,6 @@ while diffMax > tol:
     print(maxDisp)
     print(diffMax)
 
-
 AbaqusSolver0.Finalize()
 
-print_colored("Finished",'green')
+print_colored("Finished", 'green')

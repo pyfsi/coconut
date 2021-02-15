@@ -26,7 +26,7 @@ case_reference = legend_entries[0]
 
 def zero_to_nan(values):
     """Replace every 0 with 'nan' and return a copy."""
-    return [float('nan') if x==0 else x for x in values]
+    return [float('nan') if x == 0 else x for x in values]
 
 
 def to_tolerance(residuals, tolerance):

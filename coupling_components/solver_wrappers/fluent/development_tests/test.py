@@ -58,7 +58,8 @@ else:
             interface_input = solver.GetInterfaceInput()
             for key in settings['interface_input'].keys():
                 for node in interface_input.model[key].Nodes:
-                    dy = (1 - np.cos(2 * np.pi * (node.X0 - timestep / 4 - iteration / 16))) * 0.5 * f  # this used node.X before
+                    dy = (1 - np.cos(
+                        2 * np.pi * (node.X0 - timestep / 4 - iteration / 16))) * 0.5 * f  # this used node.X before
                     node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
         solver.FinalizeSolutionStep()
 

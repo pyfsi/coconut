@@ -166,8 +166,8 @@ class CoupledSolverGaussSeidel(Component):
 
         if self.solver_level == 0:
             out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
-                  f"║\tSummary\n" \
-                  f"╠═══════════════════════════════════════════════════════════════════════════════"
+                f"║\tSummary\n" \
+                f"╠═══════════════════════════════════════════════════════════════════════════════"
             tools.Print(out)
 
         for component in self.components:
@@ -194,7 +194,7 @@ class CoupledSolverGaussSeidel(Component):
             out += f"{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n"
             if solver.__class__.__name__ == "SolverWrapperMapped":
                 out += f"{pre}\t└─{solver.solver_wrapper.__class__.__name__}: " \
-                       f"{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n"
+                    f"{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n"
         if self.solver_level == 0:
             out += f"{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n"
         out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
@@ -204,9 +204,9 @@ class CoupledSolverGaussSeidel(Component):
 
     def PrintHeader(self):
         header = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                 f"\tTime step {self.n}\n" \
-                 f"════════════════════════════════════════════════════════════════════════════════\n" \
-                 f"Iteration\tNorm residual"
+            f"\tTime step {self.n}\n" \
+            f"════════════════════════════════════════════════════════════════════════════════\n" \
+            f"Iteration\tNorm residual"
         tools.Print(header)
 
     def PrintInfo(self, r):

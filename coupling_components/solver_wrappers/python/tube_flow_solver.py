@@ -37,7 +37,8 @@ class SolverWrapperTubeFlow(Component):
 
         self.ureference = self.settings["ureference"].GetDouble()  # Reference velocity
         self.u0 = self.settings["u0"].GetDouble() if self.settings.Has("u0") else self.ureference  # Initial velocity
-        self.preference = self.settings["preference"].GetDouble() if self.settings.Has("preference") else 0.0 # Reference and initial pressure
+        self.preference = self.settings["preference"].GetDouble() if self.settings.Has(
+            "preference") else 0.0  # Reference and initial pressure
         self.inlet_boundary = self.settings["inlet_boundary"]
         self.inlet_variable = self.inlet_boundary["variable"].GetString()  # Variable upon which boundary condition is specified
         if self.inlet_variable == "velocity":
@@ -82,7 +83,8 @@ class SolverWrapperTubeFlow(Component):
         self.n = 0  # Time step (no restart implemented)
         if self.unsteady:
             self.dt = self.settings["delta_t"].GetDouble()  # Time step size
-            self.alpha = np.pi * self.d ** 2 / 4.0 / (self.ureference + self.dz / self.dt)  # Numerical damping parameter due to central discretization of pressure in momentum equation
+            self.alpha = np.pi * self.d ** 2 / 4.0 / (
+                        self.ureference + self.dz / self.dt)  # Numerical damping parameter due to central discretization of pressure in momentum equation
         else:
             self.dt = 1.0  # Time step size default value
             self.alpha = np.pi * self.d ** 2 / 4.0 / self.ureference  # Numerical damping parameter due to central discretization of pressure in momentum equation
@@ -275,7 +277,7 @@ class SolverWrapperTubeFlow(Component):
                                  * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0
                                  - self.alpha * (self.p[2:self.m + 2] - 2.0 * self.p[1:self.m + 1] + self.p[0:self.m]))
         f[3:2 * self.m + 3:2] = (self.dz / self.dt * (self.u[1:self.m + 1] * self.a[1:self.m + 1]
-                                 - self.un[1:self.m + 1] * self.an[1:self.m + 1]) * self.unsteady
+                                                      - self.un[1:self.m + 1] * self.an[1:self.m + 1]) * self.unsteady
                                  + ur * (self.u[1:self.m + 1] + self.u[2:self.m + 2])
                                  * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
                                  - ul * (self.u[1:self.m + 1] + self.u[0:self.m])
