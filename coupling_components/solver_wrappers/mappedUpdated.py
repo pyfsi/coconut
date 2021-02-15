@@ -44,8 +44,6 @@ class SolverWrapperMapped(Component):
         self.solver_wrapper.initialize_solution_step()
         self.iteration = 0
         self.updateArray = {}
-        #todo: check to implement the right size for the delta0
-        # delta_0 = np.zeros(x0.size, )
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input_from):
@@ -53,8 +51,8 @@ class SolverWrapperMapped(Component):
         self.interface_input_from = interface_input_from
 
         for item_input_to in self.interface_input_to.parameters:
+            #create MP with displacement field in input_to mapping
             mp_input_to = self.interface_input_to.get_model_part(item_input_to['model_part'])
-
             self.model.create_model_part('intermediate_mp' + str(self.iteration), mp_input_to.x0, mp_input_to.y0,
                                          mp_input_to.z0,
                                          np.arange(mp_input_to.x0.size))
@@ -66,14 +64,26 @@ class SolverWrapperMapped(Component):
                                                                             'displacement')
             print("zeros")
             print(mp_intermediate)
+            #create a variable with the displcaments of previous iteration
             if self.iteration > 1:
                 self.interface_output_from_intermediate = self.interface_output_from.copy()
                 self.interface_output_from_intermediate.set_variable_data('BEAMINSIDEMOVING_nodes', 'displacement',
                                                                           self.myArrays[self.iteration - 1])
                 check = self.interface_output_from_intermediate.get_variable_data('BEAMINSIDEMOVING_nodes',
                                                                                   'displacement')
+                self.mapper_interface_inputUpdate(self.interface_output_from_intermediate, self.interface_intermediate)
+                # add the mapped displacement to interface_input_to by creating new MP
+                for item_input_intermediat_to in self.interface_intermediate:
+                    mp_intermediate_to = self.interface_intermediate(item_input_intermediat_to['model_part'])
+                    mp_intermediate = self.interface_intermediate.get_variable_data('intermediate_mp' + str(self.iteration),
+                                                                                'displacement')
+                    new_mp_input_to = [mp_intermediate_to.x0.size, 3]
+                    new_mp_input_to[:,0] = np.add(mp_intermediate[:,0],mp_intermediate_to.x0)
+                    new_mp_input_to[:,1] = np.add(mp_intermediate[:,1],mp_intermediate_to.y0)
+                    ids_to = np.arange(0,mp_intermediate_to.x0.size)
+                    self.model.create_model_part('new_to' +str(self.iteration), new_mp_input_to[:,0], new_mp_input_to[:,1], new_mp_input_to[:,2], ids_to)
+                    self.interface_input_to = self.model.get_model_part('new_to' + str(self.iteration))
 
-        self.mapper_interface_inputUpdate(self.interface_output_from_intermediate, self.interface_intermediate)
 
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
 
@@ -91,6 +101,7 @@ class SolverWrapperMapped(Component):
             self.updateArray[self.iteration] = varia
 
         self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
+
         return self.interface_output_to
 
     def finalize_solution_step(self):
@@ -125,12 +136,12 @@ class SolverWrapperMapped(Component):
         self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
         self.mapper_interface_input.initialize(self.interface_input_from, self.interface_input_to)
 
-    def set_interface_inputUpdate(self, interface_output_from):
+    def set_interface_inputUpdate_to(self, interface_output_from):
         # Create input mapper
         self.interface_output_from = interface_output_from.copy()
         self.interface_input_to = self.solver_wrapper.get_interface_output()
 
-        self.mapper_interface_input = create_instance(self.settings["mapper_interface_inputUpdate"])
+        self.mapper_interface_input = create_instance(self.settings["mapper_interface_inputUpdate_to"])
         self.mapper_interface_input.initialize(self.interface_output_from, self.interface_input_to)
 
     def get_interface_output(self):
