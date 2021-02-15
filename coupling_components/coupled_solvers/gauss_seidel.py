@@ -183,9 +183,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # print summary header
         if self.solver_level == 0:
-            out = f"╔═══════════════════════════════════════════════════════════════════════════════\n" \
-                  f"║\tSummary\n" \
-                  f"╠═══════════════════════════════════════════════════════════════════════════════"
+            out = "╔" + 79 * "═" + "\n║\tSummary\n╠" + 79 * "═"
             tools.print_info(out)
 
         self.print_summary()
@@ -210,14 +208,12 @@ class CoupledSolverGaussSeidel(Component):
             out += f"{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n"
         out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
         if self.solver_level == 0:
-            out += f"\n╚═══════════════════════════════════════════════════════════════════════════════"
+            out += "\n╚" + 79 * "═"
         tools.print_info(out)
 
     def print_header(self):
-        header = f"════════════════════════════════════════════════════════════════════════════════\n" \
-                 f"\tTime step {self.time_step}\n" \
-                 f"════════════════════════════════════════════════════════════════════════════════\n" \
-                 f"{'Iteration':<16}{'Norm residual':<28}"
+        header = (80 * "═" + f"\n\tTime step {self.time_step}\n" +
+                  80 * "═" + f"\n{'Iteration':<16}{'Norm residual':<28}")
         tools.print_info(header, flush=True)
 
     def print_iteration_info(self, r):
