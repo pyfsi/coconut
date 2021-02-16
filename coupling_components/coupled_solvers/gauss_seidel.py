@@ -74,10 +74,10 @@ class CoupledSolverGaussSeidel(Component):
 
         # initialize mappers if required
         if self.index_mapped is not None:
+            self.solver_wrappers[self.index_other].initialize()
             interface_input_from = self.solver_wrappers[self.index_other].get_interface_output()
             interface_output_to = self.solver_wrappers[self.index_other].get_interface_input()
             self.solver_wrappers[self.index_mapped].initialize(interface_input_from, interface_output_to)
-            self.solver_wrappers[self.index_other].initialize()
         else:
             self.solver_wrappers[0].initialize()
             self.solver_wrappers[1].initialize()

@@ -34,7 +34,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.delta_t = self.settings["delta_t"]
         tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start}")
 
-        # i
+        # create dummy components
         self.predictor = DummyComponent()
         self.convergence_criterion = DummyComponent()
 
