@@ -2,14 +2,6 @@ from coconut.tools import create_instance
 from coconut.coupling_components.component import Component
 from coconut import tools
 
-""" proposed changes to mapped.py
-- use copy in get_interface_input/Output methods?
-    and just refer to actual solver wrapper in SolverWrapperMapped
-- all Interfaces are stored in this mapper, e.g. self.interface_output_to and 3 others;
-    I see no reason for this; furthermore, it is only useful to store it if you take copies all the time
-- output_solution_step is barely used; what's the deal with it??
-"""
-
 
 def create(parameters):
     return SolverWrapperMapped(parameters)
