@@ -122,12 +122,5 @@
                 "nodal_results"       : ["DISPLACEMENT","POSITIVE_FACE_PRESSURE","SURFACE_LOAD"],
                 "gauss_point_results" : []
         }
-    },
-  "interface_input_sub_mp_list": [
-    "SurfaceLoad3D_tube"
-  ],
-  "interface_output_sub_mp_list": [
-    "SurfaceLoad3D_tube"
-  ]
-
+    }
 }

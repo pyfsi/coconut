@@ -15,7 +15,8 @@ def print_box(text):
     bottom = '\n└─' + n * '─' + '─┘'
     print(top + mid + bottom)
 
-class TestSolverWrapperKratosStructure6_0(KratosUnittest.TestCase):
+
+class TestSolverWrapperKratosStructure60(KratosUnittest.TestCase):
 
     def test_solver_wrapper_kratos_structure_6_0_tube3d_static(self):
 

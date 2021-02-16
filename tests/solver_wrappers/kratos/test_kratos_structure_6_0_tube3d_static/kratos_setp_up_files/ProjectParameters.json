@@ -174,11 +174,5 @@
       ],
       "gauss_point_results": []
     }
-  },
-  "interface_input_sub_mp_list": [
-    "SurfaceLoad3D_tube"
-  ],
-  "interface_output_sub_mp_list": [
-    "SurfaceLoad3D_tube"
-  ]
+  }
 }

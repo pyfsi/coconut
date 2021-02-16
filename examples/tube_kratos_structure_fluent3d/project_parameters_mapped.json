@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 100
+    "number_of_timesteps": 10
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
@@ -72,7 +72,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.kratos.v60",
+            "type": "solver_wrappers.kratos.structural_mechanics_application.v60",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,
@@ -81,7 +81,7 @@
               "timestep_start": 0,
               "input_file": "ProjectParameters.json",
               "solver_load_cmd": "ml Kratos",
-              "sub_model_parts_from_str_solver": [
+              "kratos_interface_sub_model_parts_list": [
                 "SurfaceLoad3D_tube"
               ],
               "interface_input": {

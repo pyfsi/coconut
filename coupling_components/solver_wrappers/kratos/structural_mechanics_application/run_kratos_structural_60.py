@@ -20,15 +20,14 @@ class StructuralMechanicsWrapper:
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
 
-        self.input_interfaces = parameters["interface_input_sub_mp_list"]
-        self.output_interfaces = parameters["interface_output_sub_mp_list"]
+        self.interfaces = parameters["interface_sub_model_parts_list"]
 
         self.structural_analysis = StructuralMechanicsAnalysis(self.model, self.kratos_parameters)
 
     def Initialize(self):
         self.structural_analysis.Initialize()
 
-        for sub_model_part_name in self.input_interfaces + self.output_interfaces:
+        for sub_model_part_name in self.interfaces:
 
             sub_model_part = self.model[f'Structure.{sub_model_part_name}']
             file_name = f'{sub_model_part_name}_nodes.csv'
@@ -60,7 +59,7 @@ class StructuralMechanicsWrapper:
 
     def OutputData(self):
 
-        for sub_model_part_name in self.output_interfaces:
+        for sub_model_part_name in self.interfaces:
             full_sub_model_part_name = "Structure." + sub_model_part_name
             if self.model["Structure"].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
@@ -78,7 +77,7 @@ class StructuralMechanicsWrapper:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
     def InputData(self):
-        for sub_model_part_name in self.input_interfaces:
+        for sub_model_part_name in self.interfaces:
             full_sub_model_part_name = "Structure." + sub_model_part_name
             if self.model["Structure"].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]

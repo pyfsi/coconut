@@ -1,21 +1,20 @@
+import json
+import os
+import time
+from os.path import join
+from subprocess import Popen
+
+import pandas as pd
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.interface import Interface
-from coconut.coupling_components import tools
-
-import os
-from os.path import join
-import json
-import time
-import pandas as pd
-from subprocess import Popen
 
 
 def Create(parameters):
-    return SolverWrapperKratosStructure6_0(parameters)
+    return SolverWrapperKratosStructure60(parameters)
 
 
-class SolverWrapperKratosStructure6_0(Component):
+class SolverWrapperKratosStructure60(Component):
     def __init__(self, parameters):
         super().__init__()
 
@@ -23,6 +22,7 @@ class SolverWrapperKratosStructure6_0(Component):
         self.working_directory = join(os.getcwd(), self.settings["working_directory"].GetString())
         delta_t = self.settings["delta_t"].GetDouble()
         timestep_start = self.settings["timestep_start"].GetDouble()
+        dimensions = self.settings["dimensions"].GetDouble()
 
         input_file_name = join(self.working_directory, self.settings["input_file"].GetString())
 
@@ -31,6 +31,12 @@ class SolverWrapperKratosStructure6_0(Component):
 
         kratos_parameters["problem_data"]["start_time"] = timestep_start
         kratos_parameters["problem_data"]["time_step"] = delta_t
+        kratos_parameters["problem_data"]["domain_size"] = dimensions
+        interface_sub_model_parts_list = []
+        for param in self.settings["kratos_interface_sub_model_parts_list"].list():
+            interface_sub_model_parts_list.append(param.GetString())
+
+        kratos_parameters["interface_sub_model_parts_list"] = interface_sub_model_parts_list
 
         with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
             json.dump(kratos_parameters, f, indent=4)
@@ -47,7 +53,7 @@ class SolverWrapperKratosStructure6_0(Component):
 
         kratos_load_cmd = self.settings["solver_load_cmd"].GetString()
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        run_script_file = os.path.join(dir_path, 'run_kratos_structural.py')
+        run_script_file = os.path.join(dir_path, 'run_kratos_structural_60.py')
 
         self.kratos_process = Popen(f'{kratos_load_cmd} && python3 {run_script_file} {input_file_name} &> log',
                                     shell=True,
@@ -173,26 +179,19 @@ class SolverWrapperKratosStructure6_0(Component):
                                                                   displacement_z[i]])
 
     def CheckInterface(self):
-
         input_interface_list = self.settings["interface_input"].keys()
         output_interface_list = self.settings["interface_output"].keys()
-        for name in input_interface_list:
-            if '_input' not in name:
-                raise RuntimeError(
-                    '<sub_mp_name> in the list of "sub_model_parts_from_str_solver" in json file should have entry as <sub_mp_name>_input')
+        sub_model_part_list = self.settings["kratos_interface_sub_model_parts_list"].list()
 
-        for name in output_interface_list:
-            if '_output' not in name:
+        for param in sub_model_part_list:
+            name = param.GetString()
+            if not f'{name}_input' in input_interface_list:
                 raise RuntimeError(
-                    '<sub_mp_name> in the list of "sub_model_parts_from_str_solver" in json file should have entry as <sub_mp_name>_output')
+                    f'Error in json file: {name}_input not listed in "interface_input": {input_interface_list}.\n. <sub_mp_name> in the "kratos_interface_sub_model_parts_list" in json file should have corresponding <sub_mp_name>_input in "interface_input" list. ')
 
-        sub_model_part_list = self.settings["sub_model_parts_from_str_solver"].list()
-        sub_model_part_list = [elem.GetString() for elem in sub_model_part_list]
-        sub_model_part_list_interface = [name.replace('_input', '') for name in input_interface_list]
-        sub_model_part_list_interface += [name.replace('_output', '') for name in output_interface_list]
-        if not set(sub_model_part_list) == set(sub_model_part_list_interface):
-            raise RuntimeError(
-                '<name> in the list of "sub_model_parts_from_str_solver" in json file should have entry as <name_input> in "interface_input" or <name_output> in "interface_output" ')
+            if not f'{name}_output' in output_interface_list:
+                raise RuntimeError(
+                    f'Error in json file: {name}_output not listed in "interface_output": {output_interface_list}.\n. <sub_mp_name> in the "kratos_interface_sub_model_parts_list" in json file should have corresponding <sub_mp_name>_output in "interface_output" list.')
 
     def send_message(self, message):
         file = join(self.working_directory, message + ".coco")

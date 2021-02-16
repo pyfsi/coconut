@@ -4,7 +4,7 @@
   },
   "solver_wrappers": [
     {
-      "type": "solver_wrappers.kratos.v60",
+      "type": "solver_wrappers.kratos.structural_mechanics_application.v60",
       "settings": {
         "working_directory": "solver_wrappers/kratos/test_kratos_structure_6_0_tube3d_dynamic/kratos_structure",
         "cores": 1,
@@ -13,7 +13,7 @@
         "timestep_start": 0,
         "input_file": "ProjectParameters.json",
         "solver_load_cmd": "ml Kratos",
-        "sub_model_parts_from_str_solver": [
+        "kratos_interface_sub_model_parts_list": [
           "SurfaceLoad3D_tube"
         ],
         "interface_input": {
