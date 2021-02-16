@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 from coconut.coupling_components.mappers.permutation import MapperPermutation
 
 import unittest

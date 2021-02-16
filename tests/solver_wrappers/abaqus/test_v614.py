@@ -1,4 +1,4 @@
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 
 import unittest
 import numpy as np
@@ -10,21 +10,23 @@ import json
 
 class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     setup_case = True
-    dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), 'test_v614/tube2d')
-    file_name = join(os.path.dirname(__file__), 'test_v614/tube2d/parameters.json')
+    dimension = 2
     p = 1500
     shear = np.array([0, 0, 0])
+    axial_dir = 1   # y-direction is axial direction
+    radial_dirs = [0]
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
     mp_name_out = 'BEAMINSIDEMOVING_nodes'
 
     @classmethod
     def setUpClass(cls):
+        dir_tmp = join(os.getcwd(), f'solver_wrappers/abaqus/test_v614/tube{int(cls.dimension)}d')
         if cls.setup_case:
-            p_setup_abaqus = subprocess.Popen(os.path.join(cls.dir_tmp, 'setup_abaqus.sh'), cwd=cls.dir_tmp, shell=True)
+            p_setup_abaqus = subprocess.Popen(join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
 
         # perform reference calculation
-        with open(cls.file_name, 'r') as parameter_file:
+        with open(join(dir_tmp, 'parameters.json')) as parameter_file:
             parameters = json.load(parameter_file)
 
         # create the solver
@@ -47,16 +49,9 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         output1_2 = solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
 
-        # compare output, as input hasn't changed these should be the same
-        a1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement').copy()
-        a2 = output1_2.get_variable_data(cls.mp_name_out, 'displacement').copy()
-
-        # normalize data and compare
-        mean = np.mean(a1, axis=0)
-        ref = np.abs(a1 - mean).max()
-        a1n = (a1 - mean) / ref
-        a2n = (a2 - mean) / ref
-        np.testing.assert_allclose(a1n, a2n, atol=1e-12)
+        # save output for comparison, as input hasn't changed these should be the same
+        cls.a1_1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement')
+        cls.a2_1 = output1_2.get_variable_data(cls.mp_name_out, 'displacement')
 
         # step 2 to 4
         for i in range(3):
@@ -67,19 +62,30 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # get data for solver without restart
         output_single_run = solver.get_interface_output()
-        cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement').copy()
-        cls.mean = np.mean(cls.a1, axis=0)
-        cls.ref = np.abs(cls.a1 - cls.mean).max()
-        cls.a1n = (cls.a1 - cls.mean) / cls.ref
-        cls.mean_disp_y_no_shear = np.mean(cls.a1[:, 1])/cls.a1.shape[0]
-        cls.mean_disp_x_no_shear = np.mean(cls.a1[:, 0])/cls.a1.shape[0]   # needed for 3D test case
+        cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement')
+        print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
 
     def setUp(self):
-        with open(self.file_name, 'r') as parameter_file:
+        dir_tmp = join(os.getcwd(), f'solver_wrappers/abaqus/test_v614/tube{int(self.dimension)}d')
+        with open(join(dir_tmp, 'parameters.json')) as parameter_file:
             self.parameters = json.load(parameter_file)
 
+    def test_repeat_iteration(self):
+        """
+        Test whether repeating the same iteration yields the same results.
+        """
+        np.testing.assert_allclose(self.a2_1, self.a1_1, rtol=1e-15)
+
     def test_restart(self):
-        # test if restart option works correctly
+        """
+        Test whether restarting at time step 2 and simulating 2 time steps yields the same displacement as when the
+        simulation is ran from time step 0 until time step 4. A constant pressure is applied and no shear, on the tube
+        examples. For the test the relative difference between displacements is checked, but it is required to also use
+        a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e. whenever one of the
+        original coordinates is 0), because those have a near-zero displacement after applying a uniform pressure an no
+        shear. This near-zero value is a noise and has large relative differences between runs, but a very low absolute
+        value, they are successfully filtered with an absolute tolerance.
+        """
 
         # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
@@ -94,8 +100,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         traction[:, :] = self.shear
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
-        solver.initialize()
         # do step 3 and 4
+        solver.initialize()
         for i in range(2):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
@@ -105,16 +111,24 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as input hasn't changed these should be the same
         # get data for solver with restart
         output_restart = solver.get_interface_output()
-        self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement')
+        print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
+        print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
-        # normalize data and compare
-        self.a3n = (self.a3 - self.mean) / self.ref
-        print(f"Max diff between a1n and a3n: {np.abs(self.a1n - self.a3n).max()} \n")
-
-        np.testing.assert_allclose(self.a1n, self.a3n, atol=1e-12)  # correct to consider absolute tolerance only?
+        indices = sorted([self.axial_dir] + self.radial_dirs)  # columns that contain non-zero data
+        a3_extra = np.delete(self.a3, indices, axis=1)  # remove columns containing data
+        np.testing.assert_array_equal(a3_extra, a3_extra * 0.0)   # if a column remains it should be all zeroes
+        np.testing.assert_allclose(self.a3[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)  # non-zero columns
 
     def test_partitioning(self):
-        # test whether using 4 CPUs gives the same results as using a single one
+        """
+        Test whether using 4 CPUs yields the same results as using a single one. A constant pressure is applied and no
+        shear, on the tube examples. For the test the relative difference between displacements is checked, but it is
+        required to also use a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e.
+        whenever one of the original coordinates is 0), because those have a near-zero displacement after applying a
+        uniform pressure an no shear. This near-zero value is a noise and has large relative differences between runs,
+        but a very low absolute value, they are successfully filtered with an absolute tolerance.
+        """
 
         # adapt Parameters, create solver
         self.parameters['settings']['cores'] = 4
@@ -139,23 +153,27 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # compare output, as input hasn't changed these should be the same
         output_4cores = solver.get_interface_output()
-        self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement')
+        print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
+        print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
 
-        # normalize data and compare
-        self.a4n = (self.a4 - self.mean) / self.ref
-        print(f"Max diff between a1n and a4n: {np.abs(self.a1n - self.a4n).max()} \n")
-
-        np.testing.assert_allclose(self.a4n, self.a1n, atol=1e-12)  # correct to consider absolute tolerance only?
+        indices = sorted([self.axial_dir] + self.radial_dirs)  # columns that contain non-zero data
+        a4_extra = np.delete(self.a4, indices, axis=1)  # remove columns containing data
+        np.testing.assert_array_equal(a4_extra, a4_extra * 0.0)   # if a column remains it should be all zeroes
+        np.testing.assert_allclose(self.a4[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)  # non-zero columns
 
     def test_shear(self):
-        # test whether shear is also applied (y is the axial direction)
+        """
+        Test whether shear is also applied.
+        """
 
         # create solver
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
 
-        # define a non-zero shear in y-direction
-        local_shear = self.shear + np.array([0, 5, 0])
+        # apply non-zero shear in axial_dir (y for 2D, x for 3D)
+        local_shear = self.shear.copy()
+        local_shear[self.axial_dir] = 5
 
         # give value to variables
         pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
@@ -175,64 +193,25 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # compare output, as shear input has changed these should be different
         output_shear = solver.get_interface_output()
-        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement').copy()
+        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement')
 
-        # normalize data and compare
-        self.mean_disp_y_shear = np.mean(self.a5[:, 1])/self.a5.shape[0]
+        # calculate mean displacement
+        # no absolute value is used on purpose to filter out the axial displacement due to pressure only
+        self.mean_displacement_shear = np.mean(self.a5[:, self.axial_dir])
+        self.mean_displacement_no_shear = np.mean(self.a1[:, self.axial_dir])
 
-        print(f'Mean y-displacement without shear = {self.mean_disp_y_no_shear} m')
-        print(f'Mean y-displacement with shear = {self.mean_disp_y_shear} m')
-
-        self.assertNotAlmostEqual(self.mean_disp_y_no_shear - self.mean_disp_y_shear, 0., delta=1e-12)
+        print(f'Mean displacement in axial direction without shear = {self.mean_displacement_no_shear} m')
+        print(f'Mean displacement in axial direction with shear = {self.mean_displacement_shear} m')
+        self.assertNotAlmostEqual(self.mean_displacement_no_shear - self.mean_displacement_shear, 0., delta=1e-12)
 
 
 class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
     setup_case = True
-    file_name = join(os.path.dirname(__file__), 'test_v614/tube3d/parameters.json')
-    dir_tmp = join(os.path.realpath(os.path.dirname(__file__)), 'test_v614/tube3d')
-    p = 1500
-    shear = np.array([0, 0, 0])
+    dimension = 3
+    axial_dir = 0   # x-direction is axial direction
+    radial_dirs = [1, 2]
     mp_name_in = 'WALLOUTSIDE_load_points'
     mp_name_out = 'WALLOUTSIDE_nodes'
-
-    def test_shear(self):
-        # test whether shear is also applied (x is the axial direction)
-        print(f"Working directory for test_shear: {self.parameters['settings']['working_directory']}")
-
-        # create solver
-        solver = create_instance(self.parameters)
-        interface_input = solver.get_interface_input()
-
-        # define a non-zero shear in x-direction
-        local_shear = self.shear + np.array([5, 0, 0])
-
-        # give value to variables
-        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
-        pressure[:] = self.p
-        interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
-        traction = interface_input.get_variable_data(self.mp_name_in, 'traction')
-        traction[:, :] = local_shear
-        interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
-
-        # do 4 steps
-        solver.initialize()
-        for i in range(4):
-            solver.initialize_solution_step()
-            solver.solve_solution_step(interface_input)
-            solver.finalize_solution_step()
-        solver.finalize()
-
-        # compare output, as shear input has changed these should be different
-        output_shear = solver.get_interface_output()
-        self.a5 = output_shear.get_variable_data(self.mp_name_out, 'displacement').copy()
-
-        # normalize data and compare
-        self.mean_disp_x_shear = np.mean(self.a5[:, 0])/self.a5.shape[0]
-
-        print(f'Mean x-displacement without shear = {self.mean_disp_x_no_shear} m')
-        print(f'Mean x-displacement with shear = {self.mean_disp_x_shear} m')
-
-        self.assertNotAlmostEqual(self.mean_disp_x_no_shear - self.mean_disp_x_shear, 0., delta=1e-12)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components import tools
+from coconut import tools
 from coconut.coupling_components.component import Component
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 

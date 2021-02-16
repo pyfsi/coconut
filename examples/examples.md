@@ -8,7 +8,7 @@ Currently all these examples calculate the flow in a flexible tube.
 This section describes the different folders and files that are provided.
 
 -   `run_simulation.py`: main file, has to be run with the parameter file as argument
--   `project_parameters_X.json`: parameter file in JSON format
+-   `parameters.json`: parameter file in JSON format
 -   `setup_X`: setup folder containing all files for setting up solver X
 -   `setup_X.sh`: bash script, has to be run to set up solver X
 -   `X.md`: description of the specific example
@@ -18,7 +18,8 @@ These folder are expandable and are deleted when the setup files are (re)run.
 
 ## Project Parameters
 
-The parameter file `project_parameters_X.json` contains two dictionaries. 
+The parameter file `parameters.json` can be interpreted as a dictionary. 
+There are two main keys.
 The first is `settings` in which the number of time steps for which the calculation is run is specified.
 The second is `coupled_solver` in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solvers.
 

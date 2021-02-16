@@ -109,9 +109,9 @@
               "settings": {
                 "balanced_tree": false,
                 "directions": [
-                  "X",
-                  "Y",
-                  "Z"
+                  "x",
+                  "y",
+                  "z"
                 ],
                 "parallel": true
               }
@@ -124,9 +124,9 @@
               "settings": {
                 "balanced_tree": false,
                 "directions": [
-                  "X",
-                  "Y",
-                  "Z"
+                  "x",
+                  "y",
+                  "z"
                 ],
                 "parallel": true
               }

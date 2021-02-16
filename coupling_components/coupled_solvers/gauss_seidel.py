@@ -1,10 +1,11 @@
-from coconut.coupling_components import tools
-from coconut.coupling_components.tools import create_instance
+from coconut import tools
+from coconut.tools import create_instance
 from coconut.coupling_components.component import Component
 
 import numpy as np
 import time
 import pickle
+import os
 
 
 def create(parameters):
@@ -18,9 +19,9 @@ class CoupledSolverGaussSeidel(Component):
         self.parameters = parameters
         self.settings = parameters["settings"]
 
-        self.timestep_start = self.settings["timestep_start"]  # Time step where calculation is started
-        self.n = self.timestep_start  # Time step
-        self.delta_t = self.settings["delta_t"]  # Time step size
+        self.timestep_start = self.settings["timestep_start"]  # time step where calculation is started
+        self.n = self.timestep_start  # time step
+        self.delta_t = self.settings["delta_t"]  # time step size
 
         self.predictor = create_instance(self.parameters["predictor"])
         self.convergence_criterion = create_instance(self.parameters["convergence_criterion"])
@@ -44,7 +45,7 @@ class CoupledSolverGaussSeidel(Component):
 
         self.x = None
         self.y = None
-        self.iteration = None  # Iteration
+        self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
 
         self.start_time = None
@@ -56,6 +57,11 @@ class CoupledSolverGaussSeidel(Component):
             self.complete_solution_y = None
             self.residual = []
             self.case_name = self.settings.get("name", "results")  # case name
+            if self.case_name + '.pickle' in os.listdir(os.getcwd()):
+                i = 1
+                while self.case_name + str(i) + '.pickle' in os.listdir(os.getcwd()):
+                    i += 1
+                self.case_name += str(i)
 
     def initialize(self):
         super().initialize()
@@ -63,7 +69,7 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components[1:]:
             component.initialize()
 
-        # Construct mappers if required
+        # construct mappers if required
         index_mapped = None
         index_other = None
         for i in range(2):
@@ -75,15 +81,15 @@ class CoupledSolverGaussSeidel(Component):
         if index_other is None:
             raise ValueError("Not both solvers may be mapped solvers.")
         if index_mapped is not None:
-            # Construct input mapper
+            # construct input mapper
             interface_input_from = self.solver_wrappers[index_other].get_interface_output()
             self.solver_wrappers[index_mapped].set_interface_input(interface_input_from)
 
-            # Construct output mapper
+            # construct output mapper
             interface_output_to = self.solver_wrappers[index_other].get_interface_input()
             self.solver_wrappers[index_mapped].set_interface_output(interface_output_to)
 
-        # Initialize variables
+        # initialize variables
         self.x = self.solver_wrappers[1].get_interface_output()
         self.y = self.solver_wrappers[0].get_interface_output()
         self.predictor.initialize(self.x)
@@ -99,10 +105,10 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.initialize_solution_step()
 
-        self.n += 1  # Increment time step
+        self.n += 1  # increment time step
         self.iteration = 0
 
-        # Print time step
+        # print time step
         if not self.solver_level:
             self.print_header()
 
@@ -110,15 +116,15 @@ class CoupledSolverGaussSeidel(Component):
             self.residual.append([])
 
     def solve_solution_step(self):
-        # Initial value
+        # initial value
         self.x = self.predictor.predict(self.x)
-        # First coupling iteration
+        # first coupling iteration
         y = self.solver_wrappers[0].solve_solution_step(self.x.copy())
         self.y = y.copy()
         xt = self.solver_wrappers[1].solve_solution_step(y)
         r = xt - self.x
         self.finalize_iteration(r)
-        # Coupling iteration loop
+        # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += r
             y = self.solver_wrappers[0].solve_solution_step(self.x)
@@ -130,7 +136,7 @@ class CoupledSolverGaussSeidel(Component):
     def finalize_iteration(self, r):
         self.iteration += 1
         self.convergence_criterion.update(r)
-        # Print iteration information
+        # print iteration information
         self.print_iteration_info(r)
 
         if self.save_results:
@@ -199,7 +205,7 @@ class CoupledSolverGaussSeidel(Component):
         header = f"════════════════════════════════════════════════════════════════════════════════\n" \
                  f"\tTime step {self.n}\n" \
                  f"════════════════════════════════════════════════════════════════════════════════\n" \
-                 f"Iteration\tNorm residual"
+                 f"{'Iteration':<16}{'Norm residual':<28}"
         tools.print_info(header, flush=True)
 
     def print_iteration_info(self, r):

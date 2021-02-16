@@ -1,4 +1,4 @@
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 import json
 
 

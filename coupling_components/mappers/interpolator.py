@@ -1,6 +1,6 @@
 from coconut.coupling_components.component import Component
 from coconut.data_structure.variables import variables_dimensions
-from coconut.coupling_components import tools
+from coconut import tools
 
 from scipy.spatial import cKDTree
 import numpy as np
@@ -18,8 +18,7 @@ class MapperInterpolator(Component):
         # store settings
         self.settings = parameters['settings']
         self.interpolator = True
-        self.balanced_tree = (self.settings['balanced_tree']
-                              if 'balanced_tree' in self.settings else False)
+        self.balanced_tree = self.settings.get('balanced_tree', False)
         self.n_nearest = 0  # must be set in sub-class!
 
         # initialization
@@ -33,23 +32,23 @@ class MapperInterpolator(Component):
         # get list with directions
         self.directions = []
         if type(self.settings['directions']) != list:
-            raise TypeError('directions must be a list')
+            raise TypeError('Directions must be a list')
         for direction in self.settings['directions']:
             if direction.lower() not in ['x', 'y', 'z']:
                 raise ValueError(f'"{direction}" is not a valid direction.')
             if direction.lower() != direction:
                 # TODO: I would later remove this and only accept lowercase directions
-                tools.print_info('directions must be lowercase', layout='warning')
+                tools.print_info('Warning: Interpolator directions must be lowercase', layout='warning')
             self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
-                raise ValueError(f'too many directions given')
+                raise ValueError(f'Too many directions given')
 
         # get scaling (optional)
         self.scaling = None
         if 'scaling' in self.settings:
             self.scaling = np.array(self.settings['scaling']).reshape(1, -1)
             if self.scaling.size != len(self.directions):
-                raise ValueError(f'scaling must have same length as directions')
+                raise ValueError(f'Scaling must have same length as directions')
 
     def initialize(self, model_part_from, model_part_to):
         super().initialize()
@@ -68,7 +67,7 @@ class MapperInterpolator(Component):
 
         # check if n_from is large enough
         if self.n_from < self.n_nearest:
-            raise ValueError(f'not enough from-points: {self.n_from} < {self.n_nearest}')
+            raise ValueError(f'Not enough from-points: {self.n_from} < {self.n_nearest}')
 
         # check bounding boxes
         tools.check_bounding_box(model_part_from, model_part_to)
@@ -117,7 +116,7 @@ class MapperInterpolator(Component):
         # calculate reference distance (diagonal of bounding box)
         d_ref = np.linalg.norm(self.coords_from.max(axis=0) - self.coords_from.min(axis=0))
         if d_ref == 0.:
-            raise ValueError('all from-points coincide')
+            raise ValueError('All from-points coincide')
 
         # check for duplicate points
         dist, _ = self.tree.query(self.coords_from, k=2)

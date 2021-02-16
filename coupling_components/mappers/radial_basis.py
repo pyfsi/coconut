@@ -1,5 +1,5 @@
 from coconut.coupling_components.mappers.interpolator import MapperInterpolator
-from coconut.coupling_components import tools
+from coconut import tools
 
 from scipy.spatial import distance
 from scipy.linalg import solve

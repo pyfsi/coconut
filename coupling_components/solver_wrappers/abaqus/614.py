@@ -1,13 +1,17 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
-from coconut.coupling_components import tools
+from coconut import tools
 
 import os
 from os.path import join
 import subprocess
+import shutil
+import sys
 import time
 import numpy as np
 import re
+import textwrap
+from pathlib import Path
 
 
 def create(parameters):
@@ -15,6 +19,8 @@ def create(parameters):
 
 
 class SolverWrapperAbaqus614(Component):
+    version = '6.14'
+
     def __init__(self, parameters):
         super().__init__()
         # settings
@@ -43,6 +49,7 @@ class SolverWrapperAbaqus614(Component):
                     save_iterations         number of time steps between consecutive saves of Abaqus-files
         """
 
+        self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
         path_src = os.path.realpath(os.path.dirname(__file__))
@@ -479,11 +486,29 @@ class SolverWrapperAbaqus614(Component):
     def set_interface_output(self):
         Exception("This solver interface provides no mapping.")  # TODO: remove?
 
+    def check_software(self):
+        # Python version: 3.6 or higher
+        if sys.version_info < (3, 6):
+            raise RuntimeError('Python version 3.6 or higher required.')
+
+        # Abaqus availability
+        if shutil.which('abaqus') is None:
+            raise RuntimeError('Abaqus must be available.')
+
+        # Abaqus version
+        result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE)
+        if self.version not in str(result.stdout):
+            raise RuntimeError(f'Abaqus version {self.version} is required.')
+
+        # Compilers
+        if shutil.which('ifort') is None:
+            raise RuntimeError('Intel compiler ifort must be available.')
+
     def make_elements(self, face_file, output_file):
-        firstLoop = 1
-        # element = 0
+        face_file = Path(face_file)
+        output_file = Path(output_file)
+        first_loop = True
         element_prev = -1
-        # point = 0
         point_prev = -1
         element_0 = -1
         point_0 = -1
@@ -491,29 +516,46 @@ class SolverWrapperAbaqus614(Component):
         element_str = ""
 
         with open(face_file, 'r') as file:
-            for line in file:
+            for num, line in enumerate(file, start=1):
                 values = line.strip().split()
                 element = int(values[0])
                 point = int(values[1])
-                if element == element_0 and point == point_0:
+                if element == element_0 and point == point_0:  # all values multiple times in file, only once needed
                     break
-                if element == element_prev:
-                    if point == point_prev + 1:
+                if element == element_prev:  # load points of same element
+                    if point == point_prev + 1:  # deviation from ascending order indicates mistake
                         point_prev = point
                     else:
-                        raise ValueError(f"loadpoint number increases by more than one per line for element {element}")
-                else:
+                        if point > point_prev:
+                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
+                                                f" increases by more 1 one per line for element {element}, found "
+                                                f"{point} but {point_prev + 1} was expected.", width=80)
+                            raise ValueError(msg)
+                        elif point == 1:
+                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
+                                                f" {point} is lower than previous ({point_prev}). Check if surface "
+                                                f"contains element with multiple faces in surface, for example at "
+                                                f"corners. This is not allowed.", width=80)
+                            raise ValueError(msg)
+                        else:
+                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
+                                                f" {point} is lower than previous ({point_prev}).", width=80)
+                            raise ValueError(msg)
+                else:  # new element started
                     if point == 1:
                         point_prev = point
                         element_prev = element
                         element_str += str(element) + "\n"
                         count += 1
-                        if firstLoop:  # Faces contains all values multiple times, but we only want it once
+                        if first_loop:
                             element_0 = element
                             point_0 = point
-                            firstLoop = 0
+                            first_loop = False
                     else:
-                        raise ValueError(f"Load point number does not start at 1 for element {element}")
+                        msg = textwrap.fill(
+                            f"Error while processing {face_file.name} line {num}: Load point number does not start at 1"
+                            f" for element {element}, {point} was found instead.", width=80)
+                        raise ValueError(msg)
 
         element_str = f"{count}\n{point_prev}\n" + element_str
         with open(output_file, "w") as file:
@@ -581,7 +623,7 @@ class SolverWrapperAbaqus614(Component):
                     line_new = ''
                     for s in contents:
                         if s.strip().startswith("inc="):
-                            numbers = re.findall("\d+", s)
+                            numbers = re.findall(r"\d+", s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
                                 raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested "
                                                           f"but maxNumInc > 1.")

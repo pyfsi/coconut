@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 
 import unittest
 import numpy as np
@@ -8,7 +8,7 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.2d_axisymmetric_to_wedge_3d',

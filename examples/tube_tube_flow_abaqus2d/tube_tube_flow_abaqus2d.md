@@ -14,8 +14,9 @@ The initial guess in every time step is done using the linear predictor.
 ## Convergence criterion
 
 Two convergence criteria have been specified:
- - The number of iterations in every time step is larger than 15.
- - The residual norm on the displacement is a factor $10^{-6}$ lower than the initial value.
+
+-   The number of iterations in every time step is larger than 15.
+-   The residual norm on the displacement is a factor $10^{-6}$ lower than the initial value.
  
 When either criterion is satisfied the simulation stops.
 
