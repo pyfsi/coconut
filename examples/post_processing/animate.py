@@ -34,7 +34,6 @@ class Animation:
             self.coordinates: np.array contains the initial coordinates of the nodes on the interface
                 as given in self.info
                   e.g. x0, y0, z0, x1, y1, z1, ...
-
         :param animation_figure: (AnimationFigure) AnimationFigure object where animation is created
         :param solution : (np.array) contains as columns the solution of each time step, order is dictated by self.info
         :param interface: (Interface) object interface to be plotted
@@ -132,7 +131,6 @@ class Animation:
     def Initialize(self, mask_x, mask_y, mask_z, abscissa, component):
         """
         This method selects which points to plot and how to sort them.
-
         :param mask_x: (ndarray) selects points based on x-coordinate
         :param mask_y: (ndarray) selects points based on y-coordinate
         :param mask_z: (ndarray) selects points based on z-coordinate

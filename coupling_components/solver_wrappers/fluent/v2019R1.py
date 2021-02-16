@@ -186,7 +186,7 @@ class SolverWrapperFluent2019R1(Component):
             # create Nodes
             for i in range(ids_tmp.size):
                 mp.CreateNewNode(ids_tmp[i],
-                    coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
+                                 coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
 
         # add Nodes to output ModelParts (faces)
         for key in self.settings['interface_output'].keys():
@@ -212,7 +212,7 @@ class SolverWrapperFluent2019R1(Component):
             # create Nodes
             for i in range(ids_tmp.size):
                 mp.CreateNewNode(ids_tmp[i],
-                    coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
+                                 coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
 
         # create Interfaces
         self.interface_input = Interface(self.model, self.settings['interface_input'])

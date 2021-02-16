@@ -247,6 +247,7 @@ class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
 
         # "global" definitions
         displacement = vars(data_structure)['DISPLACEMENT']
+
         def get_dy_dz(x, y, z):
             dr = 0.0001 * np.sin(2 * np.pi / 0.05 * x)
             theta = np.arctan2(z, y)

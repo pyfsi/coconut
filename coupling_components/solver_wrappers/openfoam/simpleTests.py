@@ -1,3 +1,0 @@
-from coconut.coupling_components.solver_wrappers.openfoam.OpenFOAM_41 import SolverWrapperOpenFOAM_41
-SolverWrapperOpenFOAM_41.write_header("/cfdfile2/data/fm/laurent/git-repository/Kratos/applications/CoSimulationApplication/python_scripts/solver_wrappers/openfoam/temp","x","y")
-SolverWrapperOpenFOAM_41.write_footer("/cfdfile2/data/fm/laurent/git-repository/Kratos/applications/CoSimulationApplication/python_scripts/solver_wrappers/openfoam/temp")
