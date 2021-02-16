@@ -6,14 +6,14 @@
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
       "solver_index": 0,
-      "test_class": "TransientTest",
+      "test_class": "InterpolatedData",
       "delta_t": 0.05
     },
     "settings": {
       "timestep_start": 0,
       "delta_t": 0.0001,
-      "save_results": true,
       "omega": 0.01,
+      "save_results": true,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -56,15 +56,23 @@
           "thread_names": [
             "wall"
           ],
-          "interface_input": {
-            "wall_nodes": "DISPLACEMENT"
-          },
-          "interface_output": {
-            "wall_faces": [
-              "PRESSURE",
-              "TRACTION"
-            ]
-          },
+          "interface_input": [
+            {
+              "model_part": "wall_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "wall_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
           "cores": 6,
           "fluent_gui": false,
           "max_nodes_per_face": 4,
@@ -84,19 +92,26 @@
               "dimensions": 3,
               "arraysize": 10e5,
               "surfaces": 1,
-              "ramp": 0,
               "surfaceIDs": [
                 "WALLOUTSIDE"
               ],
-              "interface_input": {
-                "WALLOUTSIDE_load_points": [
-                  "PRESSURE",
-                  "TRACTION"
-                ]
-              },
-              "interface_output": {
-                "WALLOUTSIDE_nodes": "DISPLACEMENT"
-              },
+              "interface_input": [
+                {
+                  "model_part": "WALLOUTSIDE_load_points",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "WALLOUTSIDE_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
               "mp_mode": "THREADS",
               "input_file": "Base.inp",
               "save_iterations": 1
@@ -107,13 +122,11 @@
             "settings": {
               "type": "mappers.radial_basis",
               "settings": {
-                "balanced_tree": false,
                 "directions": [
                   "x",
                   "y",
                   "z"
-                ],
-                "parallel": true
+                ]
               }
             }
           },
@@ -122,13 +135,11 @@
             "settings": {
               "type": "mappers.radial_basis",
               "settings": {
-                "balanced_tree": false,
                 "directions": [
                   "x",
                   "y",
                   "z"
-                ],
-                "parallel": true
+                ]
               }
             }
           }

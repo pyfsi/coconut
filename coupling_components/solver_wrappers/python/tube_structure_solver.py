@@ -123,8 +123,8 @@ class SolverWrapperTubeStructure(Component):
         self.n += 1
         if self.unsteady:
             self.rn = np.array(self.r)
-            self.rndot = np.array(self.rdot)
-            self.rnddot = np.array(self.rddot)
+            self.rndot = self.rdot
+            self.rnddot = self.rddot
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -160,7 +160,7 @@ class SolverWrapperTubeStructure(Component):
         self.a = self.r[2:self.m + 2] ** 2 * np.pi
         self.disp[:, 1] = self.r[2:self.m + 2] - self.rreference
         self.interface_output.set_variable_data("wall", "displacement", self.disp)
-        return self.interface_output  # TODO: make copy?
+        return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
@@ -182,16 +182,10 @@ class SolverWrapperTubeStructure(Component):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
     def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input.copy()
-
-    def set_interface_input(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping")
+        return self.interface_input
 
     def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output.copy()
-
-    def set_interface_output(self):  # TODO: remove?
-        raise Exception("This solver interface provides no mapping")
+        return self.interface_output
 
     def get_residual(self):
         f = np.zeros(self.m + 4)

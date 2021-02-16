@@ -41,12 +41,6 @@ class ConvergenceCriterionCombined(Component):
         for convergence_criterion in self.convergence_criteria:
             convergence_criterion.output_solution_step()
 
-    def check(self):
-        super().check()
-
-        for convergence_criterion in self.convergence_criteria:
-            convergence_criterion.check()
-
     def print_components_info(self, pre):
         super().print_components_info(pre)
 

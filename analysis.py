@@ -18,7 +18,6 @@ class Analysis:
 
     def initialize(self):
         self.coupled_solver.initialize()
-        self.coupled_solver.check()
         self.coupled_solver.print_components_info(' ')
 
     def run_solution_loop(self):

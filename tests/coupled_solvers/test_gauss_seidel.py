@@ -16,7 +16,6 @@ class TestCoupledSolverGaussSeidel(unittest.TestCase):
 
         coupled_solver = create_instance(settings)
         coupled_solver.initialize()
-        coupled_solver.check()
 
         coupled_solver.initialize_solution_step()
         coupled_solver.solve_solution_step()

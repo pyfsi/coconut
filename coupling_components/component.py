@@ -6,7 +6,7 @@ class Component(object):
         self.initialized = False
         self.initialized_solution_step = False
 
-    def initialize(self):
+    def initialize(self, *args):
         if self.initialized:
             raise Exception("Already initialized")
         else:
@@ -39,9 +39,6 @@ class Component(object):
             raise Exception("Not initialized")
 
     def output_solution_step(self):
-        pass
-
-    def check(self):
         pass
 
     def print_components_info(self, pre):
