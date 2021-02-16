@@ -11,7 +11,7 @@ fi
 
 # create new CSM folder
 echo "Copying kratos_structure and set up files"
-cp -r kratos_setp_up_files CSM
+cp -r kratos_setp_up_files/ CSM
 cd CSM
 
 cd ..
