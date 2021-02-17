@@ -50,6 +50,7 @@ class StructuralMechanicsWrapper:
 
     def FinalizeSolutionStep(self):
         self.structural_analysis.FinalizeSolutionStep()
+        self.OutputSolutionStep()
 
     def OutputSolutionStep(self):
         self.structural_analysis.OutputSolutionStep()

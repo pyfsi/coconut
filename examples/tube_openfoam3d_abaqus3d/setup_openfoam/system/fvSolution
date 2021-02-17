@@ -20,8 +20,8 @@ solvers
     p
     {
         solver           GAMG;
-        tolerance        1e-7;
-        relTol           0.01;
+        tolerance        1e-10;
+        relTol           1e-5;
 
         smoother         DICGaussSeidel;
 
@@ -37,8 +37,8 @@ solvers
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
-        tolerance       1e-05;
-        relTol          0.1;
+        tolerance       1e-10;
+        relTol          1e-5;
     }
 
     "(U|k|epsilon)Final"
@@ -51,15 +51,29 @@ solvers
     {
     	solver          GAMG;
     	smoother        GaussSeidel;
-    	tolerance       1e-7;
-    	relTol          0.01;
+    	tolerance       1e-10;
+    	relTol          0.001;
     }
 }
 
 PIMPLE
 {
     nNonOrthogonalCorrectors 0;
-    nCorrectors         2;
+    nCorrectors         3;
+    nOuterCorrectors 50;
+    residualControl
+    {
+        U
+        {
+                tolerance  1e-8;
+                relTol      0;
+        }
+        p
+        {
+                tolerance  1e-7;
+                relTol      0;
+        }
+     }
 }
 
 
