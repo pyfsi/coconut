@@ -219,8 +219,7 @@ int main(int argc, char *argv[])
 
             runTime.run();
             OFstream outfile ("continue_ready.coco");
-    		
-		}
+
 		}
 
     	if (exists("save.coco"))
