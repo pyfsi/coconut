@@ -9,7 +9,7 @@ from matplotlib import cm
 
 
 class TestMapperLoadUpDate(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.updateLoad',
@@ -230,7 +230,7 @@ class TestMapperLoadUpDate(unittest.TestCase):
 
             plt.get_current_fig_manager().window.showMaximized()
             # plt.xlim(0,6)
-            plt.ylim(1,1.4)
+            # plt.ylim(0.5,1.4)
             plt.show()
             plt.close()
 if __name__ == '__main__':
