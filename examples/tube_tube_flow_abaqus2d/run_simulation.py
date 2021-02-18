@@ -1,7 +1,6 @@
 from coconut import data_structure
 from coconut.coupling_components.analysis import Analysis
 
-
 if __name__ == '__main__':
     from sys import argv
 

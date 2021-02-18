@@ -151,7 +151,7 @@ class MapperInterpolator(Component):
         msg_1 = f'ModelParts "{model_part_from.Name}", "{model_part_to.Name}": '
         msg_2 = ' values differ by '
         msg_3 = f'\n\t"{model_part_from.Name}": minimal values = {from_min} and maximal values = {from_max}' \
-                f'\n\t"{model_part_to.Name}": minimal values = {to_min} and maximal values = {to_max}'
+            f'\n\t"{model_part_to.Name}": minimal values = {to_min} and maximal values = {to_max}'
 
         msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
         if error_center > tol_center_error:

@@ -454,7 +454,7 @@ class Case3DSphere:
         self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
         for i in range(self.n_from):
             node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
-                                self.y_from.flatten()[i], self.z_from.flatten()[i])
+                                                      self.y_from.flatten()[i], self.z_from.flatten()[i])
             node.SetSolutionStepValue(self.var_from, 0, self.v_from.flatten()[i])
 
         # ModelPart to
@@ -471,7 +471,7 @@ class Case3DSphere:
         self.x_to, self.y_to, self.z_to = self.get_cartesian(theta, phi)
         for i in range(self.n_to):
             self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
-                            self.y_to.flatten()[i], self.z_to.flatten()[i])
+                                             self.y_to.flatten()[i], self.z_to.flatten()[i])
 
     def map(self, parameters):
         mapper = CreateInstance(parameters)
@@ -498,7 +498,8 @@ class Case3DSphere:
         c_error = cm.jet(self.v_error / self.v_error.max())
 
         fig = plt.figure(figsize=(18, 6))
-        plt.suptitle(f'3D case: sphere + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
+        plt.suptitle(
+            f'3D case: sphere + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
 
         ax_from = fig.add_subplot(131, projection='3d')
         ax_from.set_title('from')
@@ -562,7 +563,7 @@ class Case3DCylinder(Case3DSphere):
         self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
         for i in range(self.n_from):
             node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
-                                self.y_from.flatten()[i], self.z_from.flatten()[i])
+                                                      self.y_from.flatten()[i], self.z_from.flatten()[i])
             node.SetSolutionStepValue(self.var_from, 0, self.v_from.flatten()[i])
         # for i in range(self.n_from):
         #     node = self.model_part_from.CreateNewNode(i, self.x_from[i], self.y_from[i], self.z_from[i])
@@ -581,7 +582,7 @@ class Case3DCylinder(Case3DSphere):
         self.y_to, self.z_to = self.get_cartesian(theta_to)
         for i in range(self.n_to):
             self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
-                            self.y_to.flatten()[i], self.z_to.flatten()[i])
+                                             self.y_to.flatten()[i], self.z_to.flatten()[i])
         # for i in range(self.n_to):
         #     self.model_part_to.CreateNewNode(i, self.x_to[i], self.y_to[i], self.z_to[i])
 
@@ -593,7 +594,8 @@ class Case3DCylinder(Case3DSphere):
         c_error = cm.jet(self.v_error / self.v_error.max())
 
         fig = plt.figure(figsize=(18, 10))
-        plt.suptitle(f'3D case: cylinder + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
+        plt.suptitle(
+            f'3D case: cylinder + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
 
         # 2D plots
         ax_2dval = fig.add_subplot(221)
@@ -668,7 +670,7 @@ class Case3DSinc:
         self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
         for i in range(self.n_from):
             node = self.model_part_from.CreateNewNode(i, self.x_from.flatten()[i],
-                                    self.y_from.flatten()[i], self.z_from.flatten()[i])
+                                                      self.y_from.flatten()[i], self.z_from.flatten()[i])
             hist = []
             for j in range(3):
                 hist.append(self.v_from[j].flatten()[i])
@@ -686,7 +688,7 @@ class Case3DSinc:
         self.v_to = self.fun(self.x_to, self.y_to, self.z_to)
         for i in range(self.n_to):
             self.model_part_to.CreateNewNode(i, self.x_to.flatten()[i],
-                                 self.y_to.flatten()[i], self.z_to.flatten()[i])
+                                             self.y_to.flatten()[i], self.z_to.flatten()[i])
 
     def map(self, parameters):
         mapper = CreateInstance(parameters)

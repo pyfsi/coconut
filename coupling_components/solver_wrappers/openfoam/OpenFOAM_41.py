@@ -259,7 +259,6 @@ class SolverWrapperOpenFOAM_41(Component):
         if not (os.path.isfile(pointDisp_name)):
             self.write_pointDisplacement_file(pointDisp_raw_name, pointDisp_name)
 
-
         ##Copy zero folder to folder with correctly named timeformat
         if self.physical_time == 0:
             timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
@@ -356,7 +355,6 @@ class SolverWrapperOpenFOAM_41(Component):
                         time.sleep(5)
                     os.system("rm -rf " + newPath)
                 os.system("mkdir -p " + newPath)
-        print('\t Time step ' + str(self.timestep))
 
         self.send_message('next')  # Let OpenFOAM go to next time step
         self.wait_message('next_ready')  # Let OpenFOAM wait for input data
@@ -610,7 +608,6 @@ class SolverWrapperOpenFOAM_41(Component):
                 "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp + " &> log.decomposePar;",
                 shell=True)
 
-
     def write_controlDict_function(self, filename, funcname, libname, varname, patchname, writeStart, writeEnd):
         with open(filename, 'a+') as file:
             if writeStart:
@@ -722,8 +719,6 @@ class SolverWrapperOpenFOAM_41(Component):
         if versionNr[:-1] != self.moduleVersion:
             sys.exit("OpenFOAM 4.1 should be loaded! Currently, another version of OpenFOAM is loaded")
 
-
-
     def Get_Point_IDs(self, boundary, dir):
         'Function that returns the local point IDs belonging to a specified boundary in the correct sequence for the pointDisplacement file'
         f_b = f'{dir}/boundary'
@@ -759,7 +754,6 @@ class SolverWrapperOpenFOAM_41(Component):
                 points[count, 2] = float(temp[2][:-2])
                 count += 1
                 line = f.readline()
-
 
         points_Bool = np.zeros((N_points, 1))
         boundary_Ind = []

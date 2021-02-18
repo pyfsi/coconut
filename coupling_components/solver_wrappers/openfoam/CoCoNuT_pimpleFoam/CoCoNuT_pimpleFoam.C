@@ -218,12 +218,10 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             runTime.run();
-            Info << "I get past the save" << nl << endl;
             OFstream outfile ("continue_ready.coco");
-            outfile << "Joris says good job on continue.coco" << endl;
-    		
+
 		}
-		
+
     	if (exists("save.coco"))
 		{
 

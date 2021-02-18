@@ -104,7 +104,6 @@ class TestSolverWrapperOpenFoam41(KratosUnittest.TestCase):
             if cores > 1:
                 check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL)
 
-
             node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.dt:.{self.t_prec}f}', 'mantle')
 
             for i, node in enumerate(mp.Nodes):
