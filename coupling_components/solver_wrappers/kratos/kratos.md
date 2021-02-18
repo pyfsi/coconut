@@ -1,6 +1,6 @@
-# Solver Wrapper Kratos StructureMechanicsApplication
+# SolverWrapperKratos - StructuralMechanicsApplication
 
-This is the documentation for the solver wrapper of the StructuralMechanicsApplication in KratosMultphysics.
+This is the documentation for the solver wrapper of the StructuralMechanicsApplication in KratosMultiphysics.
 
 ## Parameters
 
@@ -8,7 +8,7 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 
 parameter|type|description
 ---:|:---:|---
-`cores`|int|Number of processor cores to use when running KratosMultphysics (Works with 1 core, multi-processing is work in progress).
+`cores`|int|Number of processor cores to use when running KratosMultiphysics (Works with 1 core, multi-processing is work in progress).
 `delta_t`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
 `input_file`|string| Project parameters file used by Kratos in json format,
 `interface_input`|dict| Keys are names of `ModelParts` for Kratos nodes. Each name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and "_input". The values are (lists of) names of `Variables`.
@@ -16,7 +16,7 @@ parameter|type|description
 `solver_load_cmd`|string| Bash commmand for loading required modules and environmental variables to run KratosMultiphysics,
 `kratos_interface_sub_model_parts_list`|string| Names of sub-model parts used for input and output in KratosMultiphysics,
 `timestep_start`|int|Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.  
-`working_directory`|string|Absolute path to the working directory or relative path w.r.t the current directory.
+<nobr>`working_directory`</nobr>|string|Absolute path to the working directory or relative path w.r.t the current directory.
 
 
 `timestep_start` and `delta_t` are necessary parameters, but are usually defined in a higher `Component`. However, they can also be given directly as parameter of the solver-wrapper (e.g. for standalone testing). If they are defined both in a higher `Component` and in the solver-wrapper, then the former value is used and a warning is printed.
@@ -28,12 +28,12 @@ If different parameters are used with different Kratos versions, this should be 
 
 The solver-wrapper consists of 2 files, where `X` is the Kratos version without decimal, e.g. for version `6.0` `60`:
 
--   `vX.py`: defines the `SolverWrapperKratosStructuralX` class
--   `run_kratos_structural_X.py`: The python file which runs Kratos in background. This interacts with the CoCoNuT for coupling.
+-   `vX.py`: defines the `SolverWrapperKratosStructureX` class
+-   `run_kratos_structural_X.py`: The python file which runs Kratos in the background. This interacts with CoCoNuT for coupling.
 
 ### The `__init__` method
 
-During initialization, the ProjectParameters.json file of KratosMultiphysics is read and adapted (parameter values are filled in) and copied to the `working_directory`. One additional parameter called  `interface_sub_model_parts_list` is added in the ProjectParameters.json that tells Kratos about the interface model parts used in the coupling.  Kratos structural simulation is then started in that directory using the parameter `cores` (multi-processing not implemented yet). The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that `SolverWrapperKratosStructuralX` can create model parts in CoCoNuT for the each entry in the `interface_input` and `interface_output`. Finally, the interfaces are created.
+During initialization, the ProjectParameters.json file of KratosMultiphysics is read and adapted (parameter values are filled in) and copied to the `working_directory`. One additional parameter called  `interface_sub_model_parts_list` is added in the ProjectParameters.json that tells Kratos about the interface model parts used in the coupling.  Kratos structural simulation is then started in that directory using the parameter `cores` (multi-processing not implemented yet). The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that `SolverWrapperKratosStructureX` can create model parts in CoCoNuT for the each entry in the `interface_input` and `interface_output`. Finally, the interfaces are created.
 
 ### Files created during simulation
 
