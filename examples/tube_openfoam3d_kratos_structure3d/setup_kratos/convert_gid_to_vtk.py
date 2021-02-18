@@ -24,7 +24,7 @@ def GetLinesBetweenTwoStrings(lines, start_string, end_string, index):
 
         index += 1
 
-    return output_lines, index;
+    return output_lines, index
 
 
 def GetIndexOfString(lines, search_string):
