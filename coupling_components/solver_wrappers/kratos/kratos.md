@@ -33,7 +33,7 @@ The solver-wrapper consists of 2 files, where `X` is the Kratos version without 
 
 ### The `__init__` method
 
-During initialization, the ProjectParameters.json file of KratosMultiphysics is read and adapted (parameter values are filled in) and copied to the `working_directory`. One additional parameter called  `interface_sub_model_parts_list` is added in the ProjectParameters.json that tells Kratos about the interface model parts used in the coupling.  Kratos structural simulation is then started in that directory using the parameter `cores` (multi-processing not implemented yet). The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that `SolverWrapperKratosStructureX` can create model parts in CoCoNuT for the each entry in the `interface_input` and `interface_output`. Finally, the interfaces are created.
+During initialization, the ProjectParameters.json file of KratosMultiphysics is read and adapted (parameter values are filled in) and copied to the `working_directory`. One additional parameter called  `interface_sub_model_parts_list` is added in the ProjectParameters.json that tells Kratos about the interface model parts used in the coupling.  Kratos structural simulation is then started in that directory using the parameter `cores` (multi-processing not implemented yet). The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that `SolverWrapperKratosStructureX` can create model parts in CoCoNuT for each entry in `interface_input` and `interface_output`. Finally, the interfaces are created.
 
 ### Files created during simulation
 

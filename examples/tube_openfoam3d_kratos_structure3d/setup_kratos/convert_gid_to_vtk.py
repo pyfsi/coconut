@@ -148,8 +148,8 @@ class GidToVtkConverter:
             output_vtk_file.write(f'FIELD FieldData {len(node_variables)}\n')
 
             for node_variable in node_variables:
-                output_vtk_file.write(f'{node_variable["variable_name"]} {node_variable["nr_components"]} {len(
-                    self.coordinates)}  float\n')
+                output_vtk_file.write(f'{node_variable["variable_name"]} {node_variable["nr_components"]}'
+                                      f' {len(self.coordinates)}  float\n')
                 values = self.variable_values_dict[node_variable['variable_name']]
                 for value in values:
                     for i in range(0, node_variable['nr_components']):

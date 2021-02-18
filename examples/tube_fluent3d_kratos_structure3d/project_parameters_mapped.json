@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 10
+    "number_of_timesteps": 100
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
@@ -77,8 +77,6 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "delta_t": 0.0,
-              "timestep_start": 0,
               "input_file": "ProjectParameters.json",
               "solver_load_cmd": "ml Kratos",
               "kratos_interface_sub_model_parts_list": [

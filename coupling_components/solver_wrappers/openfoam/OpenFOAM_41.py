@@ -355,7 +355,6 @@ class SolverWrapperOpenFOAM_41(Component):
                         time.sleep(5)
                     os.system("rm -rf " + newPath)
                 os.system("mkdir -p " + newPath)
-        print('\t Time step ' + str(self.timestep))
 
         self.send_message('next')  # Let OpenFOAM go to next time step
         self.wait_message('next_ready')  # Let OpenFOAM wait for input data
