@@ -185,7 +185,7 @@ class SolverWrapperMapped_update(Component):
             ids = np.arange(0, mp_output_from.x0.size)
 
             #creating new mp
-            self.model.create_model_part( item_output_from['model_part']+str(self.iteration), new_mp[:, 0], new_mp[:, 1], new_mp[:, 2], ids)
+            self.model_new_output_from.create_model_part( item_output_from['model_part']+str(self.iteration), new_mp[:, 0], new_mp[:, 1], new_mp[:, 2], ids)
             parameters = [{'model_part': item_output_from['model_part']+str(self.iteration), 'variables' :  item_output_from['variables'][0] }]
             self.interface_output_from_new = data_structure.Interface(parameters, self.model_new_output_from)
             self.interface_output_from_new.set_variable_data(item_output_from['model_part']+str(self.iteration),item_output_from['variables'][0], varia)
