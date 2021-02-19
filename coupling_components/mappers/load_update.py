@@ -8,10 +8,10 @@ from scipy import interpolate
 import numpy as np
 
 def create(parameters):
-    return MapperLoadUpDate(parameters)
+    return Mapper_load_update(parameters)
 
 
-class MapperLoadUpDate(MapperTransformer):
+class Mapper_load_update(MapperTransformer):
     def __init__(self, parameters):
         super().__init__(parameters)
 
@@ -33,7 +33,7 @@ class MapperLoadUpDate(MapperTransformer):
 
             self.mp_input_to = model.get_model_part(model_part_name_in)
 
-            #TODO: Here should come a call from the interface_input_from, but to test it, is it at the moment not possible.
+            #TODO: Here should come a call from the interface_input_from, but to test it, is it at the moment not possible. So an interface is created here, which represents the interface_input_from
             model0 = data_structure.Model()
             x0 = np.linspace(0, 2, 5)
             y0 = np.ones(5)

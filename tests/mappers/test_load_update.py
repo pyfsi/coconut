@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class TestMapperLoadUpDate(unittest.TestCase):
+class TestMapper_load_update(unittest.TestCase):
     gui = False
 
     def setUp(self):
-        self.parameters = {'type': 'mappers.updateLoad',
+        self.parameters = {'type': 'mappers.load_update',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y'}
@@ -75,8 +75,6 @@ class TestMapperLoadUpDate(unittest.TestCase):
         self.v_max = max(self.mp_input_from.x0)
         parameters = [{'model_part': 'mp_input_from', 'variables': ['pressure']}]
         self.interface_input_from = data_structure.Interface(parameters, model0)
-        # interface_input_from.set_variable_data('mp_input_from', 'variables'[0], np.zeros(self.mp_input_from.x0.size,1))
-        # interface_input_from.set_variable_data('mp_input_from', 'variables'[1], np.zeros(self.mp_input_from.x0.size, 3))
 
         # create new mp of size mp_input_to and length mp_input_from
         n_out_ref = self.mp_input_to.size
@@ -198,10 +196,6 @@ class TestMapperLoadUpDate(unittest.TestCase):
                 v_v_to_ref[i,0] = k(mp_to.x0[i])
                 v_v_to_ref[i, 1] = m(mp_to.x0[i])
         v_v_to = interface_to.get_variable_data(mp_name_to, var_v)
-        print("v_v_to_ref")
-        print(v_v_to_ref)
-        print("v_v_to")
-        print(v_v_to)
         np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-14)
 
         if self.gui:
@@ -229,9 +223,8 @@ class TestMapperLoadUpDate(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
-            # plt.xlim(0,6)
-            # plt.ylim(0.5,1.4)
             plt.show()
             plt.close()
+
 if __name__ == '__main__':
     unittest.main()
