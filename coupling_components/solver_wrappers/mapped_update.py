@@ -82,12 +82,14 @@ class SolverWrapperMapped_update(Component):
 
         self.solver_wrapper.initialize_solution_step()
         self.iteration = 0
-        self.update_array_to = {}
-        self.update_array_from = {}
+        self.update_array_to =np.zeros((self.interface_output_from.x0.size,1))
+        self.update_array_from = np.zeros((self.interface_output_to.x0.size, 1))
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input_from):
+
         self.iteration += 1
+
         self.interface_input_from = interface_input_from.copy()
 
         # Creating an updated self.interface_input_from
@@ -95,8 +97,8 @@ class SolverWrapperMapped_update(Component):
         # create an interface from output_to with the displacements of previous iteration
         self.interface_output_to_intermediate = self.interface_output_to.copy()
         for item_output_to in self.interface_output_to.parameters:
-            self.interface_output_to_intermediate.set_variable_data(item_output_to['model_part'], item_output_to[
-                ['variables'][0], self.update_array_from[self.iteration - 1]])
+            self.interface_output_to_intermediate.set_variable_data(item_output_to['model_part'], item_output_to
+                ['variables'][0], self.update_array_from)
 
         # purple box 1 mapping
         self.mapper_interface_input_update_from(self.interface_output_to_intermediate, self.new_interface_input_from)
@@ -135,8 +137,8 @@ class SolverWrapperMapped_update(Component):
         # create an interface from output_from with the displacements of previous iteration
         self.interface_output_from_intermediate = self.interface_output_from.copy()
         for item_output_from in self.interface_output_from.parameters:
-            self.interface_output_from_intermediate.set_variable_data(item_output_from['model_part'], item_output_from[
-                ['variables'][0], self.update_array_to[self.iteration - 1]])
+            self.interface_output_from_intermediate.set_variable_data(item_output_from['model_part'], item_output_from
+                ['variables'][0], self.update_array_to)
 
         #purple box 2 mapping
         self.mapper_interface_input_update_to(self.interface_output_from_intermediate, self.new_interface_input_to)
@@ -192,14 +194,14 @@ class SolverWrapperMapped_update(Component):
             self.interface_output_from = self.interface_output_from_new.get_model_part(item_output_from['model_part']+str(self.iteration))
 
             #store the displacements for following iteration
-            self.update_array_to[self.iteration] = varia
+            self.update_array_to = varia
 
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
 
         # store the displacements for following iteration
         for item_output_to in self.interface_output_to.parameters:
             varia2 = self.interface_output_to.get_variable_data(item_output_to['model_part'], item_output_to['variables'][0])
-            self.update_array_from[self.iteration] = varia2
+            self.update_array_from = varia2
 
         return self.interface_output_to
 
