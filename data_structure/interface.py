@@ -54,6 +54,14 @@ class Interface:
         return copy.deepcopy(self.__parameters)
 
     @property
+    def model(self):
+        model = Model()
+        for model_part_name in self.__model:
+            model_part = self.get_model_part(model_part_name)
+            model._Model__model_parts[model_part_name] = model_part
+        return model
+
+    @property
     def size(self):
         s = 0
         for model_part_name, variable in self.model_part_variable_pairs:

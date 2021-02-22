@@ -52,6 +52,24 @@ class TestInterface(unittest.TestCase):
 
         self.assertEqual(self.interface.parameters, self.parameters['interface_a'])
 
+    def test_properties(self):
+        # check model_part_variable_pairs() method
+        pairs_a = self.interface.model_part_variable_pairs
+        pairs_b = self.interface.model_part_variable_pairs
+        self.assertFalse(pairs_a is pairs_b)
+        self.assertEqual(str(pairs_a), str(pairs_b))
+
+        # check parameters() method
+        parameters_bis = self.interface.parameters
+        self.assertFalse(parameters_bis is self.parameters['interface_a'])
+        self.assertEqual(str(parameters_bis), str(self.parameters['interface_a']))
+
+        # check model() method
+        model_bis = self.interface.model
+        self.assertFalse(model_bis is self.model)
+        for mp, mp_bis in zip(self.model, model_bis):
+            self.assertTrue(mp is mp_bis)
+
     def test_model_part_variable_pairs(self):
         ref_result = [('mp1', 'pressure'), ('mp1', 'traction'), ('mp2', 'density')]
         self.assertListEqual(ref_result, self.interface.model_part_variable_pairs)
