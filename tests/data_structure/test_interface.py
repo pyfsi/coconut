@@ -66,9 +66,7 @@ class TestInterface(unittest.TestCase):
 
         # check model() method
         model_bis = self.interface.model
-        self.assertFalse(model_bis is self.model)
-        for mp, mp_bis in zip(self.model, model_bis):
-            self.assertTrue(mp is mp_bis)
+        self.assertTrue(model_bis is self.model)
 
     def test_model_part_variable_pairs(self):
         ref_result = [('mp1', 'pressure'), ('mp1', 'traction'), ('mp2', 'density')]

@@ -55,11 +55,7 @@ class Interface:
 
     @property
     def model(self):
-        model = Model()
-        for model_part_name in self.__model:
-            model_part = self.get_model_part(model_part_name)
-            model._Model__model_parts[model_part_name] = model_part
-        return model
+        return self.__model
 
     @property
     def size(self):
