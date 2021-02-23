@@ -84,12 +84,12 @@ This line can also be added to your `.bashrc` file.
 We recommend to run the unit tests at the end of the installation, to make sure that everything works. 
 
 -   Ensure that `coconut` is included in your Python path.
--   Move to the `coconut` directory. 
+-   Move to the `coconut/tests` directory. 
 -   Run the unit tests by executing the following line:
 
-    ```bash
-    sh run_coconut_tests.sh
-    ```
+```bash
+python -m unittest -b
+```
 
 
 
