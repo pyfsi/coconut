@@ -19,7 +19,8 @@ class ModelPart:
                              f'\n\tx0\t{x0.size}\n\ty0\t{y0.size}\n\tz0\t{z0.size}')
         if type(id) is not np.ndarray or id.dtype.kind not in np.typecodes['AllInteger'] or id.shape != x0.shape:
             raise ValueError(f'id array should be 1D array of integers of the same size as the coordinate arrays')
-        if not np.array_equal(id, np.unique(id)):
+        _, counts = np.unique(id, return_counts=True)
+        if np.any(counts > 1):
             raise ValueError(f'id array should be 1D array should have unique integer values')
 
         self.__name = name

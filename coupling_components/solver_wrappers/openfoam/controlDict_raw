@@ -39,11 +39,13 @@ writePrecision  |WRITE_PRECISION|;
 
 writeCompression uncompressed;
 
-timeFormat      general;
+timeFormat      fixed;
 
 timePrecision   |TIME_PRECISION|;
 
 runTimeModifiable false;
 
 adjustTimeStep	no;
+
+boundary_names |BOUNDARY_NAMES|;
 
