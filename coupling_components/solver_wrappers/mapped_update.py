@@ -75,8 +75,6 @@ class SolverWrapperMapped_update(Component):
 
         self.solver_wrapper.initialize_solution_step()
         self.iteration = 0
-        # self.update_array_to =np.zeros((self.interface_output_from.x0.size,1))
-        # self.update_array_from = np.zeros((self.interface_output_to.x0.size, 1))
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input_from):
@@ -110,14 +108,15 @@ class SolverWrapperMapped_update(Component):
 
         self.interface_new_from = data_structure.Interface(self.parameters_new_from, self.model_new_from)
 
+        tmp = {}
         for item_input_from in self.interface_input_from.parameters:
-            tmp_pressure = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][0])
-            tmp_traction = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][1])
+            j = 0
+            for i in item_input_from['variables']:
+                self.tmp_[j] = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][j])
+                self.interface_new_from.set_variable_data(item_new_input_from['model_part'],
+                                                    ['variables'][j], self.tmp_[j])
+                j+=1
 
-        self.interface_new_from.set_variable_data(item_new_input_from['model_part'],
-                                                    ['variables'][0], tmp_pressure)
-        self.interface_new_from.set_variable_data(item_new_input_from['model_part'],
-                                                    ['variables'][1], tmp_traction)
 
         self.interface_input_from = self.interface_new_from
 
