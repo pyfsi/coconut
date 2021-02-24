@@ -807,14 +807,13 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/readhRef.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/gh.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createMRF.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createFvOptions.H \
-correctPhi.H \
-$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/continuityErrs.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createUf.H \
-$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/CourantNo.H \
-$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/setInitialDeltaT.H \
 readControls.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/readTimeControls.H \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/CourantNo.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/setDeltaT.H \
+correctPhi.H \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/continuityErrs.H \
 $(WM_PROJECT_DIR)/src/dynamicFvMesh/lnInclude/meshCourantNo.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/alphaControls.H \
 alphaEqnSubCycle.H \

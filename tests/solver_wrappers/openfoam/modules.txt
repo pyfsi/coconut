@@ -11,5 +11,5 @@ module load PyCharm/2018.1.4
 module load OpenFOAM/4.1
 source $FOAM_BASH
 
-export PYTHONPATH=~/git-repository/Kratos:$PYTHONPATH
+export PYTHONPATH=~/git-repository/:$PYTHONPATH
 

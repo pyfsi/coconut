@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
     #include "createRDeltaT.H"
     #include "createFields.H"
     #include "createFvOptions.H"
+	#include "createUf.H"
 
     volScalarField rAU
     (
@@ -92,51 +93,50 @@ int main(int argc, char *argv[])
         dimensionedScalar("rAUf", dimTime/rho.dimensions(), 1.0)
     );
 
-    #include "correctPhi.H"
-    #include "createUf.H"
+
 
     turbulence->validate();
-
-    if (!LTS)
-    {
-        #include "CourantNo.H"
-        #include "setInitialDeltaT.H"
-    }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     Info<< "\nStarting time loop\n" << endl;
 
-    while (runTime.run()) // or True?
+	#include "readControls.H"
+	#include "CourantNo.H"
+	#include "setDeltaT.H"
+    
+    runTime.run(); // Initialize runTime object (also initializes functionObjects in controlDict)
+
+    while (true)
     {
         usleep(1000); // Expressed in microseconds 
             
         if (exists("next.coco"))
     	{
         	remove("next.coco");
-        	
-    		#include "readControls.H"
-    		#include "CourantNo.H"
-    		#include "setDeltaT.H"
-        	
         	runTime++;
         	OFstream outfile ("next_ready.coco");
-        	outfile << "Joris says: good job on next.coco" << endl;
+        	outfile << "next.coco" << endl;
     		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
     	}
+        
         
         if (exists("continue.coco"))
     	{
         	remove("continue.coco");        		
-        	        		
+        	       	
         	// Calculate the mesh motion and update the mesh
             mesh.update();
-
+            
+            
             // Calculate absolute flux from the mapped surface velocity
             phi = mesh.Sf() & Uf;
             if (mesh.changing() && correctPhi)
             {
                #include "correctPhi.H"
             }
+            
+            mixture.correct();
+            
             
             // Make the flux relative to the mesh motion
             fvc::makeRelative(phi, U);
@@ -146,10 +146,11 @@ int main(int argc, char *argv[])
                 #include "meshCourantNo.H"
             }
 
+            
             // --- Pressure-velocity PIMPLE corrector loop
             while (pimple.loop())
             {
-                if (pimple.firstIter() || moveMeshOuterCorrectors)
+ /*               if (pimple.firstIter() || moveMeshOuterCorrectors)
                 {
                     scalar timeBeforeMeshUpdate = runTime.elapsedCpuTime();
                     mesh.update();
@@ -182,7 +183,7 @@ int main(int argc, char *argv[])
                         #include "meshCourantNo.H"
                     }
                 }
-
+*/
                 #include "alphaControls.H"
                 #include "alphaEqnSubCycle.H"
 
@@ -202,36 +203,39 @@ int main(int argc, char *argv[])
                 }
             }
                 
+            
             // Return the coupling interface output
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
                 
-            IOobject controlDict_IO = IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject::AUTO_WRITE);
-            IOdictionary controlDict(controlDict_IO);
-            controlDict.Foam::regIOobject::write();
-                
+            runTime.run();
             OFstream outfile ("continue_ready.coco");
-            outfile << "Joris says good job on continue.coco" << endl;
+            outfile << "continue.coco" << endl;
+        
     			            
     	}
+        
     		
         if (exists("save.coco"))
     	{
         	remove("save.coco");
-        	runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+            runTime.write();
         	OFstream outfile ("save_ready.coco");
     		outfile << "Joris says: good job on save.coco" << endl;
     	}
+        
         	
         if (exists("stop.coco"))
     	{
         	remove("stop.coco");
         	OFstream outfile ("stop_ready.coco"); 
-        	outfile << "Joris says: good job on stop.coco" << endl;
+        	outfile << "stop.coco" << endl;
         	break;
-    	}  
+    	} 
+       
+        
     }
     
     return 0;

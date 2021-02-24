@@ -17,35 +17,35 @@ markdown_extensions:
 extra_javascript:
     - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
 nav:
-    -   Introduction:
-        -   README.md
-    -   Coupling components:
-        -   General: coupling_components.md
-        -   convergence_criteria.md
-        -   Coupled solvers:
-            -   coupled_solvers.md
-            -   models.md
-        -   mappers.md
-        -   predictors.md
-        -   Solver wrappers:
-            -   fluent.md
-            -   abaqus.md
-            -   python.md
-    -   Data structure:
-        -   data_structure.md
-    -   Documentation:
-        -   docs.md
-    -   Examples:
-        -   General: examples.md
-        -   Tube:
-            -   Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
-            -   Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md
-            -   Python TubeFlow - Abaqus 2D: tube_tube_flow_abaqus2d.md
-            -   Fluent 2D - Python TubeStructure: tube_fluent2d_tube_structure.md
-            -   Fluent 2D - Abaqus 2D: tube_fluent2d_abaqus2d.md
-            -   Fluent 2D - Abaqus 2D - Steady: tube_fluent2d_abaqus2d_steady.md
-            -   Fluent 3D - Abaqus 2D: tube_fluent3d_abaqus2d.md
-            -   Fluent 3D - Abaqus 3D: tube_fluent3d_abaqus3d.md
-        - Test single solver: test_single_solver.md
-    -   Tests:
-        -   tests.md
+  - Introduction:
+      - README.md
+  - Coupling components:
+      - General: coupling_components.md
+      - convergence_criteria.md
+      - Coupled solvers:
+          - coupled_solvers.md
+          - models.md
+      - mappers.md
+      - predictors.md
+      - Solver wrappers:
+          - fluent.md
+          - abaqus.md
+          - python.md
+  - Data structure:
+      - data_structure.md
+  - Documentation:
+      - docs.md
+  - Examples:
+      - General: examples.md
+      - Tube:
+          - Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
+          - Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md
+          - Python TubeFlow - Abaqus 2D: tube_tube_flow_abaqus2d.md
+          - Fluent 2D - Python TubeStructure: tube_fluent2d_tube_structure.md
+          - Fluent 2D - Abaqus 2D: tube_fluent2d_abaqus2d.md
+          - Fluent 2D - Abaqus 2D - Steady: tube_fluent2d_abaqus2d_steady.md
+          - Fluent 3D - Abaqus 2D: tube_fluent3d_abaqus2d.md
+          - Fluent 3D - Abaqus 3D: tube_fluent3d_abaqus3d.md
+      - Test single solver: test_single_solver.md
+  - Tests:
+      - tests.md
