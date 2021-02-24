@@ -1,0 +1,124 @@
+{
+  "mapper_interface_input_update_to": {
+    "type": "mappers.interface",
+    "settings": {
+      "type": "mappers.linear",
+      "settings": {
+        "directions": [
+          "x",
+          "y"
+        ]
+      }
+    }
+  },
+  "mapper_interface_input_update_from": {
+    "type": "mappers.interface",
+    "settings": {
+      "type": "mappers.linear",
+      "settings": {
+        "directions": [
+          "x",
+          "y"
+        ]
+      }
+    }
+  },
+
+  "mappers_interface_input": {
+    "type": "mappers.interface",
+    "settings": {
+      "type": "mappers.combined",
+      "settings": {
+        "mappers":
+        [
+          {
+            "type": "mappers.wedge_3d_to_2d_axisymmetric",
+            "settings":
+            {
+              "directional_axial": "x",
+              "directional_radial": "y"
+            }
+          },
+          {
+              "type": "mappers.permutation",
+              "settings":
+              {
+                "permutation": [1, 0, 2]
+              }
+          },
+          {
+              "type": "mappers.linear",
+              "settings":
+              {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+          },
+          {
+              "type": "mappers.load_update",
+              "settings":
+              {
+                "coord_min": "v_min",
+                "coord_max": "v_max"
+              }
+          }
+        ]
+      }
+    }
+  },
+  "mappers_interface_output":
+  {
+    "type": "mappers.interface",
+    "settings":
+      {
+        "type":"mappers.combined",
+        "settings":
+        {
+          "mappers":
+          [
+            {
+              "type": "mappers.remove_axial_component",
+              "settings":
+              {
+                 "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            },
+            {
+              "type": "mappers.linear",
+              "settings":
+              {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            },
+            {
+              "type": "mappers.permutation",
+              "settings":
+              {
+                "permutation": [1,0,2]
+              }
+            },
+            {
+              "type": "mappers.2d_axisymmetric_to_wedge_3d",
+              "settings":
+              {
+                "directional_axial": "x",
+                "directional_radial": "y"
+              }
+            }
+          ]
+
+        }
+      }
+  }
+
+}
+
+
