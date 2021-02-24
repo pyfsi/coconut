@@ -87,6 +87,12 @@ class SolverWrapperMapped_update(Component):
 
         # Creating an updated self.interface_input_from
 
+        # create an interface from output_to with the displacements of previous iteration
+        # self.interface_output_to_intermediate = self.interface_output_to.copy()
+        # for item_output_to in self.interface_output_to.parameters:
+        #     self.interface_output_to_intermediate.set_variable_data(item_output_to['model_part'], item_output_to
+        #         ['variables'][0], self.update_array_from)
+
         # purple box 1 mapping
         self.mapper_interface_input_update_from(self.interface_output_to, self.new_interface_input_from)
 
@@ -96,55 +102,63 @@ class SolverWrapperMapped_update(Component):
             mp_intermediate_input_from = self.new_interface_input_from(item_new_input_from['model_part'])
             mp_intermediate_from = self.new_interface_input_from.get_variable_data(item_new_input_from['model_part'],
                                                                                item_new_input_from['variables'][0])
-            x0_new = mp_intermediate_from[:, 0] + mp_intermediate_input_from.x0
-            y0_new = mp_intermediate_from[:, 1] + mp_intermediate_input_from.y0
-            z0_new = mp_intermediate_from[:, 2] + mp_intermediate_input_from.z0
+            new_mp_input_from = np.zeros((mp_intermediate_input_from.x0.size, 3))
+            new_mp_input_from[:, 0] = np.add(mp_intermediate_from[:, 0], mp_intermediate_input_from.x0)
+            new_mp_input_from[:, 1] = np.add(mp_intermediate_from[:, 1], mp_intermediate_input_from.y0)
+            new_mp_input_from[:, 2] = np.add(mp_intermediate_from[:, 2], mp_intermediate_input_from.z0)
             ids_from = np.arange(0, mp_intermediate_input_from.x0.size)
 
             # create new mp with interface_new_to to update self.interface_input_to
-            self.model_new_from.create_model_part(item_new_input_from['model_part'],
-                                                x0_new, y0_new, z0_new,
+            self.model_new_to.create_model_part(item_new_input_from['model_part'] + str(self.iteration),
+                                                new_mp_input_from[:, 0], new_mp_input_from[:, 1], new_mp_input_from[:, 2],
                                                 ids_from)
-            self.parameters_new_from = [{'model_part': item_new_input_from['model_part'],
+            parameters_new_from = [{'model_part': item_new_input_from['model_part'] + str(self.iteration),
                                   'variables': ['pressure', 'traction']}]
+            self.interface_new_from = data_structure.Interface(parameters_new_from, self.model_new_from)
+            for item_input_from in self.interface_input_from.parameters:
+                tmp_pressure = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][0])
+                tmp_traction = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][1])
 
-        self.interface_new_from = data_structure.Interface(self.parameters_new_from, self.model_new_from)
-
-        for item_input_from in self.interface_input_from.parameters:
-            tmp_pressure = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][0])
-            tmp_traction = self.interface_input_from.get_variable_data(item_input_from['model_part'], item_input_from['variables'][1])
-
-        self.interface_new_from.set_variable_data(item_new_input_from['model_part'],
+            self.interface_new_from.set_variable_data(item_new_input_from['model_part'] + str(self.iteration),
                                                     ['variables'][0], tmp_pressure)
-        self.interface_new_from.set_variable_data(item_new_input_from['model_part'],
+            self.interface_new_from.set_variable_data(item_new_input_from['model_part'] + str(self.iteration),
                                                     ['variables'][1], tmp_traction)
 
         self.interface_input_from = self.interface_new_from
-
         # Creating an updated self.interface_input_to
 
+        # create an interface from output_from with the displacements of previous iteration
+        self.interface_output_from_intermediate = self.interface_output_from.copy()
+        for item_output_from in self.interface_output_from.parameters:
+            self.interface_output_from_intermediate.set_variable_data(item_output_from['model_part'], item_output_from
+                ['variables'][0], self.update_array_to)
+
         #purple box 2 mapping
-        self.mapper_interface_input_update_to(self.interface_output_from, self.new_interface_input_to)
+        self.mapper_interface_input_update_to(self.interface_output_from_intermediate, self.new_interface_input_to)
 
         # add the mapped displacement to interface_input_to by creating a new mp
         self.model_new_to = data_structure.Model()
         for item_new_input_to in self.new_interface_input_to.parameters:
             mp_intermediate_input_to = self.new_interface_input_to(item_new_input_to['model_part'])
-            tmp = self.new_interface_input_to.get_variable_data(item_new_input_to['model_part'],
+            mp_intermediate_to = self.new_interface_input_to.get_variable_data(item_new_input_to['model_part'],
                                                                                item_new_input_to['variables'][0])
-            x0_new_to = tmp[:, 0] + mp_intermediate_input_to.x0
-            y0_new_to = tmp[:, 1] + mp_intermediate_input_to.y0
-            z0_new_to = tmp[:, 2] + mp_intermediate_input_to.z0
+            new_mp_input_to = np.zeros((mp_intermediate_input_to.x0.size, 3))
+            new_mp_input_to[:, 0] = np.add(mp_intermediate_to[:, 0], mp_intermediate_input_to.x0)
+            new_mp_input_to[:, 1] = np.add(mp_intermediate_to[:, 1], mp_intermediate_input_to.y0)
+            new_mp_input_to[:, 2] = np.add(mp_intermediate_to[:, 2], mp_intermediate_input_to.z0)
             ids_to = np.arange(0, mp_intermediate_input_to.x0.size)
 
             #create new mp with interface_new_to to update self.interface_input_to
-            self.model_new_to.create_model_part(item_new_input_to['model_part'],
-                                                x0_new_to, y0_new_to, z0_new_to,
+            self.model_new_to.create_model_part(item_new_input_to['model_part'] + str(self.iteration),
+                                                new_mp_input_to[:, 0], new_mp_input_to[:, 1], new_mp_input_to[:, 2],
                                                 ids_to)
-            self.parameters_new_to = [{'model_part': item_new_input_to['model_part'],
+            parameters_new_to = [{'model_part': item_new_input_to['model_part'] + str(self.iteration),
                                   'variables': ['pressure', 'traction']}]
-
-        self.interface_new_to = data_structure.Interface(self.parameters_new_to, self.model_new_to)
+            self.interface_new_to = data_structure.Interface(parameters_new_to, self.model_new_to)
+            self.interface_new_to.set_variable_data(item_new_input_to['model_part'] + str(self.iteration),
+                                                    ['variables'][0], np.zeros((mp_intermediate_input_to.x0.size,1)))
+            self.interface_new_to.set_variable_data(item_new_input_to['model_part'] + str(self.iteration),
+                                                    ['variables'][1], np.zeros((mp_intermediate_input_to.x0.size, 3)))
 
         self.interface_input_to = self.interface_new_to
 
@@ -159,24 +173,28 @@ class SolverWrapperMapped_update(Component):
         for item_output_from in self.interface_output_from.parameters:
             mp_output_from = self.interface_output_from.get_model_part(item_output_from['model_part'])
             varia = self.interface_output_from.get_variable_data(item_output_from['model_part'], item_output_from['variables'][0])
-            x0_new_from = np.add(varia[:,0],mp_output_from.x0)
-            y0_new_from = np.add(varia[:,1],mp_output_from.y0)
-            z0_new_from = np.add(varia[:,2],mp_output_from.z0)
+            new_mp = np.zeros((mp_output_from.x0.size,3))
+            new_mp[:,0] = np.add(varia[:,0],mp_output_from.x0)
+            new_mp[:,1] = np.add(varia[:,1],mp_output_from.y0)
+            new_mp[:,2] = np.add(varia[:,2],mp_output_from.z0)
             ids = np.arange(0, mp_output_from.x0.size)
 
             #creating new mp
-            self.model_new_output_from.create_model_part( item_output_from['model_part'], x0_new_from, y0_new_from, z0_new_from, ids)
-            self.parameters_new_output_from = [{'model_part': item_output_from['model_part'], 'variables' :  item_output_from['variables'][0] }]
+            self.model_new_output_from.create_model_part( item_output_from['model_part']+str(self.iteration), new_mp[:, 0], new_mp[:, 1], new_mp[:, 2], ids)
+            parameters = [{'model_part': item_output_from['model_part']+str(self.iteration), 'variables' :  item_output_from['variables'][0] }]
+            self.interface_output_from_new = data_structure.Interface(parameters, self.model_new_output_from)
+            self.interface_output_from_new.set_variable_data(item_output_from['model_part']+str(self.iteration),item_output_from['variables'][0], varia)
+            self.interface_output_from = self.interface_output_from_new.get_model_part(item_output_from['model_part']+str(self.iteration))
 
-        self.interface_output_from_new = data_structure.Interface(self.parameters_new_output_from, self.model_new_output_from)
-        self.interface_output_from_new.set_variable_data(item_output_from['model_part']+str(self.iteration),item_output_from['variables'][0], varia)
-        self.interface_output_from = self.interface_output_from_new.get_model_part(item_output_from['model_part']+str(self.iteration))
-
-         #store the displacements for following iteration
-
-        self.interface_output_from = self.interface_output_from.copy()
+            #store the displacements for following iteration
+            self.update_array_to = varia
 
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
+
+        # store the displacements for following iteration
+        for item_output_to in self.interface_output_to.parameters:
+            varia2 = self.interface_output_to.get_variable_data(item_output_to['model_part'], item_output_to['variables'][0])
+            self.update_array_from = varia2
 
         return self.interface_output_to.copy()
 
