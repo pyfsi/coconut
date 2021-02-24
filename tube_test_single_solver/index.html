@@ -484,6 +484,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -496,8 +508,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -744,6 +768,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -933,9 +993,9 @@ Note that the number of classes defined is not restricted.
 Also note that the <code>__init__()</code> method can be used to avoid repeating the same calculations multiple times.
 The name of the class that one wants to use should be specified in the JSON file. 
 In this example the <code>TransientTest</code> is used.
-Each class contains function definitions with a pre-formatted name <code>calculate_VARIABLE(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being the variable(s) required by the tested solver, e.g. <code>DISPLACEMENT</code>, <code>PRESSURE</code> or <code>TRACTION</code>.
+Each class contains function definitions with a pre-formatted name <code>calculate_variable(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being the variable(s) required by the tested solver, e.g. <code>displacement</code>, <code>pressure</code> or <code>traction</code>.
 How these variables are defined inside these methods, is up to the user.
-However, the methods need to return the right format: a 3-element list of floats for vector variables and a single float for scalar variables.</p>
+However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.</p>
                 
                   
                 
@@ -957,7 +1017,7 @@ However, the methods need to return the right format: a 3-element list of floats
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../tube_fluent3d_abaqus3d/" title="Fluent 3D - Abaqus 3D" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -966,7 +1026,7 @@ However, the methods need to return the right format: a 3-element list of floats
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Fluent 3D - Abaqus 3D
+                OpenFOAM 3D - Abaqus 3D
               </span>
             </div>
           </a>

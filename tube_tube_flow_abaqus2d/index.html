@@ -484,6 +484,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -496,8 +508,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -805,6 +829,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -816,7 +876,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -936,9 +996,11 @@ This done by using Python solver TubeFlow and Abaqus (axisymmetric).</p>
 <h2 id="predictor">Predictor</h2>
 <p>The initial guess in every time step is done using the linear predictor.</p>
 <h2 id="convergence-criterion">Convergence criterion</h2>
-<p>Two convergence criteria have been specified:
- - The number of iterations in every time step is larger than 15.
- - The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-6}</span><script type="math/tex">10^{-6}</script></span> lower than the initial value.</p>
+<p>Two convergence criteria have been specified:</p>
+<ul>
+<li>The number of iterations in every time step is larger than 15.</li>
+<li>The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-6}</span><script type="math/tex">10^{-6}</script></span> lower than the initial value.</li>
+</ul>
 <p>When either criterion is satisfied the simulation stops.</p>
 <h2 id="solvers">Solvers</h2>
 <p>The flow solver is the Python solver TubeFlow, which implements a 1D model of the flow inside the tube,

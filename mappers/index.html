@@ -646,6 +646,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -658,8 +670,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -904,6 +928,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -915,7 +975,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -1132,7 +1192,7 @@
 <h2 id="general-concepts">General concepts</h2>
 <h3 id="hierarchy-of-mapping-related-objects">Hierarchy of mapping-related objects</h3>
 <p>CoCoNuT interacts with the mappers through the <code>SolverWrapperMapped</code> object. This solver-wrapper appears and behaves exactly the same as real solver-wrappers.
-It contains 3 <code>Components</code>: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the <code>SetInterfaceInput</code> and <code>SetInterfaceOutput</code> methods respectively, by providing them with the <code>Interfaces</code> that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
+It contains 3 <code>Components</code>: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the <code>set_interface_input</code> and <code>set_interface_output</code> methods respectively, by providing them with the <code>Interfaces</code> that will be respectively the input and output of the <code>SolverWrapperMapped</code> object.</p>
 <p>The two mappers in the <code>SolverWrapperMapped</code> are also of a special type: they work on the level of <code>Interfaces</code>. They are some sort of <em>mapper-wrapper</em> around the actual mappers which work on <code>ModelPart</code> level.
 Currently only one such mapper is available, aptly called <code>MapperInterface</code>.</p>
 <p>At the lowest level, mappers interpolate historical variables between two <code>ModelParts</code>, based on the coordinates of the <code>Nodes</code>. Interpolation is always done from the <em>from</em>-<code>ModelPart</code> to the <em>to</em>-<code>ModelPart</code>.
@@ -1227,12 +1287,12 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><code>direction_axial</code></td>
 <td align="center">string</td>
-<td>Must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the symmetry axis.</td>
+<td>Must be <code>"x"</code>, <code>"y"</code> or <code>"z"</code>, specifies the symmetry axis.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>direction_radial</code></nobr></td>
 <td align="center">string</td>
-<td>Must be <code>"X"</code>, <code>"Y"</code> or <code>"Z"</code>, specifies the second (radial) axis in 2D.</td>
+<td>Must be <code>"x"</code>, <code>"y"</code> or <code>"z"</code>, specifies the second (radial) axis in 2D.</td>
 </tr>
 <tr>
 <td align="right"><code>n_tangential</code></td>
@@ -1260,7 +1320,7 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><code>directions</code></td>
 <td align="center">list</td>
-<td>List of coordinate directions, maximum three entries, may contain <code>"X"</code>, <code>"Y"</code>, <code>"Z"</code>.</td>
+<td>List of coordinate directions, maximum three entries, may contain <code>"x"</code>, <code>"y"</code>, <code>"z"</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>scaling</code></td>

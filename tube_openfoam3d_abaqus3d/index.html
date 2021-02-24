@@ -38,7 +38,7 @@
     
     
       
-        <title>Tube case with OpenFOAM3D and Abaqus3D - CoCoNuT</title>
+        <title>OpenFOAM 3D - Abaqus 3D - CoCoNuT</title>
       
     
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                Tube case with OpenFOAM3D and Abaqus3D
+                OpenFOAM 3D - Abaqus 3D
               
             </span>
           
@@ -181,7 +181,9 @@
       
         
 
-<nav class="md-tabs" data-md-component="tabs">
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
       
@@ -242,7 +244,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../examples/" class="md-tabs__link">
+        <a href="../examples/" class="md-tabs__link md-tabs__link--active">
           Examples
         </a>
       
@@ -482,6 +484,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -494,8 +508,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -598,10 +624,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5" checked>
     
     <label class="md-nav__link" for="nav-5">
       Examples
@@ -629,10 +657,12 @@
           
           
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5-2" type="checkbox" id="nav-5-2">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5-2" type="checkbox" id="nav-5-2" checked>
     
     <label class="md-nav__link" for="nav-5-2">
       Tube
@@ -740,6 +770,101 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        OpenFOAM 3D - Abaqus 3D
+      </label>
+    
+    <a href="./" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link md-nav__link--active">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#coupling-algorithm" class="md-nav__link">
+    Coupling algorithm
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictor" class="md-nav__link">
+    Predictor
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergence-criterion" class="md-nav__link">
+    Convergence criterion
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solvers" class="md-nav__link">
+    Solvers
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -751,7 +876,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -914,6 +1039,41 @@ Therefore, a radial basis mapper is introduced in the structure solver to interp
       
         
 <footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../tube_fluent3d_abaqus3d/" title="Fluent 3D - Abaqus 3D" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Fluent 3D - Abaqus 3D
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../tube_test_single_solver/" title="Test single solver" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Test single solver
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

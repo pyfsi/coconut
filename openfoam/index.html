@@ -181,7 +181,9 @@
       
         
 
-<nav class="md-tabs" data-md-component="tabs">
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
       
@@ -203,7 +205,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../coupling_components/" class="md-tabs__link">
+        <a href="../coupling_components/" class="md-tabs__link md-tabs__link--active">
           Coupling components
         </a>
       
@@ -346,10 +348,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
     
     <label class="md-nav__link" for="nav-2">
       Coupling components
@@ -461,10 +465,12 @@
           
           
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" checked>
     
     <label class="md-nav__link" for="nav-2-6">
       Solver wrappers
@@ -475,6 +481,18 @@
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
         
           
           
@@ -494,9 +512,168 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
     </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        SolverWrapperOpenFOAM
+      </label>
+    
+    <a href="./" title="SolverWrapperOpenFOAM" class="md-nav__link md-nav__link--active">
+      SolverWrapperOpenFOAM
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-the-python-file" class="md-nav__link">
+    Overview of the Python-file
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-__init__-method" class="md-nav__link">
+    The __init__ method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-initialize-method" class="md-nav__link">
+    The Initialize method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-initializesolutionstep-method" class="md-nav__link">
+    The InitializeSolutionStep method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-solvesolutionstep-method" class="md-nav__link">
+    The SolveSolutionStep method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-finalizesolutionstep-method" class="md-nav__link">
+    The FinalizeSolutionStep method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-finalize-method" class="md-nav__link">
+    The Finalize method
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    Comments
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-an-openfoam-solver-used-in-coconut" class="md-nav__link">
+    Overview of an OpenFOAM-solver used in CoCoNuT
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-new-case" class="md-nav__link">
+    Setting up a new case
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comments_1" class="md-nav__link">
+    Comments
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-specific-documentation" class="md-nav__link">
+    Version specific documentation
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfoam_41-openfoam-41" class="md-nav__link">
+    OpenFOAM_41 (OpenFOAM 4.1)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -740,6 +917,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -751,7 +964,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -1003,12 +1216,12 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <tr>
 <td align="right"><code>interface_input</code></td>
 <td align="center">dict</td>
-<td>Keys are names of <code>ModelParts</code>, which should correspond to a boundary name (defined in <code>boundary_names</code> appended with <code>_input</code>. Every boundary name should correspond to one interface input name. This is explicitly checked at the start of the CoCoNuT simulation. The values are (lists of) names of <code>Variables</code>. For a flow solver, this is typically <code>DISPLACEMENT</code>(Dirichlet condition).</td>
+<td>List of <code>ModelPart</code> names and <code>Variables</code> pairs that provides interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code> with values as name of the <code>ModelPart</code> and list of input variables available in <code>variables.py</code>. The <code>ModelPart</code> name must be the concatenation of an entry from <code>boundary_names</code> and "_input".</td>
 </tr>
 <tr>
 <td align="right"><code>interface_output</code></td>
 <td align="center">dict</td>
-<td>Keys are names of <code>ModelParts</code>, which should correspond to a boundary name (defined in <code>boundary_names</code> appended with <code>_output</code>. Every boundary name should correspond to one interface input name. This is explicitly checked at the start of the CoCoNuT simulation. The values are (lists of) names of <code>Variables</code>. For a flow solver, this is typically <code>PRESSURE</code> and  <code>TRACTION</code> (Neumann condition).</td>
+<td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>boundary_names</code> and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
 </tr>
 <tr>
 <td align="right"><code>cores</code></td>
@@ -1119,6 +1332,41 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
       
         
 <footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                SolverWrapperKratos - StructuralMechanicsApplication
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../python/" title="SolverWrapperPython" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                SolverWrapperPython
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">

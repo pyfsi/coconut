@@ -484,6 +484,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -496,8 +508,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -803,6 +827,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -814,7 +874,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -933,7 +993,7 @@ Currently all these examples calculate the flow in a flexible tube.</p>
 <p>This section describes the different folders and files that are provided.</p>
 <ul>
 <li><code>run_simulation.py</code>: main file, has to be run with the parameter file as argument</li>
-<li><code>project_parameters_X.json</code>: parameter file in JSON format</li>
+<li><code>parameters.json</code>: parameter file in JSON format</li>
 <li><code>setup_X</code>: setup folder containing all files for setting up solver X</li>
 <li><code>setup_X.sh</code>: bash script, has to be run to set up solver X</li>
 <li><code>X.md</code>: description of the specific example</li>
@@ -941,7 +1001,8 @@ Currently all these examples calculate the flow in a flexible tube.</p>
 <p>When the setup files are run, working directories are created that have to match the ones specified in the parameter file.
 These folder are expandable and are deleted when the setup files are (re)run.</p>
 <h2 id="project-parameters">Project Parameters</h2>
-<p>The parameter file <code>project_parameters_X.json</code> contains two dictionaries. 
+<p>The parameter file <code>parameters.json</code> can be interpreted as a dictionary. 
+There are two main keys.
 The first is <code>settings</code> in which the number of time steps for which the calculation is run is specified.
 The second is <code>coupled_solver</code> in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solvers.</p>
 <h2 id="running-a-case">Running a case</h2>

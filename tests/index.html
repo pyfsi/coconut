@@ -484,6 +484,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -496,8 +508,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -742,6 +766,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -753,7 +813,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -799,9 +859,45 @@
       
     
     
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Tests
+      </label>
+    
     <a href="./" title="Tests" class="md-nav__link md-nav__link--active">
       Tests
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-unittests" class="md-nav__link">
+    Running unittests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#including-unittests-for-solver-wrappers" class="md-nav__link">
+    Including unittests for solver-wrappers
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -828,6 +924,29 @@
     
   
   
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-unittests" class="md-nav__link">
+    Running unittests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#including-unittests-for-solver-wrappers" class="md-nav__link">
+    Including unittests for solver-wrappers
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -840,10 +959,23 @@
                 
                 
                 <h1 id="tests">Tests</h1>
-<blockquote>
-<p>TODO: gives an explanation of how to run the tests, how and when tests should be added etc... </p>
-</blockquote>
-<p>This file should mention e.g. that for tests with Fluent, the software must be loaded in advance (and hence only one version can be tested at a time). Sth similar is probably true for the other solver wrappers?</p>
+<h2 id="running-unittests">Running unittests</h2>
+<p>The unittests in CoCoNuT uses unittest module available in python. To run all the tests you have to first go to <code>tests/</code>
+directory and run the following command in the terminal:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">python -m unittest discover -bv</span>
+</code></pre></div>
+
+
+<p>The discover keyword finds all the unittests writen in the files named <code>test_&lt;some name&gt;</code>. It will recursively find all the test files with this pattern for all the folders containing <code>__init__.py</code> file. Further  documentation on unittest discover can be found <a href="https://docs.python.org/3/library/unittest.html">here</a>.
+By default, all the unitests except the ones for the solver wrappers will be run.</p>
+<h2 id="including-unittests-for-solver-wrappers">Including unittests for solver-wrappers</h2>
+<p>Solver wrapper provides an interface to an external solver that is coupled while performing coupled simulation. Since this depends on the availability of the solver in a system, the unittests for the solver wrappers are made optional. Including the unitests for solver wrappers in the list of unittests that need to be run involves following steps: </p>
+<ul>
+<li>Load the corresponding solvers.</li>
+<li>Import the unittest classes for the solver wrappers in the python file, <code>tests/solver_wrappers/__init__.py</code>.</li>
+<li>Add the unittest classes for the solver wrappers in the list called <code>tests_cases</code> in the python file, <code>tests/solver_wrappers/__init__.py</code>.</li>
+</ul>
+<p>After following the above steps, if you now run all the tests using the command given in the previous section from the directory <code>tests/</code>, unitests for the added solver wrappers will be run along with all the default ones.</p>
                 
                   
                 
@@ -865,7 +997,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../test_single_solver/" title="Test single solver" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../tube_test_single_solver/" title="Test single solver" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>

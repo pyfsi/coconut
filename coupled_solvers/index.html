@@ -681,6 +681,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -693,8 +705,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -939,6 +963,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -950,7 +1010,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -1528,9 +1588,9 @@ The <code>type</code> for this <code>coupled_solver</code> is <code>coupled_solv
 <p>To test only one solver, a dummy solver must be used.
 Such a dummy solver is implemented by a test class in the file <code>dummy_solver.py</code>, which has to be on the same folder level as <code>run_simulation.py</code>.
 Upon run-time an instance of this class is made.
-The test class requires methods of the form <code>calculate_&lt;variable&gt;(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being the variable(s) required by the tested solver, e.g. <code>DISPLACEMENT</code>, <code>PRESSURE</code> or <code>TRACTION</code>.
+The test class requires methods of the form <code>calculate_&lt;variable&gt;(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being the variable(s) required by the tested solver, e.g. <code>displacement</code>, <code>pressure</code> or <code>traction</code>.
 How these variables are defined inside these methods, is up to the user.
-However, the methods need to return the right format: a 3-element list of floats for vector variables and a single float for scalar variables.
+However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
 Some examples are given in the example <a href="https://pyfsi.github.io/coconut/test_single_solver/">test_single_solver</a>
 The test class name is provided in the JSON settings as a string.
 If no test class is provided or the value <code>None</code> is used, zero input will be used.</p>

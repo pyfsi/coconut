@@ -484,6 +484,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
+      SolverWrapperAbaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
       SolverWrapperFluent
     </a>
@@ -496,8 +508,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
+      SolverWrapperKratos - StructuralMechanicsApplication
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
+      SolverWrapperOpenFOAM
     </a>
   </li>
 
@@ -805,6 +829,42 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_fluent3d_kratos_structure3d.md" title="Fluent 3D - Kratos Structure 3D" class="md-nav__link">
+      Fluent 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d_abaqus3d/" title="OpenFOAM 3D - Abaqus 3D" class="md-nav__link">
+      OpenFOAM 3D - Abaqus 3D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tube_openfoam3d__kratos_structure3d.md" title="OpenFOAM 3D - Kratos Structure 3D" class="md-nav__link">
+      OpenFOAM 3D - Kratos Structure 3D
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -816,7 +876,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
+    <a href="../tube_test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
     </a>
   </li>
@@ -936,9 +996,11 @@ This done by using Python solvers TubeFlow and TubeRingmodel.</p>
 <h2 id="predictor">Predictor</h2>
 <p>The initial guess in every time step is done using the linear predictor.</p>
 <h2 id="convergence-criterion">Convergence criterion</h2>
-<p>Two convergence criteria have been specified:
- - The number of iterations in every time step is larger than 15.
- - The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-6}</span><script type="math/tex">10^{-6}</script></span> lower than the initial value.</p>
+<p>Two convergence criteria have been specified:</p>
+<ul>
+<li>The number of iterations in every time step is larger than 15.</li>
+<li>The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-6}</span><script type="math/tex">10^{-6}</script></span> lower than the initial value.</li>
+</ul>
 <p>When either criterion is satisfied the simulation stops.</p>
 <h2 id="solvers">Solvers</h2>
 <p>The flow solver is the Python solver TubeFlow, which implements a 1D model of the flow inside the tube,
@@ -959,12 +1021,12 @@ Only the radial displacement is different from zero.
 The axial direction is along the z-axis,
 the radial direction along the y-axis.</p>
 <p>The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
-In contrast, the difference of the points where loads and displacements are applied or calculated,
-require the use of interpolation mappers.
-Therefore, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.
-A parameter file <code>project_parameters_conformal.json</code> is also provided.
+However, the discretization of both solvers differ.
+To account for the difference of the points where loads and displacements are applied or calculated, the use of interpolation mappers is required.
+Therefore, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.</p>
+<p>Additionally a parameter file <code>parameters_conformal.json</code> is also provided.
 This parameter file performs no interpolation.
-It should be verified that the number of cells <code>m</code> are the same in both solvers before using it.</p>
+It should be verified that the number of cells <code>m</code> is the same in both solvers before using it and is merely provided as a theoretical example as it will have close to no practical use.</p>
                 
                   
                 
