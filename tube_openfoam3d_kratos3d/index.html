@@ -38,7 +38,7 @@
     
     
       
-        <title>Data structure - CoCoNuT</title>
+        <title>Tube case with OpenFOAM3D and Kratos3 - CoCoNuT</title>
       
     
     
@@ -87,6 +87,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#tube-case-with-openfoam3d-and-kratos3" tabindex="0" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -109,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                Data structure
+                Tube case with OpenFOAM3D and Kratos3
               
             </span>
           
@@ -177,9 +181,7 @@
       
         
 
-  
-
-<nav class="md-tabs md-tabs--active" data-md-component="tabs">
+<nav class="md-tabs" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
       
@@ -214,7 +216,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="./" class="md-tabs__link md-tabs__link--active">
+        <a href="../data_structure/" class="md-tabs__link">
           Data structure
         </a>
       
@@ -548,12 +550,10 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+  <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
     
     <label class="md-nav__link" for="nav-3">
       Data structure
@@ -569,18 +569,11 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-    
-    <a href="./" title="Data structure" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../data_structure/" title="Data structure" class="md-nav__link">
       Data structure
     </a>
-    
   </li>
 
         
@@ -872,16 +865,92 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#coupling-algorithm" class="md-nav__link">
+    Coupling algorithm
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictor" class="md-nav__link">
+    Predictor
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergence-criterion" class="md-nav__link">
+    Convergence criterion
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solvers" class="md-nav__link">
+    Solvers
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
                 
-                  <h1>Data structure</h1>
-                
-                <div class="codehilite"><pre><span></span><code><span class="n">TODO</span><span class="o">:</span> <span class="n">write</span> <span class="n">docs</span> <span class="n">about</span> <span class="n">data</span> <span class="n">structure</span>
-</code></pre></div>
+                <h1 id="tube-case-with-openfoam3d-and-kratos3">Tube case with OpenFOAM3D and Kratos3</h1>
+<p>This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
+This done by using OpenFOAM and StructuralMechanicsApplication of Kratos, both with a fully 3D case.</p>
+<h2 id="coupling-algorithm">Coupling algorithm</h2>
+<p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQNI-LS).</p>
+<h2 id="predictor">Predictor</h2>
+<p>The initial guess in every time step is done using the linear predictor.</p>
+<h2 id="convergence-criterion">Convergence criterion</h2>
+<p>Two convergence criteria have been specified:
+ - The number of iterations in every time step is larger than 20.
+ - The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</p>
+<p>When either criterion is satisfied the simulation stops.</p>
+<h2 id="solvers">Solvers</h2>
+<p>The flow solver is OpenFoam, used to solve a fully 3D tube,
+with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+When setting up the case, the mesh is build based on the file <code>blockMeshDict</code>.
+The displacements are applied in the nodes. 
+In contrast, the loads (pressure and traction) are calculated in the cell centers.
+The axial direction is along the x-axis,
+the radial direction along the y-axis.</p>
+<p>The structure solver is Kratos, used to solve a fully 3D tube,
+with 24 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction. 
+The Kratos element type used is ShellThickElementCorotational3D4N. These are 4-node shell elements.
+The displacement and loads are calculated/applied on the nodes. There are 200 nodes on the fluid-structure interface.
+The axial direction is along the x-axis,</p>
+<p>The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
+On the other hand, difference in the discretization between the fluid and the structure mesh requires the use of interpolation mappers.
+Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-direction.</p>
                 
                   
                 
@@ -899,41 +968,6 @@
       
         
 <footer class="md-footer">
-  
-    <div class="md-footer-nav">
-      <nav class="md-footer-nav__inner md-grid">
-        
-          <a href="../python/" title="SolverWrapperPython" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
-            <div class="md-flex__cell md-flex__cell--shrink">
-              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
-            </div>
-            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-              <span class="md-flex__ellipsis">
-                <span class="md-footer-nav__direction">
-                  Previous
-                </span>
-                SolverWrapperPython
-              </span>
-            </div>
-          </a>
-        
-        
-          <a href="../docs/" title="Documentation" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
-            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-              <span class="md-flex__ellipsis">
-                <span class="md-footer-nav__direction">
-                  Next
-                </span>
-                Documentation
-              </span>
-            </div>
-            <div class="md-flex__cell md-flex__cell--shrink">
-              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
-            </div>
-          </a>
-        
-      </nav>
-    </div>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
