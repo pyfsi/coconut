@@ -2,14 +2,12 @@ from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
-from subprocess import check_call
 
+from subprocess import check_call
 import numpy as np
 import os
-import linecache
 import sys
 import time
-import copy
 import subprocess
 
 
@@ -209,6 +207,8 @@ class SolverWrapperOpenFOAM_41(Component):
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_output = Interface(self.settings["interface_output"], self.model)
 
+        # run time
+        self.run_time = 0.0
 
     def initialize(self):
         super().initialize()
@@ -315,8 +315,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 new_path = os.path.join(self.working_directory, "processor" + str(i), self.cur_timestamp)
                 if os.path.isdir(new_path):
                     if i == 0:
-                        print(
-                            "\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in processor-subfolders. \n\n\n")
+                        print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in "
+                              "processor-subfolders. \n\n\n")
                         time.sleep(5)
                     os.system("rm -rf " + new_path)
                 os.system("mkdir -p " + new_path)
@@ -352,8 +352,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 os.system(cmd)
 
         # let OpenFOAM run, wait for data
-        '''OpenFOAM tends to keep on appending to files while already providing access, this causes issues when reading out the data
-        Therefore these files are removed if they already exist prior to generating new data output '''
+        '''OpenFOAM tends to keep on appending to files while already providing access, this causes issues when reading 
+        out the data. Therefore these files are removed if they already exist prior to generating new data output '''
         for boundary in self.boundary_names:
             # specify location of pressure and traction
             traction_name = "TRACTION_" + boundary
@@ -551,8 +551,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 file.write("\t\t type  \t fixedValue; \n")
                 file.write('\t\t value \t nonuniform List<vector> ( \n')
                 for i in range(displacement.shape[0]):
-                    file.write(' (' + f'{displacement[i, 0]:27.17e} {displacement[i, 1]:27.17e} {displacement[
-                        i, 2]:27.17e}' + ') \n')
+                    file.write(f' ({displacement[i, 0]:27.17e} {displacement[i, 1]:27.17e} '
+                               f'{displacement[i, 2]:27.17e}) \n')
                 file.write(');\n')
 
             os.system("wc -l " + disp_file + " > lengthDisp")
@@ -569,8 +569,8 @@ class SolverWrapperOpenFOAM_41(Component):
 
         if self.cores > 1:
             check_call(
-                "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp + " &> log.decomposePar;",
-                shell=True)
+                "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp
+                + " &> log.decomposePar;", shell=True)
 
     def write_control_dict_function(self, file_name, func_name, lib_name, variable_name, patch_name, write_start,
                                     write_end):
@@ -672,8 +672,8 @@ class SolverWrapperOpenFOAM_41(Component):
 
     def check_software(self):
         if os.system(self.application + ' -help &> checkSoftware') != 0:
-            sys.exit(
-                "You either did not load the module for OpenFOAM/4.1, did not compile the solver you are trying to use or did not source $FOAM_BASH prior to execution of CoCoNuT.")
+            sys.exit("You either did not load the module for OpenFOAM/4.1, did not compile the solver you are trying "
+                     "to use or did not source $FOAM_BASH prior to execution of CoCoNuT.")
 
         # The statement above could work for other version of OpenFOAM is the solver is also compiled for that version. Therefore, the version number is checked explicity (don't forget to remove the end-of-line variable at the end of the String versionNr
         with open('checkSoftware', 'r') as f:
@@ -763,12 +763,14 @@ class SolverWrapperOpenFOAM_41(Component):
         boundary_names = self.settings["boundary_names"]
 
         for boundary_name in boundary_names:
-            if not f'{boundary_name}_input' in input_interface_model_parts:
+            if f'{boundary_name}_input' not in input_interface_model_parts:
                 raise RuntimeError(
-                    f'Error in json file: {boundary_name}_input not listed in "interface_input": {self.settings[
-                        "interface_input"]}.\n. <boundary> in the "boundary_names" in json file should have corresponding <boundary>_input in "interface_input" list. ')
+                    f'Error in json file: {boundary_name}_input not listed in "interface_input": '
+                    f'{self.settings["interface_input"]}.\n. <boundary> in the "boundary_names" in json file should '
+                    f'have corresponding <boundary>_input in "interface_input" list. ')
 
-            if not f'{boundary_name}_output' in output_interface_model_parts:
+            if f'{boundary_name}_output' not in output_interface_model_parts:
                 raise RuntimeError(
-                    f'Error in json file: {boundary_name}_output not listed in "interface_output": {self.settings[
-                        "interface_output"]}.\n. <boundary> in the "boundary_names" in json file should have corresponding <boundary>_input in "interface_output" list.')
+                    f'Error in json file: {boundary_name}_output not listed in "interface_output": '
+                    f'{self.settings["interface_output"]}.\n. <boundary> in the "boundary_names" in json file should '
+                    f'have corresponding <boundary>_output in "interface_output" list.')

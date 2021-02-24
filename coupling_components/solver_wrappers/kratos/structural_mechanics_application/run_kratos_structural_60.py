@@ -5,7 +5,6 @@ from structural_mechanics_analysis import StructuralMechanicsAnalysis
 import os
 import time
 import json
-import argparse
 import pandas as pd
 
 
