@@ -7,7 +7,7 @@
 ### Hierarchy of mapping-related objects
 
 CoCoNuT interacts with the mappers through the `SolverWrapperMapped` object. This solver-wrapper appears and behaves exactly the same as real solver-wrappers.
-It contains 3 `Components`: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the `SetInterfaceInput` and `SetInterfaceOutput` methods respectively, by providing them with the `Interfaces` that will be respectively the input and output of the `SolverWrapperMapped` object.
+It contains 3 `Components`: a mapper for the input, a real solver-wrapper and a mapper for the output. The mappers are initialized through the `set_interface_input` and `set_interface_output` methods respectively, by providing them with the `Interfaces` that will be respectively the input and output of the `SolverWrapperMapped` object.
 
 The two mappers in the `SolverWrapperMapped` are also of a special type: they work on the level of `Interfaces`. They are some sort of _mapper-wrapper_ around the actual mappers which work on `ModelPart` level.
 Currently only one such mapper is available, aptly called `MapperInterface`.
@@ -85,8 +85,8 @@ Scalar variables are simply mapped from the 2D `Node` to all corresponding 3D `N
 
 JSON setting|type|description
 ------:|:----:|-----------
-`direction_axial`|string|Must be `"X"`, `"Y"` or `"Z"`, specifies the symmetry axis.
-<nobr>`direction_radial`</nobr>|string|Must be `"X"`, `"Y"` or `"Z"`, specifies the second (radial) axis in 2D.
+`direction_axial`|string|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+<nobr>`direction_radial`</nobr>|string|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
 `n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. Must be $\geq 6$.
 
 ### MapperAxisymmetric3DTo2D
@@ -107,7 +107,7 @@ Base-class for all interpolators (currently `MapperNearest`, `MapperLinear` and 
 
 JSON setting|type|description
 ------:|:----:|-----------
-`directions`|list|List of coordinate directions, maximum three entries, may contain `"X"`, `"Y"`, `"Z"`.
+`directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
 `scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
 <nobr>`balanced_tree`</nobr>|bool|Optional, default `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.
 

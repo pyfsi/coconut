@@ -11,11 +11,11 @@ parameter|type|description
 `cores`|int|Number of processor cores to use when running KratosMultiphysics (Works with 1 core, multi-processing is work in progress).
 `delta_t`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
 `input_file`|string| Project parameters file used by Kratos in json format,
-`interface_input`|dict| Keys are names of `ModelParts` for Kratos nodes. Each name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and "_input". The values are (lists of) names of `Variables`.
-`interface_output`|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and "_output".
+`interface_input`|dict| List `ModelParts` names and `Variables` pairs that provides interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables` with values as name of the `ModelPart` and list of input variables available in `variables.py`. The `ModelPart` name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and "_input".
+`interface_output`|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
 `solver_load_cmd`|string| Bash commmand for loading required modules and environmental variables to run KratosMultiphysics,
 `kratos_interface_sub_model_parts_list`|string| Names of sub-model parts used for input and output in KratosMultiphysics,
-`timestep_start`|int|Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.  
+`timestep_start`|int|Timestep number t:wqo (re)start a transient FSI calculation. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.  
 <nobr>`working_directory`</nobr>|string|Absolute path to the working directory or relative path w.r.t the current directory.
 
 

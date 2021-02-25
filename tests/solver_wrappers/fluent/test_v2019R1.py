@@ -1,446 +1,386 @@
-from coconut import data_structure
-from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
 
+import unittest
 import numpy as np
-from copy import deepcopy
-import multiprocessing
 import os
+from os.path import join
 import subprocess
+import json
+
+# TODO: issue: id is a Python build-in function... use ids instead?
+
+# TODO: put somewhere in docs?
+"""
+- The unittests in this file (i.e. for v2019R1) can be run
+directly, using
+
+    python -m unittest -vb solver_wrappers/fluent/test_v2019R1.py
+
+- The unittests for the other Fluent versions currently 
+inherit from these classes. Because those modules import
+these super classes, they are also run and crash, which is
+kinda ugly. 
+To run other Fluent version unittests, adapt the file
+__ini__.py and use
+
+    python -m unittest discover -vb
+    
+- The unittests for different Fluent versions can never be
+run simultaneously, because the correct software must be 
+loaded in advance. 
+"""
 
 
-def print_box(text):
-    n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
-    mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
-
-
-class TestSolverWrapperFluent2019R1(KratosUnittest.TestCase):
-    """
-    Only 1 Fluent version can be tested at a time,
-    because the correct software version must be
-    preloaded.
-    """
-
+class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
     version = '2019R1'
+    setup_case = True
 
-    def test_solver_wrapper_fluent_2019R1(self):
-        self.test_solver_wrapper_fluent_2019R1_tube2d()
-        self.test_solver_wrapper_fluent_2019R1_tube3d()
-
-    def test_solver_wrapper_fluent_2019R1_tube2d(self):
-        print_box('started tests for Fluent Tube2D')
-
-        tmp = os.path.join(os.path.dirname(__file__),
-                           f'test_v{self.version}/tube2d',
-                           'test_solver_wrapper.json')
-        print(f'\ncorrect path? \n{tmp}\n')
-
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           f'test_v{self.version}/tube2d',
-                                           'test_solver_wrapper.json')
-
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = data_structure.Parameters(parameter_file.read())
-        par_solver_0 = parameters['solver_wrappers'][0]
-
-        # if running from this folder
-        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory',
-                                               f'test_v{self.version}/tube2d/CFD')
-
-        # "global" definitions
-        displacement = vars(data_structure)['DISPLACEMENT']
-
-        def get_dy(x):
-            return 0.0001 * np.sin(2 * np.pi / 0.05 * x)
-
-        # setup Fluent case
-        if True:
-            print_box('setup Fluent case')
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                   f'test_v{self.version}/tube2d')
-            print(f'dir_tmp = {dir_tmp}')
-            p = subprocess.Popen(os.path.join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
+    @classmethod
+    def setUpClass(cls):
+        if cls.setup_case:
+            dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube2d')
+            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 
+    def setUp(self):
+        file_name = f'solver_wrappers/fluent/test_v{self.version}/tube2d/parameters.json'
+        with open(file_name) as parameter_file:
+            self.parameters = json.load(parameter_file)
+        self.mp_name_in = 'beamoutside_nodes'
+        self.mp_name_out = 'beamoutside_faces'
+
+    def get_dy(self, x):
+        return 0.0001 * np.sin(2 * np.pi / 0.05 * x)
+
+    def test_move_nodes(self):
         # test if nodes are moved to the correct position
-        if True:
-            print_box('test if nodes are moved to the correct position')
 
-            # adapt Parameters, create solver
-            par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('flow_iterations', 1)
-            solver = CreateInstance(par_solver)
+        # adapt parameters, create solver
+        self.parameters['settings']['flow_iterations'] = 1
+        solver = create_instance(self.parameters)
 
-            # give value to DISPLACEMENT variable
-            mp = solver.model['beamoutside_nodes']
-            for node in mp.Nodes:
-                node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
+        # set displacement
+        interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.mp_name_in)
 
-            # update position by iterating once in solver
-            solver.Initialize()
-            solver.InitializeSolutionStep()
-            solver.SolveSolutionStep(solver.GetInterfaceInput())
-            solver.FinalizeSolutionStep()
-            coord_data = solver.get_coordinates()
-            solver.Finalize()
+        x0, y0 = model_part.x0, model_part.y0
+        dy = self.get_dy(x0)
 
-            # check if correct displacement was given
-            for i, node in enumerate(mp.Nodes):
-                y_goal = node.Y0 + node.GetSolutionStepValue(displacement)[1]
-                y = coord_data['beamoutside_nodes']['coords'][i][1]
-                self.assertAlmostEqual(y, y_goal, delta=1e-16)
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = dy
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
+        # update position by iterating once in solver
+        solver.initialize()
+        solver.initialize_solution_step()
+        solver.solve_solution_step(interface_input)
+        solver.finalize_solution_step()
+        coord_data = solver.get_coordinates()
+        solver.finalize()
+
+        # check if correct displacement was given
+        y = coord_data[self.mp_name_in]['coords'][:, 1]
+        np.testing.assert_allclose(y, y0 + dy, rtol=1e-15)
+
+    def test_partitioning(self):
         # test if different partitioning gives the same ModelParts
-        if True:
-            print_box('test if different partitioning gives the same ModelParts')
 
-            # create two solvers with different flow solver partitioning
-            par_solver = deepcopy(par_solver_0)
-            model_parts = []
-            for cores in [1, multiprocessing.cpu_count()]:
-                par_solver['settings'].SetInt('cores', cores)
-                solver = CreateInstance(par_solver)
-                solver.Initialize()
-                solver.Finalize()
-                model_parts.append(deepcopy(solver.model['beamoutside_nodes']))
+        # create two solvers with different partitioning
+        x0, y0, z0, ids = [], [], [], []
+        for cores in [0, 1]:
+            self.parameters['settings']['cores'] = cores
+            solver = create_instance(self.parameters)
+            solver.initialize()
+            solver.finalize()
+            mp = solver.model.get_model_part(self.mp_name_in)
+            x0.append(mp.x0)
+            y0.append(mp.y0)
+            z0.append(mp.z0)
+            ids.append(mp.id)
 
-            # compare Nodes in ModelParts between both solvers
-            mp1, mp2 = model_parts
-            for node1 in mp1.Nodes:
-                node2 = mp2.GetNode(node1.Id)
-                self.assertEqual(node1.X0, node2.X0)
-                self.assertEqual(node1.Y0, node2.Y0)
-                self.assertEqual(node1.Z0, node2.Z0)
+        # compare ModelParts of both solvers
+        for attr in [x0, y0, z0, ids]:
+            np.testing.assert_array_equal(attr[0], attr[1])
 
+    def test_pressure_traction(self):
         # test if same coordinates always give same pressure & traction
-        if True:
-            print_box('test if same coordinates always gives same pressure & traction')
 
-            # adapt Parameters, create solver
-            par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
-            par_solver['settings'].SetInt('flow_iterations', 500)
-            solver = CreateInstance(par_solver)
-            solver.Initialize()
-            solver.InitializeSolutionStep()
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 0
+        self.parameters['settings']['flow_iterations'] = 500
+        solver = create_instance(self.parameters)
+        solver.initialize()
+        solver.initialize_solution_step()
+        interface_input = solver.get_interface_input()
 
-            # change grid to position 1
-            mp = solver.model['beamoutside_nodes']
-            for node in mp.Nodes:
-                node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+        # set displacement
+        x0 = interface_input.get_model_part(self.mp_name_in).x0
+        dys = [self.get_dy(x0), np.zeros_like(x0), self.get_dy(x0)]
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
 
-            # change grid to position 2
-            for node in mp.Nodes:
-                node.SetSolutionStepValue(displacement, 0, [0., -get_dy(node.X0), 0.])
-            output2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+        # run solver for three displacements (first one = last one)
+        pressure = []
+        traction = []
+        for dy in dys:
+            displacement[:, 1] = dy
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+            interface_output = solver.solve_solution_step(interface_input)
+            pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
+            traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
+        solver.finalize_solution_step()
+        solver.finalize()
 
-            # change grid back to position 1
-            for node in mp.Nodes:
-                node.SetSolutionStepValue(displacement, 0, [0., get_dy(node.X0), 0.])
-            output3 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+        # check if same position gives same pressure & traction
+        np.testing.assert_allclose(pressure[0], pressure[2], rtol=1e-12)
+        np.testing.assert_allclose(traction[0], traction[2], rtol=1e-12)
 
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+        # check if different position gives different pressure & traction
+        p01 = np.linalg.norm(pressure[0] - pressure[1])
+        p02 = np.linalg.norm(pressure[0] - pressure[2])
+        self.assertTrue(p02 / p01 < 1e-12)
 
-            # normalize data and compare
-            a1 = output1.GetNumpyArray()
-            a2 = output2.GetNumpyArray()
-            a3 = output3.GetNumpyArray()
+        t01 = np.linalg.norm(traction[0] - traction[1])
+        t02 = np.linalg.norm(traction[0] - traction[2])
+        self.assertTrue(t02 / t01 < 1e-12)
 
-            mean = np.mean(a1)
-            ref = np.abs(a1 - mean).max()
-
-            a1n = (a1 - mean) / ref
-            a2n = (a2 - mean) / ref
-            a3n = (a3 - mean) / ref
-
-            self.assertNotAlmostEqual(np.sum(np.abs(a1n - a2n)) / a1n.size, 0., delta=1e-12)
-            for i in range(a1.size):
-                self.assertAlmostEqual(a1n[i] - a3n[i], 0., delta=1e-12)
-
+    def test_restart(self):
         # test if restart option works correctly
-        if True:
-            print_box('test if restart option works correctly')
 
-            # adapt Parameters, create solver
-            par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('cores', 1)
-            par_solver['settings'].SetInt('flow_iterations', 30)
-            solver = CreateInstance(par_solver)
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 1
+        self.parameters['settings']['flow_iterations'] = 30
+        solver = create_instance(self.parameters)
+        interface_input = solver.get_interface_input()
 
-            # run solver for 4 timesteps
-            solver.Initialize()
-            for i in range(4):
-                mp = solver.model['beamoutside_nodes']
-                for node in mp.Nodes:
-                    node.SetSolutionStepValue(displacement, 0, [0., i * get_dy(node.X0), 0.])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            coord_data1 = solver.get_coordinates()
-            solver.Finalize()
+        # set displacement
+        x0 = interface_input.get_model_part(self.mp_name_in).x0
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = self.get_dy(x0)
 
-            # get data for solver without restart
-            interface1 = solver.GetInterfaceOutput().deepcopy()
-            data1 = interface1.GetNumpyArray().copy()
+        # run solver for 4 timesteps
+        solver.initialize()
+        for i in range(4):
+            solver.initialize_solution_step()
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
+        solver.finalize()
 
-            # create solver which restarts at timestep 2
-            par_solver['settings'].SetInt('timestep_start', 2)
-            solver = CreateInstance(par_solver)
+        # get data for solver without restart
+        interface_output = solver.get_interface_output()
+        pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
+        traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-            # run solver for 2 more timesteps
-            solver.Initialize()
-            for i in range(2, 4):
-                mp = solver.model['beamoutside_nodes']
-                for node in mp.Nodes:
-                    node.SetSolutionStepValue(displacement, 0, [0., i * get_dy(node.X0), 0.])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            coord_data2 = solver.get_coordinates()
-            solver.Finalize()
+        # create solver which restarts at timestep 2
+        self.parameters['settings']['timestep_start'] = 2
+        solver = create_instance(self.parameters)
+        interface_input = solver.get_interface_input()
 
-            # get data for solver with restart
-            interface2 = solver.GetInterfaceOutput().deepcopy()
-            data2 = interface2.GetNumpyArray().copy()
+        # run solver for 2 more timesteps
+        solver.initialize()
+        for i in range(2, 4):
+            solver.initialize_solution_step()
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
+        solver.finalize()
 
-            # compare coordinates of Nodes
-            key = 'beamoutside_nodes'
-            for i in range(coord_data1[key]['ids'].size):
-                for j in range(3):
-                    self.assertAlmostEqual(coord_data1[key]['coords'][i, j],
-                                           coord_data2[key]['coords'][i, j],
-                                           delta=1e-16)
+        # get data for solver with restart
+        interface_output = solver.get_interface_output()
+        pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
+        traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-            # normalize pressure and traction data and compare
-            mean = np.mean(data1)
-            ref = np.abs(data1 - mean).max()
+        # check if coordinates of ModelParts are equal
+        np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
-            data1n = (data1 - mean) / ref
-            data2n = (data2 - mean) / ref
+        # check if pressure and traction are equal
+        np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
+        np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
 
-            for i in range(data1n.size):
-                self.assertAlmostEqual(data1n[i] - data2n[i], 0., delta=1e-14)
 
-        print_box('finished tests for Fluent Tube2D')
+class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
+    version = '2019R1'
+    setup_case = True
 
-    def test_solver_wrapper_fluent_2019R1_tube3d(self):
-        print_box('started tests for Fluent Tube3D')
-
-        parameter_file_name = os.path.join(os.path.dirname(__file__),
-                                           f'test_v{self.version}/tube3d',
-                                           'test_solver_wrapper.json')
-
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = data_structure.Parameters(parameter_file.read())
-        par_solver_0 = parameters['solver_wrappers'][0]
-
-        # if running from this folder
-        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            par_solver_0['settings'].SetString('working_directory',
-                                               f'test_v{self.version}/tube3d/CFD')
-
-        # "global" definitions
-        displacement = vars(data_structure)['DISPLACEMENT']
-
-        def get_dy_dz(x, y, z):
-            dr = 0.0001 * np.sin(2 * np.pi / 0.05 * x)
-            theta = np.arctan2(z, y)
-            dy = dr * np.cos(theta)
-            dz = dr * np.sin(theta)
-            return dy, dz
-
-        # setup Fluent case
-        if True:
-            print_box('setup Fluent case')
-
-            dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                   f'test_v{self.version}/tube3d')
-            p = subprocess.Popen(os.path.join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
+    @classmethod
+    def setUpClass(cls):
+        if cls.setup_case:
+            dir_tmp = join(os.getcwd(),f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
+            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 
+    def setUp(self):
+        file_name = f'solver_wrappers/fluent/test_v{self.version}/tube3d/parameters.json'
+        with open(file_name) as parameter_file:
+            self.parameters = json.load(parameter_file)
+        self.mp_name_in = 'wall_nodes'
+        self.mp_name_out = 'wall_faces'
+
+    def get_dy_dz(self, x, y, z):
+        dr = 0.0001 * np.sin(2 * np.pi / 0.05 * x)
+        theta = np.arctan2(z, y)
+        dy = dr * np.cos(theta)
+        dz = dr * np.sin(theta)
+        return dy, dz
+
+    def test_move_nodes(self):
         # test if nodes are moved to the correct position
-        if True:
-            print_box('test if nodes are moved to the correct position')
 
-            # adapt Parameters, create solver
-            par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('flow_iterations', 1)
-            solver = CreateInstance(par_solver)
+        # adapt parameters, create solver
+        self.parameters['settings']['flow_iterations'] = 1
+        solver = create_instance(self.parameters)
 
-            # give value to DISPLACEMENT variable
-            mp = solver.model['wall_nodes']
-            for node in mp.Nodes:
-                dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
-                node.SetSolutionStepValue(displacement, 0, [0., dy, dz])
-            mp0 = solver.GetInterfaceInput().deepcopy().model['wall_nodes']
+        # set displacement
+        interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.mp_name_in)
 
-            # update position by iterating once in solver
-            solver.Initialize()
-            solver.InitializeSolutionStep()
-            solver.SolveSolutionStep(solver.GetInterfaceInput())
-            solver.FinalizeSolutionStep()
-            coord_data = solver.get_coordinates()
-            solver.Finalize()
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
 
-            # check if correct displacement was given
-            for i, node in enumerate(mp.Nodes):
-                disp = node.GetSolutionStepValue(displacement)
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = dy
+        displacement[:, 2] = dz
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
-                y_goal = node.Y0 + disp[1]
-                y = coord_data['wall_nodes']['coords'][i][1]
-                self.assertAlmostEqual(y, y_goal, delta=1e-16)
+        # update position by iterating once in solver
+        solver.initialize()
+        solver.initialize_solution_step()
+        solver.solve_solution_step(solver.get_interface_input())
+        solver.finalize_solution_step()
+        coord_data = solver.get_coordinates()
+        solver.finalize()
 
-                z_goal = node.Z0 + disp[2]
-                z = coord_data['wall_nodes']['coords'][i][2]
-                self.assertAlmostEqual(z, z_goal, delta=1e-16)
+        # check if correct displacement was given
+        y = coord_data[self.mp_name_in]['coords'][:, 1]
+        z = coord_data[self.mp_name_in]['coords'][:, 2]
+        np.testing.assert_allclose(y, y0 + dy, rtol=1e-15)
+        np.testing.assert_allclose(z, z0 + dz, rtol=1e-15)
 
+    def test_partitioning(self):
         # test if different partitioning gives the same ModelParts
-        if True:
-            print_box('test if different partitioning gives the same ModelParts')
 
-            # create two solvers with different flow solver partitioning
-            par_solver = deepcopy(par_solver_0)
-            model_parts = []
-            for cores in [1, multiprocessing.cpu_count()]:
-                par_solver['settings'].SetInt('cores', cores)
-                solver = CreateInstance(par_solver)
-                solver.Initialize()
-                solver.Finalize()
-                model_parts.append(deepcopy(solver.model['wall_nodes']))
+        # create two solvers with different partitioning
+        x0, y0, z0, ids = [], [], [], []
+        for cores in [0, 1]:
+            self.parameters['settings']['cores'] = cores
+            solver = create_instance(self.parameters)
+            solver.initialize()
+            solver.finalize()
+            mp = solver.model.get_model_part('wall_nodes')
+            x0.append(mp.x0)
+            y0.append(mp.y0)
+            z0.append(mp.z0)
+            ids.append(mp.id)
 
-            # compare Nodes in ModelParts between both solvers
-            mp1, mp2 = model_parts
-            for node1, node2 in zip(mp1.Nodes, mp2.Nodes):
-                self.assertEqual(node1.X0, node2.X0)
-                self.assertEqual(node1.Y0, node2.Y0)
-                self.assertEqual(node1.Z0, node2.Z0)
+        # compare ModelParts of both solvers
+        for attr in [x0, y0, z0, ids]:
+            np.testing.assert_array_equal(attr[0], attr[1])
 
+    def test_pressure_traction(self):
         # test if same coordinates always give same pressure & traction
-        if True:
-            print_box('test if same coordinates always gives same pressure & traction')
 
-            # adapt Parameters, create solver
-            par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
-            par_solver['settings'].SetInt('flow_iterations', 500)
-            solver = CreateInstance(par_solver)
-            solver.Initialize()
-            solver.InitializeSolutionStep()
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 0
+        self.parameters['settings']['flow_iterations'] = 500
+        solver = create_instance(self.parameters)
+        solver.initialize()
+        solver.initialize_solution_step()
+        interface_input = solver.get_interface_input()
 
-            # change grid to position 1
-            mp = solver.model['wall_nodes']
-            for node in mp.Nodes:
-                dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
-                node.SetSolutionStepValue(displacement, 0, [0., dy, dz])
-            output1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+        # set displacement
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
+        dydz = np.column_stack((dy, dz))
+        dydzs = [dydz, np.zeros_like(dydz), dydz]
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
 
-            # change grid to position 2
-            for node in mp.Nodes:
-                dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
-                node.SetSolutionStepValue(displacement, 0, [0., -dy, -dz])
-            output2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+        # run solver for three displacements (first one = last one)
+        pressure = []
+        traction = []
+        for dydz in dydzs:
+            displacement[:, 1:] = dydz
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+            interface_output = solver.solve_solution_step(interface_input)
+            pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
+            traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
+        solver.finalize_solution_step()
+        solver.finalize()
 
-            # change grid back to position 1
-            for node in mp.Nodes:
-                dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
-                node.SetSolutionStepValue(displacement, 0, [0., dy, dz])
-            output3 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
+        # check if same position gives same pressure & traction
+        np.testing.assert_allclose(pressure[0], pressure[2], rtol=1e-11)
+        np.testing.assert_allclose(traction[0], traction[2], rtol=1e-11)
 
-            solver.FinalizeSolutionStep()
-            solver.Finalize()
+        # check if different position gives different pressure & traction
+        p01 = np.linalg.norm(pressure[0] - pressure[1])
+        p02 = np.linalg.norm(pressure[0] - pressure[2])
+        self.assertTrue(p02 / p01 < 1e-12)
 
-            # normalize data and compare
-            a1 = output1.GetNumpyArray()
-            a2 = output2.GetNumpyArray()
-            a3 = output3.GetNumpyArray()
+        t01 = np.linalg.norm(traction[0] - traction[1])
+        t02 = np.linalg.norm(traction[0] - traction[2])
+        self.assertTrue(t02 / t01 < 1e-12)
 
-            mean = np.mean(a1)
-            ref = np.abs(a1 - mean).max()
-
-            a1n = (a1 - mean) / ref
-            a2n = (a2 - mean) / ref
-            a3n = (a3 - mean) / ref
-
-            self.assertNotAlmostEqual(np.sum(np.abs(a1n - a2n)) / a1n.size, 0., delta=1e-12)
-            for i in range(a1.size):
-                self.assertAlmostEqual(a1n[i] - a3n[i], 0., delta=1e-12)
-
+    def test_restart(self):
         # test if restart option works correctly
-        if True:
-            print_box('test if restart option works correctly')
 
-            # adapt Parameters, create solver
-            par_solver = deepcopy(par_solver_0)
-            par_solver['settings'].SetInt('cores', 1)
-            par_solver['settings'].SetInt('flow_iterations', 30)
-            solver = CreateInstance(par_solver)
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 1
+        self.parameters['settings']['flow_iterations'] = 30
+        solver = create_instance(self.parameters)
+        interface_input = solver.get_interface_input()
 
-            # run solver for 4 timesteps
-            solver.Initialize()
-            for i in range(4):
-                mp = solver.model['wall_nodes']
-                for node in mp.Nodes:
-                    dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
-                    node.SetSolutionStepValue(displacement, 0, [0., i * dy, i * dz])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            coord_data1 = solver.get_coordinates()
-            solver.Finalize()
+        # set displacement
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = dy
+        displacement[:, 2] = dz
 
-            # get data for solver without restart
-            interface1 = solver.GetInterfaceOutput().deepcopy()
-            data1 = interface1.GetNumpyArray().copy()
+        # run solver for 4 timesteps
+        solver.initialize()
+        for i in range(4):
+            solver.initialize_solution_step()
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
+        solver.finalize()
 
-            # create solver which restarts at timestep 2
-            par_solver['settings'].SetInt('timestep_start', 2)
-            solver = CreateInstance(par_solver)
+        # get data for solver without restart
+        interface_output = solver.get_interface_output()
+        pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
+        traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-            # run solver for 2 more timesteps
-            solver.Initialize()
-            for i in range(2, 4):
-                mp = solver.model['wall_nodes']
-                for node in mp.Nodes:
-                    dy, dz = get_dy_dz(node.X0, node.Y0, node.Z0)
-                    node.SetSolutionStepValue(displacement, 0, [0., i * dy, i * dz])
-                solver.InitializeSolutionStep()
-                solver.SolveSolutionStep(solver.GetInterfaceInput())
-                solver.FinalizeSolutionStep()
-            coord_data2 = solver.get_coordinates()
-            solver.Finalize()
+        # create solver which restarts at timestep 2
+        self.parameters['settings']['timestep_start'] = 2
+        solver = create_instance(self.parameters)
+        interface_input = solver.get_interface_input()
 
-            # get data for solver with restart
-            interface2 = solver.GetInterfaceOutput().deepcopy()
-            data2 = interface2.GetNumpyArray().copy()
+        # run solver for 2 more timesteps
+        solver.initialize()
+        for i in range(2, 4):
+            solver.initialize_solution_step()
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
+        solver.finalize()
 
-            # compare coordinates of Nodes
-            key = 'wall_nodes'
-            for i in range(coord_data1[key]['ids'].size):
-                for j in range(3):
-                    self.assertAlmostEqual(coord_data1[key]['coords'][i, j],
-                                           coord_data2[key]['coords'][i, j],
-                                           delta=1e-16)
+        # get data for solver with restart
+        interface_output = solver.get_interface_output()
+        pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
+        traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-            # normalize pressure and traction data and compare
-            mean = np.mean(data1)
-            ref = np.abs(data1 - mean).max()
+        # check if coordinates of ModelParts are equal
+        np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
-            data1n = (data1 - mean) / ref
-            data2n = (data2 - mean) / ref
-
-            print(f'max rel error: {np.abs(data1n - data2n).max()}')
-
-            for i in range(data1n.size):
-                self.assertAlmostEqual(data1n[i] - data2n[i], 0., delta=1e-14)
-
-        print_box('finished tests for Fluent Tube3D')
+        # check if pressure and traction are equal
+        np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
+        np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

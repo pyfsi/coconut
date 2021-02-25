@@ -1,18 +1,19 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.interface import Interface
-from coconut.coupling_components import tools
+from coconut import tools
 
 import os
 from os.path import join
 import subprocess
+import multiprocessing
 import time
 import numpy as np
 import sys
 import shutil
+import hashlib
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperFluent2019R1(parameters)
 
 
@@ -21,44 +22,46 @@ class SolverWrapperFluent2019R1(Component):
     def __init__(self, parameters):
         super().__init__()
 
+        # set parameters
         self.set_fluent_version()
         self.settings = parameters['settings']
         self.check_software()
-        self.dir_cfd = join(os.getcwd(), self.settings['working_directory'].GetString())
+        self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
         self.remove_all_messages()
-
-        path_src = os.path.realpath(os.path.dirname(__file__))
-        self.cores = self.settings['cores'].GetInt()
-        self.case_file = self.settings['case_file'].GetString()  # file must be in self.dir_cfd
+        self.dir_src = os.path.realpath(os.path.dirname(__file__))
+        self.cores = self.settings['cores']
+        if self.cores < 1 or self.cores > multiprocessing.cpu_count():
+            self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
+        self.case_file = self.settings['case_file']
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
             raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
-        self.mnpf = self.settings['max_nodes_per_face'].GetInt()
-        self.dimensions = self.settings['dimensions'].GetInt()
-        self.unsteady = self.settings['unsteady'].GetBool()
-        self.hybrid_initialization = self.settings['hybrid_initialization'].GetBool()
-        self.flow_iterations = self.settings['flow_iterations'].GetInt()
-        self.delta_t = self.settings['delta_t'].GetDouble()
-        self.timestep_start = self.settings['timestep_start'].GetInt()
+        self.mnpf = self.settings['max_nodes_per_face']
+        self.dimensions = self.settings['dimensions']
+        self.unsteady = self.settings['unsteady']
+        self.hybrid_initialization = self.settings['hybrid_initialization']
+        self.flow_iterations = self.settings['flow_iterations']
+        self.delta_t = self.settings['delta_t']
+        self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
         self.iteration = None
-
-        self.thread_names = [_.GetString() for _ in self.settings['thread_names'].list()]
-        self.n_threads = len(self.thread_names)
-        self.thread_ids = [None] * self.n_threads
         self.fluent_process = None
+        self.thread_ids = {}  # thread IDs corresponding to thread names
+        for thread_name in self.settings['thread_names']:
+            self.thread_ids[thread_name] = None
+        self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
 
         # prepare Fluent journal
         journal = f'v{self.version}.jou'
         thread_names_str = ''
-        for key in self.thread_names:
-            thread_names_str += ' "' + key + '"'
+        for thread_name in self.thread_ids:
+            thread_names_str += ' "' + thread_name + '"'
         unsteady = '#f'
         if self.unsteady:
             unsteady = '#t'
         hybrid_initialization = '#f'
         if self.hybrid_initialization:
             hybrid_initialization = '#t'
-        with open(join(path_src, journal), 'r') as infile:
+        with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
@@ -73,7 +76,7 @@ class SolverWrapperFluent2019R1(Component):
         # prepare Fluent UDF
         if self.timestep_start == 0:
             udf = f'v{self.version}.c'
-            with open(join(path_src, udf), 'r') as infile:
+            with open(join(self.dir_src, udf)) as infile:
                 with open(join(self.dir_cfd, udf), 'w') as outfile:
                     for line in infile:
                         line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
@@ -84,11 +87,11 @@ class SolverWrapperFluent2019R1(Component):
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
-        if self.settings['fluent_gui'].GetBool():
+        if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
         else:
-            cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'
-            # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'
+            cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'  # TODO: does log work well?
+            # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'  # TODO: specify what this option does?
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd)
 
@@ -119,9 +122,10 @@ class SolverWrapperFluent2019R1(Component):
             for line in file:
                 if check == 3 and line.islower():
                     name, id, _ = line.strip().split()
-                    if name in self.thread_names:
+                    if name in self.thread_ids:
                         info.append(' '.join((name, id)))
-                        self.thread_ids[self.thread_names.index(name)] = id
+                        self.thread_ids[name] = id
+
                 if check == 3 and not line.islower():
                     break
                 if check == 2:  # skip 1 line
@@ -137,64 +141,59 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('thread_ids_written_to_file')
 
         # import node and face information (use old files on restart!)
-        self.wait_message('nodes_and_faces_stored')
+        self.wait_message('nodes_and_faces_stored')  # TODO: check what happens in journal
 
         # create Model
         self.model = data_structure.Model()
 
-        # create ModelParts
-        for key, value in (self.settings['interface_input'].items() +
-                           self.settings['interface_output'].items()):
-            # add ModelPart to Model
-            self.model.CreateModelPart(key)
-            mp = self.model[key]
+        # create input ModelParts (nodes)
+        for item in (self.settings['interface_input']):
+            mp_name = item['model_part']
 
-            # add historical variables to ModelPart
-            for var_name in value.list():
-                var = vars(data_structure)[var_name.GetString()]
-                mp.AddNodalSolutionStepVariable(var)
-
-            # add information to ModelPart
-            for i in range(self.n_threads):
-                if self.thread_names[i] in key:
-                    mp.thread_name = self.thread_names[i]
-                    mp.thread_id = self.thread_ids[i]
-            if 'thread_id' not in dir(mp):
-                raise AttributeError('could not find thread name corresponding to key')
-
-        # add Nodes to input ModelParts (nodes)
-        for key in self.settings['interface_input'].keys():
-            mp = self.model[key]
+            # get face thread ID that corresponds to ModelPart
+            for thread_name in self.thread_ids:
+                if thread_name in mp_name:
+                    self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
+            if mp_name not in self.model_part_thread_ids:
+                raise AttributeError('Could not find thread name corresponding ' +
+                                     f'to ModelPart {mp_name}')
 
             # read in datafile
-            tmp = f'nodes_timestep0_thread{mp.thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
+            thread_id = self.model_part_thread_ids[mp_name]
+            file_name = join(self.dir_cfd, f'nodes_timestep0_thread{thread_id}.dat')
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + 1:
-                raise ValueError('given dimension does not match coordinates')
+                raise ValueError('Given dimension does not match coordinates')
 
             # get node coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
             coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
-            ids_tmp = data[:, -1].astype(int).astype(str)  # array is flattened
+            ids_tmp = data[:, -1].astype(int)  # array is flattened
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coords_tmp = coords_tmp[args, :]
-            ids_tmp = ids_tmp[args]
+            x0 = coords_tmp[args, 0]
+            y0 = coords_tmp[args, 1]
+            z0 = coords_tmp[args, 2]
+            ids = ids_tmp[args]
 
-            # create Nodes
-            for i in range(ids_tmp.size):
-                mp.CreateNewNode(ids_tmp[i],
-                                 coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
+            # create ModelPart
+            self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
-        # add Nodes to output ModelParts (faces)
-        for key in self.settings['interface_output'].keys():
-            mp = self.model[key]
+        # create output ModelParts (faces)
+        for item in (self.settings['interface_output']):
+            mp_name = item['model_part']
 
+            # get face thread ID that corresponds to ModelPart
+            for thread_name in self.thread_ids:
+                if thread_name in mp_name:
+                    self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
+            if mp_name not in self.model_part_thread_ids:
+                raise AttributeError('Could not find thread name corresponding ' +
+                                     f'to ModelPart {mp_name}')
             # read in datafile
-            tmp = f'faces_timestep0_thread{mp.thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
+            thread_id = self.model_part_thread_ids[mp_name]
+            file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + self.mnpf:
                 raise ValueError(f'given dimension does not match coordinates')
@@ -206,35 +205,29 @@ class SolverWrapperFluent2019R1(Component):
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coords_tmp = coords_tmp[args, :]
-            ids_tmp = ids_tmp[args]
+            x0 = coords_tmp[args, 0]
+            y0 = coords_tmp[args, 1]
+            z0 = coords_tmp[args, 2]
+            ids = ids_tmp[args]
 
-            # create Nodes
-            for i in range(ids_tmp.size):
-                mp.CreateNewNode(ids_tmp[i],
-                                 coords_tmp[i, 0], coords_tmp[i, 1], coords_tmp[i, 2])
+            # create ModelPart
+            self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create Interfaces
-        self.interface_input = Interface(self.model, self.settings['interface_input'])
-        self.interface_output = Interface(self.model, self.settings['interface_output'])
-
-        # create Variables
-        self.pressure = vars(data_structure)['PRESSURE']
-        self.traction = vars(data_structure)['TRACTION']
-        self.displacement = vars(data_structure)['DISPLACEMENT']
+        self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
+        self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
         # run time
         self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
-        self.OutputSolutionStep()
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
 
         self.iteration = 0
         self.timestep += 1
@@ -242,23 +235,24 @@ class SolverWrapperFluent2019R1(Component):
         self.send_message('next')
         self.wait_message('next_ready')
 
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input):
+    @tools.time_solve_solution_step
+    def solve_solution_step(self, interface_input):
         self.iteration += 1
 
         # store incoming displacements
-        self.interface_input.SetPythonList(interface_input.GetPythonList())
+        self.interface_input.set_interface_data(interface_input.get_interface_data())
 
         # write interface data
         self.write_node_positions()
 
         # copy input data for debugging
         if self.debug:
-            for key in self.settings['interface_input'].keys():
-                mp = self.model[key]
-                tmp = f"nodes_update_timestep{self.timestep}_thread{mp.thread_id}.dat"
-                tmp2 = f"nodes_update_timestep{self.timestep}_thread{mp.thread_id}_Iter{self.iteration}.dat"
-                cmd = f"cp {join(self.dir_cfd, tmp)} {join(self.dir_cfd, tmp2)}"
+            for dct in self.interface_input.parameters:
+                mp_name = dct['model_part']
+                thread_id = self.model_part_thread_ids[mp_name]
+                src = f"nodes_update_timestep{self.timestep}_thread{thread_id}.dat"
+                dst = f"nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat"
+                cmd = f"cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}"
                 os.system(cmd)
 
         # let Fluent run, wait for data
@@ -266,70 +260,66 @@ class SolverWrapperFluent2019R1(Component):
         self.wait_message('continue_ready')
 
         # read data from Fluent
-        for key in self.settings['interface_output'].keys():
-            mp = self.model[key]
+        for dct in self.interface_output.parameters:
+            mp_name = dct['model_part']
 
             # read in datafile
-            tmp = f'pressure_traction_timestep{self.timestep}_thread{mp.thread_id}.dat'
+            thread_id = self.model_part_thread_ids[mp_name]
+            tmp = f'pressure_traction_timestep{self.timestep}_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + 1 + self.mnpf:
                 raise ValueError('given dimension does not match coordinates')
 
             # copy output data for debugging
-            if self.debug:
-                tmp2 = f'pressure_traction_timestep{self.timestep}_thread{mp.thread_id}_Iter{self.iteration}.dat'
-                cmd = f"cp {file_name} {join(self.dir_cfd, tmp2)}"
+            if self.debug:  # TODO: Iter --> iter everywhere?
+                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                cmd = f"cp {file_name} {join(self.dir_cfd, dst)}"
                 os.system(cmd)
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
-            pressure_tmp = data[:, self.dimensions]
+            traction_tmp[:, :self.dimensions] = data[:,:-1 - self.mnpf]
+            pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            traction_tmp = traction_tmp[args, :]
-            pressure_tmp = pressure_tmp[args]
-            ids_tmp = ids_tmp[args]
+            traction = traction_tmp[args, :]
+            pressure = pressure_tmp[args]
+            ids = ids_tmp[args]
 
             # store pressure and traction in Nodes
-            if ids_tmp.size != mp.NumberOfNodes():
-                raise ValueError('number of nodes does not match size of data')
-            for i, node in enumerate(mp.Nodes):
-                if ids_tmp[i] != node.Id:
-                    raise ValueError(f'node IDs do not match: {ids_tmp[i]}, {node.Id}')
-                node.SetSolutionStepValue(self.traction, 0, traction_tmp[i, :].tolist())
-                node.SetSolutionStepValue(self.pressure, 0, pressure_tmp[i])
+            model_part = self.model.get_model_part(mp_name)
+            if ids.size != model_part.size:
+                raise ValueError('size of data does not match size of ModelPart')
+            if not (ids == model_part.id).all():
+                raise ValueError('IDs of data do not match ModelPart IDs')
+
+            self.interface_output.set_variable_data(mp_name, 'traction', traction)
+            self.interface_output.set_variable_data(mp_name, 'pressure', pressure)
 
         # return interface_output object
-        return self.interface_output.deepcopy()
+        return self.interface_output
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
-        if not self.timestep % self.settings['save_iterations'].GetInt():
+        if not self.timestep % self.settings['save_iterations']:
             self.send_message('save')
             self.wait_message('save_ready')
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
 
-    def GetInterfaceInput(self):
-        return self.interface_input.deepcopy()
+    def get_interface_input(self):
+        return self.interface_input
 
-    def SetInterfaceInput(self):
-        Exception("This solver interface provides no mapping.")
-
-    def GetInterfaceOutput(self):
-        return self.interface_output.deepcopy()
-
-    def SetInterfaceOutput(self):
-        Exception("This solver interface provides no mapping.")
+    def get_interface_output(self):
+        return self.interface_output
 
     def set_fluent_version(self):
         self.version = '2019R1'
@@ -359,36 +349,45 @@ class SolverWrapperFluent2019R1(Component):
         string is made by adding the unique node IDs together.
             e.g. for a row [5, 9, 7, -1, -1]
                  the face ID is "5-7-9"
+
+        # *** NEW: as we need integer IDs, the string is hashed and shortened
         """
         data = data.astype(int)
-        ids = np.zeros(data.shape[0], dtype='U256')  # array is flattened
-        for j in range(ids.size):
-            tmp = np.unique(data[j, :])
+        # ids = np.zeros(data.shape[0], dtype='U256')  # array is flattened
+        ids = np.zeros(data.shape[0], dtype=int)
+        for i in range(ids.size):
+            tmp = np.unique(data[i, :])
             if tmp[0] == -1:
                 tmp = tmp[1:]
-            ids[j] = '-'.join(tuple(tmp.astype(str)))
+            unique_string = '-'.join(tuple(tmp.astype(str)))
+            hash = hashlib.sha1(str.encode(unique_string))
+            ids[i] = int(hash.hexdigest(), 16) % (10 ** 16)
         return ids
 
     def write_node_positions(self):
-        for key in self.settings['interface_input'].keys():
-            mp = self.model[key]
-            tmp = f'nodes_update_timestep{self.timestep}_thread{mp.thread_id}.dat'
+        for dct in self.interface_input.parameters:
+            mp_name = dct['model_part']
+            thread_id = self.model_part_thread_ids[mp_name]
+            model_part = self.model.get_model_part(mp_name)
+            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+            x = model_part.x0 + displacement[:, 0]
+            y = model_part.y0 + displacement[:, 1]
+            z = model_part.z0 + displacement[:, 2]
+            if self.dimensions == 2:
+                data = np.rec.fromarrays([x, y, model_part.id])
+                fmt = '%27.17e%27.17e%27d'
+            else:
+                data = np.rec.fromarrays([x, y, z, model_part.id])
+                fmt = '%27.17e%27.17e%27.17e%27d'
+            tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
-            with open(file_name, 'w') as file:
-                file.write(f'{mp.NumberOfNodes()}\n')
-                for node in mp.Nodes:
-                    disp = node.GetSolutionStepValue(self.displacement)
-                    X, Y, Z = node.X0 + disp[0], node.Y0 + disp[1], node.Z0 + disp[2]
-                    if self.dimensions == 2:
-                        file.write(f'{X:27.17e}{Y:27.17e}{node.Id:>27}\n')
-                    else:
-                        file.write(f'{X:27.17e}{Y:27.17e}{Z:27.17e}{node.Id:>27}\n')
+            np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
     def get_coordinates(self):
-        """
+        """  # TODO: rewrite this
         This function can be used e.g. for debugging or testing.
-        It returns a dict that contains keys for the ModelParts 
-        on the two Interfaces. 
+        It returns a dict that contains keys for the ModelParts
+        on the two Interfaces.
         These keys give other dicts that have keys 'ids' and
         'coords'. These refer to ndarrays with respectively the
         ids of all Nodes and the current coordinates of those
@@ -402,12 +401,13 @@ class SolverWrapperFluent2019R1(Component):
         coord_data = {}
 
         # get ids and coordinates for input ModelParts (nodes)
-        for key in self.settings['interface_input'].keys():
-            coord_data[key] = {}
-            mp = self.model[key]
+        for dct in self.interface_input.parameters:
+            mp_name = dct['model_part']
+            coord_data[mp_name] = {}
+            thread_id = self.model_part_thread_ids[mp_name]
 
             # read in datafile
-            tmp = f'nodes_timestep{self.timestep}_thread{mp.thread_id}.dat'
+            tmp = f'nodes_timestep{self.timestep}_thread{thread_id}.dat'
             data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
             if data.shape[1] != self.dimensions + 1:
                 raise ValueError('given dimension does not match coordinates')
@@ -415,20 +415,21 @@ class SolverWrapperFluent2019R1(Component):
             # get node coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
             coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
-            ids_tmp = data[:, -1].astype(int).astype(str)  # array is flattened
+            ids_tmp = data[:, -1].astype(int)  # array is flattened
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coord_data[key]['ids'] = ids_tmp[args]
-            coord_data[key]['coords'] = coords_tmp[args, :]
+            coord_data[mp_name]['ids'] = ids_tmp[args]
+            coord_data[mp_name]['coords'] = coords_tmp[args, :]
 
         # update coordinates for output ModelParts (faces)
-        for key in self.settings['interface_output'].keys():
-            coord_data[key] = {}
-            mp = self.model[key]
+        for dct in self.interface_output.parameters:
+            mp_name = dct['model_part']
+            coord_data[mp_name] = {}
+            thread_id = self.model_part_thread_ids[mp_name]
 
             # read in datafile
-            tmp = f'faces_timestep{self.timestep}_thread{mp.thread_id}.dat'
+            tmp = f'faces_timestep{self.timestep}_thread{thread_id}.dat'
             data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
             if data.shape[1] != self.dimensions + self.mnpf:
                 raise ValueError(f'given dimension does not match coordinates')
@@ -440,8 +441,8 @@ class SolverWrapperFluent2019R1(Component):
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coord_data[key]['ids'] = ids_tmp[args]
-            coord_data[key]['coords'] = coords_tmp[args, :]
+            coord_data[mp_name]['ids'] = ids_tmp[args]
+            coord_data[mp_name]['coords'] = coords_tmp[args, :]
 
         return coord_data
 

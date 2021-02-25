@@ -1,3 +1,5 @@
+from coconut import tools
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -73,7 +75,7 @@ for case, residuals in zip(legend_entries, residual_list):
     for ls in residuals:
         iterations.append(len(ls))
     avg_iterations = np.array(iterations).mean()
-    print(f"{case}: average # iterations = {avg_iterations:0.2f}")
-    print('\t', iterations)
+    tools.print_info(f"{case}: average # iterations = {avg_iterations:0.2f}")
+    tools.print_info('\t', iterations)
 
 plt.show()

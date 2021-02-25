@@ -1,83 +1,92 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.interface import Interface
+from coconut.data_structure.interface import Interface
+from coconut.tools import create_instance
+
+import unittest
+import os
+import json
+import numpy as np
 
 
-class TestPredictor(KratosUnittest.TestCase):
+class TestPredictor(unittest.TestCase):
+
     def test_predictor(self):
         m = 10
-        dz = 3.0
-        a0 = 1.0
-        a1 = 2.0
-        a2 = 3.0
-        a3 = 4.0
-        a4 = 5.0
-        interface_settings = data_structure.Parameters('{"wall": "AREA"}')
+        dz = 3
+        a0 = 1
+        a1 = 2
+        a2 = 3
+        a3 = 4
+        a4 = 5
+        variable = 'area'
+        model_part_name = 'wall'
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
-        # Create interface
-        variable = vars(data_structure)["AREA"]
+        # create model and model_part
         model = data_structure.Model()
-        model_part = model.CreateModelPart("wall")
-        model_part.AddNodalSolutionStepVariable(variable)
-        for i in range(m):
-            model_part.CreateNewNode(i, 0.0, 0.0, i * dz)
-        step = 0
-        for node in model_part.Nodes:
-            node.SetSolutionStepValue(variable, step, a0)
-        interface = Interface(model, interface_settings)
+        ids = np.arange(0, m)
+        x0 = np.zeros(m)
+        y0 = np.zeros(m)
+        z0 = np.arange(0, m * dz, dz)
+        model.create_model_part(model_part_name, x0, y0, z0, ids)
 
-        # Create predictor
-        parameter_file_name = "predictors/test_cubic.json"
+        a0_array = np.full((m, 1), a0)
+
+        # create interface
+        interface = Interface(interface_settings, model)
+        interface.set_variable_data(model_part_name, variable, a0_array)
+
+        # read settings
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_cubic.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = data_structure.Parameters(parameter_file.read())
-        predictor_cubic = CreateInstance(settings)
-        predictor_cubic.Initialize(interface)
-        interface_as_array = interface.GetNumpyArray()
+            settings = json.load(parameter_file)
 
-        # Test predictor: a linear relation should be predicted in the same way
-        # by linear, quadratic and cubic predictors
-        predictor_cubic.InitializeSolutionStep()
-        interface.SetNumpyArray(a1 * interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
-        predictor_cubic.InitializeSolutionStep()
-        interface.SetNumpyArray(a2 * interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
-        predictor_cubic.InitializeSolutionStep()
-        interface.SetNumpyArray(a3 * interface_as_array)
-        predictor_cubic.Update(interface)
-        predictor_cubic.FinalizeSolutionStep()
+        predictor_cubic = create_instance(settings)
+        predictor_cubic.initialize(interface)
+        interface_as_array = interface.get_interface_data()
 
-        predictor_cubic.InitializeSolutionStep()
-        prediction_linear = predictor_cubic.Linear(interface).GetNumpyArray()
-        prediction_quadratic = predictor_cubic.Quadratic(interface).GetNumpyArray()
-        prediction_cubic = predictor_cubic.Cubic(interface).GetNumpyArray()
+        # a linear relation should be predicted in the same way by linear, quadratic and cubic predictors
+        predictor_cubic.initialize_solution_step()
+        interface.set_interface_data(a1 * interface_as_array)
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
+        predictor_cubic.initialize_solution_step()
+        interface.set_interface_data(a2 * interface_as_array)
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
+        predictor_cubic.initialize_solution_step()
+        interface.set_interface_data(a3 * interface_as_array)
+        predictor_cubic.update(interface)
+        predictor_cubic.finalize_solution_step()
+
+        predictor_cubic.initialize_solution_step()
+        prediction_linear = predictor_cubic.linear(interface).get_interface_data()
+        prediction_quadratic = predictor_cubic.quadratic(interface).get_interface_data()
+        prediction_cubic = predictor_cubic.cubic(interface).get_interface_data()
         for i in range(m):
             self.assertAlmostEqual(a4, prediction_linear[i])
             self.assertAlmostEqual(a4, prediction_quadratic[i])
             self.assertAlmostEqual(a4, prediction_cubic[i])
 
-        # Test predictor: error if no update
+        # rror if no update
         with self.assertRaises(Exception):
-            predictor_cubic.InitializeSolutionStep()
-            predictor_cubic.FinalizeSolutionStep()
+            predictor_cubic.initialize_solution_step()
+            predictor_cubic.finalize_solution_step()
 
-        # Test predictor: error if updated twice
+        # error if updated twice
         with self.assertRaises(Exception):
-            predictor_cubic.InitializeSolutionStep()
-            prediction = predictor_cubic.Predict(interface)
-            prediction = predictor_cubic.Predict(interface)
-            predictor_cubic.FinalizeSolutionStep()
+            predictor_cubic.initialize_solution_step()
+            _ = predictor_cubic.predict(interface)
+            _ = predictor_cubic.predict(interface)
+            predictor_cubic.finalize_solution_step()
 
-        # Test predictor: error if prediction after update
+        # error if prediction after update
         with self.assertRaises(Exception):
-            predictor_cubic.InitializeSolutionStep()
-            prediction = predictor_cubic.Update(interface)
-            prediction = predictor_cubic.Predict(interface)
-            predictor_cubic.FinalizeSolutionStep()
+            predictor_cubic.initialize_solution_step()
+            _ = predictor_cubic.update(interface)
+            _ = predictor_cubic.predict(interface)
+            predictor_cubic.finalize_solution_step()
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

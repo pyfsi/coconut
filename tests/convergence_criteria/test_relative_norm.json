@@ -1,7 +1,0 @@
-{
-  "type": "convergence_criteria.relative_norm",
-  "settings": {
-    "tolerance": 1e-6,
-    "order": 2
-  }
-}

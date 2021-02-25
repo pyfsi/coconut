@@ -14,8 +14,9 @@ The initial guess in every time step is done using the linear predictor.
 ## Convergence criterion
 
 Two convergence criteria have been specified:
- - The number of iterations in every time step is larger than 15.
- - The residual norm on the displacement is a factor $10^{-6}$ lower than the initial value.
+
+-   The number of iterations in every time step is larger than 15.
+-   The residual norm on the displacement is a factor $10^{-6}$ lower than the initial value.
  
 When either criterion is satisfied the simulation stops.
 
@@ -41,9 +42,10 @@ The axial direction is along the z-axis,
 the radial direction along the y-axis.
 
 The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
-In contrast, the difference of the points where loads and displacements are applied or calculated,
-require the use of interpolation mappers.
+However, the discretization of both solvers differ.
+To account for the difference of the points where loads and displacements are applied or calculated, the use of interpolation mappers is required.
 Therefore, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.
-A parameter file `project_parameters_conformal.json` is also provided.
+
+Additionally a parameter file `parameters_conformal.json` is also provided.
 This parameter file performs no interpolation.
-It should be verified that the number of cells `m` are the same in both solvers before using it.
+It should be verified that the number of cells `m` is the same in both solvers before using it and is merely provided as a theoretical example as it will have close to no practical use.

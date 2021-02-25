@@ -1,9 +1,9 @@
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
 from coconut.coupling_components.component import Component
-from coconut.coupling_components import tools
+from coconut import tools
 
 
-def Create(parameters):
+def create(parameters):
     return SolverWrapperMapped(parameters)
 
 
@@ -11,83 +11,86 @@ class SolverWrapperMapped(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        # Read parameters
         self.parameters = parameters
         self.settings = parameters["settings"]
 
-        # Create solver
-        self.solver_wrapper = CreateInstance(self.settings["solver_wrapper"])
+        # create solver
+        tools.pass_on_parameters(self.settings, self.settings["solver_wrapper"]["settings"],
+                                 ["timestep_start", "delta_t"])
+        self.solver_wrapper = create_instance(self.settings["solver_wrapper"])
+
+        # create mappers
+        self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
+        self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
+
+        self.interface_input_from = None
+        self.interface_input_to = None
+        self.interface_output_to = None
 
         # run time
         self.run_time = 0.0
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self, interface_input_from, interface_output_to):
+        super().initialize()
 
-        self.solver_wrapper.Initialize()
+        self.solver_wrapper.initialize()
 
-    def InitializeSolutionStep(self):
-        super().InitializeSolutionStep()
+        # create input mapper
+        self.interface_input_from = interface_input_from.copy()
+        self.interface_input_to = self.solver_wrapper.get_interface_input()
+        self.mapper_interface_input.initialize(self.interface_input_from, self.interface_input_to)
 
-        self.solver_wrapper.InitializeSolutionStep()
+        # create output mapper
+        self.interface_output_to = interface_output_to.copy()
+        interface_output_from = self.solver_wrapper.get_interface_output()
+        self.mapper_interface_output.initialize(interface_output_from, self.interface_output_to)
 
-    @tools.TimeSolveSolutionStep
-    def SolveSolutionStep(self, interface_input_from):
-        self.interface_input_from = interface_input_from.deepcopy()
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
+
+        self.solver_wrapper.initialize_solution_step()
+
+    @tools.time_solve_solution_step
+    def solve_solution_step(self, interface_input_from):
+        self.interface_input_from = interface_input_from.copy()
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
-        self.interface_output_from = self.solver_wrapper.SolveSolutionStep(self.interface_input_to)
-        self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
-        return self.interface_output_to.deepcopy()
+        interface_output_from = self.solver_wrapper.solve_solution_step(self.interface_input_to)
+        self.mapper_interface_output(interface_output_from, self.interface_output_to)
+        return self.interface_output_to
 
-    def FinalizeSolutionStep(self):
-        super().FinalizeSolutionStep()
+    def finalize_solution_step(self):
+        super().finalize_solution_step()
 
-        self.solver_wrapper.FinalizeSolutionStep()
+        self.solver_wrapper.finalize_solution_step()
 
-    def Finalize(self):
-        super().Finalize()
+    def finalize(self):
+        super().finalize()
 
-        self.solver_wrapper.Finalize()
-        self.mapper_interface_input.Finalize()
-        self.mapper_interface_output.Finalize()
+        self.solver_wrapper.finalize()
+        self.mapper_interface_input.finalize()
+        self.mapper_interface_output.finalize()
 
-    def OutputSolutionStep(self):
-        super().OutputSolutionStep()
+    def output_solution_step(self):
+        super().output_solution_step()
 
-        self.solver_wrapper.OutputSolutionStep()
-        self.mapper_interface_input.OutputSolutionStep()
-        self.mapper_interface_output.OutputSolutionStep()
+        self.solver_wrapper.output_solution_step()
+        self.mapper_interface_input.output_solution_step()
+        self.mapper_interface_output.output_solution_step()
 
-    def GetInterfaceInput(self):
-        # Does not contain most recent data
-        return self.interface_input_from.deepcopy()
+    def get_interface_input(self):
+        # does not contain most recent data
+        return self.interface_input_from
 
-    def SetInterfaceInput(self, interface_input_from):
-        # Create input mapper
-        self.interface_input_from = interface_input_from.deepcopy()
-        self.interface_input_to = self.solver_wrapper.GetInterfaceInput()
+    def get_interface_output(self):
+        interface_output_from = self.solver_wrapper.get_interface_output()
+        self.mapper_interface_output(interface_output_from, self.interface_output_to)
+        return self.interface_output_to
 
-        self.mapper_interface_input = CreateInstance(self.settings["mapper_interface_input"])
-        self.mapper_interface_input.Initialize(self.interface_input_from, self.interface_input_to)
-
-    def GetInterfaceOutput(self):
-        self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
-        self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
-        return self.interface_output_to.deepcopy()
-
-    def SetInterfaceOutput(self, interface_output_to):
-        # Create output mapper
-        self.interface_output_to = interface_output_to.deepcopy()
-        self.interface_output_from = self.solver_wrapper.GetInterfaceOutput()
-
-        self.mapper_interface_output = CreateInstance(self.settings["mapper_interface_output"])
-        self.mapper_interface_output.Initialize(self.interface_output_from, self.interface_output_to)
-
-    def PrintComponentsInfo(self, pre):
-        tools.Print(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
-        pre = tools.UpdatePre(pre)
-        self.solver_wrapper.PrintComponentsInfo(pre + '├─')
-        tools.Print(pre, '├─', "Input mapper:")
-        self.mapper_interface_input.PrintComponentsInfo(pre + '│ └─')
-        tools.Print(pre, '└─', "Output mapper:")
-        self.mapper_interface_output.PrintComponentsInfo(pre + '  └─')
+    def print_components_info(self, pre):
+        tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
+        pre = tools.update_pre(pre)
+        self.solver_wrapper.print_components_info(pre + '├─')
+        tools.print_info(pre, '├─', "Input mapper:")
+        self.mapper_interface_input.print_components_info(pre + '│ └─')
+        tools.print_info(pre, '└─', "Output mapper:")
+        self.mapper_interface_output.print_components_info(pre + '  └─')

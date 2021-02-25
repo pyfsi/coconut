@@ -6,15 +6,23 @@
         "working_directory": "solver_wrappers/python/tube/test_tube_structure/CSM",
         "input_file": "solver_parameters.json",
         "delta_t": 0.01,
-        "interface_input": {
-          "wall": [
-            "PRESSURE",
-            "TRACTION"
-          ]
-        },
-        "interface_output": {
-          "wall": "DISPLACEMENT"
-        }
+        "interface_input": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "pressure",
+              "traction"
+            ]
+          }
+        ],
+        "interface_output": [
+          {
+            "model_part": "wall",
+            "variables": [
+              "displacement"
+            ]
+          }
+        ]
       }
     }
   ]

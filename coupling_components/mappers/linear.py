@@ -2,10 +2,9 @@ from coconut.coupling_components.mappers.interpolator import MapperInterpolator
 
 import numpy as np
 from multiprocessing import Pool, cpu_count
-import matplotlib.pyplot as plt
 
 
-def Create(parameters):
+def create(parameters):
     return MapperLinear(parameters)
 
 
@@ -29,18 +28,13 @@ class MapperLinear(MapperInterpolator):
         super().__init__(parameters)
 
         # store settings
-        self.parallel = False
-        if self.settings.Has('parallel'):
-            self.parallel = self.settings['parallel'].GetBool()
+        self.parallel = self.settings['parallel'] if 'parallel' in self.settings else False
 
         # determine number of nearest neighbours
-        if len(self.directions) == 3:
-            self.n_nearest = 3
-        else:
-            self.n_nearest = 2
+        self.n_nearest = 3 if len(self.directions) == 3 else 2
 
-    def Initialize(self, model_part_from, model_part_to):
-        super().Initialize(model_part_from, model_part_to)
+    def initialize(self, model_part_from, model_part_to):
+        super().initialize(model_part_from, model_part_to)
 
         if len(self.directions) == 3:
             get_coeffs = get_coeffs_3d
@@ -75,6 +69,7 @@ def get_coeffs_1d_2d(coords_from, coord_to):
     coeffs[1] = 1. - coeffs[0]
     return coeffs.reshape(1, -1)
 
+
 def get_coeffs_3d(coords_from, coord_to):
     coeffs = np.zeros(3)
     P_0 = coord_to
@@ -100,6 +95,7 @@ def get_coeffs_3d(coords_from, coord_to):
 
     return coeffs.reshape(1, -1)
 
+
 def line_interpolation_coeff(P_0, P_1, P_2):
     # project P_0 on line
     # *** only necessary if 2D??
@@ -119,6 +115,7 @@ def line_interpolation_coeff(P_0, P_1, P_2):
         c = 1.
     return c
 
+
 def degenerate_triangle(P_1, P_2, P_3):
     v_12 = P_2 - P_1
     v_13 = P_3 - P_1
@@ -136,11 +133,13 @@ def degenerate_triangle(P_1, P_2, P_3):
         return True
     return False
 
+
 def project_on_triangle(P_0, P_1, P_2, P_3):
     v_n = np.cross(P_2 - P_1, P_3 - P_1)
     v_n /= np.linalg.norm(v_n)
     P_p = P_0 + v_n * np.dot(P_1 - P_0, v_n)
     return P_p
+
 
 def point_on_triangle(P_p, P_1, P_2, P_3):
     a = np.cross(P_p - P_1, P_2 - P_1)
@@ -150,6 +149,7 @@ def point_on_triangle(P_p, P_1, P_2, P_3):
     if np.dot(a, b) >= 0 and np.dot(a, c) >= 0:
         return True
     return False
+
 
 def triangle_area(P_1, P_2, P_3):
     return np.linalg.norm(np.cross(P_2 - P_1, P_3 - P_1) / 2)

@@ -1,66 +1,48 @@
-from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
 
 import numpy as np
-from sys import argv
+import json
 
 
-# Check number of command line arguments
-if len(argv) != 2:
-    err_msg = 'Wrong number of input arguments!\n'
-    err_msg += 'Use this script in the following way:\n'
-    err_msg += '    "python co_simulation_analysis.py <cosim-parameter-file>.json"\n'
-    raise Exception(err_msg)
+with open('parameters.json') as parameter_file:
+    parameters = json.load(parameter_file)
 
+solver = create_instance(parameters)
+settings = parameters['settings']
 
-# Import data structure
-parameter_file_name = argv[1]
-
-# Import parameters using the data structure
-with open(parameter_file_name, 'r') as parameter_file:
-    parameters = data_structure.Parameters(parameter_file.read())
-
-solver = CreateInstance(parameters['solver_wrappers'][0])
-
-
-settings = parameters['solver_wrappers'][0]['settings']
-
-# steady test
+# steady test  *** not converted
 if 0:
-    solver.Initialize()
-    solver.InitializeSolutionStep()
+    solver.initialize()
+    solver.initialize_solution_step()
 
-    interface_input = solver.GetInterfaceInput()
+    interface_input = solver.get_interface_input()
     for iteration in range(3):
         iteration += 1
         print(f'\niteration {iteration}')
-        solver.SolveSolutionStep(interface_input)
-        interface_input = solver.GetInterfaceInput()
+        solver.solve_solution_step(interface_input)
+        interface_input = solver.get_interface_input()
         for key in settings['interface_input'].keys():
             for node in interface_input.model[key].Nodes:
                 dy = (1 - np.cos(2 * np.pi * node.X0)) * 0.5 * 0.01  # this used node.X before
                 node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
 
-    solver.FinalizeSolutionStep()
-    solver.Finalize()
+    solver.finalize_solution_step()
+    solver.finalize()
 
-# unsteady test
+# unsteady test  *** being converted
 else:
-    solver.Initialize()
-
-    interface_input = solver.GetInterfaceInput()
+    solver.initialize()
+    interface_input = solver.get_interface_input()
     for timestep in range(1, 5):
-        f = 0.005 * (-1) ** (timestep + 1)
-        f = 0.05
-        solver.InitializeSolutionStep()
+        solver.initialize_solution_step()
         for iteration in range(1, 3):
-            solver.SolveSolutionStep(interface_input)
-            interface_input = solver.GetInterfaceInput()
-            for key in settings['interface_input'].keys():
-                for node in interface_input.model[key].Nodes:
-                    dy = (1 - np.cos(
-                        2 * np.pi * (node.X0 - timestep / 4 - iteration / 16))) * 0.5 * f  # this used node.X before
-                    node.SetSolutionStepValue(vars(data_structure)['DISPLACEMENT'], 0, [0., dy, 0.])
-        solver.FinalizeSolutionStep()
-
-    solver.Finalize()
+            solver.solve_solution_step(interface_input)
+            interface_input = solver.get_interface_input()
+            for dct in interface_input.parameters:
+                mp_name = dct['model_part']
+                model_part = interface_input.get_model_part(mp_name)
+                displacement = interface_input.get_variable_data(mp_name, 'displacement')
+                displacement[:, 1] = .02 * (1 - np.cos(2 * np.pi * (model_part.x0 - timestep / 4 - iteration / 16)))
+                interface_input.set_variable_data(mp_name, 'displacement', displacement)
+        solver.finalize_solution_step()
+    solver.finalize()

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 '''This is an example of dummy_solver.py
 To use test functions for the testing of a single solver, a file with this name should be included in the working directory.
 The functions that need to be defined depend on the variables for the interface
-The names of these functions are fixed as calculate_VARIABLE(x,y,z,n)
+The names of these functions are fixed as calculate_variable(x,y,z,n)
 The functions receive the x, y and z-coordinate of the nodes in undeformed state and the current time step (n)
 Several types of test can be grouped into this dummy_solver.py file by creating additional classes
 The name of the class to be used should be specified in the .json file containing the settings for the case
@@ -13,7 +13,7 @@ The name of the class to be used should be specified in the .json file containin
 
 
 class SimpleTest:
-    def calculate_DISPLACEMENT(self, x, y, z, n):
+    def calculate_displacement(self, x, y, z, n):
         """ Specify the displacement of a point on the interface relative to its original position"""
         if 0.01 < x < 0.024:
             disp = [0, 0, 0.001]
@@ -21,15 +21,15 @@ class SimpleTest:
             disp = [0, 0, 0]
         return disp
 
-    def calculate_PRESSURE(self, x, y, z, n):
+    def calculate_pressure(self, x, y, z, n):
         """ Specify the pressure on the surface"""
         if x > 0.01:
-            pres = 1000
+            pres = [1000]
         else:
-            pres = 0
+            pres = [0]
         return pres
 
-    def calculate_TRACTION(self, x, y, z, n):
+    def calculate_traction(self, x, y, z, n):
         """ Specify the traction on the surface"""
         if x > 0.01:
             trac = [0, 0, 100]
@@ -39,7 +39,7 @@ class SimpleTest:
 
 
 class TransientTest:
-    def calculate_DISPLACEMENT(self, x, y, z, n):
+    def calculate_displacement(self, x, y, z, n):
         """ Specify the displacement of a point on the interface relative to its original position"""
         if n < 5:
             if 0.01 < x < 0.024:
@@ -53,21 +53,21 @@ class TransientTest:
                 disp = [0, 0, 0]
         return disp
 
-    def calculate_PRESSURE(self, x, y, z, n):
+    def calculate_pressure(self, x, y, z, n):
         """ Specify the pressure on the surface"""
         if n < 5:
             if x > 0.01:
                 pres = 1000
             else:
-                pres = 0
+                pres = [0]
         else:
             if x > 0.01:
                 pres = -1000
             else:
-                pres = 0
+                pres = [0]
         return pres
 
-    def calculate_TRACTION(self, x, y, z, n):
+    def calculate_traction(self, x, y, z, n):
         """ Specify the traction on the surface"""
         if n < 5:
             if x > 0.01:
@@ -83,7 +83,7 @@ class TransientTest:
 
 
 class PythonSolverTest:
-    def calculate_DISPLACEMENT(self, x, y, z, n):
+    def calculate_displacement(self, x, y, z, n):
         """ Specify the displacement of a point on the interface relative to its original position"""
         if n < 5:
             if 0.01 < z < 0.024:
@@ -97,21 +97,21 @@ class PythonSolverTest:
                 disp = [0, 0, 0]
         return disp
 
-    def calculate_PRESSURE(self, x, y, z, n):
+    def calculate_pressure(self, x, y, z, n):
         """ Specify the pressure on the surface"""
         if n < 5:
             if z > 0.01:
                 pres = 1000
             else:
-                pres = 0
+                pres = [0]
         else:
             if z > 0.01:
                 pres = -1000
             else:
-                pres = 0
+                pres = [0]
         return pres
 
-    def calculate_TRACTION(self, x, y, z, n):
+    def calculate_traction(self, x, y, z, n):
         """ Specify the traction on the surface"""
         if n < 5:
             if z > 0.01:
@@ -144,7 +144,7 @@ class InterpolatedData:
         self.interpolant = interpolate.splrep(abscissa, y_displacement, s=0)
         plt.plot(abscissa, y_displacement)
 
-    def calculate_DISPLACEMENT(self, x, y, z, n):
+    def calculate_displacement(self, x, y, z, n):
         """ Specify the displacement of a point on the interface relative to its original position"""
         if -0.025 <= x <= 0.025:
             disp = [0, float(interpolate.splev(x, self.interpolant, der=0)), 0]

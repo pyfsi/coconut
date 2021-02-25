@@ -39,9 +39,7 @@ The axial direction is along the z-axis,
 the radial direction along the y-axis.
 
 The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
-As both solver has the 100 cells on the fluid-structure interface, no interpolation is required
-and the parameter file `project_parameters_conformal.json` can be used.
-
-A parameter file `project_parameters_mapped.json` is also provided,
-which can be used i the number of cells `m` is set differently in the two solvers.
-Then, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.
+Moreover, as both solvers have 100 cells on the fluid-structure interface, no interpolation is required.
+Nonetheless, a linear interpolation mapper for the structure solver to interpolate in the x-direction is included in
+the parameter file. 
+As such, the number of cells `m` can be varied independently in both solvers.

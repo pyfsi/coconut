@@ -1,53 +1,47 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
 
+import unittest
 import numpy as np
-import os
+import json
 
-class TestMapperCombined(KratosUnittest.TestCase):
+
+class TestMapperCombined(unittest.TestCase):
     def test_mapper_combined(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_combined.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = data_structure.Parameters(parameter_file.read())
+        with open('mappers/test_combined.json') as parameter_file:
+            parameters = json.load(parameter_file)
 
         # compare 3 mappers: nearest, combined_a, combined_b
-        if True:
-            # create model_part_from
-            var_from = vars(data_structure)["TEMPERATURE"]
-            model_from = data_structure.Model()
-            model_part_from = model_from.CreateModelPart('wall_from')
-            model_part_from.AddNodalSolutionStepVariable(var_from)
+        for var in ['pressure', 'displacement']:
+            mp_name_from = 'wall_from'
+            mp_name_to = 'wall_to'
+            model = data_structure.Model()
 
-            for i in range(100):
-                node = model_part_from.CreateNewNode(i, i, i ** 2, i ** 3)
-                node.SetSolutionStepValue(var_from, 0, np.random.rand())
+            n = 100
+            tmp = np.linspace(0, 1, n)
+            x, y, z = tmp, tmp ** 1.1, tmp ** 1.2
+            v_from = np.random.rand(n, data_structure.variables_dimensions[var])
+            mp_from = model.create_model_part(mp_name_from, x, y, z, np.arange(n))
+            mp_to = model.create_model_part(mp_name_to, np.flip(x), np.flip(y), np.flip(z), np.arange(n))
 
-            # create model_part_to
-            var_to = vars(data_structure)["PRESSURE"]
-            model_to = data_structure.Model()
-            model_part_to = model_to.CreateModelPart('wall_to')
-            model_part_to.AddNodalSolutionStepVariable(var_to)
-
-            for i in range(100):
-                model_part_to.CreateNewNode(i, (99 - i), (99 - i) ** 2, (99 - i) ** 3)
+            parameters_from = [{'model_part': mp_name_from, 'variables': [var]}]
+            int_from = data_structure.Interface(parameters_from, model)
+            int_from.set_variable_data(mp_name_from, var, v_from)
+            parameters_to = [{'model_part': mp_name_to, 'variables': [var]}]
+            int_to = data_structure.Interface(parameters_to, model)
 
             # create mappers, get output data
             data = []
             for mapper_name in ['mapper_nearest', 'mapper_combined_a', 'mapper_combined_b']:
-                mapper = CreateInstance(parameters[mapper_name])
-                mapper.Initialize(model_part_from, model_part_to)
-                mapper((model_part_from, var_from), (model_part_to, var_to))
-
-                values = []
-                for i_to, node in enumerate(model_part_to.Nodes):
-                    values.append(node.GetSolutionStepValue(var_to))
-                data.append(values)
+                mapper = create_instance(parameters[mapper_name])
+                mapper.initialize(mp_from, mp_to)
+                mapper((int_from, mp_name_from, var), (int_to, mp_name_to, var))
+                data.append(int_to.get_variable_data(mp_name_to, var))
 
             # check output data
-            self.assertListEqual(data[0], data[1])
-            self.assertListEqual(data[0], data[2])
+            np.testing.assert_array_equal(data[0], data[1])
+            np.testing.assert_array_equal(data[0], data[2])
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

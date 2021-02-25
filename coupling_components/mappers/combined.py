@@ -1,13 +1,14 @@
-from coconut.coupling_components import tools
+from coconut import tools
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
+from coconut import data_structure
+from coconut.data_structure import variables_dimensions
 
 
-def Create(parameters):
+def create(parameters):
     return MapperCombined(parameters)
 
 
-# Class MapperCombined
 class MapperCombined(Component):
     def __init__(self, parameters):
         """
@@ -25,11 +26,11 @@ class MapperCombined(Component):
 
         # create all mappers
         self.mappers = []
-        for par in self.settings['mappers'].list():
-            self.mappers.append(CreateInstance(par))
+        for par in self.settings['mappers']:
+            self.mappers.append(create_instance(par))
 
         # initialization
-        self.model_parts = None
+        self.interfaces = None
 
         # check that exactly one mapper is an interpolator
         counter = 0
@@ -40,45 +41,70 @@ class MapperCombined(Component):
         if counter != 1:
             raise ValueError(f'{counter} interpolators found instead of 1')
 
-        # TODO: combined mapper which has 0 interpolators? not possible now
+    def initialize(self, model_part_from, model_part_to):
+        super().initialize()
 
-    def Initialize(self, model_part_from, model_part_to):
-        super().Initialize()
+        self.model = data_structure.Model()
+        n = len(self.mappers)
 
         # initialize upstream transformers
-        mps_from = [model_part_from]
+        mp = model_part_from
+        mp_names_from = [mp.name]
+        self.model.create_model_part(mp.name, mp.x0, mp.y0, mp.z0, mp.id)
         for i in range(self.index):
-            mps_from.append(self.mappers[i].Initialize(mps_from[-1], forward=True))
+            mp_names_from.append(f'mp_from_{i + 1}')
+            self.mappers[i].initialize(self.model, mp_names_from[i],
+                                       mp_names_from[i + 1], forward=True)
 
         # initialize downstream transformers
-        mps_to = [model_part_to]
-        for i in range(len(self.mappers) - 1, self.index, -1):
-            mps_to.append(self.mappers[i].Initialize(mps_to[-1], forward=False))
+        mp = model_part_to
+        mp_names_to = [mp.name]
+        self.model.create_model_part(mp.name, mp.x0, mp.y0, mp.z0, mp.id)
+        for i in range(n - 1 - self.index):
+            mp_names_to.append(f'mp_to_{i + 1}')
+            self.mappers[n - 1 - i].initialize(self.model, mp_names_to[i],
+                                               mp_names_to[i + 1], forward=False)
 
         # initialize interpolator
-        self.mappers[self.index].Initialize(mps_from[-1], mps_to[-1])
+        mp_from = self.model.get_model_part(mp_names_from[-1])
+        mp_to = self.model.get_model_part(mp_names_to[-1])
+        self.mappers[self.index].initialize(mp_from, mp_to)
 
-        # store inner ModelParts
-        mps_to.reverse()
-        self.model_parts = mps_from[1:] + mps_to[:-1]
+        self.mp_names = mp_names_from + mp_names_to[::-1]
 
     def __call__(self, args_from, args_to):
-        mps_from = [args_from[0]] + self.model_parts
-        mps_to = self.model_parts + [args_to[0]]
+        # unpack arguments
+        interface_from, mp_name_from, var_from = args_from
+        interface_to, mp_name_to, var_to = args_to
+
+        # check variables
+        if var_from not in variables_dimensions:
+            raise NameError(f'Variable "{var_from}" does not exist')
+        if var_from != var_to:
+            raise TypeError('Variables must be equal')
+        var = var_from
+
+        # create Interfaces
+        interfaces = []
+        for mp_name in self.mp_names:
+            parameters = [{'model_part': mp_name, 'variables': [var]}]
+            interfaces.append(data_structure.Interface(parameters, self.model))
+
+        # map data
+        data_from = interface_from.get_variable_data(mp_name_from, var)
+        interfaces[0].set_variable_data(self.mp_names[0], var, data_from)
 
         for i, mapper in enumerate(self.mappers):
-            var_from = args_from[1]
-            var_to = args_to[1]
-            if i > self.index:
-                var_from = args_to[1]
-            if i < self.index:
-                var_to = args_from[1]
-            mapper((mps_from[i], var_from), (mps_to[i], var_to))
+            mapper((interfaces[i], self.mp_names[i], var),
+                   (interfaces[i + 1], self.mp_names[i + 1], var))
 
-    def OutputSolutionStep(self):
+        data_to = interfaces[-1].get_variable_data(self.mp_names[-1], var)
+        interface_to.set_variable_data(mp_name_to, var, data_to)
+
+    def output_solution_step(self):
         for mapper in self.mappers:
-            mapper.OutputSolutionStep()
+            mapper.output_solution_step()
 
-    def PrintComponentsInfo(self, pre):
-        tools.Print(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
-        tools.PrintComponentsInfo(pre, self.mappers)
+    def print_components_info(self, pre):
+        tools.print_info(pre, "The component ", self.__class__.__name__, " combining the following mappers:")
+        tools.print_components_info(pre, self.mappers)

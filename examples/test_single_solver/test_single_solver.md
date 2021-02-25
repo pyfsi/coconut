@@ -26,6 +26,6 @@ Note that the number of classes defined is not restricted.
 Also note that the `__init__()` method can be used to avoid repeating the same calculations multiple times.
 The name of the class that one wants to use should be specified in the JSON file. 
 In this example the `TransientTest` is used.
-Each class contains function definitions with a pre-formatted name `calculate_VARIABLE(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `DISPLACEMENT`, `PRESSURE` or `TRACTION`.
+Each class contains function definitions with a pre-formatted name `calculate_variable(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `displacement`, `pressure` or `traction`.
 How these variables are defined inside these methods, is up to the user.
-However, the methods need to return the right format: a 3-element list of floats for vector variables and a single float for scalar variables.
+However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.

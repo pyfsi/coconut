@@ -1,64 +1,67 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.interface import Interface
-from coconut.coupling_components.tools import CreateInstance
+from coconut.data_structure.interface import Interface
+from coconut.tools import create_instance
 
-import os
+import unittest
+import numpy as np
 
 
-class TestConvergenceCriterionRelativeNorm(KratosUnittest.TestCase):
+class TestConvergenceCriterionRelativeNorm(unittest.TestCase):
+
     def test_convergence_criterion_relative_norm(self):
         m = 10
-        dz = 2.0
-        a0 = 10.0
-        a1 = 1.0e-4
-        a2 = 1.0e-6
-        interface_settings = data_structure.Parameters('{"wall": "AREA"}')
+        dz = 2
+        a0 = 10
+        a1 = 1e-4
+        a2 = 1e-6
+        variable = 'area'
+        model_part_name = 'wall'
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
-        # Create interface
-        variable = vars(data_structure)["AREA"]
+        # create model and model_part
         model = data_structure.Model()
-        model_part = model.CreateModelPart("wall")
-        model_part.AddNodalSolutionStepVariable(variable)
-        for i in range(m):
-            model_part.CreateNewNode(i, 0.0, 0.0, i * dz)
-        step = 0
-        for node in model_part.Nodes:
-            node.SetSolutionStepValue(variable, step, a0)
-        interface = Interface(model, interface_settings)
+        ids = np.arange(0, m)
+        x0 = np.zeros(m)
+        y0 = np.zeros(m)
+        z0 = np.arange(0, m * dz, dz)
+        model.create_model_part(model_part_name, x0, y0, z0, ids)
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_relative_norm.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = data_structure.Parameters(parameter_file.read())
+        a0_array = np.full((m, 1), a0)
+        a1_array = np.full((m, 1), a1)
+        a2_array = np.full((m, 1), a2)
 
-        convergence_criterion_relative_norm = CreateInstance(settings)
-        convergence_criterion_relative_norm.Initialize()
+        # create interface
+        interface = Interface(interface_settings, model)
+
+        # create convergence criterion
+        parameters = {'type': 'convergence_criteria.relative_norm',
+                      'settings': {'tolerance': 1e-6, 'order': 2}}
+        convergence_criterion_relative_norm = create_instance(parameters)
+        convergence_criterion_relative_norm.initialize()
+
+        # test convergence criterion
         for i in range(3):
-            convergence_criterion_relative_norm.InitializeSolutionStep()
-            is_satisfied = convergence_criterion_relative_norm.IsSatisfied()
+            convergence_criterion_relative_norm.initialize_solution_step()
+            is_satisfied = convergence_criterion_relative_norm.is_satisfied()
             self.assertFalse(is_satisfied)
-            for node in model_part.Nodes:
-                node.SetSolutionStepValue(variable, step, a0)
-            convergence_criterion_relative_norm.Update(interface)
-            is_satisfied = convergence_criterion_relative_norm.IsSatisfied()
+            interface.set_variable_data(model_part_name, variable, a0_array)
+            convergence_criterion_relative_norm.update(interface)
+            is_satisfied = convergence_criterion_relative_norm.is_satisfied()
             self.assertFalse(is_satisfied)
-            for node in model_part.Nodes:
-                node.SetSolutionStepValue(variable, step, a1)
-            convergence_criterion_relative_norm.Update(interface)
-            is_satisfied = convergence_criterion_relative_norm.IsSatisfied()
+            interface.set_variable_data(model_part_name, variable, a1_array)
+            convergence_criterion_relative_norm.update(interface)
+            is_satisfied = convergence_criterion_relative_norm.is_satisfied()
             self.assertFalse(is_satisfied)
-            for node in model_part.Nodes:
-                node.SetSolutionStepValue(variable, step, a2)
-            convergence_criterion_relative_norm.Update(interface)
-            is_satisfied = convergence_criterion_relative_norm.IsSatisfied()
+            interface.set_variable_data(model_part_name, variable, a2_array)
+            convergence_criterion_relative_norm.update(interface)
+            is_satisfied = convergence_criterion_relative_norm.is_satisfied()
             self.assertTrue(is_satisfied)
-            for node in model_part.Nodes:
-                node.SetSolutionStepValue(variable, step, a1)
-            convergence_criterion_relative_norm.Update(interface)
-            is_satisfied = convergence_criterion_relative_norm.IsSatisfied()
+            interface.set_variable_data(model_part_name, variable, a1_array)
+            convergence_criterion_relative_norm.update(interface)
+            is_satisfied = convergence_criterion_relative_norm.is_satisfied()
             self.assertFalse(is_satisfied)
-            convergence_criterion_relative_norm.FinalizeSolutionStep()
+            convergence_criterion_relative_norm.finalize_solution_step()
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

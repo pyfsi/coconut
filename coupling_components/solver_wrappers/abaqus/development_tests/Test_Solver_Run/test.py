@@ -1,20 +1,21 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
 
 import numpy as np
 from sys import argv
 import os
+import json
 
 
 def print_colored(string, color):
-    if color == 'green':
-        print('\x1b[0;30;42m' + string + '\x1b[0m')
-    elif color == 'orange':
+    if color=='green':
+        print('\x1b[0;30;42m'+string+'\x1b[0m')
+    elif color=='orange':
         print('\x1b[0;30;43m' + string + '\x1b[0m')
-    elif color == 'red':
+    elif color=='red':
         print('\x1b[0;30;41m' + string + '\x1b[0m')
     else:
-        print(string + f'(color {color} not implemented)')
+        print(string+f'(color {color} not implemented)')
 
 
 # Check number of command line arguments
@@ -28,12 +29,12 @@ if len(argv) != 2:
 parameter_file_name = argv[1]
 
 # Import parameters using the data structure
-with open(parameter_file_name, 'r') as parameter_file:
-    parameters = data_structure.Parameters(parameter_file.read())
+with open('parameters.json') as parameter_file:
+    parameters = json.load(parameter_file)
 
 # Create the solver (__init__)
 print("Creating an AbaqusSolver")
-AbaqusSolver0 = CreateInstance(parameters["solver_wrappers"][0])
+AbaqusSolver0 = create_instance(parameters["solver_wrappers"][0])
 print_colored("AbaqusSolver0 created", "green")
 
 # Assign loads to the Input-Nodes
@@ -48,44 +49,45 @@ for node in mp.Nodes:
     node.SetSolutionStepValue(traction, 0, [0, 0, 0])
 print(f"Assigned uniform pressure ({p} Pa) and 0 traction at the interface ")
 
-AbaqusSolver0.Initialize()
+AbaqusSolver0.initialize()
 
 # Step 1, Coupling 1
-AbaqusSolver0.InitializeSolutionStep()
-AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
+AbaqusSolver0.initialize_solution_step()
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
 
 os.system("cp -r CSM/CSM_Time1.odb CSM/CSM_Time1_Iter1.odb")
 
 # Step 1, Coupling 2
-AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-AbaqusSolver0.FinalizeSolutionStep()
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
+AbaqusSolver0.finalize_solution_step()
 
-# Step 2, Coupling 1
-AbaqusSolver0.InitializeSolutionStep()
-AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-AbaqusSolver0.FinalizeSolutionStep()
+#Step 2, Coupling 1
+AbaqusSolver0.initialize_solution_step()
+AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
+AbaqusSolver0.finalize_solution_step()
 
-# Iterate until deformation is approximately steady
+#Iterate until deformation is approximately steady
 mp_out = AbaqusSolver0.model['BEAMINSIDEMOVING_nodes']  # interface input modelpart
 displacement = vars(data_structure)['DISPLACEMENT']
 
 n_out = mp_out.NumberOfNodes()
-prev_displacement = np.zeros((n_out, 3)) * 0.
-diff = np.zeros((n_out, 3)) * 0.
+prev_displacement = np.zeros((n_out, 3))*0.
+diff = np.zeros((n_out,3))*0.
 tol = 1e-06
 diffMax = 1000
 while diffMax > tol:
-    AbaqusSolver0.InitializeSolutionStep()
-    AbaqusSolver0.SolveSolutionStep(AbaqusSolver0.GetInterfaceInput())
-    AbaqusSolver0.FinalizeSolutionStep()
+    AbaqusSolver0.initialize_solution_step()
+    AbaqusSolver0.solve_solution_step(AbaqusSolver0.get_interface_input())
+    AbaqusSolver0.finalize_solution_step()
     diffMax = 0
     for node in mp_out.Nodes:
-        diff = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement)) - prev_displacement[int(node.Id), :])
+        diff = np.linalg.norm(np.array(node.GetSolutionStepValue(displacement))-prev_displacement[int(node.Id), :])
         prev_displacement[int(node.Id), :] = np.array(node.GetSolutionStepValue(displacement))
         if diff > diffMax:
             diffMax = diff
     print(diffMax)
 
-AbaqusSolver0.Finalize()
 
-print_colored("Finished", 'green')
+AbaqusSolver0.finalize()
+
+print_colored("Finished",'green')

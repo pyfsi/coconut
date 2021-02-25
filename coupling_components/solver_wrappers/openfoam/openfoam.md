@@ -15,10 +15,10 @@ parameter|type|description
 `dimensions`|int|Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D. 
 `start_time`|double|Physical start time of the simulation. This should correspond to the name of the time step folder in OpenFOAM from which the initial data and boundary conditions are read.
 `end_time`|double|Physical end time of the simulation.
-`dt`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
+`delta_t`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
 `boundary_names`|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
-`interface_input`|dict|Keys are names of `ModelParts`, which should correspond to a boundary name (defined in `boundary_names` appended with `_input`. Every boundary name should correspond to one interface input name. This is explicitly checked at the start of the CoCoNuT simulation. The values are (lists of) names of `Variables`. For a flow solver, this is typically `DISPLACEMENT`(Dirichlet condition).
-`interface_output`|dict|Keys are names of `ModelParts`, which should correspond to a boundary name (defined in `boundary_names` appended with `_output`. Every boundary name should correspond to one interface input name. This is explicitly checked at the start of the CoCoNuT simulation. The values are (lists of) names of `Variables`. For a flow solver, this is typically `PRESSURE` and  `TRACTION` (Neumann condition).
+`interface_input`|dict| List of `ModelPart` names and `Variables` pairs that provides interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables` with values as name of the `ModelPart` and list of input variables available in `variables.py`. The `ModelPart` name must be the concatenation of an entry from `boundary_names` and "_input".
+`interface_output`|dict| Analogous to `interface_input`, but here the name must be the concatenation of an entry from `boundary_names` and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
 `cores`|int|Number of cores on which the OpenFOAM-solver can run. This variable will be replaced in the raw `decomposeParDict`-file, after which the case is decomposed of the given number of cores.
 `decomposeMethod`|string|Name of the mesh decomposition method to be used in OpenFOAM (e.g. `simple`,`scotch`...).
 `write_interval`|double|Period between subsequent saves of the entire flow field.

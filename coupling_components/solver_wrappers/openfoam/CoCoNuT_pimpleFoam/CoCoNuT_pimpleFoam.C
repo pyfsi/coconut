@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 					//Get the vector field of the patch
 					vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
 		
-					Info<< "Reading pointDisplacement\n" << endl;
+					Info<< "Reading pointDisplacement Hello\n" << endl;
 		
 					Info<< "prev_runTime" << prev_runTime << endl;
 		

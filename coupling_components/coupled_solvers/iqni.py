@@ -1,8 +1,8 @@
-from coconut.coupling_components.tools import CreateInstance
+from coconut.tools import create_instance
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 
-def Create(parameters):
+def create(parameters):
     return CoupledSolverIQNI(parameters)
 
 
@@ -10,36 +10,36 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.model = CreateInstance(self.parameters["settings"]["model"])
-        self.omega = self.settings["omega"].GetDouble()
+        self.model = create_instance(self.parameters["settings"]["model"])
+        self.omega = self.settings["omega"]
 
-    def Initialize(self):
-        super().Initialize()
+    def initialize(self):
+        super().initialize()
 
-        self.model.size_in = self.model.size_out = self.x.GetNumpyArray().shape[0]
-        self.model.out = self.x.deepcopy()
-        self.model.Initialize()
+        self.model.size_in = self.model.size_out = self.x.size
+        self.model.out = self.x.copy()
+        self.model.initialize()
         self.components += [self.model]
 
-    def SolveSolutionStep(self):
-        # Initial value
-        self.x = self.predictor.Predict(self.x)
-        # First coupling iteration
-        self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-        xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+    def solve_solution_step(self):
+        # initial value
+        self.x = self.predictor.predict(self.x)
+        # first coupling iteration
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x)
+        xt = self.solver_wrappers[1].solve_solution_step(self.y)
         r = xt - self.x
-        self.model.Add(r, xt)
-        self.FinalizeIteration(r)
-        # Coupling iteration loop
-        while not self.convergence_criterion.IsSatisfied():
-            if not self.model.IsReady():
+        self.model.add(r, xt)
+        self.finalize_iteration(r)
+        # coupling iteration loop
+        while not self.convergence_criterion.is_satisfied():
+            if not self.model.is_ready():
                 dx = self.omega * r
             else:
                 dr = -1 * r
-                dx = self.model.Predict(dr) - dr
+                dx = self.model.predict(dr) - dr
             self.x += dx
-            self.y = self.solver_wrappers[0].SolveSolutionStep(self.x)
-            xt = self.solver_wrappers[1].SolveSolutionStep(self.y)
+            self.y = self.solver_wrappers[0].solve_solution_step(self.x)
+            xt = self.solver_wrappers[1].solve_solution_step(self.y)
             r = xt - self.x
-            self.model.Add(r, xt)
-            self.FinalizeIteration(r)
+            self.model.add(r, xt)
+            self.finalize_iteration(r)

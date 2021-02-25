@@ -1,75 +1,82 @@
 from coconut import data_structure
-from coconut.data_structure import KratosUnittest
-from coconut.coupling_components.tools import CreateInstance
-from coconut.coupling_components.interface import Interface
+from coconut.data_structure.interface import Interface
+from coconut.tools import create_instance
 
+import unittest
+import os
+import json
 import numpy as np
 
 
-class TestPredictorLegacy(KratosUnittest.TestCase):
+class TestPredictorLegacy(unittest.TestCase):
+
     def test_predictor_legacy(self):
         m = 10
-        dz = 3.0
-        a0 = 5.0
-        p1 = 5.0
-        a1 = 1.0
-        p2 = -3.0
-        a2 = 5.0
-        p3 = 13.0
-        interface_settings = data_structure.Parameters('{"wall": "AREA"}')
+        dz = 3
+        a0 = 5
+        p1 = 5
+        a1 = 1
+        p2 = -3
+        a2 = 5
+        p3 = 13
+        variable = 'area'
+        model_part_name = 'wall'
+        interface_settings = [{'model_part': model_part_name, 'variables': [variable]}]
 
-        # Create interface
-        variable = vars(data_structure)["AREA"]
+        # create model and model_part
         model = data_structure.Model()
-        model_part = model.CreateModelPart("wall")
-        model_part.AddNodalSolutionStepVariable(variable)
-        for i in range(m):
-            model_part.CreateNewNode(i, 0.0, 0.0, i * dz)
-        step = 0
-        for node in model_part.Nodes:
-            node.SetSolutionStepValue(variable, step, a0)
-        interface = Interface(model, interface_settings)
+        ids = np.arange(0, m)
+        x0 = np.zeros(m)
+        y0 = np.zeros(m)
+        z0 = np.arange(0, m * dz, dz)
+        model.create_model_part(model_part_name, x0, y0, z0, ids)
 
-        # Create predictor
-        parameter_file_name = "predictors/test_legacy.json"
+        a0_array = np.full((m, 1), a0)
+
+        # create interface
+        interface = Interface(interface_settings, model)
+        interface.set_variable_data(model_part_name, variable, a0_array)
+
+        # read settings
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_legacy.json')
         with open(parameter_file_name, 'r') as parameter_file:
-            settings = data_structure.Parameters(parameter_file.read())
+            settings = json.load(parameter_file)
 
-        predictor_legacy = CreateInstance(settings)
-        predictor_legacy.Initialize(interface)
+        predictor_legacy = create_instance(settings)
+        predictor_legacy.initialize(interface)
 
-        # Test predictor: first prediction needs to be equal to initialized value
-        predictor_legacy.InitializeSolutionStep()
-        prediction = predictor_legacy.Predict(interface)
+        # first prediction needs to be equal to initialized value
+        predictor_legacy.initialize_solution_step()
+        prediction = predictor_legacy.predict(interface)
         self.assertIsInstance(prediction, Interface)
-        prediction_as_array = prediction.GetNumpyArray()
+        prediction_as_array = prediction.get_interface_data()
         for i in range(m):
             self.assertAlmostEqual(p1, prediction_as_array[i])
         interface_as_array = a1 * np.ones_like(prediction_as_array)
-        interface.SetNumpyArray(interface_as_array)
-        predictor_legacy.Update(interface)
-        predictor_legacy.FinalizeSolutionStep()
+        interface.set_interface_data(interface_as_array)
+        predictor_legacy.update(interface)
+        predictor_legacy.finalize_solution_step()
 
-        # Test predictor: second prediction needs to be linear
-        predictor_legacy.InitializeSolutionStep()
-        prediction = predictor_legacy.Predict(interface)
+        # second prediction needs to be linear
+        predictor_legacy.initialize_solution_step()
+        prediction = predictor_legacy.predict(interface)
         self.assertIsInstance(prediction, Interface)
-        prediction_as_array = prediction.GetNumpyArray()
+        prediction_as_array = prediction.get_interface_data()
         for i in range(m):
             self.assertAlmostEqual(p2, prediction_as_array[i])
         interface_as_array = a2 * np.ones_like(prediction_as_array)
-        interface.SetNumpyArray(interface_as_array)
-        predictor_legacy.Update(interface)
-        predictor_legacy.FinalizeSolutionStep()
+        interface.set_interface_data(interface_as_array)
+        predictor_legacy.update(interface)
+        predictor_legacy.finalize_solution_step()
 
-        # Test predictor: third prediction needs to be legacy
-        predictor_legacy.InitializeSolutionStep()
-        prediction = predictor_legacy.Predict(interface)
+        # third prediction needs to be legacy
+        predictor_legacy.initialize_solution_step()
+        prediction = predictor_legacy.predict(interface)
         self.assertIsInstance(prediction, Interface)
-        prediction_as_array = prediction.GetNumpyArray()
+        prediction_as_array = prediction.get_interface_data()
         for i in range(m):
             self.assertAlmostEqual(p3, prediction_as_array[i])
 
 
 if __name__ == '__main__':
-    KratosUnittest.main()
+    unittest.main()

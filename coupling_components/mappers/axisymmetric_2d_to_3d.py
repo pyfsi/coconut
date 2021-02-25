@@ -1,105 +1,80 @@
-from coconut.coupling_components.component import Component
-from coconut import data_structure
+from coconut.coupling_components.mappers.transformer import MapperTransformer
+from coconut.data_structure import variables_dimensions
 
 import numpy as np
-import copy
 
 
-def Create(parameters):
+def create(parameters):
     return MapperAxisymmetric2DTo3D(parameters)
 
+# TODO: mention in docs that these mappers cannot handle singular points (i.e. with r = 0, e.g. balloon)
 
-# Class MapperAxisymmetric2DTo3D: map 2D axisymmetric to 3D.
-class MapperAxisymmetric2DTo3D(Component):
+class MapperAxisymmetric2DTo3D(MapperTransformer):
     def __init__(self, parameters):
-        super().__init__()
-
-        self.settings = parameters['settings']
-        self.interpolator = False
+        super().__init__(parameters)
 
         # get axial and radial directions
-        dirs = ['X', 'Y', 'Z']
-        self.dir_a = dirs.index(self.settings['direction_axial'].GetString())
-        self.dir_r = dirs.index(self.settings['direction_radial'].GetString())
-        self.dir_3d = (set([0, 1 ,2]) - set([self.dir_a, self.dir_r])).pop()
+        dirs = ['x', 'y', 'z']
+        if self.settings['direction_axial'] not in dirs:
+            raise ValueError(f'invalid axial_direction {self.settings["direction_axial"]}')
+        if self.settings['direction_axial'] not in dirs:
+            raise ValueError(f'invalid radial_direction {self.settings["direction_radial"]}')
+        self.dir_a = dirs.index(self.settings['direction_axial'])
+        self.dir_r = dirs.index(self.settings['direction_radial'])
+        self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
 
         # get number of nodes in tangential direction
-        self.n_t = self.settings['n_tangential'].GetInt()  # int parameter
-        if self.n_t < 6:  # hardcode minimum value?
+        self.n_t = self.settings['n_tangential']
+        if self.n_t < 6:
             raise ValueError('minimum value for n_tangential is 6')
 
-    def Initialize(self, model_part_in, forward):
-        super().Initialize()
+    def initialize(self, model, model_part_name_in, model_part_name_out, forward):
+        super().initialize()
 
         if forward:
-            self.n_from = model_part_in.NumberOfNodes()
+            mp_in = model.get_model_part(model_part_name_in)
+            n_in = mp_in.size
+            n_out = self.n_t * n_in
+            self.n_from = n_in
+            self.n_to = n_out
 
-            n_t = self.settings['n_tangential'].GetInt()  # int parameter
-            if n_t < 6:  # hardcode minimum value?
-                raise ValueError('minimum value for n_tangential is 6')
-            self.n_to = n_t * self.n_from
+            coords_in = np.column_stack((mp_in.x0, mp_in.y0, mp_in.z0))
 
-            model = data_structure.Model()
-            model_part_out = model.CreateModelPart('no_name')
-            model_part_out._ModelPart__hist_variables = model_part_in._ModelPart__hist_variables
+            coords_out = np.zeros((n_out, 3))
+            ids_out = np.arange(n_out)
+            self.theta = np.zeros(n_out)
 
-            self.nearest = np.zeros((self.n_to, 1)).astype(int)
-            self.theta = np.zeros((self.n_to, 1))
+            for i_t in range(self.n_t):  # new nodes ordered per theta
+                theta = i_t * 2 * np.pi / self.n_t
+                i_start = i_t * n_in
+                i_end = (i_t + 1) * n_in
 
-            i_from = 0
-            i_to = 0
-            for node in model_part_in.Nodes:
-                coords = np.array([node.X0, node.Y0, node.Z0])
-                r = coords[self.dir_r]
-                for i in range(n_t):
-                    self.nearest[i_to, 0] = i_from
-                    self.theta[i_to] = i * 2 * np.pi / n_t
+                coords_out[i_start: i_end, self.dir_a] = coords_in[:, self.dir_a]
+                coords_out[i_start: i_end, self.dir_r] = np.cos(theta) * coords_in[:, self.dir_r]
+                coords_out[i_start: i_end, self.dir_3d] = np.sin(theta) * coords_in[:, self.dir_r]
 
-                    coords[self.dir_r] = r * np.cos(self.theta[i_to])
-                    coords[self.dir_3d] = r * np.sin(self.theta[i_to])
+                self.theta[i_start: i_end] = theta
 
-                    model_part_out.CreateNewNode(i_to, *tuple(coords))
-                    i_to += 1
-                i_from += 1
-
-            return model_part_out
-
+            model.create_model_part(model_part_name_out, coords_out[:, 0],
+                                    coords_out[:, 1], coords_out[:, 2], ids_out)
         else:
             raise NotImplementedError('Backward Initialization not implemented for MapperAxisymmetric2DTo3D.')
 
-
     def __call__(self, args_from, args_to):
-        model_part_from, var_from = args_from
-        model_part_to, var_to = args_to
+        super().__call__(args_from, args_to)
 
-        # check if both Variables have same Type
-        if var_from.Type() != var_to.Type():
-            raise TypeError('Variables to be mapped have different Type.')
+        interface_from, mp_name_from, var = args_from
+        interface_to, mp_name_to, _ = args_to
 
-        # scalar interpolation
-        if var_from.Type() == 'Double':
-            hist_var_from = np.zeros(self.n_from)
-            for i_from, node_from in enumerate(model_part_from.Nodes):
-                hist_var_from[i_from] = node_from.GetSolutionStepValue(var_from)
-
-            for i_to, node_to in enumerate(model_part_to.Nodes):
-                node_to.SetSolutionStepValue(var_to, 0, hist_var_from[self.nearest[i_to, 0]])
-
-        # vector interpolation
-        elif var_from.Type() == 'Array':
-            hist_var_from = np.zeros((self.n_from, 3))
-            for i_from, node_from in enumerate(model_part_from.Nodes):
-                hist_var_from[i_from] = node_from.GetSolutionStepValue(var_from)
-
-            for i_to, node_to in enumerate(model_part_to.Nodes):
-                hist_var_to = hist_var_from[self.nearest[i_to, 0]].copy()
-
-                tmp = hist_var_to[self.dir_r]
-                hist_var_to[self.dir_r] = tmp * np.cos(self.theta[i_to])
-                hist_var_to[self.dir_3d] = tmp * np.sin(self.theta[i_to])
-
-                node_to.SetSolutionStepValue(var_to, 0, hist_var_to)
-
-        # other types of Variables
+        dimensions = variables_dimensions[var]
+        data_from = interface_from.get_variable_data(mp_name_from, var)
+        if dimensions == 1:
+            data_to = np.tile(data_from, (self.n_t, 1))
+        elif dimensions == 3:
+            data_to = np.tile(data_from, (self.n_t, 1))
+            r = data_to[:, self.dir_r].copy()
+            data_to[:, self.dir_r] = r * np.cos(self.theta)
+            data_to[:, self.dir_3d] = r * np.sin(self.theta)
         else:
-            raise NotImplementedError(f'Mapping not yet implemented for Variable of Type {var_from.Type()}.')
+            raise NotImplementedError(f'MapperAxisymmetric2DTo3D not implemented for variable of dimension {dimensions}')
+        interface_to.set_variable_data(mp_name_to, var, data_to)

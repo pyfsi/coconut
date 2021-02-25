@@ -1,3 +1,5 @@
+from coconut import tools
+
 import numpy as np
 import os
 import pickle
@@ -34,9 +36,9 @@ for case in legend_entries:
         norm = norm + [np.linalg.norm(results[case_reference]["solution_x"][:, i]
                                       - results[case]["solution_x"][:, i])]
     norm_average = np.array(norm).mean()
-    print(f"Average norm of the difference per time step between {case_reference} and {case} is {norm_average}.")
+    tools.print_info(f"Average norm of the difference per time step between {case_reference} and {case} is {norm_average}.")
 for case, result in results.items():
     iterations = np.array(result["iterations"]).mean()
     time = result["time"]
-    print(f"{case}: average # iterations = {iterations:0.2f} and elapsed time = {time:0.3f}s")
-    print('\t', result["iterations"])
+    tools.print_info(f"{case}: average # iterations = {iterations:0.2f} and elapsed time = {time:0.3f}s")
+    tools.print_info('\t', result["iterations"])

@@ -1,0 +1,40 @@
+{
+    "settings": {
+        "data_structure": "pyKratos"
+    },
+    "solver_wrappers":
+    [
+        {
+            "type": "solver_wrappers.abaqus.614",
+            "settings": {
+                "working_directory" : "CSM",
+                "cores": 1,
+                "dimensions": 2,
+                "arraysize": 10e5,
+                "surfaces": 1,
+                "ramp": 1,
+                "delta_t": 1e-3,
+                "timestep_start": 0,
+                "surfaceIDs": ["BEAMINSIDEMOVING"],
+                "interface_input": [
+                {
+                    "model_part": "BEAMINSIDEMOVING_load_points",
+                    "variables": [
+                        "pressure",
+                        "traction"
+                    ]
+                }
+                ],
+                "interface_output": [
+                {
+                    "model_part": "BEAMINSIDEMOVING_nodes",
+                    "variables": ["displacement"]
+                }
+                ],
+                "mp_mode": "THREADS",
+                "input_file": "Base.inp",
+                "save_iterations": 50
+            }
+        }
+    ]
+}
