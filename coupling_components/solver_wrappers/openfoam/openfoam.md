@@ -15,7 +15,7 @@ parameter|type|description
 `dimensions`|int|Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D. 
 `start_time`|double|Physical start time of the simulation. This should correspond to the name of the time step folder in OpenFOAM from which the initial data and boundary conditions are read.
 `end_time`|double|Physical end time of the simulation.
-`dt`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
+`delta_t`|double|Fixed timestep size in flow solver. This parameter is usually specified in a higher `Component`.
 `boundary_names`|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
 `interface_input`|dict| List of `ModelPart` names and `Variables` pairs that provides interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables` with values as name of the `ModelPart` and list of input variables available in `variables.py`. The `ModelPart` name must be the concatenation of an entry from `boundary_names` and "_input".
 `interface_output`|dict| Analogous to `interface_input`, but here the name must be the concatenation of an entry from `boundary_names` and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.

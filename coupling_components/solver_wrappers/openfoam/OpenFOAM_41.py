@@ -30,7 +30,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.dimensions = self.settings["dimensions"]
         if (self.dimensions != 2) and (self.dimensions != 3):
             sys.exit("OpenFOAM-case should be 2D or 3D.")
-        self.dt = self.settings["dt"]  # Time step size
+        self.delta_t = self.settings["delta_t"]  # Time step size
         self.start_time = self.settings[
             "start_time"]  # Start time - also the name of folder containing data at this time
         self.end_time = self.settings["end_time"]  # End time
@@ -86,7 +86,7 @@ class SolverWrapperOpenFOAM_41(Component):
                     line = line.replace('|APPLICATION|', str(self.application))
                     line = line.replace('|START_TIME|', str(self.start_time))
                     line = line.replace('|END_TIME|', str(self.end_time))
-                    line = line.replace('|DT|', str(self.dt))
+                    line = line.replace('|DT|', str(self.delta_t))
                     line = line.replace('|WRITE_INTERVAL|', str(self.write_interval))
                     line = line.replace('|WRITE_PRECISION|', str(self.write_precision))
                     line = line.replace('|TIME_PRECISION|', str(self.time_precision))
@@ -297,7 +297,7 @@ class SolverWrapperOpenFOAM_41(Component):
         # Prepare new time step folder and reset the number of iterations
         self.timestep += 1
         self.iteration = 0
-        self.physical_time += self.dt
+        self.physical_time += self.delta_t
 
         self.prev_timestamp = timestamp
         self.cur_timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)

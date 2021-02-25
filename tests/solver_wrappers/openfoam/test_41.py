@@ -39,7 +39,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             self.par_solver['settings']['working_directory'] = 'test_tube_3d'
 
         self.folder_path = os.path.join(os.getcwd(), self.par_solver['settings']['working_directory'])
-        self.dt = self.par_solver['settings']['dt']
+        self.delta_t = self.par_solver['settings']['delta_t']
         self.t_prec = self.par_solver['settings']['time_precision']
         self.clean_case()
         self.set_up_case()
@@ -111,7 +111,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             if cores > 1:
                 check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL)
 
-            node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.dt:.{self.t_prec}f}', 'mantle')
+            node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.delta_t:.{self.t_prec}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
             self.clean_case()
 
