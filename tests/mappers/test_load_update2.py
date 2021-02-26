@@ -19,14 +19,14 @@ class TestMapper_load_update(unittest.TestCase):
                                 "coords_max": 2.0}
                            }
 
-    def test_instantiation(self):
-
-        self.parameters['settings']["coords_min"] = 't'
-        self.assertRaises(ValueError, Mapper_load_update2 , self.parameters)
-
-        self.parameters['settings']["coords_min"] = 0
-        self.parameters['settings']["coords_max"] = 'y'
-        self.assertRaises(ValueError, Mapper_load_update2, self.parameters)
+    # def test_instantiation(self):
+    #
+    #     self.parameters['settings']["coords_min"] = 't'
+    #     self.assertRaises(ValueError, Mapper_load_update2 , self.parameters)
+    #
+    #     self.parameters['settings']["coords_min"] = 0
+    #     self.parameters['settings']["coords_max"] = 'y'
+    #     self.assertRaises(ValueError, Mapper_load_update2, self.parameters)
 
     def test_initialize(self):
         x_min = -0.5
