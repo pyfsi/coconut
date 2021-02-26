@@ -765,10 +765,12 @@ class SolverWrapperOpenFOAM_41(Component):
         for boundary_name in boundary_names:
             if not f'{boundary_name}_input' in input_interface_model_parts:
                 raise RuntimeError(
-                    f'Error in json file: {boundary_name}_input not listed in "interface_input": {self.settings[
-                        "interface_input"]}.\n. <boundary> in the "boundary_names" in json file should have corresponding <boundary>_input in "interface_input" list. ')
+                    f'Error in json file: {boundary_name}_input not listed in "interface_input": '
+                    f'{self.settings["interface_input"]}.\n. <boundary> in the "boundary_names" in json file should '
+                    f'have corresponding <boundary>_input in "interface_input" list. ')
 
             if not f'{boundary_name}_output' in output_interface_model_parts:
                 raise RuntimeError(
-                    f'Error in json file: {boundary_name}_output not listed in "interface_output": {self.settings[
-                        "interface_output"]}.\n. <boundary> in the "boundary_names" in json file should have corresponding <boundary>_input in "interface_output" list.')
+                    f'Error in json file: {boundary_name}_output not listed in "interface_output":'
+                    f' {self.settings["interface_output"]}.\n. <boundary> in the "boundary_names" in json file should '
+                    f'have corresponding <boundary>_input in "interface_output" list.')

@@ -8,32 +8,29 @@ from scipy import interpolate
 import numpy as np
 
 def create(parameters):
-    return Mapper_load_update(parameters)
+    return Mapper_load_update2(parameters)
 
 
-class Mapper_load_update(MapperTransformer):
+class Mapper_load_update2(MapperTransformer):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        # get axial and radial directions
-        dirs = ['x', 'y', 'z']
-        if self.settings['direction_axial'] not in dirs:
-            raise ValueError(f'invalid axial_direction {self.settings["direction_axial"]}')
-        if self.settings['direction_axial'] not in dirs:
-            raise ValueError(f'invalid radial_direction {self.settings["direction_radial"]}')
-        self.dir_a = dirs.index(self.settings['direction_axial'])
-        self.dir_r = dirs.index(self.settings['direction_radial'])
-        self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
+        self.min = self.settings['coords_min']
+        if type(self.min) != float:
+            raise TypeError('coords_min must be a float')
 
+        self.max = self.settings['coords_max']
+        if type(self.max) != float:
+            raise TypeError('coords_max must be a float')
+
+        self.v_min = self.settings['coords_min']
+        self.v_max = self.settings['coords_max']
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         if not forward:
             super().initialize()
 
             self.mp_input_to = model.get_model_part(model_part_name_in)
-
-            self.v_min = 0
-            self.v_max = 2
 
             n_in = self.mp_input_to.size
             n_out = n_in
@@ -54,6 +51,9 @@ class Mapper_load_update(MapperTransformer):
 
         interface_from, mp_name_from, var = args_from
         interface_to, mp_name_to, _ = args_to
+
+        self.v_min = self.settings['coords_min']
+        self.v_max = self.settings['coords_max']
 
         dimensions = variables_dimensions[var]
         self.data_from = interface_from.get_variable_data(mp_name_from, var)

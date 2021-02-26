@@ -6,27 +6,27 @@ import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from coconut.coupling_components.mappers.load_update2 import Mapper_load_update2
 
 
 class TestMapper_load_update(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.load_update2',
                            'settings':
-                               {'direction_axial': 'x',
-                                'direction_radial': 'y'}
+                               {"coords_min": 0.0,
+                                "coords_max": 2.0}
                            }
 
     def test_instantiation(self):
-        create_instance(self.parameters)
 
-        self.parameters['settings']['direction_axial'] = 'X'
-        self.assertRaises(ValueError, create_instance, self.parameters)
+        self.parameters['settings']["coords_min"] = 't'
+        self.assertRaises(ValueError, Mapper_load_update2 , self.parameters)
 
-        self.parameters['settings']['direction_axial'] = 'x'
-        self.parameters['settings']['direction_radial'] = 2
-        self.assertRaises(ValueError, create_instance, self.parameters)
+        self.parameters['settings']["coords_min"] = 0
+        self.parameters['settings']["coords_max"] = 'y'
+        self.assertRaises(ValueError, Mapper_load_update2, self.parameters)
 
     def test_initialize(self):
         x_min = -0.5
@@ -121,8 +121,8 @@ class TestMapper_load_update(unittest.TestCase):
 
         #input_from interface simulated
 
-        self.v_min = 0
-        self.v_max = 2
+        self.v_min = self.parameters['settings']['coords_min']
+        self.v_max = self.parameters['settings']['coords_max']
 
         # setting of variables mp_from
         parameters_from = [{'model_part': mp_name_from, 'variables': [var_s, var_v]}]
@@ -153,6 +153,10 @@ class TestMapper_load_update(unittest.TestCase):
 
         v_s_to = interface_to.get_variable_data(mp_name_to, var_s)
 
+        # print("v_v_to")
+        # print(v_s_to)
+        # print("v_v_to_ref")
+        # print(v_s_to_ref)
         np.testing.assert_allclose(v_s_to, v_s_to_ref, rtol=1e-14)
         # check mapped values for 3D variable
         mapper((interface_from, mp_name_from, var_v),
@@ -166,10 +170,10 @@ class TestMapper_load_update(unittest.TestCase):
                 v_v_to_ref[i,0] = v_v_from[i,0]
                 v_v_to_ref[i, 1] =v_v_from[i,1]
         v_v_to = interface_to.get_variable_data(mp_name_to, var_v)
-        print("v_v_to")
-        print(v_v_to)
-        print("v_v_to_ref")
-        print(v_v_to_ref)
+        # print("v_v_to")
+        # print(v_v_to)
+        # print("v_v_to_ref")
+        # print(v_v_to_ref)
 
         np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-14)
 
@@ -190,7 +194,7 @@ class TestMapper_load_update(unittest.TestCase):
             ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
                         pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.05, colors='r', linewidth=3)
             ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
-                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.05)
+                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.08)
 
             for ax in [ax_s, ax_v]:
                 ax.set_xlabel('x')
