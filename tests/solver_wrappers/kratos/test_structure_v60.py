@@ -23,11 +23,11 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
     def setUp(self):
         folder_name = 'test_structure_tube_v60'
         self.dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), folder_name)
-        set_up_file = os.path.join(self.dir_tmp, 'set_up_kratos.sh')
-        p = subprocess.Popen(f'sh {set_up_file}', cwd=self.dir_tmp, shell=True)
+        setup_file = os.path.join(self.dir_tmp, 'setup_kratos.sh')
+        p = subprocess.Popen(f'sh {setup_file}', cwd=self.dir_tmp, shell=True)
         p.wait()
 
-        # Create set up files for kratos
+        # Create setup files for kratos
 
         parameter_file_name = os.path.join(self.dir_tmp, 'test_solver_wrapper.json')
 

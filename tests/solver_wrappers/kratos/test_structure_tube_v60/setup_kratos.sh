@@ -9,5 +9,5 @@ then
 fi
 
 # create new CSM folder
-cp -r kratos_setp_up_files CSM
+cp -r setup_kratos CSM
 

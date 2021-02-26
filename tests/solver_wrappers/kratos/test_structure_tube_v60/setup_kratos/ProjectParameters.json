@@ -45,7 +45,7 @@
     ],
     "rotation_dofs": true,
     "time_integration_method": "implicit",
-    "scheme_type": "newmark"
+    "scheme_type": "bossak"
   },
   "constraints_process_list": [
     {

@@ -1,3 +1,8 @@
+from coconut import data_structure
+from coconut.coupling_components.component import Component
+from coconut.data_structure.interface import Interface
+from coconut import tools
+
 import json
 import os
 import time
@@ -5,10 +10,6 @@ from os.path import join
 from subprocess import Popen
 import pandas as pd
 import numpy as np
-
-from coconut import data_structure
-from coconut.coupling_components.component import Component
-from coconut.data_structure.interface import Interface
 
 
 def create(parameters):
@@ -49,8 +50,7 @@ class SolverWrapperKratosStructure60(Component):
         run_script_file = os.path.join(dir_path, 'run_kratos_structural_60.py')
 
         self.kratos_process = Popen(f'{kratos_load_cmd} && python3 {run_script_file} {input_file_name} &> log',
-                                    shell=True,
-                                    cwd=self.working_directory)
+                                    shell=True, cwd=self.working_directory)
 
         self.wait_message('start_ready')
 
@@ -67,6 +67,7 @@ class SolverWrapperKratosStructure60(Component):
         # # Interfaces
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_output = Interface(self.settings["interface_output"], self.model)
+
         # run time
         self.run_time = 0.0
 
@@ -79,6 +80,7 @@ class SolverWrapperKratosStructure60(Component):
         self.send_message('next')
         self.wait_message('next_ready')
 
+    @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
 
         self.interface_input.set_interface_data(interface_input.get_interface_data())
@@ -151,15 +153,19 @@ class SolverWrapperKratosStructure60(Component):
         sub_mp_name_list = self.settings["kratos_interface_sub_model_parts_list"]
 
         for sub_mp_name in sub_mp_name_list:
-            if not f'{sub_mp_name}_input' in input_interface_model_parts:
+            if f'{sub_mp_name}_input' not in input_interface_model_parts:
                 raise RuntimeError(
-                    f'Error in json file: {sub_mp_name}_input not listed in "interface_input": {self.settings[
-                        "interface_input"]}.\n. <sub_mp_name> in the "kratos_interface_sub_model_parts_list" in json file should have corresponding <sub_mp_name>_input in "interface_input" list. ')
+                    f'Error in json file: {sub_mp_name}_input not listed in "interface_input": '
+                    f'{self.settings["interface_input"]}.\n. <sub_mp_name> in the '
+                    f'"kratos_interface_sub_model_parts_list" in json file should have corresponding '
+                    f'<sub_mp_name>_input in "interface_input" list. ')
 
-            if not f'{sub_mp_name}_output' in output_interface_model_parts:
+            if f'{sub_mp_name}_output' not in output_interface_model_parts:
                 raise RuntimeError(
-                    f'Error in json file: {sub_mp_name}_output not listed in "interface_output": {self.settings[
-                        "interface_output"]}.\n. <sub_mp_name> in the "kratos_interface_sub_model_parts_list" in json file should have corresponding <sub_mp_name>_output in "interface_output" list.')
+                    f'Error in json file: {sub_mp_name}_output not listed in "interface_output": '
+                    f'{self.settings["interface_output"]}.\n. <sub_mp_name> in the '
+                    f'"kratos_interface_sub_model_parts_list" in json file should have corresponding '
+                    f'<sub_mp_name>_output in "interface_output" list.')
 
     def send_message(self, message):
         file = join(self.working_directory, message + ".coco")
