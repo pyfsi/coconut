@@ -25,7 +25,7 @@ class SolverWrapperAbaqus614(Component):
         super().__init__()
         # settings
         """
-               settings of solver_wrappers.abaqus.614:
+               settings of solver_wrappers.abaqus.v614:
 
                     working_directory       Absolute path to working directory
                                             or relative path w.r.t current directory
