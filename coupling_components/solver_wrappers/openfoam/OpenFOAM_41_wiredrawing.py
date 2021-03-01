@@ -39,8 +39,6 @@ class SolverWrapperOpenFOAM_41(Component):
         self.cores = self.settings["cores"]  # Number of cores to be used in the OpenFOAM-calculation
         self.decomposeMethod = self.settings[
             "decomposeMethod"]  # Decomposition-method, can be "simple", "scotch"
-        self.newtonmax = self.settings["newtonmax"]  # Maximal number of Newton iterations
-        self.newtontol = self.settings["newtontol"]  # Tolerance of Newton iterations
         self.write_interval = self.settings[
             "write_interval"]  # Number of time steps between consecutive saves performed by OpenFOAM
         self.write_precision = self.settings["write_precision"]  # writePrecision-parameter in OpenFOAM
@@ -49,6 +47,10 @@ class SolverWrapperOpenFOAM_41(Component):
             'boundary_names']  # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
         self.meshmotion_solver = self.settings["meshmotion_solver"]
         self.diffusivity = self.settings["diffusivity"]
+        self.diffusivityX = self.settings["diffusivityX"]
+        self.diffusivityY = self.settings["diffusivityY"]
+        self.diffusivityZ = self.settings["diffusivityZ"]
+
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
@@ -145,7 +147,8 @@ class SolverWrapperOpenFOAM_41(Component):
                     line = line.replace('|MESHMOTION_SOLVER|', str(self.meshmotion_solver))
                     line = line.replace('|DIFFUSIVITY|', str(self.diffusivity))
                     line = line.replace('|NUM_INTERFACE_INPUT|', str(len(self.settings['boundary_names'])))
-                    line = line.replace('|INTERFACE_INPUT|', str_boundary)
+                    # line = line.replace('|INTERFACE_INPUT|', str_boundary)
+                    line = line.replace('|INTERFACE_INPUT|', str(self.diffusivityX) + " " + str(self.diffusivityY) + " " + str(self.diffusivityZ))
                     new_file.write(line)
 
         self.write_footer(dynamic_mesh_dict_name)
@@ -564,7 +567,7 @@ class SolverWrapperOpenFOAM_41(Component):
             os.system("head -n " + str(start_nr + 1) + " " + disp_file + " > tempDisp")
 
             if self.iteration == 1:
-                a = np.loadtxt('displacement1_iteration.dat')
+                a = np.loadtxt('displacement.dat')
                 b = np.hsplit(a, 4)
                 x = b[0]
                 y = b[1]

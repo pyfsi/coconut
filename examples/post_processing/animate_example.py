@@ -8,7 +8,7 @@ import pickle
 
 # different cases to be plotted
 common_path = "../../examples/"
-case_paths = ["tube_openfoam3d_abaqus3d/results.pickle"]
+case_paths = ["tube_openfoam3d_abaqus3d/results1.pickle"]
 legend_entries = ["results"]
 
 # load cases
