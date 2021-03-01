@@ -588,9 +588,9 @@ class SolverWrapperOpenFOAM_41(Component):
                     file.write("\t { \n")
                     file.write("\t\t type  \t fixedValue; \n")
                     file.write('\t\t value \t nonuniform List<vector> ( \n')
-                    for node in mp.Model():
-                        coord_x = X0[node]
-                        coord_z =
+                    for i in mp_name.parameters:
+                        coord_x = mp_name.X0[i]
+                        coord_z = mp_name.Z0[i]
                         # print(coord_x)
                         dispX = f(coord_x)
                         # print(f'{dispX:27.17e}')
