@@ -10,7 +10,7 @@ from coconut.coupling_components.mappers.load_update2 import Mapper_load_update2
 
 
 class TestMapper_load_update(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
         self.parameters = {'type': 'mappers.load_update2',
