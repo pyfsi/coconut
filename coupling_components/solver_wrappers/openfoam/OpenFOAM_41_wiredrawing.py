@@ -50,6 +50,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.diffusivityX = self.settings["diffusivityX"]
         self.diffusivityY = self.settings["diffusivityY"]
         self.diffusivityZ = self.settings["diffusivityZ"]
+        self.displacementZ = self.settings["displacementZ"]
 
 
         # debug
@@ -101,7 +102,7 @@ class SolverWrapperOpenFOAM_41(Component):
                                 boundary_name_temp = "(" + interfaces
                                 firstBoundary = False
                             else:
-                                boundary_name_temp += " , " + interfaces
+                                boundary_name_temp += "  " + interfaces
                         boundary_name_temp += ")"
                         line = line.replace('|BOUNDARY_NAMES|', boundary_name_temp)
                     new_file.write(line)
@@ -146,7 +147,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 for line in raw_file:
                     line = line.replace('|MESHMOTION_SOLVER|', str(self.meshmotion_solver))
                     line = line.replace('|DIFFUSIVITY|', str(self.diffusivity))
-                    line = line.replace('|NUM_INTERFACE_INPUT|', str(len(self.settings['boundary_names'])))
+                    # line = line.replace('|NUM_INTERFACE_INPUT|', str(len(self.settings['boundary_names'])))
                     # line = line.replace('|INTERFACE_INPUT|', str_boundary)
                     line = line.replace('|INTERFACE_INPUT|', str(self.diffusivityX) + " " + str(self.diffusivityY) + " " + str(self.diffusivityZ))
                     new_file.write(line)
@@ -548,7 +549,15 @@ class SolverWrapperOpenFOAM_41(Component):
         f.write(r'// ************************************************************************* //' + "\n")
         f.close()
 
-    def write_node_input(self):
+    def write_node_input(self):        # The displacement of the FSI interface is passed through the file "pointDisplacement_Next"
+        # This function will prepare that file in a "serial format" and then decompose it for parallel operation
+
+        pointdisp_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "pointDisplacement_raw")
+        pointdisp_name = os.path.join(self.working_directory, self.prev_timestamp, "pointDisplacement_Next")
+        self.write_pointdisplacement_file(pointdisp_raw_name, pointdisp_name)
+
+        disp_file = pointdisp_name
+
         # The displacement of the FSI interface is passed through the file "pointDisplacement_Next"
         # This function will prepare that file in a "serial format" and then decompose it for parallel operation
 
@@ -562,51 +571,66 @@ class SolverWrapperOpenFOAM_41(Component):
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+            mp_boundary = self.interface_input.get_model_part(mp_name)
+            print(mp_boundary)
+
 
             start_nr = self.find_string_in_file(boundary, disp_file)
             os.system("head -n " + str(start_nr + 1) + " " + disp_file + " > tempDisp")
 
             if self.iteration == 1:
                 a = np.loadtxt('displacement.dat')
-                b = np.hsplit(a, 4)
+                b = np.hsplit(a, 3)
                 x = b[0]
                 y = b[1]
                 z = b[2]
-                z2 = b[3]
+                # z2 = b[3]
 
                 x_axis = x.flatten()
                 delta_x = y.flatten()
                 delta_y = z.flatten()
-                delta_z = z2.flatten()
+                # delta_z = z2.flatten()
 
                 f = interpolate.interp1d(x_axis, delta_x)
                 g = interpolate.interp1d(x_axis, delta_y)
-                h = interpolate.interp1d(x_axis, delta_z)
+                # h = interpolate.interp1d(x_axis, delta_z)
+                displacement0 = np.zeros((mp_boundary.size,3))
+                displacement0[:,0] = f(mp_boundary.x0)
+                displacement0[:,1] = g(mp_boundary.x0)
+
+                print(displacement0)
 
                 # plt.plot(x_axis, delta_x, 'o' '-')
                 # plt.plot(x_axis, delta_y, 'o' '-')
                 #
                 # plt.show()
+
                 with open('tempDisp', 'a+') as file:
                     file.write("\t { \n")
                     file.write("\t\t type  \t fixedValue; \n")
                     file.write('\t\t value \t nonuniform List<vector> ( \n')
-                    for i in mp_name.parameters:
-                        coord_x = mp_name.X0[i]
-                        coord_z = mp_name.Z0[i]
-                        # print(coord_x)
-                        dispX = f(coord_x)
-                        # print(f'{dispX:27.17e}')
-                        dispY = g(coord_x)
-                        # print(f'{dispY:27.17e}')
-                        # plt.plot(coord_x, dispX, 'o' '-')
-                        # plt.plot(coord_x, dispY, 'o' '-')
-                        # dispZ= self.displacementZ
-                        if coord_z < 0:
-                            dispZ = -h(coord_x)
-                        else:
-                            dispZ = h(coord_x)
-                        file.write(' (' + f'{dispX:27.17e} {dispY:27.17e} {dispZ:27.17e}' + ') \n')
+                    # for i in mp_boundary.x0:
+                    #     coord_x = i
+                    #     print("coord_x")
+                    #     print(coord_x)
+                    #     # coord_z = mp_boundary.z0[i]
+                    #     # print(coord_x)
+                    #     dispX = f(coord_x)
+                    #     print("disp")
+                    #     # print(f'{dispX:27.17e}')
+                    #     dispY = g(coord_x)
+                    #     print(dispY)
+                    #     # print(f'{dispY:27.17e}')
+                    #     # plt.plot(coord_x, dispX, 'o' '-')
+                    #     # plt.plot(coord_x, dispY, 'o' '-')
+                    #     dispZ= self.displacementZ
+                        # if coord_z < 0:
+                        #     dispZ = -h(coord_x)
+                        # else:
+                        #     dispZ = h(coord_x)
+                    for i in range(displacement0.shape[0]):
+                        file.write(f'({displacement0[i:,0]:27.17e} {displacement0[i:1]:27.17e}'
+                                   f' {displacement0[i:2]:27.17e}) \n')
                         # print("ynodes")
                         # print(node.Y)
                         # print(node.Y0)
