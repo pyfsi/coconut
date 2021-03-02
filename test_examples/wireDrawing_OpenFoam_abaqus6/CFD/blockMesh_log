@@ -7,10 +7,10 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1
 Exec   : blockMesh
-Date   : Mar 01 2021
-Time   : 16:21:22
+Date   : Mar 02 2021
+Time   : 08:54:55
 Host   : "cfdclu27.ugent.be"
-PID    : 19617
+PID    : 33408
 Case   : /lusers/temp/mathieu/PycharmProjects/coconut/test_examples/wireDrawing_OpenFoam_abaqus6/CFD
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
@@ -44,18 +44,18 @@ Creating polyMesh from blockMesh
 Creating points with scale 0.001
     Block 0 cell size :
         i : 3.51241e-05 .. 3.51241e-05
-        j : 0.000166474 .. 0.000166474
-        k : 5.63562e-05 .. 5.63562e-05
+        j : 2.12914e-05 .. 2.12914e-05
+        k : 6.53069e-05 .. 6.53069e-05
 
     Block 1 cell size :
-        i : 3.24379e-05 .. 3.24379e-05
-        j : 0.000109407 .. 0.000109407
-        k : 5.63562e-05 .. 5.63562e-05
+        i : 3.24824e-05 .. 3.24824e-05
+        j : 2.26885e-06 .. 2.26885e-06
+        k : 6.53069e-05 .. 6.53069e-05
 
     Block 2 cell size :
         i : 3.33333e-05 .. 3.33333e-05
-        j : 6.40312e-06 .. 6.40312e-06
-        k : 5.63562e-05 .. 5.63562e-05
+        j : 2.0155e-06 .. 2.0155e-06
+        k : 5.64086e-05 .. 5.64086e-05
 
 Creating cells
 Creating patches
@@ -64,22 +64,22 @@ Writing polyMesh
 ----------------
 Mesh Information
 ----------------
-  boundingBox: (-0.003 0.000645385 -3.54396e-05) (0.0005 0.000811701 3.54396e-05)
-  nPoints: 424
-  nCells: 105
-  nFaces: 526
-  nInternalFaces: 104
+  boundingBox: (-0.003 0.000645985 -3.54396e-05) (0.0005 0.000811701 3.54396e-05)
+  nPoints: 848
+  nCells: 315
+  nFaces: 1368
+  nInternalFaces: 522
 ----------------
 Patches
 ----------------
-  patch 0 (start: 104 size: 105) name: dieWall
-  patch 1 (start: 209 size: 1) name: outlet
-  patch 2 (start: 210 size: 30) name: upWire
-  patch 3 (start: 240 size: 60) name: deformWire
-  patch 4 (start: 300 size: 15) name: finalWire
-  patch 5 (start: 315 size: 1) name: inlet
-  patch 6 (start: 316 size: 105) name: back
-  patch 7 (start: 421 size: 105) name: front
+  patch 0 (start: 522 size: 105) name: dieWall
+  patch 1 (start: 627 size: 3) name: outlet
+  patch 2 (start: 630 size: 30) name: upWire
+  patch 3 (start: 660 size: 60) name: deformWire
+  patch 4 (start: 720 size: 15) name: finalWire
+  patch 5 (start: 735 size: 3) name: inlet
+  patch 6 (start: 738 size: 315) name: back
+  patch 7 (start: 1053 size: 315) name: front
 
 End
 

@@ -90,7 +90,7 @@
                     "diffusivityX" : 1,
        		    "diffusivityY" : 1,
                     "diffusivityZ" : 0,
-		    "density" : 0.33,
+		    "density" : 65,
                     "displacementX" : 0.0,
                     "displacementY" : 0.0,
     		    "displacementZ" : 0.0
