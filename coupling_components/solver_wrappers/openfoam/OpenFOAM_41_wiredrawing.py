@@ -571,107 +571,100 @@ class SolverWrapperOpenFOAM_41(Component):
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            mp_boundary = self.interface_input.get_model_part(mp_name)
-            print(mp_boundary)
-
+            # mp_boundary = self.interface_input.get_model_part(mp_name)
+            # print(mp_boundary.size)
 
             start_nr = self.find_string_in_file(boundary, disp_file)
             os.system("head -n " + str(start_nr + 1) + " " + disp_file + " > tempDisp")
 
-            if self.iteration == 1:
-                a = np.loadtxt('displacement.dat')
-                b = np.hsplit(a, 3)
-                x = b[0]
-                y = b[1]
-                z = b[2]
-                # z2 = b[3]
+            # if self.iteration == 1:
+            #     a = np.loadtxt('displacement.dat')
+            #     b = np.hsplit(a, 3)
+            #     x = b[0]
+            #     y = b[1]
+            #     z = b[2]
+            #     # z2 = b[3]
+            #
+            #     x_axis = x.flatten()
+            #     delta_x = y.flatten()
+            #     delta_y = z.flatten()
+            #     # delta_z = z2.flatten()
+            #
+            #     f = interpolate.interp1d(x_axis, delta_x)
+            #     g = interpolate.interp1d(x_axis, delta_y)
+            #     # h = interpolate.interp1d(x_axis, delta_z)
+            #     # displacement0 = np.zeros((mp_boundary.size,3))
+            #     # displacement0[:,0] = f(mp_boundary.x0)
+            #     # displacement0[:,1] = g(mp_boundary.x0)
+            #     #
+            #     # print(displacement0)
+            #
+            #     # plt.plot(x_axis, delta_x, 'o' '-')
+            #     # plt.plot(x_axis, delta_y, 'o' '-')
+            #     #
+            #     # plt.show()
+            #
+            #     with open('tempDisp', 'a+') as file:
+            #         file.write("\t { \n")
+            #         file.write("\t\t type  \t fixedValue; \n")
+            #         file.write('\t\t value \t nonuniform List<vector> ( \n')
+            #         for i in range(mp_boundary.size):
+            #             coord_x = mp_boundary.x0[i]
+            #             print("coord_x")
+            #             print(coord_x)
+            #             # coord_z = mp_boundary.z0[i]
+            #             # print(coord_x)
+            #             dispX = f(coord_x)
+            #             # print("disp")
+            #             # print(f'{dispX:27.17e}')
+            #             dispY = g(coord_x)
+            #             # print(dispY)
+            #             # print(f'{dispY:27.17e}')
+            #             # plt.plot(coord_x, dispX, 'o' '-')
+            #             # plt.plot(coord_x, dispY, 'o' '-')
+            #             dispZ= self.displacementZ
+            #             # if coord_z < 0:
+            #             #     dispZ = -h(coord_x)
+            #             # else:
+            #             #     dispZ = h(coord_x)
+            #         # for i in range(displacement0.shape[0]):
+            #             file.write(f'({dispX:27.17e} + {dispY:27.17e} + '
+            #                        f' {dispZ:27.17e}) \n')
+            #         file.write(');\n')
+            #         print(file)
+            #
+            #         os.system("wc -l " + disp_file + " > lengthDisp")
+            #         lengthDisp_file = open("lengthDisp", 'r')
+            #         length_disp = int(lengthDisp_file.readline().split(" ")[0])
+            #         lengthDisp_file.close()
+            #         os.system("tail -n " + str(length_disp - (start_nr + 1)) + " " + disp_file + " > tempDisp2")
+            #         start_to_end_nr = self.find_string_in_file("}", "tempDisp2")
+            #         os.system(
+            #             "tail -n " + str(length_disp - (start_nr + 1) - start_to_end_nr) + " " + disp_file + " > tempDisp3")
+            #         os.system("cat tempDisp tempDisp3 > " + disp_file)
+            #         os.system("rm tempDisp* lengthDisp")
+            #         n_key += 1
+            # else:
+            with open('tempDisp', 'a+') as file:
+                file.write("\t { \n")
+                file.write("\t\t type  \t fixedValue; \n")
+                file.write('\t\t value \t nonuniform List<vector> ( \n')
+                for i in range(displacement.shape[0]):
+                    file.write(f' ({displacement[i, 0]:27.17e} {displacement[i, 1]:27.17e} '
+                               f'{displacement[i, 2]:27.17e}) \n')
+                file.write(');\n')
 
-                x_axis = x.flatten()
-                delta_x = y.flatten()
-                delta_y = z.flatten()
-                # delta_z = z2.flatten()
-
-                f = interpolate.interp1d(x_axis, delta_x)
-                g = interpolate.interp1d(x_axis, delta_y)
-                # h = interpolate.interp1d(x_axis, delta_z)
-                displacement0 = np.zeros((mp_boundary.size,3))
-                displacement0[:,0] = f(mp_boundary.x0)
-                displacement0[:,1] = g(mp_boundary.x0)
-
-                print(displacement0)
-
-                # plt.plot(x_axis, delta_x, 'o' '-')
-                # plt.plot(x_axis, delta_y, 'o' '-')
-                #
-                # plt.show()
-
-                with open('tempDisp', 'a+') as file:
-                    file.write("\t { \n")
-                    file.write("\t\t type  \t fixedValue; \n")
-                    file.write('\t\t value \t nonuniform List<vector> ( \n')
-                    # for i in mp_boundary.x0:
-                    #     coord_x = i
-                    #     print("coord_x")
-                    #     print(coord_x)
-                    #     # coord_z = mp_boundary.z0[i]
-                    #     # print(coord_x)
-                    #     dispX = f(coord_x)
-                    #     print("disp")
-                    #     # print(f'{dispX:27.17e}')
-                    #     dispY = g(coord_x)
-                    #     print(dispY)
-                    #     # print(f'{dispY:27.17e}')
-                    #     # plt.plot(coord_x, dispX, 'o' '-')
-                    #     # plt.plot(coord_x, dispY, 'o' '-')
-                    #     dispZ= self.displacementZ
-                        # if coord_z < 0:
-                        #     dispZ = -h(coord_x)
-                        # else:
-                        #     dispZ = h(coord_x)
-                    for i in range(displacement0.shape[0]):
-                        file.write(f'({displacement0[i:,0]:27.17e} {displacement0[i:1]:27.17e}'
-                                   f' {displacement0[i:2]:27.17e}) \n')
-                        # print("ynodes")
-                        # print(node.Y)
-                        # print(node.Y0)
-
-                    # file.write(' (' + f'{node.X:27.17e} {node.Y:27.17e} {node.Z:27.17e}' + ') \n')
-                    file.write(');\n')
-
-                    # plt.show()
-
-                    os.system("wc -l " + disp_file + " > lengthDisp")
-                    lengthDisp_file = open("lengthDisp", 'r')
-                    length_disp = int(lengthDisp_file.readline().split(" ")[0])
-                    lengthDisp_file.close()
-                    os.system("tail -n " + str(length_disp - (start_nr + 1)) + " " + disp_file + " > tempDisp2")
-                    start_to_end_nr = self.find_string_in_file("}", "tempDisp2")
-                    os.system(
-                        "tail -n " + str(length_disp - (start_nr + 1) - start_to_end_nr) + " " + disp_file + " > tempDisp3")
-                    os.system("cat tempDisp tempDisp3 > " + disp_file)
-                    os.system("rm tempDisp* lengthDisp")
-                    n_key += 1
-            else:
-                with open('tempDisp', 'a+') as file:
-                    file.write("\t { \n")
-                    file.write("\t\t type  \t fixedValue; \n")
-                    file.write('\t\t value \t nonuniform List<vector> ( \n')
-                    for i in range(displacement.shape[0]):
-                        file.write(f' ({displacement[i, 0]:27.17e} {displacement[i, 1]:27.17e} '
-                                   f'{displacement[i, 2]:27.17e}) \n')
-                    file.write(');\n')
-
-                os.system("wc -l " + disp_file + " > lengthDisp")
-                lengthDisp_file = open("lengthDisp", 'r')
-                length_disp = int(lengthDisp_file.readline().split(" ")[0])
-                lengthDisp_file.close()
-                os.system("tail -n " + str(length_disp - (start_nr + 1)) + " " + disp_file + " > tempDisp2")
-                start_to_end_nr = self.find_string_in_file("}", "tempDisp2")
-                os.system(
-                    "tail -n " + str(length_disp - (start_nr + 1) - start_to_end_nr) + " " + disp_file + " > tempDisp3")
-                os.system("cat tempDisp tempDisp3 > " + disp_file)
-                os.system("rm tempDisp* lengthDisp")
-                n_key += 1
+            os.system("wc -l " + disp_file + " > lengthDisp")
+            lengthDisp_file = open("lengthDisp", 'r')
+            length_disp = int(lengthDisp_file.readline().split(" ")[0])
+            lengthDisp_file.close()
+            os.system("tail -n " + str(length_disp - (start_nr + 1)) + " " + disp_file + " > tempDisp2")
+            start_to_end_nr = self.find_string_in_file("}", "tempDisp2")
+            os.system(
+                "tail -n " + str(length_disp - (start_nr + 1) - start_to_end_nr) + " " + disp_file + " > tempDisp3")
+            os.system("cat tempDisp tempDisp3 > " + disp_file)
+            os.system("rm tempDisp* lengthDisp")
+            n_key += 1
 
         if self.cores > 1:
             check_call(
