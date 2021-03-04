@@ -161,7 +161,19 @@ The concept of the mapped solver-wrapper illustrates the modularity of CoCoNuT. 
 
 Now try to change some of the settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation.
 
-> TODO: add visualization using the post_processing files?
+After a simulation is finished, it can be useful to visualize the output quantities (i.e. displacement, pressure and in general also shear). For the FSI-simulation we have just performed, post-processing has already been implemented in the *`$COCO/coconut/examples/post_processing/`*. It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on `true`, which is for all examples done by default. As an example, we will generate an animation by running the *`animate_example.py`* file:
+
+```bash
+python $COCO/coconut/examples/post_processing/animate_example.py
+```
+
+An animation of the displacement and pressure will be shown.
+
+![pressure.gif](images/pressure.gif "Animation of the pressure as a function of time")
+
+![displacement.gif](images/displacement.gif "Animation of the displacement as a function of time")
+
+[//]: # (Comment: also refer to explanation of animate class once that documentation has been finished)
 
 
 ## Overview of the code
