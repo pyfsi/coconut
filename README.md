@@ -171,7 +171,7 @@ An animation of the displacement and pressure will be shown.
 
 ![pressure.gif](https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif "Animation of the pressure as a function of time")
 
-![displacement.gif](https://raw.githubusercontent.com/pyfsi/coconut/master/images/displacement.gif "Animation of the displacement as a function of time")
+![displacement.gif](https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/displacement.gif "Animation of the displacement as a function of time")
 
 [//]: # (Comment: also refer to explanation of animate class once that documentation has been finished)
 
