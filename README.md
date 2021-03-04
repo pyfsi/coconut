@@ -26,8 +26,11 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 
 ### Requirements
 
--   Python 3.6+ 
--   NumPy and SciPy packages (we recommend Anaconda 2019.03+)
+-   `python>=3.6` 
+-   `numpy>=1.16.2`
+-   `scipy>=1.2.1`
+
+(We recommend Anaconda 2019.03 or newer.)
 
 
 ### Installation
