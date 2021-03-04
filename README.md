@@ -100,7 +100,7 @@ python -m unittest -b
 
 Once the CoCoNuT package has been successfully installed, it is time to run a first coupled simulation. For this purpose, we give a step-by-step guide of an example case included in the source code.
 
-In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated (see [here](https://biblio.ugent.be/publication/940283) and [here](http://hdl.handle.net/1854/LU-8685199)). For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. Another example in the source code solves the same case in 3D using ANSYS Fluent and Abaqus for respectively the flow and structure calculations. 
+In this example the fluid-structure interaction (FSI) problem of a pressure wave propagating through an elastic tube in incompressible flow is calculated [[1](#1), [2](2)]. For both the flow and structure solver, we use 1D Python-solvers that are included in CoCoNuT. This has the advantage that no external single-physics solvers must be installed for this example. Furthermore, the 1D solvers are very fast, so that a full transient FSI calculation can be done in this example. Other examples in the source code solves the same case using ANSYS Fluent or OpenFOAM and Abaqus or Kratos for respectively the flow and structure calculations. 
 
 We start by creating an environment variable `COCO` in which we can store the path to the folder in which CoCoNuT is installed. We will use this variable to avoid any confusion about relative or absolute paths in this tutorial. Using the example installation location from above:
 
@@ -191,3 +191,10 @@ This folder contains examples of several fluid-structure interaction cases, whic
 ### `tests`
 
 This folder contains the unit tests. These are created for each piece of code that is added to CoCoNuT and are run regularly, to avoid bugs. 
+
+## References
+<a id="1">[1]</a> 
+[Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction," Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010](http://hdl.handle.net/1854/LU-940283)
+
+<a id="2">[2]</a> 
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers," in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
