@@ -181,26 +181,26 @@ An animation of the displacement and pressure will be shown.
 The CoCoNuT package consists of 5 main folders: *`coupling_components`*, *`data_structure`*, *`docs`*, *`examples`* and *`tests`*. To give a general understanding of how the code is structured, we give a brief description of the purpose of each folder. The documentation website mirrors this folder structure and the folder names below link to the corresponding page.
 
 
-### `coupling_components`
+### [*`coupling_components`*](coupling_components/coupling_components.md)
 
 This folder contains the basic building blocks of CoCoNuT, which can be used to set up a coupled simulation. This includes among others the solver-wrappers, to communicate with single-physics solvers, and the mappers, which provide interpolation between non-conforming meshes present in the different single-physics solvers.
 
-### `data_structure`
+### [*`data_structure`*](data_structure/data_structure.md)
 
 This folder contains the data structure that is used internally in CoCoNuT to store and pass around information obtained from the single-physics solvers. The data structure relies on NumPy arrays for efficient storage and manipulation of data.
 
 
-### `docs`
+### [*`docs`*](docs/docs.md)
 
 This folder serves to automatically generate the documentation website, based on the MarkDown documentation files that are present throughout the code. 
 
 
-### `examples`
+### [*`examples`*](examples/examples.md)
 
 This folder contains examples of several fluid-structure interaction cases, which can serve as starting point for settings up the user's own simulation. They also provide insight into the capabilities of CoCoNuT.
 
 
-### `tests`
+### [*`tests`*](tests/tests.md)
 
 This folder contains the unit tests. These are created for each piece of code that is added to CoCoNuT and are run regularly, to avoid bugs. 
 
