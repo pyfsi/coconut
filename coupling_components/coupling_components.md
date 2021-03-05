@@ -1,11 +1,11 @@
 # Coupling components
 
-The coupling components are the basic building blocks of the CoCoNuT coupling tool. They are defined in the subdirectories of the *`$COCO/coconut/copuling_components`* directory.
+The coupling components are the basic building blocks of the CoCoNuT coupling tool. They are defined in the subdirectories of the *`$COCO/coconut/coupling_components`* directory.
 There are five types: 
 
--   [*Convergence criteria*](convergence_criteria/convergence_criteria.md) which determine when the calculation in a time step has converged. Subdirectory: *`convergence_criteria`*.
+-   [*Convergence criteria*](convergence_criteria/convergence_criteria.md) which determine when the calculation within a time step has converged. Subdirectory: *`convergence_criteria`*.
 -   [*Coupled solvers*](coupled/solvers/coupled_solvers.md) (completed by *models*, subdirectory *`coupled_solvers/models`*) which perform the actual coupling, implementing a coupling algorithm. Subdirectory *`coupled/solvers`*.
--   [*Mappers*](mappers/mappers.md) which map from one interface discretization to another. Subdirectory *`mappers`*.
+-   [*Mappers*](mappers/mappers.md) which map from one interface discretization to another, i.e. interpolation between non-conformal meshes. Subdirectory *`mappers`*.
 -   [*Predictors*](predictors/predictors.md) which provide an initial guess at the start of a new time step. Subdirectory *`predictors`*.
 -   [*Solver-wrappers*](solver_wrappers/solver_wrappers.md) which provide communication which the actual solvers. Subdirectory *`solver_wrappers`*.
 
@@ -26,7 +26,7 @@ A schematic of the relation between the coupling components for a basic calculat
 
 These coupling components have to communicate with each other.
 This is done through the use of *interfaces*, indicated with arrows on the figure. 
-For these `Interface` objects (implemented in *`$COCO/coconut/data_structure/interfaces.py`*) containing the (discretized) solution data on the FSI-interface and references to among others, the coordinates of the discretized interface. The implementation of this `Interface` class is explained in more detail in [the documentation about the data structure](../data_structe/data_structe.md).
+For these `Interface` objects (implemented in *`$COCO/coconut/data_structure/interfaces.py`*) containing the (discretized) solution data on the FSI-interface and references to among others, the coordinates of the discretized interface. The implementation of this `Interface` class is explained in more detail in [the documentation about the data structure](../data_structe/data_structure.md).
 
 ## Start of the calculation
 
@@ -39,5 +39,5 @@ when its respective methods are executed.
 ## Tools
 
 Some code to perform specific tasks, like printing with a certain layout or performing a time measurement is useful throughout the code.
-These functionalities are grouped in the file *`$COCO/cocnut/tools.py`*.
+These functionalities are grouped in the file *`$COCO/coconut/tools.py`*.
 It suffices to import the file to make uses of its functions.
