@@ -169,9 +169,10 @@ python $COCO/coconut/examples/post_processing/animate_example.py
 
 An animation of the displacement and pressure will be shown.
 
-![pressure.gif](https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif "Animation of the pressure as a function of time")
-
-![displacement.gif](https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/displacement.gif "Animation of the displacement as a function of time")
+<p align="center">
+  <img alt="Pressure" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif" height="300" title="Pressure as a function of time"><!---
+  --><img alt="Displacement" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/displacement.gif" height="300" title="Displacement as a fucntion of time">
+</p>
 
 [//]: # (Comment: also refer to explanation of animate class once that documentation has been finished)
 
@@ -206,7 +207,7 @@ This folder contains the unit tests. These are created for each piece of code th
 
 ## References
 <a id="1">[1]</a> 
-[Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction," Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010](http://hdl.handle.net/1854/LU-940283)
+[Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction," Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
 
 <a id="2">[2]</a> 
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers," in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
