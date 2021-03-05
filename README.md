@@ -170,8 +170,8 @@ python $COCO/coconut/examples/post_processing/animate_example.py
 An animation of the displacement and pressure will be shown.
 
 <p align="center">
-  <img alt="Pressure" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif" height="300"><!---
-  --><img alt="Displacement" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/displacement.gif" height="300">
+  <img alt="Pressure" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif" height="300" title="Pressure as a function of time"><!---
+  --><img alt="Displacement" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/displacement.gif" height="300" title="Displacement as a fucntion of time">
 </p>
 
 [//]: # (Comment: also refer to explanation of animate class once that documentation has been finished)
