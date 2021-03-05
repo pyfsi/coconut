@@ -4,7 +4,7 @@
 
 Unit tests are particularly important to developers to debug their code separately from other coupling components. These 
 unit tests also offer an opportunity to quickly check whether the installation of the package was succesful, as mentioned 
-in the [_`README.md`_](../README.md). 
+in [_`README.md`_](../README.md). 
 
 The remainder of this documentation page focuses on running these tests. In a first stage, it is explained how you can run
 (almost) all tests at once, which is useful for the post-installation test. In a second stage, information is given in how to 
