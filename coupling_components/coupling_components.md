@@ -4,7 +4,7 @@ The coupling components are the basic building blocks of the CoCoNuT coupling to
 There are five types: 
 
 -   [*Convergence criteria*](convergence_criteria/convergence_criteria.md) which determine when the calculation within a time step has converged. Subdirectory: *`convergence_criteria`*.
--   [*Coupled solvers*](coupled/solvers/coupled_solvers.md) (completed by *models*, subdirectory *`coupled_solvers/models`*) which perform the actual coupling, implementing a coupling algorithm. Subdirectory *`coupled/solvers`*.
+-   [*Coupled solvers*](coupled_solvers/coupled_solvers.md) (completed by *models*, subdirectory *`coupled_solvers/models`*) which perform the actual coupling, implementing a coupling algorithm. Subdirectory *`coupled/solvers`*.
 -   [*Mappers*](mappers/mappers.md) which map from one interface discretization to another, i.e. interpolation between non-conformal meshes. Subdirectory *`mappers`*.
 -   [*Predictors*](predictors/predictors.md) which provide an initial guess at the start of a new time step. Subdirectory *`predictors`*.
 -   [*Solver-wrappers*](solver_wrappers/solver_wrappers.md) which provide communication which the actual solvers. Subdirectory *`solver_wrappers`*.
