@@ -38,7 +38,7 @@
     
     
       
-        <title>SolverWrapperAbaqus - CoCoNuT</title>
+        <title>Abaqus - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#solverwrapperabaqus" tabindex="0" class="md-skip">
+      <a href="#abaqus" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                SolverWrapperAbaqus
+                Abaqus
               
             </span>
           
@@ -486,6 +486,18 @@
           
           
 
+
+  <li class="md-nav__item">
+    <a href="../solver_wrappers/" title="General" class="md-nav__link">
+      General
+    </a>
+  </li>
+
+        
+          
+          
+          
+
   
 
 
@@ -497,11 +509,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        SolverWrapperAbaqus
+        Abaqus
       </label>
     
-    <a href="./" title="SolverWrapperAbaqus" class="md-nav__link md-nav__link--active">
-      SolverWrapperAbaqus
+    <a href="./" title="Abaqus" class="md-nav__link md-nav__link--active">
+      Abaqus
     </a>
     
       
@@ -613,8 +625,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
-      SolverWrapperFluent
+    <a href="../fluent/" title="Fluent" class="md-nav__link">
+      Fluent
     </a>
   </li>
 
@@ -1096,33 +1108,35 @@
               
                 
                 
-                <h1 id="solverwrapperabaqus">SolverWrapperAbaqus</h1>
-<p>This is the documentation for all Abaqus SolverWrappers.
-Currently only FSI simulations are supported, no other multiphysics problems. 
+                <h1 id="abaqus">Abaqus</h1>
+<p>This is the documentation for all Abaqus solver-wrappers. Abaqus is a structural solver implementing the finite element method.
+Currently this wrapper only supports FSI simulations, no other multiphysics problems. 
 Subcycling within the structural solver is possible.</p>
 <h2 id="terminology">Terminology</h2>
-<p><code>Main directory</code>: Directory where the Python code will be executed<br />
-<code>Source directory</code>(for wrapper): <span style="color:black">.../coconut/coupling_components/solver_wrappers/abaqus/</span><br />
-<code>Extra directory</code>: Subdirectory of the source directory with some files to assist with the setup<br />
-<code>Working directory</code>: Subdirectory of the main directory where Abaqus will be running <br />
-<code>Geometrical nodes</code>: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported. <br />
-<code>Loadpoints</code>: Every element has load points. This is where the loads (input to Abaqus) are applied.  </p>
+<ul>
+<li>Main directory: Directory where the analysis is started.  </li>
+<li>Source directory: <em><code>$COCO/coconut/coupling_components/solver_wrappers/abaqus</code></em>.</li>
+<li>Extra directory: Subdirectory of the source directory with some files to assist with the setup.</li>
+<li>Working directory: Subdirectory of the main directory in which Abaqus runs.</li>
+<li>Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported.   </li>
+<li>Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.  </li>
+</ul>
 <h2 id="environment">Environment</h2>
 <ul>
-<li>A <code>working directory</code> for Abaqus needs to be created within the main directory. Its <strong>relative path to the main directory</strong> should be specified in the .json file.  In the CoCoNuT examples this folder is typically called "<code>CSM</code>", but any name is allowed.</li>
-<li>Abaqus needs a <strong>host-file</strong> called <code>AbaqusHosts.txt</code> file in the <code>working directory</code>.<ul>
+<li>A working directory for Abaqus needs to be created within the main directory. Its <strong>relative path to the main directory</strong> should be specified in the .json file.  In the <a href="https://pyfsi.github.io/coconut/examples/">CoCoNuT examples</a> this folder is typically called <em><code>CSM</code></em>, but any name is allowed.</li>
+<li>Abaqus needs a <strong>host-file</strong> called <em><code>AbaqusHosts.txt</code></em> in the working directory.<ul>
 <li>This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm.</li>
-<li>The <code>extra directory</code> contains an <code>Example_makeHostFile.sh</code> which was used the generate a host file for the local system.</li>
+<li>The extra directory contains a script <em><code>Example_makeHostFile.sh</code></em> which can be used to generate a host file.</li>
 </ul>
 </li>
 <li>The <strong>Abaqus license server</strong> needs to be specified in the parametrized file <code>abaqus_v6.env</code> which is present in the <code>source directory</code>. For use at Ghent University no changes are required. </li>
 <li>The <strong>Abaqus software should be available as wel as compilers</strong> to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. <ul>
-<li>The <code>extra directory</code> contains a file <code>abaqus_setup</code> which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).</li>
+<li>The extra directory contains a file <em><code>abaqus_setup</code></em> which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).</li>
 </ul>
 </li>
 </ul>
 <h2 id="parameters">Parameters</h2>
-<p>This section describes the Parameters in the JSON file, listed in alphabetical order. A distinction is made between mandatory and optional parameters.</p>
+<p>This section describes the Parameters in the .json file, listed in alphabetical order. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a .json file of one of the examples in <em><code>$COCO/coconut/examples</code></em>.</p>
 <h3 id="mandatory">Mandatory</h3>
 <table>
 <thead>
@@ -1134,74 +1148,73 @@ Subcycling within the structural solver is possible.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><nobr><code>arraysize</code></nobr></td>
-<td align="center">integer</td>
-<td>Size specification for array in FORTRAN part of the code. Should be large enough and depends on the number of load points in the structural model.</td>
+<td align="right"><code>arraysize</code></td>
+<td align="center">int</td>
+<td>Size specification for array in FORTRAN part of the code, to reserve sufficient memory. Should be large enough and depends on the number of load points in the structural model.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>cores</code></nobr></td>
-<td align="center">integer</td>
+<td align="right"><code>cores</code></td>
+<td align="center">int</td>
 <td>Number of cores to be used by Abaqus.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>delta_t</code></nobr></td>
+<td align="right"><code>delta_t</code></td>
 <td align="center">float</td>
-<td>Size of the time step in Abaqus (Should be synchronized with the flow solver). This parameter is usually specified in a higher <code>Component</code>.</td>
+<td>Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> object in which case it is not mandatory.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>dimensions</code></nobr></td>
-<td align="center">integer</td>
+<td align="right"><code>dimensions</code></td>
+<td align="center">int</td>
 <td>Dimensionality of the problem (2 or 3).</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>interface_input</code></nobr></td>
-<td align="center">dict</td>
-<td>Should contain <code>surfaces</code> keys. Keys are names of <code>ModelParts</code> for Abaqus load points. Each name (key) must be the contain an entry from <code>surfaceIDs</code>. The list that follows specifies the historical variables that should be included in this <code>ModelPart</code> (note the comma). <br> <br> <b>Example:</b> <br> &emsp;"NODESETA_load_points": ["PRESSURE", "TRACTION"],<br>&emsp;"NODESETB_load_points": ["PRESSURE", "TRACTION"]</td>
+<td align="right"><code>surfaceIDs</code></td>
+<td align="center">list</td>
+<td>List with the names of the node sets associated with the geometrical nodes on the interface surfaces. <br><br> <b>Example:</b>  [“NODESETA”, “NODESETB”] <br> <br> <b>Important notes:</b><br> &emsp;•    The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the Input file section).<br>&emsp;•  The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>interface_output</code></nobr></td>
-<td align="center">dict</td>
-<td>Similar to interface_input but for Abaqus geometrical nodes.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>input_file</code></nobr></td>
-<td align="center">string</td>
-<td>Name of the input file provided by the user. <br> <b>Example:</b> “Base.inp”</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>mp_mode</code></nobr></td>
-<td align="center">string</td>
-<td>Determines how Abaqus is executed in parallel. Should be “THREADS” as “MPI”  is currently not implemented.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>save_iterations</code></nobr></td>
-<td align="center">integer</td>
-<td>Determines what files are kept by Abaqus. All files are saved, but files not corresponding to the <code>save_iterations</code> are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>surfaceIDs</code></nobr></td>
-<td align="center">list of strings</td>
-<td>Comma-separated list with the names of the node sets associated with the geometrical nodes on the interface surfaces. <br><br> <b>Example:</b>  [“NODESETA”, “NODESETB”] <br> <br> <b>Important notes:</b><br> &emsp;•    The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the Input file section).<br>&emsp;•  The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>surfaces</code></nobr></td>
-<td align="center">integer</td>
+<td align="right"><code>surfaces</code></td>
+<td align="center">int</td>
 <td>Number of surfaces on the FSI interface. Should correspond with the number of elements in <code>surfaceIDs</code>.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>timestep_start</code></nobr></td>
-<td align="center">integer</td>
-<td>Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
+<td align="right"><code>interface_input</code></td>
+<td align="center">list</td>
+<td>Should contain <code>surfaces</code> elements. Each element is a dictionary with a key <code>"model_part"</code>, containing the name of a <code>ModelPart</code> for Abaqus load points. Each name must contain an entry from <code>surfaceIDs</code>. The second key of the dictionary is <code>variables</code>. The list given as value specifies the input variables that should be included. Currently only <code>"pressure"</code> and <code>"traction"</code> are allowed (case-sensitive).</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>working_directory</code></nobr></td>
-<td align="center">string</td>
-<td>Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. <br> Should be created before execution and contain an <code>AbaqusHosts.txt</code> file.</td>
+<td align="right"><code>interface_output</code></td>
+<td align="center">list</td>
+<td>Similar to interface_input but for Abaqus geometrical nodes. In this case the <code>"variables"</code> key specifies the output variable. Currently only <code>"displacement"</code> is allowed (case-sensitive).</td>
+</tr>
+<tr>
+<td align="right"><code>input_file</code></td>
+<td align="center">str</td>
+<td>Name of the Abaqus input file (.inp) provided by the user. <br> <b>Example:</b> <code>"Base.inp"</code></td>
+</tr>
+<tr>
+<td align="right">mp_mode<code>|str|Determines how Abaqus is executed in parallel. Should be</code>"THREADS"<code>as</code>"MPI"`  is currently not implemented.</td>
+<td align="center"></td>
+<td></td>
+</tr>
+<tr>
+<td align="right"><code>save_iterations</code></td>
+<td align="center">int</td>
+<td>Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) <code>save_iterations</code> are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).</td>
+</tr>
+<tr>
+<td align="right"><code>timestep_start</code></td>
+<td align="center">int</td>
+<td>Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> in which case it is not mandatory to specify.</td>
+</tr>
+<tr>
+<td align="right"><code>working_directory</code></td>
+<td align="center">str</td>
+<td>Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. <br> Should be created before execution and contain a file <em><code>AbaqusHosts.txt</code></em>.</td>
 </tr>
 </tbody>
 </table>
 <p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher <code>Component</code>. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.</p>
-<p>If different parameters are used with different Abaqus versions, this should be specified both in this section and in the version specific documentation section.</p>
 <h3 id="optional">Optional</h3>
 <table>
 <thead>
@@ -1213,34 +1226,34 @@ Subcycling within the structural solver is possible.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><nobr><code>initialInc</code></nobr></td>
+<td align="right"><code>subcycling</code></td>
+<td align="center">boolean</td>
+<td><code>false</code>: [Default] Abaqus solves the requested time step using one increment. <br> <code>true</code>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved.</td>
+</tr>
+<tr>
+<td align="right"><code>initialInc</code></td>
 <td align="center">float</td>
-<td>Required when subcycling is enabled. Contains the size of the first substep attempted Abaqus.</td>
+<td>Required when subcycling is enabled. Contains the size of the first time <em>increment</em> attempted by Abaqus.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>maxInc</code></nobr></td>
+<td align="right"><code>maxInc</code></td>
 <td align="center">float</td>
-<td>Required when subcycling is enabled. Contains the maximal size allowed for a substep.</td>
+<td>Required when subcycling is enabled. Contains the maximal time <em>increment</em> size allowed. This value should not be higher than <code>delta_t</code>.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>maxNumInc</code></nobr></td>
-<td align="center">integer</td>
-<td>Required when subcycling is enabled. Contains the maximum number of increments that Abaqus is allowed to perform for one time step.</td>
+<td align="right"><code>maxNumInc</code></td>
+<td align="center">int</td>
+<td>Required when subcycling is enabled. Contains the maximum number of <em>increments</em> that Abaqus is allowed to perform for one time step.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>minInc</code></nobr></td>
+<td align="right"><code>minInc</code></td>
 <td align="center">float</td>
-<td>Required when subcycling is enabled. Contains the minimal size allowed for a substep.</td>
+<td>Required when subcycling is enabled. Contains the minimal size allowed for a time <em>increment</em>..</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>ramp</code></nobr></td>
-<td align="center">bool</td>
-<td>Only used when subcycling is enabled in Abaqus. <br> <b>false</b>: Load is considered to be constant throughout the time step. <br><b>true</b>: Load is applied in a ramped fashion throughout the time step.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>subcycling</code></nobr></td>
-<td align="center">bool</td>
-<td><b>false</b>: [Default] Abaqus solves the requested time step using one increment. <br> <b>true</b>: Abaqus is allowed to solve the time step using multiple increments, often required when contact is involved.</td>
+<td align="right"><code>ramp</code></td>
+<td align="center">boolean</td>
+<td>Only used when subcycling is enabled in Abaqus. <br> <code>false</code>: Load is considered to be constant throughout the time step. <br><code>true</code>: Load is applied in a ramped fashion throughout the time step.</td>
 </tr>
 </tbody>
 </table>
@@ -1341,7 +1354,7 @@ Another reason to do this is because the code cannot handle elements with two or
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../predictors/" title="Predictors" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../solver_wrappers/" title="General" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -1350,19 +1363,19 @@ Another reason to do this is because the code cannot handle elements with two or
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Predictors
+                General
               </span>
             </div>
           </a>
         
         
-          <a href="../fluent/" title="SolverWrapperFluent" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../fluent/" title="Fluent" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                SolverWrapperFluent
+                Fluent
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

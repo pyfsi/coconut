@@ -410,6 +410,14 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#iteration-limit" class="md-nav__link">
     Iteration limit
   </a>
@@ -428,8 +436,8 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#absolute-norm" class="md-nav__link">
     Absolute norm
   </a>
@@ -448,8 +456,8 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#relative-norm" class="md-nav__link">
     Relative norm
   </a>
@@ -461,6 +469,11 @@
   <a href="#settings_2" class="md-nav__link">
     Settings
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -584,8 +597,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../abaqus/" title="SolverWrapperAbaqus" class="md-nav__link">
-      SolverWrapperAbaqus
+    <a href="../solver_wrappers/" title="General" class="md-nav__link">
+      General
     </a>
   </li>
 
@@ -596,8 +609,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../fluent/" title="SolverWrapperFluent" class="md-nav__link">
-      SolverWrapperFluent
+    <a href="../abaqus/" title="Abaqus" class="md-nav__link">
+      Abaqus
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../fluent/" title="Fluent" class="md-nav__link">
+      Fluent
     </a>
   </li>
 
@@ -981,6 +1006,14 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#iteration-limit" class="md-nav__link">
     Iteration limit
   </a>
@@ -999,8 +1032,8 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#absolute-norm" class="md-nav__link">
     Absolute norm
   </a>
@@ -1019,8 +1052,8 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#relative-norm" class="md-nav__link">
     Relative norm
   </a>
@@ -1032,6 +1065,11 @@
   <a href="#settings_2" class="md-nav__link">
     Settings
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1068,9 +1106,10 @@
 <p>Convergence criteria are an essential part of numerical tools. They should be chosen wisely in order to obtain a reasonably
 accurate solution without performing more iterations than needed. This documentation describes how the user can practically
 assemble a set of convergence criteria.</p>
-<h2 id="iteration-limit">Iteration limit</h2>
+<h2 id="types">Types</h2>
+<h3 id="iteration-limit">Iteration limit</h3>
 <p>The <code>type</code> <code>convergence_criterion.iteration_limit</code> is satisfied if the number of coupling iterations equals or is larger than a predefined maximum.</p>
-<h3 id="settings">Settings</h3>
+<h4 id="settings">Settings</h4>
 <p>The <code>settings</code> dictionary contains one entry:</p>
 <table>
 <thead>
@@ -1088,18 +1127,19 @@ assemble a set of convergence criteria.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="absolute-norm">Absolute norm</h2>
+<h3 id="absolute-norm">Absolute norm</h3>
 <p>The <code>type</code> <code>convergence_criterion.absolute_norm</code> is satisfied if the <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual in the last coupling iteration
 is smaller than a predefined <code>tolerance</code>. The <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is defined as</p>
 <div>
 <div class="MathJax_Preview">
-\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
+\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p} ,
 </div>
 <script type="math/tex; mode=display">
-\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
+\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p} ,
 </script>
 </div>
-<h3 id="settings_1">Settings</h3>
+<p>where <span><span class="MathJax_Preview">r_i</span><script type="math/tex">r_i</script></span> is the <span><span class="MathJax_Preview">i</span><script type="math/tex">i</script></span>-th component of the residual.</p>
+<h4 id="settings_1">Settings</h4>
 <p>The <code>settings</code> are as follows:</p>
 <table>
 <thead>
@@ -1122,11 +1162,14 @@ is smaller than a predefined <code>tolerance</code>. The <span><span class="Math
 </tr>
 </tbody>
 </table>
-<h2 id="relative-norm">Relative norm</h2>
+<h3 id="relative-norm">Relative norm</h3>
 <p>This <code>type</code> (<code>convergence_criterion.relative_norm</code>) is completely analogous to the absolute norm. Instead of the norm of 
 the last residual being smaller than a set <code>tolerance</code>, now the ratio norm of the residual of the last coupling iteration to the 
-norm of the residual of the first coupling iteration is compared to a <code>tolerance</code>.</p>
-<h3 id="settings_2">Settings</h3>
+norm of the residual of the first coupling iteration is compared to a <code>tolerance</code>. Zero divisions are avoided internally by
+comparing the norm of the residual of the first coupling iteration to the machine limit for floating points, i.e. the smallest number
+different from zero. In case this initial norm is too small, an exception will be raised. Should this happen, it is advised to opt
+for the absolute norm criterion instead of relative norm.</p>
+<h4 id="settings_2">Settings</h4>
 <p>These are the same as for <code>convergence_criterion.absolute_norm</code>.</p>
 <h2 id="combining-multiple-convergence-criteria">Combining multiple convergence criteria</h2>
 <p>In most cases, it is wise to combine two criteria: one to ensure a high enough accuracy and an iteration limit in order
