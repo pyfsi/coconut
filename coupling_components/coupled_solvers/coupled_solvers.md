@@ -338,12 +338,26 @@ The test environment `test_single_solver` tests only the `solver_wrapper` itself
 ## Save results
 In each coupled solver, the `save_results` key can be set on `true`, in order to save some results into a [pickle](https://docs.python.org/3.9/library/pickle.html) file.
 The key `name` dictates the name of this file as explained above.
-This file contains a dictionary with: the value of the displacement and load on the interface for every time step, 
-interface objects used by the two solvers, 
-the number of coupling iterations per time step, 
-the total elapsed time for the calculation, 
-the residual after every coupling iteration and the values of `delta_t` and `timestep_start`.
-This file can be used by the postprocessing files included with the examples.
+The pickle file is saved after every time step and may be used by the postprocessing files included with the examples.
+It contains a dictionary with the following keys (np-array refers to numpy array):
+
+key|value type|description
+---:|:---:|---
+`solution_x`|numpy array|Contains the values of the vector $x$ (typically displacement) for every time step as columns of a 2 dimensional np-array. The initial value is included as well, such that the number of column will be one higher than the number of calculated time steps. The vector $x$ refers to the input of the first solver wrapper.
+`solution_y`|numpy array|Contains the values of the vector $y$ (typically pressure and traction) for every time step as columns of a 2 dimensional np-array, similar to `solution_x`. The vector $y$ refers to the input of the second solver wrapper.
+`interface_x`|interface|Interface object used as input for the first solver wrapper.
+`interface_y`|interface|Interface object used as input for the second solver wrapper.
+`iterations`|list|Contains the performed number of coupling iterations for every time step.
+`time`|float|Equals the computation time between initialization and finalization of the final time step.
+`residual`|list|Nested list, which contains for each time step a list of the residual after every iteration.
+`delta_t`|float|Equals the used time step size.
+`timestep_start`|int|Equals the used start time step.
+
+In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.
+
+Finally, there is also a debug option, which can be activated by setting the boolean `self.debug` on `True` in the code file itself.
+Then, the above information is stored every iteration. Additionaly, the residual vector is saved as well using the key `solution_r`, anologously to `solution_x` and `solution_y`.
+Note, however, that the pickle file can be become very large in that case.
 
 ## References
 
