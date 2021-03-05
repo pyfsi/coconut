@@ -9,7 +9,7 @@ All coupled solvers inherit from the class `GaussSeidel`.
 In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`,
 but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing 2 dictionaries: one for each `solver_wrapper`.
 More information on these last three can be found in [predictors](../predictors/predictors.md),
-[convergence criteria](../convergence_criteria/convergence_criteria.md) and the solver wrappers documentation, respectively.
+[convergence criteria](../convergence_criteria/convergence_criteria.md) and the [solver_wrappers](../solver_wrappers/solver_wrappers.md) documentation, respectively.
 
 In the following subsections, basics scheme will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
 and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$.
@@ -39,8 +39,9 @@ parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
 `name`|string|(optional) Default: "results". Name of the case used to store a pickle file with results.
-`save_results`|bool|(optional) Default: `false`. If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save_results).
+`save_results`|bool|(optional) Default: `false`. If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save-results).
 `time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be 0.
+
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
 
@@ -311,7 +312,7 @@ parameter|type|description
 ---:|:---:|---
 `delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `name`|string|(optional) Name of the case used to store a pickle file with results. The pickle file will have the name `<name>_<test_solver_working_directory>.pickle`. If not provided, the value from `settings` is used or if `settings` is not present: "results".
-`save_results`|bool|(optional) If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save_results) as in `gauss_seidel`. If not provided, the value from `settings` is used or if `settings` is not present: `false`.
+`save_results`|bool|(optional) If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save-results) as in `gauss_seidel`. If not provided, the value from `settings` is used or if `settings` is not present: `false`.
 `solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first `solver_wrapper` that appears in the JSON-file, 1 the second one.
 `test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py`. If not provided or `None`, zero input will be used.
 `timestep_start`|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
@@ -324,7 +325,7 @@ An illustration can be found in the example [test_single_solver](../../examples/
 
 The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0.  
 As such, previous test solver working directories are not overwritten.
-The optional pickle file, which saves some [results](#save_results), uses the name as specified by the JSON settings followed by an underscore and the solver test working directory.
+The optional pickle file, which saves some [results](#save-results), uses the name as specified by the JSON settings followed by an underscore and the solver test working directory.
 As such, the pickle file can always be linked to the corresponding test working directory.
 
 During run time, the norm of $x$ and $y$ are printed.
