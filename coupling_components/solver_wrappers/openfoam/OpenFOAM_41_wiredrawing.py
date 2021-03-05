@@ -578,7 +578,7 @@ class SolverWrapperOpenFOAM_41(Component):
             os.system("head -n " + str(start_nr + 1) + " " + disp_file + " > tempDisp")
 
             if self.iteration == 1:
-                a = np.loadtxt('displacement.dat')
+                a = np.loadtxt('displacement2.dat')
                 b = np.hsplit(a, 3)
                 x = b[0]
                 y = b[1]
