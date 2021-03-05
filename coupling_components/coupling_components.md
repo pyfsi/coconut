@@ -26,7 +26,7 @@ A schematic of the relation between the coupling components for a basic calculat
 
 These coupling components have to communicate with each other.
 This is done through the use of *interfaces*, indicated with arrows on the figure. 
-For these `Interface` objects (implemented in *`$COCO/coconut/data_structure/interfaces.py`*) containing the (discretized) solution data on the FSI-interface and references to among others, the coordinates of the discretized interface. The implementation of this `Interface` class is explained in more detail in [the documentation about the data structure](../data_structe/data_structure.md).
+For these `Interface` objects (implemented in *`$COCO/coconut/data_structure/interfaces.py`*) containing the (discretized) solution data on the FSI-interface and references to among others, the coordinates of the discretized interface. The implementation of this `Interface` class is explained in more detail in [the documentation about the data structure](../data_structure/data_structure.md).
 
 ## Start of the calculation
 
