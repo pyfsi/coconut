@@ -14,7 +14,12 @@ More information on these last three can be found in [predictors](../predictors/
 In the following subsections, basics scheme will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
 and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$.
 Typically, these solvers are a flow and structure solver, respectively.
-The superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.
+Note that the column vectors such as $x$ and $y$ typically contain different components of the same variables or even different variables.
+Often, the vectors $x$ and $\tilde{x}$ contain the three components of displacement, 
+whereas the vectors $y$ and $\tilde{y}$ contain the pressure and the three components of traction.
+However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
+Further, the superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.
+Finally, the difference between the output $\tilde{x}^k$ and input $x^k$ in the same iteration is defined as the residual $r^k=\tilde{x}^k-x^k$, which is used to monitor the convergence of the calculation.
 
 ## Gauss-Seidel
 
@@ -27,7 +32,7 @@ Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solv
 The following figure shows the basic methodology.
 ![gauss_seidel](images/iteration_gauss_seidel.png "Gauss-Seidel iterations")
 
-Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added mass.
+Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
 A considerable convergence stabilization and acceleration is obtained by modifying the input to the one or both of the solvers using derivative information, as will be shown further.
 
 ### Settings
@@ -54,7 +59,7 @@ The `type` for this coupled solver is `coupled_solvers.relaxation`.
 
 ### Algorithm
 
-Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added mass.
+Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added-mass.
 A simple approach to mitigate this is applying relaxation, also called simple mixing.
 In this coupling method the output of first solver is still given to the other one without adjustment, 
 but the output of the second solver is relaxed as follows:
