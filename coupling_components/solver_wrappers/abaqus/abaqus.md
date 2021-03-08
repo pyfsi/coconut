@@ -1,7 +1,7 @@
 # Abaqus
 
 This is the documentation for all Abaqus solver-wrappers. Abaqus is a structural solver implementing the finite element method.
-Currently this wrapper only supports FSI simulations, no other multiphysics problems. 
+Currently this wrapper only supports FSI simulations, no other multi-physics problems. 
 Subcycling within the structural solver is possible.
 
 ## Terminology
