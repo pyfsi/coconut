@@ -89,39 +89,51 @@ The solver-wrapper consists of 5 files located in the source directory (with *`X
  - Output text file *`CSM_TimeASurfaceBOutput.dat`* containing displacements written by GetOutput and read by the solver-wrapper.
  - Input text file *`CSM_TimeASurfaceBCpu0Input.dat`* containing the loads written by the solver-wrapper and read by the USR.
 
-## Setting up a case: Abaqus input file (.inp)
-The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the `main directory`. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as “base-file”
-<br><br>Creation of the base-file is not considered a part of the solver wrapper functionality as it is case-specific. However, in order for the solver wrapper to work, the base-file has to comply with certain general conditions. This section aims at informing the user about the requirements for the base-file.
+## Setting up a case: Abaqus input file (.inp) and JSON file
+The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as "base-file"
+
+Creation of the base-file is not considered a part of the solver wrapper functionality as it is case-specific. However, in order for the solver wrapper to work, the base-file has to comply with certain general conditions. This section aims at informing the user about the requirements for the base-file.
 
 ### General
-The base-file needs to be of the “.inp” type, this is an “input file for Abaqus”. “.inp-files” are created via Abaqus by, after configuration, creating a “job” and requesting a “write input” for that job. These files can be opened in Abaqus by using “file > import > model”.
+The base-file needs to be of the ".inp" type, this is an "input file for Abaqus". ".inp-files" are created via Abaqus by, after configuration, creating a "job" and requesting a "write input" for that job. These files can be opened in Abaqus by using "file > import > model".
 The base-file has to contain all necessary information about the structural model, which includes:  
 
- - Geometry
- - Mesh
- - Material properties
- - Boundary conditions
- - Surfaces where external loads need to be applied
- - Node sets where displacement data will be extracted
- - Additional loads not dependent on the flow solver
+ - Mesh defining the structure geometry and discretization.
+    - Also the element type needs to be defined.
+ - Material properties.
+ - Boundary conditions.
+ - Surfaces where external loads need to be applied.
+    - Here *"Surface"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.
+ - Node sets where displacement data will be extracted.
+    - Here *"Set"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".
+ - A *Step* definition, which contains solver settings. The name can be freely chosen in Abaqus, but for CoCoNuT it should contain the word "Step". Currently the following type of analyses (it is advised to explicitly set them rather than leaving it to Abaqus to fill in a default) are supported:
+    - Implicit dynamic, application quasi-static
+    - Implicit dynamic, application moderate dissipation
+    - Static general
+ - Additional loads not dependent on the flow solver.
  
-Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software.
+Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software. Also the sets and surfaces required by CoCoNuT should be defined on the assembly level.
+ 
+ Abaqus has a GUI as well as a Python 2 interface (which is also accessible) via the GUI. References to both the Python interface and GUI will be made below.
  
 ### Setup for Abaqus input (loads)
-Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a “surface” should be created **in the assembly**. 
-These surfaces can for example be created from geometry or by creating a “node set” containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `makeSurface.py` file in the `Extra directory`. The name of the surface has to be **MOVINGSURFACE followed by an integer**. The integer of the surface has to correspond with the index of that specific surface in the `surfaceIDs` parameter (index starts from 0). 
-For example MOVINGSURFACE0 is associated with the first item in `surfaceIDs` and MOVINGSURFACE1 would be associated with the second item in `surfaceIDs`. 
-An example on the use of SurfaceFromNodeSet (via the Python console in Abaqus or a python script for Abaqus):  
- 
-```python
-from makeSurface import *
-my_model=mdb.models['Model-1']
-my_assembly=my_model.rootAssembly  
-my_instance=my_assembly.instances['PART-1-1']
-movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NAME_OF_THE_NODESET', 'MOVINGSURFACE0')
-```  
+Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created **in the assembly**. There are multiple possibilities to create these surfaces: 
+  - From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.
+  - From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.
+  - By converting a "node set" containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `makeSurface.py` file in the extra directory.
 
-On these surfaces a pressure load and a traction load need to be specified with a user-defined distribution. Loads are assigned to a “step”. A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. After creation of the step the loads can be assigned. This can be done via the GUI or using python commands available in Abaqus similar to the following:  
+The name of the surface has to be **MOVINGSURFACE followed by an integer**. The integer of the surface has to correspond with the index of that specific surface in the `surfaceIDs` parameter (index starts from 0). For example MOVINGSURFACE0 is associated with the first item in `surfaceIDs` and MOVINGSURFACE1 would be associated with the second item in `surfaceIDs`.
+
+An example on the use of `SurfaceFromNodeSet` (via the Python console in Abaqus or a Python script for Abaqus):  
+```python
+from makeSurface import SurfaceFromNodeSet
+my_model = mdb.models['Model-1']
+my_assembly = my_model.rootAssembly  
+my_instance = my_assembly.instances['PART-1-1']
+movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NODESET_NAME_A', 'MOVINGSURFACE0')
+```
+
+On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:  
 
 ```python
 from step import *
@@ -131,15 +143,15 @@ my_model.Pressure(name = 'DistributedPressure', createStepName = 'Step-1', distr
 my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', region = movingSurface0, magnitude = 1, traction = GENERAL, directionVector = ((0,0,0), (1,0,0)), distributionType = USER_DEFINED)
 ```
 
-The second command enables writing of restart files by Abaqus, which is required for running unsteady cases. This can be done from the GUI when the "step" module is active, by selecting "Output" in the top menu and subsequently "Restart Requests". _Frequency_ should be put on _99999_, _overlay_ _activated_ (this saves data since only the last increment is kept) and _interval_ on _1_ (also see [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAECAERefMap/simacae-t-simodbrestart.htm)).  
+The second command enables writing of restart files by Abaqus, which is required for running unsteady cases. This can be done from the GUI when the "Step" module is active in the viewport, by selecting "Output" in the top menu and subsequently "Restart Requests". _Frequency_ should be put on _99999_, _overlay_ _activated_ (this saves data since only the last increment is kept) and _interval_ on _1_ (also see [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAECAERefMap/simacae-t-simodbrestart.htm)).  
 Note that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
 
 ```python
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
-Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t` and `subcycling` settings and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_ or a _static step with subcycling_.  
-**Attention:** Replacing the incrementation settings is done by looking up some keywords in the base file (`*Step`, `*Dynamic`, `application`). This procedure fails when these keywords are not found. When using the GUI to create the base file (.inp) and using the default settings for the step, often the keyword `application` is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (`inc=1`), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the input file should look similar to this:
+Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t`, `subcycling` and related settings and adjusts them accordingly or raises an error, but _only_ for a _dynamic step_ or a _static step with subcycling_.  
+**Attention:** Replacing the incrementation settings is done by looking up some keywords in the base file (`*Step`, `*Dynamic`, `application`). This procedure fails when these keywords are not found. When using the GUI to create the base file (.inp) and using the default settings for the step, often the keyword `application` is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (`inc=1`), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the base-file (.inp) should look similar to this:
 
 ```
 *Step, name=Step-1, nlgeom=YES, inc=1
@@ -147,31 +159,70 @@ Currently, the Abaqus wrapper automatically checks if the increments comply with
 0.0001,0.0001,
 ```
 
-The time step (0.0001) will in this case be replaced by settings found in the json-file. More information can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
+The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
+
+#### Input-related settings in JSON file
+Although it is imperative to use MOVINGSURFACE followed by an integer in the base-file to identify the surfaces *for input*, some lines in the JSON file (see example below) related to input contains names specified by the user. The names in the `input_interface["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. 
+
+```json
+{
+  "surfaceIDs": ["NODESET_NAME_A", "NODESET_NAME_B"],
+  "interface_input": 
+  [
+    {
+      "model_part": "NODESET_NAME_A_load_points",
+      "variables": ["pressure", "traction"]
+    },
+    {
+      "model_part": "NODESET_NAME_B_load_points",
+      "variables": ["pressure", "traction"]
+    }
+  ]
+}
+```
 
 ### Setup for Abaqus output (displacements)
-After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A fieldOutput has to be generated covering all locations involved in the fluid-structure interface. 
-To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not been done before) and to create a fieldOutput per surface containing at least the coordinates and the displacements. 
+After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. 
+To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not been done before) and to create a Field Output containing at least the coordinates and the displacements. 
 
 In the previous section an example was given of how a surface can be created from a node set, but the other way around is also possible, creating a node set from a surface (presuming that this surface was already created):
 
 ```python
-my_model = mdb.models['Model-1']
 my_assembly = my_model.rootAssembly  
 movingSurface0 = my_assembly.surfaces["MOVINGSURFACE0"]
-outputSet = my_assembly.Set(name='NAME_OF_THE_NODESET', nodes=movingSurface0.nodes)
-my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=my_assembly.sets['NAME_OF_THE_NODE_SET'], variables=('COORD', 'U'))
+outputSet = my_assembly.Set(name='NODESET_NAME_A', nodes=movingSurface0.nodes)
+my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=my_assembly.sets['NODESET_NAME_A'], variables=('COORD', 'U'))
 ```
 
 Furthermore, it is interesting (for post-processing and debugging) to preserve the default Abaqus output and therefore
-also configure a fieldOutput and historyOutput with PRESELECTED variables. 
-This can be done via the GUI or using python lines similar to the following:  
+also configure a Field Output and History Output with PRESELECTED variables.
+This can be done via the GUI or using Python lines similar to the following:  
 
-```python   
+```python
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
 my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='H-Output-1', variables=PRESELECT)
-```  
+```
 
-## ModelParts
+#### Output-related settings in JSON file
+The values of the `output_interface["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. These values are internally used in CoCoNuT to distinguish the different `ModelParts`. The elements of `surfaceIDs` should match the names of the node sets defined in Abaqus.
+
+```json
+{
+  "surfaceIDs": ["NODESET_NAME_A", "NODESET_NAME_B"],
+  "interface_input": 
+  [
+    {
+      "model_part": "NODESET_NAME_A_nodes",
+      "variables": ["displacement"]
+    },
+    {
+      "model_part": "NODESET_NAME_B_nodes",
+      "variables": ["displacement"]
+    }
+  ]
+}
+```
+
+### Note about the `ModelParts`
 The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to ModelParts in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different ModelPart. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different ModelParts at each side of the corner.  
 Another reason to do this is because the code cannot handle elements with two or more faces being part of the same ModelPart. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same ModelPart: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a `Node` on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.
