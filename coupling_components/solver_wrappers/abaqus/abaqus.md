@@ -33,7 +33,7 @@ parameter|type|description
 `cores`|int|Number of cores to be used by Abaqus.
 `delta_t`|float|Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` object in which case it is not mandatory.
 `dimensions`|int|Dimensionality of the problem (2 or 3).
-`surfaceIDs`|list|List with the names of the node sets associated with the geometrical nodes on the interface surfaces. <br><br> <b>Example:</b>  ["NODESET_NAME_A", "NODESET_NAME_B"] <br> <br> <b>Important notes:</b><br> &emsp;•	The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the [Input file section](#setting-up-a-case-abaqus-input-file-inp-and-json-file)).<br>&emsp;•	The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.
+`surfaceIDs`|list|List with the names of the node sets associated with the geometrical nodes on the interface surfaces. <br><br> <b>Example:</b>  ["NODESET_NAME_A", "NODESET_NAME_B"] <br> <br> <b>Important notes:</b><br> &emsp;•	The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the [Input file section](#setting-up-a-case-abaqus-input-file-inp)).<br>&emsp;•	The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.
 `surfaces`|int|Number of surfaces on the FSI interface. Should correspond with the number of elements in `surfaceIDs`.
 `interface_input`|list|Should contain `surfaces` elements. Each element is a dictionary with a key `"model_part"`, containing the name of a `ModelPart` for Abaqus load points. Each name must contain an entry from `surfaceIDs`. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). 
 `interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable. Currently only `"displacement"` is allowed (case-sensitive).
@@ -41,7 +41,7 @@ parameter|type|description
 `mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"`  is currently not implemented.
 `save_iterations`|int|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
-`working_directory`|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. <br> Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [Environment section](#Environment).
+`working_directory`|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [Environment section](#Environment).
 
 `timestep_start` and `delta_t` are necessary parameters, but are usually defined in a higher `Component`. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.
 
@@ -89,7 +89,7 @@ The solver-wrapper consists of 5 files located in the source directory (with *`X
  - Output text file *`CSM_TimeASurfaceBOutput.dat`* containing displacements written by GetOutput and read by the solver-wrapper.
  - Input text file *`CSM_TimeASurfaceBCpu0Input.dat`* containing the loads written by the solver-wrapper and read by the USR.
 
-## Setting up a case: Abaqus input file (.inp) and JSON file
+## Setting up a case: Abaqus input file (.inp)
 The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as "base-file"
 
 Creation of the base-file is not considered a part of the solver wrapper functionality as it is case-specific. However, in order for the solver wrapper to work, the base-file has to comply with certain general conditions. This section aims at informing the user about the requirements for the base-file.
@@ -162,7 +162,7 @@ Currently, the Abaqus wrapper automatically checks if the increments comply with
 The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
 
 #### Input-related settings in JSON file
-Although it is imperative to use MOVINGSURFACE followed by an integer in the base-file to identify the surfaces *for input*, some lines in the JSON file (see example below) related to input contains names specified by the user. The names in the `input_interface["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. 
+Although it is imperative to use MOVINGSURFACE followed by an integer in the base-file to identify the surfaces *for input*, some lines in the JSON file (see example below) related to input contains names specified by the user. The names in the `interface_input["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. 
 
 ```json
 {
@@ -182,8 +182,7 @@ Although it is imperative to use MOVINGSURFACE followed by an integer in the bas
 ```
 
 ### Setup for Abaqus output (displacements)
-After creation of the step Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. 
-To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not been done before) and to create a Field Output containing at least the coordinates and the displacements. 
+After creation of the step, Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. To do so it is best to create node sets in the assembly containing all structural nodes of the surfaces (if this had not been done before) and to create a Field Output Request containing at least the coordinates and the displacements. This Field Output Request can in the GUI be found as part of the model tree, but below also an example for the Python interface is given. A Field Output Request requests field output (as the name says) to be written to the output database file (.odb).
 
 In the previous section an example was given of how a surface can be created from a node set, but the other way around is also possible, creating a node set from a surface (presuming that this surface was already created):
 
@@ -194,9 +193,7 @@ outputSet = my_assembly.Set(name='NODESET_NAME_A', nodes=movingSurface0.nodes)
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1', region=my_assembly.sets['NODESET_NAME_A'], variables=('COORD', 'U'))
 ```
 
-Furthermore, it is interesting (for post-processing and debugging) to preserve the default Abaqus output and therefore
-also configure a Field Output and History Output with PRESELECTED variables.
-This can be done via the GUI or using Python lines similar to the following:  
+Furthermore, it is interesting (for post-processing and debugging) to preserve the default Abaqus output and therefore also configure a Field Output and History Output with PRESELECTED variables. This can be done via the GUI or using Python lines similar to the following:  
 
 ```python
 my_model.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-2', variables=PRESELECT)
@@ -204,12 +201,12 @@ my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT,
 ```
 
 #### Output-related settings in JSON file
-The values of the `output_interface["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. These values are internally used in CoCoNuT to distinguish the different `ModelParts`. The elements of `surfaceIDs` should match the names of the node sets defined in Abaqus.
+The values of the `interface_output["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. These values are internally used in CoCoNuT to distinguish the different `ModelParts`. The elements of `surfaceIDs` should match the names of the node sets defined in Abaqus.
 
 ```json
 {
   "surfaceIDs": ["NODESET_NAME_A", "NODESET_NAME_B"],
-  "interface_input": 
+  "interface_output": 
   [
     {
       "model_part": "NODESET_NAME_A_nodes",
@@ -224,9 +221,8 @@ The values of the `output_interface["model_part"]` keys are matched by the eleme
 ```
 
 ### Note about the `ModelParts`
-The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to ModelParts in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different ModelPart. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different ModelParts at each side of the corner.  
-Another reason to do this is because the code cannot handle elements with two or more faces being part of the same ModelPart. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same ModelPart: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or load point on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.
+The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to ModelParts in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different ModelPart. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different ModelParts at each side of the corner. Another reason to do this is because the code cannot handle elements with two or more faces being part of the same ModelPart. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same ModelPart: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or load point on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.
 
 ## Log files
 
-A general event log of the procedure can be found in the working directory, in a file named *`AbaqusSolver.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time steps, so these files get overwritten by each new coupling iteration in the same time step.
+A general event log of the procedure can be found in the working directory, in a file named *`AbaqusSolver.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time steps, so these .msg-files get overwritten by each new coupling iteration in the same time step.
