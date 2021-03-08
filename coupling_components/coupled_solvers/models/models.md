@@ -65,7 +65,7 @@ They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
-`min_significant`|double|Absolute tolerance for filtering.
+`min_significant`|double|Absolute tolerance for filtering. To disable filtering set to `0`.
 `q`|int|Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be 0.
 
 ## Multi-vector
@@ -95,9 +95,9 @@ They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
-`min_significant`|double|Absolute tolerance for filtering.
+`min_significant`|double|(optional) Default: `0` (disabled). Absolute tolerance for filtering.
 
-## MV-MF
+## Multi-vector matrix-free
 
 The `type` for this model is `coupled_solvers.models.mv_mf`.
 The abbreviation MV-MF stands for _multi-vector matrix-free_.
@@ -121,7 +121,7 @@ They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
-`min_significant`|double|Absolute tolerance for filtering.
+`min_significant`|double|(optional) Default: `0` (disabled). Absolute tolerance for filtering.
 `q`|int|Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be 0.
 
 ## References 

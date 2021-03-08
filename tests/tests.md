@@ -3,8 +3,8 @@
 ## Idea
 
 Unit tests are particularly important to developers to debug their code separately from other coupling components. These 
-unit tests also offer an opportunity to quickly check whether the installation of the package was succesful, as mentioned 
-on the [start page](../README.md). 
+unit tests also offer an opportunity to quickly check whether or not the installation of the package was successful, as mentioned 
+on the [start page](../README.md#quick-test). 
 
 The remainder of this documentation page focuses on running these tests. In a first stage, it is explained how you can run
 (almost) all tests at once, which is useful for the post-installation test. In a second stage, information is given in how to 

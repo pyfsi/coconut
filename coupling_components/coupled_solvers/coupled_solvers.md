@@ -14,7 +14,12 @@ More information on these last three can be found in [predictors](../predictors/
 In the following subsections, basics scheme will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ 
 and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$.
 Typically, these solvers are a flow and structure solver, respectively.
-The superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.
+Note that the column vectors such as $x$ and $y$ typically contain different components of the same variables or even different variables.
+Often, the vectors $x$ and $\tilde{x}$ contain the three components of displacement, 
+whereas the vectors $y$ and $\tilde{y}$ contain the pressure and the three components of traction.
+However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
+Further, the superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.
+Finally, the difference between the output $\tilde{x}^k$ and input $x^k$ in the same iteration is defined as the residual $r^k=\tilde{x}^k-x^k$, which is used to monitor the convergence of the calculation.
 
 ## Gauss-Seidel
 
@@ -27,7 +32,7 @@ Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solv
 The following figure shows the basic methodology.
 ![gauss_seidel](images/iteration_gauss_seidel.png "Gauss-Seidel iterations")
 
-Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added mass.
+Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
 A considerable convergence stabilization and acceleration is obtained by modifying the input to the one or both of the solvers using derivative information, as will be shown further.
 
 ### Settings
@@ -38,7 +43,7 @@ Here they are listed in alphabetical order.
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
-`name`|string|(optional) Default: "results". Name of the case used to store a pickle file with results.
+`name`|string|(optional) Default: `"results"`. Name of the case used to store a pickle file with results.
 `save_results`|bool|(optional) Default: `false`. If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save-results).
 `time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be 0.
 
@@ -54,7 +59,7 @@ The `type` for this coupled solver is `coupled_solvers.relaxation`.
 
 ### Algorithm
 
-Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added mass.
+Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added-mass.
 A simple approach to mitigate this is applying relaxation, also called simple mixing.
 In this coupling method the output of first solver is still given to the other one without adjustment, 
 but the output of the second solver is relaxed as follows:
@@ -293,7 +298,7 @@ The `type` for this coupled solver is `coupled_solvers.test_single_solver`.
 ### Dummy solver
 
 To test only one solver, a dummy solver must be used.
-Such a dummy solver is implemented by a test class in the file `dummy_solver.py`, which has to be on the same folder level as `run_simulation.py`.
+Such a dummy solver is implemented by a test class in the file _`dummy_solver.py`_, which has to be on the same folder level as _`run_simulation.py`_.
 Upon run-time an instance of this class is made.
 The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `displacement`, `pressure` or `traction`.
 How these variables are defined inside these methods, is up to the user.
@@ -311,7 +316,7 @@ The keys for the `test_settings` dictionary are listed in alphabetical order bel
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
-`name`|string|(optional) Name of the case used to store a pickle file with results. The pickle file will have the name `<name>_<test_solver_working_directory>.pickle`. If not provided, the value from `settings` is used or if `settings` is not present: "results".
+`name`|string|(optional) Name of the case used to store a pickle file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: "results".
 `save_results`|bool|(optional) If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save-results) as in `gauss_seidel`. If not provided, the value from `settings` is used or if `settings` is not present: `false`.
 `solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first `solver_wrapper` that appears in the JSON-file, 1 the second one.
 `test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py`. If not provided or `None`, zero input will be used.
@@ -332,7 +337,7 @@ During run time, the norm of $x$ and $y$ are printed.
 A residual does not exist here.
 The arrays $x$ and $y$ do not have a physical meaning, but are the in- and output of the first solver,
 which is typically the flow solver. Then, the vector $y$ will contain pressure and traction components for all points.
-Nonetheless, these values can be useful to verify that the `solver_wrapper` runs.
+Nonetheless, these values can be useful to verify that the solver wrapper runs.
 
 The test environment `test_single_solver` tests only the `solver_wrapper` itself, no mapping is included.
 
