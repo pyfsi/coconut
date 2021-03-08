@@ -4,11 +4,12 @@ import os
 from collections import OrderedDict
 
 float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
-int_pattern = r'[+-]?\d*'
+int_pattern = r'[+-]?\d+'
+delimter = r'[\s\n]+'
 
 
-def get_float(string, keyword):
-    result = re.search(keyword + r'\s+\n*(?P<value>' + float_pattern + r')', string)
+def get_float(input_string, keyword):
+    result = re.search(keyword + delimter + r'(?P<value>' + float_pattern + r')', input_string)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword}')
 
@@ -16,8 +17,8 @@ def get_float(string, keyword):
         return float(result.group('value'))
 
 
-def get_int(string, keyword):
-    result = re.search(keyword + r'\s+\n*(?P<value>' + int_pattern + r')', string)
+def get_int(input_string, keyword):
+    result = re.search(keyword + delimter + r'(?P<value>' + int_pattern + r')', input_string)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword}')
 
@@ -25,57 +26,122 @@ def get_int(string, keyword):
         return int(result.group('value'))
 
 
-def get_dict(string, keyword):
-    result = re.search(keyword + r'\s+\n*\{.*?\}', string, flags=re.S)
+def get_string(input_string, keyword):
+    result = re.search(keyword + delimter + r'(?P<value>' + r'\w+' + r')', input_string)
+    if result is None:
+        raise RuntimeError(f'keyword not found: {keyword}')
+
+    else:
+        return result.group('value')
+
+
+def get_dict(input_string, keyword):
+    result = re.search(keyword + delimter + r'\{.*?\}', input_string, flags=re.S)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword}')
     else:
         return result.group()
 
 
-def get_vector_float_array(string):
-    pattern = re.compile(r'\(\s*' + float_pattern + r'\s*' + float_pattern + r'\s*' + float_pattern + r'\s*\)',
-                         flags=re.S)
-    data_list = re.findall(pattern, string)
+def get_vector_array(input_string, is_int=False):
+    if is_int:
+        pattern = re.compile(
+            r'\(' + r'[\s\n]*' + int_pattern + delimter + int_pattern + delimter + int_pattern + r'[\s\n]*\)',
+            flags=re.S)
+    else:
+        pattern = re.compile(
+            r'\(' + r'[\s\n]*' + float_pattern + delimter + float_pattern + delimter + float_pattern + r'[\s\n]*\)',
+            flags=re.S)
+    data_list = re.findall(pattern, input_string)
     data = np.empty(shape=(len(data_list), 3))
     pattern = re.compile(r'\((.*)\)')
-    for i, elem in enumerate(data_list):
-        data[i, :] = np.array(re.search(pattern, elem).group(1).split(), dtype=np.float)
+
+    if is_int:
+        for i, elem in enumerate(data_list):
+            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=np.int)
+    else:
+        for i, elem in enumerate(data_list):
+            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=np.float)
 
     return data
 
 
-def get_vector_float_array_from_dict(dict_string):
+def get_vector_array_from_dict(dict_string, size=None, is_int=False):
     # keyword = 'value'+r'\s+\n*'+r'nonuniform List\<vector\>'
     keyword = 'value'
-    result = re.search(keyword + r'\s+\n*' + 'nonuniform List<vector>\s+\n*\d*\s+\n*' + r'(.*)', dict_string, re.S)
-
-    if result is None:
-        raise RuntimeError(f'keyword not found: {keyword}')
+    result_non_uniform = re.search(
+        keyword + delimter + 'nonuniform List<vector>' + delimter + r'\d*' + delimter + r'(.*)', dict_string, re.S)
+    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'\((.*)\)', dict_string)
+    if not result_non_uniform is None:
+        return get_vector_array(input_string=result_non_uniform.group(1), is_int=is_int)
+    elif not (result_uniform is None or size is None):
+        value_list = result_uniform.group(1).strip().split()
+        if is_int:
+            return np.full((size, len(value_list)), value_list, dtype=np.int)
+        else:
+            return np.full((size, len(value_list)), value_list, dtype=np.float)
     else:
-
-        return get_vector_float_array(result.group(1))
-
-
-# TODO: To test this function
-def get_scalar_float_array(string):
-    pattern = re.compile(r'\(\s*' + float_pattern + r'\s*\)',
-                         flags=re.S)
-    data_list = re.findall(pattern, string)
-    data = np.empty(shape=(len(data_list), 3))
-    pattern = re.compile(r'\((.*)\)')
-    for i, elem in enumerate(data_list):
-        data[i, :] = np.array(re.search(pattern, elem).group(1).split(), dtype=np.float)
-
-    return data
+        raise RuntimeError(f'keyword not found: {keyword}')
 
 
-def get_boundary_field(file_name, boundary_name):
+def update_vector_array_dict(dict_string, vector_array):
+    keyword = 'value'
+    result_non_uniform = re.search(
+        keyword + delimter + 'nonuniform List<vector>' + delimter + r'(\d*' + delimter + r'\(.*\))', dict_string, re.S)
+    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'(\(.*\))', dict_string)
+    size = vector_array.shape[0]
+    replace_string = '\n' + str(size) + '\n' + np.array2string(vector_array, separator=' ', threshold=1e15,
+                                                               precision=15).replace('[', '(').replace(
+        ']', ')')
+    if not result_non_uniform is None:
+        return_string = dict_string.replace(result_non_uniform.group(1), replace_string)
+        return return_string
+
+    elif not (result_uniform is None):
+        return_string = dict_string.replace('uniform', 'nonuniform List<vector>')
+        return_string = return_string.replace(result_uniform.group(1), replace_string)
+        return return_string
+
+    else:
+        raise RuntimeError(f'keyword not found: {keyword}')
+
+
+def get_scalar_array(input_string, is_int=False):
+    scalar_string = re.search(r'\((.*)\)', input_string, re.S).group(1)
+    data_list = scalar_string.split()
+    if is_int:
+        return np.array(data_list, dtype=np.int)
+    else:
+        return np.array(data_list, dtype=np.float)
+
+
+def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
+    keyword = 'value'
+    result_non_uniform = re.search(
+        keyword + delimter + 'nonuniform List<scalar>' + delimter + r'\d*' + delimter + r'(.*)', dict_string, re.S)
+    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'\((.*)\)', dict_string)
+    if not result_non_uniform is None:
+        return get_scalar_array(input_string=result_non_uniform.group(1), is_int=is_int)
+    elif not (result_uniform is None or size is None):
+        value_list = result_uniform.group(1).strip().split()
+        if is_int:
+            return np.full((size, len(value_list)), value_list, dtype=np.int)
+        else:
+            return np.full((size, len(value_list)), value_list, dtype=np.float)
+    else:
+        raise RuntimeError(f'keyword not found: {keyword}')
+
+
+def get_boundary_field(file_name, boundary_name, is_scalar, size=None, is_int=False):
     with open(file_name, 'r') as f:
-        lines = f.read()
+        file_string = f.read()
 
-    boundary_field_dict = get_dict(lines, boundary_name)
-    boundary_field = (get_vector_float_array_from_dict(boundary_field_dict))
+    boundary_field_dict = get_dict(input_string=file_string, keyword=boundary_name)
+
+    if is_scalar:
+        boundary_field = get_scalar_array_from_dict(dict_string=boundary_field_dict, size=size, is_int=is_int)
+    else:
+        boundary_field = get_vector_array_from_dict(dict_string=boundary_field_dict, size=size, is_int=is_int)
     return boundary_field
 
 
@@ -91,8 +157,8 @@ def get_boundary_points(case_directory, time_folder, boundary_name):
     with open(b_file_name, 'r') as f:
         b_lines = f.read()
         b_dict = get_dict(b_lines, boundary_name)
-    nr_faces = get_int(string=b_dict, keyword='nFaces')
-    start_face = get_int(string=b_dict, keyword='startFace')
+    nr_faces = get_int(input_string=b_dict, keyword='nFaces')
+    start_face = get_int(input_string=b_dict, keyword='startFace')
 
     with open(f_file_name, 'r') as f:
         faces_lines = f.read()
@@ -101,8 +167,8 @@ def get_boundary_points(case_directory, time_folder, boundary_name):
     faces = re.findall(pattern, faces_block)[start_face:start_face + nr_faces]
 
     with open(p_file_name, 'r') as f:
-        point_lines = f.read()
-    point_coords = get_vector_float_array(point_lines)
+        point_file_string = f.read()
+    point_coords = get_vector_array(input_string=point_file_string, is_int=False)
 
     pattern = re.compile(r'\((.*)\)')
     point_ids = []
@@ -110,12 +176,5 @@ def get_boundary_points(case_directory, time_folder, boundary_name):
         face_point_ids = re.search(pattern, face).group(1).split()
         for point_id in face_point_ids:
             point_ids.append(int(point_id))
-    ordered_points = list(OrderedDict.fromkeys(point_ids))
-    return point_coords[ordered_points]
-
-
-if __name__ == '__main__':
-    case_directory = '/lusers/temp/navaneeth/Software/Coconut/coconut/tests/solver_wrappers/openfoam/test_41_pipeCyclic'
-    time_folder = '0.1'
-    boundary_name = 'walls'
-    get_boundary_points(case_directory, time_folder, boundary_name)
+    unique_point_ids = list(OrderedDict.fromkeys(point_ids))
+    return np.array(unique_point_ids), point_coords[unique_point_ids]

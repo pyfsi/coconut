@@ -16,7 +16,9 @@ FoamFile
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains |CORES|;
+numberOfSubdomains   8;
 
-method          |DECOMPOSEMETHOD|;
+method          scotch;
 
+
+// ************************************************************************* //

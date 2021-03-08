@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 	runTime.run();
     word prev_runTime;
     
-    IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::AUTO_WRITE));
+    IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
     wordList boundary_names ( controlDict.lookup("boundary_names"));
         
     while (true) // NOT runTime.run()
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 					//Get the vector field of the patch
 					vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
 		
-					Info<< "Reading pointDisplacement Hello\n" << endl;
+					Info<< "Reading pointDisplacement\n" << endl;
 		
 					Info<< "prev_runTime" << prev_runTime << endl;
 		

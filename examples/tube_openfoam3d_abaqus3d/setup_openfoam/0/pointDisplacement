@@ -9,43 +9,29 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "system";
-    object      controlDict;
+    class       pointVectorField;
+    location    "0";
+    object      pointDisplacement;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     |APPLICATION|;
+dimensions      [0 1 0 0 0 0 0];
 
-startFrom       startTime;
+internalField   uniform (0 0 0);
 
-startTime       |START_TIME|;
+boundaryField
+{
+	 ".*"
+	 {
+		 type            fixedValue;
+	 	 value           uniform (0 0 0);
+	 }
 
-stopAt          endTime;
+ 	 mantle 
+	 { 
+		 type  	 fixedValue; 
+		 value 	 uniform ( 0 0 0 );
+	 } 
+} 
 
-endTime         |END_TIME|;
-
-deltaT          |DT|;
-
-writeControl    timeStep;
-
-writeInterval   |WRITE_INTERVAL|;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  |WRITE_PRECISION|;
-
-writeCompression uncompressed;
-
-timeFormat      fixed;
-
-timePrecision   |TIME_PRECISION|;
-
-runTimeModifiable false;
-
-adjustTimeStep	no;
-
-boundary_names |BOUNDARY_NAMES|;
-
+// ************************************************************************* //

@@ -10,20 +10,15 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location	"constant";
-    object      dynamicMeshDict;
+    location	"system";
+    object      decomposeParDict;
 }
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dynamicFvMesh      dynamicMotionSolverFvMesh;
+numberOfSubdomains   8;
 
-motionSolverLibs   ("libfvMotionSolvers.so");
-
-solver             |MESHMOTION_SOLVER|;
-
-displacementLaplacianCoeffs
-{
-	diffusivity	   	|DIFFUSIVITY| |NUM_INTERFACE_INPUT|(|INTERFACE_INPUT|);
-}
+method          scotch;
 
 
+// ************************************************************************* //

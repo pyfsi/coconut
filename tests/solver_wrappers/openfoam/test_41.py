@@ -1,14 +1,12 @@
-from coconut import data_structure
 from coconut.tools import create_instance
 
 import unittest
-import numpy as np
-from copy import deepcopy
 import os
-import math
 import multiprocessing
+import re
 import json
 from subprocess import check_call, DEVNULL
+import numpy as np
 
 import coconut.coupling_components.solver_wrappers.openfoam.open_foam_io as of_io
 
@@ -33,35 +31,44 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.mp_name_in = self.par_solver['settings']['interface_input'][0]['model_part']
         self.mp_name_out = self.par_solver['settings']['interface_output'][0]['model_part']
 
-
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
             self.par_solver['settings']['working_directory'] = 'test_tube_3d'
 
         self.folder_path = os.path.join(os.getcwd(), self.par_solver['settings']['working_directory'])
         self.delta_t = self.par_solver['settings']['delta_t']
-        self.t_prec = self.par_solver['settings']['time_precision']
         self.clean_case()
         self.set_up_case()
 
     def clean_case(self):
-        cmd = os.path.join(self.folder_path, 'Allclean; ')
-        cmd += 'rm -rf ' + f'{0:.{self.t_prec}f}; '
-        cmd += 'rm -f *.coco'
 
-        check_call(cmd, shell=True, cwd=self.folder_path)
+        check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True)
 
     def set_up_case(self):
         check_call('sh ' + os.path.join(self.folder_path, 'Allrun'), shell=True)
 
-    # Test if order of nodes vary with different decomposition
+    def set_cores(self, cores):
+        if cores == 1:
+            self.par_solver['settings']['parallel'] = False
+        else:
+            self.par_solver['settings']['parallel'] = True
+            decompose_file_name = os.path.join(self.folder_path, 'system', 'decomposeParDict')
+            with open(decompose_file_name, 'r') as f:
+                dict = f.read()
+            new_dict = re.sub(r'numberOfSubdomains[\s\n]+' + of_io.int_pattern, f'numberOfSubdomains   {cores}', dict)
+
+            with open(decompose_file_name, 'w') as f:
+                f.write(new_dict)
+
+    ## Test if order of nodes vary with different decomposition
     def test_model_part_nodes_with_different_cores(self):
 
         print_box("Testing model part nodes with different partitioning")
         # create two solvers with different flow solver partitioning
         x0, y0, z0, ids = [], [], [], []
         for cores in [1, multiprocessing.cpu_count()]:
-            self.par_solver['settings']['cores'] = cores
+            self.set_cores(cores)
+            self.set_cores(cores)
             solver = create_instance(self.par_solver)
             solver.initialize()
             solver.finalize()
@@ -75,7 +82,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         for attr in [x0, y0, z0, ids]:
             np.testing.assert_array_equal(attr[0], attr[1])
 
-    # test if nodes are moved to the correct position
+    ## test if nodes are moved to the correct position
     def test_displacement_on_nodes(self):
 
         print_box("Testing imposed node (radial) displacement")
@@ -83,7 +90,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         # test if nodes are moved to the correct position
         for cores in [1, multiprocessing.cpu_count()]:
             self.set_up_case()
-            self.par_solver['settings']['cores'] = cores
+            self.set_cores(cores)
             solver = create_instance(self.par_solver)
             dr_mag = 0.001
             l0 = 0.05
@@ -111,18 +118,19 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             if cores > 1:
                 check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL)
 
-            node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.delta_t:.{self.t_prec}f}', 'mantle')
+            _, node_coords = of_io.get_boundary_points(solver.working_directory,
+                                                       f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
             self.clean_case()
 
-    # check if different partitioning gives the same pressure and traction results
+    ## check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
         print_box("Testing if pressure/wall shear stress are imposed properly when run in parallel ")
         output_list = []
 
         for cores in [1, multiprocessing.cpu_count()]:
             self.set_up_case()
-            self.par_solver['settings']['cores'] = cores
+            self.set_cores(cores)
             solver = create_instance(self.par_solver)
             mp = solver.model.get_model_part(self.mp_name_in)
             displacement = np.zeros((mp.size, 3))
@@ -297,6 +305,24 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
     #     #                 self.assertAlmostEqual(data1n[i] - data2n[i], 0., delta=1e-14)
     #
     #     print('Finishing tests for OpenFOAM/4.1 tube_3d.')
+
+    # test update vector dict
+    # with open('/lusers/temp/navaneeth/Software/Coconut/coconut/examples/tube_openfoam3d_kratos_structure3d/CFD/0.00000/pointDisplacement',
+    #         'r') as f:
+    #     file_string = f.read()
+    #     dict = of_io.get_dict(string=file_string, keyword='mantle')
+    #     dict_new = of_io.update_vector_array_dict(dict, np.full((3, 3), [1.0, 0.004, 2.34e-9]))
+    #     file_string = file_string.replace(dict, dict_new)
+    #     print(file_string)
+
+    # #get scalar field
+    # with open('test_tube_3d/constant/polyMesh/neighbour', 'r') as f:
+    #     file_string = f.read()
+    #     print(of_io.get_scalar_array(file_string, is_int=True))
+    # get scalar field from dict
+    # file_name = 'test_tube_3d/0/ccx'
+    # scalar_array = of_io.get_boundary_field(file_name, 'mantle', is_scalar=True)
+    # print(scalar_array)
 
 
 if __name__ == '__main__':
