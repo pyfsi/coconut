@@ -4,11 +4,13 @@ Convergence criteria are an essential part of numerical tools. They should be ch
 accurate solution without performing more iterations than needed. This documentation describes how the user can practically
 assemble a set of convergence criteria.
 
-## Iteration limit
+## Types
+
+### Iteration limit
 
 The `type` `convergence_criterion.iteration_limit` is satisfied if the number of coupling iterations equals or is larger than a predefined maximum.
 
-### Settings
+#### Settings
 
 The `settings` dictionary contains one entry:
 
@@ -16,16 +18,18 @@ parameter|type|description
 ---:|:---:|---
 `maximum`|int|Maximum number of iterations.
 
-## Absolute norm
+### Absolute norm
 
 The `type` `convergence_criterion.absolute_norm` is satisfied if the $p$-norm of the residual in the last coupling iteration
 is smaller than a predefined `tolerance`. The $p$-norm of the residual $r$ is defined as
 
 $$
-\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p}
+\Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p} ,
 $$
 
-### Settings
+where $r_i$ is the $i$-th component of the residual.
+
+#### Settings
 
 The `settings` are as follows:
 
@@ -34,13 +38,16 @@ parameter|type|description
 `tolerance`|double|Limit value for convergence.
 `order`|int|Order $p$ of the norm.
 
-## Relative norm
+### Relative norm
 
 This `type` (`convergence_criterion.relative_norm`) is completely analogous to the absolute norm. Instead of the norm of 
 the last residual being smaller than a set `tolerance`, now the ratio norm of the residual of the last coupling iteration to the 
-norm of the residual of the first coupling iteration is compared to a `tolerance`.
+norm of the residual of the first coupling iteration is compared to a `tolerance`. Zero divisions are avoided internally by
+comparing the norm of the residual of the first coupling iteration to the machine limit for floating points, i.e. the smallest number
+different from zero. In case this initial norm is too small, an exception will be raised. Should this happen, it is advised to opt
+for the absolute norm criterion instead of relative norm.
 
-### Settings
+#### Settings
 
 These are the same as for `convergence_criterion.absolute_norm`.
 
