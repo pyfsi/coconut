@@ -33,7 +33,7 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 (We recommend Anaconda 2019.03 or newer.)
 
 
-### Installation
+### Installation procedure
 
 CoCoNuT does not need to be compiled, hence installation is straightforward. 
 The source code can be downloaded as a zip file, or cloned directly from GitHub. For users that have no experience with Git or GitHub, we recommend the first option. The second option makes it easier to update the software and contribute to the code. 
