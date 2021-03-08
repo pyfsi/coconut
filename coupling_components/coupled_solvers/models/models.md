@@ -97,7 +97,7 @@ parameter|type|description
 ---:|:---:|---
 `min_significant`|double|(optional) Default: `0` (disabled). Absolute tolerance for filtering.
 
-## MV-MF
+## Multi-vector matrix-free
 
 The `type` for this model is `coupled_solvers.models.mv_mf`.
 The abbreviation MV-MF stands for _multi-vector matrix-free_.
