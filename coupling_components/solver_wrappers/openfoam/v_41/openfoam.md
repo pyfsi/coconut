@@ -103,7 +103,7 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Version specific documentation
 
-### OpenFOAM_41 (OpenFOAM 4.1)
+### v_41 (OpenFOAM 4.1)
 
 This is currently the only version.
 
