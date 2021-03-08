@@ -5,24 +5,26 @@ Currently this wrapper only supports FSI simulations, no other multiphysics prob
 Subcycling within the structural solver is possible.
 
 ## Terminology
--   Main directory: Directory where the analysis is started.  
+-   Main directory: Directory where the analysis is started.
+-   Working directory: Subdirectory of the main directory in which Abaqus runs.
 -   Source directory: Directory where the source files of the Abaqus solver-wrapper are found: *`$COCO/coconut/coupling_components/solver_wrappers/abaqus`*.
 -   Extra directory: Subdirectory of the source directory with some files to assist with the setup.
--   Working directory: Subdirectory of the main directory in which Abaqus runs.
 -   Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported.   
--   Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.  
+-   Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.
+-   Time step: Time step from the viewpoint of the fluid-structure interaction, usually equal to the time-step of the flow solver and structural solver, although one of the solvers can deviate in the case of subcycling.
+-   Increment: Time increment in the nomenclature of the Abaqus software. This is usually equal to the time step of the flow solver and overall coupled simulation, but in case of subcycling within the Abaqus solver, a time step can be subdivided in multiple increments.
 
 ## Environment
- - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the .json file.  In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
+ - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the JSON file.  In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
  - Abaqus needs a **host-file** called *`AbaqusHosts.txt`* in the working directory.
      - This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm.
      - The extra directory contains a script *`Example_makeHostFile.sh`* which can be used to generate a host file.
  - The **Abaqus license server** needs to be specified in the parametrized file `abaqus_v6.env` which is present in the `source directory`. For use at Ghent University no changes are required. 
- - The **Abaqus software should be available as wel as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
+ - The **Abaqus software should be available as well as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
      - The extra directory contains a file *`abaqus_setup`* which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).
 
-## Parameters 
-This section describes the Parameters in the .json file, listed in alphabetical order. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a .json file of one of the examples in *`$COCO/coconut/examples`*.
+## Parameters
+This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in *`$COCO/coconut/examples`*.
 
 ### Mandatory
 parameter|type|description
