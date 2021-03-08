@@ -43,7 +43,9 @@ In that case , the names of the `ModelParts` of both flow and structure solver n
 This flow solver calculates the flow inside a 1D straight and flexible tube.
 The `type` for this solver wrapper is `solver_wrappers.python.tube_flow_solver`.
 The required input is the radial displacement of the tube wall.
+The other components of displacement are ingnored.
 The resulting output is the pressure on the tube wall.
+Although a required variable in `interface_output`, `traction` is always returned as being zero.
 
 From the radial displacements the area of each cross-section is calculated.
 The flow is governed by the continuity and momentum equation
@@ -98,7 +100,7 @@ parameter|type|description
 ---:|:---:|---
 `amplitude`|double|Amplitude of the inlet boundary condition.
 `period`|double|Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type `4`).
-`reference`|double|(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `rho_f` * `ureference`^2 / 2.
+`reference`|double|(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `rhof` * `ureference`^2 / 2.
 `type`|int|Type of inlet boundary condition. <br>If `1`, a sine wave is used with amplitude, reference and period as specified. <br>If `2`, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If `3`, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If `4`, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.
 `variable`|string|Variable upon which the inlet boundary condition is definded, either `"pressure"`, `"velocity"` or `"total pressure"`.
 
@@ -116,7 +118,9 @@ This structure solver calculates the deformation of the wall of a straight and f
 The `type` for this solver wrapper is `solver_wrappers.python.ring_model_solver`.
 The tube is regarded as made up of independent rings.
 The required input is the pressure on the tube wall.
+Although a required variable in `interface_input`, `traction` is not taken into account.
 The resulting output is the radial displacement.
+For the other components of displacement, zero is returned.
 This solver is not suited to calculate the propagation a pressure pulse.
 
 The behaviour of the elastic tube wall is described by a Hookean relation,
@@ -159,7 +163,9 @@ This structure solver calculates the deformation of the wall of a straight and f
 The `type` for this solver wrapper is `solver_wrappers.python.tube_structure_solver`.
 In this model inertia is taken into account, but still only radial displacement is considered.
 The required input is the pressure on the tube wall.
+Although a required variable in `interface_input`, `traction` is not taken into account.
 The resulting output is the radial displacement.
+For the other components of displacement, zero is returned.
 
 The deformation of the tube in the radial direction is determined by
 $$
