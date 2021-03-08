@@ -38,7 +38,7 @@ Here they are listed in alphabetical order.
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
-`name`|string|(optional) Default: "results". Name of the case used to store a pickle file with results.
+`name`|string|(optional) Default: `"results"`. Name of the case used to store a pickle file with results.
 `save_results`|bool|(optional) Default: `false`. If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save-results).
 `time_step_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be 0.
 
@@ -293,7 +293,7 @@ The `type` for this coupled solver is `coupled_solvers.test_single_solver`.
 ### Dummy solver
 
 To test only one solver, a dummy solver must be used.
-Such a dummy solver is implemented by a test class in the file `dummy_solver.py`, which has to be on the same folder level as `run_simulation.py`.
+Such a dummy solver is implemented by a test class in the file _`dummy_solver.py`_, which has to be on the same folder level as _`run_simulation.py`_.
 Upon run-time an instance of this class is made.
 The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being the variable(s) required by the tested solver, e.g. `displacement`, `pressure` or `traction`.
 How these variables are defined inside these methods, is up to the user.
@@ -311,7 +311,7 @@ The keys for the `test_settings` dictionary are listed in alphabetical order bel
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
-`name`|string|(optional) Name of the case used to store a pickle file with results. The pickle file will have the name `<name>_<test_solver_working_directory>.pickle`. If not provided, the value from `settings` is used or if `settings` is not present: "results".
+`name`|string|(optional) Name of the case used to store a pickle file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: "results".
 `save_results`|bool|(optional) If `true` a [pickle](https://docs.python.org/3.9/library/pickle.html) file is stored containing some main [results](#save-results) as in `gauss_seidel`. If not provided, the value from `settings` is used or if `settings` is not present: `false`.
 `solver_index`|int|Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first `solver_wrapper` that appears in the JSON-file, 1 the second one.
 `test_class`|string|(optional) Refers to the class to use in the `dummy_solver.py`. If not provided or `None`, zero input will be used.
@@ -332,7 +332,7 @@ During run time, the norm of $x$ and $y$ are printed.
 A residual does not exist here.
 The arrays $x$ and $y$ do not have a physical meaning, but are the in- and output of the first solver,
 which is typically the flow solver. Then, the vector $y$ will contain pressure and traction components for all points.
-Nonetheless, these values can be useful to verify that the `solver_wrapper` runs.
+Nonetheless, these values can be useful to verify that the solver wrapper runs.
 
 The test environment `test_single_solver` tests only the `solver_wrapper` itself, no mapping is included.
 
