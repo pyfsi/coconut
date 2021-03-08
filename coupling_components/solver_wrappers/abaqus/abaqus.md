@@ -6,7 +6,7 @@ Subcycling within the structural solver is possible.
 
 ## Terminology
 -   Main directory: Directory where the analysis is started.  
--   Source directory: *`$COCO/coconut/coupling_components/solver_wrappers/abaqus`*.
+-   Source directory: Directory where the source files of the Abaqus solver-wrapper are found: *`$COCO/coconut/coupling_components/solver_wrappers/abaqus`*.
 -   Extra directory: Subdirectory of the source directory with some files to assist with the setup.
 -   Working directory: Subdirectory of the main directory in which Abaqus runs.
 -   Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported.   
@@ -36,7 +36,7 @@ parameter|type|description
 `interface_input`|list|Should contain `surfaces` elements. Each element is a dictionary with a key `"model_part"`, containing the name of a `ModelPart` for Abaqus load points. Each name must contain an entry from `surfaceIDs`. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). 
 `interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable. Currently only `"displacement"` is allowed (case-sensitive).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <b>Example:</b> `"Base.inp"`
-mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"`  is currently not implemented.
+`mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"`  is currently not implemented.
 `save_iterations`|int|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
 `working_directory`|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. <br> Should be created before execution and contain a file *`AbaqusHosts.txt`*.
