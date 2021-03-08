@@ -52,10 +52,10 @@ class SolverWrapperMapped_update(Component):
         self.mapper_interface_output.initialize(self.interface_output_from, self.interface_output_to)
 
         #create mp input_update_to
-
         for item_input_to in self.interface_input_to.model:
+            l = self.interface_input_to.get_model_part(item_input_to)
             parameters_to = [{'model_part':'new_mp_input_to', 'variables':['displacement']}]
-            self.new_interface_input_to = data_structure.Interface(parameters_to, self.interface_input_to.model)
+            self.new_interface_input_to = data_structure.Interface(parameters_to, l)
 
         #create mp_input_udate_from
 
