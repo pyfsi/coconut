@@ -25,6 +25,10 @@ These links can be used in rendered MarkDown, e.g. in PyCharm, but also on GitHu
 These links also work on the documentation website, as they are automatically replaced by the correct URL. 
 Take for example a look at the documentation of the [mappers](../coupling_components/mappers/mappers.md) or the [examples](../examples/examples.md). 
 
+In addition, it is also possible to link to (sub)sections of a file. It is less straightforward to find the correct address in this case, but PyCharm gives you suggestions if you type a # behind the filename. Some examples: [this paragraph](docs.md#links-to-other-markdown-files), [a CoCoNuT tutorial](../README.md#getting-started), [setting up a Fluent case](../coupling_components/solver_wrappers/fluent/fluent.md#setting-up-a-new-case), [radial basis mappers](../coupling_components/mappers/mappers.md#mapperradialbasis). This feature has some limitations: it is not possible to link to a section name that appears several times in a file (non-unique name); it is not possible to link to a section name that is a link itself.
+
+
+
 ### Math
 For writing mathematics, LaTeX notation can be used. Inline equations must be enclosed in single dollar signs (e.g. $E = m c^2$), block-style equations in double dolar signs, e.g.
 
