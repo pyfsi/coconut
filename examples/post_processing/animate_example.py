@@ -8,7 +8,7 @@ import pickle
 
 # different cases to be plotted
 common_path = "../../examples/"
-case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
+case_paths = ["tube_openfoam3d_abaqus3d/results2.pickle"]
 legend_entries = ["results"]
 
 # load cases
@@ -36,7 +36,7 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
         coordinates = animation.coordinates
 
         # example 1: python solver (YZ-plane)
-        python_solver = True
+        python_solver = False
         if python_solver:
             mask_x = (coordinates[:, 0] > -np.inf)
             mask_y = (abs(coordinates[:, 1]) > 0)
@@ -45,12 +45,12 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
             component = 1  # y-component
 
         # example 2: fluent solver (XY-plane)
-        fluent = False
+        fluent = True
         if fluent:
             mask_x = (coordinates[:, 0] > -np.inf)
             mask_y = (coordinates[:, 1] > 0)
-            mask_z = (abs(coordinates[:, 2]) < 1e-16)
-            # mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)
+            # mask_z = (abs(coordinates[:, 2]) < 1e-16)
+            mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)
             abscissa = 0  # x-axis
             component = 1  # y-component
 
