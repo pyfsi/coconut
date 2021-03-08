@@ -18,7 +18,7 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            parameters_solver['settings'].SetString('working_directory', 'test_tube_flow/CFD')
+            parameters_solver['settings']['working_directory'] = 'test_tube_flow/CFD'
 
         # setup case
         dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_tube_flow')

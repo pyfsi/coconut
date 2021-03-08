@@ -85,7 +85,7 @@ class SolverWrapperTubeRingmodel(Component):
     def solve_solution_step(self, interface_input):
         # input
         self.interface_input = interface_input.copy()
-        self.p = interface_input.get_variable_data("wall", "pressure").flatten() / self.rhof
+        self.p = interface_input.get_variable_data("wall", "pressure").flatten() / self.rhof  # kinematic pressure
 
         # independent rings model
         for i in range(len(self.p)):
