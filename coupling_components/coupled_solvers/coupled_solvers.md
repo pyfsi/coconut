@@ -18,7 +18,7 @@ The superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current ite
 
 ## Gauss-Seidel
 
-The `type` for this coupled_solver is `coupled_solvers.gauss_seidel`.
+The `type` for this coupled solver is `coupled_solvers.gauss_seidel`.
 
 ### Algorithm
 
@@ -50,7 +50,7 @@ If they are defined both here and in the solver wrapper, then the former value i
 ## Relaxation
 
 This coupled solver inherits from the class `GaussSeidel`.
-The `type` for this `coupled_solver` is `coupled_solvers.relaxation`.
+The `type` for this coupled solver is `coupled_solvers.relaxation`.
 
 ### Algorithm
 
@@ -84,7 +84,7 @@ parameter|type|description
 ## Aitken
 
 This coupled solver inherits from the class `GaussSeidel`.
-The `type` for this `coupled_solver` is `coupled_solvers.aitken`.
+The `type` for this coupled solver is `coupled_solvers.aitken`.
 
 ### Algorithm
 
@@ -132,7 +132,7 @@ parameter|type|description
 ## IQNI
 
 This coupled solver inherits from the class `GaussSeidel`.
-The `type` for this coupled_solver is `coupled_solvers.iqni`.
+The `type` for this coupled solver is `coupled_solvers.iqni`.
 
 ### Algorithm
 
@@ -191,7 +191,7 @@ A symbolic schematic is given in the following figure.
 ![iqni](images/iteration_iqni.png "Residual operator iterations")
 
 For more information with respect to the approximation of the Jacobian, refer to the [models documentation](models/models.md).
-More information about residual operator methods can be found in [1](#1).
+More information about residual operator methods can be found in [[1](#1)].
 
 ### Settings
 
@@ -206,7 +206,7 @@ parameter|type|description
 ## IBQN
 
 This coupled solver inherits from the class `GaussSeidel`.
-The `type` for this coupled solver is `coupled_solvers.ibqn`.
+The `type` for this coupled solver is `coupled solvers.ibqn`.
 
 ### Algorithm
 
@@ -268,7 +268,7 @@ A symbolic schematic is given in the following figure.
 ![ibqn](images/iteration_ibqn.png "Block iterations")
 
 The actual approximation of the Jacobian occurs with the same [models](models/models.md) as before.
-More information about block methods can be found in [1](#1).
+More information about block methods can be found in [[1](#1)].
 
 ### Settings
 
@@ -320,7 +320,7 @@ parameter|type|description
 Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the `settings` dictionary.
 The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `name` if not provided in `test_settings`.
 Note that `test_settings` has priority over the parameters defined in `settings`.
-This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the `coupled_solver` type to `coupled_solvers.test_single_solver` and without altering anything else.
+This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
 An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 
 The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0.  
@@ -363,4 +363,4 @@ Note, however, that the pickle file can be become very large in that case.
 ## References
 
 <a id="1">[1]</a> 
-[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers," in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
