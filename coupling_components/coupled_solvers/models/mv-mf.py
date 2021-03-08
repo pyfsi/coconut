@@ -14,7 +14,7 @@ class ModelMVMF(Component):
         super().__init__()
 
         self.settings = parameters["settings"]
-        self.min_significant = self.settings["min_significant"]
+        self.min_significant = self.settings.get("min_significant", 0)
         self.q = self.settings["q"]
 
         self.size_in = None
