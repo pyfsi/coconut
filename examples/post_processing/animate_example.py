@@ -49,8 +49,8 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
         if fluent:
             mask_x = (coordinates[:, 0] > -np.inf)
             mask_y = (coordinates[:, 1] > 0)
-            # mask_z = (abs(coordinates[:, 2]) < 1e-16)
-            mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)
+            mask_z = (abs(coordinates[:, 2]) < 1e-16)
+            #mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)
             abscissa = 0  # x-axis
             component = 1  # y-component
 
