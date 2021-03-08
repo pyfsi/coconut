@@ -60,8 +60,8 @@
               "type": "mappers.load_update",
               "settings":
               {
-                "coord_min": "v_min",
-                "coord_max": "v_max"
+                "coord_min": -0.003,
+                "coord_max": 0.0005
               }
           }
         ]
@@ -85,7 +85,8 @@
                  "directions": [
                   "x",
                   "y"
-                ]
+                ],
+                "dif_radius_wire": 0.0001
               }
             },
             {

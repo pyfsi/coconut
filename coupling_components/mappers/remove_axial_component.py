@@ -24,6 +24,10 @@ class MapperRemoveAxialComponent(MapperTransformer):
         self.dir_r = dirs.index(self.settings['direction_radial'])
         self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
 
+        self.radius = self.settings['dif_radius_wire']
+        if type(self.radius) != float:
+            raise TypeError('coords_max must be a float')
+
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
             super().initialize()
@@ -58,6 +62,8 @@ class MapperRemoveAxialComponent(MapperTransformer):
             data_to = np.tile(data_from, (1, 1))
 
             data_to[:,self.dir_a] = 0
+            data_to[:, self.dir_r] = self.radius + data_to[:,self.dir_r]
+
 
             # print(data_to)
 

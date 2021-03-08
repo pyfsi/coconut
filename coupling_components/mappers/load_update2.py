@@ -15,16 +15,13 @@ class Mapper_load_update2(MapperTransformer):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.min = self.settings['coords_min']
-        if type(self.min) != float:
+        self.v_min = self.settings['coords_min']
+        if type(self.v_min) != float:
             raise TypeError('coords_min must be a float')
 
-        self.max = self.settings['coords_max']
-        if type(self.max) != float:
-            raise TypeError('coords_max must be a float')
-
-        self.v_min = self.settings['coords_min']
         self.v_max = self.settings['coords_max']
+        if type(self.v_max) != float:
+            raise TypeError('coords_max must be a float')
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         if not forward:

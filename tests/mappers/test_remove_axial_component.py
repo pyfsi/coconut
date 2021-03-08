@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.tools import create_instance
+from coconut.tools import create_instance
 
 import unittest
 import numpy as np
@@ -7,13 +7,14 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 class TestMapperPlasticDeform(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
         self.parameters = {'type': 'mappers.remove_axial_component',
                            'settings':
                                {'direction_axial': 'x',
-                                'direction_radial': 'y'}
+                                'direction_radial': 'y',
+                                 'dif_radius_wire': 0.0001}
                            }
 
     def test_instantiation(self):
@@ -24,6 +25,11 @@ class TestMapperPlasticDeform(unittest.TestCase):
 
         self.parameters['settings']['direction_axial'] = 'x'
         self.parameters['settings']['direction_radial'] = 2
+        self.assertRaises(ValueError, create_instance, self.parameters)
+
+        self.parameters['settings']['direction_axial'] = 'x'
+        self.parameters['settings']['direction_radial'] = 2
+        self.parameters['settings']['radius_wire'] = 't'
         self.assertRaises(ValueError, create_instance, self.parameters)
 
     def test_initialize(self):
@@ -73,7 +79,7 @@ class TestMapperPlasticDeform(unittest.TestCase):
 
         def fun_v(x, y, z):
             d_x =  0.05 * x
-            d_y = -0.03 * d_x
+            d_y = -0.0004 * d_x
             d_z = 0 * d_x
             return np.column_stack((d_x, d_y, d_z))
 
@@ -93,15 +99,6 @@ class TestMapperPlasticDeform(unittest.TestCase):
         z_from = np.zeros(n_from)
 
         coords_init = np.column_stack((x_from, y_from, z_from))
-
-        # i = 0
-        # for k in range(n_in):
-        #     for p in range(2):
-        #         x_to[i] = tmp[k]
-        #         y_to[i] = r_tmp[k] * np.cos(np.radians(2.5))
-        #         z_to[i] = r_tmp[k] * ((-1) ** p) * np.sin(np.radians(2.5))
-        #         i += 1
-        #     k += 1
 
         model = data_structure.Model()
         model.create_model_part(mp_name_from, x_from, y_from, z_from, np.arange(n_from))
@@ -134,11 +131,12 @@ class TestMapperPlasticDeform(unittest.TestCase):
                 (interface_to, mp_name_to, var_v))
         displacement_to = fun_v(x_to,y_to,z_to)
         displacement_to[:,0] = 0
+        displacement_to[:,1] = self.parameters['settings']['dif_radius_wire'] + displacement_to[:,1]
         v_v_to_ref = displacement_to
         v_v_to = interface_to.get_variable_data(mp_name_to, var_v)
         np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-14)
 
-        print(v_v_to_ref)
+        print(v_v_from)
         print(v_v_to)
 
         if self.gui:
@@ -156,9 +154,9 @@ class TestMapperPlasticDeform(unittest.TestCase):
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
             ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
-                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.05, colors='r', linewidth=3)
+                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=1, colors='r')
             ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
-                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=0.05)
+                        pivot='tail', arrow_length_ratio=0.05, normalize=False, length=1000, colors = 'b')
 
             for ax in [ ax_v]:
                 ax.set_xlabel('x')
@@ -166,8 +164,8 @@ class TestMapperPlasticDeform(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
-            plt.xlim(0, 6)
-            plt.ylim(0.7, 1.5)
+            # plt.xlim(0, 6)
+            # plt.ylim(0.7, 1.5)
             plt.show()
             plt.close()
 
