@@ -11,7 +11,7 @@ delimter = r'[\s\n]+'
 def get_float(input_string, keyword):
     result = re.search(keyword + delimter + r'(?P<value>' + float_pattern + r')', input_string)
     if result is None:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
 
     else:
         return float(result.group('value'))
@@ -20,7 +20,7 @@ def get_float(input_string, keyword):
 def get_int(input_string, keyword):
     result = re.search(keyword + delimter + r'(?P<value>' + int_pattern + r')', input_string)
     if result is None:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
 
     else:
         return int(result.group('value'))
@@ -29,7 +29,7 @@ def get_int(input_string, keyword):
 def get_string(input_string, keyword):
     result = re.search(keyword + delimter + r'(?P<value>' + r'\w+' + r')', input_string)
     if result is None:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
 
     else:
         return result.group('value')
@@ -38,7 +38,7 @@ def get_string(input_string, keyword):
 def get_dict(input_string, keyword):
     result = re.search(keyword + delimter + r'\{.*?\}', input_string, flags=re.S)
     if result is None:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
     else:
         return result.group()
 
@@ -81,7 +81,7 @@ def get_vector_array_from_dict(dict_string, size=None, is_int=False):
         else:
             return np.full((size, len(value_list)), value_list, dtype=np.float)
     else:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
 
 def update_vector_array_dict(dict_string, vector_array):
@@ -103,7 +103,7 @@ def update_vector_array_dict(dict_string, vector_array):
         return return_string
 
     else:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
 
 def get_scalar_array(input_string, is_int=False):
@@ -119,17 +119,17 @@ def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
     keyword = 'value'
     result_non_uniform = re.search(
         keyword + delimter + 'nonuniform List<scalar>' + delimter + r'\d*' + delimter + r'(.*)', dict_string, re.S)
-    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'\((.*)\)', dict_string)
+    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'(' + float_pattern + r')', dict_string)
     if not result_non_uniform is None:
         return get_scalar_array(input_string=result_non_uniform.group(1), is_int=is_int)
     elif not (result_uniform is None or size is None):
-        value_list = result_uniform.group(1).strip().split()
+        value = result_uniform.group(1)
         if is_int:
-            return np.full((size, len(value_list)), value_list, dtype=np.int)
+            return np.full(size, value, dtype=np.int)
         else:
-            return np.full((size, len(value_list)), value_list, dtype=np.float)
+            return np.full(size, value, dtype=np.float)
     else:
-        raise RuntimeError(f'keyword not found: {keyword}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
 
 def get_boundary_field(file_name, boundary_name, is_scalar, size=None, is_int=False):

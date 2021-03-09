@@ -242,13 +242,23 @@ class SolverWrapperOpenFOAM_41(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        # Let OpenFOAM check whether it needs to save this timestep (in OF-solver: runTime.write())
+        prev_timestep = self.timestep -1
+        # remove the folder that was used for pointDisplacement_Next if not in writeInterval
+        if self.settings['parallel']:
+            dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
+            os.system('rm -rf ' + dir_pointdisp_next)
+
+            if prev_timestep % self.write_interval:
+                for p in range(self.cores):
+                    prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
+                    os.system('rm -rf ' + prev_timestep_dir)
+        else:
+            if prev_timestep % self.write_interval:
+                dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
+                os.system('rm -rf ' + dir_pointdisp_next)
+
 
         if not (self.timestep % self.write_interval):
-            if self.cores > 1:  # Remove folder that was used for pointDisplacement_Next
-                # at end of time step if parallel run if not writeInterval
-                path = os.path.join(self.working_directory, self.prev_timestamp)
-                os.system('rm -rf ' + path)
             self.send_message('save')
             self.wait_message('save_ready')
 
@@ -314,7 +324,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 pos_list = [pos for pos in range(0, nfaces)]
 
             wall_shear_stress = np.empty(wss_tmp.shape)
-            pressure = np.empty((pres_tmp.shape[0], 1))
+            pressure = np.empty((pres_tmp.size, 1))
 
             wall_shear_stress[pos_list,] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp[:]
@@ -444,8 +454,10 @@ class SolverWrapperOpenFOAM_41(Component):
             self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
             time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
             if not time_format == 'fixed':
-                raise NotImplementedError(
-                    f'timeFormat:{time_format} in controlDict not implemented. Available options: fixed.')
+                msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
+                tools.print_info(msg, layout='warning')
+                control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
+                                      control_dict)
 
             control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
                                   control_dict)

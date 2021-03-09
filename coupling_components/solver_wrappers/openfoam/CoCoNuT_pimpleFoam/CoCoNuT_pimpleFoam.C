@@ -78,7 +78,9 @@ int main(int argc, char *argv[])
 	
 	runTime.run();
     word prev_runTime;
-    
+
+    unsigned int iteration;
+
     IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
     wordList boundary_names ( controlDict.lookup("boundary_names"));
         
@@ -97,16 +99,19 @@ int main(int argc, char *argv[])
 
     		prev_runTime = runTime.timeName();
     		Info << prev_runTime << nl << endl;
-
+            // For adjustable time steps insert a while (controlDict.deltaT > runTime.deltaTValue()):  pimple loop
     		runTime++;
     		remove("next.coco");
     		OFstream outfile ("next_ready.coco");
     		outfile << "next.coco" << endl;
 			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
+			iteration = 0;
 		}
     	
     	if (exists("continue.coco"))
-		{		
+		{
+		    iteration++;
+		    Info << "Coupling iteration = " << iteration << nl << endl;
     		
     		// Define movement of the coupling interface
     	    forAll(boundary_names, s)
@@ -138,7 +143,7 @@ int main(int argc, char *argv[])
 		
 					Info<< "Reading pointDisplacement\n" << endl;
 		
-					Info<< "prev_runTime" << prev_runTime << endl;
+					//Info<< "prev_runTime" << prev_runTime << endl; // can be removed navaneeth
 		
 					pointVectorField pointDisplacement_temp_
 					(
