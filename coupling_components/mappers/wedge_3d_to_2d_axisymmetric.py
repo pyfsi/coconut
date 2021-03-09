@@ -52,7 +52,7 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
                 if z > 0:
                     self.nearest[i_to] = i_from
                     coords_tmp[i_to, 0] = self.coords_in[i_from,0]
-                    coords_tmp[i_to,1 ] = np.cos(self.angle) * r +np.sin(self.angle) * z
+                    coords_tmp[i_to,1 ] = np.cos(-self.angle) * r + np.sin(self.angle) * z
                     coords_tmp[i_to,2] = 0
 
                     i_to += 1
@@ -86,11 +86,10 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
             data_to = np.zeros((self.n_to,3))
 
             for i_to in range(len(data_to)):
-                data_to[i_to] = data_from[self.nearest[i_to]]
-                data_to[:, self.dir_r] =  data_to[:,self.dir_r]/np.cos(-self.angle) + data_to[:,self.dir_3d] * np.cos(np.pi/2 - self.angle)
-                data_to[:, self.dir_3d] = 0
-                # print(data_to)
-
+                tmp = data_from[self.nearest[i_to]]
+                data_to[i_to, self.dir_a] = tmp[self.dir_a]
+                data_to[i_to, self.dir_r] =  tmp[self.dir_r]*np.cos(-self.angle) + tmp[self.dir_3d] * np.cos(np.pi/2 - self.angle)
+                data_to[i_to, self.dir_3d] = 0
 
         else:
             raise NotImplementedError(f'MapperWedge3DTo2DAxisymmetric not implemented for variable of dimension {dimensions}')
