@@ -5,7 +5,7 @@ Currently this wrapper only supports FSI simulations, no other multi-physics pro
 Subcycling within the structural solver is possible.
 
 ## Fluid-structure interaction with Abaqus
-Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node *sets*, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points (Gauss points, quadrature points), the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts`of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
+Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node *sets*, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points (Gauss points, quadrature points), the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts` of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
 
 ## Terminology
  - Main directory: Directory where the analysis is started.
@@ -43,7 +43,7 @@ parameter|type|description
 `mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"` is currently not implemented.
 `save_iterations`|int|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
-<nobr>`working_directory`</nobr>|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [environment section](#Environment).
+<nobr>`working_directory`</nobr>|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [environment section](#environment).
 
 `timestep_start` and `delta_t` are necessary parameters, but are usually defined in a higher `Component`. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.
 
@@ -68,9 +68,9 @@ The solver wrapper consists of 5 files located in the source directory (with *`X
 
 ### The `__init__` method
 
- During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE**B**", where **B** should correspond to the index of the elements in `surfaceIDs` (0, 1, 2, ...). These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` (which also correspond to elements in `surfaceIDs`). GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output` (also matched with `surfaceIDs`). The input `ModelParts`are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
+ During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE**B**", where **B** should correspond to the index of the elements in `surfaceIDs` (0, 1, 2, ...). These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` (which also correspond to elements in `surfaceIDs`). GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output` (also matched with `surfaceIDs`). The input `ModelParts` are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
  
- #### Files written in the working directory during `__init__`
+#### Files written in the working directory during `__init__`
  
  In the file conventions *`A`* is the start time step (`timestep_start` in the JSON file) and *`B`* the index of the corresponding element of `surfaceIDs`.
  
@@ -78,11 +78,11 @@ The solver wrapper consists of 5 files located in the source directory (with *`X
  - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_TimeACpu0SurfaceBFaces.dat`* and *`CSM_TimeACpu0SurfaceBFacesBis.dat`*. When these are processed by the solver wrapper, also *`CSM_TimeASurfaceBElements.dat`* is created.
  - Upon running GetOutput the geometrical nodes are written to *`CSM_TimeASurfaceBNodes.dat`*. 
  
- ### The `solve_solution_step` method
+### The `solve_solution_step` method
  
  This method of `SolverWrapperAbaqusX` is called each coupling iteration with an `Interface` object (input_interface) containing loads, which are written to files that are read by the (compiled) *`USR.f`* during the invoked Abaqus simulation. The Abaqus software is started and shut down for each calculation, i.e. each coupling iteration. When the simulation has ran successfully (log-file *`AbaqusSolver.log`* is checked for errors), the outputs are read from Abaqus by GetOuput and written to a file. The file is read in Python and the output (displacements) are stored in the output_interface `Interface` object which is returned.
  
- #### Files written in the working directory during `solve_solution_step`
+#### Files written in the working directory during `solve_solution_step`
  
 In the file conventions *`A`* is the time step and *`B`* the index of the corresponding element of `surfaceIDs`.
 
@@ -119,7 +119,8 @@ Abaqus models contain parts and those parts are used to create assemblies. The b
  Abaqus has a GUI as well as a Python 2 interface (which is also accessible) via the GUI. References to both the Python interface and GUI will be made below.
  
 ### Setup for Abaqus input (loads)
-Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created **in the assembly**. There are multiple possibilities to create these surfaces: 
+Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created **in the assembly**. There are multiple possibilities to create these surfaces:
+
  - From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.
  - From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.
  - By converting a "node set" containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `makeSurface.py` file in the extra directory.
@@ -153,7 +154,7 @@ step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, i
 ```
 
 Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t`, `subcycling` and related settings and adjusts them accordingly or raises an error, but *only* for a *dynamic step* or a *static step with subcycling*.
-**Attention:** Replacing the incrementation settings is done by looking up some keywords in the base file (`*Step`, `*Dynamic`, `application`). This procedure fails when these keywords are not found. When using the GUI to create the base file (.inp) and using the default settings for the step, often the keyword `application` is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (`inc=1`), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the base-file (.inp) should look similar to this:
+**Attention:** Replacing the incrementation settings is done by looking up some keywords in the base-file (`*Step`, `*Dynamic`, `application`). This procedure fails when these keywords are not found. When using the GUI to create the base-file (.inp) and using the default settings for the step, often the keyword `application` is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (`inc=1`), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the base-file (.inp) should look similar to this:
 
 ```
 *Step, name=Step-1, nlgeom=YES, inc=1
