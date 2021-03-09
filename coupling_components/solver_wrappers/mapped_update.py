@@ -52,19 +52,32 @@ class SolverWrapperMapped_update(Component):
         self.mapper_interface_output.initialize(self.interface_output_from, self.interface_output_to)
 
         #create mp input_update_to
-        for item_input_to in self.interface_input_to.model:
-            l = self.interface_input_to.get_model_part(item_input_to)
-            parameters_to = [{'model_part':'new_mp_input_to', 'variables':['displacement']}]
-            self.new_interface_input_to = data_structure.Interface(parameters_to, l)
+        model1 = self.interface_input_to.model
+        parameters1 = self.interface_input_to.parameters
+        for dct in parameters1:
+            dct['variables'] = ["displacement"]
+        self.new_interface_input_to = data_structure.Interface(parameters1,model1)
 
         #create mp_input_udate_from
+        model2 = self.interface_input_from.model
+        parameters2 = self.interface_input_from.parameters
+        for dct2 in parameters2:
+            dct2['variables'] = ["displacement"]
+        self.new_interface_input_from = data_structure.Interface(parameters2, model2)
 
-        for item_input_from in self.interface_input_from.model:
-            parameters_from = [{'model_part':'new_mp_input_from', 'variables':['displacement']}]
-            self.new_interface_input_from = data_structure.Interface(parameters_from, self.interface_input_from.model)
+        for i in self.interface_output_to.parameters:
+            tmp = self.interface_output_to.get_model_part(i['model_part'])
+            print(tmp)
+            # for j in range(tmp.x0.size):
 
+                # print(tmp.x0[j])
+                # print(tmp.y0[j])
+                # print(tmp.z0[j])
+            self.coords_in = np.column_stack((tmp.x0, tmp.y0, tmp.z0))
+            print(self.coords_in)
         #create input_update_to mapper
         self.mapper_interface_input_update_to.initialize(self.interface_output_from, self.new_interface_input_to)
+
 
         #create input_update_from mapper
         self.mapper_interface_input_update_from.initialize(self.interface_output_to, self.new_interface_input_from)
@@ -90,7 +103,7 @@ class SolverWrapperMapped_update(Component):
         # add the mapped displacement to interface_input_from by creating a new mp
         self.model_new_from = data_structure.Model()
         for item_new_input_from in self.new_interface_input_from.parameters:
-            mp_intermediate_input_from = self.new_interface_input_from(item_new_input_from['model_part'])
+            mp_intermediate_input_from = self.new_interface_input_from.get_model_part(item_new_input_from['model_part'])
             mp_intermediate_from = self.new_interface_input_from.get_variable_data(item_new_input_from['model_part'],
                                                                                item_new_input_from['variables'][0])
             x0_new = mp_intermediate_from[:, 0] + mp_intermediate_input_from.x0

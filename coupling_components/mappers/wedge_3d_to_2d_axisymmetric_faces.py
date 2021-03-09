@@ -48,8 +48,6 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
             j = 0
             i_to = 0
             for i in range(n_in):
-                print(i)
-                print(self.coords_in[i])
                 coords_tmp[j,: ] = self.coords_in[i,:]
                 self.nearest[i] = i_to
                 j += 1

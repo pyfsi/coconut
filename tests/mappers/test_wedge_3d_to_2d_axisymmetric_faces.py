@@ -45,7 +45,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         for k in range(n_in):
             x_in[i] = x[k]
             y_in[i] = r[k] * np.cos(np.radians(2.5))
-            z_in[i] = r[k] * np.sin(np.radians(2.5))
+            z_in[i] = 0
             i += 1
 
         model = data_structure.Model()
