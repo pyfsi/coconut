@@ -4,7 +4,7 @@ This documentation describes the different types of coupled solvers which are av
 A coupled solver refers to a coupling algortihm used to couple two solvers, typically a flow and a structure solver.
 Some of these coupled solvers make use of one or more [models](models/models.md).
 An odd one out is `test_single_solver` which allows to test only one solver by coupling it to a dummy solver. 
-All coupled solvers inherit from the class `GaussSeidel`.
+All coupled solvers inherit from the class `CoupledSolverGaussSeidel`.
 
 In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`,
 but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing 2 dictionaries: one for each `solver_wrapper`.
@@ -50,11 +50,11 @@ parameter|type|description
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
 
-**These parameters should also be specified for the coupled solvers inheriting from `GaussSeidel`.**
+**These parameters should also be specified for the coupled solvers inheriting from `CoupledSolverGaussSeidel`.**
 
 ## Relaxation
 
-This coupled solver inherits from the class `GaussSeidel`.
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.relaxation`.
 
 ### Algorithm
@@ -79,7 +79,7 @@ For more challenging problems, with incompresible flow and high added-mass, this
 
 ### Settings
 
-Besides the parameters required in the class `GaussSeidel`, the following parameters need to be included in the `settings` dictionary.
+Besides the parameters required in the class `CoupledSolverGaussSeidel`, the following parameters need to be included in the `settings` dictionary.
 They are listed in alphabetical order.
 
 parameter|type|description
@@ -88,7 +88,7 @@ parameter|type|description
 
 ## Aitken
 
-This coupled solver inherits from the class `GaussSeidel`.
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.aitken`.
 
 ### Algorithm
@@ -127,7 +127,7 @@ but even faster convergence can be obtained using quasi-Newton methods, which ca
 
 ### Settings
 
-Besides the parameters required in the class `GaussSeidel`, the following parameters need to be included in the `settings` dictionary.
+Besides the parameters required in the class `CoupledSolverGaussSeidel`, the following parameters need to be included in the `settings` dictionary.
 They are listed in alphabetical order.
 
 parameter|type|description
@@ -136,7 +136,7 @@ parameter|type|description
 
 ## IQNI
 
-This coupled solver inherits from the class `GaussSeidel`.
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.iqni`.
 
 ### Algorithm
@@ -200,7 +200,7 @@ More information about residual operator methods can be found in [[1](#1)].
 
 ### Settings
 
-Besides the parameters required in the class `GaussSeidel`, the following parameters need to be included in the `settings` dictionary.
+Besides the parameters required in the class `CoupledSolverGaussSeidel`, the following parameters need to be included in the `settings` dictionary.
 They are listed in alphabetical order.
 
 parameter|type|description
@@ -210,7 +210,7 @@ parameter|type|description
 
 ## IBQN
 
-This coupled solver inherits from the class `GaussSeidel`.
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled solvers.ibqn`.
 
 ### Algorithm
@@ -277,7 +277,7 @@ More information about block methods can be found in [[1](#1)].
 
 ### Settings
 
-Besides the parameters required in the class `GaussSeidel`, the following parameters need to be included in the `settings` dictionary.
+Besides the parameters required in the class `CoupledSolverGaussSeidel`, the following parameters need to be included in the `settings` dictionary.
 They are listed in alphabetical order.
 
 parameter|type|description
@@ -292,7 +292,7 @@ parameter|type|description
 
 The solver `test_single_solver` can be used to test new cases and solver settings.
 The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy.
-This test environment inherits from the class `GaussSeidel`. 
+This test environment inherits from the class `CoupledSolverGaussSeidel`. 
 The `type` for this coupled solver is `coupled_solvers.test_single_solver`.
 
 ### Dummy solver
