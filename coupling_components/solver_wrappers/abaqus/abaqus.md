@@ -4,6 +4,9 @@ This is the documentation for all Abaqus solver-wrappers. Abaqus is a structural
 Currently this wrapper only supports FSI simulations, no other multi-physics problems. 
 Subcycling within the structural solver is possible.
 
+## Fluid-structure interaction with Abaqus
+Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node *sets*, where the resulting computed displacements are returned to the solver-wrapper. The loads are applied in so-called load points, the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts`of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
+
 ## Terminology
  - Main directory: Directory where the analysis is started.
  - Working directory: Subdirectory of the main directory in which Abaqus runs.
