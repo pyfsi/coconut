@@ -9,7 +9,7 @@ There are five types:
 -   [*Predictors*](predictors/predictors.md) which provide an initial guess at the start of a new time step. Subdirectory *`predictors`*.
 -   [*Solver-wrappers*](solver_wrappers/solver_wrappers.md) which provide communication which the actual solvers. Subdirectory *`solver_wrappers`*.
 
-The idea behind these components is modularity. For example, changing a solver-wrapper or creating a new one can be done without having to adapt any other components.
+The idea behind these components is modularity. For example, changing a solver wrapper or creating a new one can be done without having to adapt any other components.
 This allows for high degree of flexibility, a short learning curve and a limited development effort.
 Moreover, components can be used multiple times without the need for copying code.
 Detailed information on these components can be found in the specific documentation.

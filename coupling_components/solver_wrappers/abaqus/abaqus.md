@@ -1,16 +1,16 @@
 # Abaqus
 
-This is the documentation for all Abaqus solver-wrappers. Abaqus is a structural solver implementing the finite element method.
+This is the documentation for all Abaqus solver wrappers. Abaqus is a structural solver implementing the finite element method.
 Currently this wrapper only supports FSI simulations, no other multi-physics problems. 
 Subcycling within the structural solver is possible.
 
 ## Fluid-structure interaction with Abaqus
-Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node *sets*, where the resulting computed displacements are returned to the solver-wrapper. The loads are applied in so-called load points, the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts`of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
+Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node *sets*, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points, the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts`of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
 
 ## Terminology
  - Main directory: Directory where the analysis is started.
  - Working directory: Subdirectory of the main directory in which Abaqus runs.
- - Source directory: Directory where the source files of the Abaqus solver-wrapper are found: *`$COCO/coconut/coupling_components/solver_wrappers/abaqus`*.
+ - Source directory: Directory where the source files of the Abaqus solver wrapper are found: *`$COCO/coconut/coupling_components/solver_wrappers/abaqus`*.
  - Extra directory: Subdirectory of the source directory with some files to assist with the setup.
  - Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported.   
  - Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.
@@ -59,7 +59,7 @@ parameter|type|description
 `ramp`|boolean| Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
 
 ## Overview of operation
-The solver-wrapper consists of 5 files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
+The solver wrapper consists of 5 files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
 
  - *`X.py`*: defines the `SolverWrapperAbaqusX`class. 
  - *`abaqus_v6.env`*: environment file setting the environment for the Abaqus solver.
@@ -76,7 +76,7 @@ The solver-wrapper consists of 5 files located in the source directory (with *`X
  In the file conventions *`A`* is the start time step (`timestep_start` in the JSON file) and *`B`* the index of the corresponding element of `surfaceIDs`.
  
  - The Abaqus input file (`input_file` in JSON file) is processed into a file *`CSM_TimeA.inp`* and `CSM_Restart.inp`, the latter taking care of all simulations (i.e. coupling iterations) but the first.
- - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_TimeACpu0SurfaceBFaces.dat`* and *`CSM_TimeACpu0SurfaceBFacesBis.dat`*. When these are processed by the solver-wrapper, also *`CSM_TimeASurfaceBElements.dat`* is created.
+ - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_TimeACpu0SurfaceBFaces.dat`* and *`CSM_TimeACpu0SurfaceBFacesBis.dat`*. When these are processed by the solver wrapper, also *`CSM_TimeASurfaceBElements.dat`* is created.
  - Upon running GetOutput the geometrical nodes are written to *`CSM_TimeASurfaceBNodes.dat`*. 
  
  ### The `solve_solution_step` method
@@ -89,8 +89,8 @@ The solver-wrapper consists of 5 files located in the source directory (with *`X
 
  - Files written by Abaqus for allowing a restart (required every coupling iteration): *`CSM_TimeA.odb`*, *`CSM_TimeA.res`*, *`CSM_TimeA.mdl`*, *`CSM_TimeA.prt`*, *`CSM_TimeA.stt`*.
  - Output database file written by Abaqus called *`CSM_TimeA.odb`* and read by GetOutput (also needed for restart).
- - Output text file *`CSM_TimeASurfaceBOutput.dat`* containing displacements written by GetOutput and read by the solver-wrapper.
- - Input text file *`CSM_TimeASurfaceBCpu0Input.dat`* containing the loads written by the solver-wrapper and read by the USR.
+ - Output text file *`CSM_TimeASurfaceBOutput.dat`* containing displacements written by GetOutput and read by the solver wrapper.
+ - Input text file *`CSM_TimeASurfaceBCpu0Input.dat`* containing the loads written by the solver wrapper and read by the USR.
 
 ## Setting up a case: Abaqus input file (.inp)
 The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as "base-file"
