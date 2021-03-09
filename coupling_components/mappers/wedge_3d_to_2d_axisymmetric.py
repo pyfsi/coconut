@@ -33,7 +33,7 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
 
             mp_in = model.get_model_part(model_part_name_in)
             n_in = mp_in.size
-            n_out = n_in
+            n_out = n_in //2
             self.n_from = n_in
             self.n_to = n_out
 
@@ -45,19 +45,21 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
 
             self.nearest = np.zeros((self.n_to,)).astype(int)
 
-            j = 0
             i_to = 0
-            for i in range(n_in):
-                print(i)
-                print(self.coords_in[i])
-                coords_tmp[j,: ] = self.coords_in[i,:]
-                self.nearest[i] = i_to
-                j += 1
-                i_to += 1
+            for i_from in range(n_in):
+                z = self.coords_in[i_from,2]
+                r = self.coords_in[i_from,1]
+                if z > 0:
+                    self.nearest[i_to] = i_from
+                    coords_tmp[i_to, 0] = self.coords_in[i_from,0]
+                    coords_tmp[i_to,1 ] = np.cos(self.angle) * r +np.sin(self.angle) * z
+                    coords_tmp[i_to,2] = 0
+
+                    i_to += 1
 
             coords_out[:, 0] = coords_tmp[:, 0]
-            coords_out[:, 1] = coords_tmp[:, 1]/np.cos(self.angle)
-            coords_out[:, 2] = 0
+            coords_out[:, 1] = coords_tmp[:, 1]
+            coords_out[:, 2] = coords_tmp[:, 2]
 
             model.create_model_part(model_part_name_out, coords_out[:, 0],
                                     coords_out[:, 1], coords_out[:, 2], ids_out)
@@ -72,20 +74,22 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
 
         dimensions = variables_dimensions[var]
         data_from = interface_from.get_variable_data(mp_name_from, var)
+        # print(data_from)
 
         if dimensions == 1:
-            data_to = np.tile(data_from,(1,1))
+            data_to = np.zeros((self.n_to,1))
             for i_to in range(len(data_to)):
                 data_to[i_to] = data_from[self.nearest[i_to]]
+            # print(data_to)
 
         elif dimensions == 3:
-            data_to = np.tile(data_from, (1,1))
+            data_to = np.zeros((self.n_to,3))
+
             for i_to in range(len(data_to)):
                 data_to[i_to] = data_from[self.nearest[i_to]]
-
-            r = data_to[:, self.dir_r].copy()
-            data_to[:, self.dir_r] = r / np.cos(self.angle)
-            data_to[:, self.dir_3d] = 0
+                data_to[:, self.dir_r] =  data_to[:,self.dir_r]/np.cos(-self.angle) + data_to[:,self.dir_3d] * np.cos(np.pi/2 - self.angle)
+                data_to[:, self.dir_3d] = 0
+                # print(data_to)
 
 
         else:

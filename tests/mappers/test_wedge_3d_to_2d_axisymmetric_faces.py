@@ -112,7 +112,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         i = 0
         for k in range(n_in):
             x_from[i] = tmp[k]
-            y_from[i] = 0.01*r_tmp[k] * np.cos(np.radians(2.5))
+            y_from[i] = r_tmp[k] * np.cos(np.radians(2.5))
             z_from[i] = r_tmp[k] * 0
             i += 1
 
