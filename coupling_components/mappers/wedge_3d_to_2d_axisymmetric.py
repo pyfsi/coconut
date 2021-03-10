@@ -74,13 +74,11 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
 
         dimensions = variables_dimensions[var]
         data_from = interface_from.get_variable_data(mp_name_from, var)
-        # print(data_from)
 
         if dimensions == 1:
             data_to = np.zeros((self.n_to,1))
             for i_to in range(len(data_to)):
                 data_to[i_to] = data_from[self.nearest[i_to]]
-            # print(data_to)
 
         elif dimensions == 3:
             data_to = np.zeros((self.n_to,3))
@@ -88,7 +86,8 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
             for i_to in range(len(data_to)):
                 tmp = data_from[self.nearest[i_to]]
                 data_to[i_to, self.dir_a] = tmp[self.dir_a]
-                data_to[i_to, self.dir_r] =  tmp[self.dir_r]*np.cos(-self.angle) + tmp[self.dir_3d] * np.cos(np.pi/2 - self.angle)
+                # data_to[i_to, self.dir_r] =  tmp[self.dir_r]*np.cos(-self.angle) + tmp[self.dir_3d] * np.cos(np.pi/2 - self.angle)
+                data_to[i_to, self.dir_r] = tmp[self.dir_r] * np.cos(self.angle) + tmp[self.dir_3d] * np.sin(self.angle)
                 data_to[i_to, self.dir_3d] = 0
 
         else:

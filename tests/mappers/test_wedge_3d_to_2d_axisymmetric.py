@@ -14,7 +14,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         self.parameters = {'type': 'mappers.wedge_3d_to_2d_axisymmetric',
                            'settings':
                                {'direction_axial': 'x',
-                                'direction_radial': 'y'}
+                                'direction_radial': 'y',
+                               }
                            }
 
     def test_instantiation(self):
@@ -116,14 +117,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         y_from = np.zeros(n_from)
         z_from = np.zeros(n_from)
 
-        # i = 0
-        # for k in range(n_to):
-        #     for j in range(2):
-        #         x_from[i] = tmp[k]
-        #         y_from[i] = r_tmp[k] * np.cos(np.radians(2.5))
-        #         z_from[i] = r_tmp[k] * ((-1) ** j) * np.sin(np.radians(2.5))
-        #         i += 1
-        #     k += 1
         for i in range(n_from):
             x_from[i] = x_in[i]
             y_from[i] = y_in[i]
@@ -139,7 +132,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         v_v_from = fun_v(x_from, y_from, z_from)
         interface_from.set_variable_data(mp_name_from, var_s, v_s_from)
         interface_from.set_variable_data(mp_name_from, var_v, v_v_from)
-
 
         # initialize mapper to get model_part_to (2D)
         mapper = create_instance(self.parameters)
@@ -190,8 +182,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
-            # plt.xlim(1,1.25)
-            # plt.ylim(0.99,1.02)
             plt.show()
             plt.close()
 
