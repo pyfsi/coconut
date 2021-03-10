@@ -16,7 +16,7 @@ aspect of the wrapper without having to test all aspects together, which can be 
 
 ### Run all unit tests at once
 The unit tests in CoCoNuT uses the  standard unit test module available in Python. To run all the tests (except those 
-for the solver wrappers, as will be explained later on), navigate to the _`tests/`_ directory and type following command 
+for the solver wrappers, as will be explained later on), navigate to the _`coconut/tests/`_ directory and type following command 
 in the terminal:
 
 ````
@@ -36,12 +36,12 @@ not run by default. Including the unit tests for solver wrappers in the list of 
 following steps: 
 
 -   Load the corresponding solver modules in the terminal;
--   Import the test classes for the solver wrappers in the Python file, _`tests/solver_wrappers/__init__.py`_;
+-   Import the test classes for the solver wrappers in the Python file, _`coconyt/tests/solver_wrappers/__init__.py`_;
 -   Add the test classes for the solver wrappers in the list called `tests_cases` in the Python file 
-_`tests/solver_wrappers/__init__.py`_.
+_`coconut/tests/solver_wrappers/__init__.py`_.
 
 In practice, the last two steps boil down to simply uncommenting the line that corresponds to the test class of the 
-solver  in the `tests_cases` list in the Python file _`tests/solver_wrappers/__init__.py`_. Be aware that the solver 
+solver  in the `tests_cases` list in the Python file _`coconut/tests/solver_wrappers/__init__.py`_. Be aware that the solver 
 wrapper of two different versions of the same software can not be tested together due to conflicting modules (i.e. only 
 one Fluent version at a time can be tested). Compared to the other tests, testing solver wrappers takes more time.
 
@@ -55,9 +55,9 @@ In case the test classes list is defined but left empty, no test classes are exe
 The Python unit test framework allows for running the test separately as well. This is particularly useful for the unit tests
 of the solver wrappers, as they generally take a bit longer to run. There are two possibilities: running a test 
 on the level of a file, or on the level of the class or even a method. Important is however that you ALWAYS start the test
-from the _`tests/`_ directory! If not, errors will occur due to erroneous paths, especially in the tests of a solver wrapper.
+from the _`coconut/tests/`_ directory! If not, errors will occur due to erroneous paths, especially in the tests of a solver wrapper.
 
-Let us consider the Abaqus unit test as an example. It is located in _`tests/solver_wrappers/abaqus/test_v614.py`_. In this file
+Let us consider the Abaqus unit test as an example. It is located in _`coconut/tests/solver_wrappers/abaqus/test_v614.py`_. In this file
 there are two test classes: `TestSolverWrapperAbaqus614Tube2D` and `TestSolverWrapperAbaqus614Tube3D`, which inherits from the former.
 Within these test classes, four test methods are run: `test_repeat_iteration`, `test_restart`, `test_partitioning` and 
 `test_shear`. The other two methods, `setUpClass` and `setUp`, are run just before each test class and test method, respectively.
