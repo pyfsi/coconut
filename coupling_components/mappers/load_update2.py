@@ -37,6 +37,7 @@ class Mapper_load_update2(MapperTransformer):
             self.coords_in = np.column_stack((self.mp_input_to.x0, self.mp_input_to.y0, self.mp_input_to.z0))
             ids_out = np.arange(n_out)
 
+
             self.mp_out = model.create_model_part(model_part_name_out, self.coords_in[:, 0],
                                     self.coords_in[:, 1], self.coords_in[:, 2], ids_out)
 
@@ -58,7 +59,7 @@ class Mapper_load_update2(MapperTransformer):
         if dimensions == 1:
             data_to = np.zeros((self.mp_input_to.size, 1))
             for i in range(self.mp_input_to.size):
-                if self.mp_input_to.x0[i] < self.v_min or self.mp_input_to.x0[i] >self.v_max:
+                if self.mp_input_to.y0[i] < self.v_min or self.mp_input_to.y0[i] > self.v_max:
                     data_to[i] = 0
                 else:
                      data_to[i] = self.data_from[i]
