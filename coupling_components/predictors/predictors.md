@@ -10,7 +10,7 @@ The vector $x$ is the input for the first solver, conform the [coupled solvers d
 A predictor is intialized in the coupled solver using an initial solution as determined by the coupled solver.
 As such, there is at least one previous solution available.
 
-Only the `type` has to be provided (e.g. `predictors.linear`), no `settings` dictionary is required.
+In the JSON file, the `predictor` dictionary only requires a `type` (e.g. `predictors.linear`), no `settings` dictionary has to be provided.
 
 Specification of a predictor is mandatory, also for a steady simulation. In that case, however, it does not matter which
 predictor is chosen as only one "time step" is performed.
@@ -39,7 +39,7 @@ $$
 x^{n+1}=\frac{5}{2}x^{n}-2x^{n-1}+\frac{1}{2}x^{n-2}.
 $$
 If no three previous solutions are available, the predictor `PredictorLinear` is used.
-This predictor is called `PredictorLegacy` as it corresponds to the 2^{nd} order extrapolator in the coupling code _Tango_.
+This predictor is called `PredictorLegacy` as it corresponds to the second order extrapolator in the coupling code _Tango_, the predecessor of _CoCoNuT_.
 
 ## Quadratic
 The `type` for this predictor is `predictors.quadratic`.
