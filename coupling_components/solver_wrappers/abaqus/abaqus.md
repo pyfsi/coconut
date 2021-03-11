@@ -10,7 +10,7 @@ Abaqus (Dassault Systèmes) can be used to solve for the structural displacement
 ## Terminology
  - Main directory: Directory where the analysis is started.
  - Working directory: Subdirectory of the main directory in which Abaqus runs.
- - Source directory: Directory where the source files of the Abaqus solver wrapper are found: *`$COCO/coconut/coupling_components/solver_wrappers/abaqus`*.
+ - Source directory: Directory where the source files of the Abaqus solver wrapper are found: *`coupling_components/solver_wrappers/abaqus`*.
  - Extra directory: Subdirectory of the source directory with some files to assist with the setup.
  - Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported. 
  - Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.
@@ -27,7 +27,7 @@ Abaqus (Dassault Systèmes) can be used to solve for the structural displacement
      - The extra directory contains a file *`abaqus_setup`* which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).
 
 ## Parameters
-This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in *`$COCO/coconut/examples`*.
+This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in the *`examples`* folder.
 
 ### Mandatory
 parameter|type|description
@@ -37,8 +37,8 @@ parameter|type|description
 `delta_t`|float|Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` object in which case it is not mandatory.
 `dimensions`|int|Dimensionality of the problem (2 or 3).
 `surfaceIDs`|list|List with the names of the node sets associated with the geometrical nodes on the FSI-interface surfaces. <br><br> **Example:** ["NODESET_NAME_A", "NODESET_NAME_B"] <br> <br> **Important notes:**<br> &emsp;•	The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the [input file section](#setting-up-a-case-abaqus-input-file-inp)).<br>&emsp;•	The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.
-`interface_input`|list|Should contain a dictionary for each corresponding element in `surfaceIDs`, with a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`$COCO/coconut/data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). An example can be found in [this part of the input file section](#input-related-settings-in-json-file).
-`interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`$COCO/coconut/data_structure/variables.py`. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
+`interface_input`|list|Should contain a dictionary for each corresponding element in `surfaceIDs`, with a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). An example can be found in [this part of the input file section](#input-related-settings-in-json-file).
+`interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"Base.inp"`
 `mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"` is currently not implemented.
 `save_iterations`|int|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
