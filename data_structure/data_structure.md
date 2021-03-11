@@ -51,14 +51,14 @@ The following schematic illustrates the data structure in the
 ![Fig](images/interface_data.png "Data in Interface class")
 
 For example, in the schematic above, the interface has a model part named 
-'mp_1_name', which has several variable data. The data for the variable `'var_1'` is stored in a `numpy array` with the number of rows equal to the number points in the model part and the number of columns equal to the number of components/dimensions of the variable. The number of dimensions for a variable 
+"mp_1_name", which has several variable data. The data for the variable `var_1` is stored in a `numpy array` with the number of rows equal to the number points in the model part and the number of columns equal to the number of components/dimensions of the variable. The number of dimensions for a variable 
 is defined in the `variable_dimensions` `dict` in the file 
 `data_structure/variables.py`variables.py, e.g the number of dimensions for the variables 
-`'pressure'` and `'displacement'` is 1 and 3, respectively. <br>
+`pressure` and `displacement` is 1 and 3, respectively. <br>
 
-The nested '`dict` in the `Interface` is constructed during the instantiation
+The nested `dict` in the `Interface` is constructed during the instantiation
  of the class using a parameters `dict` given as an input argument. For the 
- schematic shown above, the paramters dict would be:<br>
+ schematic shown above, the parameters dict would be:<br>
  
  ````
  [
@@ -89,7 +89,7 @@ The file *`data_structure/variables.py`* does not contain a class definition.
 It has a `dict` called `variable_dimensions` with keys as data 
 variable names (`string`) and values as the number of components or dimensions 
 (`int`). One important point to note is that only variables defined in this 
-dictionary can be used in CoCoNuT. To use a new variable, the developer first 
+dictionary can be used in CoCoNuT. To use a new variable, the user first 
 needs to add the variable name and its number of components in this `dict`.
 
 ---
