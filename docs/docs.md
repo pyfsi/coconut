@@ -4,7 +4,6 @@ This website is a collection of all MarkDown (MD) files found in the `coconut` p
 These files are converted to a static website using [MkDocs][1], based on the outline defined in the `mkdocs.yml` file.
 
 
-
 ## Documentation in MarkDown 
 
 MD files are easy to write and read in raw form, and can easily be converted to HTML for nicer rendering. It is easy to learn, see e.g. this [tutorial](https://www.markdowntutorial.com/). Several flavors of MD exist, which differ only in some details. GitHub has its own [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/), which is used to render MD documents found in repositories on the run. PyCharm comes with an automatic rendering tool built in, and I assume many other IDE's too. 
@@ -51,7 +50,7 @@ with `alt` displayed when the image cannot be shown/viewed for some reason, and 
 
 ![example image](images/lachend_kakske.png "diefstal in Oostende")
 
-Only image formats specified in `run_mkdocs.py` are copied to the website; missing extensions can be added. 
+Only image formats specified in `run_mkdocs.py` (i.e. png, jpg, jpeg) are copied to the website; missing extensions can be added. 
 Images from all `coconut` subdirectories called `images` are copied to the website, so care must be taken that `images` is not used in e.g. the output of the test examples.
 
 
