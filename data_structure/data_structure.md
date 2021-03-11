@@ -25,11 +25,13 @@ Naturally, the size of `x0`, `y0`, `z0`, and  `id` should be equal, which is
 checked in the `__init__` method.
 
 ---
+
 **NOTE**:<br>
 The data in `ModelPart` once created, either by `__init__` method of 
 the `ModelPart` class or by `create_model_part` method of the `Model` class, 
 cannot be changed later. This is because the initial coordinates of boundary 
 points are always supplied from the solver wrapper and they don't change during the various stages of the coupling process. 
+
 --- 
 
 ## Interface
@@ -57,6 +59,7 @@ is defined in the `variable_dimensions` `dict` in the file
 The nested '`dict` in the `Interface` is constructed during the instantiation
  of the class using a parameters `dict` given as an input argument. For the 
  schematic shown above, the paramters dict would be:<br>
+ 
  ````
  [
     {
@@ -74,13 +77,13 @@ The nested '`dict` in the `Interface` is constructed during the instantiation
     .
  ]
  ````
+ 
 The data in the interface can be accessed, added, or replaced by the various 
 methods implemented in the `Interface` class, which can be looked in the file 
-`data_structure/interface.py`. 
-
-
+`data_structure/interface.py`.
 
 ---
+
 **NOTE**:<br>
 The file *`data_structure/variables.py`* does not contain a class definition. 
 It has a `dict` called `variable_dimensions` with keys as data 
