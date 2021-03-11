@@ -42,10 +42,10 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.OpenFOAM_41",
+        "type": "solver_wrappers.openfoam.v41",
         "settings": {
           "working_directory": "CFD",
-          "application": "CoCoNuT_pimpleFoam",
+          "application": "coconut_pimpleFoam",
           "boundary_names": [
             "mantle"
           ],

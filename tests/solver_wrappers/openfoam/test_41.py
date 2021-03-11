@@ -8,7 +8,7 @@ import json
 from subprocess import check_call, DEVNULL
 import numpy as np
 
-import coconut.coupling_components.solver_wrappers.openfoam.open_foam_io as of_io
+import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
 
 def print_box(text):

@@ -2,7 +2,7 @@ from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.openfoam import open_foam_io as of_io
+from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
 from subprocess import check_call
 import numpy as np

@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application    CoCoNuT_pimpleFoam;
+application    coconut_pimpleFoam;
 
 startFrom       startTime;
 
@@ -41,7 +41,7 @@ writeCompression uncompressed;
 
 timeFormat      fixed;
 
-timePrecision   5;
+timePrecision    4;
 
 runTimeModifiable false;
 
@@ -49,3 +49,56 @@ adjustTimeStep  no;
 
 // ******************************************************** //
 
+// CoCoNuT function objects
+boundary_names (mantle );
+
+functions
+{
+PRESSURE_mantle
+{
+type  	 surfaceRegion;
+libs 	 ("libfieldFunctionObjects.so");
+executeControl 	 timeStep;
+executeInterval 	 1;
+writeControl 	 timeStep;
+writeInterval 	 1;
+timeFormat 	 fixed;
+timePrecision 	 4;
+operation 	 none;
+writeFields 	 true;
+surfaceFormat 	 raw;
+regionType 	 patch;
+name 	 mantle;
+fields (p);
+}
+wallShearStress
+{
+type  	 wallShearStress;
+libs 	 ("libfieldFunctionObjects.so");
+executeControl 	 timeStep;
+executeInterval 	 1;
+writeControl 	 timeStep;
+writeInterval 	 1;
+timeFormat 	 fixed;
+timePrecision 	 4;
+log 	 false;
+}
+TRACTION_mantle
+{
+type  	 surfaceRegion;
+libs 	 ("libfieldFunctionObjects.so");
+executeControl 	 timeStep;
+executeInterval 	 1;
+writeControl 	 timeStep;
+writeInterval 	 1;
+timeFormat 	 fixed;
+timePrecision 	 4;
+operation 	 none;
+writeFields 	 true;
+surfaceFormat 	 raw;
+regionType 	 patch;
+name 	 mantle;
+fields ( wallShearStress);
+}
+}
+// ************************************************************************* //

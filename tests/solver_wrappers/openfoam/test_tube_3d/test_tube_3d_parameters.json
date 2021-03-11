@@ -4,10 +4,10 @@
   },
   "solver_wrappers": [
     {
-      "type": "solver_wrappers.openfoam.OpenFOAM_41",
+      "type": "solver_wrappers.openfoam.v41",
       "settings": {
         "working_directory": "solver_wrappers/openfoam/test_tube_3d",
-        "application": "CoCoNuT_pimpleFoam",
+        "application": "coconut_pimpleFoam",
         "delta_t": 0.0001,
         "time_precision": 4,
         "boundary_names": [
