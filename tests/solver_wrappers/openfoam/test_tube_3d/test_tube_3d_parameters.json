@@ -9,6 +9,7 @@
         "working_directory": "solver_wrappers/openfoam/test_tube_3d",
         "application": "CoCoNuT_pimpleFoam",
         "delta_t": 0.0001,
+        "time_precision": 4,
         "boundary_names": [
           "mantle"
         ],

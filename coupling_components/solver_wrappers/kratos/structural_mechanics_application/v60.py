@@ -33,6 +33,7 @@ class SolverWrapperKratosStructure60(Component):
         kratos_parameters["problem_data"]["start_time"] = timestep_start
         kratos_parameters["problem_data"]["time_step"] = delta_t
         kratos_parameters["problem_data"]["domain_size"] = dimensions
+        kratos_parameters["problem_data"]["end_time"] = 1e15
 
         interface_sub_model_parts_list = self.settings["kratos_interface_sub_model_parts_list"]
 

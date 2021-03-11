@@ -27,6 +27,7 @@ class SolverWrapperOpenFOAM_41(Component):
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
+        self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start']
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
@@ -450,7 +451,6 @@ class SolverWrapperOpenFOAM_41(Component):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-            self.time_precision = of_io.get_int(input_string=control_dict, keyword='timePrecision')
             self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
             time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
             if not time_format == 'fixed':
@@ -464,6 +464,8 @@ class SolverWrapperOpenFOAM_41(Component):
             control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
                                   f'startTime    {self.start_time}', control_dict)
             control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
+                                  control_dict)
+            control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern, f'timePrecision    {self.time_precision}',
                                   control_dict)
             control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
 
