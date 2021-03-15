@@ -11,13 +11,13 @@ parameter|type|description
 ---:|:---:|---
 `cores`|int|Number of processor cores to use when running Kratos (works with 1 core, multi-processing is work in progress).
 `delta_t`|double (optional)|Fixed time step size in structural solver.
-`input_file`|string| Project parameters file used by Kratos in JSON format.
-`interface_input`|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`data_structure/variables.py`*. The model part name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the `string` "_input".
+`input_file`|string| Project parameters file used by Kratos in JSON format. In the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md), this is typically called *`ProjectParameters.json`*.
+`interface_input`|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_input`.
 `interface_output`|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
 `kratos_interface_sub_model_parts_list`|string| Names of sub-model parts used for input and output in Kratos.
 `solver_load_cmd`|string| Bash commands for loading required modules and environmental variables to run Kratos.
 `timestep_start`|int (optional)|Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.  
-<nobr>`working_directory`</nobr>|string|Path to the working directory (i.e. where the input file for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).
+<nobr>`working_directory`</nobr>|string|Path to the working directory (i.e. where the `input_file` for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).
 
 
 `timestep_start` and `delta_t` are usually defined already in the parameters of the `coupled_solver`. However, they can also be given directly as a parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.
@@ -29,8 +29,8 @@ If different parameters are used with different Kratos versions, this should be 
 
 The solver-wrapper consists of 2 files, where `X` is the Kratos version without decimal, e.g. for version 6.0 this becomes `60`:
 
--   *`vX.py`*: defines the `SolverWrapperKratosStructureX` class
--   *`run_kratos_structural_X.py`*: The python file which runs Kratos in the background. This interacts with CoCoNuT for coupling.
+-   *`vX.py`*: defines the `SolverWrapperKratosStructureX` class,
+-   *`run_kratos_structural_X.py`*: The Python file which runs Kratos in the background. This interacts with CoCoNuT for coupling.
 
 ### The `__init__` method
 
@@ -45,7 +45,7 @@ Finally, the interfaces are created.
 -   The interface sub-model parts nodes are saved as *`<sub_model_part_name>_nodes.csv`*.
 -   The displacement from Kratos is written in a file named *`<sub_model_part_name>_displacement.csv`*.
 -   Pressure and tractions are passed from python to Kratos with files of the form *`<sub_model_part_name>_pressure.csv`* and *`<sub_model_part_name>_surface_load.csv`*, respectively.
--   Files with extension ".coco" are used to pass messages between Python and Kratos. 
+-   Files with extension *`.coco`* are used to pass messages between Python and Kratos. 
 
 
 
@@ -53,15 +53,15 @@ Finally, the interfaces are created.
 
 Following items should be set up and saved in the `working_directory` (this list may be non-exhaustive):
 
--   *`ProjectParameters.json`* with all the required parameters (see the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md))
--   Mesh file with extension *`.mdpa`*
+-   *`ProjectParameters.json`* with all the required parameters (see the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md)),
+-   Mesh file with extension *`.mdpa`*,
 -   *`StructuralMaterials.json`* with the material properties.
 
 Following items are taken care of by CoCoNuT, and must therefore will be automatically changed at the begining of the simulation:
 
--   the start time (`timestep_start`)
--   the time step (`delta_t`) 
--   initialization of the solution field
+-   the start time (`timestep_start`),
+-   the time step (`delta_t`),
+-   initialization of the solution field.
 
 
 ## Version specific documentation
