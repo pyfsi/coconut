@@ -570,34 +570,42 @@ class SolverWrapperOpenFOAM_41(Component):
         n_key = 0
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
+            mp_use = self.interface_input.get_model_part(mp_name)
+            # print("z-direction_mp")
+            # print(mp_name)
+            # print(mp_use.z0)
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
             mp_boundary = self.interface_input.get_model_part(mp_name)
-            print(mp_boundary.size)
+
 
             start_nr = self.find_string_in_file(boundary, disp_file)
             os.system("head -n " + str(start_nr + 1) + " " + disp_file + " > tempDisp")
 
             if self.iteration == 1:
                 a = np.loadtxt('displacement2.dat')
-                b = np.hsplit(a, 3)
+                b = np.hsplit(a, 4)
                 x = b[0]
                 y = b[1]
                 z = b[2]
-                # z2 = b[3]
+                z2 = b[3]
 
                 x_axis = x.flatten()
                 delta_x = y.flatten()
                 delta_y = z.flatten()
-                # delta_z = z2.flatten()
+                delta_z = z2.flatten()
 
                 f = interpolate.interp1d(x_axis, delta_x)
                 g = interpolate.interp1d(x_axis, delta_y)
-                # h = interpolate.interp1d(x_axis, delta_z)
+                h = interpolate.interp1d(x_axis, delta_z)
                 displacement0 = np.zeros((displacement.shape[0],3))
 
                 displacement0[:,0] = f(mp_boundary.x0)
                 displacement0[:,1] = g(mp_boundary.x0)
-                # displacement0[:,2] = h(mp_boundary.x0)
+                for i in range(mp_use.x0.size):
+                    if mp_use.z0[i] < 0:
+                        displacement0[i,2] = -h(mp_boundary.x0[i])
+                    else:
+                        displacement0[i,2] = h(mp_boundary.x0[i])
 
 
                 with open('tempDisp', 'a+') as file:
