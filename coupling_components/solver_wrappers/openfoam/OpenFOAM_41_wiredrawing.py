@@ -558,15 +558,6 @@ class SolverWrapperOpenFOAM_41(Component):
 
         disp_file = pointdisp_name
 
-        # The displacement of the FSI interface is passed through the file "pointDisplacement_Next"
-        # This function will prepare that file in a "serial format" and then decompose it for parallel operation
-
-        pointdisp_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "pointDisplacement_raw")
-        pointdisp_name = os.path.join(self.working_directory, self.prev_timestamp, "pointDisplacement_Next")
-        self.write_pointdisplacement_file(pointdisp_raw_name, pointdisp_name)
-
-        disp_file = pointdisp_name
-
         n_key = 0
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
