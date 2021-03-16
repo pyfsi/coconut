@@ -53,7 +53,35 @@ with `alt` displayed when the image cannot be shown/viewed for some reason, and 
 Only image formats specified in `run_mkdocs.py` (i.e. png, jpg, jpeg) are copied to the website; missing extensions can be added. 
 Images from all `coconut` subdirectories called `images` are copied to the website, so care must be taken that `images` is not used in e.g. the output of the test examples.
 
+### Style & layout guide
 
+* Use code style for:
+
+    * class and method names (and plurals): `Model`, `ModelParts`,`__init__`,`finalize`
+    * JSON keys and values: `coupled_solver`,`delta_t`
+    
+* Use code style + italics for:
+
+    * files: `run_simulation.py`, `parameters.json`
+    * folders: `data_structure`,`/coupling_components/solver_wrappers/mapped.py`
+
+* Use normal text for:
+
+    * referring to abstract (i.e. not a specific class): solver wrappers, mappers, coupled solver, data structure
+    
+* Title of markdown page (e.g. `# Mappers`, the first line of the MarkDown file):
+
+    * should be brief and not repeat information that can be deducted rom the structure of the documentation; e.g. for the Fluent solver wrapper: just use `# Fluent` and not `# Fluent solver wrapper`, as it is beneath `Solver wrappers` on the website.
+    * don't use class names (i.e. no camelcase), so not something like `# SolverWrapperOpenFOAM`
+    
+* If you refer to other MarkDown pages in the documentation, it can be useful to use a relative link.
+
+* Recommendation for links: it is nice that the link text gives you some information about where the link goes, so
+
+    * good example: [coconut documentation][2]
+    * bad example: [this link][3]
+    
+    
 ## Creating a static website with MkDocs
 
 [MkDocs][1] can be installed using pip: 
@@ -84,12 +112,7 @@ The complete process to create the documentation website is automated by `run_mk
 *   Check if each MD file is mentioned in `mkdocs.yml`. If a file is not mentioned, a warning is given.
 *   Build static HTML website using `mkdocs build`. 
 
-The behavior of `run_mkdocs.py` can be altered by adding an extra command line argument. 
-
-```bash
-python run_mkdocs.py --deploy
-```
-deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  
+`run_mkdocs.py` is used by adding an extra command line argument: 
 
 ```bash
 python run_mkdocs.py --preview example
@@ -97,4 +120,14 @@ python run_mkdocs.py --preview example
 opens a preview of the website in Firefox, showing the webpage corresponding to the file `example.md`. This can be used to check MD and LaTeX syntax. 
 
 
+```bash
+python run_mkdocs.py --deploy
+```
+deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  
+
+
+
+
 [1]:    https://www.mkdocs.org/
+[2]:    https://pyfsi.github.io/coconut/
+[3]:    https://www.youtube.com/watch?v=5ZCgbGgA-_8&t=99s
