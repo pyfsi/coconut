@@ -38,7 +38,6 @@ class SolverWrapperFluent2019R1(Component):
         self.mnpf = self.settings['max_nodes_per_face']
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
-        self.hybrid_initialization = self.settings['hybrid_initialization']
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -58,16 +57,12 @@ class SolverWrapperFluent2019R1(Component):
         unsteady = '#f'
         if self.unsteady:
             unsteady = '#t'
-        hybrid_initialization = '#f'
-        if self.hybrid_initialization:
-            hybrid_initialization = '#t'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
-                    line = line.replace('|HYBRID_INITIALIZATION|', hybrid_initialization)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))

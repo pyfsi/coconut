@@ -47,7 +47,7 @@ file start-transcript "transcript.txt"
 ;   READ CASE/DATA, COMPILE AND LOAD UDF
 (if (= timestep_start 0)
     (begin
-        (ti-menu-load-string "file read-case |CASE|")
+        (ti-menu-load-string "file read-case-data |CASE|")
         (ti-menu-load-string "solve set expert y n y")
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
@@ -87,22 +87,8 @@ define user-defined execute-on-demand "get_thread_ids::v2019R1"
 )
 ;
 ;   STORE COORDINATES AND IDS
-;(if (= timestep_start 0)
-;    (begin
-;        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2019R1\"")
-;        (send_message "nodes_and_faces_stored")
-;    )
-;)
 define user-defined execute-on-demand "store_coordinates_id::v2019R1"
 (send_message "nodes_and_faces_stored")
-;
-;   INITIALIZE SOLUTION
-(if (= timestep_start 0)
-    (if |HYBRID_INITIALIZATION|
-        (ti-menu-load-string "solve initialize hyb-initialization")
-        (ti-menu-load-string "solve initialize initialize-flow")
-    )
-)
 ;
 ;   SET DELTA_T
 (if unsteady
