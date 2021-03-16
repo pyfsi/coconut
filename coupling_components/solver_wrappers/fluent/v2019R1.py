@@ -248,9 +248,9 @@ class SolverWrapperFluent2019R1(Component):
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 thread_id = self.model_part_thread_ids[mp_name]
-                src = f"nodes_update_timestep{self.timestep}_thread{thread_id}.dat"
-                dst = f"nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat"
-                cmd = f"cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}"
+                src = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                dst = f'nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
         # let Fluent run, wait for data
@@ -272,12 +272,12 @@ class SolverWrapperFluent2019R1(Component):
             # copy output data for debugging
             if self.debug:  # TODO: Iter --> iter everywhere?
                 dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
-                cmd = f"cp {file_name} {join(self.dir_cfd, dst)}"
+                cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:,:-1 - self.mnpf]
+            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
             pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
@@ -445,19 +445,19 @@ class SolverWrapperFluent2019R1(Component):
         return coord_data
 
     def send_message(self, message):
-        file = join(self.dir_cfd, message + ".coco")
+        file = join(self.dir_cfd, message + '.coco')
         open(file, 'w').close()
         return
 
     def wait_message(self, message):
-        file = join(self.dir_cfd, message + ".coco")
+        file = join(self.dir_cfd, message + '.coco')
         while not os.path.isfile(file):
             time.sleep(0.01)
         os.remove(file)
         return
 
     def check_message(self, message):
-        file = join(self.dir_cfd, message + ".coco")
+        file = join(self.dir_cfd, message + '.coco')
         if os.path.isfile(file):
             os.remove(file)
             return True
