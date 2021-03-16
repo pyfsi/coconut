@@ -33,8 +33,13 @@ class SolverWrapperFluent2019R1(Component):
         if self.cores < 1 or self.cores > multiprocessing.cpu_count():
             self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
         self.case_file = self.settings['case_file']
+        parts = self.case_file.split('.')
+        parts = ['dat' if part == 'cas' else part for part in parts]
+        self.data_file = '.'.join(parts)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
             raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
+        elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
+            raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
