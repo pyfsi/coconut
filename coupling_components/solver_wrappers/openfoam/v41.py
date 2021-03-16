@@ -205,7 +205,6 @@ class SolverWrapperOpenFOAM_41(Component):
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.iteration += 1
-
         # store incoming displacements
         self.interface_input.set_interface_data(interface_input.get_interface_data())
 
@@ -331,7 +330,7 @@ class SolverWrapperOpenFOAM_41(Component):
             pressure[pos_list, 0] = pres_tmp[:]
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * density)
+            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * -1 * density)
 
     # writeFooter: to write OpenFOAM-footer in file at location 'file_loc'
     def write_footer(self, file_name):
@@ -532,6 +531,9 @@ class SolverWrapperOpenFOAM_41(Component):
                                         f'regionType 	 patch;\n'
                                         f'name 	 {boundary_name};\n'
                                         f'fields ( wallShearStress);\n'
-                                        f'}}\n'
-                                        f'}}')
+                                        f'}}\n')
+
+            control_dict_file.write ('}\n ')
+
         self.write_footer(file_name)
+

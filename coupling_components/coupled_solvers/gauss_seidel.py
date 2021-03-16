@@ -34,8 +34,8 @@ class CoupledSolverGaussSeidel(Component):
             # add timestep_start and delta_t to solver_wrapper settings
             tools.pass_on_parameters(self.settings, parameters["settings"], ["timestep_start", "delta_t"])
             self.solver_wrappers.append(create_instance(parameters))
-            # determine index of mapped solver if present
-            if parameters["type"] == "solver_wrappers.mapped":
+            # determine index of mapped solver or mapped_solver_update is present. Mapped_update solver is used for sliding parts.
+            if parameters["type"] == "solver_wrappers.mapped" or parameters["type"] =="solver_wrappers.mapped_update":
                 self.index_mapped = index
             else:
                 self.index_other = index
