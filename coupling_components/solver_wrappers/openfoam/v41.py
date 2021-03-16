@@ -106,6 +106,16 @@ class SolverWrapperOpenFOAM_41(Component):
         # run time
         self.run_time = 0.0
 
+        self.plot_of_residuals = True  # TODO: add in the parameters
+        self.residual_variables = self.settings.get('residual_variables', None)
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.dat')
+        self.step = 1
+        if not self.residual_variables is None:
+            self.write_residuals_fileheader()
+        elif self.plot_of_residuals:
+            tools.print_info('No openfoam variables in the parameters key "residual_variables". Cannot plot residuals.',
+                             layout='warning')
+
     def initialize(self):
         super().initialize()
 
@@ -243,7 +253,7 @@ class SolverWrapperOpenFOAM_41(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        prev_timestep = self.timestep -1
+        prev_timestep = self.timestep - 1
         # remove the folder that was used for pointDisplacement_Next if not in writeInterval
         if self.settings['parallel']:
             dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
@@ -258,10 +268,12 @@ class SolverWrapperOpenFOAM_41(Component):
                 dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
                 os.system('rm -rf ' + dir_pointdisp_next)
 
-
         if not (self.timestep % self.write_interval):
             self.send_message('save')
             self.wait_message('save_ready')
+
+        if not self.residual_variables is None:
+            self.write_and_plot_of_residuals()
 
     def finalize(self):
         super().finalize()
@@ -270,6 +282,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.wait_message('stop_ready')
         os.system(f'pkill -f {self.application}')
         self.openfoam_process.kill()
+        self.plot_of_residuals_process.kill()
 
     def get_interface_input(self):
         return self.interface_input
@@ -309,15 +322,15 @@ class SolverWrapperOpenFOAM_41(Component):
             nfaces = mp.size
             wss_filename = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
                                         self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
-            pres_filename = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+            pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
                                          self.cur_timestamp, 'p_patch_' + boundary + '.raw')
 
             # check if the pressure and wall shear stress files completed by openfoam and read data
             if self.check_output_file(wss_filename, nfaces):
                 wss_tmp = np.loadtxt(wss_filename, comments='#')[:, 3:]
 
-            if self.check_output_file(pres_filename, nfaces):
-                pres_tmp = np.loadtxt(pres_filename, comments='#')[:, 3]
+            if self.check_output_file(pres_filepath, nfaces):
+                pres_tmp = np.loadtxt(pres_filepath, comments='#')[:, 3]
 
             if self.settings['parallel']:
                 pos_list = mp.sequence
@@ -453,6 +466,7 @@ class SolverWrapperOpenFOAM_41(Component):
             control_dict = control_dict_file.read()
             self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
             time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
+            self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
             if not time_format == 'fixed':
                 msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
                 tools.print_info(msg, layout='warning')
@@ -465,7 +479,8 @@ class SolverWrapperOpenFOAM_41(Component):
                                   f'startTime    {self.start_time}', control_dict)
             control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
                                   control_dict)
-            control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern, f'timePrecision    {self.time_precision}',
+            control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
+                                  f'timePrecision    {self.time_precision}',
                                   control_dict)
             control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
 
@@ -532,6 +547,48 @@ class SolverWrapperOpenFOAM_41(Component):
                                         f'regionType 	 patch;\n'
                                         f'name 	 {boundary_name};\n'
                                         f'fields ( wallShearStress);\n'
-                                        f'}}\n'
-                                        f'}}')
+                                        f'}}\n')
+            control_dict_file.write('}')
         self.write_footer(file_name)
+
+    def write_residuals_fileheader(self):
+        header = '#  Step'
+        for var in self.residual_variables:
+            header += ' ' * self.write_precision + var
+        with open(self.res_filepath, 'w') as f:
+            f.write('# Residuals\n')
+            f.write(header + '\n')
+
+    def write_and_plot_of_residuals(self):
+        log_filepath = os.path.join(self.working_directory, f'log.{self.application}')
+        if os.path.isfile(log_filepath):
+            with open(log_filepath, 'r') as f:
+                log_string = f.read()
+            time_start_string = f'Time = {self.prev_timestamp}'
+            time_end_string = f'Time = {self.cur_timestamp}'
+            match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
+            if not match is None:
+                time_block = match.group(1)
+                iteration_block_list = re.findall(
+                    r'Coupling iteration = \d+' + r'(.*?)' + r'Coupling iteration \d+ end', time_block, flags=re.S)
+                for iteration_block in iteration_block_list:
+                    with open(self.res_filepath, 'a') as f:
+                        f.write(str(self.step) + ' ' * self.write_precision)
+                    for variable in self.residual_variables:
+                        search_string = f'Solving for {variable}, Initial residual = ' + r'(' + of_io.float_pattern + r')'
+                        var_residual_list = re.findall(search_string, iteration_block)
+                        if var_residual_list:
+                            # last initial residual of pimple loop
+                            var_residual = float(var_residual_list[-1])
+                        else:
+                            raise RuntimeError(f'Variable: {variable} equation is not solved in {self.application}')
+
+                        with open(self.res_filepath, 'a') as f:
+                            f.write(str(var_residual) + ' ' * self.write_precision)
+                    with open(self.res_filepath, 'a') as f:
+                        f.write('\n')
+                    self.step += 1
+                if self.plot_of_residuals:
+                    self.plot_of_residuals_process = subprocess.Popen('foamMonitor -l residuals.dat',
+                                                                      cwd=self.working_directory, shell=True)
+                    self.plot_of_residuals = False

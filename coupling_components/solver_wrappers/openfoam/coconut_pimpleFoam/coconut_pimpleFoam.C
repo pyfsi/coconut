@@ -98,7 +98,6 @@ int main(int argc, char *argv[])
 
 
     		prev_runTime = runTime.timeName();
-    		Info << prev_runTime << nl << endl;
             // For adjustable time steps insert a while (controlDict.deltaT > runTime.deltaTValue()):  pimple loop
     		runTime++;
     		remove("next.coco");
@@ -142,9 +141,7 @@ int main(int argc, char *argv[])
 					vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
 		
 					Info<< "Reading pointDisplacement\n" << endl;
-		
-					//Info<< "prev_runTime" << prev_runTime << endl; // can be removed navaneeth
-		
+
 					pointVectorField pointDisplacement_temp_
 					(
 						IOobject
@@ -223,6 +220,7 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             runTime.run();
+            Info << "Coupling iteration " << iteration << " end" << nl << endl;
             OFstream outfile ("continue_ready.coco");
 
 		}
