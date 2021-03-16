@@ -69,14 +69,19 @@ define user-defined execute-on-demand "get_thread_ids::v2020R1"
 ;   SETUP DYNAMIC MESH
 (if (= timestep_start 0)
     (begin
+        (if unsteady
+            (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
+        )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
                 user-defined \"move_nodes::v2020R1\"" (list-ref face_threads k)))
         )
-        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1")
-        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1")
         (if unsteady
-            (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1")
+            (begin
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1\n")
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1\n")
+            )
         )
     )
 )
