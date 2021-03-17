@@ -1,6 +1,6 @@
 # OpenFOAM
 
-This is the documentation for all OpenFOAM solver-wrappers.
+This is the documentation for all OpenFOAM solver wrappers.
 Currently only FSI simulations are supported, no other multiphysics problems.
 
 
@@ -33,7 +33,7 @@ parameter|type|description
 
 ## Overview of the OpenFOAM-wrapper
 
-The solver-wrapper can be found in the `solver_wrapper.openfoam.v_X`-directory and consists of only one Python-file: `v_X.py`, with `X`the identifier of the OpenFOAM-version (e.g. `v_41` for OpenFOAM 4.1). Aside from this, the Python-file constructs a number of files such as `controlDict`, `pointDisplacement`, `dynamicMeshDict` and `decomposeParDict` by starting from the `_raw`-files in the solver-wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accomodate the internal messaging system used during the FSI-simulation. Currently, only `pimpleFoam` and `interFoam` have been adapted; the solvers called by the solver-wrapper have the same name as the original OpenFOAM-solver but with `CoCoNuT_` added to the name. `CoCoNuT_pimpleFoam` treads FSI simulations whereas the fluid is approached as isothermal and incompressible in a laminar or turbulent transient case. `CoCoNuT_interFoam` is apllied for two incompressible, isothermal immiscible fluids. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using `wmake` in the `solver_wrapper.CoCoNuT_xxxxFoam`-directory).
+The solver wrapper can be found in the `solver_wrapper.openfoam.v_X`-directory and consists of only one Python-file: `v_X.py`, with `X`the identifier of the OpenFOAM-version (e.g. `v_41` for OpenFOAM 4.1). Aside from this, the Python-file constructs a number of files such as `controlDict`, `pointDisplacement`, `dynamicMeshDict` and `decomposeParDict` by starting from the `_raw`-files in the solver wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accomodate the internal messaging system used during the FSI-simulation. Currently, only `pimpleFoam` and `interFoam` have been adapted; the solvers called by the solver wrapper have the same name as the original OpenFOAM-solver but with `CoCoNuT_` added to the name. `CoCoNuT_pimpleFoam` treads FSI simulations whereas the fluid is approached as isothermal and incompressible in a laminar or turbulent transient case. `CoCoNuT_interFoam` is apllied for two incompressible, isothermal immiscible fluids. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using `wmake` in the `solver_wrapper.CoCoNuT_xxxxFoam`-directory).
 
 ### The `__init__` method
 

@@ -27,7 +27,7 @@ If different parameters are used with different Kratos versions, this should be 
 
 ## Overview of operation
 
-The solver-wrapper consists of 2 files, where `X` is the Kratos version without decimal, e.g. for version 6.0 this becomes `60`:
+The solver wrapper consists of 2 files, where `X` is the Kratos version without decimal, e.g. for version 6.0 this becomes `60`:
 
 -   *`vX.py`*: defines the `SolverWrapperKratosStructureX` class,
 -   *`run_kratos_structural_X.py`*: The Python file which runs Kratos in the background. This interacts with CoCoNuT for coupling.
