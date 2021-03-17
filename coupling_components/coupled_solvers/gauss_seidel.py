@@ -141,7 +141,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # update save results
         if self.save_results:
-            self.residual[self.time_step - 1].append(r.norm())
+            self.residual[self.time_step - self.timestep_start - 1].append(r.norm())
             if self.debug:
                 self.complete_solution_x = np.hstack((self.complete_solution_x, self.x.get_interface_data().reshape(-1, 1)))
                 self.complete_solution_y = np.hstack((self.complete_solution_y, self.y.get_interface_data().reshape(-1, 1)))

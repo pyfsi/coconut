@@ -138,8 +138,9 @@ class SolverWrapperFluent2019R1(Component):
                 file.write(line + '\n')
         self.send_message('thread_ids_written_to_file')
 
-        # import node and face information (use old files on restart!)
-        self.wait_message('nodes_and_faces_stored')  # TODO: check what happens in journal
+        # import node and face information if no restart
+        if self.timestep_start == 0:
+            self.wait_message('nodes_and_faces_stored')
 
         # create Model
         self.model = data_structure.Model()
@@ -291,7 +292,7 @@ class SolverWrapperFluent2019R1(Component):
             model_part = self.model.get_model_part(mp_name)
             if ids.size != model_part.size:
                 raise ValueError('size of data does not match size of ModelPart')
-            if not (ids == model_part.id).all():
+            if not np.all(ids == model_part.id):
                 raise ValueError('IDs of data do not match ModelPart IDs')
 
             self.interface_output.set_variable_data(mp_name, 'traction', traction)
