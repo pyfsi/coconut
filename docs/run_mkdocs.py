@@ -94,7 +94,7 @@ for filename in filenames:
             print(line, end='')
 
 # find all relevant images in CoCoNuT
-extensions = ['png', 'jpg', 'jpeg']
+extensions = ['png', 'jpg', 'jpeg', 'gif']
 images = []
 for ext in extensions:
     images += glob.glob(f'../**/images/*.{ext}', recursive=True)
