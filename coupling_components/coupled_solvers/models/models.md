@@ -1,17 +1,23 @@
 # Models
 
-This documentation describes the different types of available models. The purpose of a model is always to approximate a (inverse) Jacobian of a system, based on input and output pairs. In this documentation the approximated Jacobian will be denoted by $J$.
+This documentation describes the different types of available models. The purpose of a model is always to approximate a (inverse) Jacobian of a system, based on secant information from input and output pairs.
+In order to approximate the Jacobian $\mathcal{A}'$ of a general function $a=\mathcal{A}(b)$, the model needs to be supplied with matching input and output pairs, ($b^i$, $a^i=\mathcal(b^i)$).
+Once at least two pair has been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector $\Delta b$.
+In other words, when the a vector $\Delta b$ is given it outputs $\Delta a=\widehat{\mathcal{A}}'\Delta$, where the hat symbol is used to denote that an approximation of the Jacobain is used.
+
 Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
-For example, using the coupled solver `CoupledSolverIQNI` with the model `ModelLS`, corresponds to the IQN-ILS method developed by Degroote et al. [[1](#1)]. In that case, it is the approximated Jacobian is $\mathcal{R}'^{-1}$.
+For example, using the coupled solver `CoupledSolverIQNI` with the model `ModelLS`, corresponds to the IQN-ILS method developed by Degroote et al. [[1](#1)]. In that case, the approximated Jacobian is $\mathcal{R}'^{-1}$.
 If the coupled solver `CoupledSolverIBQN` is combined with two instances the model `ModelLS`, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [[2](#2)]. Then, the two models each approximate one Jacobian: $\mathcal{F}'$ and $\mathcal{S}'$.
 Refer to the [coupled solvers documentation](../coupled_solvers.md) for more information on these notations.
-In the following, it is assumed that the Jacobian $J$ has an input vector $r$ and an output vector $x$.
+
+In the following, the example from IQN-ILS will be used: the inverse Jacobian of $\mathcal{R}'$ with respect to $\tilde{x} is approximated which has an input vector $r$ and an output vector $\tilde{x}$.
+For brevity, the approximation will denoted by $N^k$, where the superscript $k$ referes to the iteration.
 
 ## Common methods
 
 There are three model-specific methods which are implemented by all models.
 
-The first of which is the `predict(dr)` method, which returns an estimation of $\Delta r=J\Delta\tilde{x}$, receiving an input $\Delta\tilde{x}$, based on stored input and output pairs.
+The first of which is the `predict(dr)` method, which returns an estimation of $\Delta r=N^k\Delta\tilde{x}$ from an input $\Delta\tilde{x}$, based on stored input and output pairs.
 Second, in order to improve the estimation, input-output pairs can be added to the model using the method `add(r, xt)`.
 Third, the method `filterq(dr)` returns the part of vector $r$ which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs.
 In other words, it returns the part of the vector $r$ for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector $r$ which is inside the nullspace of the approximation of the Jacobian represented by the model.
@@ -26,9 +32,9 @@ $$
 \delta \tilde{x}^{i-1}=\tilde{x}^i-\tilde{x}^{i-1}.
 $$
 These are stored as column of the matrices $V$ and $W$.
-This model requires the approximation of $J$, denoted by $\widehat{J}$, to fulfill the secant equations:
+This model requires the approximation of the Jacobian, denoted by $N^k$, to fulfill the secant equations:
 $$
-W=\widehat{J}V.
+W=N^k V.
 $$
 In addition to this a minimal norm requirement is imposed (hence the name).
 
@@ -59,7 +65,7 @@ parameter|type|description
 
 The `type` for this model is `coupled_solvers.models.mv`. The abbreviation MV stands for _multi-vector_.
 
-In this model, differences are constructed similar to the least-squares model. However, it requires the approximation of $J$ to fulfill the secant equations of the current time step only. Moreover, it is required that the approximation is as close as possible to the previous time step. In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.
+In this model, differences are constructed similar to the least-squares model. However, it requires the approximation $N^k$ to fulfill the secant equations of the current time step only. Moreover, it is required that the approximation is as close as possible to the previous time step. In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.
 
 Filtering can also be applied here, then (almost) linear columns in the matrix containing the input information from the current time step are removed. However, filtering is much less critical compared to the `LS` model as it concerns only the information from the current time step. If no filtering is wanted, the tolerance level should be set to zero.
 
