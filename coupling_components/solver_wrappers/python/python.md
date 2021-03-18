@@ -21,13 +21,13 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 ### Settings
 
 The following parameters, listed in alphabetical order, need to be provided in the JSON parameter file 
-as `setttings` of the solver wrapper.
+as `settings` of the solver wrapper.
 
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size. This parameter is usually specified in a higher component.
-`input_file`|string|Name of the input file, which must be present in the folder `working_directory`. The file contains all parameters required for the solver, in JSON-format.
-`interface_input`|list|List of dictionaries; each dictionary requires two keys: `"model_part"` and `"variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `["displacement"]` for a flow solver and `["pressure","traction"]` for a structure solver.
+`input_file`|string|Name of the input file, which must be present in the folder given in `working_directory`. The file contains all parameters required for the solver, in JSON-format.
+`interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `["displacement"]` for a flow solver and `["pressure","traction"]` for a structure solver.
 `interface_output`|list|Analogous to `interface_input`. However, the variables are different: `["pressure","traction"]` for a flow solver and `["displacement"]` for a structure solver.
 `unsteady`|bool|(optional) Default: `true`. Indicates if case is steady or unsteady.
 `working_directory`|string|Absolute path to the working directory or relative path with respect to the current directory.
@@ -57,7 +57,7 @@ $$
 $$
 with $a=\pi r^2$ the cross-sectional area of the tube and $r$ the inner radius.
 Furthermore, $t$ is the time, $v$ the velocity along the axis of the tube, $p$ the pressure and $\rho_f$ the density of the fluid.
-Add the start and end of the tube the boundary conditions have to be applied.
+At the start and at the end of the tube the boundary conditions have to be applied.
 Discretizing these equations results in a system of linear algebraic equations which can be solved for the pressure and velocity
 by performing Newton-Raphson iterations.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.
@@ -65,13 +65,13 @@ Inside the solver the kinematic pressure is used, which is the pressure divided 
 The boundary condtions are implemented by four additional equations: at the in- and outlet for both pressure and velocity.
 At the inlet, the pressure, velocity or total pressure can be specified.
 At the outlet, the pressure can be set to a fixed value or a non-reflecting boundary conditions.
-These settings are specified in the the `input_file` in the `working directory`.
+These settings are specified in the `input_file` in the `working directory`.
 
 For more information about the implementation this solver refer to [[1](#1)].
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name `input_file`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name *`input_file`*.
 This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the structural solver.
 
@@ -80,7 +80,7 @@ parameter|type|description
 `axial_offset`|double|(optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.
 `d`|double|Nominal diameter of the tube.
 `e`|double|Modulus of elasticity of the tube wall.
-`h`|double|Thickness of tube wall.
+`h`|double|Thickness of the tube wall.
 `inlet_boundary`|dict|Dictionary containing all information with respect to the inlet boundary condition.
 `l`|double|Length of the tube.
 `m`|int|Number of cells for discretization. The values are calculated in the cell centers.
@@ -88,7 +88,7 @@ parameter|type|description
 `newtontol`|double|Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.
 `outlet_boundary`|dict|Dictionary containing all information with respect to the outlet boundary condition.
 `preference`|double|(optional) Default: `0`. Reference pressure and initial pressure.
-`u0`|double|(optional) Defaaul: `ureference`. Initial velocity throughout the tube.
+`u0`|double|(optional) Default: `ureference`. Initial velocity throughout the tube.
 `ureference`|double|Reference velocity used for determination of pressure stabilization term.
 `rhof`|double|Density of the fluid.
 
@@ -102,7 +102,7 @@ parameter|type|description
 `period`|double|Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type `4`).
 `reference`|double|(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `rhof` * `ureference`^2 / 2.
 `type`|int|Type of inlet boundary condition. <br>If `1`, a sine wave is used with amplitude, reference and period as specified. <br>If `2`, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If `3`, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If `4`, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.
-`variable`|string|Variable upon which the inlet boundary condition is definded, either `"pressure"`, `"velocity"` or `"total pressure"`.
+`variable`|string|Variable upon which the inlet boundary condition is defined, either `"pressure"`, `"velocity"` or `"total pressure"`.
 
 ##### Outlet Boundary
 
@@ -110,7 +110,7 @@ This section describes all parameters that need to be specified in the dictionar
 
 parameter|type|description
 ---:|:---:|---
-`type`|int|Type of outlet boundary condition. <br>If `1`, a non-reflecting boundary condition is applied. This type can not be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.
+`type`|int|Type of outlet boundary condition. <br>If `1`, a non-reflecting boundary condition is applied. This type cannot be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.
 
 ### Tube Ringmodel solver
 
@@ -118,10 +118,10 @@ This structure solver calculates the deformation of the wall of a straight and f
 The `type` for this solver wrapper is `solver_wrappers.python.ring_model_solver`.
 The tube is regarded as made up of independent rings.
 The required input is the pressure on the tube wall.
-Although a required variable in `interface_input`, `traction` is not taken into account.
+Traction is not taken into account, even though it is a required variable in `interface_input`. 
 The resulting output is the radial displacement.
 For the other components of displacement, zero is returned.
-This solver is not suited to calculate the propagation a pressure pulse.
+This solver is not suited to calculate the propagation of a pressure pulse.
 
 The behaviour of the elastic tube wall is described by a Hookean relation,
 which results in the following equation
@@ -138,11 +138,11 @@ Here, $E$ is the modulus of elasticity, $h$ the thickness of the tube wall and $
 No boundary conditions are required.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.
 
-For more information about the implementation this solver refer to [[2](#2)].
+More information about the implementation of this solver can be found in [[2](#2)].
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name `input_file`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name *`input_file`*.
 This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
@@ -163,7 +163,7 @@ This structure solver calculates the deformation of the wall of a straight and f
 The `type` for this solver wrapper is `solver_wrappers.python.tube_structure_solver`.
 In this model inertia is taken into account, but still only radial displacement is considered.
 The required input is the pressure on the tube wall.
-Although a required variable in `interface_input`, `traction` is not taken into account.
+Traction is not taken into account, even though it is a required variable in `interface_input`. 
 The resulting output is the radial displacement.
 For the other components of displacement, zero is returned.
 
@@ -184,13 +184,13 @@ $$
 $$
 with $E$ the Young's modulus and $\nu$ Poisson's coefficient.
 The second term of $b_3$ is considered small compared to the first one because $h\ll r_o$ and is thus neglected.
-Discretizing these equations results in a system of linear algebraic equations whit a Jacobian that does not depend on the pressure.
+Discretizing these equations results in a system of linear algebraic equations with a Jacobian that does not depend on the pressure.
 The system can be solved for the radius in one step.
 
 The tube is considered clamped at both ends. This boundary condition is imposed by adding four equations: two at the inlet and two at the outlet.
 
-For more information about the implementation this solver refer to [[1](#1)].
-In this work the Newmark-beta time discretization is used. Here, however, backward Euler time discretization as well.
+For more information about the implementation of this solver refer to [[1](#1)].
+In this work the Newmark-beta time discretization is used. Here, however, backward Euler time discretization is used as well.
 
 For the Newmark-beta time discretization, two Newmark parameters $\beta$ and $\gamma$ are required, which result in an unconditionally stable integration scheme if
 $$
@@ -206,7 +206,7 @@ This avoids the occurrence of spurious oscillations of the pressure in time [[3]
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name `input_file`.This file should be located in the `working_directory`.
+The following parameters, listed in alphabetical order, need to be specified in a file with name *`input_file`*.This file should be located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
 parameter|type|description
@@ -215,7 +215,7 @@ parameter|type|description
 `beta`|double|(optional) Newmark parameter $\beta$. Only required when the Newmark-beta time discretization is used.
 `d`|double|Nominal diameter of the tube.
 `e`|double|Modulus of elasticity of the tube wall.
-`h`|double|Thickness of tube wall.
+`h`|double|Thickness of the tube wall.
 `gamma`|double|(optional) Newmark parameter $\gamma$. Only required when the Newmark-beta time discretization is used.
 `l`|double|Length of the tube.
 `m`|int|Number of cells for discretization. The values are calculated in the cell centers.
