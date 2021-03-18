@@ -1,7 +1,7 @@
 # Fluent
 
 This is the documentation for all Fluent solver wrappers.
-Currently only FSI simulations are supported, no other multiphysics problems; hence the focus of this page is on FSI. FSI with inviscid flows is not supported, but that would be straightforward to add if required.
+The focus of this page is on fluid-structure interaction (FSI). Currently no other multiphysics problems are supported, but these are envisioned in future developments. FSI with inviscid flows is not supported, but that would be straightforward to add if required.
 
 
 ## Fluid-structure interaction with Fluent
@@ -51,7 +51,7 @@ The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2019R1
 
 ### The `__init__` method
 
-During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the `working_directory`. Fluent is then started in that directory using the parameters `cores`, `dimensions` and `fluent_gui`. Fluent then writes a case summery, so that the solver wrapper can link the interface thread names (specified in `thread_names`) to Fluent thread IDs, for use in the UDFs. Then the `Model` and `ModelParts` are created, based on data written by Fluent in time step 0. After a restart, this same data must be found, i.e. if those data files are removed from the `working_directory` folder, the simulation cannot be restarted. Finally, the `Interfaces` are created. 
+During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the `working_directory`. Fluent is then started in that directory using the parameters `cores`, `dimensions` and `fluent_gui`. Fluent then writes a case summary, so that the solver wrapper can link the interface thread names (specified in `thread_names`) to Fluent thread IDs, for use in the UDFs. Then the `Model` and `ModelParts` are created, based on data written by Fluent in time step 0. After a restart, this same data must be found, i.e. if those data files are removed from the `working_directory` folder, the simulation cannot be restarted. Finally, the `Interfaces` are created. 
 
 ### Files created during simulation
 
@@ -59,7 +59,7 @@ In these file conventions, A is the time step number and B the Fluent thread ID.
 
 -   Fluent case and data files are saved as files of the form *`case_timestepA.cas`* and *`case_timestepA.dat`*.
 -   Current node and face coordinates are passed from Fluent to CoCoNuT with files of the form *`nodes_timestepA_threadB.dat`* and *`faces_timestepA_threadB.dat`*. 
--   The new node coordinates are passed from CoCoNuT to Fluent with files of the form *`nodes_update_timestepA_threadB`*.
+-   The new node coordinates are passed from CoCoNuT to Fluent with files of the form *`nodes_update_timestepA_threadB.dat`*.
 -   Pressure and tractions are passed from Fluent to CoCoNuT with files of the form *`pressure_traction_timestepA_threadB.dat`*.
 -   Files with extension *`.coco`* are used to exchange messages between CoCoNuT and Fluent. 
 
