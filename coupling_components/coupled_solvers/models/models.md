@@ -17,10 +17,10 @@ For brevity, the approximation will denoted by $N^k$, where the superscript $k$ 
 
 There are three model-specific methods which are implemented by all models.
 
-The first of which is the `predict(dr)` method, which returns an estimation of $\Delta r=N^k\Delta\tilde{x}$ from an input $\Delta\tilde{x}$, based on stored input and output pairs.
+The first of which is the `predict(dr)` method, which returns an estimation of $\Delta \tilde{x}=N^k\Delta r$ from an input $\Delta r$, based on stored input and output pairs.
 Second, in order to improve the estimation, input-output pairs can be added to the model using the method `add(r, xt)`.
-Third, the method `filterq(dr)` returns the part of vector $r$ which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs.
-In other words, it returns the part of the vector $r$ for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector $r$ which is inside the nullspace of the approximation of the Jacobian represented by the model.
+Third, the method `filterq(dr)` returns the part of vector $\Delta r$ which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs.
+In other words, it returns the part of the input vector $\Delta r$ for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector $\Delta r$ which is inside the nullspace of the approximation of the Jacobian represented by the model.
 
 ## Least-squares
 
