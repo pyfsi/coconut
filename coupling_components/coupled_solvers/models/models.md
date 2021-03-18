@@ -1,16 +1,16 @@
 # Models
 
 This documentation describes the different types of available models. The purpose of a model is always to approximate a (inverse) Jacobian of a system, based on secant information from input and output pairs.
-In order to approximate the Jacobian $\mathcal{A}'$ of a general function $a=\mathcal{A}(b)$, the model needs to be supplied with matching input and output pairs, ($b^i$, $a^i=\mathcal(b^i)$).
-Once at least two pair has been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector $\Delta b$.
-In other words, when the a vector $\Delta b$ is given it outputs $\Delta a=\widehat{\mathcal{A}}'\Delta$, where the hat symbol is used to denote that an approximation of the Jacobain is used.
+In order to approximate the Jacobian $\mathcal{A}'$ of a general function $a=\mathcal{A}(b)$, the model needs to be supplied with matching input and output pairs, ($b^i$, $a^i=\mathcal{A}(b^i)$).
+Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector $\Delta b$.
+In other words, when the a vector $\Delta b$ is given it outputs $\Delta a=\widehat{\mathcal{A}}'\Delta b$, where the hat symbol is used to denote that an approximation of the Jacobain is used.
 
 Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
-For example, using the coupled solver `CoupledSolverIQNI` with the model `ModelLS`, corresponds to the IQN-ILS method developed by Degroote et al. [[1](#1)]. In that case, the approximated Jacobian is $\mathcal{R}'^{-1}$.
+For example, using the coupled solver `CoupledSolverIQNI` with the model `ModelLS` corresponds to the IQN-ILS method developed by Degroote et al. [[1](#1)]. In that case, the approximated Jacobian is $\mathcal{R}'^{-1}$.
 If the coupled solver `CoupledSolverIBQN` is combined with two instances the model `ModelLS`, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [[2](#2)]. Then, the two models each approximate one Jacobian: $\mathcal{F}'$ and $\mathcal{S}'$.
 Refer to the [coupled solvers documentation](../coupled_solvers.md) for more information on these notations.
 
-In the following, the example from IQN-ILS will be used: the inverse Jacobian of $\mathcal{R}'$ with respect to $\tilde{x} is approximated which has an input vector $r$ and an output vector $\tilde{x}$.
+In the following, the example from IQN-ILS will be used: the inverse Jacobian of $\mathcal{R}'$ with respect to $\tilde{x}$ is approximated which has an input vector $r$ and an output vector $\tilde{x}$.
 For brevity, the approximation will denoted by $N^k$, where the superscript $k$ referes to the iteration.
 
 ## Common methods
@@ -28,7 +28,8 @@ The `type` for this model is `coupled_solvers.models.ls`.
 The abbreviation LS stands for _least-squares_.
 From the received input vectors $r^i$ and output vectors $\tilde{x}^i$, differences are constructed
 $$
-\delta r^{i-1}=r^i-r^{i-1}
+\delta r^{i-1}=r^i-r^{i-1},
+\;
 \delta \tilde{x}^{i-1}=\tilde{x}^i-\tilde{x}^{i-1}.
 $$
 These are stored as column of the matrices $V$ and $W$.
