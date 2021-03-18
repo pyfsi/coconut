@@ -44,7 +44,7 @@ It is important to note that differences between the input and outputs from diff
 Reuse may greatly improve the convergence speed and stability. The optimal value of `q` is problem dependent. Typically, however, an optimal value is around 10.
 
 This model is matrix-free, due to an implementation using QR-decomposition. With matrix-free is meant that no large dense matrices are constructed, not that no matrices are used at all.
-The $R$ matrix from the QR-decomposition has to be invertible. Therefore, (almost) linear columns in the matrix containing the input information from the current and previous time steps should be removed. This is called filtering. The larger `q`, the more important filtering becomes.
+The $R$ matrix from the QR-decomposition has to be invertible. Therefore, (almost) linearly dependent columns in the matrix containing the input information from the current and previous time steps should be removed. This is called filtering. The larger `q`, the more important filtering becomes.
 If the diagonal element in $R$ is smaller than an absolute tolerance level `min_significant`, the corresponding column is removed.
 The implementation is as such that the most recent information is kept.
 
