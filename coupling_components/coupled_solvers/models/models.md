@@ -2,14 +2,16 @@
 
 This documentation describes the different types of available models. The purpose of a model is always to approximate a (inverse) Jacobian of a system, based on secant information from input and output pairs.
 In order to approximate the Jacobian $\mathcal{A}'$ of a general function $a=\mathcal{A}(b)$, the model needs to be supplied with matching input and output pairs, ($b^i$, $a^i=\mathcal{A}(b^i)$).
-Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector $\Delta b$. In other words, when the a vector $\Delta b$ is given it outputs $\Delta a=\widehat{\mathcal{A}}'\Delta b$, where the hat symbol is used to denote that an approximation of the Jacobian is used.
+Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector $\Delta b$.
+In other words, when the a vector $\Delta b$ is given it outputs $\Delta a=\widehat{\mathcal{A}}'\Delta b$, where the hat symbol is used to denote that an approximation of the Jacobain is used.
 
 Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
 For example, using the coupled solver `CoupledSolverIQNI` with the model `ModelLS` corresponds to the IQN-ILS method developed by Degroote et al. [[1](#1)]. In that case, the approximated Jacobian is $\mathcal{R}'^{-1}$.
 If the coupled solver `CoupledSolverIBQN` is combined with two instances the model `ModelLS`, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [[2](#2)]. Then, the two models each approximate one Jacobian: $\mathcal{F}'$ and $\mathcal{S}'$.
 Refer to the [coupled solvers documentation](../coupled_solvers.md) for more information on these notations.
 
-In the following, the example from IQN-ILS will be used: the inverse Jacobian of $\mathcal{R}'$ with respect to $\tilde{x}$ is approximated which has an input vector $r$ and an output vector $\tilde{x}$. For brevity, the approximation will denoted by $N^k$, where the superscript $k$ referes to the iteration.
+In the following, the example from IQN-ILS will be used: the inverse Jacobian of $\mathcal{R}'$ with respect to $\tilde{x}$ is approximated which has an input vector $r$ and an output vector $\tilde{x}$.
+For brevity, the approximation will denoted by $N^k$, where the superscript $k$ referes to the iteration.
 
 ## Common methods
 
@@ -17,7 +19,7 @@ There are three model-specific methods which are implemented by all models.
 
 The first of which is the `predict(dr)` method, which returns an estimation of $\Delta \tilde{x}=N^k\Delta r$ from an input $\Delta r$, based on stored input and output pairs.
 Second, in order to improve the estimation, input-output pairs can be added to the model using the method `add(r, xt)`.
-Third, the method `filterq(dr)` returns the part of vector $\Delta r$ which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. In other words, it returns the part of the input vector $\Delta r$ for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector $\Delta r$ which is inside the nullspace of the approximation of the Jacobian represented by the model.
+Third, the method `filter_q(dr)` returns the part of vector $\Delta r$ which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. In other words, it returns the part of the input vector $\Delta r$ for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector $\Delta r$ which is inside the nullspace of the approximation of the Jacobian represented by the model.
 
 ## Least-squares
 
