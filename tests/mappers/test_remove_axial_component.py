@@ -118,7 +118,6 @@ class TestMapperPlasticDeform(unittest.TestCase):
         mp_to = interface_to.get_model_part(mp_name_to)
         x_to, y_to, z_to = mp_to.x0, mp_to.y0, mp_to.z0
 
-
         # check mapped values for 1D variable
         # mapper((interface_from, mp_name_from, var_s),
         #         (interface_to, mp_name_to, var_s))

@@ -85,7 +85,8 @@ class MapperAxisymmetric2DToWedge3D(MapperTransformer):
 
         dimensions = variables_dimensions[var]
         data_from = interface_from.get_variable_data(mp_name_from, var)
-
+        # print("data_from")
+        # print(data_from)
         if dimensions == 1:
             data_to = np.tile(data_from,(2,1))
 
@@ -114,4 +115,6 @@ class MapperAxisymmetric2DToWedge3D(MapperTransformer):
 
         else:
             raise NotImplementedError(f'Mapper2DAxisymmetricToWedge3D not implemented for variable of dimension {dimensions}')
+        # print("data_to_wedge")
+        # print(data_to)
         interface_to.set_variable_data(mp_name_to, var, data_to)

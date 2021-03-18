@@ -210,6 +210,9 @@ class SolverWrapperMapped_update(Component):
         # does not contain most recent data
         return self.interface_input_from
 
+    def get_iteration(self):
+        return self.iteration
+
     def get_interface_output(self):
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)

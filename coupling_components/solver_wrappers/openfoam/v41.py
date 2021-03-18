@@ -330,7 +330,7 @@ class SolverWrapperOpenFOAM_41(Component):
             pressure[pos_list, 0] = pres_tmp[:]
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * -1 * density)
+            self.interface_output.set_variable_data(mp_name, 'pressure', pressure  * density)
 
     # writeFooter: to write OpenFOAM-footer in file at location 'file_loc'
     def write_footer(self, file_name):
