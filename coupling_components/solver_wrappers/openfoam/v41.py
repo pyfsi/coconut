@@ -106,7 +106,7 @@ class SolverWrapperOpenFOAM_41(Component):
         # run time
         self.run_time = 0.0
 
-        self.plot_of_residuals = True  # TODO: add in the parameters
+        self.plot_of_residuals = False  # TODO: add in the parameters
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.dat')
         self.step = 1
@@ -139,7 +139,7 @@ class SolverWrapperOpenFOAM_41(Component):
         Normally no doubles should be encountered on an interface as these faces are not shared by processors
         '''
         if self.settings['parallel']:
-            check_call(f'decomposePar -force -time {self.start_time}&> log.decomposePar', cwd=self.working_directory,
+            check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar', cwd=self.working_directory,
                        shell=True)
             for boundary in self.boundary_names:
                 mp_output = self.model.get_model_part(f'{boundary}_output')

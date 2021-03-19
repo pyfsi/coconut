@@ -1,2 +1,2 @@
 SOURCE = \
-CoCoNuT_interFoam.C 
+coconut_interFoam.C 

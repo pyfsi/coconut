@@ -48,6 +48,9 @@ Description
 #include "CorrectPhi.H"
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
+#include "fixedValuePointPatchField.H"
+#include "IOstream.H"
+#include "Ostream.H"
 
 
 #include <stdlib.h>
@@ -98,59 +101,101 @@ int main(int argc, char *argv[])
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    Info<< "\nStarting time loop\n" << endl;
 
-	#include "readControls.H"
-	#include "CourantNo.H"
-	#include "setDeltaT.H"
-    
+    runTime.run();
+    word prev_runTime;
+
+    unsigned int iteration;
+
+    IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
+    wordList boundary_names ( controlDict.lookup("boundary_names"));
+
     runTime.run(); // Initialize runTime object (also initializes functionObjects in controlDict)
 
     while (true)
     {
-        usleep(1000); // Expressed in microseconds 
-            
+        usleep(1000); // Expressed in microseconds
+
         if (exists("next.coco"))
     	{
+    	    #include "readControls.H"
+	        #include "CourantNo.H"
+	        #include "alphaCourantNo.H"
+	        #include "setDeltaT.H"
+
+	        prev_runTime = runTime.timeName();
+	        runTime++;
         	remove("next.coco");
-        	runTime++;
         	OFstream outfile ("next_ready.coco");
         	outfile << "next.coco" << endl;
     		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
+    	    iteration = 0;
     	}
-        
-        
+
+
         if (exists("continue.coco"))
     	{
-        	remove("continue.coco");        		
-        	       	
-        	// Calculate the mesh motion and update the mesh
-            mesh.update();
-            
-            
-            // Calculate absolute flux from the mapped surface velocity
-            phi = mesh.Sf() & Uf;
-            if (mesh.changing() && correctPhi)
-            {
-               #include "correctPhi.H"
-            }
-            
-            mixture.correct();
-            
-            
-            // Make the flux relative to the mesh motion
-            fvc::makeRelative(phi, U);
+    	    iteration++;
+    	    Info << "Coupling iteration = " << iteration << nl << endl;
 
-            if (mesh.changing() && checkMeshCourantNo)
-            {
-                #include "meshCourantNo.H"
-            }
+    	    forAll(boundary_names, s)
+    	    {
+    	            word current_boundary = boundary_names[s];
+    	            label patchWallID = mesh.boundaryMesh().findPatchID(current_boundary);
+    	            const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
 
-            
+					// Info << "In Next" << nl << endl;
+
+					// *** Set patch displacement for motion solver.*** //
+					// Find the reference to the pointDisplacement field (this appears to work)
+					pointVectorField& PointDisplacement = const_cast<pointVectorField&>
+					(
+						mesh.objectRegistry::lookupObject<pointVectorField >
+						(
+						"pointDisplacement"
+						)
+					);
+
+					//OFstream testfile(runTime.path()/"Example_pointDispFile");
+					//testfile << PointDisplacement<< endl;
+					//PointDisplacement.write();
+
+					// Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
+
+					//Get the vector field of the patch
+					vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
+
+					Info<< "Reading pointDisplacement\n" << endl;
+
+					pointVectorField pointDisplacement_temp_
+					(
+						IOobject
+						(
+							"pointDisplacement_Next",
+							prev_runTime,
+							mesh,
+							IOobject::MUST_READ,
+							IOobject::AUTO_WRITE
+						),
+						pointMesh::New(mesh)
+					);
+
+					pointVectorField& PointDisplacementTemp = const_cast<pointVectorField&>
+					(
+						pointDisplacement_temp_
+					);
+
+					vectorField &pDispTemp=refCast<vectorField>(PointDisplacementTemp.boundaryFieldRef()[patchWallID]);
+
+					// Assign the new boundary displacements
+					PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
+
+    	    }
+
             // --- Pressure-velocity PIMPLE corrector loop
             while (pimple.loop())
             {
- /*               if (pimple.firstIter() || moveMeshOuterCorrectors)
+               if (pimple.firstIter() || moveMeshOuterCorrectors)
                 {
                     scalar timeBeforeMeshUpdate = runTime.elapsedCpuTime();
                     mesh.update();
@@ -183,7 +228,7 @@ int main(int argc, char *argv[])
                         #include "meshCourantNo.H"
                     }
                 }
-*/
+
                 #include "alphaControls.H"
                 #include "alphaEqnSubCycle.H"
 
@@ -202,28 +247,25 @@ int main(int argc, char *argv[])
                     turbulence->correct();
                 }
             }
-                
-            
+
+            remove("continue.coco");
             // Return the coupling interface output
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
-                
+
             runTime.run();
+            Info << "Coupling iteration " << iteration << " end" << nl << endl;
             OFstream outfile ("continue_ready.coco");
-            outfile << "continue.coco" << endl;
-        
-    			            
+
     	}
-        
-    		
+
         if (exists("save.coco"))
     	{
-        	remove("save.coco");
             runTime.write();
+            remove("save.coco");
         	OFstream outfile ("save_ready.coco");
-    		outfile << "Joris says: good job on save.coco" << endl;
     	}
         
         	
@@ -233,9 +275,7 @@ int main(int argc, char *argv[])
         	OFstream outfile ("stop_ready.coco"); 
         	outfile << "stop.coco" << endl;
         	break;
-    	} 
-       
-        
+    	}
     }
     
     return 0;
