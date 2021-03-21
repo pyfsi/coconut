@@ -41,10 +41,14 @@ class StructuralMechanicsWrapper:
         self.structural_analysis.time = self.structural_analysis.solver.AdvanceInTime(self.structural_analysis.time)
         self.structural_analysis.InitializeSolutionStep()
         self.structural_analysis.solver.Predict()
+        self.coupling_iteration = 0
 
     def SolveSolutionStep(self):
+        self.coupling_iteration += 1
+        KM.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
         self.InputData()
         self.structural_analysis.solver.SolveSolutionStep()
+        KM.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
     def FinalizeSolutionStep(self):
