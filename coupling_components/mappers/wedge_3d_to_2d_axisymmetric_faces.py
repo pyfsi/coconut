@@ -68,9 +68,14 @@ class MapperWedge3DToAxisymmetric2D(MapperTransformer):
         interface_from, mp_name_from, var = args_from
         interface_to, mp_name_to, _ = args_to
 
+        # print("args_from_faces")
+        # # print(interface_from.parameters)
+        # for i in interface_from.parameters:
+        #     mp_from = interface_from.get_model_part(i["model_part"])
+        #     print(mp_from.y0)
+
         dimensions = variables_dimensions[var]
         data_from = interface_from.get_variable_data(mp_name_from, var)
-
         if dimensions == 1:
             data_to = np.tile(data_from,(1,1))
             for i_to in range(len(data_to)):

@@ -58,6 +58,12 @@ class Mapper_load_update2(MapperTransformer):
 
         if dimensions == 1:
             data_to = np.zeros((self.mp_input_to.size, 1))
+            # print("args_from_load")
+
+            # for i in interface_from.parameters:
+            #     mp_from = interface_from.get_model_part(i["model_part"])
+            #     print(mp_from.y0)
+            # print(self.mp_out.y0)
             for i in range(self.mp_input_to.size):
                 if self.mp_input_to.y0[i] < self.v_min or self.mp_input_to.y0[i] > self.v_max:
                     data_to[i] = 0
@@ -68,7 +74,7 @@ class Mapper_load_update2(MapperTransformer):
 
             data_to = np.zeros((self.mp_input_to.size, 3))
             for j in range(self. mp_input_to.size):
-                if self.mp_input_to.x0[j] < self.v_min or self.mp_input_to.x0[j] >self.v_max:
+                if self.mp_input_to.x0[j] < self.v_min or self.mp_input_to.x0[j] > self.v_max:
                     data_to[j,0] = 0
                     data_to[j,1] = 0
                     data_to[j,2] = 0

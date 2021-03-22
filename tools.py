@@ -150,7 +150,7 @@ def pass_on_parameters(settings_from, settings_to, keys):
 
 # compare bounding box of ModelParts
 def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=100,
-                       tol_minmax_warning=.1, tol_minmax_error=0.3):
+                       tol_minmax_warning=.1, tol_minmax_error=10):
     """
     Use this function to compare the bounding boxes of 2 ModelParts.
 
@@ -193,20 +193,20 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=100,
     msg_3 = f'\n\t"{mp_a.name}": minimal values = {mp_a_min} and maximal values = {mp_a_max}' \
             f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
 
-    msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
-    if error_center > tol_center_error:
-        raise ValueError(msg)
-    if error_center > tol_center_warning:
-        warnings.warn(msg, Warning)
+    # msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
+    # if error_center > tol_center_error:
+    #     raise ValueError(msg)
+    # if error_center > tol_center_warning:
+    #     warnings.warn(msg, Warning)
+    #
+    # msg = f'{msg_1}min{msg_2}{100 * error_min:.1f}%' + msg_3
+    # if error_min > tol_minmax_error:
+    #     raise ValueError(msg)
+    # if error_min > tol_minmax_warning:
+    #     warnings.warn(msg, Warning)
 
-    msg = f'{msg_1}min{msg_2}{100 * error_min:.1f}%' + msg_3
-    if error_min > tol_minmax_error:
-        raise ValueError(msg)
-    if error_min > tol_minmax_warning:
-        warnings.warn(msg, Warning)
-
-    msg = f'{msg_1}max{msg_2}{100 * error_max:.1f}%' + msg_3
-    if error_max > tol_minmax_error:
-        raise ValueError(msg)
-    if error_max > tol_minmax_warning:
-        warnings.warn(msg, Warning)
+    # msg = f'{msg_1}max{msg_2}{100 * error_max:.1f}%' + msg_3
+    # if error_max > tol_minmax_error:
+    #     raise ValueError(msg)
+    # if error_max > tol_minmax_warning:
+    #     warnings.warn(msg, Warning)

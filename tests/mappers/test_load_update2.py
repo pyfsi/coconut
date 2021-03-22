@@ -153,10 +153,10 @@ class TestMapper_load_update(unittest.TestCase):
 
         v_s_to = interface_to.get_variable_data(mp_name_to, var_s)
 
-        # print("v_v_to")
-        # print(v_s_to)
-        # print("v_v_to_ref")
-        # print(v_s_to_ref)
+        print("v_s_to")
+        print(v_s_to)
+        print("v_s_to_ref")
+        print(v_s_to_ref)
         np.testing.assert_allclose(v_s_to, v_s_to_ref, rtol=1e-14)
         # check mapped values for 3D variable
         mapper((interface_from, mp_name_from, var_v),

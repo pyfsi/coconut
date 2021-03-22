@@ -1,6 +1,6 @@
 from coconut.coupling_components.mappers.transformer import MapperTransformer
 from coconut.data_structure import variables_dimensions
-import coconut.solver_wrappers
+
 from scipy.spatial import cKDTree
 
 import numpy as np
@@ -58,7 +58,7 @@ class MapperRemoveAxialComponent(MapperTransformer):
 
         dimensions = variables_dimensions[var]
         data_from = interface_from.get_variable_data(mp_name_from, var)
-        it = mapped_update.get_iteration
+        # it = mapped_update.get_iteration
         # print("data_from")
         # print(data_from)
         if dimensions == 3:

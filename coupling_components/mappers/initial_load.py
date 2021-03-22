@@ -56,7 +56,7 @@ class Mapper_initial_load(MapperTransformer):
             data_to = np.zeros((self.mp_input_to.size, 1))
             for i in range(self.mp_input_to.size):
                 if self.mp_input_to.x0[i] > self.v_min:
-                    data_to[i] = 1.0165e9
+                    data_to[i] = 1.0365e9
                 else:
                      data_to[i] = 0
 
