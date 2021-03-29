@@ -11,13 +11,13 @@ def create(parameters):
 
 # TODO: warnings now crash the code... this should not happen
 
+
 class MapperInterpolator(Component):
     def __init__(self, parameters):
         super().__init__()
 
         # store settings
         self.settings = parameters['settings']
-        self.interpolator = True
         self.balanced_tree = self.settings.get('balanced_tree', False)
         self.n_nearest = 0  # must be set in sub-class!
 
