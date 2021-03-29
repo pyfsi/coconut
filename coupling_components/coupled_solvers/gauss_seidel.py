@@ -17,30 +17,30 @@ class CoupledSolverGaussSeidel(Component):
         super().__init__()
 
         self.parameters = parameters
-        self.settings = parameters["settings"]
+        self.settings = parameters['settings']
 
         # read parameters
-        self.timestep_start = self.settings["timestep_start"]  # time step where calculation is started
+        self.timestep_start = self.settings['timestep_start']  # time step where calculation is started
         self.time_step = self.timestep_start  # time step
-        self.delta_t = self.settings["delta_t"]  # time step size
+        self.delta_t = self.settings['delta_t']  # time step size
 
-        self.predictor = create_instance(self.parameters["predictor"])
-        self.convergence_criterion = create_instance(self.parameters["convergence_criterion"])
+        self.predictor = create_instance(self.parameters['predictor'])
+        self.convergence_criterion = create_instance(self.parameters['convergence_criterion'])
         self.solver_wrappers = []
         self.index_mapped = None
         self.index_other = None
         for index in range(2):
-            parameters = self.parameters["solver_wrappers"][index]
+            parameters = self.parameters['solver_wrappers'][index]
             # add timestep_start and delta_t to solver_wrapper settings
-            tools.pass_on_parameters(self.settings, parameters["settings"], ["timestep_start", "delta_t"])
+            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
-            if parameters["type"] == "solver_wrappers.mapped":
+            if parameters['type'] == 'solver_wrappers.mapped':
                 self.index_mapped = index
             else:
                 self.index_other = index
         if self.index_other is None:
-            raise ValueError("Not both solvers may be mapped solvers.")
+            raise ValueError('Not both solvers may be mapped solvers.')
 
         self.components = [self.predictor, self.convergence_criterion, self.solver_wrappers[0], self.solver_wrappers[1]]
 
@@ -53,12 +53,12 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = []
 
         # save results variables
-        self.save_results = self.settings.get("save_results", False)  # set True in order to save for every iteration
+        self.save_results = self.settings.get('save_results', False)  # set True in order to save for every iteration
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.settings.get("name", "results")  # case name
+            self.case_name = self.settings.get('name', 'results')  # case name
             if self.case_name + '.pickle' in os.listdir(os.getcwd()):
                 i = 1
                 while self.case_name + str(i) + '.pickle' in os.listdir(os.getcwd()):
@@ -167,12 +167,12 @@ class CoupledSolverGaussSeidel(Component):
 
         self.elapsed_time = time.time() - self.start_time
         if self.save_results:
-            output = {"solution_x": self.complete_solution_x, "solution_y": self.complete_solution_y,
-                      "interface_x": self.x, "interface_y": self.y, "iterations": self.iterations,
-                      "time": self.elapsed_time, "residual": self.residual, "delta_t": self.delta_t,
-                      "timestep_start": self.timestep_start}
+            output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
+                      'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
+                      'time': self.elapsed_time, 'residual': self.residual, 'delta_t': self.delta_t,
+                      'timestep_start': self.timestep_start}
             if self.debug:
-                output.update({"solution_r": self.complete_solution_r})
+                output.update({'solution_r': self.complete_solution_r})
             pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
 
         for component in self.components:
@@ -183,7 +183,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # print summary header
         if self.solver_level == 0:
-            out = "╔" + 79 * "═" + "\n║\tSummary\n╠" + 79 * "═"
+            out = '╔' + 79 * '═' + '\n║\tSummary\n╠' + 79 * '═'
             tools.print_info(out)
 
         self.print_summary()
@@ -194,32 +194,32 @@ class CoupledSolverGaussSeidel(Component):
     def print_summary(self):
         solver_run_times = []
         pre = '║' + ' │' * self.solver_level
-        out = ""
+        out = ''
         if self.solver_level == 0:
-            out += f"{pre}Elapsed time: {self.elapsed_time:0.3f}s\n"
-        out += f"{pre}Percentage of total calculation time:\n"
+            out += f'{pre}Elapsed time: {self.elapsed_time:0.3f}s\n'
+        out += f'{pre}Percentage of total calculation time:\n'
         for solver in self.solver_wrappers:
             solver_run_times.append(solver.run_time / self.elapsed_time * 100)
-            out += f"{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n"
-            if solver.__class__.__name__ == "SolverWrapperMapped":
-                out += f"{pre}\t└─{solver.solver_wrapper.__class__.__name__}: " \
-                       f"{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n"
+            out += f'{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n'
+            if solver.__class__.__name__ == 'SolverWrapperMapped':
+                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: ' \
+                       f'{solver.solver_wrapper.run_time / self.elapsed_time * 100:0.1f}%\n'
         if self.solver_level == 0:
-            out += f"{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n"
-        out += f"{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}"
+            out += f'{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n'
+        out += f'{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}'
         if self.solver_level == 0:
-            out += "\n╚" + 79 * "═"
+            out += '\n╚' + 79 * '═'
         tools.print_info(out)
 
     def print_header(self):
-        header = (80 * "═" + f"\n\tTime step {self.time_step}\n" +
-                  80 * "═" + f"\n{'Iteration':<16}{'Norm residual':<28}")
+        header = (80 * '═' + f'\n\tTime step {self.time_step}\n' +
+                  80 * '═' + f'\n{"Iteration":<16}{"Norm residual":<28}')
         tools.print_info(header, flush=True)
 
     def print_iteration_info(self, r):
-        info = f"{self.iteration:<16d}{r.norm():<28.17e}"
+        info = f'{self.iteration:<16d}{r.norm():<28.17e}'
         tools.print_info(' │' * self.solver_level, info, flush=True)
 
     def print_components_info(self, pre):
-        tools.print_info(pre, "The coupled solver ", self.__class__.__name__, " has the following components:")
+        tools.print_info(pre, 'The coupled solver ', self.__class__.__name__, ' has the following components:')
         tools.print_components_info(pre, self.components)
