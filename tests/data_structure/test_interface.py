@@ -176,6 +176,21 @@ class TestInterface(unittest.TestCase):
         norm = np.linalg.norm(self.interface_data)
         self.assertEqual(self.interface.norm(), norm)
 
+    def test_has_same_modelparts(self):
+        self.interface.set_interface_data(self.interface_data)
+
+        interface_a = self.interface.copy()
+        interface_a.set_interface_data(np.random.rand(self.model_part_size * 5))
+        self.assertTrue(self.interface.has_same_model_parts(interface_a))
+
+        interface_b = Interface(self.parameters['interface_b'], self.model)
+        interface_b.set_interface_data(self.interface_data)
+        self.assertTrue(self.interface.has_same_model_parts(interface_b))
+
+        interface_c = Interface(self.parameters['interface_c'], self.model)
+        interface_c.set_interface_data(self.interface_data)
+        self.assertFalse(self.interface.has_same_model_parts(interface_c))
+
     def create_test_interfaces(self):
         interface_data1 = np.random.rand(self.interface.size)
         interface_data2 = np.random.rand(self.interface.size)
