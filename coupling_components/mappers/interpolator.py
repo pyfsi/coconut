@@ -35,10 +35,9 @@ class MapperInterpolator(Component):
             raise TypeError('Directions must be a list')
         for direction in self.settings['directions']:
             if direction.lower() not in ['x', 'y', 'z']:
-                raise ValueError(f'"{direction}" is not a valid direction.')
+                raise ValueError(f'"{direction}" is not a valid direction')
             if direction.lower() != direction:
-                # TODO: I would later remove this and only accept lowercase directions
-                tools.print_info('Warning: Interpolator directions must be lowercase', layout='warning')
+                raise ValueError(f'"{direction}" must be lowercase')
             self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
                 raise ValueError(f'Too many directions given')
