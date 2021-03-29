@@ -52,6 +52,12 @@ class CoupledSolverGaussSeidel(Component):
         self.elapsed_time = None
         self.iterations = []
 
+        # restart
+        self.save_restart = self.settings.get('save_restart', 1)  # time step interval to save restart data
+        if self.timestep_start != 0:  # restart
+            self.restart_case = self.settings['restart_case']  # case name to restart from
+            self.restart_data = self.check_restart()
+
         # save results variables
         self.save_results = self.settings.get('save_results', False)  # set True in order to save for every iteration
         if self.save_results:
@@ -87,6 +93,14 @@ class CoupledSolverGaussSeidel(Component):
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
         self.start_time = time.time()
+
+        # restart
+        if self.timestep_start != 0:
+            if self.x != self.restart_data['interface_x'] or self.y != self.restart_data['interface_y']:
+                raise ValueError('Restart not possible because model parts changed')
+            tools.print_info(80 * '═' + f'\n\tRestart from time step {self.timestep_start}\n' + 80 * '═')
+            self.predictor = self.restart_data['predictor']
+            self.components[0] = self.predictor
 
         # update save results
         if self.save_results:
@@ -155,6 +169,14 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.finalize_solution_step()
 
+        # save data for restart
+        if self.time_step % self.save_restart == 0:
+            output = {'predictor': self.predictor, 'interface_x': self.x, 'interface_y': self.y,
+                      'parameters': {key: self.parameters[key] for key in ('type', 'settings', 'predictor')},
+                      'delta_t': self.delta_t, 'time_step': self.time_step}
+            self.add_restart_data(output)
+            pickle.dump(output, open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb'))
+
         # update save results
         self.iterations.append(self.iteration)
         if self.save_results:
@@ -190,6 +212,28 @@ class CoupledSolverGaussSeidel(Component):
 
         for component in self.components:
             component.finalize()
+
+    def check_restart(self):
+        restart_file_name = self.restart_case + f'_restart_ts{self.timestep_start}.pickle'
+        if not restart_file_name in os.listdir(os.getcwd()):
+            raise FileNotFoundError(f'Not able to perform restart because {restart_file_name} '
+                                    f'not found in {os.getcwd()}')
+        else:
+            with open(restart_file_name, 'rb') as restart_file:
+                restart_data = pickle.load(restart_file)
+            for key in ('predictor', 'type'):
+                if self.parameters[key] != restart_data['parameters'][key]:
+                    raise ValueError(f'Restart not possible because {key} changed in coupled solver')
+            self.add_restart_check(restart_data)
+            if self.delta_t != restart_data['delta_t']:
+                tools.print_info('Time step size has changed upon restart', layout='warning')
+        return restart_data
+
+    def add_restart_check(self, restart_data):
+        pass
+
+    def add_restart_data(self, restart_data):
+        pass
 
     def print_summary(self):
         solver_run_times = []

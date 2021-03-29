@@ -18,6 +18,18 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         self.added = False
         self.rcurr = None
 
+    def initialize(self):
+        super().initialize()
+
+        if self.timestep_start != 0:  # restart
+            self.omega = self.restart_data['omega']
+
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
+
+        self.added = False
+        self.rcurr = None
+
     def predict(self, r_in):
         r = r_in.get_interface_data()
         # calculate return value if sufficient data available
@@ -64,8 +76,5 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
     def is_ready(self):
         return self.added
 
-    def initialize_solution_step(self):
-        super().initialize_solution_step()
-
-        self.added = False
-        self.rcurr = None
+    def add_restart_data(self, restart_data):
+        return restart_data.update({'omega': self.omega})
