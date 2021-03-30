@@ -67,8 +67,8 @@ class ModelMVMF(Component):
             c = solve_triangular(rr, b)
             dxt = self.w @ c
         else:
-            dxt = np.zeros((self.size_in, 1))
-            qq = np.zeros((self.size_out, 1))
+            dxt = np.zeros((self.size_out, 1))
+            qq = np.zeros((self.size_in, 1))
         dr = dr - qq @ (qq.T @ dr)
         i = 0
         while np.linalg.norm(dr) > self.min_significant and i < len(self.wprev):

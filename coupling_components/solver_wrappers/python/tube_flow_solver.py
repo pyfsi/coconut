@@ -220,10 +220,10 @@ class SolverWrapperTubeFlow(Component):
                     file.write(f"{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n")
 
     def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input
+        return self.interface_input.copy()
 
     def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output
+        return self.interface_output.copy()
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:

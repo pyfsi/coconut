@@ -182,10 +182,10 @@ class SolverWrapperTubeStructure(Component):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
     def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input
+        return self.interface_input.copy()
 
     def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output
+        return self.interface_output.copy()
 
     def get_residual(self):
         f = np.zeros(self.m + 4)
