@@ -28,8 +28,8 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
 
         self.dxtemp = self.x.copy()
         self.dytemp = self.y.copy()
-        self.u = self.x.get_interface_data().shape[0]
-        self.w = self.y.get_interface_data().shape[0]
+        self.u = self.x.size
+        self.w = self.y.size
         self.ready = False
         if self.timestep_start == 0:  # no restart
             self.model_f.size_in = self.model_s.size_out = self.u
@@ -68,7 +68,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         # first coupling iteration
         yt = self.solver_wrappers[0].solve_solution_step(self.x)
         self.model_f.add(self.x, yt)
-        self.y = yt
+        self.y = yt.copy()
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         self.model_s.add(self.y, xt)
         r = xt - self.x
