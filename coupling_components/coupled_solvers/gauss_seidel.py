@@ -53,7 +53,7 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = []
 
         # restart
-        self.save_restart = self.settings.get('save_restart', 1)  # time step interval to save restart data
+        self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         if self.timestep_start != 0:  # restart
             self.restart_case = self.settings['restart_case']  # case name to restart from
             self.restart_data = self.check_restart()
@@ -64,12 +64,16 @@ class CoupledSolverGaussSeidel(Component):
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.settings.get('name', 'results')  # case name
-            if self.case_name + '.pickle' in os.listdir(os.getcwd()):
-                i = 1
-                while self.case_name + str(i) + '.pickle' in os.listdir(os.getcwd()):
-                    i += 1
-                self.case_name += str(i)
+
+        # case name
+        self.case_name = self.settings.get('name', 'case')  # case name
+        listdir = os.listdir(os.getcwd())
+        if self.case_name + '_results.pickle' in listdir or self.case_name + '_restart.pickle' in listdir:
+            i = 1
+            while self.case_name + str(i) + '_results.pickle' in listdir \
+                    or self.case_name + str(i) + '_restart.pickle' in listdir:
+                i += 1
+            self.case_name += str(i)
 
         self.debug = False  # save results each iteration including residual interfaces
         if self.debug:
@@ -88,15 +92,16 @@ class CoupledSolverGaussSeidel(Component):
             self.solver_wrappers[0].initialize()
             self.solver_wrappers[1].initialize()
 
-        self.x = self.solver_wrappers[1].get_interface_output()
-        self.y = self.solver_wrappers[0].get_interface_output()
+        self.x = self.solver_wrappers[1].get_interface_output().copy()
+        self.y = self.solver_wrappers[0].get_interface_output().copy()
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
         self.start_time = time.time()
 
         # restart
         if self.timestep_start != 0:
-            if self.x != self.restart_data['interface_x'] or self.y != self.restart_data['interface_y']:
+            if not (self.x.has_same_model_parts(self.restart_data['interface_x']) and
+                    self.y.has_same_model_parts(self.restart_data['interface_y'])):
                 raise ValueError('Restart not possible because model parts changed')
             tools.print_info(80 * '═' + f'\n\tRestart from time step {self.timestep_start}\n' + 80 * '═')
             self.predictor = self.restart_data['predictor']
@@ -170,12 +175,17 @@ class CoupledSolverGaussSeidel(Component):
             component.finalize_solution_step()
 
         # save data for restart
-        if self.time_step % self.save_restart == 0:
+        if self.save_restart != 0 and self.time_step % self.save_restart == 0:
             output = {'predictor': self.predictor, 'interface_x': self.x, 'interface_y': self.y,
                       'parameters': {key: self.parameters[key] for key in ('type', 'settings', 'predictor')},
                       'delta_t': self.delta_t, 'time_step': self.time_step}
             self.add_restart_data(output)
             pickle.dump(output, open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb'))
+        if self.save_restart < 0:
+            try:
+                os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
+            except OSError:
+                pass
 
         # update save results
         self.iterations.append(self.iteration)
@@ -195,7 +205,7 @@ class CoupledSolverGaussSeidel(Component):
                       'timestep_start': self.timestep_start}
             if self.debug:
                 output.update({'solution_r': self.complete_solution_r})
-            pickle.dump(output, open(self.case_name + '.pickle', 'wb'))
+            pickle.dump(output, open(self.case_name + '_results.pickle', 'wb'))
 
         for component in self.components:
             component.output_solution_step()
