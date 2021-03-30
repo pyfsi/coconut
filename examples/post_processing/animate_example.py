@@ -7,9 +7,9 @@ import matplotlib.animation as ani
 import pickle
 
 # different cases to be plotted
-common_path = "../../examples/"
-case_paths = ["tube_tube_flow_tube_structure/case_results.pickle"]
-legend_entries = ["case"]
+common_path = '../../examples/'
+case_paths = ['tube_tube_flow_tube_structure/case_results.pickle']
+legend_entries = ['case']
 
 # load cases
 results = {}
@@ -20,16 +20,16 @@ for name, path in zip(legend_entries, case_paths):
 animation_figure_displacement = AnimationFigure()  # figure for displacement animations
 animation_figure_pressure = AnimationFigure()  # figure for pressure animations
 animation_figure_coordinates = AnimationFigure()  # figure for coordinate animations
-colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
 line_styles = ['-', '--', ':', '-.']
-for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement", "m", animation_figure_displacement),
-                                    ("solution_y", "interface_y", "pressure", "Pa", animation_figure_pressure),
-                                    ("solution_x", "interface_x", "coordinates", "m", animation_figure_coordinates)):
+for sol, itf, var, uni, ani_fig in (('solution_x', 'interface_x', 'displacement', 'm', animation_figure_displacement),
+                                    ('solution_y', 'interface_y', 'pressure', 'Pa', animation_figure_pressure),
+                                    ('solution_x', 'interface_x', 'coordinates', 'm', animation_figure_coordinates)):
     for j, name in enumerate(legend_entries):
         solution = results[name][sol]
         interface = results[name][itf]
-        dt = results[name]["delta_t"]
-        time_step_start = results[name]["timestep_start"]
+        dt = results[name]['delta_t']
+        time_step_start = results[name]['timestep_start']
         # create animate object
         animation = ani_fig.add_animation(solution, interface, dt, time_step_start, variable=var, name=name)
         # select points and component of variable to plot
@@ -61,11 +61,11 @@ for sol, itf, var, uni, ani_fig in (("solution_x", "interface_x", "displacement"
         animation.line.set_marker('o')
         animation.line.set_markersize(2)
 
-    ani_fig.figure.axes[0].set_ylabel(f"{var} ({uni})")
-    ani_fig.figure.axes[0].set_xlabel("axial coordinate (m)")
+    ani_fig.figure.axes[0].set_ylabel(f'{var} ({uni})')
+    ani_fig.figure.axes[0].set_xlabel('axial coordinate (m)')
     ani_fig.figure.axes[0].legend()
     ani_fig.figure.tight_layout()
-    # or make figure active using plt.figure(ani_fig.number) and use plt.xlabel("") type commands etc.
+    # or make figure active using plt.figure(ani_fig.number) and use plt.xlabel('') type commands etc.
 
 animation_figure_displacement.make_animation()
 animation_figure_pressure.make_animation()
@@ -74,7 +74,7 @@ animation_figure_coordinates.make_animation()
 
 save = False
 animation_figure = animation_figure_displacement
-movie_name = "displacement.mp4"
+movie_name = 'displacement.mp4'
 if save:
     # set up formatting for the movie files: mp4-file
     plt.rcParams['animation.ffmpeg_path'] = u'/apps/SL6.3/FFmpeg/3.1.3/bin/ffmpeg'  # path to ffmpeg conversion tool
