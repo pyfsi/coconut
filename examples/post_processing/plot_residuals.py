@@ -14,8 +14,8 @@ tolerance = 1e-8  # cut-off tolerance
 
 # different cases to be plotted
 common_path = "../../examples/"
-case_paths = ["tube_tube_flow_tube_structure/results.pickle"]
-legend_entries = ["results"]
+case_paths = ["tube_tube_flow_tube_structure/case_results.pickle"]
+legend_entries = ["case_results"]
 
 # load cases
 results = {}
