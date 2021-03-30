@@ -61,6 +61,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver.finalize()
 
         # get data for solver without restart
+        cls.interface_y_single_run = solver.get_interface_input()
+        cls.interface_x_single_run = solver.get_interface_output()
         output_single_run = solver.get_interface_output()
         cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement')
         print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
@@ -110,11 +112,15 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # compare output, as input hasn't changed these should be the same
         # get data for solver with restart
+        interface_y_restart = solver.get_interface_input()
+        interface_x_restart = solver.get_interface_output()
         output_restart = solver.get_interface_output()
         self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement')
         print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
         print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
 
+        self.assertTrue(self.interface_y_single_run.has_same_model_parts(interface_y_restart))
+        self.assertTrue(self.interface_x_single_run.has_same_model_parts(interface_x_restart))
         indices = sorted([self.axial_dir] + self.radial_dirs)  # columns that contain non-zero data
         a3_extra = np.delete(self.a3, indices, axis=1)  # remove columns containing data
         np.testing.assert_array_equal(a3_extra, a3_extra * 0.0)   # if a column remains it should be all zeroes
