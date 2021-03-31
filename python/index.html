@@ -38,7 +38,7 @@
     
     
       
-        <title>SolverWrapperPython - CoCoNuT</title>
+        <title>Python - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#solverwrapperpython" tabindex="0" class="md-skip">
+      <a href="#python" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                SolverWrapperPython
+                Python
               
             </span>
           
@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -524,8 +524,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -536,8 +536,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -557,11 +557,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        SolverWrapperPython
+        Python
       </label>
     
-    <a href="./" title="SolverWrapperPython" class="md-nav__link md-nav__link--active">
-      SolverWrapperPython
+    <a href="./" title="Python" class="md-nav__link md-nav__link--active">
+      Python
     </a>
     
       
@@ -590,8 +590,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tubeflow" class="md-nav__link">
-    TubeFlow
+  <a href="#tube-flow-solver" class="md-nav__link">
+    Tube flow solver
   </a>
   
     <nav class="md-nav">
@@ -630,8 +630,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tuberingmodel" class="md-nav__link">
-    TubeRingModel
+  <a href="#tube-ringmodel-solver" class="md-nav__link">
+    Tube Ringmodel solver
   </a>
   
     <nav class="md-nav">
@@ -650,8 +650,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tubestructure" class="md-nav__link">
-    TubeStructure
+  <a href="#tube-structure-solver" class="md-nav__link">
+    Tube structure solver
   </a>
   
     <nav class="md-nav">
@@ -671,6 +671,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
   
 </li>
       
@@ -1043,8 +1050,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tubeflow" class="md-nav__link">
-    TubeFlow
+  <a href="#tube-flow-solver" class="md-nav__link">
+    Tube flow solver
   </a>
   
     <nav class="md-nav">
@@ -1083,8 +1090,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tuberingmodel" class="md-nav__link">
-    TubeRingModel
+  <a href="#tube-ringmodel-solver" class="md-nav__link">
+    Tube Ringmodel solver
   </a>
   
     <nav class="md-nav">
@@ -1103,8 +1110,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tubestructure" class="md-nav__link">
-    TubeStructure
+  <a href="#tube-structure-solver" class="md-nav__link">
+    Tube structure solver
   </a>
   
     <nav class="md-nav">
@@ -1127,6 +1134,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
+  
+</li>
+      
       
       
       
@@ -1144,9 +1158,9 @@
               
                 
                 
-                <h1 id="solverwrapperpython">SolverWrapperPython</h1>
-<p>This is the documentation for all Python SolverWrappers.
-Currently only solvers exist for the 1D calculation of a straight flexible tube.</p>
+                <h1 id="python">Python</h1>
+<p>This is the documentation for all Python solver wrappers.
+Currently only solvers exist for the one-dimensional (1D) calculation of a straight flexible tube.</p>
 <h2 id="tube">Tube</h2>
 <p>There are three tube solvers for a straight tube with circular cross-section.
 The axial direction is along the z-axis.
@@ -1155,10 +1169,13 @@ This means the tube is divided in <code>m</code> intervals in the axial z-direct
 and only variations in that direction are taken into account.
 In other words, all variables are uniform over a cross-section.
 They are calculated in the center of each of the <code>m</code> cells.</p>
-<p>There is one flow solver (TubeFlow) and two structure solvers, one with inertia (TubeStructure) and one without (TubeRingmodel).</p>
+<p>There is one flow solver <code>SolverWrapperTubeFlow</code> and two structure solvers, one with inertia <code>SolverWrapperTubeStructure</code> and one without <code>SolverWrapperTubeRingmodel</code>.
+These solvers are very simple and provide insight in the physics, especially in the stability of fluid-structure interaction simulation.
+Nonetheless, they are not meant to provide an accurate representation of reality.
+Especially the pressure stabilization term in the flow solver smooths the pressure distribution.</p>
 <h3 id="settings">Settings</h3>
 <p>The following parameters, listed in alphabetical order, need to be provided in the JSON parameter file 
-as <code>setttings</code> of the solver wrapper.</p>
+as <code>settings</code> of the solver wrapper.</p>
 <table>
 <thead>
 <tr>
@@ -1171,42 +1188,46 @@ as <code>setttings</code> of the solver wrapper.</p>
 <tr>
 <td align="right"><code>delta_t</code></td>
 <td align="center">double</td>
-<td>Fixed time step size in flow solver. This parameter is usually specified in a higher Component.</td>
+<td>Fixed time step size. This parameter is usually specified in a higher component.</td>
 </tr>
 <tr>
 <td align="right"><code>input_file</code></td>
 <td align="center">string</td>
-<td>Name of the input file, which must be present in the folder <code>working_directory</code>. The file contains all parameters required for the solver, in JSON-format.</td>
+<td>Name of the input file, which must be present in the folder given in <code>working_directory</code>. The file contains all parameters required for the solver, in JSON-format.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_input</code></td>
-<td align="center">dict</td>
-<td>Keys are names of ModelParts. The values are (lists of) names of Variables. <br>For a flow solver:<code>"DISPLACEMENT"</code>. <br>For a structure solver:<code>["PRESSURE","TRACTION"]</code>.</td>
+<td align="center">list</td>
+<td>List of dictionaries; each dictionary requires two keys: <code>model_part</code> and <code>variables</code>. The former contains the name of the <code>ModelPart</code> as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: <code>["displacement"]</code> for a flow solver and <code>["pressure","traction"]</code> for a structure solver.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_output</code></td>
-<td align="center">dict</td>
-<td>Analogous to <code>interface_input</code>, but for the flow solver output. <br>For a flow solver:<code>["PRESSURE","TRACTION"]</code>. <br>For a structure solver:<code>"DISPLACEMENT"</code>.</td>
+<td align="center">list</td>
+<td>Analogous to <code>interface_input</code>. However, the variables are different: <code>["pressure","traction"]</code> for a flow solver and <code>["displacement"]</code> for a structure solver.</td>
 </tr>
 <tr>
 <td align="right"><code>unsteady</code></td>
 <td align="center">bool</td>
-<td>(optional) Indicates if case is steady or unsteady. If omitted, <code>true</code> is assumed.</td>
+<td>(optional) Default: <code>true</code>. Indicates if case is steady or unsteady.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>working_directory</code></nobr></td>
+<td align="right"><code>working_directory</code></td>
 <td align="center">string</td>
-<td>Absolute path to the working directory or relative path w.r.t the current directory.</td>
+<td>Absolute path to the working directory or relative path with respect to the current directory.</td>
 </tr>
 </tbody>
 </table>
-<p><code>delta_t</code> is a necessary parameter, but is usually defined in a higher Component. However, it can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If it is defined both in higher Component and in the solver wrapper, then the former value is used and a warning is printed.</p>
-<p>If no intepolation is applied, the names of the ModelParts of both flow and structure solver need to be the same.</p>
+<p><code>delta_t</code> is a necessary parameter, but is usually defined in a higher component. However, it can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If it is defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.</p>
 <p>There is no parameter <code>timestep_start</code>, as currently, restart is not implemented in this solver wrapper.</p>
-<h3 id="tubeflow">TubeFlow</h3>
+<p>Because these solvers are simple it is possible to ommit the use of interpolation between two solver wrappers.
+In that case , the names of the <code>ModelParts</code> of both flow and structure solver need to be the same.</p>
+<h3 id="tube-flow-solver">Tube flow solver</h3>
 <p>This flow solver calculates the flow inside a 1D straight and flexible tube.
+The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.tube_flow_solver</code>.
 The required input is the radial displacement of the tube wall.
-The resulting output is the pressure on the tube wall.</p>
+The other components of displacement are ingnored.
+The resulting output is the pressure on the tube wall.
+Although a required variable in <code>interface_output</code>, <code>traction</code> is always returned as being zero.</p>
 <p>From the radial displacements the area of each cross-section is calculated.
 The flow is governed by the continuity and momentum equation
 $$
@@ -1217,13 +1238,17 @@ $$
 $$
 with <span><span class="MathJax_Preview">a=\pi r^2</span><script type="math/tex">a=\pi r^2</script></span> the cross-sectional area of the tube and <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> the inner radius.
 Furthermore, <span><span class="MathJax_Preview">t</span><script type="math/tex">t</script></span> is the time, <span><span class="MathJax_Preview">v</span><script type="math/tex">v</script></span> the velocity along the axis of the tube, <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> the pressure and <span><span class="MathJax_Preview">\rho_f</span><script type="math/tex">\rho_f</script></span> the density of the fluid.
-Add the start and end of the tube the boundary conditions have to be applied.
+At the start and at the end of the tube the boundary conditions have to be applied.
 Discretizing these equations results in a system of linear algebraic equations which can be solved for the pressure and velocity
 by performing Newton-Raphson iterations.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.</p>
-<p>For more information about the implementation this solver refer to .</p>
+<p>The boundary condtions are implemented by four additional equations: at the in- and outlet for both pressure and velocity.
+At the inlet, the pressure, velocity or total pressure can be specified.
+At the outlet, the pressure can be set to a fixed value or a non-reflecting boundary conditions.
+These settings are specified in the <code>input_file</code> in the <code>working directory</code>.</p>
+<p>For more information about the implementation this solver refer to [<a href="#1">1</a>].</p>
 <h4 id="solver-parameters">Solver parameters</h4>
-<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <code>input_file</code>.
+<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <em><code>input_file</code></em>.
 This file should be located in the <code>working_directory</code>.
 Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the structural solver.</p>
 <table>
@@ -1238,7 +1263,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>axial_offset</code></td>
 <td align="center">double</td>
-<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+<td>(optional) Default: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
 <td align="right"><code>d</code></td>
@@ -1253,7 +1278,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>h</code></td>
 <td align="center">double</td>
-<td>Thickness of tube wall.</td>
+<td>Thickness of the tube wall.</td>
 </tr>
 <tr>
 <td align="right"><code>inlet_boundary</code></td>
@@ -1281,19 +1306,19 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>outlet_boundary</code></nobr></td>
+<td align="right"><code>outlet_boundary</code></td>
 <td align="center">dict</td>
 <td>Dictionary containing all information with respect to the outlet boundary condition.</td>
 </tr>
 <tr>
 <td align="right"><code>preference</code></td>
 <td align="center">double</td>
-<td>(optional) Reference pressure and initial pressure. If not provided, the value of this parameter is 0.</td>
+<td>(optional) Default: <code>0</code>. Reference pressure and initial pressure.</td>
 </tr>
 <tr>
 <td align="right"><code>u0</code></td>
 <td align="center">double</td>
-<td>(optional) Initial velocity. If omitted, <code>ureference</code> is used.</td>
+<td>(optional) Default: <code>ureference</code>. Initial velocity throughout the tube.</td>
 </tr>
 <tr>
 <td align="right"><code>ureference</code></td>
@@ -1319,29 +1344,29 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </thead>
 <tbody>
 <tr>
-<td align="right"><nobr><code>amplitude</code></nobr></td>
+<td align="right"><code>amplitude</code></td>
 <td align="center">double</td>
 <td>Amplitude of the inlet boundary condition.</td>
 </tr>
 <tr>
 <td align="right"><code>period</code></td>
 <td align="center">double</td>
-<td>Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type 4).</td>
+<td>Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type <code>4</code>).</td>
 </tr>
 <tr>
 <td align="right"><code>reference</code></td>
 <td align="center">double</td>
-<td>(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. <code>ureference</code>, <code>preference</code> or <code>preference</code> + <code>ureference</code>^2.</td>
+<td>(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. <code>ureference</code>, <code>preference</code> or <code>preference</code> + <code>rhof</code> * <code>ureference</code>^2 / 2.</td>
 </tr>
 <tr>
 <td align="right"><code>type</code></td>
 <td align="center">int</td>
-<td>Type of inlet boundary condition. <br>If 1, a sine wave is used with amplitude, reference and period as specified. <br>If 2, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If 3, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If 4, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.</td>
+<td>Type of inlet boundary condition. <br>If <code>1</code>, a sine wave is used with amplitude, reference and period as specified. <br>If <code>2</code>, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If <code>3</code>, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If <code>4</code>, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.</td>
 </tr>
 <tr>
 <td align="right"><code>variable</code></td>
 <td align="center">string</td>
-<td>Variable upon which the inlet boundary condition is definded, either 'pressure', 'velocity' or 'total pressure'.</td>
+<td>Variable upon which the inlet boundary condition is defined, either <code>"pressure"</code>, <code>"velocity"</code> or <code>"total pressure"</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -1359,15 +1384,19 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>type</code></td>
 <td align="center">int</td>
-<td>Type of outlet boundary condition. <br>If 1, a non-reflecting boundary condition is applied. This type can not be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.</td>
+<td>Type of outlet boundary condition. <br>If <code>1</code>, a non-reflecting boundary condition is applied. This type cannot be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="tuberingmodel">TubeRingModel</h3>
+<h3 id="tube-ringmodel-solver">Tube Ringmodel solver</h3>
 <p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
+The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.ring_model_solver</code>.
 The tube is regarded as made up of independent rings.
 The required input is the pressure on the tube wall.
-The resulting output is the radial displacement.</p>
+Traction is not taken into account, even though it is a required variable in <code>interface_input</code>. 
+The resulting output is the radial displacement.
+For the other components of displacement, zero is returned.
+This solver is not suited to calculate the propagation of a pressure pulse.</p>
 <p>The behaviour of the elastic tube wall is described by a Hookean relation,
 which results in the following equation
 $$
@@ -1382,9 +1411,9 @@ $$
 Here, <span><span class="MathJax_Preview">E</span><script type="math/tex">E</script></span> is the modulus of elasticity, <span><span class="MathJax_Preview">h</span><script type="math/tex">h</script></span> the thickness of the tube wall and <span><span class="MathJax_Preview">r_0</span><script type="math/tex">r_0</script></span> the reference radius.
 No boundary conditions are required.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.</p>
-<p>For more information about the implementation this solver refer to .</p>
+<p>More information about the implementation of this solver can be found in [<a href="#2">2</a>].</p>
 <h4 id="solver-parameters_1">Solver parameters</h4>
-<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <code>input_file</code>.
+<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <em><code>input_file</code></em>.
 This file should be located in the <code>working_directory</code>.
 Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
 <table>
@@ -1399,7 +1428,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><nobr><code>axial_offset</code></nobr></td>
 <td align="center">double</td>
-<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+<td>(optional) Defalult: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
 <td align="right"><code>d</code></td>
@@ -1429,7 +1458,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>preference</code></td>
 <td align="center">double</td>
-<td>(optional) Reference pressure. If not provided, the value of this parameter is 0.</td>
+<td>(optional) Default: <code>0</code>. Reference pressure.</td>
 </tr>
 <tr>
 <td align="right"><code>rhof</code></td>
@@ -1438,18 +1467,20 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </tr>
 </tbody>
 </table>
-<h3 id="tubestructure">TubeStructure</h3>
+<h3 id="tube-structure-solver">Tube structure solver</h3>
 <p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
-In this model inertia is taken into account, but still only radial displacements are considered.
+The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.tube_structure_solver</code>.
+In this model inertia is taken into account, but still only radial displacement is considered.
 The required input is the pressure on the tube wall.
-The resulting output is the radial displacement.</p>
+Traction is not taken into account, even though it is a required variable in <code>interface_input</code>. 
+The resulting output is the radial displacement.
+For the other components of displacement, zero is returned.</p>
 <p>The deformation of the tube in the radial direction is determined by
 $$
     \rho_s h\frac{\partial^2 r}{\partial t^2}+b_1\frac{\partial^4 r}{\partial z^4}-b_2\frac{\partial^2 r}{\partial z^2}+b_3(r-r_o)=p-p_o
 $$
-with <span><span class="MathJax_Preview">\rho_s</span><script type="math/tex">\rho_s</script></span> the solid density and <span><span class="MathJax_Preview">h</span><script type="math/tex">h</script></span> the thickness of the tube's wall.
+with <span><span class="MathJax_Preview">\rho_s</span><script type="math/tex">\rho_s</script></span> the solid density and <span><span class="MathJax_Preview">h</span><script type="math/tex">h</script></span> the thickness of the tube wall.
 Further, <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is the inner radius, <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> pressure and <span><span class="MathJax_Preview">t</span><script type="math/tex">t</script></span> time. The variables <span><span class="MathJax_Preview">r_0</span><script type="math/tex">r_0</script></span> and <span><span class="MathJax_Preview">p_0</span><script type="math/tex">p_0</script></span> are a reference radius and pressure, respectively.
-The tube is considered clamped at both ends.
 The parameters <span><span class="MathJax_Preview">b_1</span><script type="math/tex">b_1</script></span> and <span><span class="MathJax_Preview">b_2</span><script type="math/tex">b_2</script></span> (<span><span class="MathJax_Preview">b_1, b_2 \ge 0</span><script type="math/tex">b_1, b_2 \ge 0</script></span>) account for the inner action of the bending and the axial tension in the wall, while the parameter <span><span class="MathJax_Preview">b_3</span><script type="math/tex">b_3</script></span> accounts for the circumferential stress in the tube wall.
 For a thin-walled tube that is clamped in the axial direction, they are defined as
 $$
@@ -1461,11 +1492,23 @@ $$
 $$
 with <span><span class="MathJax_Preview">E</span><script type="math/tex">E</script></span> the Young's modulus and <span><span class="MathJax_Preview">\nu</span><script type="math/tex">\nu</script></span> Poisson's coefficient.
 The second term of <span><span class="MathJax_Preview">b_3</span><script type="math/tex">b_3</script></span> is considered small compared to the first one because <span><span class="MathJax_Preview">h\ll r_o</span><script type="math/tex">h\ll r_o</script></span> and is thus neglected.
-Discretizing these equations results in a system of linear algebraic equations whit a Jacobian that does not depend on the pressure.
+Discretizing these equations results in a system of linear algebraic equations with a Jacobian that does not depend on the pressure.
 The system can be solved for the radius in one step.</p>
-<p>For more information about the implementation this solver refer to .</p>
+<p>The tube is considered clamped at both ends. This boundary condition is imposed by adding four equations: two at the inlet and two at the outlet.</p>
+<p>For more information about the implementation of this solver refer to [<a href="#1">1</a>].
+In this work the Newmark-beta time discretization is used. Here, however, backward Euler time discretization is used as well.</p>
+<p>For the Newmark-beta time discretization, two Newmark parameters <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> and <span><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> are required, which result in an unconditionally stable integration scheme if
+$$
+\gamma\geq\frac{1}{2} 
+\textrm{ and }
+\beta\geq\frac{1}{4}\left(\frac{1}{2}+\gamma\right)^2.
+$$
+Typical values are <span><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> equal to 1/2 and <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> equal to 1/4.</p>
+<p>A different time discretization for flow and structure can lead to difficulties for strongly coupled problems, especially looking at the resulting pressure distributions.
+As most flow solvers are discretized using the backward Euler method, it is advised to chose the same method for the structure solver (the time discretization of <code>SolverWrapperTubeFlowSolver</code> is also backward Euler).
+This avoids the occurrence of spurious oscillations of the pressure in time [<a href="#3">3</a>].</p>
 <h4 id="solver-parameters_2">Solver parameters</h4>
-<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <code>input_file</code>.This file should be located in the <code>working_directory</code>.
+<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <em><code>input_file</code></em>.This file should be located in the <code>working_directory</code>.
 Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
 <table>
 <thead>
@@ -1479,12 +1522,12 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>axial_offset</code></td>
 <td align="center">double</td>
-<td>(optional) Distance over which tube is displaced axially in the coordinate system. If not provided, the value of this parameter is 0.</td>
+<td>(optional) Default: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
 <td align="right"><code>beta</code></td>
 <td align="center">double</td>
-<td>(optional) Newmark parameter <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span>.  Only required when the Newmark-beta time discretization is used.</td>
+<td>(optional) Newmark parameter <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span>. Only required when the Newmark-beta time discretization is used.</td>
 </tr>
 <tr>
 <td align="right"><code>d</code></td>
@@ -1499,7 +1542,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>h</code></td>
 <td align="center">double</td>
-<td>Thickness of tube wall.</td>
+<td>Thickness of the tube wall.</td>
 </tr>
 <tr>
 <td align="right"><code>gamma</code></td>
@@ -1524,7 +1567,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><code>preference</code></td>
 <td align="center">double</td>
-<td>(optional) Reference pressure. If not provided, the value of this parameter is 0.</td>
+<td>(optional) Default: <code>0</code>. Reference pressure.</td>
 </tr>
 <tr>
 <td align="right"><code>rhof</code></td>
@@ -1537,22 +1580,19 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>Density of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>time_disretization</code></nobr></td>
+<td align="right"><code>time_disretization</code></td>
 <td align="center">string</td>
-<td>(optional) Either 'Newmark' or 'backward Euler'. If not provided, backward Euler is used.</td>
+<td>(optional) Default: <code>backward Euler</code>. Specifies the time discretiation: either <code>Newmark</code> or <code>backward Euler</code>. Not case sensitive.</td>
 </tr>
 </tbody>
 </table>
-<p>The equations are discretized in time with the Newmark-beta method or backward Euler method.
-In the former case, two Newmark parameters <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> and <span><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> are required, which result in an un-conditionally stable integration scheme if
-$$
-\gamma\geq\frac{1}{2} 
-\textrm{ and }
-\beta\geq\frac{1}{4}\left(\frac{1}{2}+\gamma\right)^2.
-$$
-Typical values are <span><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> equal to 1/2 and <span><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> equal to 1/4.</p>
-<p>A different time discretization for flow and structure can lead to difficulties for strongly coupled problems, especially looking at the resulting pressure distributions.
-As most flow solvers are discretized using the backward Euler method, it is advised to chose the same method for the structure solver.</p>
+<h2 id="references">References</h2>
+<p><a id="1">[1]</a> 
+<a href="http://hdl.handle.net/1854/LU-940283">Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers &amp; Structures, vol. 88, no. 5-6, pp. 263, 2010.</a></p>
+<p><a id="2">[2]</a> 
+<a href="http://hdl.handle.net/1854/LU-533350">Degroote J., Bruggeman P., Haelterman R., Vierendeels J., "Stability of a coupling technique for partitioned solvers in FSI applications", Computers &amp; Structures, vol. 86, no. 23–24, pp. 2224–2234, 2008.</a></p>
+<p><a id="3">[3]</a> 
+<a href="http://hdl.handle.net/1854/LU-325786">Vierendeels J., Dumont K., Dick E., Verdonck P., "Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion", American Institute of Aeronautics and Astronautics Journal", vol. 43, no. 12, pp. 2549–2557, 2005.</a></p>
                 
                   
                 
@@ -1574,7 +1614,7 @@ As most flow solvers are discretized using the backward Euler method, it is advi
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../openfoam/" title="OpenFOAM" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -1583,7 +1623,7 @@ As most flow solvers are discretized using the backward Euler method, it is advi
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                SolverWrapperOpenFOAM
+                OpenFOAM
               </span>
             </div>
           </a>

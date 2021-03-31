@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -633,8 +633,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -645,8 +645,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -657,8 +657,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -1129,7 +1129,9 @@ assemble a set of convergence criteria.</p>
 </table>
 <h3 id="absolute-norm">Absolute norm</h3>
 <p>The <code>type</code> <code>convergence_criterion.absolute_norm</code> is satisfied if the <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual in the last coupling iteration
-is smaller than a predefined <code>tolerance</code>. The <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is defined as</p>
+is smaller than a predefined <code>tolerance</code>. 
+More information on how the residual is calculated can be found in the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers documentation</a>.
+The <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>-norm of the residual <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> is defined as</p>
 <div>
 <div class="MathJax_Preview">
 \Vert r \Vert_p = \left(\sum_{i=1}^n \vert r_{i}\vert^p\right)^{1/p} ,
@@ -1151,19 +1153,19 @@ is smaller than a predefined <code>tolerance</code>. The <span><span class="Math
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>tolerance</code></td>
-<td align="center">double</td>
-<td>Limit value for convergence.</td>
-</tr>
-<tr>
 <td align="right"><code>order</code></td>
 <td align="center">int</td>
 <td>Order <span><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span> of the norm.</td>
 </tr>
+<tr>
+<td align="right"><code>tolerance</code></td>
+<td align="center">double</td>
+<td>Limit value for convergence.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="relative-norm">Relative norm</h3>
-<p>This <code>type</code> (<code>convergence_criterion.relative_norm</code>) is completely analogous to the absolute norm. Instead of the norm of 
+<p>The <code>type</code> <code>convergence_criterion.relative_norm</code> is completely analogous to the absolute norm. Instead of the norm of 
 the last residual being smaller than a set <code>tolerance</code>, now the ratio norm of the residual of the last coupling iteration to the 
 norm of the residual of the first coupling iteration is compared to a <code>tolerance</code>. Zero divisions are avoided internally by
 comparing the norm of the residual of the first coupling iteration to the machine limit for floating points, i.e. the smallest number
@@ -1176,7 +1178,9 @@ for the absolute norm criterion instead of relative norm.</p>
 to break loops that are not converging fast enough. In that case, the criteria are combined via <code>or</code> or <code>and</code> statements.
 In that case, the <code>type</code> is set to <code>convergence_criterion.or</code> (alternatively, <code>convergence_criterion.and</code>) and the <code>settings</code>
 contain a <code>criteria_list</code> that contains single criteria in the same way as described above. </p>
-<p>In the following example, the <code>iteration_limit</code> and <code>relative_norm</code> criteria are combined using an <code>or</code> statement. </p>
+<p>In the following example, the <code>iteration_limit</code> and <code>relative_norm</code> criteria are combined using an <code>or</code> statement.
+Note that the number of criteria is not limited to two.
+Moreover, the <code>or</code> and <code>and</code> statements can be combined multiple times, if needed.</p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
   <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.or&quot;</span><span class="p">,</span>
   <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1190,8 +1194,8 @@ contain a <code>criteria_list</code> that contains single criteria in the same w
       <span class="p">{</span>
         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.relative_norm&quot;</span><span class="p">,</span>
         <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&quot;tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
-          <span class="nt">&quot;order&quot;</span><span class="p">:</span> <span class="mi">2</span>
+          <span class="nt">&quot;order&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="nt">&quot;tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-3</span>
         <span class="p">}</span>
       <span class="p">}</span>
     <span class="p">]</span>

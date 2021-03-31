@@ -38,7 +38,7 @@
     
     
       
-        <title>SolverWrapperOpenFOAM - CoCoNuT</title>
+        <title>OpenFOAM - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#solverwrapperopenfoam" tabindex="0" class="md-skip">
+      <a href="#openfoam" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                SolverWrapperOpenFOAM
+                OpenFOAM
               
             </span>
           
@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -524,8 +524,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -545,11 +545,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        SolverWrapperOpenFOAM
+        OpenFOAM
       </label>
     
-    <a href="./" title="SolverWrapperOpenFOAM" class="md-nav__link md-nav__link--active">
-      SolverWrapperOpenFOAM
+    <a href="./" title="OpenFOAM" class="md-nav__link md-nav__link--active">
+      OpenFOAM
     </a>
     
       
@@ -570,8 +570,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#overview-of-the-python-file" class="md-nav__link">
-    Overview of the Python-file
+  <a href="#overview-of-the-openfoam-wrapper" class="md-nav__link">
+    Overview of the OpenFOAM-wrapper
   </a>
   
     <nav class="md-nav">
@@ -667,8 +667,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#openfoam_41-openfoam-41" class="md-nav__link">
-    OpenFOAM_41 (OpenFOAM 4.1)
+  <a href="#v_41-openfoam-41" class="md-nav__link">
+    v_41 (OpenFOAM 4.1)
   </a>
   
 </li>
@@ -695,8 +695,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -1051,8 +1051,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#overview-of-the-python-file" class="md-nav__link">
-    Overview of the Python-file
+  <a href="#overview-of-the-openfoam-wrapper" class="md-nav__link">
+    Overview of the OpenFOAM-wrapper
   </a>
   
     <nav class="md-nav">
@@ -1148,8 +1148,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#openfoam_41-openfoam-41" class="md-nav__link">
-    OpenFOAM_41 (OpenFOAM 4.1)
+  <a href="#v_41-openfoam-41" class="md-nav__link">
+    v_41 (OpenFOAM 4.1)
   </a>
   
 </li>
@@ -1176,8 +1176,8 @@
               
                 
                 
-                <h1 id="solverwrapperopenfoam">SolverWrapperOpenFOAM</h1>
-<p>This is the documentation for all OpenFOAM solver-wrappers.
+                <h1 id="openfoam">OpenFOAM</h1>
+<p>This is the documentation for all OpenFOAM solver wrappers.
 Currently only FSI simulations are supported, no other multiphysics problems.</p>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
@@ -1196,44 +1196,9 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <td>Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with <code>CoCoNuT_</code>.</td>
 </tr>
 <tr>
-<td align="right"><code>working_directory</code></td>
-<td align="center">string</td>
-<td>Directory where the OpenFOAM-case is defined (and which contains the JSON-file).</td>
-</tr>
-<tr>
-<td align="right"><code>dimensions</code></td>
-<td align="center">int</td>
-<td>Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D.</td>
-</tr>
-<tr>
-<td align="right"><code>start_time</code></td>
-<td align="center">double</td>
-<td>Physical start time of the simulation. This should correspond to the name of the time step folder in OpenFOAM from which the initial data and boundary conditions are read.</td>
-</tr>
-<tr>
-<td align="right"><code>end_time</code></td>
-<td align="center">double</td>
-<td>Physical end time of the simulation.</td>
-</tr>
-<tr>
-<td align="right"><code>delta_t</code></td>
-<td align="center">double</td>
-<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
-</tr>
-<tr>
 <td align="right"><code>boundary_names</code></td>
 <td align="center">list</td>
-<td>List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.</td>
-</tr>
-<tr>
-<td align="right"><code>interface_input</code></td>
-<td align="center">dict</td>
-<td>List of <code>ModelPart</code> names and <code>Variables</code> pairs that provides interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code> with values as name of the <code>ModelPart</code> and list of input variables available in <code>variables.py</code>. The <code>ModelPart</code> name must be the concatenation of an entry from <code>boundary_names</code> and "_input".</td>
-</tr>
-<tr>
-<td align="right"><code>interface_output</code></td>
-<td align="center">dict</td>
-<td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>boundary_names</code> and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
+<td>List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case (e.g.<code>["boundary1", "boundary2",...]</code>).</td>
 </tr>
 <tr>
 <td align="right"><code>cores</code></td>
@@ -1246,6 +1211,61 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <td>Name of the mesh decomposition method to be used in OpenFOAM (e.g. <code>simple</code>,<code>scotch</code>...).</td>
 </tr>
 <tr>
+<td align="right"><code>delta_t</code></td>
+<td align="center">double</td>
+<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>density</code></td>
+<td align="center">int</td>
+<td>The applied density of the fluid in an incompressible case. The density will be applied if <code>"is_incompressible</code> is set on <code>true</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>diffusivity</code></td>
+<td align="center">string</td>
+<td>Name of the diffusivity constant used in the mesh motion solver in OpenFOAM (e.g. <code>inverseDistance</code>...).</td>
+</tr>
+<tr>
+<td align="right"><code>dimensions</code></td>
+<td align="center">int</td>
+<td>Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D.</td>
+</tr>
+<tr>
+<td align="right"><code>end_time</code></td>
+<td align="center">double</td>
+<td>Physical end time of the simulation.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_input</code></td>
+<td align="center">dict</td>
+<td>List of <code>ModelPart</code> names and <code>Variables</code> pairs that provides interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code> with values as name of the <code>ModelPart</code> and list of input variables available in <code>variables.py</code>. The <code>ModelPart</code> name must be the concatenation of an entry from <code>boundary_names</code> and "_input" (e.g. <code>{ "model_part": boundary1_input", "variables": ["displacement"]}</code>).</td>
+</tr>
+<tr>
+<td align="right"><code>interface_output</code></td>
+<td align="center">dict</td>
+<td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>boundary_names</code> and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation (e.g. <code>{ "model_part": boundary1_output", "variables": ["pressure", "traction"]}</code>).</td>
+</tr>
+<tr>
+<td align="right"><code>is_incompressible</code></td>
+<td align="center">boolean</td>
+<td>Indicates if the fluid film is behaving under incompressible or compressible conditions.</td>
+</tr>
+<tr>
+<td align="right"><code>meshmotion_solver</code></td>
+<td align="center">string</td>
+<td>Name of the mesh motion solver to be used in OpenFOAM (e.g. <code>displacementLaplacian</code>...).</td>
+</tr>
+<tr>
+<td align="right"><code>start_time</code></td>
+<td align="center">double</td>
+<td>Physical start time of the simulation. This should correspond to the name of the time step folder in OpenFOAM from which the initial data and boundary conditions are read.</td>
+</tr>
+<tr>
+<td align="right"><code>time_precision</code></td>
+<td align="center">int</td>
+<td>Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.</td>
+</tr>
+<tr>
 <td align="right"><code>write_interval</code></td>
 <td align="center">double</td>
 <td>Period between subsequent saves of the entire flow field.</td>
@@ -1256,30 +1276,20 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <td>Number of digits after the decimal sign to be used when writing data to time step folders or the <code>postProcessing</code>-folder.</td>
 </tr>
 <tr>
-<td align="right"><code>time_precision</code></td>
-<td align="center">int</td>
-<td>Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.</td>
-</tr>
-<tr>
-<td align="right"><code>meshmotion_solver</code></td>
+<td align="right"><code>working_directory</code></td>
 <td align="center">string</td>
-<td>Name of the mesh motion solver to be used in OpenFOAM (e.g. <code>displacementLaplacian</code>...).</td>
-</tr>
-<tr>
-<td align="right"><code>diffusivity</code></td>
-<td align="center">string</td>
-<td>Name of the diffusivity constant used in the mesh motion solver in OpenFOAM (e.g. <code>inverseDistance</code>...).</td>
+<td>Directory where the OpenFOAM-case is defined (and which contains the JSON-file).</td>
 </tr>
 </tbody>
 </table>
-<h2 id="overview-of-the-python-file">Overview of the Python-file</h2>
-<p>The solver-wrapper itself consists of only one Python-file: <code>OpenFOAM_X.py</code>, with <code>X</code>the identifier of the OpenFOAM-version (e.g. <code>41</code> for OpenFOAM 4.1). Aside from this, the Python-file constructs a number of files such as <code>controlDict</code>, <code>pointDisplacement</code> and <code>decomposeParDict</code> by starting from the <code>_raw</code>-files in the solver-wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accomodate the internal messaging system used during the FSI-simulation. Currently, only <code>pimpleFoam</code> and <code>interFoam</code> have been adapted; the solvers called by the solver-wrapper have the same name as the original OpenFOAM-solver but with <code>CoCoNuT_</code> added to the name. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using <code>wmake</code>).</p>
+<h2 id="overview-of-the-openfoam-wrapper">Overview of the OpenFOAM-wrapper</h2>
+<p>The solver wrapper can be found in the <code>solver_wrapper.openfoam.v_X</code>-directory and consists of only one Python-file: <code>v_X.py</code>, with <code>X</code>the identifier of the OpenFOAM-version (e.g. <code>v_41</code> for OpenFOAM 4.1). Aside from this, the Python-file constructs a number of files such as <code>controlDict</code>, <code>pointDisplacement</code>, <code>dynamicMeshDict</code> and <code>decomposeParDict</code> by starting from the <code>_raw</code>-files in the solver wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accomodate the internal messaging system used during the FSI-simulation. Currently, only <code>pimpleFoam</code> and <code>interFoam</code> have been adapted; the solvers called by the solver wrapper have the same name as the original OpenFOAM-solver but with <code>CoCoNuT_</code> added to the name. <code>CoCoNuT_pimpleFoam</code> treads FSI simulations whereas the fluid is approached as isothermal and incompressible in a laminar or turbulent transient case. <code>CoCoNuT_interFoam</code> is apllied for two incompressible, isothermal immiscible fluids. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using <code>wmake</code> in the <code>solver_wrapper.CoCoNuT_xxxxFoam</code>-directory).</p>
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
 <p>During initialization, the case settings as defined in the JSON-file are read into the corresponding Python-variables. Afterwards, the required OpenFOAM-files are constructed and some checks are in place to verify whether the necessary (and correct) modules are loaded. Next, the interface names are loaded and the tool <code>writeCellCentres</code> is used to read in the points located on said interfaces. Finally, the variables on each interface are stored in the data-structure of CoCoNuT. </p>
 <h3 id="the-initialize-method">The <code>Initialize</code> method</h3>
 <p>The OpenFOAM-solver, which should be adapted to operation in CoCoNuT, is launched in a subprocess. Other variables, such as time step index and physical time, are initialized.</p>
 <h3 id="the-initializesolutionstep-method">The <code>InitializeSolutionStep</code> method</h3>
-<p>This function is called at the start of every time step. The time step index is increased by one, the iteration index is set to zero and the OpenFOAM file directory is made in which the time step data needs to be stored (this last part is probably superfluous and can be removed at a later stage).</p>
+<p>This function is called at the start of every time step. The time step index is increased by one, the iteration index is set to zero and the OpenFOAM file directory is made in which the time step data needs to be stored.</p>
 <h3 id="the-solvesolutionstep-method">The <code>SolveSolutionStep</code> method</h3>
 <p>The interface displacement is converted into an OpenFOAM-readable format (with the function <code>write_node_input</code>), after which the OpenFOAM-loop is called in a subprocess. After completion of the OpenFOAM-loop, the function <code>read_node_output</code> is called, which reads the interface loads from the corresponding OpenFOAM-directory (in the <code>postProcessing</code>-folder).</p>
 <h3 id="the-finalizesolutionstep-method">The <code>FinalizeSolutionStep</code> method</h3>
@@ -1325,7 +1335,7 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <li>OpenFOAM is known for generating a lot of files, which is not different in CoCoNuT-operation. Make sure you have sufficient storage space on your cluster and that you are able to write a large number of files (the latter is specifically important when storing data in your home-directory).</li>
 </ul>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="openfoam_41-openfoam-41">OpenFOAM_41 (OpenFOAM 4.1)</h3>
+<h3 id="v_41-openfoam-41">v_41 (OpenFOAM 4.1)</h3>
 <p>This is currently the only version.</p>
                 
                   
@@ -1348,7 +1358,7 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../kratos/" title="Kratos" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -1357,19 +1367,19 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                SolverWrapperKratos - StructuralMechanicsApplication
+                Kratos
               </span>
             </div>
           </a>
         
         
-          <a href="../python/" title="SolverWrapperPython" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../python/" title="Python" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                SolverWrapperPython
+                Python
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

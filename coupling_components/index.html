@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -567,8 +567,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -579,8 +579,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -591,8 +591,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -971,39 +971,39 @@
                 
                 
                 <h1 id="coupling-components">Coupling components</h1>
-<p>The coupling components are the basic building blocks of the CoCoNuT coupling tool. They are defined in the subdirectories of the <em><code>$COCO/coconut/coupling_components</code></em> directory.
+<p>The coupling components are the basic building blocks of the CoCoNuT coupling tool. They are defined in the subdirectories of the <em><code>coconut/coupling_components</code></em> directory.
 There are five types: </p>
 <ul>
-<li><a href="https://pyfsi.github.io/coconut/convergence_criteria/"><em>Convergence criteria</em></a> which determine when the calculation within a time step has converged. Subdirectory: <em><code>convergence_criteria</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/coupled_solvers/"><em>Coupled solvers</em></a> (completed by <em>models</em>, subdirectory <em><code>coupled_solvers/models</code></em>) which perform the actual coupling, implementing a coupling algorithm. Subdirectory <em><code>coupled/solvers</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/mappers/"><em>Mappers</em></a> which map from one interface discretization to another, i.e. interpolation between non-conformal meshes. Subdirectory <em><code>mappers</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/predictors/"><em>Predictors</em></a> which provide an initial guess at the start of a new time step. Subdirectory <em><code>predictors</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/solver_wrappers/"><em>Solver-wrappers</em></a> which provide communication which the actual solvers. Subdirectory <em><code>solver_wrappers</code></em>.</li>
+<li><a href="https://pyfsi.github.io/coconut/convergence_criteria">Convergence criteria</a> which determine when the calculation has converged within a time step. Subdirectory: <em><code>convergence_criteria</code></em>.</li>
+<li><a href="https://pyfsi.github.io/coconut/coupled_solvers">Coupled solvers</a> (completed by <a href="https://pyfsi.github.io/coconut/models">Models</a>, subdirectory <em><code>coupled_solvers/models</code></em>) which perform the actual coupling, implementing a coupling algorithm. Subdirectory: <em><code>coupled_solvers</code></em>.</li>
+<li><a href="https://pyfsi.github.io/coconut/mappers">Mappers</a> which map from one interface discretization to another, i.e. interpolation between non-conformal meshes. Subdirectory: <em><code>mappers</code></em>.</li>
+<li><a href="https://pyfsi.github.io/coconut/predictors">Predictors</a> which provide an initial guess at the start of a new time step. Subdirectory: <em><code>predictors</code></em>.</li>
+<li><a href="https://pyfsi.github.io/coconut/solver_wrappers">Solver wrappers</a> which provide communication which the actual solvers. Subdirectory: <em><code>solver_wrappers</code></em>.</li>
 </ul>
-<p>The idea behind these components is modularity. For example, changing a solver-wrapper or creating a new one can be done without having to adapt any other components.
+<p>The idea behind these components is modularity. For example, changing a solver wrapper or creating a new one can be done without having to adapt any other components.
 This allows for high degree of flexibility, a short learning curve and a limited development effort.
 Moreover, components can be used multiple times without the need for copying code.
 Detailed information on these components can be found in the specific documentation.</p>
-<p>All these coupling components inherit from a same superclass called <code>Component</code>, defined in <em><code>$COCO/coconut/coupling_components/component.py</code></em>. 
+<p>All these coupling components inherit from a same superclass called <code>Component</code>, defined in <em><code>coconut/coupling_components/component.py</code></em>. 
 In this class some methods are implemented, which control the flow within CoCoNuT. 
 For every coupling component, there are <code>initialize</code> and <code>finalize</code>, which are called at the start and end of a calculation
 and there are <code>initialize_solution_step</code> and <code>finalize_solution_step</code>, which are called at the start and end of each time step.
 If needed these methods are overwritten to perform a specific action.
 For example in the <code>finalize</code> method of a <code>solver_wrapper</code>, the termination of the solver software could be implemented.</p>
-<p>A schematic of the relation between the coupling components for a basic calculation is given in the following figure.
-<img alt="" src="../images/coupling_components.png" title="Schematic of relation between coupling components" /></p>
+<p>A schematic of the relation between the coupling components for a basic calculation is given in the following figure.</p>
+<p><img alt="" src="../images/coupling_components.png" title="Schematic of relation between coupling components" /></p>
 <p>These coupling components have to communicate with each other.
 This is done through the use of <em>interfaces</em>, indicated with arrows on the figure. 
-For these <code>Interface</code> objects (implemented in <em><code>$COCO/coconut/data_structure/interfaces.py</code></em>) containing the (discretized) solution data on the FSI-interface and references to among others, the coordinates of the discretized interface. The implementation of this <code>Interface</code> class is explained in more detail in <a href="https://pyfsi.github.io/coconut/data_structure/">the documentation about the data structure</a>.</p>
+For these <code>Interface</code> objects (implemented in <em><code>coconut/data_structure/interfaces.py</code></em>) containing the (discretized) solution data on the FSI-interface and references to, among others, the coordinates of the discretized interface. The implementation of this <code>Interface</code> class is explained in more detail in <a href="https://pyfsi.github.io/coconut/data_structure">the documentation about the data structure</a>.</p>
 <h2 id="start-of-the-calculation">Start of the calculation</h2>
 <p>The main coupling component in which all other coupling components are instantiated is the coupled solver.
-The coupled solver itself is created in the <code>Analysis</code> class (<em><code>$COCO/coconut/analysis.py</code></em>, which is the starting point of the CoCoNuT calculation.
+The coupled solver itself is created in the <code>Analysis</code> class (<em><code>coconut/analysis.py</code></em>, which is the starting point of the CoCoNuT calculation.
 Upon the start of CoCoNuT, an instance of <code>Analysis</code> is made and its method <code>run</code> is executed.
 The coupled solver keeps track of all <code>Components</code> and runs the methods <code>initialize</code>, <code>finalize</code>, <code>initialize_solution_step</code> and <code>finalize_solution_step</code>,
 when its respective methods are executed.</p>
 <h2 id="tools">Tools</h2>
 <p>Some code to perform specific tasks, like printing with a certain layout or performing a time measurement is useful throughout the code.
-These functionalities are grouped in the file <em><code>$COCO/coconut/tools.py</code></em>.
+These functionalities are grouped in the file <em><code>coconut/tools.py</code></em>.
 It suffices to import the file to make uses of its functions.</p>
                 
                   
@@ -1026,7 +1026,7 @@ It suffices to import the file to make uses of its functions.</p>
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href=".." title="CoCoNuT" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -1035,7 +1035,7 @@ It suffices to import the file to make uses of its functions.</p>
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                CoCoNuT - Coupling Code for Numerical Tools
+                CoCoNuT
               </span>
             </div>
           </a>

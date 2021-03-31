@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -515,8 +515,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#implementations" class="md-nav__link">
-    Implementations
+  <a href="#available-solver-wrappers" class="md-nav__link">
+    Available solver wrappers
   </a>
   
 </li>
@@ -562,8 +562,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -574,8 +574,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -586,8 +586,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -935,8 +935,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#implementations" class="md-nav__link">
-    Implementations
+  <a href="#available-solver-wrappers" class="md-nav__link">
+    Available solver wrappers
   </a>
   
 </li>
@@ -958,20 +958,27 @@
               
                 
                 
-                <h1 id="solver-wrappers">Solver-wrappers</h1>
-<p>The goal of solver-wrappers is to provide communication with the solvers. This  means that a solver-wrapper must implement a way to communicate input to the solver, run the solver with the provided input and obtain the solution from the solver. </p>
-<p>As each solver is different, the solver-wrappers are highly customized too. Nevertheless, they all inherit from the <code>Component</code> class and must all implement the following methods: <code>initialize</code>, <code>initialize_solution_step</code>, <code>solve_solution_step</code>, <code>finalize_solution_step</code>, <code>finalize</code>, <code>get_interface_input</code> and <code>get_interface_output</code>. </p>
-<p>The <code>solve_solution_step</code> method is called each coupling iteration with input data on the interface, which it provides to the solver. After the solver has obtained a solution, it reads this solution and returns it as output data on the interface.</p>
-<h2 id="implementations">Implementations</h2>
-<p>There are currently 2 solver-wrappers for flow solvers implemented:</p>
+                <h1 id="solver-wrappers">Solver wrappers</h1>
+<p>The goal of solver wrappers is to provide communication with the solvers. This  means that a solver wrapper must implement a way to communicate input to the solver (at the fluid-structure interface), run the solver with the provided input and obtain the solution from the solver (at the fluid-structure interface). </p>
+<p>As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from the <code>Component</code> class and must all implement the following methods: <code>initialize</code>, <code>initialize_solution_step</code>, <code>solve_solution_step</code>, <code>finalize_solution_step</code>, <code>finalize</code>, <code>get_interface_input</code> and <code>get_interface_output</code>.</p>
+<p>Upon instantiation of the solver wrapper object, the solver wrapper has to create a <code>Model</code> containing one or more <code>ModelParts</code> which correspond to (a part of) the fluid-structure interface. The interface coordinates at time step 0 should be stored in the <code>ModelPart</code>, even for a simulation that is restarted from a later time step, in order to have consistent <a href="https://pyfsi.github.io/coconut/mappers">mapping</a> over restarts.</p>
+<p>The <code>solve_solution_step</code> method is called in each coupling iteration by the coupled solver, which provides input data stored in an <code>Interface</code> object. The solver wrapper extracts the data and supplies it to the actual solver, starts the calculation and reads the output data when the solver has finished. The solver wrapper then returns this data to the coupled solver as an <code>Interface</code> object.</p>
+<h2 id="available-solver-wrappers">Available solver wrappers</h2>
+<p>There are currently two solver wrappers for computational fluid dynamics (CFD) packages:</p>
 <ul>
-<li><a href="https://pyfsi.github.io/coconut/fluent/">ANSYS Fluent</a> (2019R1, 2019R2, 2019R3, 2020R1)</li>
-<li><a href="https://pyfsi.github.io/coconut/openfoam/">OpenFOAM</a> (4.1)</li>
+<li><a href="https://pyfsi.github.io/coconut/fluent">ANSYS Fluent</a> (2019R1, 2019R2, 2019R3, 2020R1)</li>
+<li><a href="https://pyfsi.github.io/coconut/openfoam">OpenFOAM</a> (4.1)</li>
 </ul>
-<p>There are currently 2 solver-wrappers for structural solvers implemented:</p>
+<p>There are currently also two solver wrappers for computational structural mechanics (CSM) packages :</p>
 <ul>
-<li><a href="https://pyfsi.github.io/coconut/abaqus/">Abaqus</a> (6.14)</li>
-<li><a href="https://pyfsi.github.io/coconut/kratos/">Kratos Multiphysics</a> (6.0)</li>
+<li><a href="https://pyfsi.github.io/coconut/abaqus">Abaqus</a> (6.14)</li>
+<li><a href="https://pyfsi.github.io/coconut/kratos">Kratos Multiphysics</a> (6.0)</li>
+</ul>
+<p>CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms and implementations. These are:</p>
+<ul>
+<li><a href="https://pyfsi.github.io/coconut/python/#tube-flow-solver">Tube flow solver</a></li>
+<li><a href="https://pyfsi.github.io/coconut/python/#tube-structure-solver">Tube structure solver</a></li>
+<li><a href="https://pyfsi.github.io/coconut/python/#tube-ringmodel-solver">Tube ringmodel solver</a></li>
 </ul>
                 
                   

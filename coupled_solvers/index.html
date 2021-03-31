@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -731,8 +731,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -743,8 +743,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -755,8 +755,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -1297,30 +1297,25 @@
                 
                 
                 <h1 id="coupled-solvers">Coupled solvers</h1>
-<p>This documentation describes the different types of coupled solvers which are available.
-A coupled solver refers to a coupling algortihm used to couple two solvers, typically a flow and a structure solver.
-Some of these coupled solvers make use of one or more <a href="https://pyfsi.github.io/coconut/models/">models</a>.
-An odd one out is <code>test_single_solver</code> which allows to test only one solver by coupling it to a dummy solver. 
-All coupled solvers inherit from the class <code>GaussSeidel</code>.</p>
-<p>In the parameter JSON file, the dictionary <code>coupled_solver</code> holds the <code>type</code> and the dictionary <code>settings</code>,
-but also the dictionary <code>predictor</code>, the dictionary <code>convergence_criterion</code> and the list <code>solver_wrappers</code> containing 2 dictionaries: one for each <code>solver_wrapper</code>.
-More information on these last three can be found in <a href="https://pyfsi.github.io/coconut/predictors/">predictors</a>,
-<a href="https://pyfsi.github.io/coconut/convergence_criteria/">convergence criteria</a> and the <a href="https://pyfsi.github.io/coconut/solver_wrappers/">solver_wrappers</a> documentation, respectively.</p>
-<p>In the following subsections, basics scheme will be shown. In those schematics, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\tilde{y}</span><script type="math/tex">\tilde{y}</script></span> 
-and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span>.
-Typically, these solvers are a flow and structure solver, respectively.
-The superscript <span><span class="MathJax_Preview">k=0\dots</span><script type="math/tex">k=0\dots</script></span> denotes the iteration, where <span><span class="MathJax_Preview">k+1</span><script type="math/tex">k+1</script></span> is the current iteration.</p>
+<p>This documentation describes the different types of coupled solvers which are available. A coupled solver refers to a coupling algorithm used to couple two solvers, typically a flow and a structure solver.
+Some of these coupled solvers make use of one or more <a href="https://pyfsi.github.io/coconut/models">models</a>. An odd one out is <code>test_single_solver</code> which allows to test only one solver by coupling it to a dummy solver. 
+All coupled solvers inherit from the class <code>CoupledSolverGaussSeidel</code>.</p>
+<p>In the parameter JSON file, the dictionary <code>coupled_solver</code> holds the <code>type</code> and the dictionary <code>settings</code>, but also the dictionary <code>predictor</code>, the dictionary <code>convergence_criterion</code> and the list <code>solver_wrappers</code> containing 2 dictionaries: one for each solver wrapper. More information on these last three can be found in the <a href="https://pyfsi.github.io/coconut/predictors">predictors</a>, <a href="https://pyfsi.github.io/coconut/convergence_criteria">convergence criteria</a> and the <a href="https://pyfsi.github.io/coconut/solver_wrappers">solver wrappers</a> documentation, respectively.</p>
+<p>In the following subsections, explanatory schematics will be shown. In those schematics, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\tilde{y}</span><script type="math/tex">\tilde{y}</script></span> and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span>. Typically, these solvers are a flow and structure solver, respectively.
+Note that the column vectors such as <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> typically contain different components of the same variables or even different variables.
+Often, the vectors <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span> contain the three components of displacement, whereas the vectors <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and <span><span class="MathJax_Preview">\tilde{y}</span><script type="math/tex">\tilde{y}</script></span> contain the pressure and the three components of traction. However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
+Further, the superscript <span><span class="MathJax_Preview">k=0\dots</span><script type="math/tex">k=0\dots</script></span> denotes the iteration, where <span><span class="MathJax_Preview">k+1</span><script type="math/tex">k+1</script></span> is the current iteration.
+Finally, the difference between the output <span><span class="MathJax_Preview">\tilde{x}^k</span><script type="math/tex">\tilde{x}^k</script></span> and input <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> in the same iteration is defined as the residual <span><span class="MathJax_Preview">r^k=\tilde{x}^k-x^k</span><script type="math/tex">r^k=\tilde{x}^k-x^k</script></span>, which is used to monitor the convergence of the calculation.</p>
 <h2 id="gauss-seidel">Gauss-Seidel</h2>
-<p>The <code>type</code> for this coupled_solver is <code>coupled_solvers.gauss_seidel</code>.</p>
+<p>The <code>type</code> for this coupled solver is <code>coupled_solvers.gauss_seidel</code>.</p>
 <h3 id="algorithm">Algorithm</h3>
 <p>Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solvers: the output of one solver is given to the other one without adjustment.</p>
 <p>The following figure shows the basic methodology.
 <img alt="gauss_seidel" src="../images/iteration_gauss_seidel.png" title="Gauss-Seidel iterations" /></p>
-<p>Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added mass.
-A considerable convergence stabilization and acceleration is obtained by modifying the input to the one or both of the solvers using derivative information, as will be shown further.</p>
+<p>Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
+A considerable convergence stabilization and acceleration is obtained by modifying the input to one or both of the solvers using derivative information, as will be shown further.</p>
 <h3 id="settings">Settings</h3>
-<p>The following parameters need to be included in the <code>settings</code> dictionary.
-Here they are listed in alphabetical order.</p>
+<p>The following parameters need to be included in the <code>settings</code> dictionary. Here they are listed in alphabetical order.</p>
 <table>
 <thead>
 <tr>
@@ -1332,37 +1327,35 @@ Here they are listed in alphabetical order.</p>
 <tbody>
 <tr>
 <td align="right"><code>delta_t</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.</td>
 </tr>
 <tr>
 <td align="right"><code>name</code></td>
 <td align="center">string</td>
-<td>(optional) Default: "results". Name of the case used to store a pickle file with results.</td>
+<td>(optional) Default: <code>"results"</code>. Name of the case used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results.</td>
 </tr>
 <tr>
 <td align="right"><code>save_results</code></td>
 <td align="center">bool</td>
-<td>(optional) Default: <code>false</code>. If <code>true</code> a <a href="https://docs.python.org/3.9/library/pickle.html">pickle</a> file is stored containing some main <a href="#save-results">results</a>.</td>
+<td>(optional) Default: <code>false</code>. If <code>true</code> a pickle file is stored containing some main <a href="#save-results">results</a>.</td>
 </tr>
 <tr>
-<td align="right"><code>time_step_start</code></td>
+<td align="right"><nobr><code>time_step_start</code></nobr></td>
 <td align="center">int</td>
-<td>Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be 0.</td>
+<td>Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be <code>0</code>.</td>
 </tr>
 </tbody>
 </table>
 <p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.</p>
-<p><strong>These parameters should also be specified for the coupled solvers inheriting from <code>GaussSeidel</code>.</strong></p>
+<p><strong>These parameters should also be specified for the coupled solvers inheriting from <code>CoupledSolverGaussSeidel</code>.</strong></p>
 <h2 id="relaxation">Relaxation</h2>
-<p>This coupled solver inherits from the class <code>GaussSeidel</code>.
-The <code>type</code> for this <code>coupled_solver</code> is <code>coupled_solvers.relaxation</code>.</p>
+<p>This coupled solver inherits from the class <code>CoupledSolverGaussSeidel</code>.
+The <code>type</code> for this coupled solver is <code>coupled_solvers.relaxation</code>.</p>
 <h3 id="algorithm_1">Algorithm</h3>
-<p>Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added mass.
-A simple approach to mitigate this is applying relaxation, also called simple mixing.
-In this coupling method the output of first solver is still given to the other one without adjustment, 
-but the output of the second solver is relaxed as follows:
+<p>Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added-mass.
+A simple approach to mitigate this is applying relaxation, also called simple mixing. In this coupling method the output of first solver is still given to the other one without adjustment, but the output of the second solver is relaxed as follows:
 $$
 x^{k+1}=(1-\omega)x^k+\omega\tilde{x}^k=x^k+\omega r^k
 $$
@@ -1371,12 +1364,11 @@ The difference between both is called the residual <span><span class="MathJax_Pr
 The mixing or relaxation factor is <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.</p>
 <p>A symbolic schematic is given in the following figure.
 <img alt="relaxation" src="../images/iteration_relaxation.png" title="Relaxed Gauss-Seidel iterations" /></p>
-<p>This method is again quite simple, but be able to stabilize some cases which fail with Gauss-Seidel iterations.
-A lower <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span> increases stability, but decreases convergence speed.
-For more challenging problems, with incompresible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.</p>
+<p>This method is again quite simple, but able to stabilize some cases that fail with Gauss-Seidel iterations.
+One can see that a lower <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span> corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
+For more challenging problems, with incompressible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.</p>
 <h3 id="settings_1">Settings</h3>
-<p>Besides the parameters required in the class <code>GaussSeidel</code>, the following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>Besides the <a href="#settings">parameters required in the class <code>CoupledSolverGaussSeidel</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
 <table>
 <thead>
 <tr>
@@ -1388,22 +1380,18 @@ They are listed in alphabetical order.</p>
 <tbody>
 <tr>
 <td align="right"><code>omega</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>Relaxation factor.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="aitken">Aitken</h2>
-<p>This coupled solver inherits from the class <code>GaussSeidel</code>.
-The <code>type</code> for this <code>coupled_solver</code> is <code>coupled_solvers.aitken</code>.</p>
+<p>This coupled solver inherits from the class <code>CoupledSolverGaussSeidel</code>.
+The <code>type</code> for this coupled solver is <code>coupled_solvers.aitken</code>.</p>
 <h3 id="algorithm_2">Algorithm</h3>
 <p>Gauss-Seidel iterations are very simple, but are unstable for many cases.
-An approach to mitigate this is applying relaxation.
-However, the choice of a relaxation factor can be difficult: a high factor leads to a higher degree of stability, but a lower convergence speed.
-In more challenging cases there will be no acceptable value for <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.
-In this coupling method a dynamic relaxation factor is used.
-The output of the first solver is still given to the other one without adjustment, 
-but the output of the second solver is relaxed as follows:
+An approach to mitigate this is applying relaxation. However, the choice of a relaxation factor can be difficult: a high factor leads to a higher degree of stability, but a lower convergence speed. In more challenging cases there will be no acceptable value for <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.
+In this coupling method a dynamic relaxation factor is used. The output of the first solver is still given to the other one without adjustment, but the output of the second solver is relaxed as follows:
 $$
 x^{k+1}=(1-\omega^k)x^k+\omega^k\tilde{x}^k=x^k+\omega^k r^k
 $$
@@ -1422,11 +1410,9 @@ $$
 \omega^0=\textrm{sign}(\omega^n)\min(|\omega^n|,\omega^{max}).
 $$
 The relaxation factor in the first time step is equal to <span><span class="MathJax_Preview">\omega^{max}</span><script type="math/tex">\omega^{max}</script></span>.</p>
-<p>This method improves convergence speed drastically compared to Gauss-Seidel iterations,
-but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for differnt Fourier modes of the ouput of the second solver.</p>
+<p>This method improves convergence speed drastically compared to Gauss-Seidel iterations, but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for different Fourier modes of the output of the second solver.</p>
 <h3 id="settings_2">Settings</h3>
-<p>Besides the parameters required in the class <code>GaussSeidel</code>, the following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>Besides the <a href="#settings">parameters required in the class <code>CoupledSolverGaussSeidel</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
 <table>
 <thead>
 <tr>
@@ -1438,38 +1424,30 @@ They are listed in alphabetical order.</p>
 <tbody>
 <tr>
 <td align="right"><code>omega_max</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>Maximal relaxation factor.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="iqni">IQNI</h2>
-<p>This coupled solver inherits from the class <code>GaussSeidel</code>.
-The <code>type</code> for this coupled_solver is <code>coupled_solvers.iqni</code>.</p>
+<p>This coupled solver inherits from the class <code>CoupledSolverGaussSeidel</code>.
+The <code>type</code> for this coupled solver is <code>coupled_solvers.iqni</code>.</p>
 <h3 id="algorithm_3">Algorithm</h3>
-<p>The abbreviation IQNI refers to <em>interface quasi-Newton with inverse Jacobian</em>.
-In this type of coupling iteration, the combination of the two solvers is seen as one system.
-The input of the first solver <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> in iteration <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> is denoted by <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>.
-The output of this solver is transferred unchanged to the second solver.
-The output of the second solver is denoted <span><span class="MathJax_Preview">\tilde{x}^k</span><script type="math/tex">\tilde{x}^k</script></span>.
-The difference between input and output is called the residual <span><span class="MathJax_Preview">r^k=\tilde{x}^k-x^k</span><script type="math/tex">r^k=\tilde{x}^k-x^k</script></span>.</p>
-<p>A residual operator <span><span class="MathJax_Preview">\mathcal{R}(x)</span><script type="math/tex">\mathcal{R}(x)</script></span> is defined which return the residual <span><span class="MathJax_Preview">r^k</span><script type="math/tex">r^k</script></span> as a function of <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>.
-The goal is to find <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> for which <span><span class="MathJax_Preview">\mathcal{R}(x)=0</span><script type="math/tex">\mathcal{R}(x)=0</script></span>, i.e. the root.
-This system of non-linear equations is solved using Newton-Raphson iterations as follows
+<p>The abbreviation IQNI refers to <em>interface quasi-Newton with inverse Jacobian</em>. In this type of coupling algorithm, the combination of the two solvers is seen as one system.
+The input of the first solver <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> in iteration <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> is denoted by <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>. The output of this solver is transferred unchanged to the second solver. The output of the second solver is denoted <span><span class="MathJax_Preview">\tilde{x}^k</span><script type="math/tex">\tilde{x}^k</script></span>. The difference between input and output is called the residual <span><span class="MathJax_Preview">r^k=\tilde{x}^k-x^k</span><script type="math/tex">r^k=\tilde{x}^k-x^k</script></span>.</p>
+<p>A residual operator <span><span class="MathJax_Preview">\mathcal{R}(x)</span><script type="math/tex">\mathcal{R}(x)</script></span> is defined, which returns the residual <span><span class="MathJax_Preview">r^k</span><script type="math/tex">r^k</script></span> as a function of <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>. The goal is to find <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> for which <span><span class="MathJax_Preview">\mathcal{R}(x)=0</span><script type="math/tex">\mathcal{R}(x)=0</script></span>, i.e. the root. This system of non-linear equations is solved using Newton-Raphson iterations as follows
 $$
 \Delta x^k=\mathcal{R}'^{-1}(x^k)\Delta r,
 $$
 where <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> is the Jacobian of <span><span class="MathJax_Preview">\mathcal{R}</span><script type="math/tex">\mathcal{R}</script></span> with respect to <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span>, <span><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span> is the difference between the input of two subsequent iterations 
-and <span><span class="MathJax_Preview">\Delta r^k=0-r^k=-r^k</span><script type="math/tex">\Delta r^k=0-r^k=-r^k</script></span> is the difference between the desired and the current residual
+and <span><span class="MathJax_Preview">\Delta r^k=0-r^k=-r^k</span><script type="math/tex">\Delta r^k=0-r^k=-r^k</script></span> is the difference between the desired and the current residual.
 The iteration update can also be written as
 $$
 x^{k+1}=x^k-\mathcal{R}'^{-1}(x^k)r^k.
 $$</p>
-<p>However, this Jacobian is not accessible and therefore has to be approximated.
-Instead of approximating <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span>, solving the linear system can be avoided by approximating its inverse directly.</p>
-<p>The approximation procedure will typically result in a low-rank Jacobian.
-Whereas, a full rank Jacobian is required for the Newton-Raphson update to function properly.
-Therefore, the inverse Jacobian of <span><span class="MathJax_Preview">\tilde{\mathcal{R}}</span><script type="math/tex">\tilde{\mathcal{R}}</script></span> is approximated.
+<p>However, this Jacobian is not accessible and therefore has to be approximated. Instead of approximating <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span>, solving the linear system can be avoided by approximating its inverse directly.</p>
+<p>The approximation procedure typically results in a low-rank Jacobian.
+Whereas, a full rank Jacobian is required for the Newton-Raphson update to function properly. Therefore, the inverse Jacobian of an altered residual operator <span><span class="MathJax_Preview">\tilde{\mathcal{R}}</span><script type="math/tex">\tilde{\mathcal{R}}</script></span> is approximated.
 This altered residual operator is defined as follows
 $$
 r^{k+1}=\tilde{\mathcal{R}}(\tilde{x}^{k+1})=\mathcal{R}(\tilde{x}^{k+1}-r^{k+1}).
@@ -1484,9 +1462,7 @@ $$
 \Delta \tilde{x}^k=\tilde{\mathcal{R}}'^{-1}(x^k)\Delta r^k,
 $$
 where <span><span class="MathJax_Preview">\Delta\tilde{x}^k=\tilde{x}^{k+1}-\tilde{x}^k</span><script type="math/tex">\Delta\tilde{x}^k=\tilde{x}^{k+1}-\tilde{x}^k</script></span> is the difference between the the output of two subsequent iterations.
-This Jacobian is also not known, but is approximated using a <code>model</code> and denoted by <span><span class="MathJax_Preview">\tilde{N}^k</span><script type="math/tex">\tilde{N}^k</script></span>.
-The type of <code>model</code> and its settings are specified in the <code>settings</code> dictionary.
-This model returns an estimation of <span><span class="MathJax_Preview">\Delta\tilde{x}^k</span><script type="math/tex">\Delta\tilde{x}^k</script></span> given a value <span><span class="MathJax_Preview">\Delta r^k=-r^k</span><script type="math/tex">\Delta r^k=-r^k</script></span>
+This Jacobian is also not known, but is approximated using a <code>model</code> and denoted by <span><span class="MathJax_Preview">\tilde{N}^k</span><script type="math/tex">\tilde{N}^k</script></span>. The type of <code>model</code> and its settings are specified in the <code>settings</code> dictionary. This model returns an estimation of <span><span class="MathJax_Preview">\Delta\tilde{x}^k</span><script type="math/tex">\Delta\tilde{x}^k</script></span> given a value <span><span class="MathJax_Preview">\Delta r^k=-r^k</span><script type="math/tex">\Delta r^k=-r^k</script></span>
 $$
 \Delta\tilde{x}^k=\tilde{N}^k \Delta r^k.
 $$
@@ -1496,11 +1472,10 @@ x^{k+1}=x^k+(\tilde{N}^k-I)\Delta r^k=x^k-\tilde{N}^k r^k+r^k.
 $$</p>
 <p>A symbolic schematic is given in the following figure.
 <img alt="iqni" src="../images/iteration_iqni.png" title="Residual operator iterations" /></p>
-<p>For more information with respect to the approximation of the Jacobian, refer to the <a href="https://pyfsi.github.io/coconut/models/">models documentation</a>.
-More information about residual operator methods can be found in <a href="#1">1</a>.</p>
+<p>For more information with respect to the approximation of the Jacobian, refer to the <a href="https://pyfsi.github.io/coconut/models">models documentation</a>.
+More information about residual operator methods can be found in [<a href="#1">1</a>].</p>
 <h3 id="settings_3">Settings</h3>
-<p>Besides the parameters required in the class <code>GaussSeidel</code>, the following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>Besides the <a href="#settings">parameters required in the class <code>CoupledSolverGaussSeidel</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
 <table>
 <thead>
 <tr>
@@ -1517,14 +1492,14 @@ They are listed in alphabetical order.</p>
 </tr>
 <tr>
 <td align="right"><code>omega</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>Relaxation factor.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="ibqn">IBQN</h2>
-<p>This coupled solver inherits from the class <code>GaussSeidel</code>.
-The <code>type</code> for this coupled solver is <code>coupled_solvers.ibqn</code>.</p>
+<p>This coupled solver inherits from the class <code>CoupledSolverGaussSeidel</code>.
+The <code>type</code> for this coupled solver is <code>coupled solvers.ibqn</code>.</p>
 <h3 id="algorithm_4">Algorithm</h3>
 <p>The abbreviation IBQN refers to <em>interface block quasi-Newton</em>.
 In type of coupling iteration, the system 
@@ -1536,9 +1511,7 @@ $$
 \end{cases}
 $$
 is solved in block form.
-Again, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\tilde{y}</span><script type="math/tex">\tilde{y}</script></span> 
-and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span>
-In this iteration scheme, the output of each solver is altered before being transferred to the other one.
+Again, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\tilde{y}</span><script type="math/tex">\tilde{y}</script></span> and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span>. In this iteration scheme, the output of each solver is altered before being transferred to the other one.
 Solving the system in block Newton-Raphson iterations results in
 $$
     \begin{bmatrix}
@@ -1559,9 +1532,7 @@ $$
     \end{bmatrix},
 $$
 where <span><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span> denote the Jacobians of the first and second solver, respectively.
-These Jacobians are, however, not accessible and are approximated using a <code>model</code> as specified in the <code>settings</code> dictionary.
-To the fist and second solver correspond <code>model_f</code>, denoted here by <span><span class="MathJax_Preview">M_f</span><script type="math/tex">M_f</script></span>, and <code>model_s</code>, denoted bye <span><span class="MathJax_Preview">M_s</span><script type="math/tex">M_s</script></span>, respectively.
-For example, <code>model_f</code> returns an estimation of <span><span class="MathJax_Preview">\Delta\tilde{y}^k=\tilde{y}^{k+1}-\tilde{y}^k</span><script type="math/tex">\Delta\tilde{y}^k=\tilde{y}^{k+1}-\tilde{y}^k</script></span> given <span><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span>
+These Jacobians are, however, not accessible and are approximated using a <code>model</code> as specified in the <code>settings</code> dictionary. To the first and second solver correspond <code>model_f</code>, denoted here by <span><span class="MathJax_Preview">M_f</span><script type="math/tex">M_f</script></span>, and <code>model_s</code>, denoted bye <span><span class="MathJax_Preview">M_s</span><script type="math/tex">M_s</script></span>, respectively. For example, <code>model_f</code> returns an estimation of <span><span class="MathJax_Preview">\Delta\tilde{y}^k=\tilde{y}^{k+1}-\tilde{y}^k</span><script type="math/tex">\Delta\tilde{y}^k=\tilde{y}^{k+1}-\tilde{y}^k</script></span> given <span><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span>
 $$
 \Delta\tilde{y}^k=M_f^k \Delta x^k.
 $$</p>
@@ -1571,7 +1542,7 @@ $$
 =\tilde{x}^k-x^k+M_s^k(\tilde{y}^k-y^k)
 $$
 for <span><span class="MathJax_Preview">\Delta x^k</span><script type="math/tex">\Delta x^k</script></span>.
-This done matrix-free using the Generalized minimal residual method (GMRES).
+This is done matrix-free using the Generalized minimal residual method (GMRES).
 Analogously, the input <span><span class="MathJax_Preview">y^{k+1}=y^k+\Delta y^k</span><script type="math/tex">y^{k+1}=y^k+\Delta y^k</script></span> for the structural solver by solving 
 $$
 \left(I-M_f^{k+1}M_s^k\right)\Delta y^k
@@ -1580,11 +1551,10 @@ $$
 for <span><span class="MathJax_Preview">\Delta y^k</span><script type="math/tex">\Delta y^k</script></span>.</p>
 <p>A symbolic schematic is given in the following figure.
 <img alt="ibqn" src="../images/iteration_ibqn.png" title="Block iterations" /></p>
-<p>The actual approximation of the Jacobian occurs with the same <a href="https://pyfsi.github.io/coconut/models/">models</a> as before.
-More information about block methods can be found in <a href="#1">1</a>.</p>
+<p>The actual approximation of the Jacobian occurs with the same <a href="https://pyfsi.github.io/coconut/models">models</a> as before.
+More information about block methods can be found in [<a href="#1">1</a>].</p>
 <h3 id="settings_4">Settings</h3>
-<p>Besides the parameters required in the class <code>GaussSeidel</code>, the following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>Besides the <a href="#settings">parameters required in the class <code>CoupledSolverGaussSeidel</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
 <table>
 <thead>
 <tr>
@@ -1596,7 +1566,7 @@ They are listed in alphabetical order.</p>
 <tbody>
 <tr>
 <td align="right"><code>absolute_tolerance_gmres</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>Absolute tolerance used in the GMRES method.</td>
 </tr>
 <tr>
@@ -1611,35 +1581,24 @@ They are listed in alphabetical order.</p>
 </tr>
 <tr>
 <td align="right"><code>omega</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>Relaxation factor.</td>
 </tr>
 <tr>
-<td align="right"><code>relative_tolerance_gmres</code></td>
-<td align="center">double</td>
+<td align="right"><nobr><code>relative_tolerance_gmres</code></nobr></td>
+<td align="center">float</td>
 <td>Relative tolerance used in the GMRES method.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="test-single-solver">Test single solver</h2>
-<p>The solver <code>test_single_solver</code> can be used to test new cases and solver settings.
-The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy.
-This test environment inherits from the class <code>GaussSeidel</code>. 
-The <code>type</code> for this coupled solver is <code>coupled_solvers.test_single_solver</code>.</p>
+<p>The solver <code>test_single_solver</code> can be used to test new cases and solver settings. The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy. This test environment inherits from the class <code>CoupledSolverGaussSeidel</code>. The <code>type</code> for this coupled solver is <code>coupled_solvers.test_single_solver</code>.</p>
 <h3 id="dummy-solver">Dummy solver</h3>
-<p>To test only one solver, a dummy solver must be used.
-Such a dummy solver is implemented by a test class in the file <code>dummy_solver.py</code>, which has to be on the same folder level as <code>run_simulation.py</code>.
-Upon run-time an instance of this class is made.
-The test class requires methods of the form <code>calculate_&lt;variable&gt;(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being the variable(s) required by the tested solver, e.g. <code>displacement</code>, <code>pressure</code> or <code>traction</code>.
-How these variables are defined inside these methods, is up to the user.
-However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
-Some examples are given in the example <a href="https://pyfsi.github.io/coconut/test_single_solver/">test_single_solver</a>
-The test class name is provided in the JSON settings as a string.
-If no test class is provided or the value <code>None</code> is used, zero input will be used.</p>
+<p>To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file <em><code>dummy_solver.py</code></em>, which has to be on the same folder level as <em><code>run_simulation.py</code></em>. Upon run-time an instance of this class is made.
+The test class requires methods of the form <code>calculate_&lt;variable&gt;(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being a variable required by the tested solver, e.g. <code>displacement</code>, <code>pressure</code> or <code>traction</code>. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
+Some examples are given in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>. The test class name is provided in the JSON settings as a string. If no test class is provided or the value <code>None</code> is used, zero input will be used.</p>
 <h3 id="settings_5">Settings</h3>
-<p>The JSON file requirements for the class <code>CoupledSolverTestSingleSolver</code> are different from the other coupled solvers in the sense that they only require 
-the <code>type</code>, which is <code>coupled_solvers.test_single_solver</code>, the dictionary <code>test_settings</code> and the list <code>solver_wrappers</code> containing at least one <code>solver_wrapper</code>.
-The keys for the <code>test_settings</code> dictionary are listed in alphabetical order below.</p>
+<p>The JSON file requirements for the class <code>CoupledSolverTestSingleSolver</code> are different from the other coupled solvers in the sense that they only require the <code>type</code>, which is <code>coupled_solvers.test_single_solver</code>, the dictionary <code>test_settings</code> and the list <code>solver_wrappers</code> containing at least one solver wrapper. The keys for the <code>test_settings</code> dictionary are listed in alphabetical order below.</p>
 <table>
 <thead>
 <tr>
@@ -1651,56 +1610,45 @@ The keys for the <code>test_settings</code> dictionary are listed in alphabetica
 <tbody>
 <tr>
 <td align="right"><code>delta_t</code></td>
-<td align="center">double</td>
+<td align="center">float</td>
 <td>(optional) Time step size to be used in the test. Is optional as long as this value is defined in the <code>settings</code> dictionary. If a different value is defined in both dictionaries, the one defined in <code>test_settings</code> is chosen.</td>
 </tr>
 <tr>
 <td align="right"><code>name</code></td>
 <td align="center">string</td>
-<td>(optional) Name of the case used to store a pickle file with results. The pickle file will have the name <code>&lt;name&gt;_&lt;test_solver_working_directory&gt;.pickle</code>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: "results".</td>
+<td>(optional) Name of the case used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results. The pickle file will have the name <em><code>&lt;name&gt;_&lt;test_solver_working_directory&gt;.pickle</code></em>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>"results"</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>save_results</code></td>
 <td align="center">bool</td>
-<td>(optional) If <code>true</code> a <a href="https://docs.python.org/3.9/library/pickle.html">pickle</a> file is stored containing some main <a href="#save-results">results</a> as in <code>gauss_seidel</code>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>false</code>.</td>
+<td>(optional) If <code>true</code> a pickle file is stored containing some main <a href="#save-results">results</a>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>false</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>solver_index</code></td>
 <td align="center">int</td>
-<td>Has a value 0 or 1 and indicates the solver that one wants to test. 0 indicates the first <code>solver_wrapper</code> that appears in the JSON-file, 1 the second one.</td>
+<td>Has a value <code>0</code> or <code>1</code> and indicates the solver that one wants to test. <code>0</code> indicates the first solver wrapper that appears in the JSON-file, <code>1</code> the second one.</td>
 </tr>
 <tr>
 <td align="right"><code>test_class</code></td>
 <td align="center">string</td>
-<td>(optional) Refers to the class to use in the <code>dummy_solver.py</code>. If not provided or <code>None</code>, zero input will be used.</td>
+<td>(optional) Refers to the class to use in the <em><code>dummy_solver.py</code></em>. If not provided or <code>None</code>, zero input will be used.</td>
 </tr>
 <tr>
-<td align="right"><code>timestep_start</code></td>
+<td align="right"><nobr><code>timestep_start</code></nobr></td>
 <td align="center">int</td>
 <td>(optional) Time step to start from. If not provided the value defined in the <code>settings</code> dictionary is used. If the <code>settings</code> dictionary is not present, zero is used.</td>
 </tr>
 </tbody>
 </table>
 <p>Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the <code>settings</code> dictionary.
-The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>name</code> if not provided in <code>test_settings</code>.
-Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>.
-This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the <code>coupled_solver</code> type to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
-An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver/">test_single_solver</a>.</p>
-<p>The working directory of the solver is copied to a new directory with the same name and a suffix <code>_testX</code> with <code>X</code> an integer starting from 0.<br />
-As such, previous test solver working directories are not overwritten.
-The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver test working directory.
-As such, the pickle file can always be linked to the corresponding test working directory.</p>
-<p>During run time, the norm of <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed.
-A residual does not exist here.
-The arrays <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver,
-which is typically the flow solver. Then, the vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points.
-Nonetheless, these values can be useful to verify that the <code>solver_wrapper</code> runs.</p>
+The <a href="#settings"><code>settings</code> dictionary</a> is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
+An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>.</p>
+<p>The working directory of the solver is copied to a new directory with the same name and a suffix <code>_testX</code> with <code>X</code> an integer starting from 0. As such, previous test solver working directories are not overwritten.
+The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver test working directory. As such, the pickle file can always be linked to the corresponding test working directory.</p>
+<p>During run time, the norm of <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
-<p>In each coupled solver, the <code>save_results</code> key can be set on <code>true</code>, in order to save some results into a <a href="https://docs.python.org/3.9/library/pickle.html">pickle</a> file.
-The key <code>name</code> dictates the name of this file as explained above.
-The pickle file is saved after every time step and may be used by the postprocessing files included with the examples.
-It contains a dictionary with the following keys (np-array refers to numpy array):</p>
+<p>In each coupled solver, the <code>save_results</code> key can be set on <code>true</code>, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>name</code> dictates the name of this file as explained above. The pickle file is saved after every time step and may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:</p>
 <table>
 <thead>
 <tr>
@@ -1738,12 +1686,12 @@ It contains a dictionary with the following keys (np-array refers to numpy array
 <tr>
 <td align="right"><code>time</code></td>
 <td align="center">float</td>
-<td>Equals the computation time between initialization and finalization of the final time step.</td>
+<td>Equals the total computation time, i.e. the time between initialization and finalization.</td>
 </tr>
 <tr>
 <td align="right"><code>residual</code></td>
 <td align="center">list</td>
-<td>Nested list, which contains for each time step a list of the residual after every iteration.</td>
+<td>Nested list, which contains for each time step a list, on its turn containing residuals, one for every iteration of that time step.</td>
 </tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
@@ -1751,19 +1699,17 @@ It contains a dictionary with the following keys (np-array refers to numpy array
 <td>Equals the used time step size.</td>
 </tr>
 <tr>
-<td align="right"><code>timestep_start</code></td>
+<td align="right"><nobr><code>timestep_start</code></nobr></td>
 <td align="center">int</td>
 <td>Equals the used start time step.</td>
 </tr>
 </tbody>
 </table>
 <p>In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.</p>
-<p>Finally, there is also a debug option, which can be activated by setting the boolean <code>self.debug</code> on <code>True</code> in the code file itself.
-Then, the above information is stored every iteration. Additionaly, the residual vector is saved as well using the key <code>solution_r</code>, anologously to <code>solution_x</code> and <code>solution_y</code>.
-Note, however, that the pickle file can be become very large in that case.</p>
+<p>Finally, there is also a debug option, which can be activated by setting the boolean <code>self.debug</code> on <code>True</code> in the code file itself. Then, the above information is stored every iteration. Additionally, the residual vector is saved as well using the key <code>solution_r</code>, analogously to <code>solution_x</code> and <code>solution_y</code>. Note, however, that the pickle file can be become very large in that case.</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
-<a href="http://hdl.handle.net/1854/LU-8685199">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers," in ECCOMAS 2020, Proceedings, Paris, France, 2021.</a></p>
+<a href="http://hdl.handle.net/1854/LU-8685199">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.</a></p>
                 
                   
                 

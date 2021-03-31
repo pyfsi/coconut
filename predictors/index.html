@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -588,8 +588,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -600,8 +600,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -612,8 +612,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -1015,45 +1015,54 @@
                 <h1 id="predictors">Predictors</h1>
 <p>This documentation describes the available predictors.
 A predictor is used to determine the initial guess in each time step by extrapolating the solution from previous time steps.
-The different predictors differ in the number of previous iterations they take into account 
-and the polynomial degree that is used.</p>
-<p>Only the <code>type</code> has to be provided (e.g. <code>predictors.linear</code>), no <code>settings</code> dictionary is required.</p>
-<p>Specification of a predictor is mandatory, also for a steady simulation. In that case however, it does not matter which
+The predictors differ in the number of previous time steps they take into account 
+and the polynomial degree that is used.
+The formulas in this document, use the index <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> to refer to the time step, where <span><span class="MathJax_Preview">n+1</span><script type="math/tex">n+1</script></span> is the current time step, i.e. the time step for which the initial guess is made.
+The vector <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> is the input for the first solver, conform the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers documentation</a>.</p>
+<p>A predictor is intialized in the coupled solver using an initial solution as determined by the coupled solver.
+As such, there is at least one previous solution available.</p>
+<p>In the JSON file, the <code>predictor</code> dictionary only requires a <code>type</code> (e.g. <code>predictors.linear</code>), no <code>settings</code> dictionary has to be provided.</p>
+<p>Specification of a predictor is mandatory, also for a steady simulation. In that case, however, it does not matter which
 predictor is chosen as only one "time step" is performed.</p>
 <h2 id="constant">Constant</h2>
-<p>This predictor uses the result from the last time step as the initial guess in the current time step
+<p>The <code>type</code> for this predictor is <code>predictors.constant</code>.
+This predictor uses the result from the previous solution as the initial guess in the current time step:
 $$
 x^{n+1}=x^{n}.
 $$</p>
 <h2 id="linear">Linear</h2>
-<p>This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
+<p>The <code>type</code> for this predictor is <code>predictors.linear</code>.
+This predictor uses the results from the last two time steps to determine the initial guess in the current time step 
 using a linear extrapolation as follows
 $$
 x^{n+1}=2x^{n}-1x^{n-1}.
 $$
-If no two previous solutions are available, the solution from the last time step is used, i.e. the predictor <code>constant</code>.</p>
+If no two previous solutions are available, the solution from the last time step is used, i.e. the predictor <code>PredictorConstant</code>.</p>
 <h2 id="legacy">Legacy</h2>
-<p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
+<p>The <code>type</code> for this predictor is <code>predictors.legacy</code>.
+This predictor uses the results from the last three time steps to determine the initial guess in the current time step
 using a linear extrapolation as follows
 $$
 x^{n+1}=\frac{5}{2}x^{n}-2x^{n-1}+\frac{1}{2}x^{n-2}.
 $$
-If no three previous solutions are available, the predictor <code>linear</code> is used.
-This predictor is called <code>legacy</code> as it corresponds to the 2nd order extrapolator in the coupling code Tango.</p>
+If no three previous solutions are available, the predictor <code>PredictorLinear</code> is used.
+This predictor is called <code>PredictorLegacy</code> as it corresponds to the second order extrapolator in the coupling code <em>Tango</em>, the predecessor of <em>CoCoNuT</em>.</p>
 <h2 id="quadratic">Quadratic</h2>
-<p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
+<p>The <code>type</code> for this predictor is <code>predictors.quadratic</code>.
+This predictor uses the results from the last three time steps to determine the initial guess in the current time step
 using a quadratic extrapolation as follows
 $$
 x^{n+1}=3x^{n}-3x^{n-1}+1x^{n-2}.
 $$
-If no three previous solutions are available, the predictor <code>linear</code> is used.</p>
+If no three previous solutions are available, the predictor <code>PredictorLinear</code> is used.</p>
 <h2 id="cubic">Cubic</h2>
-<p>This predictor uses the results from the last three time steps to determine the initial guess in the current time step
+<p>The <code>type</code> for this predictor is <code>predictors.cubic</code>.
+This predictor uses the results from the last three time steps to determine the initial guess in the current time step
 using a cubic extrapolation as follows
 $$
 x^{n+1}=4x^{n}-6x^{n-1}+4x^{n-2}-1x^{n-3}.
 $$
-If no four previous solutions are available, the predictor <code>quadratic</code> is used.</p>
+If no four previous solutions are available, the predictor <code>PredictorQuadratic</code> is used.</p>
                 
                   
                 

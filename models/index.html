@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -455,8 +455,15 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#ls" class="md-nav__link">
-    LS
+  <a href="#common-methods" class="md-nav__link">
+    Common methods
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#least-squares" class="md-nav__link">
+    Least-squares
   </a>
   
     <nav class="md-nav">
@@ -475,8 +482,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mv" class="md-nav__link">
-    MV
+  <a href="#multi-vector" class="md-nav__link">
+    Multi-vector
   </a>
   
     <nav class="md-nav">
@@ -495,8 +502,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mv-mf" class="md-nav__link">
-    MV-MF
+  <a href="#multi-vector-matrix-free" class="md-nav__link">
+    Multi-vector matrix-free
   </a>
   
     <nav class="md-nav">
@@ -511,6 +518,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
   
 </li>
       
@@ -615,8 +629,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -627,8 +641,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -639,8 +653,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -988,8 +1002,15 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#ls" class="md-nav__link">
-    LS
+  <a href="#common-methods" class="md-nav__link">
+    Common methods
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#least-squares" class="md-nav__link">
+    Least-squares
   </a>
   
     <nav class="md-nav">
@@ -1008,8 +1029,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mv" class="md-nav__link">
-    MV
+  <a href="#multi-vector" class="md-nav__link">
+    Multi-vector
   </a>
   
     <nav class="md-nav">
@@ -1028,8 +1049,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mv-mf" class="md-nav__link">
-    MV-MF
+  <a href="#multi-vector-matrix-free" class="md-nav__link">
+    Multi-vector matrix-free
   </a>
   
     <nav class="md-nav">
@@ -1044,6 +1065,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
   
 </li>
       
@@ -1065,26 +1093,45 @@
                 
                 
                 <h1 id="models">Models</h1>
-<p>This documentation describes the models which are available.
-These models always approximate a (inverse) Jacobian, denoted here by <span><span class="MathJax_Preview">J</span><script type="math/tex">J</script></span>.
-Receiving an input, called <span><span class="MathJax_Preview">\Delta x</span><script type="math/tex">\Delta x</script></span>, they return an estimation of <span><span class="MathJax_Preview">J\Delta x=\Delta r</span><script type="math/tex">J\Delta x=\Delta r</script></span>.
-In order to improve the estimation, information is added, when it becomes available.
-This information consists of pairs of calculated differences <span><span class="MathJax_Preview">\Delta x</span><script type="math/tex">\Delta x</script></span> and <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>.
-The different models use this information in a different way.</p>
-<h2 id="ls">LS</h2>
-<p>The abbreviation LS stands for <em>least-squares</em>.
-This model requires the approximation of <span><span class="MathJax_Preview">J</span><script type="math/tex">J</script></span>, to fulfill the secant equations of the current and <code>q</code> previous time steps.
-Moreover, it is required that the approximation is least-squares.
-This model is matrix-free, due to an implementation using QR-decomposition.
-With matrix-free is meant that no large dense matrices are constructed, not that no matrices are used at all.</p>
-<p>The optimal value of <code>q</code> is problem dependent.
-Typically however, an optimal value is around 10.
-The <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> matrix from the QR-decompostion has to be invertible.
-Therefore, (almost) linear columns in the matrix containing the input information from the current and previous time steps should be removed.
-This is called filtering. The larger <code>q</code>, the more important filtering becomes.
-If the diagonal element in <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level, the corresponding column is removed.
-The most recent information is kept.</p>
-<p>For more information refer to .</p>
+<p>This documentation describes the different types of available models. The purpose of a model is always to approximate a (inverse) Jacobian of a system, based on secant information from input and output pairs.
+In order to approximate the Jacobian <span><span class="MathJax_Preview">\mathcal{A}'</span><script type="math/tex">\mathcal{A}'</script></span> of a general function <span><span class="MathJax_Preview">a=\mathcal{A}(b)</span><script type="math/tex">a=\mathcal{A}(b)</script></span>, the model needs to be supplied with matching input and output pairs, (<span><span class="MathJax_Preview">b^i</span><script type="math/tex">b^i</script></span>, <span><span class="MathJax_Preview">a^i=\mathcal{A}(b^i)</span><script type="math/tex">a^i=\mathcal{A}(b^i)</script></span>).
+Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span>.
+In other words, when the a vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span> is given it outputs <span><span class="MathJax_Preview">\Delta a=\widehat{\mathcal{A}}'\Delta b</span><script type="math/tex">\Delta a=\widehat{\mathcal{A}}'\Delta b</script></span>, where the hat symbol is used to denote that an approximation of the Jacobain is used.</p>
+<p>Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
+For example, using the coupled solver <code>CoupledSolverIQNI</code> with the model <code>ModelLS</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>]. In that case, the approximated Jacobian is <span><span class="MathJax_Preview">\mathcal{R}'^{-1}</span><script type="math/tex">\mathcal{R}'^{-1}</script></span>.
+If the coupled solver <code>CoupledSolverIBQN</code> is combined with two instances the model <code>ModelLS</code>, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>]. Then, the two models each approximate one Jacobian: <span><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span>.
+Refer to the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers documentation</a> for more information on these notations.</p>
+<p>In the following, the example from IQN-ILS will be used: the inverse Jacobian of <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> with respect to <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span> is approximated which has an input vector <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> and an output vector <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span>.
+For brevity, the approximation will denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
+<h2 id="common-methods">Common methods</h2>
+<p>There are three model-specific methods which are implemented by all models.</p>
+<p>The first of which is the <code>predict(dr)</code> method, which returns an estimation of <span><span class="MathJax_Preview">\Delta \tilde{x}=N^k\Delta r</span><script type="math/tex">\Delta \tilde{x}=N^k\Delta r</script></span> from an input <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>, based on stored input and output pairs.
+Second, in order to improve the estimation, input-output pairs can be added to the model using the method <code>add(r, xt)</code>.
+Third, the method <code>filter_q(dr)</code> returns the part of vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. In other words, it returns the part of the input vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is inside the nullspace of the approximation of the Jacobian represented by the model.</p>
+<h2 id="least-squares">Least-squares</h2>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.ls</code>.
+The abbreviation LS stands for <em>least-squares</em>.
+From the received input vectors <span><span class="MathJax_Preview">r^i</span><script type="math/tex">r^i</script></span> and output vectors <span><span class="MathJax_Preview">\tilde{x}^i</span><script type="math/tex">\tilde{x}^i</script></span>, differences are constructed
+$$
+\delta r^{i-1}=r^i-r^{i-1},
+\;
+\delta \tilde{x}^{i-1}=\tilde{x}^i-\tilde{x}^{i-1}.
+$$
+These are stored as column of the matrices <span><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> and <span><span class="MathJax_Preview">W</span><script type="math/tex">W</script></span>.
+This model requires the approximation of the Jacobian, denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, to fulfill the secant equations:
+$$
+W=N^k V.
+$$
+In addition to this a minimal norm requirement is imposed (hence the name).</p>
+<p>The differences can be limited to the current time step only. However, using the reuse parameter <code>q</code>, the differences from the <code>q</code> previous time steps are included as well.
+It is important to note that differences between the input and outputs from different time steps are not considered.
+Reuse may greatly improve the convergence speed and stability. The optimal value of <code>q</code> is problem dependent. Typically, however, an optimal value is around 10.</p>
+<p>This model is matrix-free, due to an implementation using QR-decomposition. With matrix-free is meant that no large dense matrices are constructed, not that no matrices are used at all.
+The <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> matrix from the QR-decomposition has to be invertible. Therefore, (almost) linearly dependent columns in the matrix containing the input information from the current and previous time steps should be removed. This is called filtering. The larger <code>q</code>, the more important filtering becomes.
+If the diagonal element in <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level <code>min_significant</code>, the corresponding column is removed.
+The implementation is as such that the most recent information is kept.</p>
+<p>For more information refer to [<a href="#3">3</a>].</p>
+<p>As mentioned before, the combination of this model wiht the coupled solver <code>CoupledSolverIQNI</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>], while using twice this model with the coupled solver <code>CoupledSolverIBQN</code> corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>].</p>
 <h3 id="settings">Settings</h3>
 <p>The following parameters need to be included in the <code>settings</code> dictionary.
 They are listed in alphabetical order.</p>
@@ -1098,30 +1145,23 @@ They are listed in alphabetical order.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>min_significant</code></td>
+<td align="right"><nobr><code>min_significant</code></nobr></td>
 <td align="center">double</td>
-<td>Absolute tolerance for filtering.</td>
+<td>Absolute tolerance for filtering. To disable filtering set to <code>0</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>q</code></td>
 <td align="center">int</td>
-<td>Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be 0.</td>
+<td>Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be <code>0</code>.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="mv">MV</h2>
-<p>The abbreviation MV stands for <em>multi-vector</em>.
-not matrix free, not for large number of degrees of freedom on the interface.</p>
-<p>This model requires the approximation of <span><span class="MathJax_Preview">J</span><script type="math/tex">J</script></span>, to fulfill the secant equations of the current time step only.
-Moreover, it is required that the approximation is as close as possible to the previous time step.
-In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.</p>
-<p>Here filtering can also be applied.
-Then, (almost) linear columns in the matrix containing the input information from the current time step are removed.
-If the diagonal element in <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level, the corresponding column is removed.
-The most recent information is kept.
-However, filtering is much less critical compared to the <code>LS</code> model as it concerns only the information from th current time step.
-If no filtering is wanted, the tolerance level should be set to zero.</p>
-<p>For more infromation refer to .</p>
+<h2 id="multi-vector">Multi-vector</h2>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.mv</code>. The abbreviation MV stands for <em>multi-vector</em>.</p>
+<p>In this model, differences are constructed similar to the least-squares model. However, it requires the approximation <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span> to fulfill the secant equations of the current time step only. Moreover, it is required that the approximation is as close as possible to the previous time step. In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.</p>
+<p>Filtering can also be applied here, then (almost) linear columns in the matrix containing the input information from the current time step are removed. However, filtering is much less critical compared to the <code>LS</code> model as it concerns only the information from the current time step. If no filtering is wanted, the tolerance level should be set to zero.</p>
+<p>For more information refer to [<a href="#3">3</a>].</p>
+<p>The combination of this model with the coupled solver <code>CoupledSolverIQNI</code> corresponds to the IQN-MVJ from Lindner et al. [<a href="#4">4</a>], while using twice this model with the coupled solver <code>CoupledSolverIBQN</code> corresponds to the MVQN method developed by Bogaers et al. [<a href="#5">5</a>].</p>
 <h3 id="settings_1">Settings</h3>
 <p>The following parameters need to be included in the <code>settings</code> dictionary.
 They are listed in alphabetical order.</p>
@@ -1135,17 +1175,17 @@ They are listed in alphabetical order.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>min_significant</code></td>
+<td align="right"><nobr><code>min_significant</code></nobr></td>
 <td align="center">double</td>
-<td>Absolute tolerance for filtering.</td>
+<td>(optional) Default: <code>0</code> (disabled). Absolute tolerance for filtering.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="mv-mf">MV-MF</h2>
-<p>The abbreviation MV-MF stands for <em>multi-vector matrix-free</em>.
-This method implements the multi-vector method, but in a matrix-free way.
-Therefore, a parameter <code>q</code> is used to denote how many time steps are re-used.
-Setting this parameter very large, this model will act the same as <code>MV</code>, which reuses all time steps.</p>
+<h2 id="multi-vector-matrix-free">Multi-vector matrix-free</h2>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.mv_mf</code>. The abbreviation MV-MF stands for <em>multi-vector matrix-free</em>.</p>
+<p>By combining the QR-approach from the least-squares model with the time step wise storage of secant information, a matrix-free implementation of the multi-vector approach is obtained quite naturally. This implementation was also thought of by Spenke et al. [<a href="#6">6</a>].</p>
+<p>In this approach, the contribution of each time step is grouped into a separate term, where the most recent time step has priority over the later ones. Therefore, a parameter <code>q</code> is used to denote how many time steps are reused. Setting this parameter very large, this model will act the same as <code>MV</code>, which reuses all time steps. Generally, the performance will increase when this parameter is chosen larger, but so will be the computational cost. Nonetheless, this cost is much smaller compared to the non-matrix-free multi-vector approach.</p>
+<p>Filtering can be applied similar to the above described models, but this is typically not necessary.</p>
 <h3 id="settings_2">Settings</h3>
 <p>The following parameters need to be included in the <code>settings</code> dictionary.
 They are listed in alphabetical order.</p>
@@ -1159,9 +1199,9 @@ They are listed in alphabetical order.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>min_significant</code></td>
+<td align="right"><nobr><code>min_significant</code></nobr></td>
 <td align="center">double</td>
-<td>Absolute tolerance for filtering.</td>
+<td>(optional) Default: <code>0</code> (disabled). Absolute tolerance for filtering.</td>
 </tr>
 <tr>
 <td align="right"><code>q</code></td>
@@ -1170,6 +1210,19 @@ They are listed in alphabetical order.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="references">References</h2>
+<p><a id="1">[1]</a> 
+<a href="http://hdl.handle.net/1854/LU-533365">Degroote J., Bathe K.-J., Vierendeels J., "Performance of a new partitioned procedure versus a monolithic procedure in fluid-structure interaction", Computers &amp; Structures, vol. 87, no. 11–12, pp. 793-801, 2009.</a></p>
+<p><a id="2">[2]</a> 
+<a href="http://hdl.handle.net/1854/LU-409369">Vierendeels J., Lanoye L., Degroote J., Verdonck P., "Implicit coupling of partitioned fluid-structure interaction problems with reduced order models", Computers &amp; Structures, vol. 85, no. 11–14, pp. 970–976, 2007.</a></p>
+<p><a id="3">[3]</a> 
+<a href="http://hdl.handle.net/1854/LU-8685199">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.</a></p>
+<p><a id="4">[4]</a> 
+<a href="https://www.researchgate.net/publication/277077208_A_Comparison_of_various_Quasi-Newton_Schemes_for_Partitioned_Fluid-Structure_Interaction">Lindner F., Mehl M., Scheufele K., Uekermann B., "A comparison of various quasi-Newton schemes for partitioned fluid-structure interaction", in: B. Schrefler, E. Oñate, M. Papadrakakis (Eds.), 6th International Conference on Computational 975 Methods for Coupled Problems in Science and Engineering, pp. 477–488, 2015.</a></p>
+<p><a id="5">[5]</a> 
+<a href="https://doi.org/10.1016/j.cma.2014.06.033">Bogaers A., Kok S., Reddy B., Franz T., "Quasi-Newton methods for implicit black-box FSI coupling", ComputerMethods in AppliedMechanics and Engineering, vol. 279, pp. 113–132, 2014.</a></p>
+<p><a id="6">[6]</a> 
+<a href="https://doi.org/10.1016/j.cma.2019.112810">Spenke T., Hosters N., Behr M., "A multi-vector interface quasi-newton method with linear complexity for partitioned fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 361, pp. 112810, 2020.</a></p>
                 
                   
                 

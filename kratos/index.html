@@ -38,7 +38,7 @@
     
     
       
-        <title>SolverWrapperKratos - StructuralMechanicsApplication - CoCoNuT</title>
+        <title>Kratos - CoCoNuT</title>
       
     
     
@@ -87,7 +87,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#solverwrapperkratos-structuralmechanicsapplication" tabindex="0" class="md-skip">
+      <a href="#kratos" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -113,7 +113,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                SolverWrapperKratos - StructuralMechanicsApplication
+                Kratos
               
             </span>
           
@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -533,11 +533,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        SolverWrapperKratos - StructuralMechanicsApplication
+        Kratos
       </label>
     
-    <a href="./" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link md-nav__link--active">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="./" title="Kratos" class="md-nav__link md-nav__link--active">
+      Kratos
     </a>
     
       
@@ -628,8 +628,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -640,8 +640,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -1066,8 +1066,9 @@
               
                 
                 
-                <h1 id="solverwrapperkratos-structuralmechanicsapplication">SolverWrapperKratos - StructuralMechanicsApplication</h1>
-<p>This is the documentation for the solver wrapper of the StructuralMechanicsApplication in KratosMultiphysics.</p>
+                <h1 id="kratos">Kratos</h1>
+<p>KratosMultiphysics is an open source framework for finite element simulations. More information on Kratos and the source code can be found on the <a href="https://github.com/KratosMultiphysics">Kratos Github page</a>. 
+The <code>StructuralMechanicsApplication</code> in Kratos has been implemented in CoCoNuT and the basics of the solver wrapper and the setup of a case are explained below.</p>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
 <table>
@@ -1082,79 +1083,83 @@
 <tr>
 <td align="right"><code>cores</code></td>
 <td align="center">int</td>
-<td>Number of processor cores to use when running KratosMultiphysics (Works with 1 core, multi-processing is work in progress).</td>
+<td>Number of processor cores to use when running Kratos (works with 1 core, multi-processing is work in progress).</td>
 </tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
-<td align="center">double</td>
-<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
+<td align="center">double (optional)</td>
+<td>Fixed time step size in structural solver.</td>
 </tr>
 <tr>
 <td align="right"><code>input_file</code></td>
 <td align="center">string</td>
-<td>Project parameters file used by Kratos in json format,</td>
+<td>Project parameters file used by Kratos in JSON format. In the <a href="https://pyfsi.github.io/coconut/tube_fluent3d_kratos_structure3d">example cases</a>, this is typically called <em><code>ProjectParameters.json</code></em>.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_input</code></td>
 <td align="center">dict</td>
-<td>List <code>ModelParts</code> names and <code>Variables</code> pairs that provides interface boundary conditions for the Kratos solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code> with values as name of the <code>ModelPart</code> and list of input variables available in <code>variables.py</code>. The <code>ModelPart</code> name must be the concatenation of an entry from <code>kratos_interface_sub_model_parts_list</code> and "_input".</td>
+<td>List of dictionaries that describes the input <code>Interface</code>. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code>, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  <code>variables_dimensions</code> <code>dict</code> in  the file <em><code>coconut/data_structure/variables.py</code></em>. The model part name must be the concatenation of an entry from <code>kratos_interface_sub_model_parts_list</code> and the string <code>_input</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_output</code></td>
 <td align="center">dict</td>
-<td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>kratos_interface_sub_model_parts_list</code> and "_output". The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
-</tr>
-<tr>
-<td align="right"><code>solver_load_cmd</code></td>
-<td align="center">string</td>
-<td>Bash commmand for loading required modules and environmental variables to run KratosMultiphysics,</td>
+<td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>kratos_interface_sub_model_parts_list</code> and the string <code>_output</code>. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
 </tr>
 <tr>
 <td align="right"><code>kratos_interface_sub_model_parts_list</code></td>
 <td align="center">string</td>
-<td>Names of sub-model parts used for input and output in KratosMultiphysics,</td>
+<td>Names of sub-model parts used for input and output in Kratos.</td>
+</tr>
+<tr>
+<td align="right"><code>solver_load_cmd</code></td>
+<td align="center">string</td>
+<td>Bash commands for loading required modules and environmental variables to run Kratos.</td>
 </tr>
 <tr>
 <td align="right"><code>timestep_start</code></td>
-<td align="center">int</td>
-<td>Timestep number t:wqo (re)start a transient FSI calculation. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files. This parameter is usually specified in a higher <code>Component</code>.</td>
+<td align="center">int (optional)</td>
+<td>Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>working_directory</code></nobr></td>
 <td align="center">string</td>
-<td>Absolute path to the working directory or relative path w.r.t the current directory.</td>
+<td>Path to the working directory (i.e. where the <code>input_file</code> for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).</td>
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher <code>Component</code>. However, they can also be given directly as parameter of the solver-wrapper (e.g. for standalone testing). If they are defined both in a higher <code>Component</code> and in the solver-wrapper, then the former value is used and a warning is printed.</p>
+<p><code>timestep_start</code> and <code>delta_t</code> are usually defined already in the parameters of the <code>coupled_solver</code>. However, they can also be given directly as a parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.</p>
 <p>If different parameters are used with different Kratos versions, this should be specified both in this section and in the version specific documentation section.</p>
 <h2 id="overview-of-operation">Overview of operation</h2>
-<p>The solver-wrapper consists of 2 files, where <code>X</code> is the Kratos version without decimal, e.g. for version <code>6.0</code> <code>60</code>:</p>
+<p>The solver wrapper consists of 2 files, where <code>X</code> is the Kratos version without decimal, e.g. for version 6.0 this becomes <code>60</code>:</p>
 <ul>
-<li><code>vX.py</code>: defines the <code>SolverWrapperKratosStructureX</code> class</li>
-<li><code>run_kratos_structural_X.py</code>: The python file which runs Kratos in the background. This interacts with CoCoNuT for coupling.</li>
+<li><em><code>vX.py</code></em>: defines the <code>SolverWrapperKratosStructureX</code> class,</li>
+<li><em><code>run_kratos_structural_X.py</code></em>: The Python file which runs Kratos in the background. This interacts with CoCoNuT for coupling.</li>
 </ul>
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
-<p>During initialization, the ProjectParameters.json file of KratosMultiphysics is read and adapted (parameter values are filled in) and copied to the <code>working_directory</code>. One additional parameter called  <code>interface_sub_model_parts_list</code> is added in the ProjectParameters.json that tells Kratos about the interface model parts used in the coupling.  Kratos structural simulation is then started in that directory using the parameter <code>cores</code> (multi-processing not implemented yet). The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that <code>SolverWrapperKratosStructureX</code> can create model parts in CoCoNuT for each entry in <code>interface_input</code> and <code>interface_output</code>. Finally, the interfaces are created.</p>
+<p>During initialization, the <em><code>ProjectParameters.json</code></em> file required for Kratos simulation is read and modified (parameter values are filled in) in the <code>working_directory</code>. 
+One additional parameter called  <code>interface_sub_model_parts_list</code> is added in the <em><code>ProjectParameters.json</code></em> that tells Kratos about the interface model parts used in the coupling. 
+Kratos structural simulation is then started in that directory using the parameter <code>cores</code> (multi-processing not implemented yet). 
+The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that <code>SolverWrapperKratosStructureX</code> can create model parts in CoCoNuT for each entry in <code>interface_input</code> and <code>interface_output</code>. 
+Finally, the interfaces are created.</p>
 <h3 id="files-created-during-simulation">Files created during simulation</h3>
 <ul>
-<li>The interface sub-model parts nodes are saved as <code>&lt;sub_model_part_name&gt;_nodes.csv</code>.</li>
-<li>The displacement from Kratos is written in a file named <code>&lt;sub_model_part_name&gt;_displacement.csv</code>.</li>
-<li>Pressure and tractions are passed from python to Kratos with files of the form <code>&lt;sub_model_part_name&gt;_pressure.csv</code> and <code>&lt;sub_model_part_name&gt;_surface_load.csv</code>, respectively.</li>
-<li>Files with extension <code>.coco</code> are used to pass messages between Python and Kratos. </li>
+<li>The interface sub-model parts nodes are saved as <em><code>&lt;sub_model_part_name&gt;_nodes.csv</code></em>.</li>
+<li>The displacement from Kratos is written in a file named <em><code>&lt;sub_model_part_name&gt;_displacement.csv</code></em>.</li>
+<li>Pressure and tractions are passed from python to Kratos with files of the form <em><code>&lt;sub_model_part_name&gt;_pressure.csv</code></em> and <em><code>&lt;sub_model_part_name&gt;_surface_load.csv</code></em>, respectively.</li>
+<li>Files with extension <em><code>.coco</code></em> are used to pass messages between Python and Kratos. </li>
 </ul>
 <h2 id="setting-up-a-new-case">Setting up a new case</h2>
 <p>Following items should be set up and saved in the <code>working_directory</code> (this list may be non-exhaustive):</p>
 <ul>
-<li>ProjectParameters.json with all the required parameters and <code>end_time</code> set to very high value, e.g. <code>1e9</code></li>
-<li>Mesh file with extension <code>mdpa</code></li>
-<li>StructuralMaterials.json with the material properties.</li>
+<li><em><code>ProjectParameters.json</code></em> with all the required parameters (see the <a href="https://pyfsi.github.io/coconut/tube_fluent3d_kratos_structure3d">example cases</a>),</li>
+<li>Mesh file with extension <em><code>.mdpa</code></em>,</li>
+<li><em><code>StructuralMaterials.json</code></em> with the material properties.</li>
 </ul>
 <p>Following items are taken care of by CoCoNuT, and must therefore will be automatically changed at the begining of the simulation:</p>
 <ul>
-<li>the start_time (<code>timestep_start</code>)</li>
-<li>the timestep (<code>delta_t</code>) </li>
-<li>initialization of the solution field</li>
+<li>the start time (<code>timestep_start</code>),</li>
+<li>the time step (<code>delta_t</code>),</li>
+<li>initialization of the solution field.</li>
 </ul>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
 <h3 id="v60-60">v60 (6.0)</h3>
@@ -1195,13 +1200,13 @@
           </a>
         
         
-          <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../openfoam/" title="OpenFOAM" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                SolverWrapperOpenFOAM
+                OpenFOAM
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

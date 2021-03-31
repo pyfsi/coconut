@@ -333,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -644,8 +644,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -656,8 +656,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -668,8 +668,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -1124,14 +1124,14 @@
                 
                 <h1 id="fluent">Fluent</h1>
 <p>This is the documentation for all Fluent solver wrappers.
-Currently only FSI simulations are supported, no other multiphysics problems; hence the focus of this page is on FSI. FSI with inviscid flows is not supported, but that would be straightforward to add if required.</p>
+The focus of this page is on fluid-structure interaction (FSI). Currently no other multiphysics problems are supported, but these are envisioned in future developments. FSI with inviscid flows is not supported, but that would be straightforward to add if required.</p>
 <h2 id="fluid-structure-interaction-with-fluent">Fluid-structure interaction with Fluent</h2>
 <p>ANSYS Fluent can be used to solve the flow field in partitioned FSI simulations. The FSI interface consists of one or several <em>surface threads</em> in Fluent. 
 During each FSI iteration, the solver wrapper imposes a certain displacement on this FSI interface. Fluent then automatically deforms the rest of the mesh (using dynamic mesh capabilities), solves the flow field and returns the calculated loads on the FSI interface to the solver wrapper. 
 Displacements are applied in Fluent in <em>nodes</em>. As displacements are the input of Fluent, these nodes are collected in one or more <code>ModelParts</code> in the <em>input</em> <code>Interface</code>. 
 Loads (pressure and traction) can be obtained from the Fluent <em>faces</em>. As loads are the output of Fluent, these faces are collected in one or more <code>ModelParts</code> in the <em>output</em> <code>Interface</code>.
 A fixed naming convention is used for the Fluent <code>ModelParts</code> in CoCoNuT: each <code>ModelPart</code> gets the name of the corresponding Fluent surface thread, plus "_nodes" or "_faces", depending on their content. As a consequence, each <code>ModelPart</code> in the input <code>Interface</code> has a counterpart in the output <code>Interface</code>. 
-More information about <code>ModelParts</code> and <code>Interfaces</code> can be found in the <a href="https://pyfsi.github.io/coconut/data_structure/">data structure documentation</a>.</p>
+More information about <code>ModelParts</code> and <code>Interfaces</code> can be found in the <a href="https://pyfsi.github.io/coconut/data_structure">data structure documentation</a>.</p>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
 <table>
@@ -1146,7 +1146,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <tr>
 <td align="right"><code>case_file</code></td>
 <td align="center">string</td>
-<td>Name of the case file. It must be present in the folder specified by <code>working_directory</code>.</td>
+<td>Name of the case file. It must be present in the folder specified by <code>working_directory</code>. The corresponding data file must also be present but has no key in the JSON file.</td>
 </tr>
 <tr>
 <td align="right"><code>cores</code></td>
@@ -1160,8 +1160,8 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 </tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
-<td align="center">double</td>
-<td>Fixed timestep size in flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
+<td align="center">float</td>
+<td>Fixed time step size in flow solver. This parameter is usually specified in a higher <code>Component</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>flow_iterations</code></td>
@@ -1174,11 +1174,6 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <td>Set to <code>true</code> to run Fluent with the graphical interface.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>hybrid_initialization</code></nobr></td>
-<td align="center">bool</td>
-<td>If <code>true</code>, the hybrid initialization is used in Fluent before the first timestep. If <code>false</code>, the standard initialization is used, which requires that adequate reference values have been set in advance by the user in the Fluent case.</td>
-</tr>
-<tr>
 <td align="right"><code>interface_input</code></td>
 <td align="center">list</td>
 <td>List of dictionaries to describe the input <code>Interface</code> (Fluent nodes). Each dictionary defines one <code>ModelPart</code> with two keys: <code>model_part</code> contains the name of the <code>ModelPart</code> and <code>variables</code> contains a list of variable names. Each <code>ModelPart</code> name must be the concatenation of an entry from <code>thread_names</code> and "_nodes". The variable names must be chosen from <em><code>data_structure/variables.py</code></em>.</td>
@@ -1189,14 +1184,14 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <td>Analogous to <code>interface_input</code>, but for the output <code>Interface</code> (Fluent faces). Each <code>ModelPart</code> name must be the concatenation of an entry from the file <code>thread_names</code> and "_faces".</td>
 </tr>
 <tr>
-<td align="right"><code>max_nodes_per_face</code></td>
+<td align="right"><nobr><code>max_nodes_per_face</code></nobr></td>
 <td align="center">int</td>
 <td>This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.</td>
 </tr>
 <tr>
 <td align="right"><code>save_iterations</code></td>
 <td align="center">int</td>
-<td>Number of timesteps between consecutive saves of the Fluent case and data files.</td>
+<td>Number of time steps between consecutive saves of the Fluent case and data files.</td>
 </tr>
 <tr>
 <td align="right"><code>thread_names</code></td>
@@ -1206,7 +1201,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <tr>
 <td align="right"><code>timestep_start</code></td>
 <td align="center">int</td>
-<td>Timestep number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the <code>case_file</code>, else the code looks for the relevant case and data files. This parameter is usually specified in a higher <code>Component</code>.</td>
+<td>Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the <code>case_file</code>, else the code looks for the relevant case and data files. This parameter is usually specified in a higher <code>Component</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>unsteady</code></td>
@@ -1230,13 +1225,13 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <li><em><code>X.c</code></em>: Fluent UDF file that implements additional functionality used in Fluent, written in C.</li>
 </ul>
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
-<p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summery, so that the solver wrapper can link the interface thread names (specified in <code>thread_names</code>) to Fluent thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelParts</code> are created, based on data written by Fluent in timestep 0. After a restart, this same data must be found, i.e. if those data files are removed from the <code>working_directory</code> folder, the simulation cannot be restarted. Finally, the <code>Interfaces</code> are created. </p>
+<p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summary, so that the solver wrapper can link the interface thread names (specified in <code>thread_names</code>) to Fluent thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelParts</code> are created, based on data written by Fluent in time step 0. After a restart, this same data must be found, i.e. if those data files are removed from the <code>working_directory</code> folder, the simulation cannot be restarted. Finally, the <code>Interfaces</code> are created. </p>
 <h3 id="files-created-during-simulation">Files created during simulation</h3>
-<p>In these file conventions, A is the timestep number and B the Fluent thread ID.</p>
+<p>In these file conventions, A is the time step number and B the Fluent thread ID.</p>
 <ul>
 <li>Fluent case and data files are saved as files of the form <em><code>case_timestepA.cas</code></em> and <em><code>case_timestepA.dat</code></em>.</li>
 <li>Current node and face coordinates are passed from Fluent to CoCoNuT with files of the form <em><code>nodes_timestepA_threadB.dat</code></em> and <em><code>faces_timestepA_threadB.dat</code></em>. </li>
-<li>The new node coordinates are passed from CoCoNuT to Fluent with files of the form <em><code>nodes_update_timestepA_threadB</code></em>.</li>
+<li>The new node coordinates are passed from CoCoNuT to Fluent with files of the form <em><code>nodes_update_timestepA_threadB.dat</code></em>.</li>
 <li>Pressure and tractions are passed from Fluent to CoCoNuT with files of the form <em><code>pressure_traction_timestepA_threadB.dat</code></em>.</li>
 <li>Files with extension <em><code>.coco</code></em> are used to exchange messages between CoCoNuT and Fluent. </li>
 </ul>
@@ -1248,13 +1243,13 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <li>2D, 3D or axisymmetric (should match with the <code>dimensions</code> parameter),</li>
 <li>dynamic mesh zones for all deforming surfaces, except for the FSI interfaces,</li>
 <li>dynamic mesh smoothing parameters,</li>
-<li>boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria,</li>
-<li>if <code>hybrid_initialization</code> is <code>false</code>, then defaults should be set for standard initialization.</li>
+<li>boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria.</li>
 </ul>
+<p>A data file should also be present with the fields either initialized or containing the results of a previous calculation.</p>
 <p>Following items are taken care of by CoCoNuT, and must therefore not be included in the Fluent case file:</p>
 <ul>
 <li>dynamic mesh zones for the FSI interfaces (these are defined in <code>thread_names</code>),</li>
-<li>the timestep (<code>delta_t</code>).</li>
+<li>the time step (<code>delta_t</code>).</li>
 </ul>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
 <h3 id="v2019r1-1930">v2019R1 (19.3.0)</h3>
@@ -1263,7 +1258,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <p>No changes.</p>
 <h3 id="v2019r3-1950">v2019R3 (19.5.0)</h3>
 <p>The solutions in this version are (slightly) different because the <em>Rhie-Chow face flux interpolation in the pressure-based solver</em> has changed. This setting can be reverted with the TUI command <code>solve set previous undo-2019r3 y n</code>, which is included in <em><code>v2019R3.jou</code></em>.</p>
-<p>The results can be slightly different when restarts are used for multicore simulations for the following reason: <em>For parallel cases with smoothing that do not use dynamic load balancing, a zonal partitioning with Laplace smoothing will automatically be applied when the file is read, which should result in better load balancing for the mesh smoothing calculations.</em>
+<p>The results can be slightly different when restarts are used for multi-core simulations for the following reason: <em>For parallel cases with smoothing that do not use dynamic load balancing, a zonal partitioning with Laplace smoothing will automatically be applied when the file is read, which should result in better load balancing for the mesh smoothing calculations.</em>
 After a restart, the partitioning can be different and hence the mesh deformation can be slightly different. </p>
 <h3 id="v2020r1-2010">v2020R1 (20.1.0)</h3>
 <p>Same behavior as v2019R3.</p>
@@ -1303,13 +1298,13 @@ After a restart, the partitioning can be different and hence the mesh deformatio
           </a>
         
         
-          <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../kratos/" title="Kratos" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                SolverWrapperKratos - StructuralMechanicsApplication
+                Kratos
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

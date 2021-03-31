@@ -87,6 +87,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#data-structure" tabindex="0" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -329,8 +333,8 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="CoCoNuT - Coupling Code for Numerical Tools" class="md-nav__link">
-      CoCoNuT - Coupling Code for Numerical Tools
+    <a href=".." title="CoCoNuT" class="md-nav__link">
+      CoCoNuT
     </a>
   </li>
 
@@ -516,8 +520,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../kratos/" title="SolverWrapperKratos - StructuralMechanicsApplication" class="md-nav__link">
-      SolverWrapperKratos - StructuralMechanicsApplication
+    <a href="../kratos/" title="Kratos" class="md-nav__link">
+      Kratos
     </a>
   </li>
 
@@ -528,8 +532,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../openfoam/" title="SolverWrapperOpenFOAM" class="md-nav__link">
-      SolverWrapperOpenFOAM
+    <a href="../openfoam/" title="OpenFOAM" class="md-nav__link">
+      OpenFOAM
     </a>
   </li>
 
@@ -540,8 +544,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../python/" title="SolverWrapperPython" class="md-nav__link">
-      SolverWrapperPython
+    <a href="../python/" title="Python" class="md-nav__link">
+      Python
     </a>
   </li>
 
@@ -588,10 +592,55 @@
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Data structure
+      </label>
     
     <a href="./" title="Data structure" class="md-nav__link md-nav__link--active">
       Data structure
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    Model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelpart" class="md-nav__link">
+    ModelPart
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface" class="md-nav__link">
+    Interface
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -884,16 +933,136 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    Model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelpart" class="md-nav__link">
+    ModelPart
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface" class="md-nav__link">
+    Interface
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
                 
-                  <h1>Data structure</h1>
-                
-                <div class="codehilite"><pre><span></span><code><span class="n">TODO</span><span class="o">:</span> <span class="n">write</span> <span class="n">docs</span> <span class="n">about</span> <span class="n">data</span> <span class="n">structure</span>
-</code></pre></div>
+                <h1 id="data-structure">Data structure</h1>
+<p>The data structure in CoCoNuT contains different classes that serve as 
+containers of various types of data that are transferred between the 
+components of CoCoNuT during the partitioned coupling. It consists of 
+the following three classes:</p>
+<ul>
+<li><code>Model</code></li>
+<li><code>ModelPart</code></li>
+<li><code>Interface</code></li>
+</ul>
+<h2 id="model">Model</h2>
+<p><code>Model</code> is simply a <code>dict</code> with keys as model part names and values as the 
+reference to model parts. It serves as a container of instances of 
+<code>ModelParts</code>. Additionally, it has one important method called 
+<code>create_model_part</code>, which as the name suggests, creates an instance of the 
+class <code>ModelPart</code> and adds it to the dictionary.</p>
+<h2 id="modelpart">ModelPart</h2>
+<p><code>ModelPart</code> is a container of boundary points, that are involved in the 
+partitioned coupling. This contains the initial coordinates- 
+<code>x0</code>, <code>y0</code>, <code>z0</code> (<code>1D numpy float array</code>), and point ids-<code>id</code> 
+(<code>1D numpy int array</code>). It is recommended to always instantiate <code>ModelPart</code> 
+using the <code>create_model_part</code> method of the class <code>Model</code>, discussed above. 
+Naturally, the size of <code>x0</code>, <code>y0</code>, <code>z0</code>, and  <code>id</code> should be equal, which is 
+checked in the <code>__init__</code> method.</p>
+<hr />
+<p><strong>NOTE</strong>:<br>
+The data in <code>ModelPart</code> once created, either by <code>__init__</code> method of 
+the <code>ModelPart</code> class or by <code>create_model_part</code> method of the <code>Model</code> class, 
+cannot be changed later. This is because the initial coordinates of boundary 
+points are always supplied from the solver wrapper and they don't change during the various stages of the coupling process. </p>
+<hr />
+<h2 id="interface">Interface</h2>
+<p><code>Interface</code> stores the <code>variable</code> data that are transferred between the 
+different components (<code>coupling_components</code>) of CoCoNuT to perform partitioned
+ coupling. Additionally, it contains a reference to an instance of <code>Model</code>, 
+ usually created in the solver wrapper. As described above, the <code>Model</code> contains 
+several model parts corresponding to the boundaries in the solver wrappers. 
+Therefore, in a way, the interface also contains coordinates of the boundary 
+points that are involved in the coupling. <br></p>
+<p>The data in the interfaces are stored as <code>numpy arrays</code> in a nested <code>dict</code>. 
+The following schematic illustrates the data structure in the 
+<code>Interface</code> class, where the arrow points from a key to the value in the 
+<code>dict</code>:<br>
+<img alt="Fig" src="../images/interface_data.png" title="Data in Interface class" /></p>
+<p>For example, in the schematic above, the interface has a model part named 
+"mp_1_name", which has several variable data. The data for the variable <code>var_1</code> is stored in a <code>numpy array</code> with the number of rows equal to the number points in the model part and the number of columns equal to the number of components/dimensions of the variable. The number of dimensions for a variable 
+is defined in the <code>variable_dimensions</code> <code>dict</code> in the file 
+<code>data_structure/variables.py</code>variables.py, e.g the number of dimensions for the variables 
+<code>pressure</code> and <code>displacement</code> is 1 and 3, respectively. <br></p>
+<p>The nested <code>dict</code> in the <code>Interface</code> is constructed during the instantiation
+ of the class using a parameters <code>dict</code> given as an input argument. For the 
+ schematic shown above, the parameters dict would be:<br></p>
+<p><code>[
+    {
+      "model_part": "mp_1_name",
+      "variables": ["var_1", var_2, ..]
+      ]
+    },
+    {
+      "model_part": "mp_2_name",
+      "variables": ["var_3",  ..]
+      ]
+    },
+    .
+    .
+    .
+ ]</code></p>
+<p>The data in the interface can be accessed, added, or replaced by the various 
+methods implemented in the <code>Interface</code> class, which can be looked in the file 
+<code>data_structure/interface.py</code>.</p>
+<hr />
+<p><strong>NOTE</strong>:<br>
+The file <em><code>data_structure/variables.py</code></em> does not contain a class definition. 
+It has a <code>dict</code> called <code>variable_dimensions</code> with keys as data 
+variable names (<code>string</code>) and values as the number of components or dimensions 
+(<code>int</code>). One important point to note is that only variables defined in this 
+dictionary can be used in CoCoNuT. To use a new variable, the user first 
+needs to add the variable name and its number of components in this <code>dict</code>.</p>
+<hr />
                 
                   
                 
@@ -915,7 +1084,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../python/" title="SolverWrapperPython" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../python/" title="Python" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -924,7 +1093,7 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                SolverWrapperPython
+                Python
               </span>
             </div>
           </a>
