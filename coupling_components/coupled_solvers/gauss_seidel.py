@@ -98,12 +98,13 @@ class CoupledSolverGaussSeidel(Component):
         self.predictor.initialize(self.x)
         self.start_time = time.time()
 
+        tools.print_info(80 * '═' + f'\n\t{self.case_name}\n' + 80 * '═')
+
         # restart
         if self.timestep_start != 0:
             if not (self.x.has_same_model_parts(self.restart_data['interface_x']) and
                     self.y.has_same_model_parts(self.restart_data['interface_y'])):
                 raise ValueError('Restart not possible because model parts changed')
-            tools.print_info(80 * '═' + f'\n\tRestart from time step {self.timestep_start}\n' + 80 * '═')
             self.predictor = self.restart_data['predictor']
             self.components[0] = self.predictor
 
@@ -113,9 +114,12 @@ class CoupledSolverGaussSeidel(Component):
                 self.complete_solution_x = np.empty((self.x.get_interface_data().shape[0], 0))
                 self.complete_solution_y = np.empty((self.y.get_interface_data().shape[0], 0))
                 self.complete_solution_r = np.empty((self.x.get_interface_data().shape[0], 0))
-            else:
+            elif self.timestep_start == 0:  # no restart
                 self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
                 self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
+            else:  # restart
+                self.complete_solution_x = self.restart_data['interface_x'].get_interface_data().reshape(-1, 1)
+                self.complete_solution_y = self.restart_data['interface_y'].get_interface_data().reshape(-1, 1)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -277,3 +281,7 @@ class CoupledSolverGaussSeidel(Component):
     def print_components_info(self, pre):
         tools.print_info(pre, 'The coupled solver ', self.__class__.__name__, ' has the following components:')
         tools.print_components_info(pre, self.components)
+
+        # restart
+        if self.timestep_start != 0:
+            tools.print_info(80 * '═' + f'\n\tRestart from time step {self.timestep_start}\n' + 80 * '═')
