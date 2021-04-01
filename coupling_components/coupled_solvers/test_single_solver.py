@@ -95,13 +95,16 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.elapsed_time = None
         self.iterations = []
 
+        # no restart files are saved
+        self.save_restart = 0
+
         # save results variables
         self.save_results = self.settings.get("save_results", False)
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.settings.get("name", "results")  # case name
+            self.case_name = self.settings.get("name", "case")  # case name
             self.case_name += "_" + cur_wd
 
         self.debug = False
