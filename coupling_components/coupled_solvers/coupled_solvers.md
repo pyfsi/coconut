@@ -33,7 +33,9 @@ The following parameters need to be included in the `settings` dictionary. Here 
 parameter|type|description
 ---:|:---:|---
 `delta_t`|float|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
-`name`|string|(optional) Default: `"results"`. Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results.
+`name`|string|(optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<name>_results.pickle`_) and a restart file (_`<name>_restart_ts<time_step>.pickle`_). If one of these files already exists, a number is appended to `name`, until no such file is found.
+`restart_case`|string|Only required when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
+`save_restart`|int|(optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. With a minus sign only the last file is retained.
 `save_results`|bool|(optional) Default: `false`. If `true` a pickle file is stored containing some main [results](#save-results).
 <nobr>`time_step_start`</nobr>|int|Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.
 
@@ -181,7 +183,7 @@ parameter|type|description
 ## IBQN
 
 This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
-The `type` for this coupled solver is `coupled solvers.ibqn`.
+The `type` for this coupled solver is `coupled_solvers.ibqn`.
 
 ### Algorithm
 
@@ -259,7 +261,7 @@ The solver `test_single_solver` can be used to test new cases and solver setting
 
 ### Dummy solver
 
-To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file _`dummy_solver.py`_, which has to be on the same folder level as _`run_simulation.py`_. Upon run-time an instance of this class is made.
+To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file _`dummy_solver.py`_. Its path starts in the folder from where the simulation is performed, e.g. the same folder level as _`run_simulation.py`_. Upon run-time an instance of this class is made.
 The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being a variable required by the tested solver, e.g. `displacement`, `pressure` or `traction`. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
 Some examples are given in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md). The test class name is provided in the JSON settings as a string. If no test class is provided or the value `None` is used, zero input will be used.
 
@@ -270,7 +272,7 @@ The JSON file requirements for the class `CoupledSolverTestSingleSolver` are dif
 parameter|type|description
 ---:|:---:|---
 `delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
-`name`|string|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"results"`.
+`name`|string|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
 `save_results`|bool|(optional) If `true` a pickle file is stored containing some main [results](#save-results). If not provided, the value from `settings` is used or if `settings` is not present: `false`.
 `solver_index`|int|Has a value `0` or `1` and indicates the solver that one wants to test. `0` indicates the first solver wrapper that appears in the JSON-file, `1` the second one.
 `test_class`|string|(optional) Refers to the class to use in the *`dummy_solver.py`*. If not provided or `None`, zero input will be used.
@@ -305,6 +307,49 @@ key|value type|description
 In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.
 
 Finally, there is also a debug option, which can be activated by setting the boolean `self.debug` on `True` in the code file itself. Then, the above information is stored every iteration. Additionally, the residual vector is saved as well using the key `solution_r`, analogously to `solution_x` and `solution_y`. Note, however, that the pickle file can be become very large in that case.
+
+## Restart
+The restart functionality is very useful to continue a calculation which has been stopped, either intentionally or unintentionally.
+The goal is to continue as if the code had never been interrupted.
+
+In order to restart from time step $n$, the coupled solver saves the predictor and possibly one or more models in the state at the end of time step $n$ in a pickle file.
+By saving the predictor, the initial guess at the start of the first time step(s) will be the same, as the predictor typically extrapolates the solution from the previous time step(s) in some way.
+The model(s) are saved such that the behavior of the coupling algorithm is the same.
+This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse (q>0).
+The following table gives an overview of the coupled solvers which save one or more additional components or values.
+
+type|additional components saved for restart
+---:|---
+`coupled_solvers.aitken`|`omega`
+`coupled_solvers.iqni`|`model`
+`coupled_solvers.ibqn`|`model_f` and `model_s`
+
+However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
+Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step $n$.
+Moreover, its vital that they reconstruct the exact same model parts as in the initial calculation.
+In other words, the undeformed coordinates must be the same.
+Conversely, they are not required to initialize the interfaces with the correct data from time step $n$, as this taken care of by the predictor in the coupled solver.
+Only when both solver wrappers allow restart, is is possible to restart a calculation!
+
+### Saving restart files
+During a calculation it is possible to save restart pickle files.
+As described above the pickle file for restart has a name (_`<name>_restart_ts<time_step>.pickle`_), based on the setting `name`.
+If a restart or results file with such a `name` already exists, a number is appended to `name`, until no such file is found.
+As such, the accidental overwriting of files is avoided and the pickle files belonging to a certain case can be easily identified.
+
+The frequency of saving a restart pickle file is determined by the `save_restart` interval as described above.
+
+### Performing restart
+To restart a case, `timestep_start` has to be a positive integer above zero.
+The first time step that will be calculated is `timestep_start` plus one.
+The methodology described above does not allow to change any settings of the predictor or model(s), nor the type of coupled solver.
+Upon restart, this condition is checked, as well as the presence of the pickle file for restart.
+This file is identified by the setting `restart_case` as _`<restart_case>_restart_ts<timestep_start>.pickle`_.
+Additionally, it is checked that the new model parts are exactly the same as the previous ones.
+
+It is important to realize that the pickle file only makes sure that the initial guess and coupling algorithm work as before.
+The physical effect of previous time steps dealt with by the solver wrappers.
+**Therefore, in order to be able to perform a restart, the solver files for the corresponding time step also need to be present!**
 
 ## References
 
