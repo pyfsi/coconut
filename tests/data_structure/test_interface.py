@@ -25,7 +25,12 @@ class TestInterface(unittest.TestCase):
                 [
                     {'model_part': 'mp1', 'variables': ['pressure', 'traction']},
                     {'model_part': 'mp3', 'variables': ['density']}
-                ]
+                ],
+            'interface_d':
+                [
+                    {'model_part': 'mp2', 'variables': ['density']},
+                    {'model_part': 'mp1', 'variables': ['pressure', 'displacement']}
+                ],
         }
 
         self.model = Model()
@@ -190,6 +195,10 @@ class TestInterface(unittest.TestCase):
         interface_c = Interface(self.parameters['interface_c'], self.model)
         interface_c.set_interface_data(self.interface_data)
         self.assertFalse(self.interface.has_same_model_parts(interface_c))
+
+        interface_d = Interface(self.parameters['interface_d'], self.model)
+        interface_d.set_interface_data(self.interface_data)
+        self.assertFalse(self.interface.has_same_model_parts(interface_d))
 
     def create_test_interfaces(self):
         interface_data1 = np.random.rand(self.interface.size)

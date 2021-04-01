@@ -5,6 +5,7 @@
       "settings": {
         "working_directory": "solver_wrappers/python/tube/test_tube_structure/CSM",
         "input_file": "solver_parameters.json",
+        "save_restart": 0,
         "delta_t": 0.0001,
         "interface_input": [
           {
