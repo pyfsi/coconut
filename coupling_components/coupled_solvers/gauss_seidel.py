@@ -6,6 +6,7 @@ import numpy as np
 import time
 import pickle
 import os
+import re
 
 
 def create(parameters):
@@ -68,10 +69,11 @@ class CoupledSolverGaussSeidel(Component):
         # case name
         self.case_name = self.settings.get('name', 'case')  # case name
         listdir = os.listdir(os.getcwd())
-        if self.case_name + '_results.pickle' in listdir or self.case_name + '_restart.pickle' in listdir:
+        match = [re.findall(r'(\w+)_(restart_ts(\d+)|results).pickle', f) for f in listdir]  # match file names
+        present_case_names = [f[0][0] for f in match if f != []]  # retain present case names
+        if self.case_name in present_case_names:
             i = 1
-            while self.case_name + str(i) + '_results.pickle' in listdir \
-                    or self.case_name + str(i) + '_restart.pickle' in listdir:
+            while self.case_name + str(i) in present_case_names:
                 i += 1
             self.case_name += str(i)
 
