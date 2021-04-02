@@ -15,8 +15,8 @@ The initial guess in every time step is done using the linear predictor.
 
 Two convergence criteria have been specified:
 
--   The number of iterations in every time step is larger than 10.
--   The residual norm on the displacement is a factor $10^{-4}$ lower than the initial value.
+- The number of iterations in every time step is larger than 10.
+- The residual norm on the displacement is a factor $10^{-4}$ lower than the initial value.
  
 When either criterion is satisfied the simulation stops.
  
@@ -24,23 +24,25 @@ When either criterion is satisfied the simulation stops.
 
 The flow solver is Fluent, used to solve an axisymmetric representation of the tube,
 with 100 cells on the fluid-structure interface. 
-When setting up the case, the mesh is build based on the file `mesh.jou` using Gambit.
+When setting up the case, the mesh is build based on the file *`mesh.jou`* using Gambit.
 The displacements are applied in the nodes, of which there are 101. 
 In contrast, the loads (pressure and traction) are calculated in the cell centers, of which there are 100.
-The axial direction is along the x-axis,
-the radial direction along the y-axis.
+The axial direction is along the x-axis, the radial direction along the y-axis. 
+After the mesh is created in Gambit, the setup script runs Fluent with the *`case.jou`* journal file to setup the case parameters.
+This case is written to the *`case_tube2d.cas`* file, which serves as input for CoCoNuT.
 
 The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
-The Abaqus case is not build when setting up the case, but is provided as the file `Base.inp`. 
-The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, 
-for stress and displacement without twist. 
-They are: 8-node biquadratic, reduced integration, hybrid with linear pressure. 
-See Abaqus documentaion for more information. 
+The Abaqus case is not build when setting up the case, but is provided as the file *`Base.inp`*. 
+However, in the <nobr>*`setup_files/setup_abaqus2d/Create_Model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
+This setup can be run by executing the *`setup_abaqus.sh`* script. 
+This will run Abaqus with the *`makeInp.py`* Python script to set the structural parameters, starting from the mesh in *`Base.inp`*.
+The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
+They are: 8-node biquadratic, reduced integration, hybrid with linear pressure.
+See the [Abaqus documentation](http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb) for more information. 
 The loads are applied on the faces in three points per element, which means on 150 load points in total. 
 The displacement is calculated in the nodes. There are 101 nodes on the fluid-structure interface.
-The axial direction is along the y-axis,
-the radial direction along the x-axis.
+The axial direction is along the y-axis, the radial direction along the x-axis.
 
 The difference in reference frames and number of cells on the fluid-structure interface requires the use of mappers.
 In the structure solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
