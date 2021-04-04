@@ -77,7 +77,7 @@ class SolverWrapperTubeFlow(Component):
         self.m = self.settings["m"]  # number of segments
         self.dz = l / self.m  # segment length
         axial_offset = self.settings.get("axial_offset", 0)  # start position along axis
-        self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # data is stored in cell centers
+        self.z = axial_offset + np.arange(self.dz / 2 - l / 2, l / 2, self.dz)  # data is stored in cell centers
 
         self.k = 0  # iteration
         self.n = 0  # time step (no restart implemented)
