@@ -186,7 +186,8 @@ class CoupledSolverGaussSeidel(Component):
                       'parameters': {key: self.parameters[key] for key in ('type', 'settings', 'predictor')},
                       'delta_t': self.delta_t, 'time_step': self.time_step}
             self.add_restart_data(output)
-            pickle.dump(output, open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb'))
+            with open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb') as file:
+                pickle.dump(output, file)
         if self.save_restart < 0:
             try:
                 os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
@@ -211,7 +212,8 @@ class CoupledSolverGaussSeidel(Component):
                       'timestep_start': self.timestep_start}
             if self.debug:
                 output.update({'solution_r': self.complete_solution_r})
-            pickle.dump(output, open(self.case_name + '_results.pickle', 'wb'))
+            with open(self.case_name + '_results.pickle', 'wb') as file:
+                pickle.dump(output, file)
 
         for component in self.components:
             component.output_solution_step()

@@ -18,7 +18,8 @@ legend_entries = ['case_results']
 # load cases
 results = {}
 for name, path in zip(legend_entries, case_paths):
-    results.update({name: pickle.load(open(os.path.join(common_path, path), 'rb'))})
+    with open(os.path.join(common_path, path), 'rb') as file:
+        results.update({name: pickle.load(file)})
 
 # reference case
 case_reference = legend_entries[0]
