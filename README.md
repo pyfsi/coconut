@@ -32,6 +32,8 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 -   `python>=3.6` 
 -   `numpy>=1.16.2`
 -   `scipy>=1.2.1`
+-   `pandas>=0.24.2` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos))
+-   `matplotlib=3.03` (recommended)
 
 We recommend Anaconda 2019.03 or newer.
 
@@ -96,7 +98,6 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 ```bash
 python -m unittest -b
 ```
-
 
 
 ## Getting started
