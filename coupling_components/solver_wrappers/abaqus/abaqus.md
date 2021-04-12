@@ -136,7 +136,7 @@ my_instance = my_assembly.instances['PART-1-1']
 movingSurface0 = SurfaceFromNodeSet(my_model, my_instance, 'NODESET_NAME_A', 'MOVINGSURFACE0')
 ```
 
-On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
+On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. **Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in `GetOutput.cpp`**. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
 
 ```python
 from step import *
@@ -147,7 +147,7 @@ my_model.SurfaceTraction(name = 'DistributedShear', createStepName = 'Step-1', r
 ```
 
 The second command enables writing of restart files by Abaqus, which is required for running unsteady cases. This can be done from the GUI when the "Step" module is active in the viewport, by selecting "Output" in the top menu and subsequently "Restart Requests". *Frequency* should be put on *99999*, *overlay* *activated* (this spares disk space since only the last increment is kept) and _interval_ on _1_ (also see [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAECAERefMap/simacae-t-simodbrestart.htm)).
-Note that the step type "ImplicitDynamicStep" is an example, it depends on the analysis procedure chosen to run the Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
+Note that the step type "ImplicitDynamicsStep" is an example, it depends on the analysis procedure chosen to run the Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":
 
 ```python
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
