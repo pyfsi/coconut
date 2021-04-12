@@ -70,7 +70,9 @@ class MapperInterpolator(Component):
             raise ValueError(f'Not enough from-points: {self.n_from} < {self.n_nearest}')
 
         # check bounding boxes
-        tools.check_bounding_box(model_part_from, model_part_to)
+        direction_dict = {'x0':0, 'y0':1, 'z0':2}
+        axis = sorted([direction_dict[direction] for direction in self.directions])
+        tools.check_bounding_box(model_part_from, model_part_to, axis=axis)
 
         # apply scaling to coordinates
         if self.scaling is not None:

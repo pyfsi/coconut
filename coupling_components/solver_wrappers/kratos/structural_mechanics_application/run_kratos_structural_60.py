@@ -45,9 +45,10 @@ class StructuralMechanicsWrapper:
 
     def SolveSolutionStep(self):
         self.coupling_iteration += 1
-        KM.Logger.PrintInfo('Coupling Iteration', self.coupling_iteration)
+        KM.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
         self.InputData()
         self.structural_analysis.solver.SolveSolutionStep()
+        KM.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
     def FinalizeSolutionStep(self):

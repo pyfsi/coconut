@@ -150,7 +150,7 @@ def pass_on_parameters(settings_from, settings_to, keys):
 
 # compare bounding box of ModelParts
 def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
-                       tol_minmax_warning=.1, tol_minmax_error=.3):
+                       tol_minmax_warning=.1, tol_minmax_error=.3, axis=[0,1,2]):
     """
     Use this function to compare the bounding boxes of 2 ModelParts.
 
@@ -166,8 +166,8 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
     Returns nothing.
     """
     # extract coordinate data
-    mp_a_coords = np.column_stack((mp_a.x0, mp_a.y0, mp_a.z0))
-    mp_b_coords = np.column_stack((mp_b.x0, mp_b.y0, mp_b.z0))
+    mp_a_coords = np.column_stack((mp_a.x0, mp_a.y0, mp_a.z0))[:,axis]
+    mp_b_coords = np.column_stack((mp_b.x0, mp_b.y0, mp_b.z0))[:,axis]
 
     # get bounding boxes
     mp_a_min = mp_a_coords.min(axis=0)

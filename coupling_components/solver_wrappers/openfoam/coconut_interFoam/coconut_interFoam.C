@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
     #include "createRDeltaT.H"
     #include "createFields.H"
     #include "createFvOptions.H"
-	#include "createUf.H"
 
     volScalarField rAU
     (
@@ -96,7 +95,8 @@ int main(int argc, char *argv[])
         dimensionedScalar("rAUf", dimTime/rho.dimensions(), 1.0)
     );
 
-
+    #include "CorrectPhi.H"
+    #include "createUf.H"
 
     turbulence->validate();
 
@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
         if (exists("next.coco"))
     	{
     	    #include "readControls.H"
+
 	        #include "CourantNo.H"
 	        #include "alphaCourantNo.H"
 	        #include "setDeltaT.H"

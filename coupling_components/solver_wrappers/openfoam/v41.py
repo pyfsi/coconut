@@ -282,7 +282,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.wait_message('stop_ready')
         os.system(f'pkill -f {self.application}')
         self.openfoam_process.kill()
-        self.plot_of_residuals_process.kill()
+        #self.plot_of_residuals_process.kill()
 
     def get_interface_input(self):
         return self.interface_input
