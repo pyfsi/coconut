@@ -27,14 +27,16 @@ with 48 cells on the fluid-structure interface in the length-wise direction and 
 When setting up the case, the mesh is build based on the file *`mesh.jou`* using Gambit.
 The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
 The axial direction is along the x-axis.
-After the mesh is created in Gambit, the setup script runs Fluent with the *`case.jou`* journal file to setup the case parameters.
-This case is written to the *`case_tube3d.cas`* file, which serves as input for CoCoNuT.
+The setup script runs Fluent with the *`case.jou`* journal file to setup the case parameters, starting from the mesh file *`mesh_tube3d.msh`*.
+This case is written to the *`case_tube3d.cas`* file, which serves as input for CoCoNuT. 
+Additionally, a folder *`create_mesh`* is provided containing a script to create the mesh in Gambit using a journal file.
+The mesh can be created by running the script *`create_mesh.sh`*, given that Gambit v2.4.6 is available.
 
 The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
 The Abaqus case is not build when setting up the case, but is provided as the file *`Base.inp`*.
-However, in the <nobr>*`setup_files/setup_abaqus2d/Create_Model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
-This setup can be run by executing the *`setup_abaqus.sh`* script. This will run Abaqus with the *`makeInp.py`* Python script to set the structural parameters, starting from the mesh in *`Base.inp`*.
+However, in the <nobr>*`setup_files/setup_abaqus2d/create_model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
+This setup can be run by executing the *`create_model.sh`* script. This will run Abaqus with the *`makeInp.py`* Python script to set the structural parameters, starting from the mesh in *`Base.inp`*.
 The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
 They are: 8-node biquadratic, reduced integration, hybrid with linear pressure. See the [Abaqus documentation](http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb) for more information. 
 The loads are applied on the faces in three points per element, which means on 150 load points in total. 

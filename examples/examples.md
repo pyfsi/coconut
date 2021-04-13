@@ -23,8 +23,8 @@ The main directory of each example case contains following files:
 - *`tube_<flow solver>_<structural solver>.md`*: description of the specific example.
 
 When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
-These folder are expandable and are deleted when the setup files are (re)run. 
-The script first copies the *`run_simulation.py`* file into the main directory, then loads the correct solver modules and finally copies the necessary case files from *`setup_files`* into the correct working directory.
+These folders are expandable and are deleted when the setup files are (re)run. 
+The script copies first the *`run_simulation.py`* file into the main directory, then the necessary case files from *`setup_files`* into the correct working directory and finally loads the solver modules.
 After the completion of this script, the example case is ready to run.
 
 
@@ -57,5 +57,5 @@ To set up your own case, following items should be present in the main directory
 In case you wish another name, make sure to adapt the variable `parameter_file_name` in the *`run_simulation.py`* script.
 - The *`run_simulation.py`* script which initiates the CoCoNuT simulation when run.
 - Working directories for the flow and structural solvers. In the examples they are named *`CFD`* and *`CSM`*, respectively. 
-In practice, they can bear any name as long as you make sure they are referenced correctly in parameter file under the keyword `working_directory`.
-These working directories should contain the cases for the flow and structural calculations.
+In practice, they can bear any name as long as you make sure they are referenced correctly in the parameter file under the keyword `working_directory`.
+These working directories should contain the case files for the flow and structural calculations.

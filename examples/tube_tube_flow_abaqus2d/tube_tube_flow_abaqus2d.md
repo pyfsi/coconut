@@ -24,7 +24,7 @@ When either criterion is satisfied the simulation stops.
 
 The flow solver is the Python solver TubeFlow, which implements a 1D model of the flow inside the tube,
 with 100 cells on the fluid-structure interface. 
-The parameters for this model are specified in the setup folder by the file *`solver_parameters.json`*.
+The parameters for this model are specified in the setup folder by the file *`solver_parameters_pressure.json`*.
 The (radial) displacements are applied on the cell centers.
 The loads, in fact only pressure for this 1D case, are calculated in the cell centers as well.
 The axial direction is along the z-axis,
@@ -33,8 +33,8 @@ the radial direction along the y-axis.
 The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
 The Abaqus case is not build when setting up the case, but is provided as the file *`Base.inp`*.
-However, in the <nobr>*`setup_files/setup_abaqus2d/Create_Model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
-This setup can be run by executing the *`setup_abaqus.sh`* script. 
+However, in the <nobr>*`setup_files/setup_abaqus2d/create_model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
+This setup can be run by executing the *`create_model.sh`* script. 
 This will run Abaqus with the *`makeInp.py`* Python script to set the structural parameters, starting from the mesh in *`Base.inp`*. 
 The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
 They are: 8-node biquadratic, reduced integration, hybrid with linear pressure. 

@@ -24,7 +24,7 @@ When either criterion is satisfied the simulation stops.
 
 The flow solver is the Python solver TubeFlow, which implements a 1D model of the flow inside the tube,
 with 100 cells on the fluid-structure interface. 
-The parameters for this model are specified in the setup folder by the file *`solver_parameters.json`*.
+The parameters for this model are specified in the setup folder by the file *`solver_parameters_pressure.json`*.
 The (radial) displacements are applied on the cell centers.
 The loads, in fact only pressure for this 1D case, are calculated in the cell centers as well.
 The axial direction is along the z-axis, the radial direction along the y-axis.
