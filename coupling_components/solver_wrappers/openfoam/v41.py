@@ -108,13 +108,10 @@ class SolverWrapperOpenFOAM_41(Component):
 
         self.plot_of_residuals = False  # TODO: add in the parameters
         self.residual_variables = self.settings.get('residual_variables', None)
-        self.res_filepath = os.path.join(self.working_directory, 'residuals.dat')
-        self.step = 1
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
+
         if not self.residual_variables is None:
             self.write_residuals_fileheader()
-        elif self.plot_of_residuals:
-            tools.print_info('No openfoam variables in the parameters key "residual_variables". Cannot plot residuals.',
-                             layout='warning')
 
     def initialize(self):
         super().initialize()
@@ -273,7 +270,7 @@ class SolverWrapperOpenFOAM_41(Component):
             self.wait_message('save_ready')
 
         if not self.residual_variables is None:
-            self.write_and_plot_of_residuals()
+            self.write_of_residuals()
 
     def finalize(self):
         super().finalize()
@@ -282,7 +279,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.wait_message('stop_ready')
         os.system(f'pkill -f {self.application}')
         self.openfoam_process.kill()
-        #self.plot_of_residuals_process.kill()
+        # self.plot_of_residuals_process.kill()
 
     def get_interface_input(self):
         return self.interface_input
@@ -552,14 +549,15 @@ class SolverWrapperOpenFOAM_41(Component):
         self.write_footer(file_name)
 
     def write_residuals_fileheader(self):
-        header = '#  Step'
-        for var in self.residual_variables:
-            header += ' ' * self.write_precision + var
+        header = ''
+        sep = ', '
         with open(self.res_filepath, 'w') as f:
             f.write('# Residuals\n')
-            f.write(header + '\n')
+            for variable in self.residual_variables:
+                header += variable + sep
+            f.write(header.strip(sep) + '\n')
 
-    def write_and_plot_of_residuals(self):
+    def write_of_residuals(self):
         log_filepath = os.path.join(self.working_directory, f'log.{self.application}')
         if os.path.isfile(log_filepath):
             with open(log_filepath, 'r') as f:
@@ -572,23 +570,16 @@ class SolverWrapperOpenFOAM_41(Component):
                 iteration_block_list = re.findall(
                     r'Coupling iteration = \d+' + r'(.*?)' + r'Coupling iteration \d+ end', time_block, flags=re.S)
                 for iteration_block in iteration_block_list:
-                    with open(self.res_filepath, 'a') as f:
-                        f.write(str(self.step) + ' ' * self.write_precision)
-                    for variable in self.residual_variables:
+                    residual_array = np.empty(len(self.residual_variables))
+                    for i, variable in enumerate(self.residual_variables):
                         search_string = f'Solving for {variable}, Initial residual = ' + r'(' + of_io.float_pattern + r')'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of pimple loop
                             var_residual = float(var_residual_list[-1])
+                            residual_array[i] = var_residual
                         else:
                             raise RuntimeError(f'Variable: {variable} equation is not solved in {self.application}')
 
-                        with open(self.res_filepath, 'a') as f:
-                            f.write(str(var_residual) + ' ' * self.write_precision)
                     with open(self.res_filepath, 'a') as f:
-                        f.write('\n')
-                    self.step += 1
-                if self.plot_of_residuals:
-                    self.plot_of_residuals_process = subprocess.Popen('foamMonitor -l residuals.dat',
-                                                                      cwd=self.working_directory, shell=True)
-                    self.plot_of_residuals = False
+                        np.savetxt(f, [residual_array], delimiter=', ')

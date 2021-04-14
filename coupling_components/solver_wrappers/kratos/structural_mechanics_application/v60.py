@@ -74,7 +74,7 @@ class SolverWrapperKratosStructure60(Component):
         self.run_time = 0.0
 
         self.residual_variables = self.settings.get('residual_variables', None)
-        self.res_filepath = os.path.join(self.working_directory, 'residuals.dat')
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
 
         if not self.residual_variables is None:
             self.write_residuals_fileheader()
@@ -85,7 +85,7 @@ class SolverWrapperKratosStructure60(Component):
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
-        self.timestep +=1
+        self.timestep += 1
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -205,22 +205,21 @@ class SolverWrapperKratosStructure60(Component):
                 os.remove(file)
 
     def write_residuals_fileheader(self):
-        header = '# '
-        nr_spaces =15
-        for var in self.residual_variables:
-            header += var + ' '*nr_spaces
+        header = ''
+        sep = ', '
         with open(self.res_filepath, 'w') as f:
             f.write('# Residuals\n')
-            f.write(header + '\n')
+            for variable in self.residual_variables:
+                header += variable + sep
+            f.write(header.strip(sep) + '\n')
 
     def write_residuals(self):
-        nr_spaces = 15
         float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
         log_filepath = os.path.join(self.working_directory, f'log')
         if os.path.isfile(log_filepath):
             with open(log_filepath, 'r') as f:
                 log_string = f.read()
-            time_start_string = r'STEP:\s+' + str(self.timestep -1)
+            time_start_string = r'STEP:\s+' + str(self.timestep - 1)
             time_end_string = r'STEP:\s+' + str(self.timestep)
             match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
             if not match is None:
@@ -228,16 +227,16 @@ class SolverWrapperKratosStructure60(Component):
                 iteration_block_list = re.findall(
                     r'Coupling iteration: \d+' + r'(.*?)' + r'Coupling iteration \d+ end', time_block, flags=re.S)
                 for iteration_block in iteration_block_list:
-                    for variable in self.residual_variables:
+                    residual_array = np.empty(len(self.residual_variables))
+                    for i, variable in enumerate(self.residual_variables):
                         search_string = r'\n' + variable + r' CRITERION.*[Nn]orm = ' + r'(' + float_pattern + r')'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of the non-linear iteration
                             var_residual = float(var_residual_list[-1])
+                            residual_array[i] = var_residual
                         else:
                             raise RuntimeError(f'{variable} CRITERION not found in kratos log file')
 
-                        with open(self.res_filepath, 'a') as f:
-                            f.write(str(var_residual) + ' ' * nr_spaces)
                     with open(self.res_filepath, 'a') as f:
-                        f.write('\n')
+                        np.savetxt(f, [residual_array], delimiter=', ')
