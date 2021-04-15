@@ -42,6 +42,7 @@ See the [Abaqus documentation](http://130.149.89.49:2080/v6.14/books/usb/default
 The loads are applied on the faces in 9 points per element, which means on 864 load points in total. 
 The displacement is calculated in the nodes. There are 304 nodes on the fluid-structure interface.
 The axial direction is along the x-axis.
+Additionally, an alternative input file *`Base_mixed.inp`* is provided. The mesh of this model contains a mixed interface, i.e. both quadrilateral (S8R) and triangular (STRI65) elements.
 
 The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
 In contrast, the difference of the points where loads and displacements are applied or calculated, require the use of interpolation mappers.
