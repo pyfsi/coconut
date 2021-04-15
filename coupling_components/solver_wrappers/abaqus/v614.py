@@ -148,7 +148,7 @@ class SolverWrapperAbaqus614(Component):
                 f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
             # The output files will have a name with a higher time step  ("job=") than the input file ("input=")
             cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} " \
-                f"cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                f"cpus=1 output_precision=full interactive >> AbaqusSolver.log 2>&1"
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name='Abaqus_USRInit_Time0')
         else:
@@ -156,7 +156,7 @@ class SolverWrapperAbaqus614(Component):
             cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
                 f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
             cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} " \
-                f"input=CSM_Restart cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                f"input=CSM_Restart cpus=1 output_precision=full interactive >> AbaqusSolver.log 2>&1"
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name=f'Abaqus_USRInit_Restart')
 
@@ -221,6 +221,7 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # compile Abaqus USR.f
+        path_libusr = join(self.dir_csm, "libusr/")
         os.system("rm -r " + path_libusr)  # remove libusr containing compiled USRInit.f
         os.system("mkdir " + path_libusr)
         cmd = "abaqus make library=usr.f directory=" + path_libusr + " >> AbaqusSolver.log 2>&1"
@@ -399,7 +400,7 @@ class SolverWrapperAbaqus614(Component):
                     # run datacheck and store generated files safely
                     self.dir_vault.mkdir()
                     cmd2 = f"abaqus datacheck job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
-                        f"cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                        f"cpus={self.cores} output_precision=full interactive >> AbaqusSolver.log 2>&1"
                     # tools.print_info(f'running datacheck at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -409,7 +410,7 @@ class SolverWrapperAbaqus614(Component):
                         shutil.copy(from_file, to_file)
                     # run continue
                     cmd2 = f"abaqus continue job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
-                        f"cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                        f"cpus={self.cores} output_precision=full interactive >> AbaqusSolver.log 2>&1"
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -420,7 +421,7 @@ class SolverWrapperAbaqus614(Component):
                         to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
                         shutil.copy(from_file, to_file)
                     cmd2 = f"abaqus continue job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
-                        f"cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                        f"cpus={self.cores} output_precision=full interactive >> AbaqusSolver.log 2>&1"
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -431,7 +432,7 @@ class SolverWrapperAbaqus614(Component):
                         f.unlink()  # empty vault
                     # tools.print_info(f'running datacheck at timestep {self.timestep} and iteration {self.iteration}')
                     cmd2 = f"abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
-                        f"input=CSM_Restart cpus={self.cores} user=usr.f output_precision=full interactive " \
+                        f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
                         f">> AbaqusSolver.log 2>&1"
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -441,7 +442,7 @@ class SolverWrapperAbaqus614(Component):
                         shutil.copy(from_file, to_file)
                     # run continue
                     cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
-                        f"input=CSM_Restart cpus={self.cores} user=usr.f output_precision=full interactive " \
+                        f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
                         f">> AbaqusSolver.log 2>&1"
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
@@ -453,7 +454,7 @@ class SolverWrapperAbaqus614(Component):
                         to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
                         shutil.copy(from_file, to_file)
                     cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
-                        f"input=CSM_Restart cpus={self.cores} user=usr.f output_precision=full interactive " \
+                        f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
                         f">> AbaqusSolver.log 2>&1"
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
