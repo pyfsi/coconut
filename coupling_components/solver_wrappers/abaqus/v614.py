@@ -52,6 +52,8 @@ class SolverWrapperAbaqus614(Component):
         self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
+        self.dir_vault = Path(self.dir_csm) / 'vault'
+        self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         path_src = os.path.realpath(os.path.dirname(__file__))
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -387,22 +389,75 @@ class SolverWrapperAbaqus614(Component):
         while not bool_completed and attempt < 10000:
             attempt += 1
             if attempt > 1:
-                tools.print_info(f"Warning attempt {attempt - 1} in AbaqusSolver failed, new attempt in one minute",
+                tools.print_info(f"Warning attempt {attempt - 1} to run Abaqus failed, new attempt in one minute",
                                  layout='warning')
                 time.sleep(60)
                 tools.print_info(f"Starting attempt {attempt}")
+            cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # for HPC
             if self.timestep == 1:
-                cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"
-                cmd2 = f"abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1}" \
-                    f" cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
-                commands = [cmd1, cmd2]
-                self.run_shell(self.dir_csm, commands, name='Abaqus_Calculate')
+                if self.iteration == 1:
+                    # run datacheck and store generated files safely
+                    self.dir_vault.mkdir()
+                    cmd2 = f"abaqus datacheck job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
+                        f"cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                    # tools.print_info(f'running datacheck at timestep {self.timestep} and iteration {self.iteration}')
+                    commands = cmd1 + ' ; ' + cmd2
+                    subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+                    for suffix in self.vault_suffixes:
+                        from_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
+                        to_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
+                        shutil.copy(from_file, to_file)
+                    # run continue
+                    cmd2 = f"abaqus continue job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
+                        f"cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                    # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
+                    commands = cmd1 + ' ; ' + cmd2
+                    subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+                else:
+                    # run continue using previously stored simulation files
+                    for suffix in self.vault_suffixes:
+                        from_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
+                        to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
+                        shutil.copy(from_file, to_file)
+                    cmd2 = f"abaqus continue job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
+                        f"cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                    # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
+                    commands = cmd1 + ' ; ' + cmd2
+                    subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
             else:
-                cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"
-                cmd2 = f"abaqus job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} input=CSM_Restart" \
-                    f" cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
-                commands = [cmd1, cmd2]
-                self.run_shell(self.dir_csm, commands, name='Abaqus_Calculate')
+                if self.iteration == 1:
+                    # run datacheck and store generated files safely
+                    for f in self.dir_vault.iterdir():
+                        f.unlink()  # empty vault
+                    # tools.print_info(f'running datacheck at timestep {self.timestep} and iteration {self.iteration}')
+                    cmd2 = f"abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
+                        f"input=CSM_Restart cpus={self.cores} user=usr.f output_precision=full interactive " \
+                        f">> AbaqusSolver.log 2>&1"
+                    commands = cmd1 + ' ; ' + cmd2
+                    subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+                    for suffix in self.vault_suffixes:
+                        from_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
+                        to_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
+                        shutil.copy(from_file, to_file)
+                    # run continue
+                    cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
+                        f"input=CSM_Restart cpus={self.cores} user=usr.f output_precision=full interactive " \
+                        f">> AbaqusSolver.log 2>&1"
+                    # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
+                    commands = cmd1 + ' ; ' + cmd2
+                    subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+                else:
+                    # run continue using previously stored simulation files
+                    for suffix in self.vault_suffixes:
+                        from_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
+                        to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
+                        shutil.copy(from_file, to_file)
+                    cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
+                        f"input=CSM_Restart cpus={self.cores} user=usr.f output_precision=full interactive " \
+                        f">> AbaqusSolver.log 2>&1"
+                    # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
+                    commands = cmd1 + ' ; ' + cmd2
+                    subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
             # Check log for completion and or errors
             cmd = "tail -n 10 AbaqusSolver.log > Temp_log.coco"
