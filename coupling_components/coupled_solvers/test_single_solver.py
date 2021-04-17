@@ -74,7 +74,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         else:
             if not os.path.isfile('dummy_solver.py'):
                 raise ModuleNotFoundError(f"Test class specified, but no file named dummy_solver.py in {os.getcwd()}")
-            module = __import__('dummy_solver')
+            module = tools.import_module('dummy_solver', 'dummy_solver.py')
             if not hasattr(module, self.test_class):
                 raise NameError(f"Module dummy_solver has no class {self.test_class}")
             self.dummy_solver = getattr(module, self.test_class)()
