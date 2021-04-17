@@ -524,6 +524,7 @@ class SolverWrapperAbaqus614(Component):
                 if element == element_prev:  # load points of same element
                     if point == point_prev + 1:  # deviation from ascending order indicates mistake
                         point_prev = point
+                        n_lp += 1
                     else:
                         if point > point_prev:
                             msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
@@ -543,7 +544,7 @@ class SolverWrapperAbaqus614(Component):
                 else:  # new element started
                     if point == 1:
                         n_elem += 1
-                        n_lp += point_prev  # add the number of load points from previous element
+                        n_lp += 1
                         # add to elements file the element number and number of load points from PREVIOUS element
                         if not first_loop:  # exclude first loop, as no actual element is looked at yet
                             element_str += str(element_prev) + "\t" + str(point_prev) + "\n"
