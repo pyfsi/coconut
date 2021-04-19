@@ -53,8 +53,10 @@ class SolverWrapperAbaqus614(Component):
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
         self.dir_vault = Path(self.dir_csm) / 'vault'
+        self.dir_vault.mkdir(exist_ok=True)
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         path_src = os.path.realpath(os.path.dirname(__file__))
+        self.logfile = 'AbaqusSolver.log'
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
@@ -137,26 +139,30 @@ class SolverWrapperAbaqus614(Component):
         path_libusr = join(self.dir_csm, "libusr/")
         os.system("rm -rf " + path_libusr)
         os.system("mkdir " + path_libusr)
-        cmd = "abaqus make library=usrInit.f directory=" + path_libusr + " >> AbaqusSolver.log 2>&1"
+        cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
         commands = [cmd]
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(f'### Compilation of usrInit.f ###', file=f)
         self.run_shell(self.dir_csm, commands, name='Compile_USRInit')
 
         # Get load points from usrInit.f
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(f'\n### Get load integration points using usrInit.f ###', file=f)
         if self.timestep_start == 0:
-            cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
-            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
-                f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
+            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # To get this to work on HPC?
+            cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
+                f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             # The output files will have a name with a higher time step  ("job=") than the input file ("input=")
-            cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} " \
-                f"cpus=1 output_precision=full interactive >> AbaqusSolver.log 2>&1"
+            cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
+                f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name='Abaqus_USRInit_Time0')
         else:
-            cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
-            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
-                f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
-            cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} " \
-                f"input=CSM_Restart cpus=1 output_precision=full interactive >> AbaqusSolver.log 2>&1"
+            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # To get this to work on HPC?
+            cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
+                f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
+            cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
+                f'input=CSM_Restart cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name=f'Abaqus_USRInit_Restart')
 
@@ -179,21 +185,23 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # compile GetOutput.cpp
-        cmd = "abaqus make job=GetOutput user=GetOutput.cpp >> AbaqusSolver.log 2>&1"
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(f'\n### Compilation of GetOutput.cpp ###', file=f)
+        cmd = f'abaqus make job=GetOutput user=GetOutput.cpp >> {self.logfile} 2>&1'
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='Compile_GetOutput')
 
         # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(f'\n### Get geometrical node positions using GetOutput ###', file=f)
+        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> {self.logfile} 2>&1'
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='GetOutput_Start')
 
         for i in range(0, self.n_surfaces):
-            path_output = f"CSM_Time{self.timestep_start+1}Surface{i}Output.dat"
-            path_nodes = f"CSM_Time{self.timestep_start}Surface{i}Nodes.dat"
-            cmd = f"mv {path_output} {path_nodes}"
-            commands = [cmd]
-            self.run_shell(self.dir_csm, commands, name='Move_Output_File_To_Node')
+            path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start+1}Surface{i}Output.dat')
+            path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
+            shutil.move(path_output, path_nodes)
 
             # Create elements file per surface
             face_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat")
@@ -221,10 +229,11 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # compile Abaqus USR.f
-        path_libusr = join(self.dir_csm, "libusr/")
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(f'\n### Compilation of usr.f ###', file=f)
         os.system("rm -r " + path_libusr)  # remove libusr containing compiled USRInit.f
         os.system("mkdir " + path_libusr)
-        cmd = "abaqus make library=usr.f directory=" + path_libusr + " >> AbaqusSolver.log 2>&1"
+        cmd = f'abaqus make library=usr.f directory={path_libusr} >> {self.logfile} 2>&1'
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='Compile_USR')
 
@@ -385,6 +394,8 @@ class SolverWrapperAbaqus614(Component):
                 os.system(cmd)
 
         # Run Abaqus and check for (licensing) errors
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(f'\n### time step {self.timestep}, iteration {self.iteration} ###', file=f)
         bool_completed = 0
         attempt = 0
         while not bool_completed and attempt < 10000:
@@ -408,9 +419,9 @@ class SolverWrapperAbaqus614(Component):
                     for f in self.dir_vault.iterdir():
                         f.unlink()  # empty vault
                     # tools.print_info(f'running datacheck at timestep {self.timestep} and iteration {self.iteration}')
-                    cmd2 = f"abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
-                        f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
-                        f">> AbaqusSolver.log 2>&1"
+                    cmd2 = f'abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
+                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
+                        f'>> {self.logfile} 2>&1'
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
                     for suffix in self.vault_suffixes:
@@ -418,9 +429,9 @@ class SolverWrapperAbaqus614(Component):
                         to_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
                         shutil.copy(from_file, to_file)
                     # run continue
-                    cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
-                        f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
-                        f">> AbaqusSolver.log 2>&1"
+                    cmd2 = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
+                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
+                        f'>> {self.logfile} 2>&1'
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -432,15 +443,15 @@ class SolverWrapperAbaqus614(Component):
                         shutil.copy(from_file, to_file)
                     cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
                         f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
-                        f">> AbaqusSolver.log 2>&1"
+                        f">> {self.logfile} 2>&1"
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + ' ; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
             # Check log for completion and or errors
-            cmd = "tail -n 10 AbaqusSolver.log > Temp_log.coco"
+            cmd = f'tail -n 10 {self.logfile} > Temp_log.coco'
             self.run_shell(self.dir_csm, [cmd], name='Temp_log')
-            log_tmp = os.path.join(self.dir_csm, "Temp_log.coco")
+            log_tmp = os.path.join(self.dir_csm, 'Temp_log.coco')
             bool_lic = 1
             with open(log_tmp, "r") as fp:
                 for line in fp:
@@ -451,16 +462,16 @@ class SolverWrapperAbaqus614(Component):
             elif "COMPLETED" in line:  # Check final line for completed
                 bool_completed = 1
             elif bool_lic:  # Final line did not contain "COMPLETED" but also no licensing error detected
-                raise RuntimeError("Abaqus did not COMPLETE, unclassified error, see AbaqusSolver.log "
-                                   "for extra information")
+                raise RuntimeError(f'Abaqus did not complete, unclassified error, see {self.logfile} for extra '
+                                   f'information')
 
             # Append additional information to log file
-            cmd = f"tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\'" \
-                f" >> AbaqusSolver.log 2>&1"
+            cmd = f'tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' ' \
+                f'>> {self.logfile} 2>&1'
             self.run_shell(self.dir_csm, [cmd], name='Append_log')
 
         # Write Abaqus output
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep} 1 >> AbaqusSolver.log 2>&1"
+        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep} 1 >> {self.logfile} 2>&1'
         self.run_shell(self.dir_csm, [cmd], name='GetOutput')
 
         # Read Abaqus output data
@@ -474,9 +485,8 @@ class SolverWrapperAbaqus614(Component):
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat")
-                cmd = f"cp {file_name} {file_name2}"
-                os.system(cmd)
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat')
+                shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
                 raise ValueError(f"given dimension does not match coordinates")
