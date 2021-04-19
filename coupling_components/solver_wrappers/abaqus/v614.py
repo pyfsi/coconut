@@ -107,8 +107,6 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace("|HOSTNAME|", self.hostname_replace)
                     line = line.replace("|MP_MODE|", self.mp_mode)
                     line = line.replace("|PID|", str(os.getpid()))
-                    line = line.replace("|PWD|", os.path.abspath(os.path.join(self.dir_csm, os.pardir)))
-                    line = line.replace("|CSM_dir|", self.settings["working_directory"])
                     if "|" in line:
                         raise ValueError(f"The following line in abaqus_v6.env still contains a \"|\" after "
                                          f"substitution: \n \t{line} \n Probably a parameter was not substituted")
