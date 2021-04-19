@@ -24,7 +24,7 @@ class SolverWrapperAbaqus614(Component):
     def __init__(self, parameters):
         super().__init__()
         # settings
-        """
+        '''
                settings of solver_wrappers.abaqus.v614:
 
                     working_directory       Absolute path to working directory
@@ -47,7 +47,7 @@ class SolverWrapperAbaqus614(Component):
                                             displacements)
                     mp_mode                 Mode of the parallel computing (currently only THREADS is accepted)
                     save_iterations         number of time steps between consecutive saves of Abaqus-files
-        """
+        '''
 
         self.check_software()
         self.settings = parameters['settings']
@@ -61,27 +61,27 @@ class SolverWrapperAbaqus614(Component):
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
         if self.dimensions == 2:
-            tools.print_info("Warning for axisymmetric cases:\n\tIn Abaqus these have to be constructed around the "
-                             "y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be "
-                             "accomplished by using an appropriate mapper.", layout='warning')
-        self.array_size = self.settings["arraysize"]
-        self.delta_t = self.settings["delta_t"]
-        self.timestep_start = self.settings["timestep_start"]
+            tools.print_info('Warning for axisymmetric cases:\n\tIn Abaqus these have to be constructed around the '
+                             'y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be '
+                             'accomplished by using an appropriate mapper.', layout='warning')
+        self.array_size = self.settings['arraysize']
+        self.delta_t = self.settings['delta_t']
+        self.timestep_start = self.settings['timestep_start']
         self.surfaceIDs = self.settings['surfaceIDs']
         self.n_surfaces = len(self.surfaceIDs)
-        self.mp_mode = self.settings["mp_mode"]
-        self.input_file = self.settings["input_file"]
+        self.mp_mode = self.settings['mp_mode']
+        self.input_file = self.settings['input_file']
         self.timestep = self.timestep_start
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
 
-        self.subcycling = self.settings.get("subcycling", 0)
+        self.subcycling = self.settings.get('subcycling', 0)
         if self.subcycling:
-            self.minInc = self.settings["minInc"]
-            self.initialInc = self.settings["initialInc"]
-            self.maxNumInc = self.settings["maxNumInc"]
-            self.maxInc = self.settings["maxInc"]
-            self.ramp = self.settings["ramp"]
+            self.minInc = self.settings['minInc']
+            self.initialInc = self.settings['initialInc']
+            self.maxNumInc = self.settings['maxNumInc']
+            self.maxInc = self.settings['maxInc']
+            self.ramp = self.settings['ramp']
         else:
             self.ramp = 0
             self.maxNumInc = 1
@@ -136,7 +136,7 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # Compile Abaqus USRInit.f
-        path_libusr = join(self.dir_csm, "libusr/")
+        path_libusr = join(self.dir_csm, 'libusr/')
         os.system("rm -rf " + path_libusr)
         os.system("mkdir " + path_libusr)
         cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
@@ -167,8 +167,8 @@ class SolverWrapperAbaqus614(Component):
             self.run_shell(self.dir_csm, commands, name=f'Abaqus_USRInit_Restart')
 
         # prepare GetOutput.cpp
-        get_output = "GetOutput.cpp"
-        temp_str = ""
+        get_output = 'GetOutput.cpp'
+        temp_str = ''
         for j in range(0, self.n_surfaces - 1):
             temp_str += f"\"{self.surfaceIDs[j]}\", "
         temp_str += f"\"{self.surfaceIDs[self.n_surfaces-1]}\""
@@ -204,12 +204,12 @@ class SolverWrapperAbaqus614(Component):
             shutil.move(path_output, path_nodes)
 
             # Create elements file per surface
-            face_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat")
-            output_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Elements.dat")
+            face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat')
+            output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Elements.dat')
             self.make_elements(face_file, output_file)
 
         # prepare Abaqus USR.f
-        usr = "USR.f"
+        usr = 'USR.f'
         with open(join(path_src, usr), "r") as infile:
             with open(join(self.dir_csm, "usr.f"), "w") as outfile:
                 for line in infile:
@@ -395,22 +395,21 @@ class SolverWrapperAbaqus614(Component):
 
         # Run Abaqus and check for (licensing) errors
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'\n### time step {self.timestep}, iteration {self.iteration} ###', file=f)
+            print(f'\n### Time step {self.timestep}, iteration {self.iteration} ###', file=f)
         bool_completed = 0
         attempt = 0
         while not bool_completed and attempt < 10000:
             attempt += 1
             if attempt > 1:
-                tools.print_info(f"Warning attempt {attempt - 1} to run Abaqus failed, new attempt in one minute",
+                tools.print_info(f'Warning attempt {attempt - 1} to run Abaqus failed, new attempt in one minute',
                                  layout='warning')
                 time.sleep(60)
-                tools.print_info(f"Starting attempt {attempt}")
-            cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # for HPC
+                tools.print_info(f'Starting attempt {attempt}')
+            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # for HPC
             if self.timestep == 1:
                 # run datacheck and store generated files safely
-                self.dir_vault.mkdir(exist_ok=True)
-                cmd2 = f"abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} " \
-                    f"cpus={self.cores} output_precision=full interactive >> AbaqusSolver.log 2>&1"
+                cmd2 = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
+                    f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
                 commands = cmd1 + ' ; ' + cmd2
                 subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
             else:
@@ -453,13 +452,14 @@ class SolverWrapperAbaqus614(Component):
             self.run_shell(self.dir_csm, [cmd], name='Temp_log')
             log_tmp = os.path.join(self.dir_csm, 'Temp_log.coco')
             bool_lic = 1
-            with open(log_tmp, "r") as fp:
+            with open(log_tmp, 'r') as fp:
                 for line in fp:
-                    if any(x in line for x in ["Licensing error", "license error", "Error checking out Abaqus license"]):
+                    if any(x in line for x in ['Licensing error', 'license error',
+                                               'Error checking out Abaqus license']):
                         bool_lic = 0
             if not bool_lic:
-                tools.print_info("Abaqus licensing error", layout='fail')
-            elif "COMPLETED" in line:  # Check final line for completed
+                tools.print_info('Abaqus licensing error', layout='fail')
+            elif 'COMPLETED' in line:  # Check final line for completed
                 bool_completed = 1
             elif bool_lic:  # Final line did not contain "COMPLETED" but also no licensing error detected
                 raise RuntimeError(f'Abaqus did not complete, unclassified error, see {self.logfile} for extra '
@@ -489,7 +489,7 @@ class SolverWrapperAbaqus614(Component):
                 shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
-                raise ValueError(f"given dimension does not match coordinates")
+                raise ValueError(f'given dimension does not match coordinates')
 
             # get surface node displacements
             n_nodes = data.shape[0]
@@ -507,8 +507,8 @@ class SolverWrapperAbaqus614(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
         if self.timestep and (self.timestep - 1) % self.settings['save_iterations']:
-            to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
-                                    "Surface0Cpu0Input.dat", "Surface0Output.dat"]
+            to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
+                                    'Surface0Cpu0Input.dat', 'Surface0Output.dat']
             cmd = []
             for suffix in to_be_removed_suffix:
                 cmd.append(f"rm CSM_Time{self.timestep - 1}{suffix}")
@@ -615,8 +615,8 @@ class SolverWrapperAbaqus614(Component):
         return p
 
     def replace_fortran(self, line, orig, new):
-        """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
-        This functions splits these strings over multiple lines."""
+        '''The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
+        This functions splits these strings over multiple lines.'''
 
         ampersand_location = 6
         char_limit = 72
