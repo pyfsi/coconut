@@ -4,6 +4,7 @@ from scipy.spatial import cKDTree
 from coconut import data_structure
 import numpy as np
 from scipy import interpolate
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -55,21 +56,27 @@ class Mapper_load_update2(MapperTransformer):
 
         dimensions = variables_dimensions[var]
         self.data_from = interface_from.get_variable_data(mp_name_from, var)
-
+        coord_from = interface_from.get_model_part(mp_name_from)
+        # print("coord.x0 mapper load")
+        # print(coord_from.y0)
+        # print("data_from")
+        # print(self.data_from)
+        # y = self.data_from[:, 1]
+        # print(y)
+        #
         if dimensions == 1:
             data_to = np.zeros((self.mp_input_to.size, 1))
-            # print("args_from_load")
-
-            # for i in interface_from.parameters:
-            #     mp_from = interface_from.get_model_part(i["model_part"])
-            #     print(mp_from.y0)
-            # print(self.mp_out.y0)
             for i in range(self.mp_input_to.size):
                 if self.mp_input_to.y0[i] < self.v_min or self.mp_input_to.y0[i] > self.v_max:
                     data_to[i] = 0
                 else:
                      data_to[i] = self.data_from[i]
-
+            y = data_to
+            # print("coord.x0 mapper load")
+            # print(coord_from.y0)
+            # print(y)
+            # plt.scatter(coord_from.y0, y, color='b', label="input_to")
+            # plt.show()
         elif dimensions == 3:
 
             data_to = np.zeros((self.mp_input_to.size, 3))
@@ -86,4 +93,6 @@ class Mapper_load_update2(MapperTransformer):
         else:
             raise NotImplementedError(
                 f'MapperUpdateLoad not implemented for variable of dimension {dimensions}')
+
+
         interface_to.set_variable_data(mp_name_to, var, data_to)

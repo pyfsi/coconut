@@ -1,6 +1,6 @@
 from coconut.coupling_components.mappers.transformer import MapperTransformer
 from coconut.data_structure import variables_dimensions
-from scipy.spatial import cKDTree
+from scipy import interpolate
 
 import numpy as np
 
@@ -52,11 +52,20 @@ class Mapper_initial_load(MapperTransformer):
         dimensions = variables_dimensions[var]
         self.data_from = interface_from.get_variable_data(mp_name_from, var)
 
+        a = np.loadtxt('initial_pressure.dat')
+        b = np.hsplit(a,2)
+        x = b[0]
+        y = b[1]
+        x_axis = x.flatten()
+        pressure = y.flatten()
+
+        f = interpolate.interp1d(x_axis,pressure)
+
         if dimensions == 1:
             data_to = np.zeros((self.mp_input_to.size, 1))
             for i in range(self.mp_input_to.size):
                 if self.mp_input_to.x0[i] > self.v_min:
-                    data_to[i] = 1.0365e9
+                    data_to[i] = f(self.mp_input_to.x0[i])
                 else:
                      data_to[i] = 0
 

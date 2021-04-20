@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut import tools
+import matplotlib.pyplot as plt
 
 import os
 from os.path import join
@@ -364,6 +365,18 @@ class SolverWrapperAbaqus614(Component):
     def solve_solution_step(self, interface_input):
         self.iteration += 1
 
+        for input in interface_input.parameters:
+            model = interface_input.get_model_part(input['model_part'])
+            # print("model")
+            # print(model.y0)
+            tmp = interface_input.get_variable_data(input['model_part'], input['variables'][0])
+            # print('load')
+            # print(tmp)
+            plt.plot(model.y0, tmp, color='r', label="input_to")
+            plt.xlabel('wire position (m)')
+            plt.ylabel('applied load (Pa)')
+        # plt.show()
+
         # store incoming loads
         self.interface_input.set_interface_data(interface_input.get_interface_data())
 
@@ -433,6 +446,13 @@ class SolverWrapperAbaqus614(Component):
         # Read Abaqus output data
         for dct in self.interface_output.parameters:
             mp_name = dct['model_part']
+            mp = self.interface_output.get_model_part(dct['model_part'])
+            tmp = self.interface_output.get_variable_data(dct['model_part'], dct['variables'][0])
+            tmp1 = tmp[:,0]
+            # print("output_model")
+            # print(mp.y0)
+            # print(tmp)
+            # plt.plot(mp.y0, tmp1, color='b', linestyle='dashed', label="input_to")
 
             # read in output file for surface nodes
             mp_id = self.model_part_surface_ids[mp_name]
@@ -458,7 +478,7 @@ class SolverWrapperAbaqus614(Component):
             displacement[:, :self.dimensions] = data
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
-
+        # plt.show()
         return self.interface_output
 
     def finalize_solution_step(self):

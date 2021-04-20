@@ -1,6 +1,7 @@
 from coconut.coupling_components.mappers.transformer import MapperTransformer
 from coconut.data_structure import variables_dimensions
 from scipy.spatial import cKDTree
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -19,7 +20,7 @@ class MapperAxisymmetric2DToWedge3D(MapperTransformer):
         if self.settings['direction_axial'] not in dirs:
             raise ValueError(f'invalid axial_direction {self.settings["direction_axial"]}')
         if self.settings['direction_axial'] not in dirs:
-            raise ValueError(f'invalid radial_direction {self.settings["direction_radial"]}')
+            raise ValueError(f'invalid radiadata_from.x0l_direction {self.settings["direction_radial"]}')
         self.dir_a = dirs.index(self.settings['direction_axial'])
         self.dir_r = dirs.index(self.settings['direction_radial'])
         self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
@@ -37,6 +38,7 @@ class MapperAxisymmetric2DToWedge3D(MapperTransformer):
             self.n_to = n_in
 
             self.coords_in = np.column_stack((mp_in.x0, mp_in.y0, mp_in.z0))
+            # print(self.coords_in)
             self.tree= cKDTree(self.coords_in, balanced_tree = False)
             coords = self.coords_in.copy()
             # print("coords")
@@ -85,8 +87,14 @@ class MapperAxisymmetric2DToWedge3D(MapperTransformer):
 
         dimensions = variables_dimensions[var]
         data_from = interface_from.get_variable_data(mp_name_from, var)
+        # coord_from = interface_from.get_model_part(mp_name_from)
+        # print("coord.x0 mapper 2D=>3D")
+        # print(coord_from.x0)
         # print("data_from")
-        # print(data_from)
+        # y = data_from[:,1]
+        # print(y)
+        # plt.scatter(coord_from.x0, y, color = 'b', label="input_to")
+
         if dimensions == 1:
             data_to = np.tile(data_from,(2,1))
 

@@ -2,6 +2,7 @@ from coconut.tools import create_instance
 from coconut.coupling_components.component import Component
 from coconut import tools
 from coconut import data_structure
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -127,14 +128,15 @@ class SolverWrapperMapped_update(Component):
 
         # Creating an updated self.interface_input_to
 
-        for output_from in self.interface_output_from.parameters:
-            output = self.interface_output_from.get_model_part(output_from['model_part'])
-            tmp = self.interface_output_from.get_variable_data(output_from['model_part'], output_from['variables'][0])
-            print("output", self.iteration)
-            # print(output.x0)
-            print(output.y0)
-            print("displacement")
-            print(tmp)
+        # for output_from in self.interface_output_from.parameters:
+        #     output = self.interface_output_from.get_model_part(output_from['model_part'])
+        #     tmp = self.interface_output_from.get_variable_data(output_from['model_part'], output_from['variables'][0])
+        #     print("output.x0", self.iteration)
+        #     print(output.x0)
+        #     print("output.y0", self.iteration)
+        #     print(output.y0)
+            # print("displacement")
+            # print(tmp)
 
         #purple box 2 mapping
         self.mapper_interface_input_update_to(self.interface_output_from, self.new_interface_input_to)
@@ -147,6 +149,8 @@ class SolverWrapperMapped_update(Component):
                                                                                item_new_input_to['variables'][0])
             x0_new_to = tmp[:, 0] + mp_intermediate_input_to.x0
             y0_new_to = tmp[:, 1] + mp_intermediate_input_to.y0
+            # print("tmp", self.iteration)
+            # print(tmp[:,1])
             z0_new_to = tmp[:, 2] + mp_intermediate_input_to.z0
             ids_to = np.arange(0, mp_intermediate_input_to.x0.size)
 
@@ -158,19 +162,20 @@ class SolverWrapperMapped_update(Component):
         self.interface_new_to = data_structure.Interface(self.interface_input_to.parameters, self.model_new_to)
 
 
-        for i in self.interface_new_to.parameters:
-            tyl = self.interface_new_to.get_model_part(i['model_part'])
-            tyl2 = self.interface_new_to.get_variable_data(i["model_part"],i['variables'][0])
-            # print("x-coord new interface output from")
-            # print(tyl.x0)
-            # print("y-coord new interface output from")
-            # print(tyl.y0)
+        # for i in self.interface_new_to.parameters:
+        #     tyl = self.interface_new_to.get_model_part(i['model_part'])
+        #     tyl2 = self.interface_new_to.get_variable_data(i["model_part"],i['variables'][0])
+        #     # print("x-coord new interface output from")
+        #     # print(tyl.x0)
+        #     print("y-coord new interface output from")
+        #     print(tyl.y0)
             # print("z-coord new interface output from")
             # print(tyl.z0)
 
 
         # Creating an updated self.interface_input_to
-        self.interface_input_to = self.interface_new_to
+        #todo 
+        # self.interface_input_to = self.interface_new_to
 
 
         for i in self.interface_input_to.parameters:
@@ -191,11 +196,10 @@ class SolverWrapperMapped_update(Component):
         #     for i in self.interface_input_to.parameters:
         #         mp = self.interface_input_to.get_model_part(i['model_part'])
         #         print("y-coord interface input to after mapping")
-        #         print(mp.x0)
-        #         print(mp.y0)
+        #
         #         check2 = self.interface_input_to.get_variable_data(i['model_part'], i['variables'][0])
         #         print('check2')
-        #         print(check2)
+        #         print(mp.y0,check2)
 
         interface_output_from = self.solver_wrapper.solve_solution_step(self.interface_input_to)
 
@@ -225,26 +229,49 @@ class SolverWrapperMapped_update(Component):
         self.tmp2 = self.interface_output_from.get_interface_data()
         self.interface_output_from_new.set_interface_data(self.tmp2)
 
-        self.interface_output_from = self.interface_output_from_new
+        #store the displacements for following iteration
 
-         #store the displacements for following iteration
+        # for i in self.interface_output_from.parameters:
+        #     coord = self.interface_output_from.get_model_part(i['model_part'])
+        #     print("output_from_x0", self.iteration)
+        #     print(coord.x0)
+        #     print("output_from_y0", self.iteration)
+        #     print(coord.y0)
 
-        self.interface_output_from = self.interface_output_from.copy()
+        for i in self.interface_output_from_new.parameters:
+            coord = self.interface_output_from_new.get_model_part(i['model_part'])
+            # print("output_from_new_x0", self.iteration)
+            # # print(coord.x0)
+            # print("output_from_new_y0", self.iteration)
+            # print(coord.y0.size)
+            # disp = self.interface_output_from_new.get_variable_data(i['model_part'], i['variables'][0])
+            # y = disp[:,0]
+            # print("disp")
+            # print(y)
+            # plt.scatter(coord.y0, y, color = 'r', label= "output_from")
+            # plt.xlabel('wire position')
+            # plt.ylabel('radial displacement')
+
 
         self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
-        self.mapper_interface_output.initialize(self.interface_output_from, self.interface_output_to)
+        #todo self.interface_output_to van naam veranderen
+        self.mapper_interface_output.initialize(self.interface_output_from_new, self.interface_output_to)
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
+        plt.show()
 
-        # if self.iteration ==5:
-        #     for item_output_to in self.interface_output_to.parameters:
-        #         mp_output_to = self.interface_output_to.get_model_part(item_output_to['model_part'])
-        #         print("mp_output_to_x0")
-        #         print(mp_output_to.x0)
-        #         print("mp_output_to_y0")
-        #         print(mp_output_to.y0)
-        #         varia = self.interface_output_to.get_variable_data(item_output_to['model_part'], item_output_to['variables'][0])
-        #         print("displacement")
-        #         print(varia)
+
+        # for item_output_to in self.interface_output_to.parameters:
+        #     mp_output_to = self.interface_output_to.get_model_part(item_output_to['model_part'])
+        #     print("mp_output_to_x0", self.iteration)
+        #     print(mp_output_to.x0)
+        #     print("mp_output_to_y0", self.iteration)
+        #     print(mp_output_to.y0)
+        #     print("mp_output_to_z0", self.iteration)
+        #     print(mp_output_to.z0)
+        #
+        #     varia = self.interface_output_to.get_variable_data(item_output_to['model_part'], item_output_to['variables'][0])
+        #     print("displacement", self.iteration)
+        #     print(varia)
 
         return self.interface_output_to.copy()
 
