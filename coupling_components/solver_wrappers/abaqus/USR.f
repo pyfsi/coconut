@@ -35,8 +35,8 @@ C==============================================================================
       COMMON /IDENT/ ID,IDENTIFIED
       SAVE /IDENT/
 #else
-      INTEGER O(S),P(S),ELS(N,S)
-      COMMON /OPELS/ O,P,ELS
+      INTEGER OP(2,S),ELS(2,N,S)
+      COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
 #endif
 
@@ -88,22 +88,22 @@ C==============================================================================
       PARAMETER (N = |arraySize|)
       PARAMETER (S = |surfaces|)
 
-      INTEGER O(S),P(S),ELS(N,S)
-      COMMON /OPELS/ O,P,ELS
+      INTEGER OP(2,S),ELS(2,N,S)
+      COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
 
       INTEGER NOEL,R,K,LEFT,MID,RIGHT
 
       K = 0
       LEFT  = 1
-      RIGHT = O(R)
+      RIGHT = OP(1,R)
       DO
          IF (LEFT > RIGHT) RETURN
          MID = (LEFT+RIGHT)/2
-         IF (NOEL == ELS(MID,R)) THEN
+         IF (NOEL == ELS(1,MID,R)) THEN
             K = MID
             RETURN
-         ELSE IF (NOEL < ELS(MID,R)) THEN
+         ELSE IF (NOEL < ELS(1,MID,R)) THEN
             RIGHT = MID-1
          ELSE
             LEFT = MID+1
@@ -152,8 +152,8 @@ C==============================================================================
       SAVE /IDENT/
 #else
       INTEGER ID
-      INTEGER O(S),P(S),ELS(N,S)
-      COMMON /OPELS/ O,P,ELS
+      INTEGER OP(2,S),ELS(2,N,S)
+      COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
 
       CHARACTER(LEN=40) :: FMT_ELEM
@@ -179,7 +179,7 @@ C==============================================================================
 #else
       ID = 0
 
-      FMT_ELEM = '(I)'
+      FMT_ELEM = '(I10,BN,I11)'
       UNIT_ELEM = 101
 
       DO R = 1,S
@@ -190,16 +190,15 @@ C==============================================================================
 
          OPEN(UNIT=UNIT_ELEM,FILE=FILENAME,STATUS='OLD')
       
-         READ(UNIT_ELEM,'(I)',IOSTAT=IOS) O(R)
-         READ(UNIT_ELEM,'(I)',IOSTAT=IOS) P(R)
+         READ(UNIT_ELEM,FMT_ELEM,IOSTAT=IOS) OP(:,R)
          IF (IOS < 0) THEN
             CALL STDB_ABQERR(-3,'USR-error: problem while opening')
          END IF
-         IF (O(R) > N) THEN
+         IF (OP(1,R) > N) THEN
             CALL STDB_ABQERR(-3,'USR-error: problem with array length')
          END IF
-         DO I = 1,O(R)
-            READ(UNIT_ELEM,FMT_ELEM,IOSTAT=IOS) ELS(I,R)
+         DO I = 1,OP(1,R)
+            READ(UNIT_ELEM,FMT_ELEM,IOSTAT=IOS) ELS(:,I,R)
             IF (IOS < 0) THEN
                CALL STDB_ABQERR(-3,'USR-error: problem while reading')
             END IF
@@ -207,6 +206,11 @@ C==============================================================================
          CLOSE(UNIT_ELEM)
       END DO
 #endif
+      PRINT *,'ELS(1,1,1) = ',ELS(1,1,1)
+      PRINT *,'ELS(2,10,1) = ',ELS(2,10,1)
+      PRINT *,'OP(1,1) = ',OP(1,1)
+      PRINT *,'OP(2,1) = ',OP(2,1)
+      CALL FLUSH(6)
       
       DO R = 1,S
          WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)') 
@@ -308,8 +312,8 @@ C==============================================================================
 
 #ifndef MPI
       INTEGER K
-      INTEGER O(S),P(S),ELS(N,S)
-      COMMON /OPELS/ O,P,ELS
+      INTEGER OP(2,S),ELS(2,N,S)
+      COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
 #endif
 
@@ -343,7 +347,7 @@ C==============================================================================
       END IF
 #else
       CALL LOOKUP(NOEL,R,K)
-      K = (K-1)*P(R)+NPT
+      K = ELS(2,K,R)+NPT
 
 #if RAMP
       F = LOADNEW(1,K,R)*(TIME(1)/DT)
@@ -396,8 +400,8 @@ C==============================================================================
 
 #ifndef MPI
       INTEGER L
-      INTEGER O(S),P(S),ELS(N,S)
-      COMMON /OPELS/ O,P,ELS
+      INTEGER OP(2,S),ELS(2,N,S)
+      COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
 #endif
 
@@ -418,7 +422,7 @@ C==============================================================================
       END IF
 #else
       CALL LOOKUP(NOEL,R,L)
-      L = (L-1)*P(R)+NPT
+      L = ELS(2,L,R)+NPT
 
       T_USER = LOADNEW(2:D+1,L,R)
 #endif
