@@ -38,7 +38,7 @@ parameter|type|description
 `dimensions`|int|Dimensionality of the problem (2 or 3).
 `surfaceIDs`|list|List with the names of the node sets associated with the geometrical nodes on the FSI-interface surfaces. <br><br> **Example:** ["NODESET_NAME_A", "NODESET_NAME_B"] <br> <br> **Important notes:**<br> &emsp;•	The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the [input file section](#setting-up-a-case-abaqus-input-file-inp)).<br>&emsp;•	The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.
 `interface_input`|list|Should contain a dictionary for each corresponding element in `surfaceIDs`, with a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). An example can be found in [this part of the input file section](#input-related-settings-in-json-file).
-`interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
+`interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"Base.inp"`
 `mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"` is currently not implemented.
 `save_iterations`|int|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
@@ -54,7 +54,7 @@ parameter|type|description
 `initialInc`|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
 `maxInc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
 `maxNumInc`|int|Required when subcycling is enabled. Contains the maximum number of *increments* that Abaqus is allowed to perform for one time step. 
-`minInc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*..
+`minInc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*.
 `ramp`|boolean| Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
 
 ## Overview of operation
@@ -63,7 +63,7 @@ The solver wrapper consists of 5 files located in the source directory (with *`X
  - *`X.py`*: defines the `SolverWrapperAbaqusX`class. 
  - *`abaqus_v6.env`*: environment file setting the environment for the Abaqus solver.
  - *`GetOutput.cpp`*: Extracts the output (from Abaqus .odb files) and writes it to a file for each output`ModelPart`. Written in C++.
- - *`USR.f`*: An Abaqus user-subroutine that reads the loads from files (one for each ìnput `ModelPart`) and applies them on the load points. Written in FORTRAN.
+ - *`USR.f`*: An Abaqus user-subroutine that reads the loads from files (one for each input `ModelPart`) and applies them on the load points. Written in FORTRAN.
  - *`USRinit.f`*: An Abaqus user-subroutine that extract the coordinates of the load points and writes them to files (one for each input `ModelPart`) to initialize each input `ModelPart`. Written in FORTRAN.
 
 ### The `__init__` method
