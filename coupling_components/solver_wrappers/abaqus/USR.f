@@ -206,11 +206,6 @@ C==============================================================================
          CLOSE(UNIT_ELEM)
       END DO
 #endif
-      PRINT *,'ELS(1,1,1) = ',ELS(1,1,1)
-      PRINT *,'ELS(2,10,1) = ',ELS(2,10,1)
-      PRINT *,'OP(1,1) = ',OP(1,1)
-      PRINT *,'OP(2,1) = ',OP(2,1)
-      CALL FLUSH(6)
       
       DO R = 1,S
          WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)') 
