@@ -2,14 +2,16 @@ import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 
-'''This is an example of dummy_solver.py
+"""
+This is an example of dummy_solver.py.
 To use test functions for the testing of a single solver, a file with this name should be included in the working directory.
-The functions that need to be defined depend on the variables for the interface
-The names of these functions are fixed as calculate_variable(x,y,z,n)
-The functions receive the x, y and z-coordinate of the nodes in undeformed state and the current time step (n)
-Several types of test can be grouped into this dummy_solver.py file by creating additional classes
-The name of the class to be used should be specified in the .json file containing the settings for the case
-'''
+The functions that need to be defined depend on the variables for the interface.
+The names of these functions are fixed as calculate_<variable>(x,y,z,n).
+The functions receive the x, y and z-coordinate of the nodes in undeformed state and the current time step (n).
+They have to return a list or numpy array of 1 or 3 elements for a scalar or vector, respectively.
+Several types of test can be grouped into this dummy_solver.py file by creating additional classes.
+The name of the class to be used should be specified in the .json file containing the settings for the case.
+"""
 
 
 class SimpleTest:
@@ -57,12 +59,12 @@ class TransientTest:
         """ Specify the pressure on the surface"""
         if n < 5:
             if x > 0.01:
-                pres = 1000
+                pres = [1000]
             else:
                 pres = [0]
         else:
             if x > 0.01:
-                pres = -1000
+                pres = [-1000]
             else:
                 pres = [0]
         return pres
@@ -101,12 +103,12 @@ class PythonSolverTest:
         """ Specify the pressure on the surface"""
         if n < 5:
             if z > 0.01:
-                pres = 1000
+                pres = [1000]
             else:
                 pres = [0]
         else:
             if z > 0.01:
-                pres = -1000
+                pres = [-1000]
             else:
                 pres = [0]
         return pres
