@@ -47,7 +47,7 @@ file start-transcript "transcript.txt"
 ;   READ CASE/DATA, COMPILE AND LOAD UDF
 (if (= timestep_start 0)
     (begin
-        (ti-menu-load-string "file read-case |CASE|")
+        (ti-menu-load-string "file read-case-data |CASE|")
         (ti-menu-load-string "solve set expert y n y")
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
@@ -69,33 +69,28 @@ define user-defined execute-on-demand "get_thread_ids::v2019R2"
 ;   SETUP DYNAMIC MESH
 (if (= timestep_start 0)
     (begin
+        (if unsteady
+            (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
+        )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
                 user-defined \"move_nodes::v2019R2\"" (list-ref face_threads k)))
         )
-        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1")
-        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1")
         (if unsteady
-            (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1")
+            (begin
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1\n")
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1\n")
+            )
         )
     )
 )
 ;
 ;   STORE COORDINATES AND IDS
-;(if (= timestep_start 0)
-;    (begin
-;        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2019R2\"")
-;        (send_message "nodes_and_faces_stored")
-;    )
-;)
-define user-defined execute-on-demand "store_coordinates_id::v2019R2"
-(send_message "nodes_and_faces_stored")
-;
-;   INITIALIZE SOLUTION
 (if (= timestep_start 0)
-    (if |HYBRID_INITIALIZATION|
-        (ti-menu-load-string "solve initialize hyb-initialization")
-        (ti-menu-load-string "solve initialize initialize-flow")
+    (begin
+        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2019R2\"")
+        (send_message "nodes_and_faces_stored")
     )
 )
 ;

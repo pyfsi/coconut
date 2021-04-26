@@ -57,12 +57,12 @@ class TransientTest:
         """ Specify the pressure on the surface"""
         if n < 5:
             if x > 0.01:
-                pres = 1000
+                pres = [1000]
             else:
                 pres = [0]
         else:
             if x > 0.01:
-                pres = -1000
+                pres = [0]
             else:
                 pres = [0]
         return pres

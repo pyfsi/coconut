@@ -131,8 +131,8 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         solver.finalize()
 
         # check if same position gives same pressure & traction
-        np.testing.assert_allclose(pressure[0], pressure[2], rtol=1e-12)
-        np.testing.assert_allclose(traction[0], traction[2], rtol=1e-12)
+        np.testing.assert_allclose(pressure[0], pressure[2], rtol=1e-10)
+        np.testing.assert_allclose(traction[0], traction[2], rtol=1e-11)
 
         # check if different position gives different pressure & traction
         p01 = np.linalg.norm(pressure[0] - pressure[1])

@@ -52,6 +52,7 @@ solve initialize set-defaults pressure 0
 solve initialize set-defaults x-velocity 0
 solve initialize set-defaults y-velocity 0
 solve initialize set-defaults z-velocity 0
+solve initialize initialize-flow
 
-file write-case case_tube3d.cas
+file write-case-data case_tube3d.cas
 exit

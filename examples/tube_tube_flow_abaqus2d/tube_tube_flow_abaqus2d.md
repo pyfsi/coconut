@@ -15,8 +15,8 @@ The initial guess in every time step is done using the linear predictor.
 
 Two convergence criteria have been specified:
 
--   The number of iterations in every time step is larger than 15.
--   The residual norm on the displacement is a factor $10^{-6}$ lower than the initial value.
+- The number of iterations in every time step is larger than 15.
+- The residual norm on the displacement is a factor $10^{-6}$ lower than the initial value.
  
 When either criterion is satisfied the simulation stops.
 
@@ -24,27 +24,28 @@ When either criterion is satisfied the simulation stops.
 
 The flow solver is the Python solver TubeFlow, which implements a 1D model of the flow inside the tube,
 with 100 cells on the fluid-structure interface. 
-The parameters for this model are specified in the setup folder by the file `solver_parameter.json`.
+The parameters for this model are specified in the setup folder by the file *`solver_parameters_pressure.json`*.
 The (radial) displacements are applied on the cell centers.
-The loads, in fact are only pressure for this 1D case, are calculated in the cell centers as well.
+The loads, in fact only pressure for this 1D case, are calculated in the cell centers as well.
 The axial direction is along the z-axis,
 the radial direction along the y-axis.
 
 The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
-The Abaqus case is not build when setting up the case, but is provided as the file `Base.inp`. 
-The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, 
-for stress and displacement without twist. 
+The Abaqus case is not build when setting up the case, but is provided as the file *`Base.inp`*.
+However, in the <nobr>*`setup_files/setup_abaqus2d/create_model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
+This setup can be run by executing the *`create_model.sh`* script. 
+This will run Abaqus with the *`makeInp.py`* Python script to set the structural parameters, starting from the mesh in *`Base.inp`*. 
+The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
 They are: 8-node biquadratic, reduced integration, hybrid with linear pressure. 
-See Abaqus documentaion for more information. 
+See the [Abaqus documentation](http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb) for more information. 
 The loads are applied on the faces in three points per element, which means on 150 load points in total. 
 The displacement is calculated in the nodes. There are 101 nodes on the fluid-structure interface.
-The axial direction is along the y-axis,
-the radial direction along the x-axis.
+The axial direction is along the y-axis, the radial direction along the x-axis.
 
 The difference in reference frames and number of cells on the fluid-structure interface requires the use of mappers.
 In the structure solver wrapper, a permutation mapper is introduced to match the coordinate frames.
-The new x-axis corresponds to y-axis of the incomming loads the new y-axis corresponds to the z-axis and the new z-axis to the x-axis.
+The new x-axis corresponds to y-axis of the incoming loads the new y-axis corresponds to the z-axis and the new z-axis to the x-axis.
 Thereafter, a linear interpolation mapper is used to interpolate in the x- and y-direction from the 100 cell centers of TubeFlow to the 150 load points in Abaqus.
 For the output the same is done in the opposite order: first interpolating and then swapping the axes.
 So the new x-axis is the z-axis of the displacements calculated by Abaqus, the new y-axis corresponds to the x-axis and the new z-axis to the y-axis.

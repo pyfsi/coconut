@@ -1,5 +1,5 @@
 {
-  "type": "solver_wrappers.abaqus.614",
+  "type": "solver_wrappers.abaqus.v614",
   "settings": {
     "working_directory": "solver_wrappers/abaqus/test_v614/tube2d/CSM",
     "cores": 1,

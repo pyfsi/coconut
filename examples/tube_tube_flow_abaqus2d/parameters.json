@@ -45,7 +45,7 @@
         "type": "solver_wrappers.python.tube_flow_solver",
         "settings": {
           "working_directory": "CFD",
-          "input_file": "solver_parameters.json",
+          "input_file": "solver_parameters_pressure.json",
           "interface_input": [
             {
               "model_part": "wall",
@@ -69,7 +69,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.614",
+            "type": "solver_wrappers.abaqus.v614",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,

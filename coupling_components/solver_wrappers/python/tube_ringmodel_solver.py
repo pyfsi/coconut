@@ -39,15 +39,15 @@ class SolverWrapperTubeRingmodel(Component):
         self.m = self.settings["m"]  # number of segments
         self.dz = l / self.m  # segment length
         axial_offset = self.settings.get("axial_offset", 0)  # start position along axis
-        self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # data is stored in cell centers
+        self.z = axial_offset + np.arange(self.dz / 2 - l / 2, l / 2, self.dz)  # data is stored in cell centers
 
         self.k = 0  # iteration
         self.n = 0  # time step (no restart implemented)
 
         # initialization
         self.areference = np.pi * d ** 2 / 4  # reference area of cross section
-        self.p = np.ones(self.m) * self.preference  # kinematic pressure
-        self.a = np.ones(self.m) * self.areference  # area of cross section
+        self.p = np.zeros(self.m) * self.preference  # kinematic pressure
+        self.a = np.zeros(self.m) * self.areference  # area of cross section
         self.c02 = self.cmk2 - self.preference / 2  # wave speed squared with reference pressure
 
         self.disp = np.zeros((self.m, 3))  # displacement
@@ -85,7 +85,7 @@ class SolverWrapperTubeRingmodel(Component):
     def solve_solution_step(self, interface_input):
         # input
         self.interface_input = interface_input.copy()
-        self.p = interface_input.get_variable_data("wall", "pressure").flatten()
+        self.p = interface_input.get_variable_data("wall", "pressure").flatten() / self.rhof  # kinematic pressure
 
         # independent rings model
         for i in range(len(self.p)):
