@@ -4,7 +4,7 @@
   },
   "solver_wrappers": [
     {
-      "type": "solver_wrappers.openfoam.OpenFOAM_41",
+      "type": "solver_wrappers.openfoam.v41",
       "settings": {
         "working_directory": "solver_wrappers/openfoam/test_tube_3d",
         "application": "CoCoNuT_pimpleFoam",
