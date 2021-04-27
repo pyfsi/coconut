@@ -57,7 +57,7 @@ class CoupledSolverGaussSeidel(Component):
         self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         if self.timestep_start != 0:  # restart
             self.restart_case = self.settings['restart_case']  # case name to restart from
-            self.restart_data = self.check_restart()
+            self.restart_data = self.load_restart_data()
 
         # save results variables
         self.save_results = self.settings.get('save_results', False)  # set True in order to save for every iteration
@@ -69,8 +69,8 @@ class CoupledSolverGaussSeidel(Component):
         # case name
         self.case_name = self.settings.get('name', 'case')  # case name
         listdir = os.listdir(os.getcwd())
-        match = [re.findall(r'(\w+)_(restart_ts(\d+)|results).pickle', f) for f in listdir]  # match file names
-        present_case_names = [f[0][0] for f in match if f != []]  # retain present case names
+        match = [re.search(r'(\w+)_(?:restart_ts\d+|results).pickle', f) for f in listdir]  # match file names
+        present_case_names = [f.group(1) for f in match if not f is None]  # retain present case names
         if self.case_name in present_case_names:
             i = 1
             while self.case_name + str(i) in present_case_names:
@@ -231,7 +231,7 @@ class CoupledSolverGaussSeidel(Component):
         for component in self.components:
             component.finalize()
 
-    def check_restart(self):
+    def load_restart_data(self):
         restart_file_name = self.restart_case + f'_restart_ts{self.timestep_start}.pickle'
         if not restart_file_name in os.listdir(os.getcwd()):
             raise FileNotFoundError(f'Not able to perform restart because {restart_file_name} '

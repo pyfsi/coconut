@@ -129,10 +129,8 @@ class Interface:
                            for model_part_dict in self.parameters]
             model_parts_other = [other.model.get_model_part(model_part_dict['model_part'])
                                  for model_part_dict in other.parameters]
-            for mp, mp_other in zip(model_parts, model_parts_other):
-                if mp != mp_other:
-                    return False
-            return True
+            return model_parts == model_parts_other
+
         return NotImplemented
 
     def __eq__(self, other):
