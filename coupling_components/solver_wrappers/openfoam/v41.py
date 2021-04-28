@@ -28,7 +28,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
-        self.start_time = self.settings['timestep_start']
+        self.start_time = self.settings['timestep_start']*self.delta_t
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
         self.version = '4.1'
@@ -64,8 +64,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.model = data_structure.Model()
 
         # writeCellcentres writes cellcentres in internal field and face centres in boundaryField
-        check_call(f'writeCellCentres -time {self.start_time} &> log.writeCellCentres;', cwd=self.working_directory,
-                   shell=True)
+        check_call(f'writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True)
         boundary_filename = os.path.join(self.working_directory, 'constant/polyMesh/boundary')
 
         for boundary in self.boundary_names:
@@ -121,7 +120,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.physical_time = self.start_time
 
         ##Copy zero folder to folder with correctly named timeformat
-        if self.physical_time == 0:
+        if self.start_time == 0:
             timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
             path_orig = os.path.join(self.working_directory, '0')
             path_new = os.path.join(self.working_directory, timestamp)
@@ -135,9 +134,13 @@ class SolverWrapperOpenFOAM_41(Component):
         Therefore to get the correct index one should use |index|-1!!
         Normally no doubles should be encountered on an interface as these faces are not shared by processors
         '''
+
         if self.settings['parallel']:
-            check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar', cwd=self.working_directory,
-                       shell=True)
+            if self.start_time == 0:
+                check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
+                           cwd=self.working_directory,
+                           shell=True)
+
             for boundary in self.boundary_names:
                 mp_output = self.model.get_model_part(f'{boundary}_output')
                 mp_output.sequence = []
@@ -190,21 +193,17 @@ class SolverWrapperOpenFOAM_41(Component):
         if not self.settings['parallel']:  # if serial
             new_path = os.path.join(self.working_directory, self.cur_timestamp)
             if os.path.isdir(new_path):
-                print('\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder: ' + str(
-                    new_path) + '. \n\n\n')
-                time.sleep(5)
-                os.system('rm -rf ' + new_path)
-            os.system('mkdir -p ' + new_path)
+                tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                check_call(f'rm -rf {new_path}', shell=True)
+            check_call(f'mkdir -p {new_path}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
                 if os.path.isdir(new_path):
                     if i == 0:
-                        print('\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in '
-                              'processor-subfolders. \n\n\n')
-                        time.sleep(5)
-                    os.system('rm -rf ' + new_path)
-                os.system('mkdir -p ' + new_path)
+                        tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                    check_call(f'rm -rf {new_path}', shell=True)
+                check_call(f'mkdir -p {new_path}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -240,6 +239,26 @@ class SolverWrapperOpenFOAM_41(Component):
 
         self.send_message('continue')
         self.wait_message('continue_ready')
+
+        # copy output data for debugging
+        if self.debug:
+            for boundary in self.boundary_names:
+                # specify location of pressure and traction
+                traction_name = 'TRACTION_' + boundary
+                pressure_name = 'PRESSURE_' + boundary
+                mp_name = f'{boundary}_output'
+                mp = self.model.get_model_part(mp_name)
+                nfaces = mp.size
+                wss_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                            self.cur_timestamp, f'wallShearStress_patch_{boundary}.raw')
+                pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                             self.cur_timestamp, f'p_patch_{boundary}.raw')
+                wss_iter_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                                 self.cur_timestamp, f'wallShearStress_patch_{boundary}_{self.iteration}.raw')
+                pres_iter_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                                  self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
+                cmd = f'cp {wss_filepath} {wss_iter_filepath} && cp {pres_filepath} {pres_iter_filepath}'
+                os.system(cmd)
 
         # read data from OpenFOAM
         self.read_node_output()
@@ -279,7 +298,6 @@ class SolverWrapperOpenFOAM_41(Component):
         self.wait_message('stop_ready')
         os.system(f'pkill -f {self.application}')
         self.openfoam_process.kill()
-        # self.plot_of_residuals_process.kill()
 
     def get_interface_input(self):
         return self.interface_input

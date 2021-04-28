@@ -20,7 +20,7 @@ solvers
     p
     {
         solver           GAMG;
-        tolerance        1e-12
+        tolerance        1e-12;
         relTol           1e-9;
 
         smoother         DICGaussSeidel;
@@ -59,6 +59,7 @@ solvers
 PIMPLE
 {
     nOuterCorrectors 100;
+    momentumPredictor no;
     nNonOrthogonalCorrectors 0;
     nCorrectors         3;
     residualControl
@@ -80,16 +81,4 @@ PIMPLE
 }
 
 
-relaxationFactors
-{
- fields
- {
-        p               0.3;
- }
- equations
- {
-        U               0.7;
-        "(k|omega|epsilon).*" 0.7;
- }
-}
 // ************************************************************************* //

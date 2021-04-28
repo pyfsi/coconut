@@ -40,6 +40,9 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.clean_case()
         self.set_up_case()
 
+    def tearDown(self):
+        check_call(f"""ps aux | awk '{{if (($0 !~ /awk/) && ($0 ~ /coconut_pimpleFoam/)) system("kill " $2)}}'""", shell=True)
+
     def clean_case(self):
 
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True)
@@ -60,6 +63,13 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             with open(decompose_file_name, 'w') as f:
                 f.write(new_dict)
 
+    def get_dy_dz(self, x, y, z):
+        dr = 0.0001 * np.sin(2 * np.pi / 0.05 * x)
+        theta = np.arctan2(z, y)
+        dy = dr * np.cos(theta)
+        dz = dr * np.sin(theta)
+        return dy, dz
+
     ## Test if order of nodes vary with different decomposition
     def test_model_part_nodes_with_different_cores(self):
 
@@ -72,11 +82,11 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             solver = create_instance(self.par_solver)
             solver.initialize()
             solver.finalize()
-            mp = solver.model.get_model_part(self.mp_name_in)
-            x0.append(mp.x0)
-            y0.append(mp.y0)
-            z0.append(mp.z0)
-            ids.append(mp.id)
+            model_part = solver.model.get_model_part(self.mp_name_in)
+            x0.append(model_part.x0)
+            y0.append(model_part.y0)
+            z0.append(model_part.z0)
+            ids.append(model_part.id)
 
         # compare ModelParts of both solvers
         for attr in [x0, y0, z0, ids]:
@@ -92,19 +102,15 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             self.set_up_case()
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
-            dr_mag = 0.001
-            l0 = 0.05
-            mp = solver.model.get_model_part(self.mp_name_in)
 
-            dr = dr_mag * np.sin(2 * np.pi / l0 * mp.x0)
-            node_angle = np.arctan2(mp.z0, mp.y0)
-            dx = np.zeros(mp.y0.shape)
-            dy = dr * np.cos(node_angle)
-            dz = dr * np.sin(node_angle)
+            model_part = solver.model.get_model_part(self.mp_name_in)
+            x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+            dx = np.zeros(x0.shape)
+            dy, dz = self.get_dy_dz(x0, y0, z0)
             displacement = np.column_stack((dx, dy, dz))
-            x = mp.x0 + dx
-            y = mp.y0 + dy
-            z = mp.z0 + dz
+            x = x0 + dx
+            y = y0 + dy
+            z = z0 + dz
             node_coords_ref = np.column_stack((x, y, z))
             solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
 
@@ -132,8 +138,11 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             self.set_up_case()
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
-            mp = solver.model.get_model_part(self.mp_name_in)
-            displacement = np.zeros((mp.size, 3))
+            model_part = solver.model.get_model_part(self.mp_name_in)
+            x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+            dx = np.zeros(x0.shape)
+            dy, dz = self.get_dy_dz(x0, y0, z0)
+            displacement = np.column_stack((dx, dy, dz))
             solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
 
             # update position by iterating once in solver
@@ -150,179 +159,133 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         for output in output_list[1:]:
             np.testing.assert_allclose(output / max_value, ref_output / max_value, atol=1e-10, rtol=0)
 
-    #
-    #     #
-    #     #         # test if same coordinates always gives same pressure & traction
-    #     #         if True:
-    #     #             # adapt Parameters, create solver
-    #     #             par_solver = deepcopy(par_solver_0)
-    #     #             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
-    #     #             par_solver['settings'].SetInt('flow_iterations', 500)
-    #     #             solver = cs_tools.CreateInstance(par_solver)
-    #     #             solver.Initialize()
-    #     #             solver.InitializeSolutionStep()
-    #     #
-    #     #             # change grid to position 1
-    #     #             mp = solver.model['beamoutside_nodes']
-    #     #             for node in mp.Nodes:
-    #     #                 node.Y = 0.005 + 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #             output1 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
-    #     #
-    #     #             # change grid to position 2
-    #     #             for node in mp.Nodes:
-    #     #                 node.Y = 0.005 - 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #             output2 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
-    #     #
-    #     #             # change grid back to position 1
-    #     #             for node in mp.Nodes:
-    #     #                 node.Y = 0.005 + 0.0005 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #             output3 = solver.SolveSolutionStep(solver.GetInterfaceInput()).deepcopy()
-    #     #
-    #     #             solver.FinalizeSolutionStep()
-    #     #             solver.Finalize()
-    #     #
-    #     #             # normalize data and compare
-    #     #             a1 = output1.GetNumpyArray()
-    #     #             a2 = output2.GetNumpyArray()
-    #     #             a3 = output3.GetNumpyArray()
-    #     #
-    #     #             mean = np.mean(a1)
-    #     #             ref = np.abs(a1 - mean).max()
-    #     #
-    #     #             a1n = (a1 - mean) / ref
-    #     #             a2n = (a2 - mean) / ref
-    #     #             a3n = (a3 - mean) / ref
-    #     #
-    #     #             self.assertNotAlmostEqual(np.sum(np.abs(a1n - a2n)) / a1n.size, 0., delta=1e-12)
-    #     #             for i in range(a1.size):
-    #     #                 self.assertAlmostEqual(a1n[i] - a3n[i], 0., delta=1e-12)
-    #     #
-    #     #         # test if correct number of displacements is applied
-    #     #         if True:
-    #     #             # adapt Parameters, create solver
-    #     #             par_solver = deepcopy(par_solver_0)
-    #     #             par_solver['settings'].SetInt('flow_iterations', 5)
-    #     #             solver = cs_tools.CreateInstance(par_solver)
-    #     #
-    #     #             # give value to DISPLACEMENT variable
-    #     #             mp = solver.model['beamoutside_nodes']
-    #     #             for node in mp.Nodes:
-    #     #                 dy = 0.0001 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #                 node.SetSolutionStepValue(displacement, 0, [0., dy, 0.])
-    #     #
-    #     #             # run solver for some timesteps and iterations
-    #     #             solver.Initialize()
-    #     #             timesteps = 3
-    #     #             iterations = 4
-    #     #             for i in range(timesteps):
-    #     #                 solver.InitializeSolutionStep()
-    #     #                 for j in range(iterations):
-    #     #                     solver.SolveSolutionStep(solver.GetInterfaceInput())
-    #     #                 solver.FinalizeSolutionStep()
-    #     #             solver.Finalize()
-    #     #
-    #     #             # create solver to check coordinates at last timestep
-    #     #             par_solver['settings'].SetInt('timestep_start', timesteps)
-    #     #             solver = cs_tools.CreateInstance(par_solver)
-    #     #             solver.Initialize()
-    #     #             solver.Finalize()
-    #     #
-    #     #             # check if displacement was applied correct number of times
-    #     #             mp = solver.model['beamoutside_nodes']
-    #     #             for node in mp.Nodes:
-    #     #                 n = timesteps * iterations
-    #     #                 y_goal = 0.005 + n * 0.0001 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #                 self.assertAlmostEqual(node.Y, y_goal, delta=1e-16)
-    #     #
-    #     #         # test if restart option works correctly
-    #     #         if True:
-    #     #             # adapt Parameters, create solver
-    #     #             par_solver = deepcopy(par_solver_0)
-    #     #             par_solver['settings'].SetInt('cores', multiprocessing.cpu_count())
-    #     #             par_solver['settings'].SetInt('flow_iterations', 500)
-    #     #             solver = cs_tools.CreateInstance(par_solver)
-    #     #
-    #     #             # give value to DISPLACEMENT variable
-    #     #             mp = solver.model['beamoutside_nodes']
-    #     #             for node in mp.Nodes:
-    #     #                 dy = 0.0002 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #                 node.SetSolutionStepValue(displacement, 0, [0., dy, 0.])
-    #     #
-    #     #             # run solver for 2 timesteps
-    #     #             solver.Initialize()
-    #     #             for i in range(4):
-    #     #                 solver.InitializeSolutionStep()
-    #     #                 for j in range(2):
-    #     #                     solver.SolveSolutionStep(solver.GetInterfaceInput())
-    #     #                 solver.FinalizeSolutionStep()
-    #     #             solver.Finalize()
-    #     #
-    #     #             # get data for solver without restart
-    #     #             interface1 = solver.GetInterfaceOutput().deepcopy()
-    #     #             data1 = interface1.GetNumpyArray().copy()
-    #     #
-    #     #             # create solver which restarts at timestep 2
-    #     #             par_solver['settings'].SetInt('timestep_start', 2)
-    #     #             solver = cs_tools.CreateInstance(par_solver)
-    #     #
-    #     #             # give value to DISPLACEMENT variable
-    #     #             mp = solver.model['beamoutside_nodes']
-    #     #             for node in mp.Nodes:
-    #     #                 dy = 0.0002 * np.sin(2 * np.pi / 0.05 * node.X)
-    #     #                 node.SetSolutionStepValue(displacement, 0, [0., dy, 0.])
-    #     #
-    #     #             # run solver for 2 more timesteps
-    #     #             solver.Initialize()
-    #     #             for i in range(2):
-    #     #                 solver.InitializeSolutionStep()
-    #     #                 for j in range(2):
-    #     #                     solver.SolveSolutionStep(solver.GetInterfaceInput())
-    #     #                 solver.FinalizeSolutionStep()
-    #     #             solver.Finalize()
-    #     #
-    #     #             # get data for solver with restart
-    #     #             interface2 = solver.GetInterfaceOutput().deepcopy()
-    #     #             data2 = interface2.GetNumpyArray().copy()
-    #     #
-    #     #             # compare coordinates of Nodes
-    #     #             mp1 = interface1.model['beamoutside_nodes']
-    #     #             mp2 = interface2.model['beamoutside_nodes']
-    #     #             for node1 in mp1.Nodes:
-    #     #                 node2 = mp2.GetNode(node1.Id)
-    #     #                 self.assertAlmostEqual(node1.X, node2.X, delta=1e-16)
-    #     #                 self.assertAlmostEqual(node1.Y, node2.Y, delta=1e-16)
-    #     #                 self.assertAlmostEqual(node1.Z, node2.Z, delta=1e-16)
-    #     #
-    #     #             # normalize pressure and traction data and compare
-    #     #             mean = np.mean(data1)
-    #     #             ref = np.abs(data1 - mean).max()
-    #     #
-    #     #             data1n = (data1 - mean) / ref
-    #     #             data2n = (data2 - mean) / ref
-    #     #
-    #     #             for i in range(data1n.size):
-    #     #                 # print(f'data1n = {data1n[i]:.1e}, data2n = {data2n[i]:.1e}, diff = {data1n[i] - data2n[i]:.1e}')
-    #     #                 self.assertAlmostEqual(data1n[i] - data2n[i], 0., delta=1e-14)
-    #
-    #     print('Finishing tests for OpenFOAM/4.1 tube_3d.')
+    ## test if same coordinates always gives same pressure & traction
+    def test_pressure_wall_shear(self):
+        print_box("Testing if same displacement gives same pressure/traction")
+        # adapt parameters, create solver
+        self.set_cores(1)
+        solver = create_instance(self.par_solver)
+        solver.initialize()
+        solver.initialize_solution_step()
+        interface_input = solver.get_interface_input()
 
-    # test update vector dict
-    # with open('/lusers/temp/navaneeth/Software/Coconut/coconut/examples/tube_openfoam3d_kratos_structure3d/CFD/0.00000/pointDisplacement',
-    #         'r') as f:
-    #     file_string = f.read()
-    #     dict = of_io.get_dict(string=file_string, keyword='mantle')
-    #     dict_new = of_io.update_vector_array_dict(dict, np.full((3, 3), [1.0, 0.004, 2.34e-9]))
-    #     file_string = file_string.replace(dict, dict_new)
-    #     print(file_string)
+        # set displacement
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
+        dydz = np.column_stack((dy, dz))
+        dydz_list = [dydz, np.zeros_like(dydz), dydz]
 
-    # #get scalar field
-    # with open('test_tube_3d/constant/polyMesh/neighbour', 'r') as f:
-    #     file_string = f.read()
-    #     print(of_io.get_scalar_array(file_string, is_int=True))
-    # get scalar field from dict
-    # file_name = 'test_tube_3d/0/ccx'
-    # scalar_array = of_io.get_boundary_field(file_name, 'mantle', is_scalar=True)
-    # print(scalar_array)
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+
+        # run solver for three displacements (first one = last one)
+        pressure = []
+        traction = []
+        for dydz in dydz_list:
+            displacement[:, 1:] = dydz
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+            interface_output = solver.solve_solution_step(interface_input)
+            pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
+            traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
+        solver.finalize_solution_step()
+        solver.finalize()
+
+        pr_amp = 0.5*(np.max((pressure[0] + pressure[2])/2) - np.min((pressure[0] + pressure[2])/2))
+        tr_amp = 0.5*(np.max((traction[0] + traction[2])/2) - np.min((traction[0] + traction[2])/2))
+
+        # # check if same position gives same pressure & traction
+        np.testing.assert_allclose(pressure[0]/pr_amp, pressure[2]/pr_amp, atol=1e-4, rtol=0)
+        np.testing.assert_allclose(traction[0]/tr_amp, traction[2]/tr_amp, atol=1e-4, rtol=0)
+
+        #check if different position gives different pressure & traction
+        p01 = np.linalg.norm(pressure[0] - pressure[1])
+        p02 = np.linalg.norm(pressure[0] - pressure[2])
+        self.assertTrue(p02 / p01 < 1e-4)
+
+        t01 = np.linalg.norm(traction[0] - traction[1])
+        t02 = np.linalg.norm(traction[0] - traction[2])
+        self.assertTrue(t02 / t01 < 1e-4)
+
+        #print(np.c_[pressure[0], pressure[1], pressure[2]])
+
+        ## test if restart option works correctly
+    def test_restart(self):
+        # adapt parameters, create solver
+        print_box("Testing restart")
+        cores = 4
+        self.set_cores(cores)
+        self.par_solver['settings']['cores'] = cores
+        solver = create_instance(self.par_solver)
+        interface_input = solver.get_interface_input()
+
+        # set displacement
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
+        dx = np.zeros(x0.shape)
+        displacement = np.column_stack((dx, dy, dz))
+        solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+        nr_time_steps = 4
+        # run solver for 4 timesteps
+        solver.initialize()
+        for i in range(nr_time_steps):
+            solver.initialize_solution_step()
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        interface_x_1 = solver.get_interface_input()
+        interface_y_1 = solver.get_interface_output()
+
+        if cores > 1:
+            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL)
+        _, coords_1 = of_io.get_boundary_points(solver.working_directory,
+                                             f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}',
+                                             'mantle')
+        solver.finalize()
+        # get data for solver without restart
+        interface_output = solver.get_interface_output()
+        pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
+        traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
+
+        # create solver which restarts at timestep 2
+        self.par_solver['settings']['timestep_start'] = 2
+        solver = create_instance(self.par_solver)
+        interface_input = solver.get_interface_input()
+
+        # run solver for 2 more timesteps
+        solver.initialize()
+        for i in range(2, nr_time_steps):
+            solver.initialize_solution_step()
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
+            solver.solve_solution_step(interface_input)
+            solver.finalize_solution_step()
+        interface_x_2 = solver.get_interface_input()
+        interface_y_2 = solver.get_interface_output()
+        if cores > 1:
+            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL)
+        _, coords_2 = of_io.get_boundary_points(solver.working_directory,
+                                             f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}',
+                                             'mantle')
+        solver.finalize()
+
+        # # get data for solver with restart
+        interface_output = solver.get_interface_output()
+        pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
+        traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
+
+        # # check if undeformed coordinate (coordinates of model part) are equal
+        # self.assertTrue(interface_x_1.has_same_model_parts(interface_x_2))
+        # self.assertTrue(interface_y_1.has_same_model_parts(interface_y_2))
+
+        # check if coordinates of ModelParts are equal
+        # ==>  check if deformed coordinates are equal
+        np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
+
+        # # check if pressure and traction are equal
+        np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-9)
+        np.testing.assert_allclose(traction_1, traction_2, rtol=1e-9)
+
+
 
 
 if __name__ == '__main__':

@@ -43,6 +43,7 @@ Description
 #include "IOstream.H"
 #include "Ostream.H"
 #include "forces.H"
+#include "fsiDisplacement.H"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
     unsigned int iteration;
 
     IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
-    wordList boundary_names ( controlDict.lookup("boundary_names"));
+    wordList boundary_names (controlDict.lookup("boundary_names"));
         
     while (true) // NOT runTime.run()
     {
@@ -95,7 +96,6 @@ int main(int argc, char *argv[])
 			#include "readControls.H"
 			#include "CourantNo.H"
 			#include "setDeltaT.H"
-
 
     		prev_runTime = runTime.timeName();
             // For adjustable time steps insert a while (controlDict.deltaT > runTime.deltaTValue()):  pimple loop
@@ -111,69 +111,12 @@ int main(int argc, char *argv[])
 		{
 		    iteration++;
 		    Info << "Coupling iteration = " << iteration << nl << endl;
-    		
+    		//mesh.movePoints(mesh.oldPoints());
     		// Define movement of the coupling interface
     	    forAll(boundary_names, s)
     	    {
-    	            word current_boundary = boundary_names[s];
-    	            label patchWallID = mesh.boundaryMesh().findPatchID(current_boundary);
-    	            const fvPatch& patchWallFaces = mesh.boundary()[patchWallID];
-
-					// Info << "In Next" << nl << endl;
-		
-					// *** Set patch displacement for motion solver.*** //
-					// Find the reference to the pointDisplacement field (this appears to work)
-					pointVectorField& PointDisplacement = const_cast<pointVectorField&>
-					(
-						mesh.objectRegistry::lookupObject<pointVectorField >
-						(
-						"pointDisplacement"
-						)
-					);
-
-					//OFstream testfile(runTime.path()/"Example_pointDispFile");
-					//testfile << PointDisplacement<< endl;
-					//PointDisplacement.write();
-		
-					// Info << PointDisplacement.instance() << nl << endl; //Instance is a part of the path referring to the file that should be read and is updated (verified this by printing)
-		
-					//Get the vector field of the patch
-					vectorField &pDisp=refCast<vectorField>(PointDisplacement.boundaryFieldRef()[patchWallID]);
-		
-					Info<< "Reading pointDisplacement\n" << endl;
-
-					pointVectorField pointDisplacement_temp_
-					(
-						IOobject
-						(
-							"pointDisplacement_Next",
-							prev_runTime,
-							mesh,
-							IOobject::MUST_READ,
-							IOobject::AUTO_WRITE
-						),
-						pointMesh::New(mesh)
-					);
-		
-					pointVectorField& PointDisplacementTemp = const_cast<pointVectorField&>
-					(
-						pointDisplacement_temp_
-					);
-		
-					vectorField &pDispTemp=refCast<vectorField>(PointDisplacementTemp.boundaryFieldRef()[patchWallID]);
-		
-					//Info << pDispTemp <<nl << endl;
-		
-					//Info << pointDisplacement_temp_ << nl <<endl;
-					//Info << pointDisplacement_temp_.boundaryField()[patchWallID] << nl<< endl;
-					//Info << "-------------------------------------------------------------------" << nl<< endl;
-					//Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
-		
-					// Assign the new boundary displacements
-					PointDisplacement.boundaryFieldRef()[patchWallID] ==  pDispTemp;
-		
-					//Info << PointDisplacement.boundaryField()[patchWallID] << nl<< endl;
-    		
+    	            word boundary_name = boundary_names[s];
+    	            ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
     	    }
     	   
     		// Calculate the mesh motion and update the mesh
