@@ -92,51 +92,51 @@ class SolverWrapperAbaqus614(Component):
         # prepare abaqus_v6.env
         self.hostnames = []
         self.hostnames_unique = []
-        with open(join(self.dir_csm, "AbaqusHosts.txt"), "r") as hostfile:
+        with open(join(self.dir_csm, 'AbaqusHosts.txt'), 'r') as hostfile:
             for line in hostfile:
                 self.hostnames.append(line.rstrip())
                 if not line.rstrip() in self.hostnames_unique:
                     self.hostnames_unique.append(line.rstrip())
-        self.hostname_replace = ""
+        self.hostname_replace = ''
         for hostname in self.hostnames_unique:
-            self.hostname_replace += "[\'" + hostname + "\', " + str(self.hostnames.count(hostname)) + "], "
-        self.hostname_replace = self.hostname_replace.rstrip(", ")
-        with open(join(path_src, "abaqus_v6.env"), "r") as infile:
-            with open(join(self.dir_csm, "abaqus_v6.env"), "w") as outfile:
+            self.hostname_replace += '[\'' + hostname + '\', ' + str(self.hostnames.count(hostname)) + '], '
+        self.hostname_replace = self.hostname_replace.rstrip(', ')
+        with open(join(path_src, 'abaqus_v6.env'), 'r') as infile:
+            with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|HOSTNAME|", self.hostname_replace)
-                    line = line.replace("|MP_MODE|", self.mp_mode)
-                    line = line.replace("|PID|", str(os.getpid()))
-                    if "|" in line:
-                        raise ValueError(f"The following line in abaqus_v6.env still contains a \"|\" after "
-                                         f"substitution: \n \t{line} \n Probably a parameter was not substituted")
+                    line = line.replace('|HOSTNAME|', self.hostname_replace)
+                    line = line.replace('|MP_MODE|', self.mp_mode)
+                    line = line.replace('|PID|', str(os.getpid()))
+                    if '|' in line:
+                        raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
+                                         f'substitution: \n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
         # Create start and restart file
-        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + "/CSM_Time0.inp",
-                                         self.dir_csm + "/CSM_Restart.inp")
+        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + '/CSM_Time0.inp',
+                                         self.dir_csm + '/CSM_Restart.inp')
 
         # Prepare Abaqus USRInit.f
-        usr = "USRInit.f"
-        with open(join(path_src, usr), "r") as infile:
-            with open(join(self.dir_csm, "usrInit.f"), "w") as outfile:
+        usr = 'USRInit.f'
+        with open(join(path_src, usr), 'r') as infile:
+            with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|dimension|", str(self.dimensions))
-                    line = line.replace("|surfaces|", str(self.n_surfaces))
-                    line = line.replace("|cpus|", str(self.cores))
+                    line = line.replace('|dimension|', str(self.dimensions))
+                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|cpus|', str(self.cores))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
-                    if "|" in line:
-                        raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: "
-                                         f"\n \t{line} \n Probably a parameter was not substituted")
+                    line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
+                    line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
+                    if '|' in line:
+                        raise ValueError(f'The following line in USRInit.f still contains a \'|\' after substitution: '
+                                         f'\n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
         # Compile Abaqus USRInit.f
         path_libusr = join(self.dir_csm, 'libusr/')
-        os.system("rm -rf " + path_libusr)
-        os.system("mkdir " + path_libusr)
+        os.system('rm -rf ' + path_libusr)
+        os.system('mkdir ' + path_libusr)
         cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'### Compilation of usrInit.f ###', file=f)
@@ -149,10 +149,10 @@ class SolverWrapperAbaqus614(Component):
             cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # To get this to work on HPC?
             cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
-            # The output files will have a name with a higher time step  ("job=") than the input file ("input=")
+            # The output files will have a name with a higher time step  ('job=') than the input file ('input=')
             cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
                 f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
-            commands = cmd1 + '; ' + cmd2  + '; ' + cmd3
+            commands = cmd1 + '; ' + cmd2 + '; ' + cmd3
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
         else:
             cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # To get this to work on HPC?
@@ -160,25 +160,25 @@ class SolverWrapperAbaqus614(Component):
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
                 f'input=CSM_Restart cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
-            commands = cmd1 + '; ' + cmd2  + '; ' + cmd3
+            commands = cmd1 + '; ' + cmd2 + '; ' + cmd3
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # prepare GetOutput.cpp
         get_output = 'GetOutput.cpp'
         temp_str = ''
         for j in range(0, self.n_surfaces - 1):
-            temp_str += f"\"{self.surfaceIDs[j]}\", "
-        temp_str += f"\"{self.surfaceIDs[self.n_surfaces-1]}\""
+            temp_str += f'\"{self.surfaceIDs[j]}\", '
+        temp_str += f'\"{self.surfaceIDs[self.n_surfaces-1]}\"'
 
-        with open(join(path_src, get_output), "r") as infile:
-            with open(join(self.dir_csm, get_output), "w") as outfile:
+        with open(join(path_src, get_output), 'r') as infile:
+            with open(join(self.dir_csm, get_output), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|surfaces|", str(self.n_surfaces))
-                    line = line.replace("|surfaceIDs|", temp_str)
-                    line = line.replace("|dimension|", str(self.dimensions))
-                    if "|" in line:
-                        raise ValueError(f"The following line in GetOutput.cpp still contains a \"|\" after "
-                                         f"substitution: \n \t{line} \n Probably a parameter was not subsituted")
+                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|surfaceIDs|', temp_str)
+                    line = line.replace('|dimension|', str(self.dimensions))
+                    if '|' in line:
+                        raise ValueError(f'The following line in GetOutput.cpp still contains a \'|\' after '
+                                         f'substitution: \n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
         # compile GetOutput.cpp
@@ -205,29 +205,29 @@ class SolverWrapperAbaqus614(Component):
 
         # prepare Abaqus USR.f
         usr = 'USR.f'
-        with open(join(path_src, usr), "r") as infile:
-            with open(join(self.dir_csm, "usr.f"), "w") as outfile:
+        with open(join(path_src, usr), 'r') as infile:
+            with open(join(self.dir_csm, 'usr.f'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|dimension|", str(self.dimensions))
-                    line = line.replace("|arraySize|", str(self.array_size))
-                    line = line.replace("|surfaces|", str(self.n_surfaces))
-                    line = line.replace("|cpus|", str(self.cores))
-                    line = line.replace("|ramp|", str(self.ramp))
-                    line = line.replace("|deltaT|", str(self.delta_t))
+                    line = line.replace('|dimension|', str(self.dimensions))
+                    line = line.replace('|arraySize|', str(self.array_size))
+                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|cpus|', str(self.cores))
+                    line = line.replace('|ramp|', str(self.ramp))
+                    line = line.replace('|deltaT|', str(self.delta_t))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
-                    if "|" in line:
-                        raise ValueError(f"The following line in USR.f still contains a \"|\" after substitution: "
-                                         f"\n \t{line} \n Probably a parameter was not subsituted")
+                    line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
+                    line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
+                    if '|' in line:
+                        raise ValueError(f'The following line in USR.f still contains a \'|\' after substitution: '
+                                         f'\n \t{line} \n Probably a parameter was not subsituted')
                     outfile.write(line)
 
         # compile Abaqus USR.f
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'\n### Compilation of usr.f ###', file=f)
-        os.system("rm -r " + path_libusr)  # remove libusr containing compiled USRInit.f
-        os.system("mkdir " + path_libusr)
+        os.system('rm -r ' + path_libusr)  # remove libusr containing compiled USRInit.f
+        os.system('mkdir ' + path_libusr)
         cmd = f'abaqus make library=usr.f directory={path_libusr} >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
@@ -252,13 +252,13 @@ class SolverWrapperAbaqus614(Component):
             n_elem = int(elements0[0, 0])  # elements first item on line 1 contains number of elements
             n_lp = int(elements0[0, 1])  # elements second item on line 1 contains number of total load points
             if elements0.shape[0] - 1 != int(n_elem):  # elements remainder contains element numbers in interface
-                raise ValueError(f"Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with "
-                                 f"the number of elements ({n_elem})")
+                raise ValueError(f'Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with '
+                                 f'the number of elements ({n_elem})')
             if self.timestep_start != 0:  # check if elements0 corresponds to timestep_start
                 elem_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
                 elements = np.loadtxt(elem_file)
                 if int(elements[0, 0]) != n_elem or int(elements[0, 1]) != n_lp:
-                    raise ValueError(f"Number of load points has changed for {mp_name}")
+                    raise ValueError(f'Number of load points has changed for {mp_name}')
 
             # read in faces file for load points
             faces0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
@@ -270,20 +270,18 @@ class SolverWrapperAbaqus614(Component):
             prev_elem = 0
             prev_lp = 0
             ids = np.arange(n_lp)
-            index = 0
             coords_tmp = np.zeros((n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
             for i in range(0, n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
-                    raise ValueError(f"Element sequence is wrong ({elem}<{prev_elem})")
+                    raise ValueError(f'Element sequence is wrong ({elem}<{prev_elem})')
                 elif elem == prev_elem and lp != prev_lp + 1:
-                    raise ValueError(f"Next line for same element ({elem}) does not contain next load point")
+                    raise ValueError(f'Next line for same element ({elem}) does not contain next load point')
                 elif elem > prev_elem and lp != 1:
-                    raise ValueError(f"First line for element ({elem}) does not contain its first load point")
+                    raise ValueError(f'First line for element ({elem}) does not contain its first load point')
 
-                # ids_tmp[i] = f"{elem}_{lp}"
-                coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last "dimensions" columns
+                coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last 'dimensions' columns
 
                 prev_elem = elem
                 prev_lp = lp
@@ -318,7 +316,7 @@ class SolverWrapperAbaqus614(Component):
                 nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
                 n_nodes = nodes.shape[0]
                 if n_nodes != n_nodes0:
-                    raise ValueError(f"Number of interface nodes has changed for {mp_name}")
+                    raise ValueError(f'Number of interface nodes has changed for {mp_name}')
 
             # get geometrical node coordinates
             ids = np.arange(n_nodes0)  # Abaqus does not use node ids but maintains the output order
@@ -380,10 +378,10 @@ class SolverWrapperAbaqus614(Component):
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 mp_id = self.model_part_surface_ids[mp_name]
-                file_name1 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat")
-                file_name2 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input"
-                                                f"_Iter{self.iteration}.dat")
-                cmd = f"cp {file_name1} {file_name2}"
+                file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
+                                                f'_Iter{self.iteration}.dat')
+                cmd = f'cp {file_name1} {file_name2}'
                 os.system(cmd)
 
         # Run Abaqus and check for (licensing) errors
@@ -433,9 +431,9 @@ class SolverWrapperAbaqus614(Component):
                         from_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
                         to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
                         shutil.copy(from_file, to_file)
-                    cmd2 = f"abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} " \
-                        f"input=CSM_Restart cpus={self.cores} output_precision=full interactive " \
-                        f">> {self.logfile} 2>&1"
+                    cmd2 = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
+                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
+                        f'>> {self.logfile} 2>&1'
                     # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + '; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -454,7 +452,7 @@ class SolverWrapperAbaqus614(Component):
                 tools.print_info('Abaqus licensing error', layout='fail')
             elif 'COMPLETED' in line:  # Check final line for completed
                 bool_completed = True
-            elif bool_lic:  # Final line did not contain "COMPLETED" but also no licensing error detected
+            elif bool_lic:  # Final line did not contain 'COMPLETED' but also no licensing error detected
                 raise RuntimeError(f'Abaqus did not complete, unclassified error, see {self.logfile} for extra '
                                    f'information')
 
@@ -473,7 +471,7 @@ class SolverWrapperAbaqus614(Component):
 
             # read in output file for surface nodes
             mp_id = self.model_part_surface_ids[mp_name]
-            file_name = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Output.dat")
+            file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output.dat')
             data = np.loadtxt(file_name, skiprows=1)
 
             # copy output data for debugging
@@ -504,7 +502,7 @@ class SolverWrapperAbaqus614(Component):
                                     'Surface0Cpu0Input.dat', 'Surface0Output.dat']
             cmd = ''
             for suffix in to_be_removed_suffix:
-                cmd += f"rm CSM_Time{self.timestep - 1}{suffix}; "
+                cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
     def finalize(self):
@@ -559,19 +557,19 @@ class SolverWrapperAbaqus614(Component):
                         n_lp += 1
                     else:
                         if point > point_prev:
-                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
-                                                f" increases by more 1 one per line for element {element}, found "
-                                                f"{point} but {point_prev + 1} was expected.", width=80)
+                            msg = textwrap.fill(f'Error while processing {face_file.name} line {num}. Load point number'
+                                                f' increases by more 1 one per line for element {element}, found '
+                                                f'{point} but {point_prev + 1} was expected', width=80)
                             raise ValueError(msg)
                         elif point == 1:
-                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
-                                                f" {point} is lower than previous ({point_prev}). Check if surface "
-                                                f"contains element with multiple faces in surface, for example at "
-                                                f"corners. This is not allowed.", width=80)
+                            msg = textwrap.fill(f'Error while processing {face_file.name} line {num}. Load point number'
+                                                f' {point} is lower than previous ({point_prev}). Check if surface '
+                                                f'contains element with multiple faces in surface, for example at '
+                                                f'corners. This is not allowed.', width=80)
                             raise ValueError(msg)
                         else:
-                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
-                                                f" {point} is lower than previous ({point_prev}).", width=80)
+                            msg = textwrap.fill(f'Error while processing {face_file.name} line {num}. Load point number'
+                                                f' {point} is lower than previous ({point_prev}).', width=80)
                             raise ValueError(msg)
                 else:  # new element started
                     if point == 1:
@@ -588,8 +586,8 @@ class SolverWrapperAbaqus614(Component):
                             first_loop = False
                     else:
                         msg = textwrap.fill(
-                            f"Error while processing {face_file.name} line {num}: Load point number does not start at 1"
-                            f" for element {element}, {point} was found instead.", width=80)
+                            f'Error while processing {face_file.name} line {num}: Load point number does not start at 1'
+                            f' for element {element}, {point} was found instead.', width=80)
                         raise ValueError(msg)
 
         element_list.insert(0, [n_elem, n_lp])
@@ -603,23 +601,23 @@ class SolverWrapperAbaqus614(Component):
         ampersand_location = 6
         char_limit = 72
 
-        if "|" in line:
+        if '|' in line:
             temp = line.replace(orig, new)
             N = len(temp)
 
             if N > char_limit:
                 count = 0
-                line = ""
-                line += temp[0:char_limit] + "\n"
+                line = ''
+                line += temp[0:char_limit] + '\n'
                 count += char_limit
                 while count < N:
                     temp_string = temp[count:count + char_limit - ampersand_location]
                     n = len(temp_string)
                     count += n
                     if count < N:  # need to append an additional new line
-                        line += "     &" + temp_string + "\n"
+                        line += '     &' + temp_string + '\n'
                     else:
-                        line += "     &" + temp_string
+                        line += '     &' + temp_string
             else:
                 line = temp
 
@@ -628,49 +626,49 @@ class SolverWrapperAbaqus614(Component):
     def write_start_and_restart_inp(self, input_file, output_file, restart_file):
         bool_restart = 0
 
-        rf = open(restart_file, "w")
-        of = open(output_file, "w")
+        rf = open(restart_file, 'w')
+        of = open(output_file, 'w')
 
-        rf.write("*HEADING \n")
-        rf.write("*RESTART, READ \n")
+        rf.write('*HEADING \n')
+        rf.write('*RESTART, READ \n')
 
         with open(input_file) as f:
             line = f.readline()
             while line:
-                if "*step" in line.lower():
-                    contents = line.split(",")  # Split string on commas
+                if '*step' in line.lower():
+                    contents = line.split(',')  # Split string on commas
                     line_new = ''
                     for s in contents:
-                        if s.strip().startswith("inc="):
-                            numbers = re.findall(r"\d+", s)
+                        if s.strip().startswith('inc='):
+                            numbers = re.findall(r'\d+', s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
-                                raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested "
-                                                          f"but maxNumInc > 1.")
+                                raise NotImplementedError(f'inc={numbers[0]}: subcycling was not requested '
+                                                          f'but maxNumInc > 1.')
                             else:
-                                line_new += f" inc={self.maxNumInc},"
+                                line_new += f' inc={self.maxNumInc},'
                         else:
-                            line_new += s+","
-                    line_new = line_new[:-1]+"\n"  # Remove the last added comma and add a newline
+                            line_new += s+','
+                    line_new = line_new[:-1]+'\n'  # Remove the last added comma and add a newline
 
                     of.write(line_new)
                     if bool_restart:
                         rf.write(line_new)
                     line = f.readline()
-                elif "*dynamic" in line.lower():
-                    contents = line.split(",")
+                elif '*dynamic' in line.lower():
+                    contents = line.split(',')
                     for s in contents:
-                        if "application" in s.lower():
-                            contents_B = s.split("=")
+                        if 'application' in s.lower():
+                            contents_B = s.split('=')
                             app = contents_B[1].lower().strip()
-                            if app == "quasi-static" or app == "moderate dissipation":
+                            if app == 'quasi-static' or app == 'moderate dissipation':
                                 if not self.subcycling:
-                                    line_2 = f"{self.delta_t}, {self.delta_t},\n"
+                                    line_2 = f'{self.delta_t}, {self.delta_t},\n'
                                 else:
-                                    line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                                    line_2 = f'{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n'
                             else:
                                 raise NotImplementedError(
-                                    f"{contents_B[1]} not available: Currently only quasi-static and "
-                                    f"moderate dissipation are implemented for the Abaqus wrapper")
+                                    f'{contents_B[1]} not available: Currently only quasi-static and '
+                                    f'moderate dissipation are implemented for the Abaqus wrapper')
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
@@ -679,15 +677,15 @@ class SolverWrapperAbaqus614(Component):
                         if bool_restart:
                             rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
                         line = f.readline()
-                    elif "*static" in line.lower():
+                    elif '*static' in line.lower():
                         of.write(line)
                         if bool_restart:
                             rf.write(line)
                         f.readline()  # need to skip the next line
                         if not self.subcycling:
                             raise NotImplementedError(
-                                "Only Static with subcycling is implemented for the Abaqus wrapper")
-                        line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                                'Only Static with subcycling is implemented for the Abaqus wrapper')
+                        line_2 = f'{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n'
                         f.readline()
                     of.write(line_2)  # Change the time step in the Abaqus step
                     if bool_restart:
@@ -698,7 +696,7 @@ class SolverWrapperAbaqus614(Component):
                     if bool_restart:
                         rf.write(line)
                     line = f.readline()
-                if "** --"in line:
+                if '** --'in line:
                     bool_restart = 1
         rf.close()
         of.close()
