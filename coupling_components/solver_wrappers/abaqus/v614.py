@@ -60,10 +60,6 @@ class SolverWrapperAbaqus614(Component):
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
-        if self.dimensions == 2:
-            tools.print_info('Warning for axisymmetric cases:\n\tIn Abaqus these have to be constructed around the '
-                             'y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be '
-                             'accomplished by using an appropriate mapper.', layout='warning')
         self.array_size = self.settings['arraysize']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
