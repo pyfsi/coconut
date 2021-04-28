@@ -397,7 +397,6 @@ class SolverWrapperOpenFOAM_41(Component):
         os.system(f"pkill -f {self.application}")
         self.openfoam_process.kill()
 
-
     def get_interface_input(self):
         return self.interface_input
 
