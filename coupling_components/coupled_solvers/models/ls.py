@@ -130,12 +130,12 @@ class ModelLS(Component):
                 self.vprev.pop()
                 self.wprev.pop()
 
-    def filter_q(self, r_in):
-        r = r_in.get_interface_data().reshape(-1, 1)
-        r_out = r_in.copy()
+    def filter_q(self, dr_in):
+        dr = dr_in.get_interface_data().reshape(-1, 1)
+        dr_out = dr_in.copy()
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         if v.shape[1]:
             qq, *_ = np.linalg.qr(v, mode='reduced')
-            r = r - qq @ (qq.T @ r)
-            r_out.set_interface_data(r.flatten())
-        return r_out
+            r = dr - qq @ (qq.T @ dr)
+            dr_out.set_interface_data(dr.flatten())
+        return dr_out

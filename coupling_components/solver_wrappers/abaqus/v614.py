@@ -243,15 +243,15 @@ class SolverWrapperAbaqus614(Component):
             # read in elements file
             elem0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
             elements0 = np.loadtxt(elem0_file)
-            n_elem = int(elements0[0])  # elements line 1 contains number of elements
-            n_lp = int(elements0[1])  # elements line 2 contains number of load points per element
-            if elements0.shape[0] - 2 != int(n_elem):  # elements remainder contains element numbers in interface
-                raise ValueError(f"Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with"
+            n_elem = int(elements0[0, 0])  # elements first item on line 1 contains number of elements
+            n_lp = int(elements0[0, 1])  # elements second item on line 1 contains number of total load points
+            if elements0.shape[0] - 1 != int(n_elem):  # elements remainder contains element numbers in interface
+                raise ValueError(f"Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with "
                                  f"the number of elements ({n_elem})")
             if self.timestep_start != 0:  # check if elements0 corresponds to timestep_start
                 elem_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
                 elements = np.loadtxt(elem_file)
-                if int(elements[0]) != n_elem or int(elements[1]) != n_lp:
+                if int(elements[0, 0]) != n_elem or int(elements[0, 1]) != n_lp:
                     raise ValueError(f"Number of load points has changed for {mp_name}")
 
             # read in faces file for load points
@@ -263,9 +263,10 @@ class SolverWrapperAbaqus614(Component):
             # get load point coordinates and ids of load points
             prev_elem = 0
             prev_lp = 0
-            ids = np.arange(n_elem * n_lp)
-            coords_tmp = np.zeros((n_elem * n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
-            for i in range(0, n_elem*n_lp):
+            ids = np.arange(n_lp)
+            index = 0
+            coords_tmp = np.zeros((n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
+            for i in range(0, n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
@@ -274,8 +275,6 @@ class SolverWrapperAbaqus614(Component):
                     raise ValueError(f"Next line for same element ({elem}) does not contain next load point")
                 elif elem > prev_elem and lp != 1:
                     raise ValueError(f"First line for element ({elem}) does not contain its first load point")
-                if lp > n_lp:
-                    raise ValueError(f"Load point ({lp}) exceeds the number of load points per element {n_lp}")
 
                 # ids_tmp[i] = f"{elem}_{lp}"
                 coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last "dimensions" columns
@@ -506,8 +505,9 @@ class SolverWrapperAbaqus614(Component):
         point_prev = -1
         element_0 = -1
         point_0 = -1
-        count = 0
-        element_str = ""
+        n_elem = 0  # total number of elements
+        n_lp = 0    # total number of load points
+        element_list = []
 
         with open(face_file, 'r') as file:
             for num, line in enumerate(file, start=1):
@@ -519,6 +519,7 @@ class SolverWrapperAbaqus614(Component):
                 if element == element_prev:  # load points of same element
                     if point == point_prev + 1:  # deviation from ascending order indicates mistake
                         point_prev = point
+                        n_lp += 1
                     else:
                         if point > point_prev:
                             msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
@@ -537,10 +538,13 @@ class SolverWrapperAbaqus614(Component):
                             raise ValueError(msg)
                 else:  # new element started
                     if point == 1:
+                        # add to elements file the element number
+                        # and cumulative number of load points encountered BEFORE reaching this element
+                        element_list.append([element, n_lp])
                         point_prev = point
                         element_prev = element
-                        element_str += str(element) + "\n"
-                        count += 1
+                        n_elem += 1
+                        n_lp += 1
                         if first_loop:
                             element_0 = element
                             point_0 = point
@@ -551,9 +555,9 @@ class SolverWrapperAbaqus614(Component):
                             f" for element {element}, {point} was found instead.", width=80)
                         raise ValueError(msg)
 
-        element_str = f"{count}\n{point_prev}\n" + element_str
-        with open(output_file, "w") as file:
-            file.write(element_str)
+        element_list.insert(0, [n_elem, n_lp])
+        element_list = np.array(element_list)
+        np.savetxt(output_file, element_list, fmt='%10d')
 
     def run_shell(self, work_dir, commands, wait=True, name='script', delete=True):
         script = f'{work_dir}/{name}.sh'

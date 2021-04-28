@@ -11,7 +11,6 @@ class MapperTransformer(Component):
         super().__init__()
 
         self.settings = parameters['settings']
-        self.interpolator = False
 
     def __call__(self, args_from, args_to):
         # check variables

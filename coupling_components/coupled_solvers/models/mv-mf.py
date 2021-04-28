@@ -14,7 +14,7 @@ class ModelMVMF(Component):
         super().__init__()
 
         self.settings = parameters["settings"]
-        self.min_significant = self.settings["min_significant"]
+        self.min_significant = self.settings.get("min_significant", 0)
         self.q = self.settings["q"]
 
         self.size_in = None
@@ -128,12 +128,12 @@ class ModelMVMF(Component):
             self.rrprev.pop()
             self.qqprev.pop()
 
-    def filter_q(self, r_in):
-        r = r_in.get_interface_data().reshape(-1, 1)
-        r_out = r_in.copy()
+    def filter_q(self, dr_in):
+        dr = dr_in.get_interface_data().reshape(-1, 1)
+        dr_out = dr_in.copy()
         qq, _ = np.linalg.qr(self.v, mode='reduced')
-        r = r - qq @ (qq.T @ r)
+        dr = dr - qq @ (qq.T @ dr)
         for qq in self.qqprev:
-            r = r - qq @ (qq.T @ r)
-        r_out.set_interface_data(r.flatten())
-        return r_out
+            dr = dr - qq @ (qq.T @ dr)
+        dr_out.set_interface_data(dr.flatten())
+        return dr_out
