@@ -9,6 +9,7 @@ from coconut.tests.solver_wrappers.kratos.test_structure_v60 import TestSolverWr
 from coconut.tests.solver_wrappers.python.tube.test_tube_flow_solver import TestSolverWrapperTubeFlowSolver
 from coconut.tests.solver_wrappers.python.tube.test_tube_ringmodel_solver import TestSolverWrapperTubeRingmodelSolver
 from coconut.tests.solver_wrappers.python.tube.test_tube_structure_solver import TestSolverWrapperTubeStructureSolver
+from coconut.tests.solver_wrappers.combined.test_combined_solver_wrapper import TestSolverWrapperCombined
 
 
 test_cases = (
@@ -19,9 +20,11 @@ test_cases = (
     # TestSolverWrapperFluent2020R1Tube2D, TestSolverWrapperFluent2020R1Tube3D,
     # TestSolverWrapperOpenFoam41,
     # TestSolverWrapperKratosStructure60,
+    TestSolverWrapperCombined,
     TestSolverWrapperTubeFlowSolver,
     TestSolverWrapperTubeRingmodelSolver,
     TestSolverWrapperTubeStructureSolver
+
 )
 
 

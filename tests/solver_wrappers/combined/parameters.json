@@ -1,0 +1,82 @@
+{
+  "type": "solver_wrappers.combined",
+  "settings": {
+    "timestep_start": 0,
+    "delta_t": 0.1,
+    "solver_wrappers": [
+      {
+        "type": "dummy_solver_1",
+        "settings": {
+          "interface_input": [
+            {
+              "model_part": "dummy_solver_1_input",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "dummy_solver_1_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "dummy_solver_2",
+        "settings": {
+          "interface_input": [
+            {
+              "model_part": "dummy_solver_2_input",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "dummy_solver_2_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "master_solver_index": 0,
+    "mapper_interface_input": {
+      "type": "mappers.interface",
+      "settings": {
+        "type": "mappers.linear",
+        "settings": {
+          "directions": [
+            "x",
+            "y",
+            "z"
+          ]
+        }
+      }
+    },
+    "mapper_interface_output": {
+      "type": "mappers.interface",
+      "settings": {
+        "type": "mappers.linear",
+        "settings": {
+          "directions": [
+            "x",
+            "y",
+            "z"
+          ]
+        }
+      }
+    }
+  }
+}
+
+
