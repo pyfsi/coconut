@@ -32,11 +32,9 @@ the radial direction along the y-axis.
 
 The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
-The Abaqus case is not build when setting up the case, but is provided as the file *`Base.inp`*.
-However, in the <nobr>*`setup_files/setup_abaqus2d/create_model`*<\nobr> folder, an example is given of how an input file can be created in Abaqus using scripts.
-This setup can be run by executing the *`create_model.sh`* script. 
-This will run Abaqus with the *`makeInp.py`* Python script to set the structural parameters, starting from the mesh in *`Base.inp`*. 
-The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
+The Abaqus case is built when setting up the case starting from the file *`mesh_tube2d.inp`* containing nodes and elements. 
+This is done by running Abaqus with the *`makeInp.py`* Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
+The result of the setup is a completed input file *`case_tube2d.inp`*.The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
 They are: 8-node biquadratic, reduced integration, hybrid with linear pressure. 
 See the [Abaqus documentation](http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb) for more information. 
 The loads are applied on the faces in three points per element, which means on 150 load points in total. 

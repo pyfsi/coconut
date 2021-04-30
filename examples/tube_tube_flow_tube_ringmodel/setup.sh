@@ -10,7 +10,7 @@ rm -rf ./CFD
 rm -rf ./CSM
 
 # create new CFD folder
-cp -r ../setup_files/tube_flow CFD
+cp -r ../setup_files/tube/tube_flow CFD
 
 # create new CSM folder
-cp -r ../setup_files/tube_ringmodel CSM
+cp -r ../setup_files/tube/tube_ringmodel CSM

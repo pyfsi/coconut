@@ -10,8 +10,8 @@ rm -rf ./CFD
 rm -rf ./CSM
 
 # create new CFD folder
-cp -r ../setup_files/openfoam3d CFD
+cp -r ../setup_files/tube/openfoam3d CFD
 cd CFD; ./setup_openfoam3d.sh; cd ..
 
 # create new CSM folder
-cp -r ../setup_files/kratos_structure3d CSM
+cp -r ../setup_files/tube/kratos_structure3d CSM

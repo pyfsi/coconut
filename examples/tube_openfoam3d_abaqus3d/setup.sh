@@ -10,12 +10,12 @@ rm -rf ./CFD
 rm -rf ./CSM
 
 # create new CFD folder
-cp -r ../setup_files/openfoam3d CFD
+cp -r ../setup_files/tube/openfoam3d CFD
 cd CFD; ./setup_openfoam3d.sh; cd ..
 
 # create new CSM folder
-cp -r ../setup_files/abaqus3d CSM
-cd CSM; source makeHostFile.sh; cd ..
+cp -r ../setup_files/tube/abaqus3d CSM
+cd CSM; ./setup_abaqus3d.sh; cd ..
 
 # TODO: remove once each solver runs in own terminal
 module load ABAQUS/6.14

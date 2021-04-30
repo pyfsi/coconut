@@ -10,11 +10,11 @@ rm -rf ./CFD
 rm -rf ./CSM
 
 # create new CFD folder
-cp -r ../setup_files/fluent2d CFD
+cp -r ../setup_files/tube/fluent2d CFD
 cd CFD; ./setup_fluent2d.sh; cd ..
 
 # create new CSM folder
-cp -r ../setup_files/tube_structure CSM
+cp -r ../setup_files/tube/tube_structure CSM
 
 # TODO: remove once each solver runs in own terminal
 module load ANSYS_CFD/2019R1

@@ -10,12 +10,12 @@ rm -rf ./CFD
 rm -rf ./CSM
 
 # create new CFD folder
-cp -r ../setup_files/fluent3d CFD
+cp -r ../setup_files/tube/fluent3d CFD
 cd CFD; ./setup_fluent3d.sh; cd ..
 
 # create new CSM folder
-cp -r ../setup_files/abaqus2d CSM
-cd CSM; source makeHostFile.sh; cd ..
+cp -r ../setup_files/tube/abaqus2d CSM
+cd CSM; ./setup_abaqus2d.sh; cd ..
 
 # TODO: remove once each solver runs in own terminal
 module load ANSYS_CFD/2019R1
