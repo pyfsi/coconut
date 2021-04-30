@@ -52,6 +52,9 @@ nav:
           - Fluent 3D - Kratos Structure 3D: tube_fluent3d_kratos_structure3d.md
           - OpenFOAM 3D - Abaqus 3D: tube_openfoam3d_abaqus3d.md
           - OpenFOAM 3D - Kratos Structure 3D: tube_openfoam3d_kratos_structure3d.md
+      - Turek benchmark:
+          - Fluent 2D - Abaqus 2D: turek_fluent2d_abaqus2d.md
+          - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
       - Test single solver: test_single_solver.md
   - Tests:
       - tests.md
