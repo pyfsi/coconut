@@ -16,7 +16,7 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
     def initialize(self):
         super().initialize()
 
-        if self.timestep_start == 0:  # no restart
+        if not self.restart:  # no restart
             self.model.size_in = self.model.size_out = self.x.size
             self.model.out = self.x.copy()
             self.model.initialize()

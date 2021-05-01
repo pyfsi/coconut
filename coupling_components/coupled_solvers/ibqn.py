@@ -31,7 +31,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         self.u = self.x.size
         self.w = self.y.size
         self.ready = False
-        if self.timestep_start == 0:  # no restart
+        if not self.restart:  # no restart
             self.model_f.size_in = self.model_s.size_out = self.u
             self.model_f.size_out = self.model_s.size_in = self.w
             self.model_f.out = self.y.copy()

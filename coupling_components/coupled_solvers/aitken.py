@@ -21,7 +21,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
     def initialize(self):
         super().initialize()
 
-        if self.timestep_start != 0:  # restart
+        if self.restart:  # restart
             self.omega = self.restart_data['omega']
 
     def initialize_solution_step(self):
