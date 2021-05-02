@@ -149,7 +149,7 @@ class SolverWrapperAbaqus614(Component):
                 f"cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
             commands = [cmd1, cmd2, cmd3]
             self.run_shell(self.dir_csm, commands, name='Abaqus_USRInit_Time0')
-        else:
+        else:  # restart: this only used for checks
             cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
             cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
                 f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
@@ -182,12 +182,12 @@ class SolverWrapperAbaqus614(Component):
         self.run_shell(self.dir_csm, commands, name='Compile_GetOutput')
 
         # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"
+        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> AbaqusSolver.log 2>&1"
         commands = [cmd]
         self.run_shell(self.dir_csm, commands, name='GetOutput_Start')
 
         for i in range(0, self.n_surfaces):
-            path_output = f"CSM_Time{self.timestep_start+1}Surface{i}Output.dat"
+            path_output = f"CSM_Time{self.timestep_start + 1}Surface{i}Output.dat"
             path_nodes = f"CSM_Time{self.timestep_start}Surface{i}Nodes.dat"
             cmd = f"mv {path_output} {path_nodes}"
             commands = [cmd]
