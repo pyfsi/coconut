@@ -9,18 +9,36 @@ class TestInterface(unittest.TestCase):
 
     def setUp(self):
         self.model_part_size = model_part_size = 3
-        self.parameters = {'interface_a':
-                           [
-                            {'model_part': 'mp1', 'variables': ['pressure', 'traction']},
-                            {'model_part': 'mp2', 'variables': ['density']}
-                            ]
-                           }
+        self.parameters = {
+            'interface_a':
+                [
+                    {'model_part': 'mp1', 'variables': ['pressure', 'traction']},
+                    {'model_part': 'mp2', 'variables': ['density']}
+                ],
+            'interface_b':
+                [
+                    {'model_part': 'mp1', 'variables': ['pressure', 'displacement']},
+                    {'model_part': 'mp2', 'variables': ['density']}
+                ],
+
+            'interface_c':
+                [
+                    {'model_part': 'mp1', 'variables': ['pressure', 'traction']},
+                    {'model_part': 'mp3', 'variables': ['density']}
+                ],
+            'interface_d':
+                [
+                    {'model_part': 'mp2', 'variables': ['density']},
+                    {'model_part': 'mp1', 'variables': ['pressure', 'displacement']}
+                ],
+        }
 
         self.model = Model()
-        x0 = np.random.rand(3 * model_part_size)
-        y0 = np.random.rand(3 * model_part_size)
-        z0 = np.random.rand(3 * model_part_size)
-        ids = np.arange(0, model_part_size)
+        self.x0 = x0 = np.random.rand(3 * model_part_size)
+        self.y0 = y0 = np.random.rand(3 * model_part_size)
+        self.z0 = z0 = np.random.rand(3 * model_part_size)
+        self.ids = ids = np.arange(0, model_part_size)
+        np.random.shuffle(ids)
         self.model.create_model_part('mp1', x0[0:model_part_size], y0[0:model_part_size], z0[0:model_part_size], ids)
         self.model.create_model_part('mp2', x0[model_part_size:2 * model_part_size],
                                      y0[model_part_size:2 * model_part_size],
@@ -163,6 +181,25 @@ class TestInterface(unittest.TestCase):
         norm = np.linalg.norm(self.interface_data)
         self.assertEqual(self.interface.norm(), norm)
 
+    def test_has_same_modelparts(self):
+        self.interface.set_interface_data(self.interface_data)
+
+        interface_a = self.interface.copy()
+        interface_a.set_interface_data(np.random.rand(self.model_part_size * 5))
+        self.assertTrue(self.interface.has_same_model_parts(interface_a))
+
+        interface_b = Interface(self.parameters['interface_b'], self.model)
+        interface_b.set_interface_data(self.interface_data)
+        self.assertTrue(self.interface.has_same_model_parts(interface_b))
+
+        interface_c = Interface(self.parameters['interface_c'], self.model)
+        interface_c.set_interface_data(self.interface_data)
+        self.assertFalse(self.interface.has_same_model_parts(interface_c))
+
+        interface_d = Interface(self.parameters['interface_d'], self.model)
+        interface_d.set_interface_data(self.interface_data)
+        self.assertFalse(self.interface.has_same_model_parts(interface_d))
+
     def create_test_interfaces(self):
         interface_data1 = np.random.rand(self.interface.size)
         interface_data2 = np.random.rand(self.interface.size)
@@ -171,6 +208,34 @@ class TestInterface(unittest.TestCase):
         interface2 = self.interface.copy()
         interface2.set_interface_data(interface_data2)
         return interface_data1, interface_data2, interface1, interface2
+
+    def test_eq(self):
+        self.interface.set_interface_data(self.interface_data)
+
+        model_part_size = self.model_part_size
+        x0 = self.x0
+        y0 = self.y0
+        z0 = self.z0
+        ids = self.ids
+        model2 = Model()
+        model2.create_model_part('mp1', x0[0:model_part_size], y0[0:model_part_size], z0[0:model_part_size], ids)
+        model2.create_model_part('mp2', x0[model_part_size:2 * model_part_size],
+                                 y0[model_part_size:2 * model_part_size],
+                                 z0[model_part_size:2 * model_part_size], ids)
+        interface2 = Interface(self.parameters['interface_a'], model2)
+        interface2.set_interface_data(self.interface_data)
+        self.assertIsNot(self.interface, interface2)
+        self.assertEqual(self.interface, interface2)
+
+        interface3 = Interface(self.parameters['interface_b'], model2)
+        interface3.set_interface_data(self.interface_data)
+        self.assertNotEqual(self.interface, interface3)
+
+        interface4 = interface2.copy()
+        interface_data4 = self.interface_data.copy()
+        interface_data4[np.random.randint(interface4.size)] = np.random.rand()
+        interface4.set_interface_data(interface_data4)
+        self.assertNotEqual(self.interface, interface4)
 
     def test_add(self):
         interface_data1, interface_data2, interface1, interface2 = self.create_test_interfaces()

@@ -55,3 +55,9 @@ class ModelPart:
     @property
     def size(self):  # name is like numpy; or rename to number_of_points?
         return self.__x0.size
+
+    def __eq__(self, other):
+        if type(other) is ModelPart:
+            return (self.__name == other.name and np.all(self.__x0 == other.x0) and np.all(self.__y0 == other.y0)
+                    and np.all(self.__z0 == other.z0) and np.all(self.__id == other.id))
+        return NotImplemented

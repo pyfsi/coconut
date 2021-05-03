@@ -45,7 +45,8 @@ layout_style = LayoutStyles()
 
 # print_info: printing with color
 #  @param args          The arguments to be printed
-#  @param layout        The layout to be used: header, blue, green, red, warning, fail, bold, underline or plain
+#  @param layout        The layout to be used: plain, bold, underline, inverse, negative, warning, fail, grey, red,
+#                       green, yellow, flue, magenta, cyan, white, black
 def print_info(*args, layout=None, **kwargs):
     if layout is None:
         print("".join(map(str, args)), **kwargs)
