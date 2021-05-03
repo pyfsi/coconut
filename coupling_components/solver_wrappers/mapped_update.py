@@ -190,6 +190,10 @@ class SolverWrapperMapped_update(Component):
 
         self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
         self.mapper_interface_input.initialize(self.interface_input_from, self.interface_input_to)
+
+        if self.iteration ==1:
+            self.mapper_interface_input.mappers["Wire_output" + '_to_' + "WALLOUTSIDE0_load_points"].mappers[1].first_iteration = True
+
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
 
         # if self.iteration ==2:
@@ -257,7 +261,7 @@ class SolverWrapperMapped_update(Component):
         #todo self.interface_output_to van naam veranderen
         self.mapper_interface_output.initialize(self.interface_output_from_new, self.interface_output_to)
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
-        plt.show()
+        # plt.show()
 
 
         # for item_output_to in self.interface_output_to.parameters:
