@@ -53,7 +53,7 @@ class SolverWrapperAbaqus614(Component):
             self.initialInc = self.settings['initialInc']
             self.maxNumInc = self.settings['maxNumInc']
             self.maxInc = self.settings['maxInc']
-            self.ramp = self.settings['ramp']
+            self.ramp = (0, 1)[self.settings['ramp']]  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
         else:
             self.ramp = 0
             self.maxNumInc = 1
@@ -356,7 +356,7 @@ class SolverWrapperAbaqus614(Component):
         # run Abaqus and check for (licensing) errors
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'\n### Time step {self.timestep}, iteration {self.iteration} ###', file=f)
-        bool_completed = 0
+        bool_completed = False
         attempt = 0
         while not bool_completed and attempt < 10000:
             attempt += 1
@@ -602,7 +602,7 @@ class SolverWrapperAbaqus614(Component):
         Read the case-file (.inp) and process it in an input-file for the first time step and a restart file used for
         all subsequent time steps.
         """
-        bool_restart = 0
+        bool_restart = False
 
         rf = open(restart_file, 'w')
         of = open(output_file, 'w')
@@ -675,7 +675,7 @@ class SolverWrapperAbaqus614(Component):
                         rf.write(line)
                     line = f.readline()
                 if '** --'in line:
-                    bool_restart = 1
+                    bool_restart = True
         rf.close()
         of.close()
 
