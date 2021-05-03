@@ -1,4 +1,5 @@
-rm AbaqusHosts.txt
+#!/usr/bin/env bash
+rm -f AbaqusHosts.txt
 NPROC=$(nproc --all)
 NAME=$(hostname | sed -e 's/.ugent.be//')
 

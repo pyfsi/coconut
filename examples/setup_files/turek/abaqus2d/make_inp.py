@@ -10,6 +10,8 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
+import sys
+sys.path.append('../../../coupling_components/solver_wrappers/abaqus/extra')
 from make_surface import *
 
 e_modulus = 1.4e6
