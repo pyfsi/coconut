@@ -12,6 +12,6 @@ rm -rf ./CSM
 cp -r setup_abaqus CSM
 cd CSM
 
-source make_host_file.sh
+source $PWD/../../../../../../coupling_components/solver_wrappers/abaqus/extra/make_host_file.sh
 
 cd ..
