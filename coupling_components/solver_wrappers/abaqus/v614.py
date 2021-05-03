@@ -23,32 +23,8 @@ class SolverWrapperAbaqus614(Component):
 
     def __init__(self, parameters):
         super().__init__()
-        # settings
-        '''
-               settings of solver_wrappers.abaqus.v614:
 
-                    working_directory       Absolute path to working directory
-                                            or relative path w.r.t current directory
-                    cores                   Number of cpus to be used by Abaqus
-                    input_file              Name of the Abaqus input file (located in the directory where Python is 
-                                            launched)
-                    dimensions              dimensionality of the problem (2 or 3)
-                    arraysize               declare a sufficiently large array size for load array in FORTRAN
-                    CSM_dir                 relative path to directory for the files and execution of the structural 
-                                            solver 
-                    ramp                    Boolean: 0 for step load, 1 for ramp load in Abaqus
-                    delta_t                 Time step size
-                    timestep_start          Time step from which is to be started (initial = 0)
-                    surface_IDS             List of the names of the surfaces that take part in the FSI, as they are 
-                                            known by Abaqus
-                    interface_input         Interface for the load points and their corresponding variables (pressure,
-                                            traction).
-                    interface_output        Interface for the output nodes and their corresponding variable(s)
-                                            displacements)
-                    mp_mode                 Mode of the parallel computing (currently only THREADS is accepted)
-                    save_iterations         number of time steps between consecutive saves of Abaqus-files
-        '''
-
+        # set parameters
         self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
@@ -82,9 +58,6 @@ class SolverWrapperAbaqus614(Component):
             self.ramp = 0
             self.maxNumInc = 1
 
-        # Upon (re)starting Abaqus needs to run USRInit.f
-        # A restart requires Abaqus to be booted with a restart file
-
         # prepare abaqus_v6.env
         self.hostnames = []
         self.hostnames_unique = []
@@ -108,11 +81,11 @@ class SolverWrapperAbaqus614(Component):
                                          f'substitution: \n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
-        # Create start and restart file
+        # create start and restart file (each time step > 1 is a restart of the previous converged time step)
         self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + '/CSM_Time0.inp',
                                          self.dir_csm + '/CSM_Restart.inp')
 
-        # Prepare Abaqus USRInit.f
+        # prepare Abaqus USRInit.f
         usr = 'USRInit.f'
         with open(join(path_src, usr), 'r') as infile:
             with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
@@ -129,7 +102,7 @@ class SolverWrapperAbaqus614(Component):
                                          f'\n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
-        # Compile Abaqus USRInit.f
+        # compile Abaqus USRInit.f in library libusr
         path_libusr = join(self.dir_csm, 'libusr/')
         os.system('rm -rf ' + path_libusr)
         os.system('mkdir ' + path_libusr)
@@ -138,20 +111,20 @@ class SolverWrapperAbaqus614(Component):
             print(f'### Compilation of usrInit.f ###', file=f)
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-        # Get load points from usrInit.f
+        # get load points from usrInit.f at timestep_start
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'\n### Get load integration points using usrInit.f ###', file=f)
         if self.timestep_start == 0:
-            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # To get this to work on HPC?
+            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # to get this to work on HPC?
             cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
-            # The output files will have a name with a higher time step  ('job=') than the input file ('input=')
+            # the output files will have a name with a higher time step  ('job=') than the input file ('input=')
             cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
                 f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = cmd1 + '; ' + cmd2 + '; ' + cmd3
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
         else:
-            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # To get this to work on HPC?
+            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # to get this to work on HPC?
             cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
@@ -194,7 +167,7 @@ class SolverWrapperAbaqus614(Component):
             path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
             shutil.move(path_output, path_nodes)
 
-            # Create elements file per surface
+            # create elements file per surface
             face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat')
             output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Elements.dat')
             self.make_elements(face_file, output_file)
@@ -211,7 +184,7 @@ class SolverWrapperAbaqus614(Component):
                     line = line.replace('|ramp|', str(self.ramp))
                     line = line.replace('|deltaT|', str(self.delta_t))
 
-                    # if PWD is too long then FORTRAN code can not compile so this needs special treatment
+                    # if PWD is too long then FORTRAN code cannot compile so this needs special treatment
                     line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
                     line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
                     if '|' in line:
@@ -380,7 +353,7 @@ class SolverWrapperAbaqus614(Component):
                 cmd = f'cp {file_name1} {file_name2}'
                 os.system(cmd)
 
-        # Run Abaqus and check for (licensing) errors
+        # run Abaqus and check for (licensing) errors
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'\n### Time step {self.timestep}, iteration {self.iteration} ###', file=f)
         bool_completed = 0
@@ -404,7 +377,6 @@ class SolverWrapperAbaqus614(Component):
                     # run datacheck and store generated files safely
                     for f in self.dir_vault.iterdir():
                         f.unlink()  # empty vault
-                    # tools.print_info(f'running datacheck at timestep {self.timestep} and iteration {self.iteration}')
                     cmd2 = f'abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
                         f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                         f'>> {self.logfile} 2>&1'
@@ -418,7 +390,6 @@ class SolverWrapperAbaqus614(Component):
                     cmd2 = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
                         f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                         f'>> {self.logfile} 2>&1'
-                    # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + '; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
                 else:
@@ -430,11 +401,10 @@ class SolverWrapperAbaqus614(Component):
                     cmd2 = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
                         f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                         f'>> {self.logfile} 2>&1'
-                    # tools.print_info(f'running continue at timestep {self.timestep} and iteration {self.iteration}')
                     commands = cmd1 + '; ' + cmd2
                     subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-            # Check log for completion and or errors
+            # check log for completion and or errors
             subprocess.run(f'tail -n 10 {self.logfile} > Temp_log.coco', shell=True, cwd=self.dir_csm,
                            executable='/bin/bash')
             log_tmp = os.path.join(self.dir_csm, 'Temp_log.coco')
@@ -446,22 +416,22 @@ class SolverWrapperAbaqus614(Component):
                         bool_lic = False
             if not bool_lic:
                 tools.print_info('Abaqus licensing error', layout='fail')
-            elif 'COMPLETED' in line:  # Check final line for completed
+            elif 'COMPLETED' in line:  # check final line for completed
                 bool_completed = True
-            elif bool_lic:  # Final line did not contain 'COMPLETED' but also no licensing error detected
+            elif bool_lic:  # final line did not contain 'COMPLETED' but also no licensing error detected
                 raise RuntimeError(f'Abaqus did not complete, unclassified error, see {self.logfile} for extra '
                                    f'information')
 
-            # Append additional information to log file
+            # append additional information to log file
             cmd = f'tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' ' \
                 f'>> {self.logfile} 2>&1'
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-        # Write Abaqus output
+        # write Abaqus output
         cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep} 1 >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-        # Read Abaqus output data
+        # read Abaqus output data
         for dct in self.interface_output.parameters:
             mp_name = dct['model_part']
 
@@ -511,6 +481,7 @@ class SolverWrapperAbaqus614(Component):
         return self.interface_output
 
     def check_software(self):
+        """Check whether the software requirements for this wrapper are fulfilled."""
         # Python version: 3.6 or higher
         if sys.version_info < (3, 6):
             raise RuntimeError('Python version 3.6 or higher required.')
@@ -524,11 +495,17 @@ class SolverWrapperAbaqus614(Component):
         if self.version not in str(result.stdout):
             raise RuntimeError(f'Abaqus version {self.version} is required.')
 
-        # Compilers
+        # compilers
         if shutil.which('ifort') is None:
             raise RuntimeError('Intel compiler ifort must be available.')
 
     def make_elements(self, face_file, output_file):
+        """
+        Reads the CSM_Time0SurfaceXFaces.dat file created by USRInit.f and converts it to
+        CSM_Time0SurfaceXElements.dat, formatted such that USR.f can read it. The first line mentions the number of
+        elements and load integration points. All lines below contain the element number and cumulative number of
+        load integration points. The USR.f uses this to quickly find the correct line to read from the load input files.
+        """
         face_file = Path(face_file)
         output_file = Path(output_file)
         first_loop = True
@@ -591,9 +568,10 @@ class SolverWrapperAbaqus614(Component):
         np.savetxt(output_file, element_list, fmt='%10d')
 
     def replace_fortran(self, line, orig, new):
-        '''The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
-        This functions splits these strings over multiple lines.'''
-
+        """
+        The length of a line in FORTRAN 77 (i.e. fixed-form) is limited, replacing working directories can exceed this
+        limit. This functions splits these strings over multiple lines.
+        """
         ampersand_location = 6
         char_limit = 72
 
@@ -620,6 +598,10 @@ class SolverWrapperAbaqus614(Component):
         return line
 
     def write_start_and_restart_inp(self, input_file, output_file, restart_file):
+        """
+        Read the case-file (.inp) and process it in an input-file for the first time step and a restart file used for
+        all subsequent time steps.
+        """
         bool_restart = 0
 
         rf = open(restart_file, 'w')
@@ -632,7 +614,7 @@ class SolverWrapperAbaqus614(Component):
             line = f.readline()
             while line:
                 if '*step' in line.lower():
-                    contents = line.split(',')  # Split string on commas
+                    contents = line.split(',')  # split string on commas
                     line_new = ''
                     for s in contents:
                         if s.strip().startswith('inc='):
@@ -644,7 +626,7 @@ class SolverWrapperAbaqus614(Component):
                                 line_new += f' inc={self.maxNumInc},'
                         else:
                             line_new += s+','
-                    line_new = line_new[:-1]+'\n'  # Remove the last added comma and add a newline
+                    line_new = line_new[:-1]+'\n'  # remove the last added comma and add a newline
 
                     of.write(line_new)
                     if bool_restart:
@@ -669,9 +651,9 @@ class SolverWrapperAbaqus614(Component):
                     if bool_restart:
                         rf.write(line)
                         f.readline()  # need to skip the next line
-                        of.write(line_2)  # Change the time step in the Abaqus step
+                        of.write(line_2)  # change the time step in the Abaqus step
                         if bool_restart:
-                            rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                            rf.write(line_2)  # change the time step in the Abaqus step (restart-file)
                         line = f.readline()
                     elif '*static' in line.lower():
                         of.write(line)
@@ -683,9 +665,9 @@ class SolverWrapperAbaqus614(Component):
                                 'Only Static with subcycling is implemented for the Abaqus wrapper')
                         line_2 = f'{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n'
                         f.readline()
-                    of.write(line_2)  # Change the time step in the Abaqus step
+                    of.write(line_2)  # change the time step in the Abaqus step
                     if bool_restart:
-                        rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                        rf.write(line_2)  # change the time step in the Abaqus step (restart-file)
                     line = f.readline()
                 else:
                     of.write(line)
@@ -698,6 +680,7 @@ class SolverWrapperAbaqus614(Component):
         of.close()
 
     def write_loads(self):
+        """Write the incoming loads to a file that is read by the READDATA subroutine in USR.f."""
         for dct in self.interface_input.parameters:
             mp_name = dct['model_part']
             mp_id = self.model_part_surface_ids[mp_name]
@@ -710,7 +693,7 @@ class SolverWrapperAbaqus614(Component):
             file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-            # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
+            # start of a simulation with ramp, needs an initial load at time 0: set at zero load
             if self.iteration == 1 and self.timestep == 1 and self.ramp:
                 file_name = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Input.dat')
                 np.savetxt(file_name, data * 0, fmt=fmt, header=f'{model_part.size}', comments='')
