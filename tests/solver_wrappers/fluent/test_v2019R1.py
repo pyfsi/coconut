@@ -110,8 +110,9 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         # test if same coordinates always give same pressure & traction
 
         # adapt parameters, create solver
-        ## fix cores based on available cores
-        max_cores = multiprocessing.cpu_count()
+
+        # fix cores based on available cores
+        max_cores = multiprocessing.cpu_count() # max available cores
         if max_cores >= 8:
             cores = 8
         elif 8 > max_cores >= 2:
@@ -296,8 +297,9 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         # test if same coordinates always give same pressure & traction
 
         # adapt parameters, create solver
-        ## fix cores based on available cores
-        max_cores = multiprocessing.cpu_count()
+
+        # fix cores based on available cores
+        max_cores = multiprocessing.cpu_count() #max available cores
         if max_cores >= 8:
             cores = 8
         elif 8 > max_cores >= 2:
