@@ -6,6 +6,10 @@ import os
 from os.path import join
 import subprocess
 import json
+import multiprocessing
+
+
+
 
 # TODO: issue: id is a Python build-in function... use ids instead?
 
@@ -106,7 +110,17 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         # test if same coordinates always give same pressure & traction
 
         # adapt parameters, create solver
-        self.parameters['settings']['cores'] = 0
+        ## fix cores based on available cores
+        max_cores = multiprocessing.cpu_count()
+        if max_cores >= 8:
+            cores = 8
+        elif 8 > max_cores >= 2:
+            cores = 4
+        elif 4 > max_cores >= 2:
+            cores = 2
+        else:
+            cores = 1
+        self.parameters['settings']['cores'] = cores
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
@@ -207,7 +221,7 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if cls.setup_case:
-            dir_tmp = join(os.getcwd(),f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
+            dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
             p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 
@@ -282,7 +296,17 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         # test if same coordinates always give same pressure & traction
 
         # adapt parameters, create solver
-        self.parameters['settings']['cores'] = 0
+        ## fix cores based on available cores
+        max_cores = multiprocessing.cpu_count()
+        if max_cores >= 8:
+            cores = 8
+        elif 8 > max_cores >= 2:
+            cores = 4
+        elif 4 > max_cores >= 2:
+            cores = 2
+        else:
+            cores = 1
+        self.parameters['settings']['cores'] = cores
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
