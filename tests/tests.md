@@ -36,7 +36,7 @@ not run by default. Including the unit tests for solver wrappers in the list of 
 following steps: 
 
 -   Load the corresponding solver modules in the terminal;
--   Import the test classes for the solver wrappers in the Python file, _`coconyt/tests/solver_wrappers/__init__.py`_;
+-   Import the test classes for the solver wrappers in the Python file, _`coconut/tests/solver_wrappers/__init__.py`_;
 -   Add the test classes for the solver wrappers in the list called `tests_cases` in the Python file 
 _`coconut/tests/solver_wrappers/__init__.py`_.
 
