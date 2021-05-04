@@ -92,7 +92,7 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         # adapt parameters, create solver
 
         # fix cores based on available cores
-        max_cores = multiprocessing.cpu_count() # max available cores
+        max_cores = multiprocessing.cpu_count()  # max available cores
         if max_cores >= 8:
             cores = 8
         elif max_cores >= 4:
@@ -280,7 +280,7 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         # adapt parameters, create solver
 
         # fix cores based on available cores
-        max_cores = multiprocessing.cpu_count() #max available cores
+        max_cores = multiprocessing.cpu_count()  # max available cores
         if max_cores >= 8:
             cores = 8
         elif max_cores >= 4:
