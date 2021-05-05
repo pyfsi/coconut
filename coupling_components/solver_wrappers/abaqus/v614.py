@@ -28,9 +28,6 @@ class SolverWrapperAbaqus614(Component):
         self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
-        self.dir_vault = Path(self.dir_csm) / 'vault'
-        self.dir_vault.mkdir(exist_ok=True)
-        self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         path_src = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
 
@@ -357,33 +354,9 @@ class SolverWrapperAbaqus614(Component):
                     f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
             else:
-                if self.iteration == 1:
-                    # run datacheck and store generated files safely
-                    for f in self.dir_vault.iterdir():
-                        f.unlink()  # empty vault
-                    cmd = f'abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
-                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
-                        f'>> {self.logfile} 2>&1'
-                    subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
-                    for suffix in self.vault_suffixes:
-                        from_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
-                        to_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
-                        shutil.copy(from_file, to_file)
-                    # run continue
-                    cmd = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
-                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
-                        f'>> {self.logfile} 2>&1'
-                    subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
-                else:
-                    # run continue using previously stored simulation files
-                    for suffix in self.vault_suffixes:
-                        from_file = self.dir_vault / f'CSM_Time{self.timestep}.{suffix}'
-                        to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
-                        shutil.copy(from_file, to_file)
-                    cmd = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
-                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
-                        f'>> {self.logfile} 2>&1'
-                    subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+                cmd = f'abaqus job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} input=CSM_Restart ' \
+                    f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
+                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
             # check log for completion and or errors
             subprocess.run(f'tail -n 10 {self.logfile} > Temp_log.coco', shell=True, cwd=self.dir_csm,
