@@ -10,8 +10,10 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
-import sys
-sys.path.append('../../../coupling_components/solver_wrappers/abaqus/extra')
+import imp
+coconut_path = imp.find_module('coconut')[1]
+fp, path_name, description = imp.find_module('make_surface', [coconut_path + '/coupling_components/solver_wrappers/abaqus/extra/'])
+imp.load_module('make_surface', fp, path_name, description)
 from make_surface import *
 
 mdb = Mdb(pathName='case_tube2d.cae')
