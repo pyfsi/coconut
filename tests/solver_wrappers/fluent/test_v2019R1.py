@@ -6,29 +6,12 @@ import os
 from os.path import join
 import subprocess
 import json
+import multiprocessing
 
 # TODO: issue: id is a Python build-in function... use ids instead?
 
-# TODO: put somewhere in docs?
-"""
-- The unittests in this file (i.e. for v2019R1) can be run
-directly, using
-
-    python -m unittest -vb solver_wrappers/fluent/test_v2019R1.py
-
-- The unittests for the other Fluent versions currently 
-inherit from these classes. Because those modules import
-these super classes, they are also run and crash, which is
-kinda ugly. 
-To run other Fluent version unittests, adapt the file
-__ini__.py and use
-
-    python -m unittest discover -vb
-    
-- The unittests for different Fluent versions can never be
-run simultaneously, because the correct software must be 
-loaded in advance. 
-"""
+# TODO: The unittests for the other Fluent versions currently inherit from these classes. Because those modules import
+#   these super classes, they are also run and crash, which is kinda ugly.
 
 
 class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
@@ -49,6 +32,7 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         self.mp_name_in = 'beamoutside_nodes'
         self.mp_name_out = 'beamoutside_faces'
 
+    # noinspection PyMethodMayBeStatic
     def get_dy(self, x):
         return 0.0001 * np.sin(2 * np.pi / 0.05 * x)
 
@@ -106,7 +90,18 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         # test if same coordinates always give same pressure & traction
 
         # adapt parameters, create solver
-        self.parameters['settings']['cores'] = 0
+
+        # fix cores based on available cores
+        max_cores = multiprocessing.cpu_count()  # max available cores
+        if max_cores >= 8:
+            cores = 8
+        elif max_cores >= 4:
+            cores = 4
+        elif max_cores >= 2:
+            cores = 2
+        else:
+            cores = 1
+        self.parameters['settings']['cores'] = cores
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
@@ -216,7 +211,7 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if cls.setup_case:
-            dir_tmp = join(os.getcwd(),f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
+            dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
             p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
             p.wait()
 
@@ -227,6 +222,7 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         self.mp_name_in = 'wall_nodes'
         self.mp_name_out = 'wall_faces'
 
+    # noinspection PyMethodMayBeStatic
     def get_dy_dz(self, x, y, z):
         dr = 0.0001 * np.sin(2 * np.pi / 0.05 * x)
         theta = np.arctan2(z, y)
@@ -291,7 +287,18 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         # test if same coordinates always give same pressure & traction
 
         # adapt parameters, create solver
-        self.parameters['settings']['cores'] = 0
+
+        # fix cores based on available cores
+        max_cores = multiprocessing.cpu_count()  # max available cores
+        if max_cores >= 8:
+            cores = 8
+        elif max_cores >= 4:
+            cores = 4
+        elif max_cores >= 2:
+            cores = 2
+        else:
+            cores = 1
+        self.parameters['settings']['cores'] = cores
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
@@ -319,8 +326,8 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         solver.finalize()
 
         # check if same position gives same pressure & traction
-        np.testing.assert_allclose(pressure[0], pressure[2], rtol=1e-11)
-        np.testing.assert_allclose(traction[0], traction[2], rtol=1e-11)
+        np.testing.assert_allclose(pressure[0], pressure[2], rtol=1e-10)
+        np.testing.assert_allclose(traction[0], traction[2], rtol=1e-10)
 
         # check if different position gives different pressure & traction
         p01 = np.linalg.norm(pressure[0] - pressure[1])
