@@ -75,7 +75,6 @@
               "cores": 1,
               "dimensions": 2,
               "arraysize": 10e5,
-              "surfaces": 1,
               "surfaceIDs": [
                 "BEAMINSIDEMOVING"
               ],
@@ -97,7 +96,7 @@
                 }
               ],
               "mp_mode": "THREADS",
-              "input_file": "Base.inp",
+              "input_file": "case_tube2d.inp",
               "save_iterations": 1
             }
           },

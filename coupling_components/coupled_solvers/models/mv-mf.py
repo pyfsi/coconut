@@ -66,18 +66,17 @@ class ModelMVMF(Component):
             b = qq.T @ dr
             c = solve_triangular(rr, b)
             dxt = self.w @ c
+            dr -= qq @ b
         else:
-            dxt = np.zeros((self.size_in, 1))
-            qq = np.zeros((self.size_out, 1))
-        dr = dr - qq @ (qq.T @ dr)
+            dxt = np.zeros((self.size_out, 1))
         i = 0
         while np.linalg.norm(dr) > self.min_significant and i < len(self.wprev):
-            b = self.qqprev[i].T @ dr
             if self.wprev[i].shape[1]:
+                qq = self.qqprev[i]
+                b = qq.T @ dr
                 c = solve_triangular(self.rrprev[i], b)
                 dxt += self.wprev[i] @ c
-                qq = self.qqprev[i]
-                dr = dr - qq @ (qq.T @ dr)
+                dr -= qq @ b
             i += 1
         # # remove insignificant information
         # while i < len(self.wprev):

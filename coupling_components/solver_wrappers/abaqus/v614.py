@@ -117,7 +117,7 @@ class SolverWrapperAbaqus614(Component):
                 f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
-        else:
+        else:  # restart: this only used for checks
             cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
@@ -152,11 +152,11 @@ class SolverWrapperAbaqus614(Component):
         # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'\n### Get geometrical node positions using GetOutput ###', file=f)
-        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> {self.logfile} 2>&1'
+        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         for i in range(0, self.n_surfaces):
-            path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start+1}Surface{i}Output.dat')
+            path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{i}Output.dat')
             path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
             shutil.move(path_output, path_nodes)
 

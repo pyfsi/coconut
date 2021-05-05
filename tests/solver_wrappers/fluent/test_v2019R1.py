@@ -164,6 +164,8 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+        interface_x_1 = solver.get_interface_input()
+        interface_y_1 = solver.get_interface_output()
         coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
         solver.finalize()
 
@@ -184,6 +186,8 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+        interface_x_2 = solver.get_interface_input()
+        interface_y_2 = solver.get_interface_output()
         coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
         solver.finalize()
 
@@ -192,7 +196,12 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
         pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
+        # check if undeformed coordinate (coordinates of model part) are equal
+        self.assertTrue(interface_x_1.has_same_model_parts(interface_x_2))
+        self.assertTrue(interface_y_1.has_same_model_parts(interface_y_2))
+
         # check if coordinates of ModelParts are equal
+        # ==>  check if deformed coordinates are equal
         np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
         # check if pressure and traction are equal
@@ -346,6 +355,8 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+        interface_x_1 = solver.get_interface_input()
+        interface_y_1 = solver.get_interface_output()
         coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
         solver.finalize()
 
@@ -366,6 +377,8 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+        interface_x_2 = solver.get_interface_input()
+        interface_y_2 = solver.get_interface_output()
         coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
         solver.finalize()
 
@@ -374,7 +387,12 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
         pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
+        # check if undeformed coordinate (coordinates of model part) are equal
+        self.assertTrue(interface_x_1.has_same_model_parts(interface_x_2))
+        self.assertTrue(interface_y_1.has_same_model_parts(interface_y_2))
+
         # check if coordinates of ModelParts are equal
+        # ==>  check if deformed coordinates are equal
         np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
         # check if pressure and traction are equal

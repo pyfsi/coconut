@@ -10,11 +10,11 @@ rm -rf ./CFD
 rm -rf ./CSM
 
 # create new CFD folder
-cp -r ../setup_files/tube_flow CFD
+cp -r ../setup_files/tube/tube_flow CFD
 
 # create new CSM folder
-cp -r ../setup_files/abaqus2d CSM
-cd CSM; source makeHostFile.sh; cd ..
+cp -r ../setup_files/tube/abaqus2d CSM
+cd CSM; ./setup_abaqus2d.sh; cd ..
 
 # TODO: remove once each solver runs in own terminal
 module load ABAQUS/6.14

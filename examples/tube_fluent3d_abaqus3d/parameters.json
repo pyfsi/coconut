@@ -85,7 +85,6 @@
               "cores": 1,
               "dimensions": 3,
               "arraysize": 10e5,
-              "surfaces": 1,
               "surfaceIDs": [
                 "WALLOUTSIDE"
               ],
@@ -107,7 +106,7 @@
                 }
               ],
               "mp_mode": "THREADS",
-              "input_file": "Base.inp",
+              "input_file": "case_tube3d.inp",
               "save_iterations": 1
             }
           },
