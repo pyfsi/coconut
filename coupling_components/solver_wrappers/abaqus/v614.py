@@ -102,13 +102,11 @@ class SolverWrapperAbaqus614(Component):
         os.system('rm -rf ' + path_libusr)
         os.system('mkdir ' + path_libusr)
         cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
-        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'### Compilation of usrInit.f ###', file=f)
+        self.print_log(f'### Compilation of usrInit.f ###')
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # get load points from usrInit.f at timestep_start
-        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'\n### Get load integration points using usrInit.f ###', file=f)
+        self.print_log(f'\n### Get load integration points using usrInit.f ###')
         if self.timestep_start == 0:
             cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
@@ -144,14 +142,12 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # compile GetOutput.cpp
-        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'\n### Compilation of GetOutput.cpp ###', file=f)
+        self.print_log(f'\n### Compilation of GetOutput.cpp ###')
         cmd = f'abaqus make job=GetOutput user=GetOutput.cpp >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
-        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'\n### Get geometrical node positions using GetOutput ###', file=f)
+        self.print_log(f'\n### Get geometrical node positions using GetOutput ###')
         cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
@@ -186,8 +182,7 @@ class SolverWrapperAbaqus614(Component):
                     outfile.write(line)
 
         # compile Abaqus USR.f
-        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'\n### Compilation of usr.f ###', file=f)
+        self.print_log(f'\n### Compilation of usr.f ###')
         os.system('rm -r ' + path_libusr)  # remove libusr containing compiled USRInit.f
         os.system('mkdir ' + path_libusr)
         cmd = f'abaqus make library=usr.f directory={path_libusr} >> {self.logfile} 2>&1'
@@ -347,8 +342,7 @@ class SolverWrapperAbaqus614(Component):
                 os.system(cmd)
 
         # run Abaqus and check for (licensing) errors
-        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
-            print(f'\n### Time step {self.timestep}, iteration {self.iteration} ###', file=f)
+        self.print_log(f'\n### Time step {self.timestep}, iteration {self.iteration} ###')
         bool_completed = False
         attempt = 0
         while not bool_completed and attempt < 10000:
@@ -485,6 +479,10 @@ class SolverWrapperAbaqus614(Component):
         # compilers
         if shutil.which('ifort') is None:
             raise RuntimeError('Intel compiler ifort must be available')
+
+    def print_log(self, msg):
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(msg, file=f)
 
     # noinspection PyMethodMayBeStatic
     def make_elements(self, face_file, output_file):
