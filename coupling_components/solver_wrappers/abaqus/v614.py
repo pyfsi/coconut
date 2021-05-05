@@ -59,21 +59,16 @@ class SolverWrapperAbaqus614(Component):
             self.maxNumInc = 1
 
         # prepare abaqus_v6.env
-        self.hostnames = []
-        self.hostnames_unique = []
-        with open(join(self.dir_csm, 'AbaqusHosts.txt'), 'r') as hostfile:
-            for line in hostfile:
-                self.hostnames.append(line.rstrip())
-                if not line.rstrip() in self.hostnames_unique:
-                    self.hostnames_unique.append(line.rstrip())
-        self.hostname_replace = ''
-        for hostname in self.hostnames_unique:
-            self.hostname_replace += '[\'' + hostname + '\', ' + str(self.hostnames.count(hostname)) + '], '
-        self.hostname_replace = self.hostname_replace.rstrip(', ')
+        hostname_replace = ''
+        if self.mp_mode == 'MPI' and 'AbaqusHosts.txt' in os.listdir(self.dir_csm):
+            with open(join(self.dir_csm, 'AbaqusHosts.txt'), 'r') as host_file:
+                host_names = host_file.read().split()
+            hostname_replace = str([[hostname, host_names.count(hostname)] for hostname in set(host_names)])
         with open(join(path_src, 'abaqus_v6.env'), 'r') as infile:
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace('|HOSTNAME|', self.hostname_replace)
+                    line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
+                        else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
                     line = line.replace('|MP_MODE|', self.mp_mode)
                     line = line.replace('|PID|', str(os.getpid()))
                     if '|' in line:
@@ -115,21 +110,19 @@ class SolverWrapperAbaqus614(Component):
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(f'\n### Get load integration points using usrInit.f ###', file=f)
         if self.timestep_start == 0:
-            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # to get this to work on HPC?
-            cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
+            cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             # the output files will have a name with a higher time step  ('job=') than the input file ('input=')
-            cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
+            cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
                 f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
-            commands = cmd1 + '; ' + cmd2 + '; ' + cmd3
+            commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
         else:
-            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # to get this to work on HPC?
-            cmd2 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
+            cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
-            cmd3 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
+            cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
                 f'input=CSM_Restart cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
-            commands = cmd1 + '; ' + cmd2 + '; ' + cmd3
+            commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # prepare GetOutput.cpp
@@ -365,13 +358,11 @@ class SolverWrapperAbaqus614(Component):
                                  layout='warning')
                 time.sleep(60)
                 tools.print_info(f'Starting attempt {attempt}')
-            cmd1 = f'export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS'  # for HPC
             if self.timestep == 1:
                 # run datacheck and store generated files safely
-                cmd2 = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
+                cmd = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
                     f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
-                commands = cmd1 + '; ' + cmd2
-                subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
             else:
                 if self.iteration == 1:
                     # run datacheck and store generated files safely
