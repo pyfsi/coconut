@@ -94,7 +94,7 @@ class SolverWrapperAbaqus614(Component):
                     line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
                     if '|' in line:
                         raise ValueError(f'The following line in USRInit.f still contains a \'|\' after substitution: '
-                                         f'\n \t{line} \n Probably a parameter was not substituted')
+                                         f'\n \t{line} \nProbably a parameter was not substituted')
                     outfile.write(line)
 
         # compile Abaqus USRInit.f in library libusr
@@ -182,7 +182,7 @@ class SolverWrapperAbaqus614(Component):
                     line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
                     if '|' in line:
                         raise ValueError(f'The following line in USR.f still contains a \'|\' after substitution: '
-                                         f'\n \t{line} \n Probably a parameter was not subsituted')
+                                         f'\n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
         # compile Abaqus USR.f
@@ -264,7 +264,7 @@ class SolverWrapperAbaqus614(Component):
                     self.model_part_surface_ids[mp_name] = i
                     break
             if mp_name not in self.model_part_surface_ids:
-                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}.')
+                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}')
             mp_id = self.model_part_surface_ids[mp_name]
 
             # read in nodes file
@@ -272,7 +272,7 @@ class SolverWrapperAbaqus614(Component):
             nodes0 = np.loadtxt(nodes0_file, skiprows=1)   # first line is a header
             n_nodes0 = nodes0.shape[0]
             if nodes0.shape[1] != self.dimensions:
-                raise ValueError(f'Given dimension does not match coordinates.')
+                raise ValueError(f'Given dimension does not match coordinates')
             if self.timestep_start != 0:  # check if nodes0 corresponds to timestep_start
                 nodes_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
                 nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
@@ -472,21 +472,22 @@ class SolverWrapperAbaqus614(Component):
         """Check whether the software requirements for this wrapper are fulfilled."""
         # Python version: 3.6 or higher
         if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required.')
+            raise RuntimeError('Python version 3.6 or higher required')
 
         # Abaqus availability
         if shutil.which('abaqus') is None:
-            raise RuntimeError('Abaqus must be available.')
+            raise RuntimeError('Abaqus must be available')
 
         # Abaqus version
         result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE)
         if self.version not in str(result.stdout):
-            raise RuntimeError(f'Abaqus version {self.version} is required.')
+            raise RuntimeError(f'Abaqus version {self.version} is required')
 
         # compilers
         if shutil.which('ifort') is None:
-            raise RuntimeError('Intel compiler ifort must be available.')
+            raise RuntimeError('Intel compiler ifort must be available')
 
+    # noinspection PyMethodMayBeStatic
     def make_elements(self, face_file, output_file):
         """
         Reads the CSM_Time0SurfaceXFaces.dat file created by USRInit.f and converts it to
@@ -555,6 +556,7 @@ class SolverWrapperAbaqus614(Component):
         element_list = np.array(element_list)
         np.savetxt(output_file, element_list, fmt='%10d')
 
+    # noinspection PyMethodMayBeStatic
     def replace_fortran(self, line, orig, new):
         """
         The length of a line in FORTRAN 77 (i.e. fixed-form) is limited, replacing working directories can exceed this
@@ -608,8 +610,8 @@ class SolverWrapperAbaqus614(Component):
                         if s.strip().startswith('inc='):
                             numbers = re.findall(r'\d+', s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
-                                raise NotImplementedError(f'inc={numbers[0]}: subcycling was not requested '
-                                                          f'but maxNumInc > 1.')
+                                raise NotImplementedError(f'inc={numbers[0]}: subcycling was not requested but '
+                                                          f'maxNumInc > 1')
                             else:
                                 line_new += f' inc={self.maxNumInc},'
                         else:
