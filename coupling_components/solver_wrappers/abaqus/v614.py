@@ -562,29 +562,11 @@ class SolverWrapperAbaqus614(Component):
         The length of a line in FORTRAN 77 (i.e. fixed-form) is limited, replacing working directories can exceed this
         limit. This functions splits these strings over multiple lines.
         """
-        ampersand_location = 6
-        char_limit = 72
-
         if '|' in line:
-            temp = line.replace(orig, new)
-            N = len(temp)
-
-            if N > char_limit:
-                count = 0
-                line = ''
-                line += temp[0:char_limit] + '\n'
-                count += char_limit
-                while count < N:
-                    temp_string = temp[count:count + char_limit - ampersand_location]
-                    n = len(temp_string)
-                    count += n
-                    if count < N:  # need to append an additional new line
-                        line += '     &' + temp_string + '\n'
-                    else:
-                        line += '     &' + temp_string
-            else:
-                line = temp
-
+            char_limit = 72
+            wrapper = textwrap.TextWrapper(width=char_limit, subsequent_indent='     &', replace_whitespace=False,
+                                           drop_whitespace=False)
+            line = wrapper.fill(line.replace(orig, new))
         return line
 
     def write_start_and_restart_inp(self, input_file, output_file, restart_file):
