@@ -14,7 +14,7 @@ class TestSolverWrapperFluent2019R2Tube3D(TestSolverWrapperFluent2019R1Tube3D):
     setup_case = True
 
 
-del TestSolverWrapperFluent2019R1Tube2D, TestSolverWrapperFluent2019R1Tube3D  # to avoid executing 2019 test too
+del TestSolverWrapperFluent2019R1Tube2D, TestSolverWrapperFluent2019R1Tube3D  # to avoid executing 2019R1 tests too
 
 if __name__ == '__main__':
     unittest.main()
