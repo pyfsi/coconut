@@ -628,15 +628,15 @@ class SolverWrapperAbaqus614(Component):
                         if 'application' in s.lower():
                             contents_B = s.split('=')
                             app = contents_B[1].lower().strip()
-                            if app == 'quasi-static' or app == 'moderate dissipation':
+                            if app == 'quasi-static' or app == 'moderate dissipation' or 'transient fidelity':
                                 if not self.subcycling:
                                     line_2 = f'{self.delta_t}, {self.delta_t},\n'
                                 else:
                                     line_2 = f'{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n'
                             else:
                                 raise NotImplementedError(
-                                    f'{contents_B[1]} not available: Currently only quasi-static and '
-                                    f'moderate dissipation are implemented for the Abaqus wrapper')
+                                    f'{contents_B[1]} not available: currently only quasi-static, moderate dissipation '
+                                    f'and transient fidelity are implemented for the Abaqus wrapper')
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
