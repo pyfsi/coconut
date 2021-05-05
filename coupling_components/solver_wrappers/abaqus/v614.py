@@ -47,16 +47,16 @@ class SolverWrapperAbaqus614(Component):
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
 
-        self.subcycling = self.settings.get('subcycling', 0)
+        self.subcycling = self.settings.get('subcycling', False)  # value from parameters or False if not present
         if self.subcycling:
-            self.minInc = self.settings['minInc']
-            self.initialInc = self.settings['initialInc']
-            self.maxNumInc = self.settings['maxNumInc']
-            self.maxInc = self.settings['maxInc']
+            self.min_inc = self.settings['min_inc']
+            self.initial_inc = self.settings['initial_inc']
+            self.max_num_inc = self.settings['max_num_inc']
+            self.max_inc = self.settings['max_inc']
             self.ramp = (0, 1)[self.settings['ramp']]  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
         else:
             self.ramp = 0
-            self.maxNumInc = 1
+            self.max_num_inc = 1
 
         # prepare abaqus_v6.env
         hostname_replace = ''
@@ -200,7 +200,7 @@ class SolverWrapperAbaqus614(Component):
         for item in (self.settings['interface_input']):
             mp_name = item['model_part']
 
-            for i, surfaceID in enumerate(self.surfaceIDs):
+            for i, surfaceID in enumerate(self.surfaceIDs):  # identify surfaceID corresponding to ModelPart
                 if surfaceID in mp_name:
                     self.model_part_surface_ids[mp_name] = i
                     break
@@ -259,7 +259,7 @@ class SolverWrapperAbaqus614(Component):
         for item in (self.settings['interface_output']):
             mp_name = item['model_part']
 
-            for i, surfaceID in enumerate(self.surfaceIDs):
+            for i, surfaceID in enumerate(self.surfaceIDs):  # identify surfaceID corresponding to ModelPart
                 if surfaceID in mp_name:
                     self.model_part_surface_ids[mp_name] = i
                     break
@@ -359,7 +359,6 @@ class SolverWrapperAbaqus614(Component):
                 time.sleep(60)
                 tools.print_info(f'Starting attempt {attempt}')
             if self.timestep == 1:
-                # run datacheck and store generated files safely
                 cmd = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
                     f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -593,9 +592,9 @@ class SolverWrapperAbaqus614(Component):
                             numbers = re.findall(r'\d+', s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
                                 raise NotImplementedError(f'inc={numbers[0]}: subcycling was not requested but '
-                                                          f'maxNumInc > 1')
+                                                          f'max_num_inc > 1')
                             else:
-                                line_new += f' inc={self.maxNumInc},'
+                                line_new += f' inc={self.max_num_inc},'
                         else:
                             line_new += s+','
                     line_new = line_new[:-1]+'\n'  # remove the last added comma and add a newline
@@ -614,7 +613,7 @@ class SolverWrapperAbaqus614(Component):
                                 if not self.subcycling:
                                     line_2 = f'{self.delta_t}, {self.delta_t},\n'
                                 else:
-                                    line_2 = f'{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n'
+                                    line_2 = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
                             else:
                                 raise NotImplementedError(
                                     f'{contents_B[1]} not available: currently only quasi-static, moderate dissipation '
@@ -635,7 +634,7 @@ class SolverWrapperAbaqus614(Component):
                         if not self.subcycling:
                             raise NotImplementedError(
                                 'Only Static with subcycling is implemented for the Abaqus wrapper')
-                        line_2 = f'{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n'
+                        line_2 = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
                         f.readline()
                     of.write(line_2)  # change the time step in the Abaqus step
                     if bool_restart:

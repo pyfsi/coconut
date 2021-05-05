@@ -47,10 +47,10 @@ parameter|type|description
 parameter|type|description
 ---:|:---:|---
 <nobr>`subcycling`</nobr>|boolean|`false`: [Default] Abaqus solves the requested time step using one increment. <br> `true`: Abaqus is allowed to solve the time step using multiple *increments*. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small *increments*.
-`initialInc`|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
-`maxInc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
-`maxNumInc`|int|Required when subcycling is enabled. Contains the maximum number of *increments* that Abaqus is allowed to perform for one time step. 
-`minInc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*.
+`initial_inc`|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
+`max_inc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
+`max_num_inc`|int|Required when subcycling is enabled. Contains the maximum number of *increments* that Abaqus is allowed to perform for one time step. 
+`min_inc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*.
 `ramp`|boolean| Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
 
 ## Overview of operation
