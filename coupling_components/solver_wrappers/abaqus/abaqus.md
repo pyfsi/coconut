@@ -19,12 +19,8 @@ Abaqus (Dassault Systèmes) can be used to solve for the structural displacement
 
 ## Environment
  - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the JSON file. In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
- - Abaqus needs a **host-file** called *`AbaqusHosts.txt`* in the working directory.
-    - This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm.
-    - The extra directory contains a script *`Example_makeHostFile.sh`* which can be used to generate a host file.
  - The **Abaqus license server** needs to be specified in the parametrized file `abaqus_v6.env` which is present in the `source directory`. For use at Ghent University no changes are required. 
  - The **Abaqus software should be available as well as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
-     - The extra directory contains a file *`abaqus_setup`* which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).
 
 ## Parameters
 This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in the *`examples`* folder.
@@ -40,7 +36,7 @@ parameter|type|description
 `interface_input`|list|Should contain a dictionary for each corresponding element in `surfaceIDs`, with a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). An example can be found in [this part of the input file section](#input-related-settings-in-json-file).
 `interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"Base.inp"`
-`mp_mode`|str|Determines how Abaqus is executed in parallel. Should be `"THREADS"` as `"MPI"` is currently not implemented.
+`mp_mode`|str|Determines how Abaqus is executed in parallel. It is recommended to use `"THREADS"`. `"MPI"` works as well but requires a host-file called *`AbaqusHosts.txt`*. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script *`make_hostfile.sh`* which can be used to generate a host file. Note that multi-node computations are currently not supported.
 `save_iterations`|int|Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) `save_iterations` are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
 <nobr>`working_directory`</nobr>|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [environment section](#environment).
@@ -123,7 +119,7 @@ Per surface in the fluid-structure interface (where loads and displacements need
 
  - From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.
  - From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.
- - By converting a "node set" containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `makeSurface.py` file in the extra directory.
+ - By converting a "node set" containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `make_surface.py` file in the extra directory.
 
 The name of the surface has to be **MOVINGSURFACE followed by an integer**. The integer of the surface has to correspond with the index of that specific surface in the `surfaceIDs` parameter (index starts from 0). For example MOVINGSURFACE0 is associated with the first item in `surfaceIDs` and MOVINGSURFACE1 would be associated with the second item in `surfaceIDs`.
 
