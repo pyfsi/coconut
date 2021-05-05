@@ -453,7 +453,7 @@ class SolverWrapperAbaqus614(Component):
         super().finalize_solution_step()
         if self.timestep and (self.timestep - 1) % self.settings['save_iterations']:
             to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
-                                    'Surface0Cpu0Input.dat', 'Surface0Output.dat']
+                                    'Surface*Cpu0Input.dat', 'Surface*Output.dat']
             cmd = ''
             for suffix in to_be_removed_suffix:
                 cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
