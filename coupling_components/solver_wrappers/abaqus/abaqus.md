@@ -76,7 +76,7 @@ The solver wrapper consists of 5 files located in the source directory (with *`X
  
 ### The `solve_solution_step` method
  
- This method of `SolverWrapperAbaqusX` is called each coupling iteration with an `Interface` object (input_interface) containing loads, which are written to files that are read by the (compiled) *`USR.f`* during the invoked Abaqus simulation. The Abaqus software is started and shut down for each calculation, i.e. each coupling iteration. When the simulation has ran successfully (log-file *`AbaqusSolver.log`* is checked for errors), the outputs are read from Abaqus by GetOuput and written to a file. The file is read in Python and the output (displacements) are stored in the output_interface `Interface` object which is returned.
+ This method of `SolverWrapperAbaqusX` is called each coupling iteration with an `Interface` object (input_interface) containing loads, which are written to files that are read by the (compiled) *`USR.f`* during the invoked Abaqus simulation. The Abaqus software is started and shut down for each calculation, i.e. each coupling iteration. When the simulation has ran successfully (log-file *`abaqus.log`* is checked for errors), the outputs are read from Abaqus by GetOuput and written to a file. The file is read in Python and the output (displacements) are stored in the output_interface `Interface` object which is returned.
  
 #### Files written in the working directory during `solve_solution_step`
  
@@ -224,4 +224,4 @@ The created "surfaces" and "node sets" for load input and displacement output re
 
 ## Log files
 
-A general event log of the procedure can be found in the working directory, in a file named *`AbaqusSolver.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.
+A general event log of the procedure can be found in the working directory, in a file named *`abaqus.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.

@@ -32,7 +32,7 @@ class SolverWrapperAbaqus614(Component):
         self.dir_vault.mkdir(exist_ok=True)
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         path_src = os.path.realpath(os.path.dirname(__file__))
-        self.logfile = 'AbaqusSolver.log'
+        self.logfile = 'abaqus.log'
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
