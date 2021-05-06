@@ -40,6 +40,7 @@ class SolverWrapperAbaqus614(Component):
         self.n_surfaces = len(self.surfaceIDs)
         self.mp_mode = self.settings['mp_mode']
         self.input_file = self.settings['input_file']
+        self.save_interval = self.settings.get('save_interval', 1)
         self.timestep = self.timestep_start
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
@@ -50,7 +51,7 @@ class SolverWrapperAbaqus614(Component):
             self.initial_inc = self.settings['initial_inc']
             self.max_num_inc = self.settings['max_num_inc']
             self.max_inc = self.settings['max_inc']
-            self.ramp = (0, 1)[self.settings['ramp']]  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
+            self.ramp = int(self.settings['ramp'])  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
         else:
             self.ramp = 0
             self.max_num_inc = 1
@@ -96,8 +97,8 @@ class SolverWrapperAbaqus614(Component):
 
         # compile Abaqus USRInit.f in library libusr
         path_libusr = join(self.dir_csm, 'libusr/')
-        os.system('rm -rf ' + path_libusr)
-        os.system('mkdir ' + path_libusr)
+        shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
+        os.mkdir(path_libusr)
         cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
         self.print_log(f'### Compilation of usrInit.f ###')
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
@@ -180,8 +181,8 @@ class SolverWrapperAbaqus614(Component):
 
         # compile Abaqus USR.f
         self.print_log(f'\n### Compilation of usr.f ###')
-        os.system('rm -r ' + path_libusr)  # remove libusr containing compiled USRInit.f
-        os.system('mkdir ' + path_libusr)
+        shutil.rmtree(path_libusr)  # remove libusr containing compiled USRInit.f
+        os.mkdir(path_libusr)
         cmd = f'abaqus make library=usr.f directory={path_libusr} >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
@@ -335,8 +336,7 @@ class SolverWrapperAbaqus614(Component):
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
                                                 f'_Iter{self.iteration}.dat')
-                cmd = f'cp {file_name1} {file_name2}'
-                os.system(cmd)
+                shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
         self.print_log(f'\n### Time step {self.timestep}, iteration {self.iteration} ###')
@@ -417,7 +417,7 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep and (self.timestep - 1) % self.settings['save_iterations']:
+        if self.save_interval == 0 or (self.timestep - 1) % self.save_interval != 0:
             to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
                                     'Surface*Cpu0Input.dat', 'Surface*Output.dat']
             cmd = ''

@@ -59,8 +59,7 @@
                     }
                 ],
                 "mp_mode": "THREADS",
-                "input_file": "Base.inp",
-                "save_iterations": 1,
+                "input_file": "Base.inp"
                 "subcycling": 1,
                 "initial_inc": 1e-6,
                 "min_inc": 1e-12,
