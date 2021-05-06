@@ -12,7 +12,5 @@ rm -rf ./CSM
 # create new folder
 cp -r setup_abaqus CSM
 cd CSM
-
-source makeHostFile.sh
-
+sh makeHostFile.sh
 cd ..

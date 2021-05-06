@@ -22,7 +22,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     def setUpClass(cls):
         dir_tmp = join(os.path.dirname(__file__), f'test_v614/tube{int(cls.dimension)}d')
         if cls.setup_case:
-            p_setup_abaqus = subprocess.Popen(join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
+            p_setup_abaqus = subprocess.Popen('sh ' + join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
             p_setup_abaqus.wait()
 
         # perform reference calculation

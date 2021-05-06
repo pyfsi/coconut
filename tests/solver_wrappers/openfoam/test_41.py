@@ -45,7 +45,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.set_up_case()
 
     def clean_case(self):
-        cmd = os.path.join(self.folder_path, 'Allclean; ')
+        cmd = 'sh ' + os.path.join(self.folder_path, 'Allclean; ')
         cmd += 'rm -rf ' + f'{0:.{self.t_prec}f}; '
         cmd += 'rm -f *.coco'
 
@@ -109,7 +109,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             solver.finalize()
 
             if cores > 1:
-                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL)
+                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL, env=solver.env)
 
             node_coords = of_io.get_boundary_points(solver.working_directory, f'{self.delta_t:.{self.t_prec}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)

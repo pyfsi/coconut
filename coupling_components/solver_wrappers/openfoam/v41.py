@@ -22,6 +22,7 @@ class SolverWrapperOpenFOAM_41(Component):
         # Settings
         self.settings = parameters["settings"]
         self.working_directory = self.settings["working_directory"]
+        self.env = tools.get_solver_env(__name__, self.working_directory)
         self.moduleType = "OpenFOAM"  # hard-coded, cannot be altered by naive user
         self.moduleVersion = "4.1"  # hard-coded, cannot be altered by naive user
         self.module = self.moduleType + "/" + self.moduleVersion
@@ -161,7 +162,7 @@ class SolverWrapperOpenFOAM_41(Component):
 
         # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         check_call("cd " + self.working_directory + "; writeCellCentres -time " + str(
-            self.start_time) + " &> log.writeCellCentres;", shell=True)
+            self.start_time) + " &> log.writeCellCentres;", shell=True, env=self.env)
 
         # Want "cellCentres for face boundaries"
         for boundary in self.boundary_names:
@@ -241,7 +242,7 @@ class SolverWrapperOpenFOAM_41(Component):
         '''
         if self.cores > 1:
             check_call("cd " + self.working_directory + "; decomposePar -force -time " + str(
-                self.start_time) + " &> log.decomposePar;", shell=True)
+                self.start_time) + " &> log.decomposePar;", shell=True, env=self.env)
             for boundary in self.boundary_names:
                 mp_output = self.model.get_model_part(f'{boundary}_output')
                 mp_output.sequence = []
@@ -273,7 +274,7 @@ class SolverWrapperOpenFOAM_41(Component):
         else:
             cmd = "mpirun -np " + str(self.cores) + " " + self.application + " -parallel &> log." + self.application
 
-        self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True)
+        self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
 
         ### CoConuT_OpenFOAMSolver is running from here on
 
@@ -569,7 +570,7 @@ class SolverWrapperOpenFOAM_41(Component):
         if self.cores > 1:
             check_call(
                 "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp
-                + " &> log.decomposePar;", shell=True)
+                + " &> log.decomposePar;", shell=True, env=self.env)
 
     def write_control_dict_function(self, file_name, func_name, lib_name, variable_name, patch_name, write_start,
                                     write_end):
@@ -670,7 +671,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 os.remove(file)
 
     def check_software(self):
-        if os.system(self.application + ' -help &> checkSoftware') != 0:
+        if check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
             sys.exit("You either did not load the module for OpenFOAM/4.1, did not compile the solver you are trying "
                      "to use or did not source $FOAM_BASH prior to execution of CoCoNuT.")
 

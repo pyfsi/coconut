@@ -48,10 +48,10 @@ class SolverWrapperAbaqus614(Component):
                     mp_mode                 Mode of the parallel computing (currently only THREADS is accepted)
                     save_iterations         number of time steps between consecutive saves of Abaqus-files
         """
-
-        self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
+        self.env = tools.get_solver_env(__name__, self.dir_csm)
+        self.check_software()
         path_src = os.path.realpath(os.path.dirname(__file__))
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -485,17 +485,17 @@ class SolverWrapperAbaqus614(Component):
             raise RuntimeError('Python version 3.6 or higher required.')
 
         # Abaqus availability
-        if shutil.which('abaqus') is None:
-            raise RuntimeError('Abaqus must be available.')
+        # if shutil.which('abaqus') is None:
+        #     raise RuntimeError('Abaqus must be available.')
 
         # Abaqus version
-        result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE)
+        result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE, env=self.env)
         if self.version not in str(result.stdout):
             raise RuntimeError(f'Abaqus version {self.version} is required.')
 
         # Compilers
-        if shutil.which('ifort') is None:
-            raise RuntimeError('Intel compiler ifort must be available.')
+        # if shutil.which('ifort') is None:
+        #     raise RuntimeError('Intel compiler ifort must be available.')
 
     def make_elements(self, face_file, output_file):
         face_file = Path(face_file)
@@ -568,9 +568,9 @@ class SolverWrapperAbaqus614(Component):
                 file.write(line + '\n')
         os.chmod(script, 0o700)
         if wait:
-            p = subprocess.call(script, shell=True)
+            p = subprocess.call(script, shell=True, env=self.env)
         else:
-            p = subprocess.Popen(script, shell=True)
+            p = subprocess.Popen(script, shell=True, env=self.env)
         if delete:
             os.system("rm " + script)
         return p
