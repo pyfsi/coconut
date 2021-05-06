@@ -10,11 +10,11 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
-   width="1000"
-   height="238.10109"
+   width="4096"
+   height="975.26208"
    id="svg2"
    inkscape:version="0.47 r22583"
-   sodipodi:docname="coconut_banner.svg">
+   sodipodi:docname="coconut-banner.svg">
   <metadata
      id="metadata34">
     <rdf:RDF>
@@ -39,9 +39,9 @@
      inkscape:window-height="988"
      id="namedview32"
      showgrid="false"
-     inkscape:zoom="0.41667425"
-     inkscape:cx="819.7405"
-     inkscape:cy="61.983693"
+     inkscape:zoom="0.10416856"
+     inkscape:cx="3487.0296"
+     inkscape:cy="583.01233"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -60,12 +60,12 @@
   <rect
      style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
      id="rect3776"
-     width="1000"
-     height="238.10109"
-     x="0"
-     y="0" />
+     width="4096"
+     height="975.26208"
+     x="9.2755399e-06"
+     y="1.8852412e-05" />
   <g
-     transform="matrix(2.1007714,0,0,2.1007714,-209.57306,-697.36705)"
+     transform="matrix(8.6047596,0,0,8.6047596,-858.41123,-2856.4154)"
      id="layer1">
     <g
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"
