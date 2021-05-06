@@ -50,7 +50,7 @@ with `alt` displayed when the image cannot be shown/viewed for some reason, and 
 
 ![example image](images/lachend_kakske.png "diefstal in Oostende")
 
-Only image formats specified in `run_mkdocs.py` (i.e. png, jpg, jpeg, gif) are copied to the website; missing extensions can be added. 
+Only image formats specified in `run_mkdocs.py` (i.e. png, jpg, jpeg, gif, svg) are copied to the website; missing extensions can be added. 
 Images from all `coconut` subdirectories called `images` are copied to the website, so care must be taken that `images` is not used in e.g. the output of the test examples.
 
 ### Style & layout guide
