@@ -116,21 +116,16 @@ We can now navigate to the folder of the example we will simulate.
 ```bash
 cd $COCO/coconut/examples/tube_tube_flow_tube_structure/
 ```
-This folder contains all the files required to set up and run the FSI simulation in CoCoNuT. The files *`run_simulation.py`* and *`parameters.json`* will be used to run the actual FSI simulation, but we will come back to those later. 
-py
-First we must set up both single-physics solvers separately, starting with the flow solver. This setup is typically done outside of CoCoNuT by the user, as it is solver-specific. In this case we provide a bash script *`setup_tube_flow.sh`* that uses the files in the folder *`setup_tube_flow`* to generate the case. When the script is run with
+This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file *`parameters.json`* will be used to run the actual FSI simulation, but we will come back to that later. 
+First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
+In this case we provide a bash script *`setup.sh`* that sets up both solvers using the files in the folder *`../setup_files`*. When the script is run with
 
 ```bash
-./setup_tube_flow.sh
+./setup.sh
 ```
 
-a new folder *`CFD`* appears. This folder contains all files required to start a simulation of the flow in the tube. Analogously, we run 
-
-```bash
-./setup_tube_structure.sh
-```
-
-to generate the *`CSM`* folder, which contains all files required to start a simulation of the tube structure. 
+new folders *`CFD`* and *`CSM`* appear, as well as the file *`run_simulation.py`*. The *`CFD`* folder contains all files required to start a simulation of the flow in the tube. 
+Analogously, the *`CSM`* folder contains all files required to start a simulation of the tube structure.
 
 We can now start the FSI simulation in CoCoNuT by running the Python file *`run_simulation.py`*:
 

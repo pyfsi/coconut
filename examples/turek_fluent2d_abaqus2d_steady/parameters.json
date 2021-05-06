@@ -114,10 +114,10 @@
               "dimensions": 2,
               "arraysize": 500,
               "subcycling": true,
-              "initialInc":0.01,
-              "maxInc": 1,
-              "minInc": 0.0001,
-              "maxNumInc": 1000,
+              "initial_inc":0.01,
+              "max_inc": 1,
+              "min_inc": 0.0001,
+              "max_num_inc": 1000,
               "ramp": true,
               "surfaceIDs": [
                 "BEAMINSIDEMOVING0",
@@ -168,8 +168,7 @@
                 }
               ],
               "mp_mode": "THREADS",
-              "input_file": "case_turek.inp",
-              "save_iterations": 1
+              "input_file": "case_turek.inp"
             }
           },
           "mapper_interface_input": {

@@ -86,10 +86,10 @@
               "dimensions": 2,
               "arraysize": 1000000.0,
               "subcycling": true,
-              "minInc": 0.0001,
-              "initialInc": 0.01,
-              "maxNumInc": 1000,
-              "maxInc": 1.0,
+              "min_inc": 0.0001,
+              "initial_inc": 0.01,
+              "max_num_inc": 1000,
+              "max_inc": 1.0,
               "ramp": true,
               "surfaceIDs": [
                 "BEAMINSIDEMOVING"
@@ -112,8 +112,7 @@
                 }
               ],
               "mp_mode": "THREADS",
-              "input_file": "case_tube2d.inp",
-              "save_iterations": 1
+              "input_file": "case_tube2d.inp"
             }
           },
           "mapper_interface_input": {
