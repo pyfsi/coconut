@@ -984,6 +984,60 @@
           
 
 
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-5-3" type="checkbox" id="nav-5-3">
+    
+    <label class="md-nav__link" for="nav-5-3">
+      Turek benchmark
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
+      <label class="md-nav__title" for="nav-5-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        Turek benchmark
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../turek_fluent2d_abaqus2d/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../turek_fluent2d_abaqus2d_steady/" title="Fluent 2D - Abaqus 2D - Steady" class="md-nav__link">
+      Fluent 2D - Abaqus 2D - Steady
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item">
     <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
@@ -1317,19 +1371,19 @@ A considerable convergence stabilization and acceleration is obtained by modifyi
 <td>Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.</td>
 </tr>
 <tr>
-<td align="right"><code>name</code></td>
+<td align="right"><code>case_name</code></td>
 <td align="center">string</td>
-<td>(optional) Default: <code>"case"</code>. Name of the case. This name is used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results (<em><code>&lt;name&gt;_results.pickle</code></em>) and a restart file (<em><code>&lt;name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>). If one of these files already exists, a number is appended to <code>name</code>, until no such file is found.</td>
+<td>(optional) Default: <code>"case"</code>. Name of the case. This name is used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results (<em><code>&lt;name&gt;_results.pickle</code></em>) and a restart file (<em><code>&lt;name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.</td>
 </tr>
 <tr>
 <td align="right"><code>restart_case</code></td>
 <td align="center">string</td>
-<td>Only required when restart is performed (<code>timestep_start</code> &gt; 0). Refers to the case which has to be restarted. The following pickle file will be used: <em><code>&lt;restart_case&gt;_restart_ts&lt;timestep_start&gt;.pickle</code></em>. This file path starts in the folder from where the simulation is performed.</td>
+<td>(optional) Default: <code>case_name</code>. Only used when restart is performed (<code>timestep_start</code> &gt; 0). Refers to the case which has to be restarted. The following pickle file will be used: <em><code>&lt;restart_case&gt;_restart_ts&lt;timestep_start&gt;.pickle</code></em>. This file path starts in the folder from where the simulation is performed.</td>
 </tr>
 <tr>
 <td align="right"><code>save_restart</code></td>
 <td align="center">int</td>
-<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. With a minus sign only the last file is retained.</td>
+<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained.</td>
 </tr>
 <tr>
 <td align="right"><code>save_results</code></td>
@@ -1610,7 +1664,7 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 <td>(optional) Time step size to be used in the test. Is optional as long as this value is defined in the <code>settings</code> dictionary. If a different value is defined in both dictionaries, the one defined in <code>test_settings</code> is chosen.</td>
 </tr>
 <tr>
-<td align="right"><code>name</code></td>
+<td align="right"><code>case_name</code></td>
 <td align="center">string</td>
 <td>(optional) Name of the case used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results. The pickle file will have the name <em><code>&lt;name&gt;_&lt;test_solver_working_directory&gt;_results.pickle</code></em>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>"case"</code>.</td>
 </tr>
@@ -1637,14 +1691,14 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 </tbody>
 </table>
 <p>Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the <code>settings</code> dictionary.
-The <a href="#settings"><code>settings</code> dictionary</a> is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
+The <a href="#settings"><code>settings</code> dictionary</a> is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>case_name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
 An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>.</p>
 <p>The working directory of the solver is copied to a new directory with the same name and a suffix <code>_testX</code> with <code>X</code> an integer starting from 0. As such, previous test solver working directories are not overwritten.
 The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver test working directory. As such, the pickle file can always be linked to the corresponding test working directory.</p>
 <p>During run time, the norm of <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
-<p>In each coupled solver, the <code>save_results</code> key can be set on <code>true</code>, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>name</code> dictates the name of this file as explained above. The pickle file is saved after every time step and may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:</p>
+<p>In each coupled solver, the <code>save_results</code> key can be set on <code>true</code>, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is saved after every time step and may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:</p>
 <table>
 <thead>
 <tr>
@@ -1680,9 +1734,9 @@ The optional pickle file, which saves some <a href="#save-results">results</a>, 
 <td>Contains the performed number of coupling iterations for every time step.</td>
 </tr>
 <tr>
-<td align="right"><code>time</code></td>
+<td align="right"><code>run_time</code></td>
 <td align="center">float</td>
-<td>Equals the total computation time, i.e. the time between initialization and finalization.</td>
+<td>Equals the total computation time, i.e. the time between initialization and finalization (excluding initialization).</td>
 </tr>
 <tr>
 <td align="right"><code>residual</code></td>
@@ -1699,10 +1753,21 @@ The optional pickle file, which saves some <a href="#save-results">results</a>, 
 <td align="center">int</td>
 <td>Equals the used start time step.</td>
 </tr>
+<tr>
+<td align="right"><code>case_name</code></td>
+<td align="center">string</td>
+<td>Name of the case.</td>
+</tr>
+<tr>
+<td align="right"><code>info</code></td>
+<td align="center">string</td>
+<td>Additional info, such as date and restart history.</td>
+</tr>
 </tbody>
 </table>
 <p>In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.</p>
-<p>Finally, there is also a debug option, which can be activated by setting the boolean <code>self.debug</code> on <code>True</code> in the code file itself. Then, the above information is stored every iteration. Additionally, the residual vector is saved as well using the key <code>solution_r</code>, analogously to <code>solution_x</code> and <code>solution_y</code>. Note, however, that the pickle file can be become very large in that case.</p>
+<p>Finally, there is also a debug option, which can be activated by setting the boolean <code>self.debug</code> on <code>True</code> in the code file itself. Then, the above information is stored every iteration. Additionally, the residual vector is saved as well using the key <code>solution_r</code>, analogously to <code>solution_x</code> and <code>solution_y</code>. Note, however, that the pickle file can be become very large in that case.
+This option is only meant for debugging a new coupling algorithm. It should not be used in combination with restart.</p>
 <h2 id="restart">Restart</h2>
 <p>The restart functionality is very useful to continue a calculation which has been stopped, either intentionally or unintentionally.
 The goal is to continue as if the code had never been interrupted.</p>
@@ -1741,10 +1806,9 @@ Conversely, they are not required to initialize the interfaces with the correct 
 Only when both solver wrappers allow restart, is is possible to restart a calculation!</p>
 <h3 id="saving-restart-files">Saving restart files</h3>
 <p>During a calculation it is possible to save restart pickle files.
-As described above the pickle file for restart has a name (<em><code>&lt;name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>), based on the setting <code>name</code>.
-If a restart or results file with such a <code>name</code> already exists, a number is appended to <code>name</code>, until no such file is found.
-As such, the accidental overwriting of files is avoided and the pickle files belonging to a certain case can be easily identified.</p>
-<p>The frequency of saving a restart pickle file is determined by the <code>save_restart</code> interval as described above.</p>
+As described above the pickle file for restart has a name (<em><code>&lt;name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>), based on the setting <code>case_name</code>.</p>
+<p>The frequency of saving a restart pickle file is determined by the <code>save_restart</code> interval as described above.
+Remark that it is only useful to save the restart pickle file, when the solver data are saved as well.</p>
 <h3 id="performing-restart">Performing restart</h3>
 <p>To restart a case, <code>timestep_start</code> has to be a positive integer above zero.
 The first time step that will be calculated is <code>timestep_start</code> plus one.
@@ -1755,6 +1819,11 @@ Additionally, it is checked that the new model parts are exactly the same as the
 <p>It is important to realize that the pickle file only makes sure that the initial guess and coupling algorithm work as before.
 The physical effect of previous time steps dealt with by the solver wrappers.
 <strong>Therefore, in order to be able to perform a restart, the solver files for the corresponding time step also need to be present!</strong></p>
+<p>When performing restart, the new data will be neatly appended to the already existing results pickle file, leaving out existing time step data after the new time step start.
+As a result, the results pickle file looks exactly as if the calculation was never stopped, with the exception of the fields <code>run_time</code> and <code>info</code>.
+The latter provides a very shot log of when restart is performed.</p>
+<p>If the results pickle file would not be found for any reason, the user is informed and a new one is made, with the correct <code>timestep_start</code>.
+Note that the presence of the restart pickle file on the other hand is required. If the <code>case_name</code> is changed, the restart can still be performed by providing the case name for restart using <code>restart_case</code> (see explanation above).</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
 <a href="http://hdl.handle.net/1854/LU-8685199">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.</a></p>

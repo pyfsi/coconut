@@ -875,6 +875,60 @@
           
 
 
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-5-3" type="checkbox" id="nav-5-3">
+    
+    <label class="md-nav__link" for="nav-5-3">
+      Turek benchmark
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
+      <label class="md-nav__title" for="nav-5-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        Turek benchmark
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="turek_fluent2d_abaqus2d/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="turek_fluent2d_abaqus2d_steady/" title="Fluent 2D - Abaqus 2D - Steady" class="md-nav__link">
+      Fluent 2D - Abaqus 2D - Steady
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item">
     <a href="test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
@@ -1162,19 +1216,15 @@ For example, with a folder structure like</p>
 </code></pre></div>
 
 
-<p>This folder contains all the files required to set up and run the FSI simulation in CoCoNuT. The files <em><code>run_simulation.py</code></em> and <em><code>parameters.json</code></em> will be used to run the actual FSI simulation, but we will come back to those later. 
-py
-First we must set up both single-physics solvers separately, starting with the flow solver. This setup is typically done outside of CoCoNuT by the user, as it is solver-specific. In this case we provide a bash script <em><code>setup_tube_flow.sh</code></em> that uses the files in the folder <em><code>setup_tube_flow</code></em> to generate the case. When the script is run with</p>
-<div class="codehilite"><pre><span></span><code>./setup_tube_flow.sh
+<p>This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file <em><code>parameters.json</code></em> will be used to run the actual FSI simulation, but we will come back to that later. 
+First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
+In this case we provide a bash script <em><code>setup.sh</code></em> that sets up both solvers using the files in the folder <em><code>../setup_files</code></em>. When the script is run with</p>
+<div class="codehilite"><pre><span></span><code>./setup.sh
 </code></pre></div>
 
 
-<p>a new folder <em><code>CFD</code></em> appears. This folder contains all files required to start a simulation of the flow in the tube. Analogously, we run </p>
-<div class="codehilite"><pre><span></span><code>./setup_tube_structure.sh
-</code></pre></div>
-
-
-<p>to generate the <em><code>CSM</code></em> folder, which contains all files required to start a simulation of the tube structure. </p>
+<p>new folders <em><code>CFD</code></em> and <em><code>CSM</code></em> appear, as well as the file <em><code>run_simulation.py</code></em>. The <em><code>CFD</code></em> folder contains all files required to start a simulation of the flow in the tube. 
+Analogously, the <em><code>CSM</code></em> folder contains all files required to start a simulation of the tube structure.</p>
 <p>We can now start the FSI simulation in CoCoNuT by running the Python file <em><code>run_simulation.py</code></em>:</p>
 <div class="codehilite"><pre><span></span><code>python run_simulation.py
 </code></pre></div>

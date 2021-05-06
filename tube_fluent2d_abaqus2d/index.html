@@ -809,6 +809,60 @@
           
 
 
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-5-3" type="checkbox" id="nav-5-3">
+    
+    <label class="md-nav__link" for="nav-5-3">
+      Turek benchmark
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
+      <label class="md-nav__title" for="nav-5-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        Turek benchmark
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../turek_fluent2d_abaqus2d/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../turek_fluent2d_abaqus2d_steady/" title="Fluent 2D - Abaqus 2D - Steady" class="md-nav__link">
+      Fluent 2D - Abaqus 2D - Steady
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item">
     <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
@@ -959,10 +1013,9 @@ Additionally, a folder <em><code>create_mesh</code></em> is provided containing 
 The mesh can be created by running the script <em><code>create_mesh.sh</code></em>, given that Gambit v2.4.6 is available.</p>
 <p>The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
-The Abaqus case is not build when setting up the case, but is provided as the file <em><code>Base.inp</code></em>. 
-However, in the <nobr><em><code>setup_files/setup_abaqus2d/create_model</code></em>&lt;\nobr&gt; folder, an example is given of how an input file can be created in Abaqus using scripts.
-This setup can be run by executing the <em><code>create_model.sh</code></em> script. 
-This will run Abaqus with the <em><code>makeInp.py</code></em> Python script to set the structural parameters, starting from the mesh in <em><code>Base.inp</code></em>.
+The Abaqus case is built when setting up the case starting from the file <em><code>mesh_tube2d.inp</code></em> containing nodes and elements. 
+This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
+The result of the setup is a completed input file <em><code>case_tube2d.inp</code></em>.
 The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
 They are: 8-node biquadratic, reduced integration, hybrid with linear pressure.
 See the <a href="http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb">Abaqus documentation</a> for more information. 

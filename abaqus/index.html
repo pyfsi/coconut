@@ -956,6 +956,60 @@
           
 
 
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-5-3" type="checkbox" id="nav-5-3">
+    
+    <label class="md-nav__link" for="nav-5-3">
+      Turek benchmark
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
+      <label class="md-nav__title" for="nav-5-3">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        Turek benchmark
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../turek_fluent2d_abaqus2d/" title="Fluent 2D - Abaqus 2D" class="md-nav__link">
+      Fluent 2D - Abaqus 2D
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../turek_fluent2d_abaqus2d_steady/" title="Fluent 2D - Abaqus 2D - Steady" class="md-nav__link">
+      Fluent 2D - Abaqus 2D - Steady
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item">
     <a href="../test_single_solver/" title="Test single solver" class="md-nav__link">
       Test single solver
@@ -1246,16 +1300,8 @@ Subcycling within the structural solver is possible.</p>
 <h2 id="environment">Environment</h2>
 <ul>
 <li>A working directory for Abaqus needs to be created within the main directory. Its <strong>relative path to the main directory</strong> should be specified in the JSON file. In the <a href="https://pyfsi.github.io/coconut/examples">CoCoNuT examples</a> this folder is typically called <em><code>CSM</code></em>, but any name is allowed.</li>
-<li>Abaqus needs a <strong>host-file</strong> called <em><code>AbaqusHosts.txt</code></em> in the working directory.<ul>
-<li>This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm.</li>
-<li>The extra directory contains a script <em><code>Example_makeHostFile.sh</code></em> which can be used to generate a host file.</li>
-</ul>
-</li>
 <li>The <strong>Abaqus license server</strong> needs to be specified in the parametrized file <code>abaqus_v6.env</code> which is present in the <code>source directory</code>. For use at Ghent University no changes are required. </li>
-<li>The <strong>Abaqus software should be available as well as compilers</strong> to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. <ul>
-<li>The extra directory contains a file <em><code>abaqus_setup</code></em> which can be sourced in the terminal that will be used to run the simulation. This script loads the Abaqus module as well as the compilers (Ghent University system).</li>
-</ul>
-</li>
+<li>The <strong>Abaqus software should be available as well as compilers</strong> to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. </li>
 </ul>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in the <em><code>examples</code></em> folder.</p>
@@ -1307,17 +1353,17 @@ Subcycling within the structural solver is possible.</p>
 <tr>
 <td align="right"><code>input_file</code></td>
 <td align="center">str</td>
-<td>Name of the Abaqus input file (.inp) provided by the user. <br> <br> <strong>Example:</strong> <code>"Base.inp"</code></td>
+<td>Name of the Abaqus input file (.inp) provided by the user. <br> <br> <strong>Example:</strong> <code>"case.inp"</code></td>
 </tr>
 <tr>
 <td align="right"><code>mp_mode</code></td>
 <td align="center">str</td>
-<td>Determines how Abaqus is executed in parallel. Should be <code>"THREADS"</code> as <code>"MPI"</code> is currently not implemented.</td>
+<td>Determines how Abaqus is executed in parallel. It is recommended to use <code>"THREADS"</code>. <code>"MPI"</code> works as well but requires a host-file called <em><code>AbaqusHosts.txt</code></em>. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script <em><code>make_host_file.sh</code></em> which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.</td>
 </tr>
 <tr>
-<td align="right"><code>save_iterations</code></td>
+<td align="right"><code>save_interval</code></td>
 <td align="center">int</td>
-<td>Determines what files are kept by Abaqus. All files are saved, but files not corresponding to (i.e. of which the time step is not a multiple of) <code>save_iterations</code> are removed at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).</td>
+<td>(optional) Default: 1. Determines what files are kept by Abaqus. Only the files corresponding to (i.e. of which the time step is a multiple of) <code>save_interval</code> are kept at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).</td>
 </tr>
 <tr>
 <td align="right"><code>timestep_start</code></td>
@@ -1348,22 +1394,22 @@ Subcycling within the structural solver is possible.</p>
 <td><code>false</code>: [Default] Abaqus solves the requested time step using one increment. <br> <code>true</code>: Abaqus is allowed to solve the time step using multiple <em>increments</em>. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small <em>increments</em>.</td>
 </tr>
 <tr>
-<td align="right"><code>initialInc</code></td>
+<td align="right"><code>initial_inc</code></td>
 <td align="center">float</td>
 <td>Required when subcycling is enabled. Contains the size of the first time <em>increment</em> attempted by Abaqus.</td>
 </tr>
 <tr>
-<td align="right"><code>maxInc</code></td>
+<td align="right"><code>max_inc</code></td>
 <td align="center">float</td>
 <td>Required when subcycling is enabled. Contains the maximal time <em>increment</em> size allowed. This value should not be higher than <code>delta_t</code>.</td>
 </tr>
 <tr>
-<td align="right"><code>maxNumInc</code></td>
+<td align="right"><code>max_num_inc</code></td>
 <td align="center">int</td>
 <td>Required when subcycling is enabled. Contains the maximum number of <em>increments</em> that Abaqus is allowed to perform for one time step.</td>
 </tr>
 <tr>
-<td align="right"><code>minInc</code></td>
+<td align="right"><code>min_inc</code></td>
 <td align="center">float</td>
 <td>Required when subcycling is enabled. Contains the minimal size allowed for a time <em>increment</em>.</td>
 </tr>
@@ -1393,7 +1439,7 @@ Subcycling within the structural solver is possible.</p>
 <li>Upon running GetOutput the geometrical nodes are written to <em><code>CSM_TimeASurfaceBNodes.dat</code></em>. </li>
 </ul>
 <h3 id="the-solve_solution_step-method">The <code>solve_solution_step</code> method</h3>
-<p>This method of <code>SolverWrapperAbaqusX</code> is called each coupling iteration with an <code>Interface</code> object (input_interface) containing loads, which are written to files that are read by the (compiled) <em><code>USR.f</code></em> during the invoked Abaqus simulation. The Abaqus software is started and shut down for each calculation, i.e. each coupling iteration. When the simulation has ran successfully (log-file <em><code>AbaqusSolver.log</code></em> is checked for errors), the outputs are read from Abaqus by GetOuput and written to a file. The file is read in Python and the output (displacements) are stored in the output_interface <code>Interface</code> object which is returned.</p>
+<p>This method of <code>SolverWrapperAbaqusX</code> is called each coupling iteration with an <code>Interface</code> object (input_interface) containing loads, which are written to files that are read by the (compiled) <em><code>USR.f</code></em> during the invoked Abaqus simulation. The Abaqus software is started and shut down for each calculation, i.e. each coupling iteration. When the simulation has ran successfully (log-file <em><code>abaqus.log</code></em> is checked for errors), the outputs are read from Abaqus by GetOuput and written to a file. The file is read in Python and the output (displacements) are stored in the output_interface <code>Interface</code> object which is returned.</p>
 <h4 id="files-written-in-the-working-directory-during-solve_solution_step">Files written in the working directory during <code>solve_solution_step</code></h4>
 <p>In the file conventions <em><code>A</code></em> is the time step and <em><code>B</code></em> the index of the corresponding element of <code>surfaceIDs</code>.</p>
 <ul>
@@ -1438,7 +1484,7 @@ The base-file has to contain all necessary information about the structural mode
 <ul>
 <li>From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.</li>
 <li>From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.</li>
-<li>By converting a "node set" containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <code>makeSurface.py</code> file in the extra directory.</li>
+<li>By converting a "node set" containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <code>make_surface.py</code> file in the extra directory.</li>
 </ul>
 <p>The name of the surface has to be <strong>MOVINGSURFACE followed by an integer</strong>. The integer of the surface has to correspond with the index of that specific surface in the <code>surfaceIDs</code> parameter (index starts from 0). For example MOVINGSURFACE0 is associated with the first item in <code>surfaceIDs</code> and MOVINGSURFACE1 would be associated with the second item in <code>surfaceIDs</code>.</p>
 <p>An example on the use of <code>SurfaceFromNodeSet</code> (via the Python console in Abaqus or a Python script for Abaqus):</p>
@@ -1531,7 +1577,7 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 <h3 id="note-about-choosing-modelparts">Note about choosing <code>ModelParts</code></h3>
 <p>The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to <code>ModelParts</code> in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different <code>ModelPart</code>. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different <code>ModelParts</code> at each side of the corner. Another reason to do this is because the code cannot handle elements with two or more faces being part of the same <code>ModelPart</code>. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same <code>ModelPart</code>: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or load point on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.</p>
 <h2 id="log-files">Log files</h2>
-<p>A general event log of the procedure can be found in the working directory, in a file named <em><code>AbaqusSolver.log</code></em>. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: <em><code>CSM_TimeA.msg</code></em>, <em><code>A</code></em> being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.</p>
+<p>A general event log of the procedure can be found in the working directory, in a file named <em><code>abaqus.log</code></em>. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: <em><code>CSM_TimeA.msg</code></em>, <em><code>A</code></em> being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.</p>
                 
               
               
