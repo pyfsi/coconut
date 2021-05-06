@@ -580,7 +580,7 @@ class SolverWrapperAbaqus614(Component):
                         if 'application' in s.lower():
                             contents_B = s.split('=')
                             app = contents_B[1].lower().strip()
-                            if app == 'quasi-static' or app == 'moderate dissipation' or 'transient fidelity':
+                            if app in ['quasi-static', 'moderate dissipation', 'transient fidelity']:
                                 if not self.subcycling:
                                     line_2 = f'{self.delta_t}, {self.delta_t},\n'
                                 else:
