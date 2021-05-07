@@ -11,9 +11,6 @@ import multiprocessing
 
 # TODO: issue: id is a Python build-in function... use ids instead?
 
-# TODO: The unittests for the other Fluent versions currently inherit from these classes. Because those modules import
-#   these super classes, they are also run and crash, which is kinda ugly.
-
 
 class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
     version = '2019R1'

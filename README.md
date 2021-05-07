@@ -1,4 +1,4 @@
-[![CoCoNuT banner](https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/coconut-banner.png)](https://github.com/pyfsi/coconut)
+[![CoCoNuT banner](https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/coconut-banner.svg)](https://github.com/pyfsi/coconut)
 
 
 # Coupling Code for Numerical Tools
