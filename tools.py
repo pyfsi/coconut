@@ -252,9 +252,12 @@ def get_solver_env(solver_module_name, working_dir):
     solver_load_cmd = solver_modules.get_solver_cmd(solver_name)
 
     # run the module load command and store the environment
-    subprocess.check_call(
-        f'{solver_load_cmd} && python -c "from coconut import tools;tools.write_env()"',
-        shell=True, cwd=working_dir, stdout=subprocess.PIPE)
+    try:
+        subprocess.check_call(
+            f'{solver_load_cmd} && python -c "from coconut import tools;tools.write_env()"',
+            shell=True, cwd=working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed.')
 
     # load the environment variables and return as python-dict
     env_filepath = os.path.join(working_dir, env_filename)

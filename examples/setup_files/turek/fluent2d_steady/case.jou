@@ -1,0 +1,64 @@
+file set-batch-options n y n
+(enable-dynamic-mesh-node-ids #t)
+file startt "transcript_setup.txt"
+file read-case mesh_turek.msh
+grid check
+grid modify-zones zone-name default-interior fluid-interior
+
+define user-defined compiled-functions compile "udf_inlet" y "udf_inlet.c" "" ""
+define user-defined compiled-functions load "udf_inlet"
+
+define materials change-create air fluid y constant 1000 n n y constant 1 n n n y
+
+define models steady
+define models viscous laminar y
+define models solver pressure-based y
+define boundary-conditions velocity-inlet in n n y y y y "udf" "x_velocity_steady::udf_inlet" n 0
+
+define boundary-conditions pressure-outlet out y n 0 n y y n n
+define boundary-conditions wall circleoutside y motion-bc-stationary y shear-bc-noslip
+(for-each
+ (lambda (zone) (ti-menu-load-string (format #f "define boundary-conditions wall ~a y motion-bc-stationary y shear-bc-noslip" zone)))
+ '(beamtopoutside beamrightoutside beambottomoutside)
+)
+define boundary-conditions wall box y motion-bc-stationary y shear-bc-noslip
+define operating-conditions operating-pressure 0
+define operating-conditions gravity n
+
+define dynamic-mesh dynamic-mesh y n n y n
+define dynamic-mesh controls smoothing y
+define dynamic-mesh controls smoothing-parameters smoothing-method diffusion
+define dynamic-mesh controls smoothing-parameters max-iter 20
+define dynamic-mesh controls smoothing-parameters relative-convergence-tolerance 1e-4
+define dynamic-mesh controls smoothing-parameters boundary-distance-method n
+define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 0
+define dynamic-mesh controls layering n
+define dynamic-mesh controls remeshing n
+
+(for-each
+ (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary fluid constant 0" zone)))
+ '(in out box circleoutside)
+)
+define dynamic-mesh zones create fluid deforming y y 0.005 0.05 0.6
+;0.00500 0.00250 0.00125
+;0.0500 0.0250 0.0125
+
+solve monitors force drag-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 1 0
+solve monitors force lift-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 0 1
+solve monitors residual check-convergence y y y
+solve monitors residual convergence-criteria 1.0E-6 1.0E-6 1.0E-6
+
+solve set discretization-scheme mom 1
+solve set discretization-scheme pressure 12
+solve set p-v-coupling 24
+solve set gradient-scheme n y
+solve set reporting-interval 10
+solve set flow-warnings n
+
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0.2
+solve initialize set-defaults y-velocity 0
+solve initialize initialize-flow
+
+file write-case-data case_turek.cas
+exit

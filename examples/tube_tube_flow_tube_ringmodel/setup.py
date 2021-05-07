@@ -14,7 +14,7 @@ shutil.rmtree(cfd_dir, ignore_errors=True)
 shutil.rmtree(csm_dir, ignore_errors=True)
 
 # create new CFD folder
-shutil.copytree('../setup_files/tube_flow', cfd_dir)
+shutil.copytree('../setup_files/tube/tube_flow', cfd_dir)
 
 # create new CSM folder
-shutil.copytree('../setup_files/tube_ringmodel', csm_dir)
+shutil.copytree('../setup_files/tube/tube_ringmodel', csm_dir)
