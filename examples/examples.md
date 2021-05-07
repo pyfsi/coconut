@@ -19,12 +19,12 @@ The *`examples`* folder contains following subfolders:
 The main directory of each example case contains following files: 
 
 - *`parameters.json`*: parameter file in JSON format.
-- *`setup.py`*: python script, which needs to be run for setting up the case.
+- *`setup.py`*: python script, which needs to be run to set up the case.
 - *`tube_<flow solver>_<structural solver>.md`*: description of the specific example.
 
 When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
 These folders are expandable and are deleted when the setup files are (re)run. 
-The script copies first the *`run_simulation.py`* file into the main directory, and then the necessary case files from *`setup_files`* into the correct working directory.
+The script copies first the *`run_simulation.py`* file into the main directory and then the necessary case files from *`setup_files`* into the correct working directory.
 After the completion of this script, the example case is ready to run.
 
 
@@ -39,7 +39,7 @@ The second is `coupled_solver` in which all parameters related to solver algorit
 ## Running a case
 
 In order to run an example case, first, the setup script has to be run to create the working directories.
-Then, the calculation is started by running *`run_simulation.py`*. Make sure to add the module-load commands for the required solvers in `solverload_cmd_dict` in the *`coconut/solver_modules.py`* file, to load the necessary modules for your solvers during the simulation. By default, solver for ugent-cluster is added in the file.
+Then, the calculation is started by running *`run_simulation.py`*. Make sure to add the module-load commands for the required solvers in `solverload_cmd_dict` in the *`coconut/solver_modules.py`* file, to load the necessary modules for your solvers during the simulation. By default, the solvers for the UGent-cluster are added to the file.
 
 In practice, you would run the following commands:
 

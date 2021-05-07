@@ -331,9 +331,6 @@ class SolverWrapperFluent2019R1(Component):
             raise RuntimeError('Python version 3.6 or higher required.')
 
         # Fluent version: see set_fluent_version
-        # if shutil.which('fluent') is None:
-        #     raise RuntimeError('ANSYS Fluent must be available.')
-
         result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
             raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
