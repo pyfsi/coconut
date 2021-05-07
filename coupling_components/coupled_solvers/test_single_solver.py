@@ -30,9 +30,10 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         # read parameters
         self.solver_index = self.settings["solver_index"]  # solver to be tested; starts at 0
         self.test_class = self.settings.get("test_class")
-        self.timestep_start = self.settings.get("timestep_start", 0)
+        self.timestep_start_current = self.timestep_start_global = self.settings.get("timestep_start", 0)
+        self.restart = False  # no restart allowed
         self.delta_t = self.settings["delta_t"]
-        tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start}")
+        tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}")
 
         # create dummy components
         self.predictor = DummyComponent()
@@ -88,12 +89,16 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         self.x = None
         self.y = None
-        self.time_step = self.timestep_start
+        self.time_step = self.timestep_start_current
         self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
         self.start_time = None
-        self.elapsed_time = None
+        self.run_time = None
+        self.run_time_previous = 0
         self.iterations = []
+
+        # no restart files are saved
+        self.save_restart = 0
 
         # save results variables
         self.save_results = self.settings.get("save_results", False)
@@ -101,7 +106,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
-            self.case_name = self.settings.get("name", "results")  # case name
+            self.info = None
+            self.case_name = self.settings.get("case_name", "case")  # case name
             self.case_name += "_" + cur_wd
 
         self.debug = False
@@ -144,7 +150,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.finalize_iteration(self.x * 0)
 
     def print_header(self):
-        if self.time_step == self.timestep_start + 1:
+        if self.time_step == self.timestep_start_current + 1:
             header = f"════════════════════════════════════════════════════════════════════════════════\n" \
                 f"{'Time step':<16}{'Norm x':<28}{'Norm y':<28}"
             tools.print_info(header, flush=True)

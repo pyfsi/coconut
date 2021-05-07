@@ -24,6 +24,10 @@ class SolverWrapperTubeRingmodel(Component):
         with open(case_file_name, 'r') as case_file:
             self.settings.update(json.load(case_file))  # TODO: inversed priority
 
+        # restart is not implemented
+        if self.settings.get("timestep_start", 0) != 0:
+            raise ValueError(f'Restart not implemented for {self.__class__.__name__}')
+
         # settings
         l = self.settings["l"]  # length
         d = self.settings["d"]  # diameter

@@ -33,7 +33,7 @@
                 ],
                 "mp_mode": "THREADS",
                 "input_file": "Base.inp",
-                "save_iterations": 50
+                "save_interval": 50
             }
         }
     ]

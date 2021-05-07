@@ -19,9 +19,9 @@ test_cases = (
     # TestSolverWrapperFluent2020R1Tube2D, TestSolverWrapperFluent2020R1Tube3D,
     # TestSolverWrapperOpenFoam41,
     # TestSolverWrapperKratosStructure60,
-    TestSolverWrapperTubeFlowSolver,
-    TestSolverWrapperTubeRingmodelSolver,
-    TestSolverWrapperTubeStructureSolver
+    # TestSolverWrapperTubeFlowSolver,
+    # TestSolverWrapperTubeRingmodelSolver,
+    # TestSolverWrapperTubeStructureSolver
 )
 
 

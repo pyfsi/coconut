@@ -24,9 +24,11 @@ class SolverWrapperFluent2019R1(Component):
 
         # set parameters
         self.set_fluent_version()
+        name = f'fluent.v{self.version}'
         self.settings = parameters['settings']
-        self.check_software()
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
+        self.env = tools.get_solver_env(name, self.dir_cfd)
+        self.check_software()
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.cores = self.settings['cores']
@@ -91,7 +93,7 @@ class SolverWrapperFluent2019R1(Component):
             cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'  # TODO: does log work well?
             # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'  # TODO: specify what this option does?
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
-                                               shell=True, cwd=self.dir_cfd)
+                                               shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from report.sum
         self.wait_message('case_info_exported')
@@ -330,10 +332,7 @@ class SolverWrapperFluent2019R1(Component):
             raise RuntimeError('Python version 3.6 or higher required.')
 
         # Fluent version: see set_fluent_version
-        if shutil.which('fluent') is None:
-            raise RuntimeError('ANSYS Fluent must be available.')
-
-        result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE)
+        result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
             raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
 

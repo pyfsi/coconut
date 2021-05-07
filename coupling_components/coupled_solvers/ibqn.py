@@ -28,16 +28,20 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
 
         self.dxtemp = self.x.copy()
         self.dytemp = self.y.copy()
-        self.u = self.x.get_interface_data().shape[0]
-        self.w = self.y.get_interface_data().shape[0]
+        self.u = self.x.size
+        self.w = self.y.size
         self.ready = False
-        self.model_f.size_in = self.model_s.size_out = self.u
-        self.model_f.size_out = self.model_s.size_in = self.w
-        self.model_f.out = self.y.copy()
-        self.model_s.out = self.x.copy()
-        models = [self.model_f, self.model_s]
-        for model in models:
-            model.initialize()
+        if not self.restart:  # no restart
+            self.model_f.size_in = self.model_s.size_out = self.u
+            self.model_f.size_out = self.model_s.size_in = self.w
+            self.model_f.out = self.y.copy()
+            self.model_s.out = self.x.copy()
+            for model in [self.model_f, self.model_s]:
+                model.initialize()
+        else:  # restart
+            self.model_f = self.restart_data['models'][0]
+            self.model_s = self.restart_data['models'][1]
+        for model in [self.model_f, self.model_s]:
             self.components += [model]
 
     def lop_f(self, dx):
@@ -64,7 +68,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         # first coupling iteration
         yt = self.solver_wrappers[0].solve_solution_step(self.x)
         self.model_f.add(self.x, yt)
-        self.y = yt
+        self.y = yt.copy()
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         self.model_s.add(self.y, xt)
         r = xt - self.x
@@ -99,3 +103,11 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
             self.model_s.add(self.y, xt)
             r = xt - self.x
             self.finalize_iteration(r)
+
+    def add_restart_check(self, restart_data):
+        for model in ['model_f', 'model_s']:
+            if self.parameters['settings'][model] != restart_data['parameters']['settings'][model]:
+                raise ValueError(f'Restart not possible because {model} changed')
+
+    def add_restart_data(self, restart_data):
+        return restart_data.update({'models': [self.model_f, self.model_s]})

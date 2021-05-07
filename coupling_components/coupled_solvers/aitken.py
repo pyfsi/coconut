@@ -18,9 +18,21 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         self.added = False
         self.rcurr = None
 
+    def initialize(self):
+        super().initialize()
+
+        if self.restart:  # restart
+            self.omega = self.restart_data['omega']
+
+    def initialize_solution_step(self):
+        super().initialize_solution_step()
+
+        self.added = False
+        self.rcurr = None
+
     def predict(self, r_in):
         r = r_in.get_interface_data()
-        # Calculate return value if sufficient data available
+        # calculate return value if sufficient data available
         if not self.added:
             raise RuntimeError("No information to predict")
         dx = self.omega * r
@@ -35,24 +47,24 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         rprev = self.rcurr
         self.rcurr = r
         if self.added:
-            # Aitken Relaxation
-            # Update omega
+            # Aitken relaxation
+            # update omega
             self.omega *= -float(rprev.T @ (r - rprev) / np.linalg.norm(r - rprev, 2) ** 2)
         else:
-            # Set first value of omega in a timestep
+            # set first value of omega in a time step
             self.omega = np.sign(self.omega) * min(abs(self.omega), self.omega_max)
             self.added = True
 
     def solve_solution_step(self):
-        # Initial value
+        # initial value
         self.x = self.predictor.predict(self.x)
-        # First coupling iteration
+        # first coupling iteration
         self.y = self.solver_wrappers[0].solve_solution_step(self.x)
         xt = self.solver_wrappers[1].solve_solution_step(self.y)
         r = xt - self.x
         self.update(self.x, xt)
         self.finalize_iteration(r)
-        # Coupling iteration loop
+        # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += self.predict(r)
             self.y = self.solver_wrappers[0].solve_solution_step(self.x)
@@ -64,8 +76,5 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
     def is_ready(self):
         return self.added
 
-    def initialize_solution_step(self):
-        super().initialize_solution_step()
-
-        self.added = False
-        self.rcurr = None
+    def add_restart_data(self, restart_data):
+        return restart_data.update({'omega': self.omega})

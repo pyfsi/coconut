@@ -9,7 +9,6 @@ import numpy as np
 def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
-# TODO: warnings now crash the code... this should not happen
 
 
 class MapperInterpolator(Component):

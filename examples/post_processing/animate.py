@@ -17,7 +17,7 @@ from fractions import Fraction
 # An AnimationFigure can hold different Animations from different cases. The code is able to handle different time
 # step sizes and starting time steps. The case data is supplied using a results file. To generate such a result file,
 # include a boolean "save_results" in the settings of the coupled solver, set on True.
-# Give a name to the case by including the string {"name": "a_name"} in the settings of the coupled solver.
+# Give a name to the case by including the string {"case_name": "a_name"} in the settings of the coupled solver.
 
 
 class Animation:
