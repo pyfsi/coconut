@@ -24,9 +24,10 @@ class SolverWrapperFluent2019R1(Component):
 
         # set parameters
         self.set_fluent_version()
+        name = f'fluent.v{self.version}'
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        self.env = tools.get_solver_env(__name__, self.dir_cfd)
+        self.env = tools.get_solver_env(name, self.dir_cfd)
         self.check_software()
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
