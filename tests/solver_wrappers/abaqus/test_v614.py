@@ -1,4 +1,5 @@
 from coconut.tools import create_instance
+from coconut.tools import get_solver_env
 
 import unittest
 import numpy as np
@@ -21,13 +22,17 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         dir_tmp = join(os.path.dirname(__file__), f'test_v614/tube{int(cls.dimension)}d')
-        if cls.setup_case:
-            p_setup_abaqus = subprocess.Popen(join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True)
-            p_setup_abaqus.wait()
 
         # perform reference calculation
         with open(join(dir_tmp, 'parameters.json')) as parameter_file:
             parameters = json.load(parameter_file)
+
+        solver_name = parameters['type'].replace('solver_wrappers.', '')
+        env = get_solver_env(solver_name, dir_tmp)
+
+        if cls.setup_case:
+            p_setup_abaqus = subprocess.Popen('sh ' + join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True, env=env)
+            p_setup_abaqus.wait()
 
         # create the solver
         solver = create_instance(parameters)

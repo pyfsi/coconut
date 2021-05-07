@@ -19,8 +19,10 @@ def create(parameters):
 class SolverWrapperKratosStructure60(Component):
     def __init__(self, parameters):
         super().__init__()
+
         self.settings = parameters["settings"]
         self.working_directory = join(os.getcwd(), self.settings["working_directory"])
+        self.env = tools.get_solver_env(__name__, self.working_directory)
         delta_t = self.settings["delta_t"]
         timestep_start = self.settings["timestep_start"]
         dimensions = self.settings["dimensions"]
@@ -45,12 +47,11 @@ class SolverWrapperKratosStructure60(Component):
 
         self.model = data_structure.Model()
 
-        kratos_load_cmd = self.settings["solver_load_cmd"]
         dir_path = os.path.dirname(os.path.realpath(__file__))
         run_script_file = os.path.join(dir_path, 'run_kratos_structural_60.py')
 
-        self.kratos_process = Popen(f'{kratos_load_cmd} && python3 {run_script_file} {input_file_name} &> log',
-                                    shell=True, cwd=self.working_directory)
+        self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
+                                    shell=True, cwd=self.working_directory, env=self.env)
 
         self.wait_message('start_ready')
 

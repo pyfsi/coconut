@@ -12,7 +12,6 @@
         "delta_t": 0.1,
         "timestep_start": 0,
         "input_file": "ProjectParameters.json",
-        "solver_load_cmd": "ml Kratos",
         "kratos_interface_sub_model_parts_list": [
           "SurfaceLoad3D_tube"
         ],

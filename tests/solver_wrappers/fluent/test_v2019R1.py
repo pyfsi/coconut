@@ -1,4 +1,5 @@
 from coconut.tools import create_instance
+from coconut.tools import get_solver_env
 
 import unittest
 import numpy as np
@@ -22,7 +23,9 @@ class TestSolverWrapperFluent2019R1Tube2D(unittest.TestCase):
     def setUpClass(cls):
         if cls.setup_case:
             dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube2d')
-            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
+            fluent_solver_module = f'fluent.v{cls.version}'
+            env = get_solver_env(fluent_solver_module, dir_tmp)
+            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
             p.wait()
 
     def setUp(self):
@@ -212,7 +215,9 @@ class TestSolverWrapperFluent2019R1Tube3D(unittest.TestCase):
     def setUpClass(cls):
         if cls.setup_case:
             dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
-            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True)
+            fluent_solver_module = f'fluent.v{cls.version}'
+            env = get_solver_env(fluent_solver_module, dir_tmp)
+            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
             p.wait()
 
     def setUp(self):

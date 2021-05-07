@@ -1,7 +1,4 @@
 {
-  "settings": {
-    "data_structure": "pyKratos"
-  },
   "solver_wrappers": [
     {
       "type": "solver_wrappers.openfoam.v41",
