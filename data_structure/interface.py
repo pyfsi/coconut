@@ -123,6 +123,16 @@ class Interface:
     def norm(self, order=2):
         return np.linalg.norm(self.get_interface_data(), order)
 
+    def has_same_model_parts(self, other):
+        if type(other) is Interface:
+            model_parts = [self.model.get_model_part(model_part_dict['model_part'])
+                           for model_part_dict in self.parameters]
+            model_parts_other = [other.model.get_model_part(model_part_dict['model_part'])
+                                 for model_part_dict in other.parameters]
+            return model_parts == model_parts_other
+
+        return NotImplemented
+
     def __eq__(self, other):
         if type(other) is Interface:
             return self.model_part_variable_pairs == other.model_part_variable_pairs and \

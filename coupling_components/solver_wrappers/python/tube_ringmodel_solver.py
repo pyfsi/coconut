@@ -24,6 +24,10 @@ class SolverWrapperTubeRingmodel(Component):
         with open(case_file_name, 'r') as case_file:
             self.settings.update(json.load(case_file))  # TODO: inversed priority
 
+        # restart is not implemented
+        if self.settings.get("timestep_start", 0) != 0:
+            raise ValueError(f'Restart not implemented for {self.__class__.__name__}')
+
         # settings
         l = self.settings["l"]  # length
         d = self.settings["d"]  # diameter
@@ -39,7 +43,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.m = self.settings["m"]  # number of segments
         self.dz = l / self.m  # segment length
         axial_offset = self.settings.get("axial_offset", 0)  # start position along axis
-        self.z = axial_offset + np.arange(self.dz / 2, l, self.dz)  # data is stored in cell centers
+        self.z = axial_offset + np.arange(self.dz / 2 - l / 2, l / 2, self.dz)  # data is stored in cell centers
 
         self.k = 0  # iteration
         self.n = 0  # time step (no restart implemented)

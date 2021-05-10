@@ -42,7 +42,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.OpenFOAM_41",
+        "type": "solver_wrappers.openfoam.v41",
         "settings": {
           "working_directory": "CFD",
           "application": "CoCoNuT_pimpleFoam",
@@ -93,7 +93,6 @@
               "cores": 1,
               "dimensions": 3,
               "arraysize": 10e5,
-              "surfaces": 1,
               "surfaceIDs": [
                 "WALLOUTSIDE"
               ],
@@ -115,8 +114,7 @@
                 }
               ],
               "mp_mode": "THREADS",
-              "input_file": "Base.inp",
-              "save_iterations": 1
+              "input_file": "case_tube3d.inp"
             }
           },
           "mapper_interface_input": {

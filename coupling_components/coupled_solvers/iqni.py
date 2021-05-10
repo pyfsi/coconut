@@ -16,9 +16,12 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
     def initialize(self):
         super().initialize()
 
-        self.model.size_in = self.model.size_out = self.x.size
-        self.model.out = self.x.copy()
-        self.model.initialize()
+        if not self.restart:  # no restart
+            self.model.size_in = self.model.size_out = self.x.size
+            self.model.out = self.x.copy()
+            self.model.initialize()
+        else:  # restart
+            self.model = self.restart_data['model']
         self.components += [self.model]
 
     def solve_solution_step(self):
@@ -43,3 +46,10 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
             r = xt - self.x
             self.model.add(r, xt)
             self.finalize_iteration(r)
+
+    def add_restart_check(self, restart_data):
+        if self.parameters['settings']['model'] != restart_data['parameters']['settings']['model']:
+            raise ValueError('Restart not possible because model changed')
+
+    def add_restart_data(self, restart_data):
+        return restart_data.update({'model': self.model})

@@ -23,207 +23,168 @@ class SolverWrapperAbaqus614(Component):
 
     def __init__(self, parameters):
         super().__init__()
-        # settings
-        """
-               settings of solver_wrappers.abaqus.v614:
 
-                    working_directory       Absolute path to working directory
-                                            or relative path w.r.t current directory
-                    cores                   Number of cpus to be used by Abaqus
-                    input_file              Name of the Abaqus input file (located in the directory where Python is 
-                                            launched)
-                    dimensions              dimensionality of the problem (2 or 3)
-                    arraysize               declare a sufficiently large array size for load array in FORTRAN
-                    CSM_dir                 relative path to directory for the files and execution of the structural 
-                                            solver 
-                    ramp                    Boolean: 0 for step load, 1 for ramp load in Abaqus
-                    delta_t                 Time step size
-                    timestep_start          Time step from which is to be started (initial = 0)
-                    surface_IDS             List of the names of the surfaces that take part in the FSI, as they are 
-                                            known by Abaqus
-                    interface_input         Interface for the load points and their corresponding variables (pressure,
-                                            traction).
-                    interface_output        Interface for the output nodes and their corresponding variable(s)
-                                            displacements)
-                    mp_mode                 Mode of the parallel computing (currently only THREADS is accepted)
-                    save_iterations         number of time steps between consecutive saves of Abaqus-files
-        """
-
+        # set parameters
         self.check_software()
         self.settings = parameters['settings']
         self.dir_csm = join(os.getcwd(), self.settings['working_directory'])  # *** alternative for getcwd?
         path_src = os.path.realpath(os.path.dirname(__file__))
+        self.logfile = 'abaqus.log'
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
-        if self.dimensions == 2:
-            tools.print_info("Warning for axisymmetric cases:\n\tIn Abaqus these have to be constructed around the "
-                             "y-axis. \n\tSwitching of x and y-coordinates might be necessary but should be "
-                             "accomplished by using an appropriate mapper.", layout='warning')
-        self.array_size = self.settings["arraysize"]
-        self.delta_t = self.settings["delta_t"]
-        self.timestep_start = self.settings["timestep_start"]
+        self.array_size = self.settings['arraysize']
+        self.delta_t = self.settings['delta_t']
+        self.timestep_start = self.settings['timestep_start']
         self.surfaceIDs = self.settings['surfaceIDs']
         self.n_surfaces = len(self.surfaceIDs)
-        self.mp_mode = self.settings["mp_mode"]
-        self.input_file = self.settings["input_file"]
+        self.mp_mode = self.settings['mp_mode']
+        self.input_file = self.settings['input_file']
+        self.save_interval = self.settings.get('save_interval', 1)
         self.timestep = self.timestep_start
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
 
-        self.subcycling = self.settings.get("subcycling", 0)
+        self.subcycling = self.settings.get('subcycling', False)  # value from parameters or False if not present
         if self.subcycling:
-            self.minInc = self.settings["minInc"]
-            self.initialInc = self.settings["initialInc"]
-            self.maxNumInc = self.settings["maxNumInc"]
-            self.maxInc = self.settings["maxInc"]
-            self.ramp = self.settings["ramp"]
+            self.min_inc = self.settings['min_inc']
+            self.initial_inc = self.settings['initial_inc']
+            self.max_num_inc = self.settings['max_num_inc']
+            self.max_inc = self.settings['max_inc']
+            self.ramp = int(self.settings['ramp'])  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
         else:
             self.ramp = 0
-            self.maxNumInc = 1
-
-        # Upon (re)starting Abaqus needs to run USRInit.f
-        # A restart requires Abaqus to be booted with a restart file
+            self.max_num_inc = 1
 
         # prepare abaqus_v6.env
-        self.hostnames = []
-        self.hostnames_unique = []
-        with open(join(self.dir_csm, "AbaqusHosts.txt"), "r") as hostfile:
-            for line in hostfile:
-                self.hostnames.append(line.rstrip())
-                if not line.rstrip() in self.hostnames_unique:
-                    self.hostnames_unique.append(line.rstrip())
-        self.hostname_replace = ""
-        for hostname in self.hostnames_unique:
-            self.hostname_replace += "[\'" + hostname + "\', " + str(self.hostnames.count(hostname)) + "], "
-        self.hostname_replace = self.hostname_replace.rstrip(", ")
-        with open(join(path_src, "abaqus_v6.env"), "r") as infile:
-            with open(join(self.dir_csm, "abaqus_v6.env"), "w") as outfile:
+        hostname_replace = ''
+        if self.mp_mode == 'MPI' and 'AbaqusHosts.txt' in os.listdir(self.dir_csm):
+            with open(join(self.dir_csm, 'AbaqusHosts.txt'), 'r') as host_file:
+                host_names = host_file.read().split()
+            hostname_replace = str([[hostname, host_names.count(hostname)] for hostname in set(host_names)])
+        with open(join(path_src, 'abaqus_v6.env'), 'r') as infile:
+            with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|HOSTNAME|", self.hostname_replace)
-                    line = line.replace("|MP_MODE|", self.mp_mode)
-                    line = line.replace("|PID|", str(os.getpid()))
-                    line = line.replace("|PWD|", os.path.abspath(os.path.join(self.dir_csm, os.pardir)))
-                    line = line.replace("|CSM_dir|", self.settings["working_directory"])
-                    if "|" in line:
-                        raise ValueError(f"The following line in abaqus_v6.env still contains a \"|\" after "
-                                         f"substitution: \n \t{line} \n Probably a parameter was not substituted")
+                    line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
+                        else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
+                    line = line.replace('|MP_MODE|', self.mp_mode)
+                    line = line.replace('|PID|', str(os.getpid()))
+                    if '|' in line:
+                        raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
+                                         f'substitution: \n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
-        # Create start and restart file
-        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + "/CSM_Time0.inp",
-                                         self.dir_csm + "/CSM_Restart.inp")
+        # create start and restart file (each time step > 1 is a restart of the previous converged time step)
+        self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + '/CSM_Time0.inp',
+                                         self.dir_csm + '/CSM_Restart.inp')
 
-        # Prepare Abaqus USRInit.f
-        usr = "USRInit.f"
-        with open(join(path_src, usr), "r") as infile:
-            with open(join(self.dir_csm, "usrInit.f"), "w") as outfile:
+        # prepare Abaqus USRInit.f
+        usr = 'USRInit.f'
+        with open(join(path_src, usr), 'r') as infile:
+            with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|dimension|", str(self.dimensions))
-                    line = line.replace("|surfaces|", str(self.n_surfaces))
-                    line = line.replace("|cpus|", str(self.cores))
+                    line = line.replace('|dimension|', str(self.dimensions))
+                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|cpus|', str(self.cores))
 
                     # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
-                    if "|" in line:
-                        raise ValueError(f"The following line in USRInit.f still contains a \"|\" after substitution: "
-                                         f"\n \t{line} \n Probably a parameter was not substituted")
+                    line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
+                    line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
+                    if '|' in line:
+                        raise ValueError(f'The following line in USRInit.f still contains a \'|\' after substitution: '
+                                         f'\n \t{line} \nProbably a parameter was not substituted')
                     outfile.write(line)
 
-        # Compile Abaqus USRInit.f
-        path_libusr = join(self.dir_csm, "libusr/")
-        os.system("rm -rf " + path_libusr)
-        os.system("mkdir " + path_libusr)
-        cmd = "abaqus make library=usrInit.f directory=" + path_libusr + " >> AbaqusSolver.log 2>&1"
-        commands = [cmd]
-        self.run_shell(self.dir_csm, commands, name='Compile_USRInit')
+        # compile Abaqus USRInit.f in library libusr
+        path_libusr = join(self.dir_csm, 'libusr/')
+        shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
+        os.mkdir(path_libusr)
+        cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
+        self.print_log(f'### Compilation of usrInit.f ###')
+        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-        # Get load points from usrInit.f
+        # get load points from usrInit.f at timestep_start
+        self.print_log(f'\n### Get load integration points using usrInit.f ###')
         if self.timestep_start == 0:
-            cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
-            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
-                f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
-            # The output files will have a name with a higher time step  ("job=") than the input file ("input=")
-            cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} " \
-                f"cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
-            commands = [cmd1, cmd2, cmd3]
-            self.run_shell(self.dir_csm, commands, name='Abaqus_USRInit_Time0')
-        else:
-            cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"  # To get this to work on HPC?
-            cmd2 = f"rm -f CSM_Time{self.timestep_start}Surface*Faces.dat " \
-                f"CSM_Time{self.timestep_start}Surface*FacesBis.dat"
-            cmd3 = f"abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} " \
-                f"input=CSM_Restart cpus=1 user=usrInit.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
-            commands = [cmd1, cmd2, cmd3]
-            self.run_shell(self.dir_csm, commands, name=f'Abaqus_USRInit_Restart')
+            cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
+                f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
+            # the output files will have a name with a higher time step  ('job=') than the input file ('input=')
+            cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
+                f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
+            commands = cmd1 + '; ' + cmd2
+            subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
+        else:  # restart: this only used for checks
+            cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
+                f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
+            cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
+                f'input=CSM_Restart cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
+            commands = cmd1 + '; ' + cmd2
+            subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # prepare GetOutput.cpp
-        get_output = "GetOutput.cpp"
-        temp_str = ""
+        get_output = 'GetOutput.cpp'
+        temp_str = ''
         for j in range(0, self.n_surfaces - 1):
-            temp_str += f"\"{self.surfaceIDs[j]}\", "
-        temp_str += f"\"{self.surfaceIDs[self.n_surfaces-1]}\""
+            temp_str += f'\"{self.surfaceIDs[j]}\", '
+        temp_str += f'\"{self.surfaceIDs[self.n_surfaces-1]}\"'
 
-        with open(join(path_src, get_output), "r") as infile:
-            with open(join(self.dir_csm, get_output), "w") as outfile:
+        with open(join(path_src, get_output), 'r') as infile:
+            with open(join(self.dir_csm, get_output), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|surfaces|", str(self.n_surfaces))
-                    line = line.replace("|surfaceIDs|", temp_str)
-                    line = line.replace("|dimension|", str(self.dimensions))
-                    if "|" in line:
-                        raise ValueError(f"The following line in GetOutput.cpp still contains a \"|\" after "
-                                         f"substitution: \n \t{line} \n Probably a parameter was not subsituted")
+                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|surfaceIDs|', temp_str)
+                    line = line.replace('|dimension|', str(self.dimensions))
+                    if '|' in line:
+                        raise ValueError(f'The following line in GetOutput.cpp still contains a \'|\' after '
+                                         f'substitution: \n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
         # compile GetOutput.cpp
-        cmd = "abaqus make job=GetOutput user=GetOutput.cpp >> AbaqusSolver.log 2>&1"
-        commands = [cmd]
-        self.run_shell(self.dir_csm, commands, name='Compile_GetOutput')
+        self.print_log(f'\n### Compilation of GetOutput.cpp ###')
+        cmd = f'abaqus make job=GetOutput user=GetOutput.cpp >> {self.logfile} 2>&1'
+        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep_start+1} 0 >> AbaqusSolver.log 2>&1"
-        commands = [cmd]
-        self.run_shell(self.dir_csm, commands, name='GetOutput_Start')
+        self.print_log(f'\n### Get geometrical node positions using GetOutput ###')
+        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
+        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         for i in range(0, self.n_surfaces):
-            path_output = f"CSM_Time{self.timestep_start+1}Surface{i}Output.dat"
-            path_nodes = f"CSM_Time{self.timestep_start}Surface{i}Nodes.dat"
-            cmd = f"mv {path_output} {path_nodes}"
-            commands = [cmd]
-            self.run_shell(self.dir_csm, commands, name='Move_Output_File_To_Node')
+            path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{i}Output.dat')
+            path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
+            shutil.move(path_output, path_nodes)
 
-            # Create elements file per surface
-            face_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat")
-            output_file = os.path.join(self.dir_csm, f"CSM_Time{self.timestep_start}Surface{i}Elements.dat")
+            # create elements file per surface
+            face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat')
+            output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Elements.dat')
             self.make_elements(face_file, output_file)
 
         # prepare Abaqus USR.f
-        usr = "USR.f"
-        with open(join(path_src, usr), "r") as infile:
-            with open(join(self.dir_csm, "usr.f"), "w") as outfile:
+        usr = 'USR.f'
+        with open(join(path_src, usr), 'r') as infile:
+            with open(join(self.dir_csm, 'usr.f'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace("|dimension|", str(self.dimensions))
-                    line = line.replace("|arraySize|", str(self.array_size))
-                    line = line.replace("|surfaces|", str(self.n_surfaces))
-                    line = line.replace("|cpus|", str(self.cores))
-                    line = line.replace("|ramp|", str(self.ramp))
-                    line = line.replace("|deltaT|", str(self.delta_t))
+                    line = line.replace('|dimension|', str(self.dimensions))
+                    line = line.replace('|arraySize|', str(self.array_size))
+                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|cpus|', str(self.cores))
+                    line = line.replace('|ramp|', str(self.ramp))
+                    line = line.replace('|deltaT|', str(self.delta_t))
 
-                    # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.replace_fortran(line, "|PWD|", os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, "|CSM_dir|", self.settings["working_directory"])
-                    if "|" in line:
-                        raise ValueError(f"The following line in USR.f still contains a \"|\" after substitution: "
-                                         f"\n \t{line} \n Probably a parameter was not subsituted")
+                    # if PWD is too long then FORTRAN code cannot compile so this needs special treatment
+                    line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
+                    line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
+                    if '|' in line:
+                        raise ValueError(f'The following line in USR.f still contains a \'|\' after substitution: '
+                                         f'\n \t{line} \n Probably a parameter was not substituted')
                     outfile.write(line)
 
         # compile Abaqus USR.f
-        os.system("rm -r " + path_libusr)  # remove libusr containing compiled USRInit.f
-        os.system("mkdir " + path_libusr)
-        cmd = "abaqus make library=usr.f directory=" + path_libusr + " >> AbaqusSolver.log 2>&1"
-        commands = [cmd]
-        self.run_shell(self.dir_csm, commands, name='Compile_USR')
+        self.print_log(f'\n### Compilation of usr.f ###')
+        shutil.rmtree(path_libusr)  # remove libusr containing compiled USRInit.f
+        os.mkdir(path_libusr)
+        cmd = f'abaqus make library=usr.f directory={path_libusr} >> {self.logfile} 2>&1'
+        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
         # create Model
         self.model = data_structure.Model()
@@ -232,7 +193,7 @@ class SolverWrapperAbaqus614(Component):
         for item in (self.settings['interface_input']):
             mp_name = item['model_part']
 
-            for i, surfaceID in enumerate(self.surfaceIDs):
+            for i, surfaceID in enumerate(self.surfaceIDs):  # identify surfaceID corresponding to ModelPart
                 if surfaceID in mp_name:
                     self.model_part_surface_ids[mp_name] = i
                     break
@@ -243,16 +204,16 @@ class SolverWrapperAbaqus614(Component):
             # read in elements file
             elem0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
             elements0 = np.loadtxt(elem0_file)
-            n_elem = int(elements0[0])  # elements line 1 contains number of elements
-            n_lp = int(elements0[1])  # elements line 2 contains number of load points per element
-            if elements0.shape[0] - 2 != int(n_elem):  # elements remainder contains element numbers in interface
-                raise ValueError(f"Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with"
-                                 f"the number of elements ({n_elem})")
+            n_elem = int(elements0[0, 0])  # elements first item on line 1 contains number of elements
+            n_lp = int(elements0[0, 1])  # elements second item on line 1 contains number of total load points
+            if elements0.shape[0] - 1 != int(n_elem):  # elements remainder contains element numbers in interface
+                raise ValueError(f'Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with '
+                                 f'the number of elements ({n_elem})')
             if self.timestep_start != 0:  # check if elements0 corresponds to timestep_start
                 elem_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
                 elements = np.loadtxt(elem_file)
-                if int(elements[0]) != n_elem or int(elements[1]) != n_lp:
-                    raise ValueError(f"Number of load points has changed for {mp_name}")
+                if int(elements[0, 0]) != n_elem or int(elements[0, 1]) != n_lp:
+                    raise ValueError(f'Number of load points has changed for {mp_name}')
 
             # read in faces file for load points
             faces0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
@@ -263,22 +224,19 @@ class SolverWrapperAbaqus614(Component):
             # get load point coordinates and ids of load points
             prev_elem = 0
             prev_lp = 0
-            ids = np.arange(n_elem * n_lp)
-            coords_tmp = np.zeros((n_elem * n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
-            for i in range(0, n_elem*n_lp):
+            ids = np.arange(n_lp)
+            coords_tmp = np.zeros((n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
+            for i in range(0, n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
-                    raise ValueError(f"Element sequence is wrong ({elem}<{prev_elem})")
+                    raise ValueError(f'Element sequence is wrong ({elem}<{prev_elem})')
                 elif elem == prev_elem and lp != prev_lp + 1:
-                    raise ValueError(f"Next line for same element ({elem}) does not contain next load point")
+                    raise ValueError(f'Next line for same element ({elem}) does not contain next load point')
                 elif elem > prev_elem and lp != 1:
-                    raise ValueError(f"First line for element ({elem}) does not contain its first load point")
-                if lp > n_lp:
-                    raise ValueError(f"Load point ({lp}) exceeds the number of load points per element {n_lp}")
+                    raise ValueError(f'First line for element ({elem}) does not contain its first load point')
 
-                # ids_tmp[i] = f"{elem}_{lp}"
-                coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last "dimensions" columns
+                coords_tmp[i, :self.dimensions] = faces0[i, -self.dimensions:]  # extract last 'dimensions' columns
 
                 prev_elem = elem
                 prev_lp = lp
@@ -294,12 +252,12 @@ class SolverWrapperAbaqus614(Component):
         for item in (self.settings['interface_output']):
             mp_name = item['model_part']
 
-            for i, surfaceID in enumerate(self.surfaceIDs):
+            for i, surfaceID in enumerate(self.surfaceIDs):  # identify surfaceID corresponding to ModelPart
                 if surfaceID in mp_name:
                     self.model_part_surface_ids[mp_name] = i
                     break
             if mp_name not in self.model_part_surface_ids:
-                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}.')
+                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}')
             mp_id = self.model_part_surface_ids[mp_name]
 
             # read in nodes file
@@ -307,13 +265,13 @@ class SolverWrapperAbaqus614(Component):
             nodes0 = np.loadtxt(nodes0_file, skiprows=1)   # first line is a header
             n_nodes0 = nodes0.shape[0]
             if nodes0.shape[1] != self.dimensions:
-                raise ValueError(f'Given dimension does not match coordinates.')
+                raise ValueError(f'Given dimension does not match coordinates')
             if self.timestep_start != 0:  # check if nodes0 corresponds to timestep_start
                 nodes_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
                 nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
                 n_nodes = nodes.shape[0]
                 if n_nodes != n_nodes0:
-                    raise ValueError(f"Number of interface nodes has changed for {mp_name}")
+                    raise ValueError(f'Number of interface nodes has changed for {mp_name}')
 
             # get geometrical node coordinates
             ids = np.arange(n_nodes0)  # Abaqus does not use node ids but maintains the output order
@@ -375,78 +333,74 @@ class SolverWrapperAbaqus614(Component):
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 mp_id = self.model_part_surface_ids[mp_name]
-                file_name1 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat")
-                file_name2 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Cpu0Input"
-                                                f"_Iter{self.iteration}.dat")
-                cmd = f"cp {file_name1} {file_name2}"
-                os.system(cmd)
+                file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
+                                                f'_Iter{self.iteration}.dat')
+                shutil.copy2(file_name1, file_name2)
 
-        # Run Abaqus and check for (licensing) errors
-        bool_completed = 0
+        # run Abaqus and check for (licensing) errors
+        self.print_log(f'\n### Time step {self.timestep}, iteration {self.iteration} ###')
+        bool_completed = False
         attempt = 0
         while not bool_completed and attempt < 10000:
             attempt += 1
             if attempt > 1:
-                tools.print_info(f"Warning attempt {attempt - 1} in AbaqusSolver failed, new attempt in one minute",
+                tools.print_info(f'Warning attempt {attempt - 1} to run Abaqus failed, new attempt in one minute',
                                  layout='warning')
                 time.sleep(60)
-                tools.print_info(f"Starting attempt {attempt}")
+                tools.print_info(f'Starting attempt {attempt}')
             if self.timestep == 1:
-                cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"
-                cmd2 = f"abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1}" \
-                    f" cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
-                commands = [cmd1, cmd2]
-                self.run_shell(self.dir_csm, commands, name='Abaqus_Calculate')
+                cmd = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
+                    f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
+                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
             else:
-                cmd1 = f"export PBS_NODEFILE=AbaqusHosts.txt && unset SLURM_GTIDS"
-                cmd2 = f"abaqus job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} input=CSM_Restart" \
-                    f" cpus={self.cores} user=usr.f output_precision=full interactive >> AbaqusSolver.log 2>&1"
-                commands = [cmd1, cmd2]
-                self.run_shell(self.dir_csm, commands, name='Abaqus_Calculate')
+                cmd = f'abaqus job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} input=CSM_Restart ' \
+                    f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
+                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-            # Check log for completion and or errors
-            cmd = "tail -n 10 AbaqusSolver.log > Temp_log.coco"
-            self.run_shell(self.dir_csm, [cmd], name='Temp_log')
-            log_tmp = os.path.join(self.dir_csm, "Temp_log.coco")
-            bool_lic = 1
-            with open(log_tmp, "r") as fp:
+            # check log for completion and or errors
+            subprocess.run(f'tail -n 10 {self.logfile} > Temp_log.coco', shell=True, cwd=self.dir_csm,
+                           executable='/bin/bash')
+            log_tmp = os.path.join(self.dir_csm, 'Temp_log.coco')
+            bool_lic = True
+            with open(log_tmp, 'r') as fp:
                 for line in fp:
-                    if any(x in line for x in ["Licensing error", "license error", "Error checking out Abaqus license"]):
-                        bool_lic = 0
+                    if any(x in line for x in ['Licensing error', 'license error',
+                                               'Error checking out Abaqus license']):
+                        bool_lic = False
             if not bool_lic:
-                tools.print_info("Abaqus licensing error", layout='fail')
-            elif "COMPLETED" in line:  # Check final line for completed
-                bool_completed = 1
-            elif bool_lic:  # Final line did not contain "COMPLETED" but also no licensing error detected
-                raise RuntimeError("Abaqus did not COMPLETE, unclassified error, see AbaqusSolver.log "
-                                   "for extra information")
+                tools.print_info('Abaqus licensing error', layout='fail')
+            elif 'COMPLETED' in line:  # check final line for completed
+                bool_completed = True
+            elif bool_lic:  # final line did not contain 'COMPLETED' but also no licensing error detected
+                raise RuntimeError(f'Abaqus did not complete, unclassified error, see {self.logfile} for extra '
+                                   f'information')
 
-            # Append additional information to log file
-            cmd = f"tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\'" \
-                f" >> AbaqusSolver.log 2>&1"
-            self.run_shell(self.dir_csm, [cmd], name='Append_log')
+            # append additional information to log file
+            cmd = f'tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' ' \
+                f'>> {self.logfile} 2>&1'
+            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-        # Write Abaqus output
-        cmd = f"abaqus ./GetOutput.exe CSM_Time{self.timestep} 1 >> AbaqusSolver.log 2>&1"
-        self.run_shell(self.dir_csm, [cmd], name='GetOutput')
+        # write Abaqus output
+        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep} 1 >> {self.logfile} 2>&1'
+        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
-        # Read Abaqus output data
+        # read Abaqus output data
         for dct in self.interface_output.parameters:
             mp_name = dct['model_part']
 
             # read in output file for surface nodes
             mp_id = self.model_part_surface_ids[mp_name]
-            file_name = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Output.dat")
+            file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output.dat')
             data = np.loadtxt(file_name, skiprows=1)
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = join(self.dir_csm, f"CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat")
-                cmd = f"cp {file_name} {file_name2}"
-                os.system(cmd)
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat')
+                shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
-                raise ValueError(f"given dimension does not match coordinates")
+                raise ValueError(f'given dimension does not match coordinates')
 
             # get surface node displacements
             n_nodes = data.shape[0]
@@ -463,13 +417,13 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep and (self.timestep - 1) % self.settings['save_iterations']:
-            to_be_removed_suffix = [".com", ".dat", ".mdl", ".msg", ".odb", ".prt", ".res", ".sim", ".sta", ".stt",
-                                    "Surface0Cpu0Input.dat", "Surface0Output.dat"]
-            cmd = []
+        if self.save_interval == 0 or (self.timestep - 1) % self.save_interval != 0:
+            to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
+                                    'Surface*Cpu0Input.dat', 'Surface*Output.dat']
+            cmd = ''
             for suffix in to_be_removed_suffix:
-                cmd.append(f"rm CSM_Time{self.timestep - 1}{suffix}")
-            self.run_shell(self.dir_csm, cmd, name="Remove_previous")
+                cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
+            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash')
 
     def finalize(self):
         super().finalize()
@@ -481,24 +435,36 @@ class SolverWrapperAbaqus614(Component):
         return self.interface_output
 
     def check_software(self):
+        """Check whether the software requirements for this wrapper are fulfilled."""
         # Python version: 3.6 or higher
         if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required.')
+            raise RuntimeError('Python version 3.6 or higher required')
 
         # Abaqus availability
         if shutil.which('abaqus') is None:
-            raise RuntimeError('Abaqus must be available.')
+            raise RuntimeError('Abaqus must be available')
 
         # Abaqus version
         result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE)
         if self.version not in str(result.stdout):
-            raise RuntimeError(f'Abaqus version {self.version} is required.')
+            raise RuntimeError(f'Abaqus version {self.version} is required')
 
-        # Compilers
+        # compilers
         if shutil.which('ifort') is None:
-            raise RuntimeError('Intel compiler ifort must be available.')
+            raise RuntimeError('Intel compiler ifort must be available')
 
+    def print_log(self, msg):
+        with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
+            print(msg, file=f)
+
+    # noinspection PyMethodMayBeStatic
     def make_elements(self, face_file, output_file):
+        """
+        Reads the CSM_Time0SurfaceXFaces.dat file created by USRInit.f and converts it to
+        CSM_Time0SurfaceXElements.dat, formatted such that USR.f can read it. The first line mentions the number of
+        elements and load integration points. All lines below contain the element number and cumulative number of
+        load integration points. The USR.f uses this to quickly find the correct line to read from the load input files.
+        """
         face_file = Path(face_file)
         output_file = Path(output_file)
         first_loop = True
@@ -506,8 +472,9 @@ class SolverWrapperAbaqus614(Component):
         point_prev = -1
         element_0 = -1
         point_0 = -1
-        count = 0
-        element_str = ""
+        n_elem = 0  # total number of elements
+        n_lp = 0    # total number of load points
+        element_list = []
 
         with open(face_file, 'r') as file:
             for num, line in enumerate(file, start=1):
@@ -519,166 +486,143 @@ class SolverWrapperAbaqus614(Component):
                 if element == element_prev:  # load points of same element
                     if point == point_prev + 1:  # deviation from ascending order indicates mistake
                         point_prev = point
+                        n_lp += 1
                     else:
                         if point > point_prev:
-                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
-                                                f" increases by more 1 one per line for element {element}, found "
-                                                f"{point} but {point_prev + 1} was expected.", width=80)
+                            msg = textwrap.fill(f'Error while processing {face_file.name} line {num}. Load point number'
+                                                f' increases by more 1 one per line for element {element}, found '
+                                                f'{point} but {point_prev + 1} was expected', width=80)
                             raise ValueError(msg)
                         elif point == 1:
-                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
-                                                f" {point} is lower than previous ({point_prev}). Check if surface "
-                                                f"contains element with multiple faces in surface, for example at "
-                                                f"corners. This is not allowed.", width=80)
+                            msg = textwrap.fill(f'Error while processing {face_file.name} line {num}. Load point number'
+                                                f' {point} is lower than previous ({point_prev}). Check if surface '
+                                                f'contains element with multiple faces in surface, for example at '
+                                                f'corners. This is not allowed.', width=80)
                             raise ValueError(msg)
                         else:
-                            msg = textwrap.fill(f"Error while processing {face_file.name} line {num}. Load point number"
-                                                f" {point} is lower than previous ({point_prev}).", width=80)
+                            msg = textwrap.fill(f'Error while processing {face_file.name} line {num}. Load point number'
+                                                f' {point} is lower than previous ({point_prev}).', width=80)
                             raise ValueError(msg)
                 else:  # new element started
                     if point == 1:
+                        # add to elements file the element number
+                        # and cumulative number of load points encountered BEFORE reaching this element
+                        element_list.append([element, n_lp])
                         point_prev = point
                         element_prev = element
-                        element_str += str(element) + "\n"
-                        count += 1
+                        n_elem += 1
+                        n_lp += 1
                         if first_loop:
                             element_0 = element
                             point_0 = point
                             first_loop = False
                     else:
                         msg = textwrap.fill(
-                            f"Error while processing {face_file.name} line {num}: Load point number does not start at 1"
-                            f" for element {element}, {point} was found instead.", width=80)
+                            f'Error while processing {face_file.name} line {num}: Load point number does not start at 1'
+                            f' for element {element}, {point} was found instead.', width=80)
                         raise ValueError(msg)
 
-        element_str = f"{count}\n{point_prev}\n" + element_str
-        with open(output_file, "w") as file:
-            file.write(element_str)
+        element_list.insert(0, [n_elem, n_lp])
+        element_list = np.array(element_list)
+        np.savetxt(output_file, element_list, fmt='%10d')
 
-    def run_shell(self, work_dir, commands, wait=True, name='script', delete=True):
-        script = f'{work_dir}/{name}.sh'
-        with open(script, 'w') as file:
-            file.write('#!/bin/bash\n')
-            file.write(f'cd {work_dir}\n')
-            for line in commands:
-                file.write(line + '\n')
-        os.chmod(script, 0o700)
-        if wait:
-            p = subprocess.call(script, shell=True)
-        else:
-            p = subprocess.Popen(script, shell=True)
-        if delete:
-            os.system("rm " + script)
-        return p
-
+    # noinspection PyMethodMayBeStatic
     def replace_fortran(self, line, orig, new):
-        """The length of a line in FORTRAN 77 is limited, replacing working directories can exceed this limit.
-        This functions splits these strings over multiple lines."""
-
-        ampersand_location = 6
-        char_limit = 72
-
-        if "|" in line:
-            temp = line.replace(orig, new)
-            N = len(temp)
-
-            if N > char_limit:
-                count = 0
-                line = ""
-                line += temp[0:char_limit] + "\n"
-                count += char_limit
-                while count < N:
-                    temp_string = temp[count:count + char_limit - ampersand_location]
-                    n = len(temp_string)
-                    count += n
-                    if count < N:  # need to append an additional new line
-                        line += "     &" + temp_string + "\n"
-                    else:
-                        line += "     &" + temp_string
-            else:
-                line = temp
-
+        """
+        The length of a line in FORTRAN 77 (i.e. fixed-form) is limited, replacing working directories can exceed this
+        limit. This functions splits these strings over multiple lines.
+        """
+        if '|' in line:
+            char_limit = 72
+            wrapper = textwrap.TextWrapper(width=char_limit, subsequent_indent='     &', replace_whitespace=False,
+                                           drop_whitespace=False)
+            line = wrapper.fill(line.replace(orig, new))
         return line
 
     def write_start_and_restart_inp(self, input_file, output_file, restart_file):
-        bool_restart = 0
+        """
+        Read the case-file (.inp) and process it in an input-file for the first time step and a restart file used for
+        all subsequent time steps.
+        """
+        bool_restart = False
 
-        rf = open(restart_file, "w")
-        of = open(output_file, "w")
+        rf = open(restart_file, 'w')
+        of = open(output_file, 'w')
 
-        rf.write("*HEADING \n")
-        rf.write("*RESTART, READ \n")
+        rf.write('*HEADING \n')
+        rf.write('*RESTART, READ \n')
 
         with open(input_file) as f:
             line = f.readline()
             while line:
-                if "*step" in line.lower():
-                    contents = line.split(",")  # Split string on commas
+                if '*step' in line.lower():
+                    contents = line.split(',')  # split string on commas
                     line_new = ''
                     for s in contents:
-                        if s.strip().startswith("inc="):
-                            numbers = re.findall(r"\d+", s)
+                        if s.strip().startswith('inc='):
+                            numbers = re.findall(r'\d+', s)
                             if (not self.subcycling) and int(numbers[0]) != 1:
-                                raise NotImplementedError(f"inc={numbers[0]}: subcycling was not requested "
-                                                          f"but maxNumInc > 1.")
+                                raise NotImplementedError(f'inc={numbers[0]}: subcycling was not requested but '
+                                                          f'max_num_inc > 1')
                             else:
-                                line_new += f" inc={self.maxNumInc},"
+                                line_new += f' inc={self.max_num_inc},'
                         else:
-                            line_new += s+","
-                    line_new = line_new[:-1]+"\n"  # Remove the last added comma and add a newline
+                            line_new += s+','
+                    line_new = line_new[:-1]+'\n'  # remove the last added comma and add a newline
 
                     of.write(line_new)
                     if bool_restart:
                         rf.write(line_new)
                     line = f.readline()
-                elif "*dynamic" in line.lower():
-                    contents = line.split(",")
+                elif '*dynamic' in line.lower():
+                    contents = line.split(',')
                     for s in contents:
-                        if "application" in s.lower():
-                            contents_B = s.split("=")
+                        if 'application' in s.lower():
+                            contents_B = s.split('=')
                             app = contents_B[1].lower().strip()
-                            if app == "quasi-static" or app == "moderate dissipation":
+                            if app in ['quasi-static', 'moderate dissipation', 'transient fidelity']:
                                 if not self.subcycling:
-                                    line_2 = f"{self.delta_t}, {self.delta_t},\n"
+                                    line_2 = f'{self.delta_t}, {self.delta_t},\n'
                                 else:
-                                    line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                                    line_2 = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
                             else:
                                 raise NotImplementedError(
-                                    f"{contents_B[1]} not available: Currently only quasi-static and "
-                                    f"moderate dissipation are implemented for the Abaqus wrapper")
+                                    f'{contents_B[1]} not available: currently only quasi-static, moderate dissipation '
+                                    f'and transient fidelity are implemented for the Abaqus wrapper')
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
                         f.readline()  # need to skip the next line
-                        of.write(line_2)  # Change the time step in the Abaqus step
+                        of.write(line_2)  # change the time step in the Abaqus step
                         if bool_restart:
-                            rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                            rf.write(line_2)  # change the time step in the Abaqus step (restart-file)
                         line = f.readline()
-                    elif "*static" in line.lower():
+                    elif '*static' in line.lower():
                         of.write(line)
                         if bool_restart:
                             rf.write(line)
                         f.readline()  # need to skip the next line
                         if not self.subcycling:
                             raise NotImplementedError(
-                                "Only Static with subcycling is implemented for the Abaqus wrapper")
-                        line_2 = f"{self.initialInc}, {self.delta_t}, {self.minInc}, {self.maxInc}\n"
+                                'Only Static with subcycling is implemented for the Abaqus wrapper')
+                        line_2 = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
                         f.readline()
-                    of.write(line_2)  # Change the time step in the Abaqus step
+                    of.write(line_2)  # change the time step in the Abaqus step
                     if bool_restart:
-                        rf.write(line_2)  # Change the time step in the Abaqus step (restart-file)
+                        rf.write(line_2)  # change the time step in the Abaqus step (restart-file)
                     line = f.readline()
                 else:
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
                     line = f.readline()
-                if "** --"in line:
-                    bool_restart = 1
+                if '** --'in line:
+                    bool_restart = True
         rf.close()
         of.close()
 
     def write_loads(self):
+        """Write the incoming loads to a file that is read by the READDATA subroutine in USR.f."""
         for dct in self.interface_input.parameters:
             mp_name = dct['model_part']
             mp_id = self.model_part_surface_ids[mp_name]
@@ -691,7 +635,7 @@ class SolverWrapperAbaqus614(Component):
             file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-            # Start of a simulation with ramp, needs an initial load at time 0: set at zero load
+            # start of a simulation with ramp, needs an initial load at time 0: set at zero load
             if self.iteration == 1 and self.timestep == 1 and self.ramp:
                 file_name = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Input.dat')
                 np.savetxt(file_name, data * 0, fmt=fmt, header=f'{model_part.size}', comments='')
