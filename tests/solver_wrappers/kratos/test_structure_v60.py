@@ -38,43 +38,44 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
             self.solver_param['settings']['working_directory'] = f'{folder_name}/CSM'
 
-        self.solver = create_instance(self.solver_param)
-        mp_out_name = self.solver_param['settings']['interface_output'][0]['model_part']
-        self.mp_out = self.solver.model.get_model_part(mp_out_name)
+        self.mp_out_name = self.solver_param['settings']['interface_output'][0]['model_part']
 
     def test_apply_load(self):
         print_box('started tests for Kratos Tube3D: test_apply_load')
 
-        load_interface = self.solver.get_interface_input()
+        solver = create_instance(self.solver_param)
+        self.mp_out = solver.model.get_model_part(self.mp_out_name)
+
+        load_interface = solver.get_interface_input()
 
         initial_pressure = 100
 
         pressure = initial_pressure
-        traction_x = 100.0
+        traction_x = 0.0
         traction_y = 0.0
         traction_z = 0.0
         traction = np.array([traction_x, traction_y, traction_z])
-        load_data_1 = self.get_non_uniform_load(pressure, traction)
+        load_data_1 = self.get_uniform_load_data(pressure, traction)
         load_interface.set_interface_data(load_data_1)
 
-        self.solver.initialize()
+        solver.initialize()
 
-        self.solver.initialize_solution_step()
-        output_1 = self.solver.solve_solution_step(load_interface).copy()
+        solver.initialize_solution_step()
+        output_1 = solver.solve_solution_step(load_interface).copy()
 
         pressure *= 0.5
         traction *= 0.5
-        load_data_2 = self.get_non_uniform_load(pressure, traction)
+        load_data_2 = self.get_uniform_load_data(pressure, traction)
         load_interface.set_interface_data(load_data_2)
-        output_2 = self.solver.solve_solution_step(load_interface).copy()
+        output_2 = solver.solve_solution_step(load_interface).copy()
 
         pressure = initial_pressure
         traction = np.array([traction_x, traction_y, traction_z])
-        load_data_3 = self.get_non_uniform_load(pressure, traction)
+        load_data_3 = self.get_uniform_load_data(pressure, traction)
         load_interface.set_interface_data(load_data_3)
-        output_3 = self.solver.solve_solution_step(load_interface).copy()
-        self.solver.finalize_solution_step()
-        self.solver.finalize()
+        output_3 = solver.solve_solution_step(load_interface).copy()
+        solver.finalize_solution_step()
+        solver.finalize()
 
         # obtain the  data and compare
         a1 = output_1.get_interface_data()
@@ -84,8 +85,69 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
         load_data_to_kratos = self.read_pressure_traction()
 
         np.testing.assert_allclose(load_data_to_kratos, load_data_1, rtol=1e-12)
-        np.testing.assert_allclose(a1, a3, rtol=0, atol=1e-12)
-        self.assertRaises(AssertionError, np.testing.assert_allclose, a1, a2, rtol=0, atol=1e-12)
+        np.testing.assert_allclose(a1, a3, rtol=0, atol=1e-10)
+        self.assertRaises(AssertionError, np.testing.assert_allclose, a1, a2, rtol=0, atol=1e-10)
+
+    def test_restart(self):
+        # restart only works for memmabrane elements among planar elements
+        print_box('started tests for Kratos Tube3D: restart')
+        solver = create_instance(self.solver_param)
+        self.mp_out = solver.model.get_model_part(self.mp_out_name)
+        load_interface = solver.get_interface_input()
+
+        initial_pressure = 10
+
+        pressure = initial_pressure
+        traction_x = 0.0
+        traction_y = 0.0
+        traction_z = 0.0
+        traction = np.array([traction_x, traction_y, traction_z])
+
+        solver.initialize()
+
+        # run solver for 4 timesteps
+        for i in range(4):
+            load = self.get_uniform_load_data(pressure*i, traction*i)
+            load_interface.set_interface_data(load)
+            solver.initialize_solution_step()
+            solver.solve_solution_step(load_interface).copy()
+            solver.finalize_solution_step()
+
+        interface_x_1 = solver.get_interface_input()
+        interface_y_1 = solver.get_interface_output()
+        solver.finalize()
+
+        # get data for solver without restart
+        interface_output = solver.get_interface_output()
+        out_data = interface_output.get_interface_data()
+
+        self.solver_param['settings']['timestep_start'] = 2
+        solver = create_instance(self.solver_param)
+        solver.initialize()
+        for i in range(2, 4):
+            load = self.get_uniform_load_data(pressure*i, traction*i)
+            load_interface.set_interface_data(load)
+            solver.initialize_solution_step()
+            solver.solve_solution_step(load_interface).copy()
+            solver.finalize_solution_step()
+
+        interface_x_2 = solver.get_interface_input()
+        interface_y_2 = solver.get_interface_output()
+
+        solver.finalize()
+
+        # get data for solver with restart
+        interface_output_restart = solver.get_interface_output()
+        out_data_restart = interface_output_restart.get_interface_data()
+
+        # check if undeformed coordinate (coordinates of model part) are equal
+        self.assertTrue(interface_x_1.has_same_model_parts(interface_x_2))
+        self.assertTrue(interface_y_1.has_same_model_parts(interface_y_2))
+
+        max_value = np.max(np.abs(out_data))
+
+        # check if pressure and traction are equal
+        np.testing.assert_allclose(out_data/max_value, out_data_restart/max_value, rtol=0, atol=1e-10)
 
     def get_uniform_load_data(self, pressure, traction):
         load = []

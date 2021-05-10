@@ -243,7 +243,7 @@ Begin Nodes
 200 0.022916666667 -0.003535533906 0.003535533906
 End Nodes
 
-Begin Elements ShellThickElementCorotational3D4N
+Begin Elements PreStressMembraneElement3D4N
 1 0 1 3 40 32
 2 0 32 40 41 31
 3 0 31 41 42 30

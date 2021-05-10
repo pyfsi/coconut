@@ -21,26 +21,36 @@ class SolverWrapperKratosStructure60(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        self.settings = parameters["settings"]
-        self.working_directory = join(os.getcwd(), self.settings["working_directory"])
+        self.settings = parameters['settings']
+        self.working_directory = join(os.getcwd(), self.settings['working_directory'])
         self.env = tools.get_solver_env(__name__, self.working_directory)
-        delta_t = self.settings["delta_t"]
-        timestep_start = self.settings["timestep_start"]
-        dimensions = self.settings["dimensions"]
+        delta_t = self.settings['delta_t']
+        timestep_start = self.settings['timestep_start']
+        dimensions = self.settings['dimensions']
 
-        input_file_name = join(self.working_directory, self.settings["input_file"])
+        input_file_name = join(self.working_directory, self.settings['input_file'])
 
-        with open(input_file_name, "r") as parameter_file:
+        with open(input_file_name, 'r') as parameter_file:
             kratos_parameters = json.load(parameter_file)
 
-        kratos_parameters["problem_data"]["start_time"] = timestep_start
-        kratos_parameters["problem_data"]["time_step"] = delta_t
-        kratos_parameters["problem_data"]["domain_size"] = dimensions
-        kratos_parameters["problem_data"]["end_time"] = 1e15
+        kratos_parameters['problem_data']['start_time'] = 0.0
+        kratos_parameters['problem_data']['time_step'] = delta_t
 
-        interface_sub_model_parts_list = self.settings["kratos_interface_sub_model_parts_list"]
+        if not 'restart_settings' in kratos_parameters['solver_settings']:
+            tools.print_info('restart_settings is missing in the kratos parameter file.', layout='warning')
+        elif not kratos_parameters['solver_settings']['restart_settings']['restart_control_type'] == 'step':
+                raise NotImplementedError('restart_settings other than "step" is not implemented.')
 
-        kratos_parameters["interface_sub_model_parts_list"] = interface_sub_model_parts_list
+        if not (timestep_start == 0):
+            kratos_parameters['solver_settings']['restart_settings']['load_restart'] = True
+            kratos_parameters['solver_settings']['restart_settings']['restart_load_file_label'] = f'{timestep_start}'
+
+        kratos_parameters['problem_data']['domain_size'] = dimensions
+        kratos_parameters['problem_data']['end_time'] = 1e15
+
+        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
+
+        kratos_parameters['interface_sub_model_parts_list'] = interface_sub_model_parts_list
 
         with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
             json.dump(kratos_parameters, f, indent=4)
@@ -68,14 +78,14 @@ class SolverWrapperKratosStructure60(Component):
             self.model.create_model_part(f'{mp_name}_output', x0, y0, z0, node_ids)
 
         # # Interfaces
-        self.interface_input = Interface(self.settings["interface_input"], self.model)
-        self.interface_output = Interface(self.settings["interface_output"], self.model)
+        self.interface_input = Interface(self.settings['interface_input'], self.model)
+        self.interface_output = Interface(self.settings['interface_output'], self.model)
 
         # run time
         self.run_time = 0.0
 
         self.residual_variables = self.settings.get('residual_variables', None)
-        self.res_filepath = os.path.join(self.working_directory, 'residuals.dat')
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
 
         if not self.residual_variables is None:
             self.write_residuals_fileheader()
@@ -86,7 +96,7 @@ class SolverWrapperKratosStructure60(Component):
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
-        self.timestep +=1
+        self.timestep += 1
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -122,7 +132,7 @@ class SolverWrapperKratosStructure60(Component):
         return self.interface_output
 
     def write_input_data(self):
-        interface_sub_model_parts_list = self.settings["kratos_interface_sub_model_parts_list"]
+        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
 
         for mp_name in interface_sub_model_parts_list:
             input_mp_name = f'{mp_name}_input'
@@ -147,7 +157,7 @@ class SolverWrapperKratosStructure60(Component):
                         surface_load_array[i, 2]) + '\n')
 
     def update_interface_output(self):
-        interface_sub_model_parts_list = self.settings["kratos_interface_sub_model_parts_list"]
+        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
 
         for mp_name in interface_sub_model_parts_list:
             output_mp_name = f'{mp_name}_output'
@@ -161,9 +171,9 @@ class SolverWrapperKratosStructure60(Component):
 
     def check_interface(self):
 
-        input_interface_model_parts = [param["model_part"] for param in self.settings["interface_input"]]
-        output_interface_model_parts = [param["model_part"] for param in self.settings["interface_output"]]
-        sub_mp_name_list = self.settings["kratos_interface_sub_model_parts_list"]
+        input_interface_model_parts = [param['model_part'] for param in self.settings['interface_input']]
+        output_interface_model_parts = [param['model_part'] for param in self.settings['interface_output']]
+        sub_mp_name_list = self.settings['kratos_interface_sub_model_parts_list']
 
         for sub_mp_name in sub_mp_name_list:
             if f'{sub_mp_name}_input' not in input_interface_model_parts:
@@ -181,19 +191,19 @@ class SolverWrapperKratosStructure60(Component):
                     f'<sub_mp_name>_output in "interface_output" list.')
 
     def send_message(self, message):
-        file = join(self.working_directory, message + ".coco")
+        file = join(self.working_directory, message + '.coco')
         open(file, 'w').close()
         return
 
     def wait_message(self, message):
-        file = join(self.working_directory, message + ".coco")
+        file = join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
             time.sleep(0.01)
         os.remove(file)
         return
 
     def check_message(self, message):
-        file = join(self.working_directory, message + ".coco")
+        file = join(self.working_directory, message + '.coco')
         if os.path.isfile(file):
             os.remove(file)
             return True
@@ -206,22 +216,21 @@ class SolverWrapperKratosStructure60(Component):
                 os.remove(file)
 
     def write_residuals_fileheader(self):
-        header = '# '
-        nr_spaces =15
-        for var in self.residual_variables:
-            header += var + ' '*nr_spaces
+        header = ''
+        sep = ', '
         with open(self.res_filepath, 'w') as f:
             f.write('# Residuals\n')
-            f.write(header + '\n')
+            for variable in self.residual_variables:
+                header += variable + sep
+            f.write(header.strip(sep) + '\n')
 
     def write_residuals(self):
-        nr_spaces = 15
         float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
         log_filepath = os.path.join(self.working_directory, f'log')
         if os.path.isfile(log_filepath):
             with open(log_filepath, 'r') as f:
                 log_string = f.read()
-            time_start_string = r'STEP:\s+' + str(self.timestep -1)
+            time_start_string = r'STEP:\s+' + str(self.timestep - 1)
             time_end_string = r'STEP:\s+' + str(self.timestep)
             match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
             if not match is None:
@@ -229,16 +238,16 @@ class SolverWrapperKratosStructure60(Component):
                 iteration_block_list = re.findall(
                     r'Coupling iteration: \d+' + r'(.*?)' + r'Coupling iteration \d+ end', time_block, flags=re.S)
                 for iteration_block in iteration_block_list:
-                    for variable in self.residual_variables:
+                    residual_array = np.empty(len(self.residual_variables))
+                    for i, variable in enumerate(self.residual_variables):
                         search_string = r'\n' + variable + r' CRITERION.*[Nn]orm = ' + r'(' + float_pattern + r')'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of the non-linear iteration
                             var_residual = float(var_residual_list[-1])
+                            residual_array[i] = var_residual
                         else:
                             raise RuntimeError(f'{variable} CRITERION not found in kratos log file')
 
-                        with open(self.res_filepath, 'a') as f:
-                            f.write(str(var_residual) + ' ' * nr_spaces)
                     with open(self.res_filepath, 'a') as f:
-                        f.write('\n')
+                        np.savetxt(f, [residual_array], delimiter=', ')
