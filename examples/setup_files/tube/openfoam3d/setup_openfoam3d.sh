@@ -1,8 +1,7 @@
 #!/bin/bash
 
-#TODO remove module load command
-ml OpenFOAM/4.1
-source $FOAM_BASH
+#compile CoCoNuT_pimpleFoam
 wmake ../../../coupling_components/solver_wrappers/openfoam/CoCoNuT_pimpleFoam/ > wmake_log
+
+#create mesh
 blockMesh > blockMesh_log
-cd ..

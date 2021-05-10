@@ -93,8 +93,6 @@
               "cores": 1,
               "dimensions": 3,
               "input_file": "ProjectParameters.json",
-              "solver_load_cmd": "ml Kratos",
-              "residual_variables": ["DISPLACEMENT", "RESIDUAL DISPLACEMENT"],
               "kratos_interface_sub_model_parts_list": [
                 "SurfaceLoad3D_tube"
               ],
