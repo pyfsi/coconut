@@ -1,4 +1,4 @@
-import coconut.tests.solver_wrappers.fluent.test_v2019R1 as TubeTest
+from coconut.tests.solver_wrappers.fluent import test_v2019R1 as TubeTest  # only from ... import ... works
 
 import unittest
 
