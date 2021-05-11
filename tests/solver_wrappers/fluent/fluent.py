@@ -12,7 +12,7 @@ import multiprocessing
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
-    version = None  # Fluent version, as from 2019R1 typically of the form 'xxxRx'
+    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     setup_case = True
 
     @classmethod

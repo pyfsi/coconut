@@ -18,8 +18,8 @@ def create(parameters):
 
 class SolverWrapperFluent(Component):
     # version specific parameters
-    version = 'xxxxRx'
-    version_bis = 'x.x.0'
+    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
 
     def __init__(self, parameters):
         super().__init__()
@@ -28,9 +28,7 @@ class SolverWrapperFluent(Component):
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
         
-        name = f'fluent.v{self.version}'
-        self.env = tools.get_solver_env(name, self.dir_cfd)
-        self.check_software()
+        self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.cores = self.settings['cores']
@@ -342,6 +340,7 @@ class SolverWrapperFluent(Component):
         if self.version_bis not in str(result.stdout):
             raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
 
+    # noinspection PyMethodMayBeStatic
     def get_unique_face_ids(self, data):
         """
         Construct unique face IDs based on the face's node IDs.
