@@ -1,7 +1,12 @@
+from coconut import solver_modules
+
 import time
 from contextlib import contextmanager
 import numpy as np
 import warnings
+import os
+import subprocess
+import pickle
 
 
 def create_instance(settings):
@@ -192,7 +197,7 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
     msg_1 = f'ModelParts "{mp_a.name}", "{mp_b.name}": '
     msg_2 = ' values differ by '
     msg_3 = f'\n\t"{mp_a.name}": minimal values = {mp_a_min} and maximal values = {mp_a_max}' \
-            f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
+        f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
 
     msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
     if error_center > tol_center_error:
@@ -211,3 +216,53 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
         raise ValueError(msg)
     if error_max > tol_minmax_warning:
         warnings.warn(msg, Warning)
+
+
+def write_env():
+    """
+    function to write all the environment variables as dict in a env.pickle file
+    """
+    with open('env.pickle', 'wb') as f:
+        pickle.dump(dict(os.environ), f)
+
+
+def get_solver_env(solver_module_name, working_dir):
+    """
+    Use this function to get all the environment variables corresponding to a solver_wrapper module.
+    This uses a python-dict in the file coconut/solver_modules.py to get the module load command, which is then executed
+    in a process. The process also runs coconut.tools.write_env() to store the resulting environment variables in a
+    pickle file. Finally, pickle file is loaded and returned as a python-dict.
+
+    @param solver_module_name: module name of the solver wrapper,
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
+    @type key: str
+
+    @param working_dir: working directory of the solver where the simulation is run .
+    @type key: str
+
+    @return: environement variables as python-dict
+    @rtype: dict
+    """
+    env_filename = 'env.pickle'
+    pre_modules = 'coconut.coupling_components.solver_wrappers.'
+    # remove pre_modules from the solver_module_name
+    solver_name = solver_module_name.replace(pre_modules, '')
+
+    # get the module load command for the solver
+    solver_load_cmd = solver_modules.get_solver_cmd(solver_name)
+
+    # run the module load command and store the environment
+    try:
+        subprocess.check_call(
+            f'{solver_load_cmd} && python -c "from coconut import tools;tools.write_env()"',
+            shell=True, cwd=working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed.')
+
+    # load the environment variables and return as python-dict
+    env_filepath = os.path.join(working_dir, env_filename)
+    with open(env_filepath, 'rb') as f:
+        env = pickle.load(f)
+    os.remove(env_filepath)
+
+    return env

@@ -163,7 +163,7 @@
               ],
               "mp_mode": "THREADS",
               "input_file": "case_turek.inp",
-              "save_iterations": 1
+              "save_interval": 200
             }
           },
           "mapper_interface_input": {
