@@ -8,8 +8,6 @@ import subprocess
 import json
 import multiprocessing
 
-# TODO: issue: id is a Python build-in function... use ids instead?
-
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
     version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class

@@ -11,6 +11,8 @@ import numpy as np
 import sys
 import hashlib
 
+# TODO: issue: id and hash shadow built-in names
+
 
 def create(parameters):
     return SolverWrapperFluent(parameters)
