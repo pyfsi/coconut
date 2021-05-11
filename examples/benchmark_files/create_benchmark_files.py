@@ -40,7 +40,9 @@ examples = {
     'tube_openfoam3d_kratos_structure3d': 2,
     'tube_tube_flow_abaqus2d': 2,
     'tube_tube_flow_tube_ringmodel': 100,
-    'tube_tube_flow_tube_structure': 100
+    'tube_tube_flow_tube_structure': 100,
+    'turek_fluent2d_abaqus2d': 2,
+    'turek_fluent2d_abaqus2d_steady': 1
     }
 
 
@@ -63,12 +65,14 @@ def create_benchmark(example, number_of_timesteps):
 
     # copy example folder to tmp
     os.mkdir(tmp_example_path)
-    for file in ('parameters.json', 'setup.sh'):
+    for file in ('parameters.json', 'setup.py'):
         copy2(join(examples_path, example, file), tmp_example_path)
 
+    # go to this example directory
+    os.chdir(tmp_example_path)
+
     # perform set up
-    p = subprocess.Popen(join(tmp_example_path, 'setup.sh'), cwd=tmp_example_path, shell=True)
-    p.wait()
+    tools.import_module('setup', join(tmp_example_path, 'setup.py'))
 
     # read parameters and limit number of time steps
     parameter_file_name = "parameters.json"
@@ -76,12 +80,13 @@ def create_benchmark(example, number_of_timesteps):
         parameters = json.load(parameter_file)
     parameters['settings']['number_of_timesteps'] = number_of_timesteps
     parameters['coupled_solver']['settings']['save_results'] = True
-    parameters['coupled_solver']['settings']['name'] = 'case_results'  # TODO: modify to 'case' if restart is merged
+    parameters['coupled_solver']['settings']['case_name'] = 'case'
 
     # perform simulation
-    os.chdir(tmp_example_path)
     simulation = coconut.Analysis(parameters)
     simulation.run()
+
+    # return to initial execution path
     os.chdir(execute_path)
 
     # move and rename results data

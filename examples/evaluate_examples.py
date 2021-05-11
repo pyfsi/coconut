@@ -1,4 +1,5 @@
 import coconut
+from coconut import tools
 
 import numpy as np
 import pickle
@@ -16,7 +17,8 @@ This file runs the example cases and compares the results and convergence histor
 pickle files.
 
 Run this file with the unittest framework (see unittest documentation for command-line flags):
-    python -m unittest evaluate_examples.py -bv
+    python evaluate_examples.py
+Or just as a python file.
 In order to exclude some examples from running, comment out the corresponding class in the tuple 'test_cases'.
 
 To include another example, create a new class analogous to the existing classes and add the class name to the tuple
@@ -24,7 +26,7 @@ To include another example, create a new class analogous to the existing classes
 number of time steps that the example should be run (the benchmark file should have run for at least this number of 
 time steps).
 There are two other class variables; 'additional_files' is a list of additional files in the example required for the 
-simulation besides 'setup.sh' and 'parameters.json', and 'compare_data' is a boolean which determines whether the
+simulation besides 'setup.py' and 'parameters.json', and 'compare_data' is a boolean which determines whether the
 comparison with a benchmark pickle file should be made.
 Once this class is made, you may need to create a benchmark file for this new example using the corresponding script.
 """
@@ -63,12 +65,14 @@ class EvaluateExamples(unittest.TestCase):
 
         # copy example folder to tmp
         os.mkdir(tmp_example_path)
-        for file in ['parameters.json', 'setup.sh'] + cls.additional_files:
+        for file in ['parameters.json', 'setup.py'] + cls.additional_files:
             shutil.copy2(join(examples_path, cls.example, file), tmp_example_path)
 
+        # go to this example directory
+        os.chdir(tmp_example_path)
+
         # perform set up
-        p = subprocess.Popen(join(tmp_example_path, 'setup.sh'), cwd=tmp_example_path, shell=True)
-        p.wait()
+        tools.import_module('setup', join(tmp_example_path, 'setup.py'))
 
         # read parameters and limit number of time steps
         parameter_file_name = "parameters.json"
@@ -76,12 +80,13 @@ class EvaluateExamples(unittest.TestCase):
             parameters = json.load(parameter_file)
         parameters['settings']['number_of_timesteps'] = cls.number_of_timesteps
         parameters['coupled_solver']['settings']['save_results'] = True
-        parameters['coupled_solver']['settings']['name'] = 'case_results'  # TODO: modify to 'case' if restart is merged
+        parameters['coupled_solver']['settings']['case_name'] = 'case'
 
         # perform simulation
-        os.chdir(tmp_example_path)
         simulation = coconut.Analysis(parameters)
         simulation.run()
+
+        # return to initial execution path
         os.chdir(execute_path)
 
         if cls.compare_data:
@@ -172,6 +177,16 @@ class TestTubeTubeFlowTubeStructure(EvaluateExamples):
     number_of_timesteps = 100
 
 
+class TestTurekFluent2DAbaqus2D(EvaluateExamples):
+    example = 'turek_fluent2d_abaqus2d'
+    number_of_timesteps = 2
+
+
+class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
+    example = 'turek_fluent2d_abaqus2d_steady'
+    number_of_timesteps = 1
+
+
 # comment out examples that you do not want to evaluate
 test_cases = (
     TestTestSingleSolver,
@@ -186,6 +201,8 @@ test_cases = (
     TestTubeTubeFlowAbaqus2D,
     TestTubeTubeFlowTubeRingmodel,
     TestTubeTubeFlowTubeStructure,
+    TestTurekFluent2DAbaqus2D,
+    TestTurekFluent2DAbaqus2DSteady,
 )
 
 
@@ -195,3 +212,17 @@ def load_tests(loader, tests, pattern):
         tests = loader.loadTestsFromTestCase(test_class)
         suite.addTests(tests)
     return suite
+
+
+def suite():
+    suite = TestSuite()
+    loader = unittest.TestLoader()
+    for test_class in test_cases:
+        tests = loader.loadTestsFromTestCase(test_class)
+        suite.addTests(tests)
+    return suite
+
+
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
