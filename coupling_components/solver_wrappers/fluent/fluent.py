@@ -11,6 +11,7 @@ import numpy as np
 import sys
 import hashlib
 
+
 # TODO: issue: id and hash shadow built-in names
 
 
@@ -29,7 +30,7 @@ class SolverWrapperFluent(Component):
         # set parameters
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        
+        self.set_fluent_version()
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
@@ -328,9 +329,8 @@ class SolverWrapperFluent(Component):
         return self.interface_output
 
     def set_fluent_version(self):
-        # needs to be overwritten
-        self.version = '2019R1'
-        self.version_bis = '19.3.0'
+        raise NotImplementedError(
+            'Base class method called, "set_fluent_version" method needs to be implemented by the derived class.')
 
     def check_software(self):
         # Python version: 3.6 or higher
