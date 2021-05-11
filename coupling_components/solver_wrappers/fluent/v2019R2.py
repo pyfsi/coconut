@@ -1,11 +1,17 @@
-from coconut.coupling_components.solver_wrappers.fluent.v2019R1 import SolverWrapperFluent2019R1
+from coconut.coupling_components.solver_wrappers.fluent.fluent import SolverWrapperFluent
+from coconut import tools
 
 
 def create(parameters):
     return SolverWrapperFluent2019R2(parameters)
 
 
-class SolverWrapperFluent2019R2(SolverWrapperFluent2019R1):
+class SolverWrapperFluent2019R2(SolverWrapperFluent):
+
+    def __init__(self, parameters):
+        super().__init__(parameters)
+        self.env = tools.get_solver_env(__name__, self.dir_cfd)
+        self.check_software()
 
     def set_fluent_version(self):
         self.version = '2019R2'
