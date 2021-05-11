@@ -1389,12 +1389,12 @@ Subcycling within the structural solver is possible.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><nobr><code>subcycling</code></nobr></td>
+<td align="right"><code>subcycling</code></td>
 <td align="center">boolean</td>
 <td><code>false</code>: [Default] Abaqus solves the requested time step using one increment. <br> <code>true</code>: Abaqus is allowed to solve the time step using multiple <em>increments</em>. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small <em>increments</em>.</td>
 </tr>
 <tr>
-<td align="right"><code>initial_inc</code></td>
+<td align="right"><nobr><code>initial_inc</code></nobr></td>
 <td align="center">float</td>
 <td>Required when subcycling is enabled. Contains the size of the first time <em>increment</em> attempted by Abaqus.</td>
 </tr>

@@ -1000,25 +1000,23 @@ Currently all these examples calculate the flow in a flexible tube.</p>
 <p>The main directory of each example case contains following files: </p>
 <ul>
 <li><em><code>parameters.json</code></em>: parameter file in JSON format.</li>
-<li><em><code>setup.sh</code></em>: bash script, has to be sourced to set up the case.</li>
+<li><em><code>setup.py</code></em>: python script, which needs to be run to set up the case.</li>
 <li><em><code>tube_&lt;flow solver&gt;_&lt;structural solver&gt;.md</code></em>: description of the specific example.</li>
 </ul>
 <p>When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
 These folders are expandable and are deleted when the setup files are (re)run. 
-The script copies first the <em><code>run_simulation.py</code></em> file into the main directory, then the necessary case files from <em><code>setup_files</code></em> into the correct working directory and finally loads the solver modules.
+The script copies first the <em><code>run_simulation.py</code></em> file into the main directory and then the necessary case files from <em><code>setup_files</code></em> into the correct working directory.
 After the completion of this script, the example case is ready to run.</p>
 <h2 id="project-parameters">Project Parameters</h2>
-<p>The parameter file <code>parameters.json</code> can be interpreted as a dictionary. 
+<p>The parameter file <em><code>parameters.json</code></em> can be interpreted as a dictionary. 
 There are two main keys.
 The first is <code>settings</code> in which the number of time steps for which the calculation is run is specified.
 The second is <code>coupled_solver</code> in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solvers.</p>
 <h2 id="running-a-case">Running a case</h2>
 <p>In order to run an example case, first, the setup script has to be run to create the working directories.
-Then, the calculation is started by running <code>run_simulation.py</code>.
-Make sure to <em>source</em> the setup script, so that the correct modules are loaded in the terminal from which the simulation is run. 
-In case of execution (<em>bash</em>), these modules are loaded in a separate (virtual) terminal which is closed after completion of the script. </p>
+Then, the calculation is started by running <em><code>run_simulation.py</code></em>. Make sure to add the module-load commands for the required solvers in <code>solverload_cmd_dict</code> in the <em><code>coconut/solver_modules.py</code></em> file, to load the necessary modules for your solvers during the simulation. By default, the solvers for the UGent-cluster are added to the file.</p>
 <p>In practice, you would run the following commands:</p>
-<div class="codehilite"><pre><span></span><code><span class="err">source setup.sh</span>
+<div class="codehilite"><pre><span></span><code><span class="err">python setup.py</span>
 <span class="err">python run_simulation.py</span>
 </code></pre></div>
 
