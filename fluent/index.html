@@ -463,8 +463,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-__init__-method" class="md-nav__link">
-    The __init__ method
+  <a href="#the-initialize-method" class="md-nav__link">
+    The initialize method
   </a>
   
 </li>
@@ -1026,8 +1026,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-__init__-method" class="md-nav__link">
-    The __init__ method
+  <a href="#the-initialize-method" class="md-nav__link">
+    The initialize method
   </a>
   
 </li>
@@ -1210,7 +1210,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <li><em><code>X.jou</code></em>: Fluent journal file to interactively run the FSI simulation, written in Scheme, </li>
 <li><em><code>X.c</code></em>: Fluent UDF file that implements additional functionality used in Fluent, written in C.</li>
 </ul>
-<h3 id="the-__init__-method">The <code>__init__</code> method</h3>
+<h3 id="the-initialize-method">The <code>initialize</code> method</h3>
 <p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summary, so that the solver wrapper can link the interface thread names (specified in <code>thread_names</code>) to Fluent thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelParts</code> are created, based on data written by Fluent in time step 0. After a restart, this same data must be found, i.e. if those data files are removed from the <code>working_directory</code> folder, the simulation cannot be restarted. Finally, the <code>Interfaces</code> are created. </p>
 <h3 id="files-created-during-simulation">Files created during simulation</h3>
 <p>In these file conventions, A is the time step number and B the Fluent thread ID.</p>
