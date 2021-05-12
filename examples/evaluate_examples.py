@@ -8,7 +8,7 @@ import json
 import os
 import shutil
 import subprocess
-from unittest import TestSuite
+from unittest import TestSuite, TestLoader
 from os.path import join
 
 
@@ -216,7 +216,7 @@ def load_tests(loader, tests, pattern):
 
 def suite():
     suite = TestSuite()
-    loader = unittest.TestLoader()
+    loader = TestLoader()
     for test_class in test_cases:
         tests = loader.loadTestsFromTestCase(test_class)
         suite.addTests(tests)
