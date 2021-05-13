@@ -1,6 +1,4 @@
-from coconut import data_structure
-from coconut.tools import create_instance
-from coconut.data_structure.interface import Interface
+from coconut.tools import create_instance, solver_available, print_box
 
 import numpy as np
 import os
@@ -10,14 +8,11 @@ import json
 import pandas as pd
 
 
-def print_box(text):
-    n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
-    mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
+version = '60'
 
 
+@unittest.skipUnless(solver_available(f'kratos.structural_mechanics_application.v{version}'),
+                     f'kratos.structural_mechanics_application.v{version} not available')
 class TestSolverWrapperKratosStructure60(unittest.TestCase):
 
     def setUp(self):

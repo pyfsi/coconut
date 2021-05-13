@@ -1,12 +1,8 @@
-from coconut import data_structure
-from coconut.tools import create_instance
-from coconut.tools import get_solver_env
+from coconut.tools import create_instance, get_solver_env, solver_available, print_box
 
 import unittest
 import numpy as np
-from copy import deepcopy
 import os
-import math
 import multiprocessing
 import json
 from subprocess import check_call, DEVNULL
@@ -14,14 +10,10 @@ from subprocess import check_call, DEVNULL
 import coconut.coupling_components.solver_wrappers.openfoam.open_foam_io as of_io
 
 
-def print_box(text):
-    n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
-    mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
+version = '41'
 
 
+@unittest.skipUnless(solver_available(f'openfoam.v{version}'), f'openfoam.v{version} not available')
 class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
     def setUp(self):
@@ -33,7 +25,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.par_solver = parameters['solver_wrappers'][0]
         self.mp_name_in = self.par_solver['settings']['interface_input'][0]['model_part']
         self.mp_name_out = self.par_solver['settings']['interface_output'][0]['model_part']
-
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):

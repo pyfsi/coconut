@@ -99,6 +99,20 @@ def print_components_info(pre, component_list):
     component_list[-1].print_components_info(pre + '└─')
 
 
+# print box
+def print_box(text):
+    """
+    This functions prints adds a box around the string text
+    :param text: str
+    :return: str
+    """
+    n = len(text)
+    top = '\n┌─' + n * '─' + '─┐'
+    mid = '\n│ ' + text + ' │'
+    bottom = '\n└─' + n * '─' + '─┘'
+    print(top + mid + bottom)
+
+
 # timer-function
 @contextmanager
 def quick_timer(name=None, t=0, n=0, ms=False):
@@ -250,6 +264,7 @@ def get_solver_env(solver_module_name, working_dir):
 
     @param solver_module_name: module name of the solver wrapper,
     e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
+    e.g. fluent.v2019R1
     @type key: str
 
     @param working_dir: working directory of the solver where the simulation is run .
@@ -281,3 +296,25 @@ def get_solver_env(solver_module_name, working_dir):
     os.remove(env_filepath)
 
     return env
+
+
+def solver_available(solver_module_name):
+    """
+    @param solver_module_name: module name of the solver wrapper,
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
+    e.g. fluent.v2019R1
+    @type key: str
+
+    @return: presence of solver env
+    @rtype: bool
+    """
+    pre_modules = 'coconut.coupling_components.solver_wrappers.'
+    # remove pre_modules from the solver_module_name
+    solver_name = solver_module_name.replace(pre_modules, '')
+
+    try:
+        # get the module load command for the solver
+        solver_modules.get_solver_cmd(solver_name)
+    except KeyError:
+        return False
+    return True
