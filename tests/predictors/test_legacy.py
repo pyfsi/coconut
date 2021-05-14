@@ -37,14 +37,11 @@ class TestPredictorLegacy(unittest.TestCase):
         interface = Interface(interface_settings, model)
         interface.set_variable_data(model_part_name, variable, a0_array)
 
-        # read settings
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_legacy.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.load(parameter_file)
-
-        predictor_legacy = create_instance(settings)
+        # create predictor
+        parameters = {'type': 'predictors.legacy'}
+        predictor_legacy = create_instance(parameters)
         predictor_legacy.initialize(interface)
-
+        
         # first prediction needs to be equal to initialized value
         predictor_legacy.initialize_solution_step()
         prediction = predictor_legacy.predict(interface)

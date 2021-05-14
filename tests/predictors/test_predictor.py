@@ -35,15 +35,12 @@ class TestPredictor(unittest.TestCase):
         # create interface
         interface = Interface(interface_settings, model)
         interface.set_variable_data(model_part_name, variable, a0_array)
-
-        # read settings
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_cubic.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.load(parameter_file)
-
-        predictor_cubic = create_instance(settings)
-        predictor_cubic.initialize(interface)
         interface_as_array = interface.get_interface_data()
+
+        # create predictor
+        parameters = {'type': 'predictors.cubic'}
+        predictor_cubic = create_instance(parameters)
+        predictor_cubic.initialize(interface)
 
         # a linear relation should be predicted in the same way by linear, quadratic and cubic predictors
         predictor_cubic.initialize_solution_step()

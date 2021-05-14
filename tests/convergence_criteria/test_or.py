@@ -4,6 +4,7 @@ from coconut.tools import create_instance
 
 import unittest
 import json
+import os
 import numpy as np
 
 
@@ -32,7 +33,7 @@ class TestConvergenceCriterionOr(unittest.TestCase):
         interface.set_variable_data(model_part_name, variable, a0_array)
 
         # read settings
-        parameter_file_name = 'convergence_criteria/test_or.json'
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_or.json')
         with open(parameter_file_name) as parameter_file:
             parameters = json.load(parameter_file)
 
