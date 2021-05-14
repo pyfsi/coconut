@@ -30,13 +30,13 @@ parameter|type|description
 `interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `["displacement"]` for a flow solver and `["pressure","traction"]` for a structure solver.
 `interface_output`|list|Analogous to `interface_input`. However, the variables are different: `["pressure","traction"]` for a flow solver and `["displacement"]` for a structure solver.
 `unsteady`|bool|(optional) Default: `true`. Indicates if case is steady or unsteady.
-`working_directory`|string|Absolute path to the working directory or relative path with respect to the current directory.
+`save_restart`|int|(optional) Default: 0. Determines the time step interval upon which a pickle file *`case_timestep<time step>.pickle`* is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.
+`time_step_start`|int|(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file *`case_timestep<timestep_start>.pickle`* to start from the corresponding time step. For a steady simulation, the value should be `0`.
+<nobr>`working_directory`</nobr>|string|Absolute path to the working directory or relative path with respect to the current directory.
 
-`delta_t` is a necessary parameter, but is usually defined in a higher component. However, it can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If it is defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.
+`delta_t` is a necessary parameter, while `timestep_start` and `save_restart` are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.
 
-There is no parameter `timestep_start`, as currently, restart is not implemented in this solver wrapper.
-
-Because these solvers are simple it is possible to ommit the use of interpolation between two solver wrappers.
+Because these solvers are simple it is possible to omit the use of interpolation between two solver wrappers.
 In that case , the names of the `ModelParts` of both flow and structure solver need to be the same.
 
 ### Tube flow solver
@@ -116,7 +116,8 @@ parameter|type|description
 
 This structure solver calculates the deformation of the wall of a straight and flexible tube.
 The `type` for this solver wrapper is `solver_wrappers.python.ring_model_solver`.
-The tube is regarded as made up of independent rings.
+The tube is regarded as made up of independent rings and no inertia is taken into account.
+Therefore, there is no dependence on previous time steps and the parameter `timestep_start` is not used.
 The required input is the pressure on the tube wall.
 Traction is not taken into account, even though it is a required variable in `interface_input`. 
 The resulting output is the radial displacement.

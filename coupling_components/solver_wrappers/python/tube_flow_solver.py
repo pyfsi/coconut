@@ -3,9 +3,11 @@ from coconut import tools
 from coconut.data_structure import Model, Interface
 
 import numpy as np
-import os.path as path
+import os
+from os.path import join
 from scipy.linalg import solve_banded
 import json
+import pickle
 
 
 def create(parameters):
@@ -24,16 +26,14 @@ class SolverWrapperTubeFlow(Component):
         self.settings = parameters["settings"]
         self.working_directory = self.settings["working_directory"]
         input_file = self.settings["input_file"]
-        case_file_name = path.join(self.working_directory, input_file)
+        case_file_name = join(self.working_directory, input_file)
         with open(case_file_name, 'r') as case_file:
             self.settings.update(json.load(case_file))  # TODO: inversed priority
 
-        # restart is not implemented
-        if self.settings.get("timestep_start", 0) != 0:
-            raise ValueError(f'Restart not implemented for {self.__class__.__name__}')
-
         # settings
         self.unsteady = self.settings.get("unsteady", True)
+        self.timestep_start = self.settings.get("timestep_start", 0)
+        self.save_restart = self.settings.get('save_restart', 0)  # eg to restart
 
         l = self.settings["l"]  # length
         self.d = self.settings["d"]  # diameter
@@ -84,7 +84,7 @@ class SolverWrapperTubeFlow(Component):
         self.z = axial_offset + np.arange(self.dz / 2 - l / 2, l / 2, self.dz)  # data is stored in cell centers
 
         self.k = 0  # iteration
-        self.n = 0  # time step (no restart implemented)
+        self.n = self.timestep_start  # time step
         if self.unsteady:
             self.dt = self.settings["delta_t"]  # time step size
             self.alpha = np.pi * self.d ** 2 / 4 / (self.ureference + self.dz / self.dt)  # Numerical damping
@@ -100,11 +100,20 @@ class SolverWrapperTubeFlow(Component):
         self.newtontol = self.settings["newtontol"]  # tolerance of Newton iterations
 
         # initialization
-        self.u = np.ones(self.m + 2) * self.u0  # velocity
+        if self.timestep_start == 0:  # no restart
+            self.u = np.ones(self.m + 2) * self.u0  # velocity
+            self.p = np.ones(self.m + 2) * self.preference  # kinematic pressure
+            self.a = np.ones(self.m + 2) * np.pi * self.d ** 2 / 4  # area of cross section
+        else:  # restart
+            file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
+            with open(file_name, 'rb') as file:
+                data = pickle.load(file)
+            self.u = data['u']  # velocity
+            self.p = data['p']  # kinematic pressure
+            self.a = data['a']  # area of cross section
+
         self.un = np.array(self.u)  # previous velocity
-        self.p = np.ones(self.m + 2) * self.preference  # kinematic pressure
         self.pn = np.array(self.p)  # previous kinematic pressure (only value at outlet is used)
-        self.a = np.ones(self.m + 2) * np.pi * self.d ** 2 / 4  # area of cross section
         self.an = np.array(self.a)  # previous area of cross section
 
         self.disp = np.zeros((self.m, 3))  # displacement
@@ -214,14 +223,23 @@ class SolverWrapperTubeFlow(Component):
         super().finalize()
 
     def output_solution_step(self):
+        if self.save_restart != 0 and self.n % self.save_restart == 0:
+            file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
+            with open(file_name, 'wb') as file:
+                pickle.dump({'a': self.a, 'p': self.p, 'u': self.u}, file)
+            if self.save_restart < 0:
+                try:
+                    os.remove(join(self.working_directory, f'case_timestep{self.n + self.save_restart}.pickle'))
+                except OSError:
+                    pass
         if self.debug:
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = self.working_directory + f"/Pressure_Velocity_TS{self.n}.txt"
+            file_name = join(self.working_directory + f'/Pressure_Velocity_TS{self.n}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
-                    file.write(f"{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n")
+                    file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
 
     def get_interface_input(self):  # TODO: need to have latest data?
         return self.interface_input

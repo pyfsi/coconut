@@ -3,9 +3,11 @@ from coconut import tools
 from coconut.data_structure import Model, Interface
 
 import numpy as np
-import os.path as path
+import os
+from os.path import join
 from scipy.linalg import solve_banded
 import json
+import pickle
 
 
 def create(parameters):
@@ -24,16 +26,14 @@ class SolverWrapperTubeStructure(Component):
         self.settings = parameters["settings"]
         self.working_directory = self.settings["working_directory"]
         input_file = self.settings["input_file"]
-        case_file_name = path.join(self.working_directory, input_file)
+        case_file_name = join(self.working_directory, input_file)
         with open(case_file_name, 'r') as case_file:
             self.settings.update(json.load(case_file))  # TODO: inversed priority
 
-        # restart is not implemented
-        if self.settings.get("timestep_start", 0) != 0:
-            raise ValueError(f'Restart not implemented for {self.__class__.__name__}')
-
         # settings
         self.unsteady = self.settings.get("unsteady", True)
+        self.timestep_start = self.settings.get("timestep_start", 0)
+        self.save_restart = self.settings.get('save_restart', 0)  # eg to restart
 
         l = self.settings["l"]  # length
         d = self.settings["d"]  # diameter
@@ -57,7 +57,7 @@ class SolverWrapperTubeStructure(Component):
         self.z = axial_offset + np.arange(self.dz / 2 - l / 2, l / 2, self.dz)  # data is stored in cell centers
 
         self.k = 0  # iteration
-        self.n = 0  # time step (no restart implemented)
+        self.n = self.timestep_start  # time step
         if self.unsteady:
             self.dt = self.settings["delta_t"]  # time step size
             self.time_discretization = self.settings.get("time_discretization", "backward euler").lower()
@@ -83,10 +83,18 @@ class SolverWrapperTubeStructure(Component):
         self.areference = np.pi * self.rreference ** 2  # reference area of cross section
         self.p = np.ones(self.m) * self.preference  # pressure
         self.a = np.ones(self.m) * self.areference  # area of cross section
-        self.r = np.ones(self.m + 4) * self.rreference  # radius of cross section
-        if self.unsteady:
-            self.rdot = np.zeros(self.m)  # first derivative of the radius with respect to time in current timestep
-            self.rddot = np.zeros(self.m)  # second derivative of the radius with respect to time in current timestep
+        if self.timestep_start == 0:  # no restart
+            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross section
+            if self.unsteady:
+                self.rdot = np.zeros(self.m)  # first derivative of the radius with respect to time in current timestep
+                self.rddot = np.zeros(self.m)  # second derivative of radius with respect to time in current timestep
+        else:  # restart
+            file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
+            with open(file_name, 'rb') as file:
+                data = pickle.load(file)
+            self.r = data['r']  # radius of cross section
+            self.rdot = data['rdot']  # first derivative of the radius with respect to time in current timestep
+            self.rddot = data['rddot']  # second derivative of the radius with respect to time in current timestep
         self.rn = np.array(self.r)  # previous radius of cross section
         self.rndot = np.zeros(self.m)  # first derivative of the radius with respect to time in previous timestep
         self.rnddot = np.zeros(self.m)  # second derivative of the radius with respect to time in previous timestep
@@ -178,6 +186,15 @@ class SolverWrapperTubeStructure(Component):
         super().finalize()
 
     def output_solution_step(self):
+        if self.save_restart != 0 and self.n % self.save_restart == 0:
+            file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
+            with open(file_name, 'wb') as file:
+                pickle.dump({'r': self.r, 'rdot': self.rdot, 'rddot': self.rddot}, file)
+            if self.save_restart < 0:
+                try:
+                    os.remove(join(self.working_directory, f'case_timestep{self.n + self.save_restart}.pickle'))
+                except OSError:
+                    pass
         if self.debug:
             file_name = self.working_directory + f"/Area_TS{self.n}.txt"
             with open(file_name, 'w') as file:

@@ -1,29 +1,25 @@
 {
-  "solver_wrappers": [
-    {
-      "type": "solver_wrappers.python.tube_ringmodel_solver",
-      "settings": {
-        "working_directory": "solver_wrappers/python/tube/test_tube_ringmodel/CSM",
-        "input_file": "solver_parameters.json",
-        "save_restart": 0,
-        "interface_input": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "pressure",
-              "traction"
-            ]
-          }
-        ],
-        "interface_output": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "displacement"
-            ]
-          }
+  "type": "solver_wrappers.python.tube_ringmodel_solver",
+  "settings": {
+    "working_directory": "solver_wrappers/python/tube/test_tube_ringmodel/CSM",
+    "input_file": "solver_parameters.json",
+    "save_restart": 0,
+    "interface_input": [
+      {
+        "model_part": "wall",
+        "variables": [
+          "pressure",
+          "traction"
         ]
       }
-    }
-  ]
+    ],
+    "interface_output": [
+      {
+        "model_part": "wall",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ]
+  }
 }
