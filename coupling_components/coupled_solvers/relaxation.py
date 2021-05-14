@@ -9,7 +9,7 @@ class CoupledSolverRelaxation(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.omega = self.settings["omega"]
+        self.omega = self.settings['omega']
 
     def solve_solution_step(self):
         # initial value

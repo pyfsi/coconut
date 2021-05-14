@@ -9,8 +9,8 @@ class ConvergenceCriterionIterationLimit(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        settings = parameters["settings"]
-        self.maximum = settings["maximum"]
+        settings = parameters['settings']
+        self.maximum = settings['maximum']
 
         self.iteration = 0
 

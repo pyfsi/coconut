@@ -10,8 +10,8 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.model = create_instance(self.parameters["settings"]["model"])
-        self.omega = self.settings["omega"]
+        self.model = create_instance(self.parameters['settings']['model'])
+        self.omega = self.settings['omega']
 
     def initialize(self):
         super().initialize()

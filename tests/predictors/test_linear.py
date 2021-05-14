@@ -3,8 +3,6 @@ from coconut.data_structure.interface import Interface
 from coconut.tools import create_instance
 
 import unittest
-import os
-import json
 import numpy as np
 
 

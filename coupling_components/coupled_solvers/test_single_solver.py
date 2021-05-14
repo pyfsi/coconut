@@ -15,49 +15,49 @@ def create(parameters):
 class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
     def __init__(self, parameters):
-        """"Should only initialize the solver that is to be tested"""
+        """Should only initialize the solver that is to be tested"""
         Component.__init__(self)
 
         self.parameters = parameters
-        self.settings = parameters.get("settings", {})  # settings is optional as long as the necessary parameters...
+        self.settings = parameters.get('settings', {})  # settings is optional as long as the necessary parameters...
         # ... are in test_settings
 
-        if "test_settings" not in self.parameters.keys():  # requires a new parameter input "test_settings"
+        if 'test_settings' not in self.parameters.keys():  # requires a new parameter input 'test_settings'
             raise KeyError('The coupled_solver "test_single_solver" requires "test_settings" which was not detected.')
-        test_settings = parameters["test_settings"]
+        test_settings = parameters['test_settings']
         self.settings.update(test_settings)  # update settings with test_settings (test_settings are prioritized)
 
         # read parameters
-        self.solver_index = self.settings["solver_index"]  # solver to be tested; starts at 0
-        self.test_class = self.settings.get("test_class")
-        self.timestep_start_current = self.timestep_start_global = self.settings.get("timestep_start", 0)
+        self.solver_index = self.settings['solver_index']  # solver to be tested; starts at 0
+        self.test_class = self.settings.get('test_class')
+        self.timestep_start_current = self.timestep_start_global = self.settings.get('timestep_start', 0)
         self.restart = False  # no restart allowed
         self.save_restart = 0  # no restart files are saved
-        self.save_results = self.settings.get("save_results", 0)  # time step interval to save results
-        self.delta_t = self.settings["delta_t"]
-        tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}")
+        self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.delta_t = self.settings['delta_t']
+        tools.print_info(f'Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}')
 
         # create dummy components
         self.predictor = DummyComponent()
         self.convergence_criterion = DummyComponent()
 
         # solver wrapper settings
-        parameters = self.parameters["solver_wrappers"][self.solver_index]
-        if parameters["type"] == "solver_wrappers.mapped":
-            parameters = parameters["settings"]["solver_wrapper"]  # for mapped solver: the solver_wrapper itself tested
-        settings = parameters["settings"]
+        parameters = self.parameters['solver_wrappers'][self.solver_index]
+        if parameters['type'] == 'solver_wrappers.mapped':
+            parameters = parameters['settings']['solver_wrapper']  # for mapped solver: the solver_wrapper itself tested
+        settings = parameters['settings']
 
-        orig_wd = settings["working_directory"]  # working directory changed to a test_working_directory
+        orig_wd = settings['working_directory']  # working directory changed to a test_working_directory
         i = 0
-        while os.path.exists(f"{orig_wd}_test{i}"):
+        while os.path.exists(f'{orig_wd}_test{i}'):
             i += 1
-        cur_wd = f"{orig_wd}_test{i}"
-        settings["working_directory"] = cur_wd
-        os.system(f"cp -r {orig_wd} {cur_wd}")
-        tools.print_info(f"{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n")
+        cur_wd = f'{orig_wd}_test{i}'
+        settings['working_directory'] = cur_wd
+        os.system(f'cp -r {orig_wd} {cur_wd}')
+        tools.print_info(f'{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n')
 
         # add delta_t and timestep_start to solver_wrapper settings
-        tools.pass_on_parameters(self.settings, parameters["settings"], ["timestep_start", "delta_t"])
+        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t'])
 
         self.solver_wrapper = tools.create_instance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
@@ -68,25 +68,25 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         interface_input = self.solver_wrapper.interface_input
         if self.test_class is None:
             self.dummy_solver = None
-            tools.print_info("No test class specified, zero input will be used")
+            tools.print_info('No test class specified, zero input will be used')
             for model_part_name, variable in interface_input.model_part_variable_pairs:
                 if data_structure.variables_dimensions[variable] == 1:
-                    tools.print_info(f"\t0 is used as {variable} input to {model_part_name}")
+                    tools.print_info(f'\t0 is used as {variable} input to {model_part_name}')
                 elif data_structure.variables_dimensions[variable] == 3:
-                    tools.print_info(f"\t[0 0 0] is used as {variable} input to {model_part_name}")
+                    tools.print_info(f'\t[0 0 0] is used as {variable} input to {model_part_name}')
         else:
             if not os.path.isfile('dummy_solver.py'):
-                raise ModuleNotFoundError(f"Test class specified, but no file named dummy_solver.py in {os.getcwd()}")
+                raise ModuleNotFoundError(f'Test class specified, but no file named dummy_solver.py in {os.getcwd()}')
             module = __import__('dummy_solver')
             if not hasattr(module, self.test_class):
-                raise NameError(f"Module dummy_solver has no class {self.test_class}")
+                raise NameError(f'Module dummy_solver has no class {self.test_class}')
             self.dummy_solver = getattr(module, self.test_class)()
-            tools.print_info(f"The functions from {self.test_class} will be used to calculate the following inputs:")
+            tools.print_info(f'The functions from {self.test_class} will be used to calculate the following inputs:')
             for model_part_name, variable in interface_input.model_part_variable_pairs:
                 if data_structure.variables_dimensions[variable] == 1:
-                    tools.print_info(f"\t{variable} [Scalar] on {model_part_name}")
+                    tools.print_info(f'\t{variable} [Scalar] on {model_part_name}')
                 elif data_structure.variables_dimensions[variable] == 3:
-                    tools.print_info(f"\t{variable} [3D array] on {model_part_name}")
+                    tools.print_info(f'\t{variable} [3D array] on {model_part_name}')
         tools.print_info()
 
         self.x = None
@@ -105,8 +105,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.complete_solution_y = None
             self.residual = []
             self.info = None
-            self.case_name = self.settings.get("case_name", "case")  # case name
-            self.case_name += "_" + cur_wd
+            self.case_name = self.settings.get('case_name', 'case')  # case name
+            self.case_name += '_' + cur_wd
 
         self.debug = False
 
@@ -134,7 +134,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.dummy_solver is not None:
             for model_part_name, variable in interface_input.model_part_variable_pairs:
                 model_part = interface_input.get_model_part(model_part_name)
-                data = [getattr(self.dummy_solver, f"calculate_{variable}")(model_part.x0[i], model_part.y0[i],
+                data = [getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
                                                                             model_part.z0[i], self.time_step)
                         for i in range(model_part.size)]
                 interface_input.set_variable_data(model_part_name, variable, np.array(data))
@@ -149,12 +149,12 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
     def print_header(self):
         if self.time_step == self.timestep_start_current + 1:
-            header = f"════════════════════════════════════════════════════════════════════════════════\n" \
+            header = f'════════════════════════════════════════════════════════════════════════════════\n' \
                 f"{'Time step':<16}{'Norm x':<28}{'Norm y':<28}"
             tools.print_info(header, flush=True)
 
     def print_iteration_info(self, r):
-        info = f"{self.time_step:<16d}{self.x.norm():<28.17e}{self.y.norm():<28.17e}"
+        info = f'{self.time_step:<16d}{self.x.norm():<28.17e}{self.y.norm():<28.17e}'
         tools.print_info(' │' * self.solver_level, info, flush=True)
 
 

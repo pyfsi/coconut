@@ -11,8 +11,8 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.settings = parameters["settings"]
-        self.omega_max = self.settings["omega_max"]
+        self.settings = parameters['settings']
+        self.omega_max = self.settings['omega_max']
 
         self.omega = self.omega_max
         self.added = False
@@ -34,7 +34,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
         r = r_in.get_interface_data()
         # calculate return value if sufficient data available
         if not self.added:
-            raise RuntimeError("No information to predict")
+            raise RuntimeError('No information to predict')
         dx = self.omega * r
         dx_out = r_in.copy()
         dx_out.set_interface_data(dx)
