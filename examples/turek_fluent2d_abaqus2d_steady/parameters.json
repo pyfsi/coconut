@@ -8,7 +8,7 @@
       "timestep_start": 0,
       "delta_t": 0,
       "omega": 0.05,
-      "save_results": true,
+      "save_results": 1,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {

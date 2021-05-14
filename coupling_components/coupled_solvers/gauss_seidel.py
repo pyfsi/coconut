@@ -27,6 +27,7 @@ class CoupledSolverGaussSeidel(Component):
         self.restart = self.timestep_start_current != 0  # true if restart
         self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         self.settings['save_restart'] = self.save_restart  # in order to pass on default value
+        self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
 
@@ -66,7 +67,6 @@ class CoupledSolverGaussSeidel(Component):
             self.restart_data = self.load_restart_data()
 
         # save results variables
-        self.save_results = self.settings.get('save_results', False)  # set True in order to save for every iteration
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
@@ -209,7 +209,7 @@ class CoupledSolverGaussSeidel(Component):
         super().output_solution_step()
 
         self.run_time = time.time() - self.start_time
-        if self.save_results:
+        if self.save_results != 0 and self.time_step % self.save_results == 0:
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
                       'run_time': self.run_time + self.run_time_previous, 'residual': self.residual,

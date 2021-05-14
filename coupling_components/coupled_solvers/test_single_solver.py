@@ -32,6 +32,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.test_class = self.settings.get("test_class")
         self.timestep_start_current = self.timestep_start_global = self.settings.get("timestep_start", 0)
         self.restart = False  # no restart allowed
+        self.save_restart = 0  # no restart files are saved
+        self.save_results = self.settings.get("save_results", 0)  # time step interval to save results
         self.delta_t = self.settings["delta_t"]
         tools.print_info(f"Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}")
 
@@ -97,11 +99,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.run_time_previous = 0
         self.iterations = []
 
-        # no restart files are saved
-        self.save_restart = 0
-
         # save results variables
-        self.save_results = self.settings.get("save_results", False)
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
