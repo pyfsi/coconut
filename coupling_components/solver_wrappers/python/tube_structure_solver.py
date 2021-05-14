@@ -23,56 +23,56 @@ class SolverWrapperTubeStructure(Component):
 
         # reading
         self.parameters = parameters
-        self.settings = parameters["settings"]
-        self.working_directory = self.settings["working_directory"]
-        input_file = self.settings["input_file"]
+        self.settings = parameters['settings']
+        self.working_directory = self.settings['working_directory']
+        input_file = self.settings['input_file']
         case_file_name = join(self.working_directory, input_file)
         with open(case_file_name, 'r') as case_file:
-            self.settings.update(json.load(case_file))  # TODO: inversed priority
+            self.settings.update(json.load(case_file))
 
         # settings
-        self.unsteady = self.settings.get("unsteady", True)
-        self.timestep_start = self.settings.get("timestep_start", 0)
+        self.unsteady = self.settings.get('unsteady', True)
+        self.timestep_start = self.settings.get('timestep_start', 0)
         self.save_restart = self.settings.get('save_restart', 0)  # eg to restart
 
-        l = self.settings["l"]  # length
-        d = self.settings["d"]  # diameter
+        l = self.settings['l']  # length
+        d = self.settings['d']  # diameter
         self.rreference = d / 2  # reference radius of cross section
-        self.rhof = self.settings["rhof"]  # fluid density
+        self.rhof = self.settings['rhof']  # fluid density
 
-        self.preference = self.settings.get("preference", 0)  # reference pressure
+        self.preference = self.settings.get('preference', 0)  # reference pressure
 
-        e = self.settings["e"]  # Young's modulus of structure
-        nu = self.settings["nu"]  # Poisson's ratio
-        self.h = self.settings["h"]  # thickness of structure
-        self.rhos = self.settings["rhos"]  # structure density
+        e = self.settings['e']  # Young's modulus of structure
+        nu = self.settings['nu']  # Poisson's ratio
+        self.h = self.settings['h']  # thickness of structure
+        self.rhos = self.settings['rhos']  # structure density
         self.cmk2 = (e * self.h) / (self.rhof * d)  # wave speed squared
         self.b1 = (self.h * e) / (1 - nu ** 2) * (self.h ** 2) / 12
         self.b2 = self.b1 * (2 * nu) / self.rreference ** 2
         self.b3 = (self.h * e) / (1 - nu ** 2) * 1 / self.rreference ** 2
 
-        self.m = self.settings["m"]  # number of segments
+        self.m = self.settings['m']  # number of segments
         self.dz = l / self.m  # segment length
-        axial_offset = self.settings.get("axial_offset", 0)  # start position along axis
+        axial_offset = self.settings.get('axial_offset', 0)  # start position along axis
         self.z = axial_offset + np.arange(self.dz / 2 - l / 2, l / 2, self.dz)  # data is stored in cell centers
 
         self.k = 0  # iteration
         self.n = self.timestep_start  # time step
         if self.unsteady:
-            self.dt = self.settings["delta_t"]  # time step size
-            self.time_discretization = self.settings.get("time_discretization", "backward euler").lower()
-            if self.time_discretization == "newmark":
-                self.gamma = self.settings["gamma"]  # Newmark parameter: gamma >= 1/2
-                self.beta = self.settings["beta"]  # Newmark parameter: beta >= 1/4 * (1/2 + gamma) ^ 2
+            self.dt = self.settings['delta_t']  # time step size
+            self.time_discretization = self.settings.get('time_discretization', 'backward euler').lower()
+            if self.time_discretization == 'newmark':
+                self.gamma = self.settings['gamma']  # Newmark parameter: gamma >= 1/2
+                self.beta = self.settings['beta']  # Newmark parameter: beta >= 1/4 * (1/2 + gamma) ^ 2
                 self.nm = True
                 if not self.gamma >= 0.5 or not self.beta >= 0.25 * (0.5 + self.gamma) ** 2:
-                    raise Exception("Inadequate Newmark parameteres")
-            elif self.time_discretization == "backward euler":
+                    raise Exception('Inadequate Newmark parameteres')
+            elif self.time_discretization == 'backward euler':
                 self.gamma = 1
                 self.beta = 1
                 self.nm = False  # used to set rnddot to zero
             else:
-                raise ValueError("Time discretization should be 'Newmark' or 'backward Euler'")
+                raise ValueError('Time discretization should be \"Newmark\" or \"backward Euler\"')
         else:
             # not used
             self.dt = 1  # Time step size default
@@ -106,17 +106,22 @@ class SolverWrapperTubeStructure(Component):
                              + 6.0 * self.b1 / self.dz ** 4
                              + 2.0 * self.b2 / self.dz ** 2 + self.b3)  # factor for conditioning Jacobian
 
-        # modelParts
+        # model parts
         self.model = Model()
-        self.model_part = self.model.create_model_part("wall", np.zeros(self.m), self.rreference * np.ones(self.m),
-                                                       self.z, np.arange(self.m))  # TODO not use hardcoded mp name
+        self.input_model_part_name = self.settings['interface_input'][0]['model_part']
+        self.output_model_part_name = self.settings['interface_output'][0]['model_part']
+        self.model_part = self.model.create_model_part(self.input_model_part_name, np.zeros(self.m),
+                                                       self.rreference * np.ones(self.m), self.z, np.arange(self.m))
+        if self.input_model_part_name != self.output_model_part_name:
+            self.model_part = self.model.create_model_part(self.output_model_part_name, np.zeros(self.m),
+                                                           self.rreference * np.ones(self.m), self.z, np.arange(self.m))
 
         # interfaces
-        self.interface_input = Interface(self.settings["interface_input"], self.model)
-        self.interface_input.set_variable_data("wall", "pressure", self.p.reshape(-1, 1))
-        self.interface_input.set_variable_data("wall", "traction", self.trac)
-        self.interface_output = Interface(self.settings["interface_output"], self.model)
-        self.interface_output.set_variable_data("wall", "displacement", self.disp)
+        self.interface_input = Interface(self.settings['interface_input'], self.model)
+        self.interface_input.set_variable_data(self.input_model_part_name, 'pressure', self.p.reshape(-1, 1))
+        self.interface_input.set_variable_data(self.input_model_part_name, 'traction', self.trac)
+        self.interface_output = Interface(self.settings['interface_output'], self.model)
+        self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
 
         # run time
         self.run_time = 0.0
@@ -142,7 +147,7 @@ class SolverWrapperTubeStructure(Component):
     def solve_solution_step(self, interface_input):
         # input
         self.interface_input = interface_input.copy()
-        self.p = interface_input.get_variable_data("wall", "pressure").flatten()
+        self.p = interface_input.get_variable_data(self.input_model_part_name, 'pressure').flatten()
 
         # solve system
         f = self.get_residual()
@@ -155,14 +160,14 @@ class SolverWrapperTubeStructure(Component):
 
         self.k += 1
         if self.debug:
-            file_name = self.working_directory + f"/Input_Pressure_Traction_TS{self.n}_IT{self.k}.txt"
+            file_name = self.working_directory + f'/Input_Pressure_Traction_TS{self.n}_IT{self.k}.txt'
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'x-traction':<22}"
                            f"\t{'y-traction':<22}\t{'z-traction':<22}\n")
                 for i in range(len(self.z)):
-                    file.write(f"{self.z[i]:<22}\t{self.p[i]:<22}\t{self.trac[i, 0]:<22}"
-                               f"\t{self.trac[i, 1]:<22}\t{self.trac[i, 2]:<22}\n")
-            file_name = self.working_directory + f"/output_Area_TS{self.n}_IT{self.k}.txt"
+                    file.write(f'{self.z[i]:<22}\t{self.p[i]:<22}\t{self.trac[i, 0]:<22}'
+                               f'\t{self.trac[i, 1]:<22}\t{self.trac[i, 2]:<22}\n')
+            file_name = self.working_directory + f'/output_Area_TS{self.n}_IT{self.k}.txt'
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
@@ -171,7 +176,7 @@ class SolverWrapperTubeStructure(Component):
         # output does not contain boundary conditions
         self.a = self.r[2:self.m + 2] ** 2 * np.pi
         self.disp[:, 1] = self.r[2:self.m + 2] - self.rreference
-        self.interface_output.set_variable_data("wall", "displacement", self.disp)
+        self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
         return self.interface_output
 
     def finalize_solution_step(self):
@@ -196,7 +201,7 @@ class SolverWrapperTubeStructure(Component):
                 except OSError:
                     pass
         if self.debug:
-            file_name = self.working_directory + f"/Area_TS{self.n}.txt"
+            file_name = self.working_directory + f'/Area_TS{self.n}.txt'
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):

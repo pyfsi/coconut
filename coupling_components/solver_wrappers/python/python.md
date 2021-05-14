@@ -117,7 +117,7 @@ parameter|type|description
 This structure solver calculates the deformation of the wall of a straight and flexible tube.
 The `type` for this solver wrapper is `solver_wrappers.python.ring_model_solver`.
 The tube is regarded as made up of independent rings and no inertia is taken into account.
-Therefore, there is no dependence on previous time steps and the parameter `timestep_start` is not used.
+Therefore, there is no dependence on previous time steps and the parameters `delta_t` and `timestep_start` are not used.
 The required input is the pressure on the tube wall.
 Traction is not taken into account, even though it is a required variable in `interface_input`. 
 The resulting output is the radial displacement.
