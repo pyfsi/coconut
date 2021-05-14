@@ -25,6 +25,8 @@ class CoupledSolverGaussSeidel(Component):
         self.timestep_start_global = self.settings['timestep_start']  # time step for global calculation (restart)
         self.timestep_start_current = self.settings['timestep_start']  # time step start for this calculation (restart)
         self.restart = self.timestep_start_current != 0  # true if restart
+        self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
+        self.settings['save_restart'] = self.save_restart  # in order to pass on default value
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
 
@@ -36,7 +38,8 @@ class CoupledSolverGaussSeidel(Component):
         for index in range(2):
             parameters = self.parameters['solver_wrappers'][index]
             # add timestep_start and delta_t to solver_wrapper settings
-            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t'])
+            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t',
+                                                                             'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
             if parameters['type'] == 'solver_wrappers.mapped':
@@ -58,7 +61,6 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = []
 
         # restart
-        self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         if self.restart:
             self.restart_case = self.settings.get('restart_case', self.case_name)  # case to restart from
             self.restart_data = self.load_restart_data()
@@ -188,11 +190,11 @@ class CoupledSolverGaussSeidel(Component):
             self.add_restart_data(output)
             with open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb') as file:
                 pickle.dump(output, file)
-        if self.save_restart < 0:
-            try:
-                os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
-            except OSError:
-                pass
+            if self.save_restart < 0:
+                try:
+                    os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
+                except OSError:
+                    pass
 
         # update save results
         self.iterations.append(self.iteration)

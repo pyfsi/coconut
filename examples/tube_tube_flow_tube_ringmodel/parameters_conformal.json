@@ -9,6 +9,7 @@
       "delta_t": 0.01,
       "omega": 0.05,
       "save_results": true,
+      "save_restart": 0,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
