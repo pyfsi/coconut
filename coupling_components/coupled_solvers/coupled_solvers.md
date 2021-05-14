@@ -306,7 +306,7 @@ key|value type|description
 `delta_t`|float|Equals the used time step size.
 <nobr>`timestep_start`</nobr>|int|Equals the used start time step.
 `case_name`|string|Name of the case.
-`info`|string|Additional info, such as date and restart history.
+`info`|string|Additional info, such as date, restart history and hostname of machine on which simulation is run.
 
 In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.
 

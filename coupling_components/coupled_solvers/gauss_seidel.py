@@ -7,6 +7,7 @@ import time
 import pickle
 import os
 from datetime import datetime
+import socket
 
 
 def create(parameters):
@@ -114,7 +115,7 @@ class CoupledSolverGaussSeidel(Component):
                 results_data = self.load_results_data()
             if results_data is None:  # no results file to append to
                 self.info = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} : ' \
-                    f'start calculation of time step {self.timestep_start_current}\n'
+                    f'start calculation of time step {self.timestep_start_current} on {socket.gethostname()}\n'
                 if self.debug:
                     self.complete_solution_x = np.empty((self.x.get_interface_data().shape[0], 0))
                     self.complete_solution_y = np.empty((self.y.get_interface_data().shape[0], 0))
@@ -281,7 +282,7 @@ class CoupledSolverGaussSeidel(Component):
         self.run_time_previous = results_data['run_time']
         self.residual = results_data['residual'][:self.timestep_start_current - self.timestep_start_global]
         self.info = results_data.get('info', '') + '' + f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} :' \
-            f' restart calculation from time step {self.timestep_start_current}\n'
+            f' restart calculation from time step {self.timestep_start_current} on {socket.gethostname()}\n'
         if self.debug:
             tools.print_info(f'Restart in debug mode may not append results to pickle file correctly', layout='warning')
             self.complete_solution_r = results_data['solution_r']
