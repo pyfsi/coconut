@@ -1,14 +1,14 @@
 from coconut import data_structure
 from coconut.data_structure.interface import Interface
-from coconut.tools import create_instance
+from coconut.tools import create_instance, cd
+from coconut.tests.coupled_solvers import coupled_solver
 
 import unittest
-import os
-import json
 import numpy as np
 
 
-class TestCoupledSolverAitken(unittest.TestCase):
+class TestCoupledSolverAitken(coupled_solver.TestCoupledSolver):
+    parameter_file_name = 'test_aitken.json'
 
     def test_coupled_solver_aitken(self):
         m = 10
@@ -34,16 +34,12 @@ class TestCoupledSolverAitken(unittest.TestCase):
         
         # create interface
         interface = Interface(interface_settings, model)
-        
-        # read settings
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_aitken.json')
-        with open(parameter_file_name, 'r') as parameter_file:
-            settings = json.load(parameter_file)
 
-        omega_max = settings["settings"]["omega_max"]
+        omega_max = self.parameters['settings']['omega_max']
 
-        coupled_solver = create_instance(settings)
-        coupled_solver.initialize()
+        with cd(self.working_dir):
+            coupled_solver = create_instance(self.parameters)
+            coupled_solver.initialize()
         coupled_solver.initialize_solution_step()
 
         interface_r = interface.copy()
