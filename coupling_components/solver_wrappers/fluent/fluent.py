@@ -24,6 +24,7 @@ class SolverWrapperFluent(Component):
     version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
 
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -60,12 +61,14 @@ class SolverWrapperFluent(Component):
         self.interface_input = None
         self.interface_output = None
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 

@@ -16,6 +16,7 @@ def create(parameters):
 
 
 class SolverWrapperOpenFOAM_41(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -208,9 +209,11 @@ class SolverWrapperOpenFOAM_41(Component):
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_output = Interface(self.settings["interface_output"], self.model)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 

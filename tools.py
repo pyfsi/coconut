@@ -132,6 +132,18 @@ def quick_timer(name=None, t=0, n=0, ms=False):
     print(s)
 
 
+# initialization time measuring function
+def time_initialize(initialize):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'init_time'):
+            self.init_time = 0.0
+        start_time = time.time()
+        initialize(*args)
+        self.init_time += time.time() - start_time
+    return wrapper
+
+
 # run time measuring function
 def time_solve_solution_step(solve_solution_step):
     def wrapper(*args):
@@ -142,7 +154,6 @@ def time_solve_solution_step(solve_solution_step):
         interface_output = solve_solution_step(*args)
         self.run_time += time.time() - start_time
         return interface_output
-
     return wrapper
 
 

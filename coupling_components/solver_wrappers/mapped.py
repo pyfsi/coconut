@@ -8,6 +8,7 @@ def create(parameters):
 
 
 class SolverWrapperMapped(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -27,9 +28,11 @@ class SolverWrapperMapped(Component):
         self.interface_input_to = None
         self.interface_output_to = None
 
-        # run time
+        # time
+        self.init_time = 0.0
         self.run_time = 0.0
 
+    @tools.time_initialize
     def initialize(self, interface_input_from, interface_output_to):
         super().initialize()
 

@@ -20,6 +20,7 @@ class CoupledSolverGaussSeidel(Component):
 
         self.parameters = parameters
         self.settings = parameters['settings']
+        self.init_time = time.time()
 
         # read parameters
         self.case_name = self.settings.get('case_name', 'case')  # case name
@@ -96,6 +97,7 @@ class CoupledSolverGaussSeidel(Component):
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
         self.start_time = time.time()
+        self.init_time = self.start_time - self.init_time
 
         title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
         tools.print_info(title)
@@ -290,21 +292,41 @@ class CoupledSolverGaussSeidel(Component):
         return results_data
 
     def print_summary(self):
-        solver_run_times = []
+        solver_init_time_percs = []
+        solver_run_time_percs = []
         pre = '║' + ' │' * self.solver_level
         out = ''
         if self.solver_level == 0:
-            out += f'{pre}Elapsed time: {self.run_time:0.3f}s\n'
-        out += f'{pre}Percentage of total calculation time:\n'
-        for solver in self.solver_wrappers:
-            solver_run_times.append(solver.run_time / self.run_time * 100)
-            out += f'{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n'
-            if solver.__class__.__name__ == 'SolverWrapperMapped':
-                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: ' \
-                       f'{solver.solver_wrapper.run_time / self.run_time * 100:0.1f}%\n'
+            out += f'{pre}Total calculation time{" (after restart)" if self.restart else ""}:' \
+                   f' {self.init_time + self.run_time:.3f}s\n'
+        # initialization time
         if self.solver_level == 0:
-            out += f'{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n'
-        out += f'{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}'
+            out += f'{pre}Initialization time: {self.init_time:0.3f}s\n'
+        out += f'{pre}Distribution of initialization time:\n'
+        for solver in self.solver_wrappers:
+            solver_init_time_percs.append(solver.init_time / self.init_time * 100)
+            out += f'{pre}\t{solver.__class__.__name__}: {solver.init_time:.0f}s ({solver_init_time_percs[-1]:0.1f}%)\n'
+            if solver.__class__.__name__ == 'SolverWrapperMapped':
+                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.init_time:.0f}s' \
+                       f' ({solver.solver_wrapper.init_time / self.init_time * 100:0.1f}%)\n'
+        if self.solver_level == 0:
+            out += f'{pre}\tOther: {self.init_time - sum([s.init_time for s in self.solver_wrappers]):.0f}s' \
+                   f' ({100 - sum(solver_init_time_percs):0.1f}%)\n'
+        # run time
+        if self.solver_level == 0:
+            out += f'{pre}Run time{" (after restart)" if self.restart else ""}: {self.run_time:0.3f}s\n'
+        out += f'{pre}Distribution of run time:\n'
+        for solver in self.solver_wrappers:
+            solver_run_time_percs.append(solver.run_time / self.run_time * 100)
+            out += f'{pre}\t{solver.__class__.__name__}: {solver.run_time:.0f}s ({solver_run_time_percs[-1]:0.1f}%)\n'
+            if solver.__class__.__name__ == 'SolverWrapperMapped':
+                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.run_time:.0f}s' \
+                       f' ({solver.solver_wrapper.run_time / self.run_time * 100:0.1f}%)\n'
+        if self.solver_level == 0:
+            out += f'{pre}\tCoupling: {self.run_time - sum([s.run_time for s in self.solver_wrappers]):.0f}s' \
+                   f' ({100 - sum(solver_run_time_percs):0.1f}%)\n'
+        out += f'{pre}Average number of iterations per time step' \
+               f'{" (including before restart)" if self.restart else ""}: {np.array(self.iterations).mean():0.2f}'
         if self.solver_level == 0:
             out += '\n╚' + 79 * '═'
         tools.print_info(out)

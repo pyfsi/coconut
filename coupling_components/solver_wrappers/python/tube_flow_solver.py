@@ -18,6 +18,7 @@ class SolverWrapperTubeFlow(Component):
     al = 4  # number of terms below diagonal in matrix
     au = 4  # number of terms above diagonal in matrix
 
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -140,13 +141,15 @@ class SolverWrapperTubeFlow(Component):
         self.interface_output.set_variable_data(self.output_model_part_name, 'pressure', self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data(self.output_model_part_name, 'traction', self.trac)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save input and output of each iteration of every time step
         self.output_solution_step()
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 

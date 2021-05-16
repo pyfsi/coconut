@@ -70,7 +70,8 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
         self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
         # debug
