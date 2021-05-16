@@ -210,7 +210,8 @@ class CoupledSolverGaussSeidel(Component):
         super().output_solution_step()
 
         self.run_time = time.time() - self.start_time
-        if self.save_results != 0 and self.time_step % self.save_results == 0:
+        if self.save_results != 0 and (self.time_step % self.save_results == 0 or
+                                       (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
                       'run_time': self.run_time + self.run_time_previous, 'residual': self.residual,

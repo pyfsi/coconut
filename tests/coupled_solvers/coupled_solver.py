@@ -88,7 +88,6 @@ class TestCoupledSolver(unittest.TestCase):
 
             # adapt parameters, create coupled solver for restart
             self.parameters['settings']['save_restart'] = 2
-            self.parameters['settings']['save_results'] = 2
             self.parameters['settings']['case_name'] = 'restart'
             coupled_solver = create_instance(self.parameters)
             coupled_solver.initialize()
