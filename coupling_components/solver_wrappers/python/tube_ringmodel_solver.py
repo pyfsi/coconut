@@ -12,6 +12,7 @@ def create(parameters):
 
 
 class SolverWrapperTubeRingmodel(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -78,6 +79,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.debug = False  # set on True to save input and output of each iteration of every time step
         self.output_solution_step()
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 
