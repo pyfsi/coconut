@@ -1,6 +1,4 @@
-from coconut import data_structure
 from coconut.tools import create_instance
-from coconut.data_structure.interface import Interface
 
 import numpy as np
 import os

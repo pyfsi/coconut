@@ -1,12 +1,8 @@
-from coconut import data_structure
-from coconut.tools import create_instance
-from coconut.tools import get_solver_env
+from coconut.tools import create_instance, get_solver_env
 
 import unittest
 import numpy as np
-from copy import deepcopy
 import os
-import math
 import multiprocessing
 import json
 from subprocess import check_call, DEVNULL
@@ -33,7 +29,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.par_solver = parameters['solver_wrappers'][0]
         self.mp_name_in = self.par_solver['settings']['interface_input'][0]['model_part']
         self.mp_name_out = self.par_solver['settings']['interface_output'][0]['model_part']
-
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
@@ -145,7 +140,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         max_value = np.max(np.abs(ref_output))
         for output in output_list[1:]:
             np.testing.assert_allclose(output / max_value, ref_output / max_value, atol=1e-10, rtol=0)
-
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
-from coconut.tools import create_instance
-from coconut.tools import get_solver_env
+from coconut.tools import create_instance, get_solver_env
 
 import unittest
 import numpy as np
