@@ -13,16 +13,16 @@ class SolverWrapperMapped(Component):
         super().__init__()
 
         self.parameters = parameters
-        self.settings = parameters["settings"]
+        self.settings = parameters['settings']
 
         # create solver
-        tools.pass_on_parameters(self.settings, self.settings["solver_wrapper"]["settings"],
-                                 ["timestep_start", "delta_t", "save_restart"])
-        self.solver_wrapper = create_instance(self.settings["solver_wrapper"])
+        tools.pass_on_parameters(self.settings, self.settings['solver_wrapper']['settings'],
+                                 ['timestep_start', 'delta_t', 'save_restart'])
+        self.solver_wrapper = create_instance(self.settings['solver_wrapper'])
 
         # create mappers
-        self.mapper_interface_input = create_instance(self.settings["mapper_interface_input"])
-        self.mapper_interface_output = create_instance(self.settings["mapper_interface_output"])
+        self.mapper_interface_input = create_instance(self.settings['mapper_interface_input'])
+        self.mapper_interface_output = create_instance(self.settings['mapper_interface_output'])
 
         self.interface_input_from = None
         self.interface_input_to = None
@@ -90,10 +90,10 @@ class SolverWrapperMapped(Component):
         return self.interface_output_to
 
     def print_components_info(self, pre):
-        tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following solver wrapper:")
+        tools.print_info(pre, 'The component ', self.__class__.__name__, ' maps the following solver wrapper:')
         pre = tools.update_pre(pre)
         self.solver_wrapper.print_components_info(pre + '├─')
-        tools.print_info(pre, '├─', "Input mapper:")
+        tools.print_info(pre, '├─', 'Input mapper:')
         self.mapper_interface_input.print_components_info(pre + '│ └─')
-        tools.print_info(pre, '└─', "Output mapper:")
+        tools.print_info(pre, '└─', 'Output mapper:')
         self.mapper_interface_output.print_components_info(pre + '  └─')
