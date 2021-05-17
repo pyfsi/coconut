@@ -11,6 +11,7 @@ class TestModelPart(unittest.TestCase):
         self.incorrect_size = 2
         self.name = 'mp1'
         self.ids = np.arange(self.correct_size)
+        np.random.shuffle(self.ids)
         self.x0 = np.random.rand(self.correct_size)
         self.y0 = np.random.rand(self.correct_size)
         self.z0 = np.random.rand(self.correct_size)
@@ -59,6 +60,28 @@ class TestModelPart(unittest.TestCase):
         with self.assertRaises(AttributeError):
             mp.id = np.arange(self.correct_size)
 
+    def test_eq(self):
+        mp = ModelPart(self.name, self.x0, self.y0, self.z0, self.ids)
+        name_2 = 'mp2'
+        x0_2 = self.x0.copy()
+        x0_2[np.random.randint(self.correct_size)] = np.random.rand()
+        y0_2 = self.y0.copy()
+        y0_2[np.random.randint(self.correct_size)] = np.random.rand()
+        z0_2 = self.z0.copy()
+        z0_2[np.random.randint(self.correct_size)] = np.random.rand()
+        ids_2 = self.ids.copy()
+        ids_2[np.random.randint(self.correct_size)] = np.random.randint(100)
+
+        args = (self.name, self.x0, self.y0, self.z0, self.ids)
+        mp2 = ModelPart(*args)
+        self.assertEqual(mp, mp2)
+
+        changed_arguments = [name_2, x0_2, y0_2, z0_2, ids_2]
+        for i in range(5):
+            args_2 = list(args)
+            args_2[i] = changed_arguments[i]
+            mp2 = ModelPart(*tuple(args_2))
+            self.assertNotEqual(mp, mp2)
 
 if __name__ == '__main__':
     unittest.main()

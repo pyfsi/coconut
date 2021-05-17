@@ -18,7 +18,7 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
 
         # if running from this folder
         if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            parameters_solver['settings'].SetString('working_directory', 'test_tube_ringmodel/CSM')
+            parameters_solver['settings']['working_directory'] = 'test_tube_ringmodel/CSM'
 
         # setup case
         dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'test_tube_ringmodel')
@@ -26,7 +26,7 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
         p.wait()
 
         def get_dp(x):
-            return 20 * np.sin(2 * np.pi / 0.05 * x)
+            return 1500 * np.sin(2 * np.pi / 0.05 * x)
 
         variable = 'pressure'
         model_part_name = 'wall'
@@ -44,21 +44,21 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
             # change solver_1 to end pressure and solve
             interface_input = solver_1.get_interface_input()
             model_part = interface_input.get_model_part(model_part_name)
-            data = [[get_dp(model_part.x0[i])] for i in range(model_part.size)]
+            data = [[get_dp(model_part.z0[i])] for i in range(model_part.size)]
             interface_input.set_variable_data(model_part_name, variable, np.array(data))
             output1_end = solver_1.solve_solution_step(interface_input).copy()
 
             # change solver_2 to intermediate pressure and solve
             interface_input = solver_2.get_interface_input()
             model_part = interface_input.get_model_part(model_part_name)
-            data = [[0.5 * get_dp(model_part.x0[i])] for i in range(model_part.size)]
+            data = [[0.5 * get_dp(model_part.z0[i])] for i in range(model_part.size)]
             interface_input.set_variable_data(model_part_name, variable, np.array(data))
             solver_2.solve_solution_step(interface_input).copy()
 
             # change solver_2 to end position and solve
             interface_input = solver_2.get_interface_input()
             model_part = interface_input.get_model_part(model_part_name)
-            data = [[get_dp(model_part.x0[i])] for i in range(model_part.size)]
+            data = [[get_dp(model_part.z0[i])] for i in range(model_part.size)]
             interface_input.set_variable_data(model_part_name, variable, np.array(data))
             output2_end = solver_2.solve_solution_step(interface_input).copy()
 
@@ -70,7 +70,7 @@ class TestSolverWrapperTubeRingmodelSolver(unittest.TestCase):
             a1 = output1_end.get_interface_data()
             a2 = output2_end.get_interface_data()
 
-            np.testing.assert_allclose(a1, a2, atol=1e-12)
+            np.testing.assert_allclose(a1, a2, atol=1e-15)
 
 
 if __name__ == '__main__':

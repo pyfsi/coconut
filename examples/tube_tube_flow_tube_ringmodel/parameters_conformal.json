@@ -45,16 +45,24 @@
         "type": "solver_wrappers.python.tube_flow_solver",
         "settings": {
           "working_directory": "CFD",
-          "input_file": "solver_parameters.json",
-          "interface_input": {
-            "wall": "DISPLACEMENT"
-          },
-          "interface_output": {
-            "wall": [
-              "PRESSURE",
-              "TRACTION"
-            ]
-          }
+          "input_file": "solver_parameters_velocity.json",
+          "interface_input": [
+            {
+              "model_part": "wall",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "wall",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ]
         }
       },
       {
@@ -62,15 +70,23 @@
         "settings": {
           "working_directory": "CSM",
           "input_file": "solver_parameters.json",
-          "interface_input": {
-            "wall": [
-              "PRESSURE",
-              "TRACTION"
-            ]
-          },
-          "interface_output": {
-            "wall": "DISPLACEMENT"
-          }
+          "interface_input": [
+            {
+              "model_part": "wall",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "wall",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ]
         }
       }
     ]

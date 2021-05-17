@@ -1,4 +1,5 @@
 from coconut.tools import create_instance
+from coconut.tools import get_solver_env
 
 import unittest
 import os
@@ -23,7 +24,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
     def setUp(self):
 
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_3d', 'test_tube_3d_parameters.json')
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_3d', 'parameters.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
@@ -37,6 +38,10 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
         self.folder_path = os.path.join(os.getcwd(), self.par_solver['settings']['working_directory'])
         self.delta_t = self.par_solver['settings']['delta_t']
+        self.t_prec = self.par_solver['settings']['time_precision']
+
+        solver_name = self.par_solver['type'].replace('solver_wrappers.', '')
+        self.env = get_solver_env(solver_name, self.folder_path)
         self.clean_case()
         self.set_up_case()
 
@@ -45,10 +50,10 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
     def clean_case(self):
 
-        check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True)
+        check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
 
     def set_up_case(self):
-        check_call('sh ' + os.path.join(self.folder_path, 'Allrun'), shell=True)
+        check_call('sh ' + os.path.join(self.folder_path, 'Allrun'), shell=True, env=self.env)
 
     def set_cores(self, cores):
         if cores == 1:
@@ -77,7 +82,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         # create two solvers with different flow solver partitioning
         x0, y0, z0, ids = [], [], [], []
         for cores in [1, multiprocessing.cpu_count()]:
-            self.set_cores(cores)
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
             solver.initialize()
@@ -122,7 +126,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             solver.finalize()
 
             if cores > 1:
-                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL)
+                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL, env=self.env)
 
             _, node_coords = of_io.get_boundary_points(solver.working_directory,
                                                        f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
@@ -237,7 +241,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         interface_y_1 = solver.get_interface_output()
 
         if cores > 1:
-            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL)
+            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL, env=self.env)
         _, coords_1 = of_io.get_boundary_points(solver.working_directory,
                                              f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}',
                                              'mantle')
@@ -262,7 +266,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         if cores > 1:
-            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL)
+            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL, env=self.env)
         _, coords_2 = of_io.get_boundary_points(solver.working_directory,
                                              f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}',
                                              'mantle')

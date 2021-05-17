@@ -71,7 +71,6 @@
           "cores": 4,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "hybrid_initialization": false,
           "flow_iterations": 200,
           "save_iterations": 1
         }
@@ -80,19 +79,18 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.614",
+            "type": "solver_wrappers.abaqus.v614",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
               "arraysize": 1000000.0,
-              "surfaces": 1,
-              "ramp": true,
               "subcycling": true,
-              "minInc": 0.0,
-              "initialInc": 1.0,
-              "maxNumInc": 500,
-              "maxInc": 1.0,
+              "min_inc": 0.0001,
+              "initial_inc": 0.01,
+              "max_num_inc": 1000,
+              "max_inc": 1.0,
+              "ramp": true,
               "surfaceIDs": [
                 "BEAMINSIDEMOVING"
               ],
@@ -114,8 +112,7 @@
                 }
               ],
               "mp_mode": "THREADS",
-              "input_file": "Base.inp",
-              "save_iterations": 1
+              "input_file": "case_tube2d.inp"
             }
           },
           "mapper_interface_input": {

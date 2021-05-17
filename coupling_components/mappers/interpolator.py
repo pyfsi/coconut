@@ -9,7 +9,7 @@ import numpy as np
 def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
-# TODO: warnings now crash the code... this should not happen
+
 
 class MapperInterpolator(Component):
     def __init__(self, parameters):
@@ -17,7 +17,6 @@ class MapperInterpolator(Component):
 
         # store settings
         self.settings = parameters['settings']
-        self.interpolator = True
         self.balanced_tree = self.settings.get('balanced_tree', False)
         self.n_nearest = 0  # must be set in sub-class!
 
@@ -35,10 +34,9 @@ class MapperInterpolator(Component):
             raise TypeError('Directions must be a list')
         for direction in self.settings['directions']:
             if direction.lower() not in ['x', 'y', 'z']:
-                raise ValueError(f'"{direction}" is not a valid direction.')
+                raise ValueError(f'"{direction}" is not a valid direction')
             if direction.lower() != direction:
-                # TODO: I would later remove this and only accept lowercase directions
-                tools.print_info('Warning: Interpolator directions must be lowercase', layout='warning')
+                raise ValueError(f'"{direction}" must be lowercase')
             self.directions.append(direction.lower() + '0')
             if len(self.directions) > 3:
                 raise ValueError(f'Too many directions given')
@@ -70,9 +68,7 @@ class MapperInterpolator(Component):
             raise ValueError(f'Not enough from-points: {self.n_from} < {self.n_nearest}')
 
         # check bounding boxes
-        direction_dict = {'x0':0, 'y0':1, 'z0':2}
-        axis = sorted([direction_dict[direction] for direction in self.directions])
-        tools.check_bounding_box(model_part_from, model_part_to, axis=axis)
+        tools.check_bounding_box(model_part_from, model_part_to)
 
         # apply scaling to coordinates
         if self.scaling is not None:

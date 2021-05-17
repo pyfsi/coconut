@@ -3,6 +3,7 @@ from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
+from coconut.tools import get_solver_env
 
 from subprocess import check_call
 import numpy as np
@@ -24,11 +25,12 @@ class SolverWrapperOpenFOAM_41(Component):
         # Settings
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
+        self.env = get_solver_env(__name__, self.working_directory)
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
-        self.start_time = self.settings['timestep_start']*self.delta_t
+        self.start_time = self.settings['timestep_start'] * self.delta_t
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
         self.version = '4.1'
@@ -64,7 +66,8 @@ class SolverWrapperOpenFOAM_41(Component):
         self.model = data_structure.Model()
 
         # writeCellcentres writes cellcentres in internal field and face centres in boundaryField
-        check_call(f'writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True)
+        check_call(f'writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True,
+                   env=self.env)
         boundary_filename = os.path.join(self.working_directory, 'constant/polyMesh/boundary')
 
         for boundary in self.boundary_names:
@@ -139,7 +142,7 @@ class SolverWrapperOpenFOAM_41(Component):
             if self.start_time == 0:
                 check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
                            cwd=self.working_directory,
-                           shell=True)
+                           shell=True, env=self.env)
 
             for boundary in self.boundary_names:
                 mp_output = self.model.get_model_part(f'{boundary}_output')
@@ -162,13 +165,13 @@ class SolverWrapperOpenFOAM_41(Component):
                     print(f'nNodes: {mp_output.size}')
                     raise ValueError('Number of face indices in sequence does not correspond to number of faces')
 
-        # Don't forget to start OpenFOAM-loop!
+        # Starting the OpenFOAM infinite loop for coupling!
         if not self.settings['parallel']:
             cmd = self.application + '&> log.' + self.application
         else:
             cmd = 'mpirun -np ' + str(self.cores) + ' ' + self.application + ' -parallel &> log.' + self.application
 
-        self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True)
+        self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -254,7 +257,8 @@ class SolverWrapperOpenFOAM_41(Component):
                 pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
                                              self.cur_timestamp, f'p_patch_{boundary}.raw')
                 wss_iter_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                                 self.cur_timestamp, f'wallShearStress_patch_{boundary}_{self.iteration}.raw')
+                                                 self.cur_timestamp,
+                                                 f'wallShearStress_patch_{boundary}_{self.iteration}.raw')
                 pres_iter_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
                                                   self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
                 cmd = f'cp {wss_filepath} {wss_iter_filepath} && cp {pres_filepath} {pres_iter_filepath}'
@@ -321,6 +325,12 @@ class SolverWrapperOpenFOAM_41(Component):
                 os.system(f'rm -rf {pres_file}')
 
     def read_node_output(self):
+        """
+        reads the pressure and wall shear stress from the <case directory>/postProcessing for serial and parallel. In
+        case of parallel, it uses mp.sequence (using faceProcAddressing) to map the values to the face centres.
+
+        :return:
+        """
 
         # Default value is 1.0 for compressible case. When the solver is incompressible, the pressure and shear stress are
         # kinematic; therefore multiply with the fluid density.
@@ -369,8 +379,13 @@ class SolverWrapperOpenFOAM_41(Component):
         f.close()
 
     def write_node_input(self):
-        # The displacement of the FSI interface is passed through the file 'pointDisplacement_Next'
-        # This function will prepare that file in a 'serial format' and then decompose it for parallel operation
+        """
+        creates pointDisplacementNext for supplying the displacement field in the FSI coupling. This file is created
+        from 0/pointDisplacement. The boundary field for boundaries participating in the FSI coupling is modified to
+        supply the boundary displacement field from structural solver. If the OpenFOAM solver is run in parallel,
+        the field is subsequently decomposed using the command: decomposePar.
+       :return:
+       """
 
         pointdisp_filename_ref = os.path.join(self.working_directory, '0', 'pointDisplacement')
 
@@ -391,7 +406,7 @@ class SolverWrapperOpenFOAM_41(Component):
 
         if self.settings['parallel']:
             check_call(f'decomposePar -fields -time {self.prev_timestamp} &> log.decomposePar;',
-                       cwd=self.working_directory, shell=True)
+                       cwd=self.working_directory, shell=True, env=self.env)
 
     def check_output_file(self, filename, nfaces):
         counter = 0
@@ -440,7 +455,7 @@ class SolverWrapperOpenFOAM_41(Component):
                 os.remove(file)
 
     def check_software(self):
-        if os.system(self.application + ' -help &> checkSoftware') != 0:
+        if check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
             raise RuntimeError(f'OpenFOAM not loaded properly. You should perform the following steps:\n'
                                f'-\tLoad the module for OpenFOAM-{self.version},\n'
                                f'-\tSource $FOAM_BASH,\n'
@@ -457,6 +472,13 @@ class SolverWrapperOpenFOAM_41(Component):
                 f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{versionNr[:-1]} of OpenFOAM is loaded')
 
     def check_interfaces(self):
+        """
+        checks the dictionaries from 'interface_input' and 'interface_output' in parameters.json file. The model part
+        name must be the concatenation of an entry from `boundary_names` and the string `_input`, for 'interface_input'
+        and for 'interface_output' it must be the concatenation of an entry from `boundary_names` and the string
+        `_output`.
+        :return:
+        """
         input_interface_model_parts = [param['model_part'] for param in self.settings['interface_input']]
         output_interface_model_parts = [param['model_part'] for param in self.settings['interface_output']]
         boundary_names = self.settings['boundary_names']
@@ -475,6 +497,11 @@ class SolverWrapperOpenFOAM_41(Component):
                     f'have corresponding <boundary>_output in "interface_output" list.')
 
     def read_modify_controldict(self):
+        """
+        reads the controlDict file in the case-directory and modifies some entries required by the coconut_pimpleFoam.
+        The values of these entries are taken from paramters.json file.
+        :return:
+        """
 
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
@@ -482,11 +509,13 @@ class SolverWrapperOpenFOAM_41(Component):
             self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
             time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
             self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
+
             if not time_format == 'fixed':
                 msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
                 tools.print_info(msg, layout='warning')
                 control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
                                       control_dict)
+            write_format = of_io.get_string(input_string=control_dict, keyword='writeFormat')
 
             control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
                                   control_dict)
@@ -576,6 +605,12 @@ class SolverWrapperOpenFOAM_41(Component):
             f.write(header.strip(sep) + '\n')
 
     def write_of_residuals(self):
+        """
+        it reads the log file generated by coconut_pimpleFoam solver and writes the last initial residual of the fields
+        in the pimple iterations, for every coupling iteration. The fields should be given in the parameters.json file
+        with the key-'residual_variables' and values-list(OpenFOAM variables), e.g. 'residual_variables': ['U', 'p']
+        :return:
+        """
         log_filepath = os.path.join(self.working_directory, f'log.{self.application}')
         if os.path.isfile(log_filepath):
             with open(log_filepath, 'r') as f:

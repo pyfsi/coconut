@@ -18,12 +18,12 @@ test_cases = (
     # TestSolverWrapperFluent2019R2Tube2D, TestSolverWrapperFluent2019R2Tube2D,
     # TestSolverWrapperFluent2019R3Tube2D, TestSolverWrapperFluent2019R3Tube2D,
     # TestSolverWrapperFluent2020R1Tube2D, TestSolverWrapperFluent2020R1Tube3D,
-    # TestSolverWrapperOpenFoam41,
-    # TestSolverWrapperKratosStructure60,
-    TestSolverWrapperCombined,
-    TestSolverWrapperTubeFlowSolver,
-    TestSolverWrapperTubeRingmodelSolver,
-    TestSolverWrapperTubeStructureSolver
+    TestSolverWrapperOpenFoam41,
+    TestSolverWrapperKratosStructure60,
+    # TestSolverWrapperCombined,
+    # TestSolverWrapperTubeFlowSolver,
+    # TestSolverWrapperTubeRingmodelSolver,
+    # TestSolverWrapperTubeStructureSolver
 
 )
 

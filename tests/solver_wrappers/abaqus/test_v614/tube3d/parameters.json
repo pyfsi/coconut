@@ -1,11 +1,10 @@
 {
-  "type": "solver_wrappers.abaqus.614",
+  "type": "solver_wrappers.abaqus.v614",
   "settings": {
     "working_directory": "solver_wrappers/abaqus/test_v614/tube3d/CSM",
     "cores": 1,
     "dimensions": 3,
     "arraysize": 10e5,
-    "surfaces": 1,
     "delta_t": 1e-3,
     "timestep_start": 0,
     "surfaceIDs": [
@@ -29,7 +28,6 @@
       }
     ],
     "mp_mode": "THREADS",
-    "input_file": "Base.inp",
-    "save_iterations": 1
+    "input_file": "case_tube3d.inp"
   }
 }

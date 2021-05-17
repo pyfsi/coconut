@@ -29,9 +29,8 @@ class TestMapperInterpolator(unittest.TestCase):
         mapper = create_instance(self.parameters)
         self.assertListEqual(mapper.directions, ['z0', 'y0', 'x0'])
 
-        # TODO: add this again, after all capitals have been removed
-        # self.parameters['settings'].SetArray('directions', ['Z'])
-        # self.assertRaises(ValueError, create_instance, self.parameters)
+        self.parameters['settings']['directions'] = ['Z']
+        self.assertRaises(ValueError, create_instance, self.parameters)
 
         self.parameters['settings']['directions'] = ['z0']
         self.assertRaises(ValueError, create_instance, self.parameters)

@@ -24,21 +24,25 @@ class SolverWrapperFluent2019R1(Component):
 
         # set parameters
         self.set_fluent_version()
+        name = f'fluent.v{self.version}'
         self.settings = parameters['settings']
-        self.check_software()
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
+        self.env = tools.get_solver_env(name, self.dir_cfd)
+        self.check_software()
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.cores = self.settings['cores']
         if self.cores < 1 or self.cores > multiprocessing.cpu_count():
             self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
         self.case_file = self.settings['case_file']
+        self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
             raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
+        elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
+            raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
-        self.hybrid_initialization = self.settings['hybrid_initialization']
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -58,16 +62,12 @@ class SolverWrapperFluent2019R1(Component):
         unsteady = '#f'
         if self.unsteady:
             unsteady = '#t'
-        hybrid_initialization = '#f'
-        if self.hybrid_initialization:
-            hybrid_initialization = '#t'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
-                    line = line.replace('|HYBRID_INITIALIZATION|', hybrid_initialization)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
@@ -93,7 +93,7 @@ class SolverWrapperFluent2019R1(Component):
             cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'  # TODO: does log work well?
             # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'  # TODO: specify what this option does?
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
-                                               shell=True, cwd=self.dir_cfd)
+                                               shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from report.sum
         self.wait_message('case_info_exported')
@@ -140,8 +140,9 @@ class SolverWrapperFluent2019R1(Component):
                 file.write(line + '\n')
         self.send_message('thread_ids_written_to_file')
 
-        # import node and face information (use old files on restart!)
-        self.wait_message('nodes_and_faces_stored')  # TODO: check what happens in journal
+        # import node and face information if no restart
+        if self.timestep_start == 0:
+            self.wait_message('nodes_and_faces_stored')
 
         # create Model
         self.model = data_structure.Model()
@@ -250,9 +251,9 @@ class SolverWrapperFluent2019R1(Component):
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 thread_id = self.model_part_thread_ids[mp_name]
-                src = f"nodes_update_timestep{self.timestep}_thread{thread_id}.dat"
-                dst = f"nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat"
-                cmd = f"cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}"
+                src = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                dst = f'nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
         # let Fluent run, wait for data
@@ -274,12 +275,12 @@ class SolverWrapperFluent2019R1(Component):
             # copy output data for debugging
             if self.debug:  # TODO: Iter --> iter everywhere?
                 dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
-                cmd = f"cp {file_name} {join(self.dir_cfd, dst)}"
+                cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:,:-1 - self.mnpf]
+            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
             pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
@@ -293,7 +294,7 @@ class SolverWrapperFluent2019R1(Component):
             model_part = self.model.get_model_part(mp_name)
             if ids.size != model_part.size:
                 raise ValueError('size of data does not match size of ModelPart')
-            if not (ids == model_part.id).all():
+            if not np.all(ids == model_part.id):
                 raise ValueError('IDs of data do not match ModelPart IDs')
 
             self.interface_output.set_variable_data(mp_name, 'traction', traction)
@@ -331,10 +332,7 @@ class SolverWrapperFluent2019R1(Component):
             raise RuntimeError('Python version 3.6 or higher required.')
 
         # Fluent version: see set_fluent_version
-        if shutil.which('fluent') is None:
-            raise RuntimeError('ANSYS Fluent must be available.')
-
-        result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE)
+        result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
             raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
 
@@ -447,19 +445,19 @@ class SolverWrapperFluent2019R1(Component):
         return coord_data
 
     def send_message(self, message):
-        file = join(self.dir_cfd, message + ".coco")
+        file = join(self.dir_cfd, message + '.coco')
         open(file, 'w').close()
         return
 
     def wait_message(self, message):
-        file = join(self.dir_cfd, message + ".coco")
+        file = join(self.dir_cfd, message + '.coco')
         while not os.path.isfile(file):
             time.sleep(0.01)
         os.remove(file)
         return
 
     def check_message(self, message):
-        file = join(self.dir_cfd, message + ".coco")
+        file = join(self.dir_cfd, message + '.coco')
         if os.path.isfile(file):
             os.remove(file)
             return True

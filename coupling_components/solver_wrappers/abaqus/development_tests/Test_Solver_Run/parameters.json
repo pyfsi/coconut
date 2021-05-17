@@ -5,7 +5,7 @@
     "solver_wrappers":
     [
         {
-            "type": "solver_wrappers.abaqus.614",
+            "type": "solver_wrappers.abaqus.v614",
             "settings": {
                 "working_directory" : "CSM",
                 "cores": 1,
@@ -33,7 +33,7 @@
                 ],
                 "mp_mode": "THREADS",
                 "input_file": "Base.inp",
-                "save_iterations": 50
+                "save_interval": 50
             }
         }
     ]

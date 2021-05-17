@@ -3,6 +3,7 @@ from coconut.coupling_components.component import Component
 from coconut.tools import create_instance
 from coconut import data_structure
 from coconut.data_structure import variables_dimensions
+from coconut.coupling_components.mappers.interpolator import MapperInterpolator
 
 
 def create(parameters):
@@ -35,7 +36,7 @@ class MapperCombined(Component):
         # check that exactly one mapper is an interpolator
         counter = 0
         for i, mapper in enumerate(self.mappers):
-            if mapper.interpolator:
+            if isinstance(mapper, MapperInterpolator):
                 self.index = i
                 counter += 1
         if counter != 1:

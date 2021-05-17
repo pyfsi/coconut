@@ -74,7 +74,6 @@ DEFINE_ON_DEMAND(get_thread_ids) {
     /* read in thread thread ids, should be called early on */
 
 #if !RP_NODE
-    char tmp;
     int k;
     FILE *file;
     file = fopen("bcs.txt", "r");
@@ -86,7 +85,7 @@ DEFINE_ON_DEMAND(get_thread_ids) {
 
 #if !RP_NODE
     for (k = 0; k < n_threads; k++) {
-        fscanf(file, "%s %i", &tmp, &thread_ids[k]);
+        fscanf(file, "%*s %i", &thread_ids[k]);
     }
     fclose(file);
 #endif /* !RP_NODE */
