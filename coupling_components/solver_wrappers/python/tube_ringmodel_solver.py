@@ -54,7 +54,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.disp = np.zeros((self.m, 3))  # displacement
         self.trac = np.zeros((self.m, 3))  # traction (always zero)
 
-        # model parts
+        # create ModelParts
         self.model = Model()
         self.input_model_part_name = self.settings['interface_input'][0]['model_part']
         self.output_model_part_name = self.settings['interface_output'][0]['model_part']

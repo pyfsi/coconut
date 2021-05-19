@@ -107,7 +107,7 @@ class SolverWrapperTubeStructure(Component):
                              + 6.0 * self.b1 / self.dz ** 4
                              + 2.0 * self.b2 / self.dz ** 2 + self.b3)  # factor for conditioning Jacobian
 
-        # model parts
+        # create ModelParts
         self.model = Model()
         self.input_model_part_name = self.settings['interface_input'][0]['model_part']
         self.output_model_part_name = self.settings['interface_output'][0]['model_part']

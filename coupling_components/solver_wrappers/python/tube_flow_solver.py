@@ -124,7 +124,7 @@ class SolverWrapperTubeFlow(Component):
         self.conditioning = self.alpha  # factor for conditioning Jacobian
         self.residual0 = None  # initial residual for Newton-Raphson
 
-        # model parts
+        # create ModelParts
         self.model = Model()
         self.input_model_part_name = self.settings['interface_input'][0]['model_part']
         self.output_model_part_name = self.settings['interface_output'][0]['model_part']
