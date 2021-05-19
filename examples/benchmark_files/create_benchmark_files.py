@@ -5,9 +5,8 @@ import json
 import os
 import shutil
 import subprocess
-from shutil import copy2
+from shutil import copytree, copy
 from os.path import join
-
 
 """
 This file creates benchmark pickle files used by the script 'evaluate_examples.py'.
@@ -20,12 +19,11 @@ In order to exclude some examples, comment out the corresponding key-value pair 
 To include another example, simply add a new key-value pair to the dictionary 'examples'.
 """
 
-
 # set paths
 execute_path = os.path.realpath(os.path.dirname(__file__))
 tmp_path = join(execute_path, 'tmp')
 examples_path = os.path.realpath(join(os.path.dirname(__file__), '..'))
-bench_mark = join(examples_path, 'benchmark_files')
+benchmark = join(examples_path, 'benchmark_files')
 
 # example and tuple with number of time steps and optional additional files
 # comment out examples that you do not want to make benchmark files for
@@ -43,16 +41,14 @@ examples = {
     'tube_tube_flow_tube_structure': 100,
     'turek_fluent2d_abaqus2d': 2,
     'turek_fluent2d_abaqus2d_steady': 1
-    }
+}
 
 
 def set_up():
-    # if os.path.exists(tmp_path):
-    #     shutil.rmtree(tmp_path)
+    if os.path.exists(tmp_path):
+        shutil.rmtree(tmp_path)
     os.mkdir(tmp_path)
-    cmd = f'cp -r {join(examples_path, "setup_files")} {join(tmp_path, "setup_files")}'
-    p = subprocess.Popen(cmd, executable='/bin/bash', cwd=tmp_path, shell=True)
-    p.wait()
+    copytree(join(examples_path, "setup_files"), join(tmp_path, "setup_files"))
 
 
 def clean_up():
@@ -66,7 +62,7 @@ def create_benchmark(example, number_of_timesteps):
     # copy example folder to tmp
     os.mkdir(tmp_example_path)
     for file in ('parameters.json', 'setup.py'):
-        copy2(join(examples_path, example, file), tmp_example_path)
+        copy(join(examples_path, example, file), tmp_example_path)
 
     # go to this example directory
     os.chdir(tmp_example_path)
@@ -90,11 +86,12 @@ def create_benchmark(example, number_of_timesteps):
     os.chdir(execute_path)
 
     # move and rename results data
-    shutil.move(join(tmp_example_path, 'case_results.pickle'), join(bench_mark, f'{example}.pickle'))
+    shutil.move(join(tmp_example_path, 'case_results.pickle'), join(benchmark, f'{example}.pickle'))
 
 
-set_up()
-for example, number_of_timesteps in examples.items():
-    with tools.quick_timer(example):
-        create_benchmark(example, number_of_timesteps)
-clean_up()
+if __name__ == '__main__':
+    set_up()
+    for example, number_of_timesteps in examples.items():
+        with tools.quick_timer(example):
+            create_benchmark(example, number_of_timesteps)
+    clean_up()

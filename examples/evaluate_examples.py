@@ -40,12 +40,10 @@ bench_mark = join(examples_path, 'benchmark_files')
 
 
 def setUpModule():
-    # if os.path.exists(tmp_path):
-    #     shutil.rmtree(tmp_path)
+    if os.path.exists(tmp_path):
+        shutil.rmtree(tmp_path)
     os.mkdir(tmp_path)
-    cmd = f'cp -r {join(examples_path, "setup_files")} {join(tmp_path, "setup_files")}'
-    p = subprocess.Popen(cmd, executable='/bin/bash', cwd=tmp_path, shell=True)
-    p.wait()
+    shutil.copytree(join(examples_path, "setup_files"), join(tmp_path, "setup_files"))
 
 
 def tearDownModule():
@@ -66,7 +64,7 @@ class EvaluateExamples(unittest.TestCase):
         # copy example folder to tmp
         os.mkdir(tmp_example_path)
         for file in ['parameters.json', 'setup.py'] + cls.additional_files:
-            shutil.copy2(join(examples_path, cls.example, file), tmp_example_path)
+            shutil.copy(join(examples_path, cls.example, file), tmp_example_path)
 
         # go to this example directory
         os.chdir(tmp_example_path)

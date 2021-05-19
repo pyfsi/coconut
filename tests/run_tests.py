@@ -3,12 +3,6 @@ import unittest
 import sys
 
 
-keys = sys.argv[1:]
-
-loader = TestLoader()
-all_tests = loader.discover('coconut.tests')
-
-
 def key_in_test(key, test):
     test_suite = TestSuite()
     if isinstance(test, TestSuite):
@@ -27,7 +21,7 @@ def key_in_test(key, test):
 
 def generate_test_suite(keys, all_tests):
     if not keys:  # empty list
-        return generate_test_suite(['fast'], all_tests)
+        return generate_test_suite(['-fast'], all_tests)
     test_suite = TestSuite()
     for key in keys:
         if key == '-all':
@@ -44,5 +38,8 @@ def generate_test_suite(keys, all_tests):
 
 
 if __name__ == '__main__':
+    keys = sys.argv[1:]
+    loader = TestLoader()
+    all_tests = loader.discover('coconut.tests')
     runner = unittest.TextTestRunner(verbosity=2, buffer=True)
     runner.run(generate_test_suite(keys, all_tests))

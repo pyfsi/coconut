@@ -210,6 +210,8 @@ class SolverWrapperOpenFOAM_41(Component):
 
         # run time
         self.run_time = 0.0
+        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
+        check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env= self.env)
 
     def initialize(self):
         super().initialize()

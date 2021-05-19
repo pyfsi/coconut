@@ -140,4 +140,4 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()  # If this script is executed directly (and NOT through "test_CoSimulationApplication.py') the "KratosUnitTest.py"-script is launched which executes all functions in the class.
+    unittest.main()

@@ -15,14 +15,14 @@ aspect of the wrapper without having to test all aspects together, which can be 
 ## Running unit tests
 
 ### Running unit tests
-The unit tests in CoCoNuT uses the standard unit test module available in Python. 
+The unit tests in CoCoNuT uses the unittest module available in Python. 
 To run the default collection of tests which evaluates in a matter of seconds, navigate to the _`coconut/tests/`_ directory 
 and type following command in the terminal:
 ````
 python run_test.py
 ````
 This command will run all tests excluding the solver wrapper tests that are not pure Python.
-These tests are excluded because they take each take several minutes to complete.
+These tests are excluded because they each take several minutes to complete.
 The above command is equivalent to 
 ````
 python run_test.py -fast
