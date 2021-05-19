@@ -4,7 +4,6 @@ from coconut import tools
 import json
 import os
 import shutil
-import subprocess
 from shutil import copytree, copy
 from os.path import join
 
