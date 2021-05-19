@@ -1,12 +1,11 @@
-from coconut.tools import create_instance
-from coconut.tools import get_solver_env
+from coconut.tools import create_instance, get_solver_env
 
 import unittest
 import os
 import multiprocessing
 import re
 import json
-from subprocess import check_call, DEVNULL
+from subprocess import check_call, STDOUT, DEVNULL
 import numpy as np
 
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
@@ -23,7 +22,6 @@ def print_box(text):
 class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
     def setUp(self):
-
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_3d', 'parameters.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
@@ -46,10 +44,11 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.set_up_case()
 
     def tearDown(self):
-        check_call(f"""ps aux | awk '{{if (($0 !~ /awk/) && ($0 ~ /coconut_pimpleFoam/)) system("kill " $2)}}'""", shell=True)
+        self.clean_case()
 
     def clean_case(self):
-
+        check_call("""ps aux | awk '{{if (($0 !~ /awk/) && ($0 ~ /coconut_pimpleFoam/)) system("kill -9 " $2)}}'""",
+                   shell=True, stdout=DEVNULL, stderr=STDOUT)
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
 
     def set_up_case(self):
@@ -62,12 +61,13 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             self.par_solver['settings']['parallel'] = True
             decompose_file_name = os.path.join(self.folder_path, 'system', 'decomposeParDict')
             with open(decompose_file_name, 'r') as f:
-                dict = f.read()
-            new_dict = re.sub(r'numberOfSubdomains[\s\n]+' + of_io.int_pattern, f'numberOfSubdomains   {cores}', dict)
+                dct = f.read()
+            new_dict = re.sub(r'numberOfSubdomains[\s\n]+' + of_io.int_pattern, f'numberOfSubdomains   {cores}', dct)
 
             with open(decompose_file_name, 'w') as f:
                 f.write(new_dict)
 
+    # noinspection PyMethodMayBeStatic
     def get_dy_dz(self, x, y, z):
         dr = 0.0001 * np.sin(2 * np.pi / 0.05 * x)
         theta = np.arctan2(z, y)
@@ -75,10 +75,10 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         dz = dr * np.sin(theta)
         return dy, dz
 
-    ## Test if order of nodes vary with different decomposition
     def test_model_part_nodes_with_different_cores(self):
-
+        # test if order of nodes vary with different decomposition
         print_box("Testing model part nodes with different partitioning")
+
         # create two solvers with different flow solver partitioning
         x0, y0, z0, ids = [], [], [], []
         for cores in [1, multiprocessing.cpu_count()]:
@@ -96,9 +96,8 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         for attr in [x0, y0, z0, ids]:
             np.testing.assert_array_equal(attr[0], attr[1])
 
-    ## test if nodes are moved to the correct position
     def test_displacement_on_nodes(self):
-
+        # test if nodes are moved to the correct position
         print_box("Testing imposed node (radial) displacement")
 
         # test if nodes are moved to the correct position
@@ -126,15 +125,16 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             solver.finalize()
 
             if cores > 1:
-                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL, env=self.env)
+                check_call(f'cd {self.folder_path} && reconstructPar -latestTime -noFields', shell=True, stdout=DEVNULL,
+                           env=self.env)
 
             _, node_coords = of_io.get_boundary_points(solver.working_directory,
                                                        f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
             self.clean_case()
 
-    ## check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
+        # check if different partitioning gives the same pressure and traction results
         print_box("Testing if pressure/wall shear stress are imposed properly when run in parallel ")
         output_list = []
 
@@ -163,9 +163,10 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         for output in output_list[1:]:
             np.testing.assert_allclose(output / max_value, ref_output / max_value, atol=1e-10, rtol=0)
 
-    ## test if same coordinates always gives same pressure & traction
     def test_pressure_wall_shear(self):
+        # test if same coordinates always gives same pressure & traction
         print_box("Testing if same displacement gives same pressure/traction")
+
         # adapt parameters, create solver
         self.set_cores(1)
         solver = create_instance(self.par_solver)
@@ -197,11 +198,11 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         pr_amp = 0.5*(np.max((pressure[0] + pressure[2])/2) - np.min((pressure[0] + pressure[2])/2))
         tr_amp = 0.5*(np.max((traction[0] + traction[2])/2) - np.min((traction[0] + traction[2])/2))
 
-        # # check if same position gives same pressure & traction
+        # check if same position gives same pressure & traction
         np.testing.assert_allclose(pressure[0]/pr_amp, pressure[2]/pr_amp, atol=1e-4, rtol=0)
         np.testing.assert_allclose(traction[0]/tr_amp, traction[2]/tr_amp, atol=1e-4, rtol=0)
 
-        #check if different position gives different pressure & traction
+        # check if different position gives different pressure & traction
         p01 = np.linalg.norm(pressure[0] - pressure[1])
         p02 = np.linalg.norm(pressure[0] - pressure[2])
         self.assertTrue(p02 / p01 < 1e-4)
@@ -210,10 +211,11 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         t02 = np.linalg.norm(traction[0] - traction[2])
         self.assertTrue(t02 / t01 < 1e-4)
 
-        #print(np.c_[pressure[0], pressure[1], pressure[2]])
+        # print(np.c_[pressure[0], pressure[1], pressure[2]])
 
-        ## test if restart option works correctly
     def test_restart(self):
+        # test if restart option works correctly
+
         # adapt parameters, create solver
         print_box("Testing restart")
         cores = 4
@@ -230,6 +232,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         displacement = np.column_stack((dx, dy, dz))
         solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
         nr_time_steps = 4
+
         # run solver for 4 timesteps
         solver.initialize()
         for i in range(nr_time_steps):
@@ -241,11 +244,12 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         interface_y_1 = solver.get_interface_output()
 
         if cores > 1:
-            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL, env=self.env)
+            check_call(f'reconstructPar -latestTime -noFields', shell=True, cwd=self.folder_path, stdout=DEVNULL,
+                       env=self.env)
         _, coords_1 = of_io.get_boundary_points(solver.working_directory,
-                                             f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}',
-                                             'mantle')
+                                                f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}', 'mantle')
         solver.finalize()
+
         # get data for solver without restart
         interface_output = solver.get_interface_output()
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
@@ -266,10 +270,10 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         if cores > 1:
-            check_call(f'reconstructPar -latestTime -noFields', shell=True,cwd=self.folder_path, stdout=DEVNULL, env=self.env)
+            check_call(f'reconstructPar -latestTime -noFields', shell=True, cwd=self.folder_path, stdout=DEVNULL,
+                       env=self.env)
         _, coords_2 = of_io.get_boundary_points(solver.working_directory,
-                                             f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}',
-                                             'mantle')
+                                                f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}', 'mantle')
         solver.finalize()
 
         # # get data for solver with restart
@@ -277,9 +281,9 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # # check if undeformed coordinate (coordinates of model part) are equal
-        # self.assertTrue(interface_x_1.has_same_model_parts(interface_x_2))
-        # self.assertTrue(interface_y_1.has_same_model_parts(interface_y_2))
+        # check if undeformed coordinate (coordinates of model part) are equal
+        self.assertTrue(interface_x_1.has_same_model_parts(interface_x_2))
+        self.assertTrue(interface_y_1.has_same_model_parts(interface_y_2))
 
         # check if coordinates of ModelParts are equal
         # ==>  check if deformed coordinates are equal
@@ -290,7 +294,5 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-9)
 
 
-
-
 if __name__ == '__main__':
-    unittest.main()  # If this script is executed directly (and NOT through "test_CoSimulationApplication.py') the "KratosUnitTest.py"-script is launched which executes all functions in the class.
+    unittest.main()
