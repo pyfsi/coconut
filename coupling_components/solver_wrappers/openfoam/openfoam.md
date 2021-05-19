@@ -34,23 +34,23 @@ The solver wrapper can be found in *`solver_wrappers/openfoam`* and consists of 
 
 During initialization, the case settings as defined in the JSON-file are read into the corresponding python-variables. Afterwards, the required OpenFOAM-files are modified and some checks are in place to verify whether the correct modules are loaded. Next, the model-parts for the `interface_input/output` are created. Finally, the variables on each interface are stored in the data-structure of CoCoNuT. 
 
-### The `Initialize` method
+### The `initialize` method
 
 The OpenFOAM-solver, which should be adapted to work with CoCoNuT, is launched in a subprocess. Other variables, such as time step index and physical time, are initialized.
 
-### The `InitializeSolutionStep` method
+### The `initialize_solution_step` method
 
 This function is called at the start of every time step. The time step index is increased by one, the iteration index is set to zero and the OpenFOAM file directory is made in which the time step data needs to be stored.
 
-### The `SolveSolutionStep` method
+### The `solve_solution_step` method
 
 The interface displacement is converted into an OpenFOAM-readable format (with the function `write_node_input`), after which the OpenFOAM-loop is called in a subprocess. After completion of the OpenFOAM-loop, the function `read_node_output` is called, which reads the interface loads from the corresponding OpenFOAM-directory (in the *`postProcessing`* folder).
 
-### The `FinalizeSolutionStep` method
+### The `finalize_solution_step` method
 
 In this method, it is checked whether the other flow variables need to be written in an OpenFOAM-directory. This save-option is done in OpenFOAM.
 
-### The `Finalize` method
+### The `finalize` method
 
 The OpenFOAM-subprocess, which was launched in the `Initialize` method, is killed.
 
@@ -90,11 +90,11 @@ Following files are modified or used as a reference to create files by CoCoNuT, 
     key|value
     :---:|:---
     `writeControl`|`timeStep`
-    `writeInterval`| required write interval
+    `writeInterval`|required write interval
     `writeFormat`|`ascii`
     `timeFormat`|`fixed`
     `timePrecision`|required time precision based on `delta_t` (used in the names of time step folders)
-    `runTimeModifiable`| `false`
+    `runTimeModifiable`|`false`
     `adjustTimeStep`|`no`
     
 -	*`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
