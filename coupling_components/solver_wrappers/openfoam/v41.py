@@ -2,333 +2,226 @@ from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
+from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
+from coconut.tools import get_solver_env
 
 from subprocess import check_call
 import numpy as np
 import os
-import sys
+import shutil
 import time
 import subprocess
+import re
 
 
 def create(parameters):
-    return SolverWrapperOpenFOAM_41(parameters)
+    return SolverWrapperOpenFOAM41(parameters)
 
 
-class SolverWrapperOpenFOAM_41(Component):
+class SolverWrapperOpenFOAM41(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        # Settings
-        self.settings = parameters["settings"]
-        self.working_directory = self.settings["working_directory"]
-        self.env = tools.get_solver_env(__name__, self.working_directory)
-        self.moduleType = "OpenFOAM"  # hard-coded, cannot be altered by naive user
-        self.moduleVersion = "4.1"  # hard-coded, cannot be altered by naive user
-        self.module = self.moduleType + "/" + self.moduleVersion
-        self.application = self.settings[
-            "application"]  # What type of OF-solver to be used - solver requires adaptation before running with OpenFOAM - name of adapted solver starts with 'CoCoNuT_'
-        self.dimensions = self.settings["dimensions"]
-        if (self.dimensions != 2) and (self.dimensions != 3):
-            sys.exit("OpenFOAM-case should be 2D or 3D.")
-        self.delta_t = self.settings["delta_t"]  # Time step size
-        self.start_time = self.settings[
-            "start_time"]  # Start time - also the name of folder containing data at this time
-        self.end_time = self.settings["end_time"]  # End time
-        self.cores = self.settings["cores"]  # Number of cores to be used in the OpenFOAM-calculation
-        self.decomposeMethod = self.settings[
-            "decomposeMethod"]  # Decomposition-method, can be "simple", "scotch"
-        self.newtonmax = self.settings["newtonmax"]  # Maximal number of Newton iterations
-        self.newtontol = self.settings["newtontol"]  # Tolerance of Newton iterations
-        self.write_interval = self.settings[
-            "write_interval"]  # Number of time steps between consecutive saves performed by OpenFOAM
-        self.write_precision = self.settings["write_precision"]  # writePrecision-parameter in OpenFOAM
-        self.time_precision = self.settings["time_precision"]  # timePrecision-parameter in OpenFOAM
-        self.boundary_names = self.settings[
-            'boundary_names']  # boundary_names is the set of boundaries where the moving interface is located (will be used to go through OF-files)
-        self.meshmotion_solver = self.settings["meshmotion_solver"]
-        self.diffusivity = self.settings["diffusivity"]
+        # settings
+        self.settings = parameters['settings']
+        self.working_directory = self.settings['working_directory']
+        self.env = get_solver_env(__name__, self.working_directory)
+        # adapted application from openfoam ('coconut_<application name>')
+        self.application = self.settings['application']
+        self.delta_t = self.settings['delta_t']
+        self.time_precision = self.settings['time_precision']
+        self.start_time = self.settings['timestep_start'] * self.delta_t
+        self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
+        self.openfoam_process = None
+        self.write_interval = self.write_precision = None
+        # boundary_names is the set of boundaries in OpenFoam used for coupling
+        self.boundary_names = self.settings['boundary_names']
+        self.version = '4.1'
 
-        # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
+        # set on True to save copy of input and output files in every iteration
+        self.debug = False
 
-        # Check that the boundary_names and the interface_input and interface_output are defined consistently in the JSON-file
-        # For every boundary_name element, there should be one interface_input (boundary_name+"_input") element and one interface_output (boundary_name+"_output") element.
-        # Make the distinction between both: interface_input/output are names of the pyKratos ModelPart - boundary_names is the name of the boundary as defined in OpenFOAM!
+        # check interface names in 'interface_input' and 'interface_output' with boundary names provided in
+        # boundary_names
         self.check_interfaces()
 
-        # Check that the correct modules have been loaded
+        # check that the correct modules have been loaded
         self.check_software()
 
-        # Remove possible CoCoNuT-message from previous interrupt
+        # remove possible CoCoNuT-message from previous interrupt
         self.remove_all_messages()
 
-        # Creating OpenFOAM-files - raw dictionary files are predefined in the solver_wrapper folder (and should not be moved)
-        # DecomposeParDict: replace raw settings by actual settings defined by user in json-file
-        if self.cores > 1:  # Only if calculating in parallel
-            decomposeParDict_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                                                     "decomposeParDict_raw")
-            decomposeParDict_name = os.path.join(self.working_directory, "system/decomposeParDict")
-            with open(decomposeParDict_raw_name, 'r') as raw_file:
-                with open(decomposeParDict_name, 'w') as new_file:
-                    for line in raw_file:
-                        line = line.replace('|CORES|', str(self.cores))
-                        line = line.replace('|DECOMPOSEMETHOD|', str(self.decomposeMethod))
-                        new_file.write(line)
+        # obtain number of cores from self.working_directory/system/decomposeParDict
+        self.cores = 1
+        if self.settings['parallel']:
+            file_name = os.path.join(self.working_directory, 'system/decomposeParDict')
+            if not os.path.isfile(file_name):
+                raise RuntimeError(
+                    f'In the parameters:\n{self.settings}\n key "parallel" is set to {True} but {file_name} '
+                    f'does not exist')
+            else:
+                with open(file_name, 'r') as file:
+                    decomposedict_string = file.read()
+                self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
 
-            self.write_footer(decomposeParDict_name)
+        # modify controlDict file to add pressure and wall shear stress functionObjects for all the boundaries in
+        # self.settings["boundary_names"]
+        self.read_modify_controldict()
 
-        # ControlDict: replace raw settings by actual settings defined by user in json-file AND add function objects to write pressure and wall shear stress
-        controlDict_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "controlDict_raw")
-        controlDict_name = os.path.join(self.working_directory, "system/controlDict")
-        with open(controlDict_raw_name, 'r') as raw_file:
-            with open(controlDict_name, 'w') as new_file:
-                for line in raw_file:
-                    line = line.replace('|APPLICATION|', str(self.application))
-                    line = line.replace('|START_TIME|', str(self.start_time))
-                    line = line.replace('|END_TIME|', str(self.end_time))
-                    line = line.replace('|DT|', str(self.delta_t))
-                    line = line.replace('|WRITE_INTERVAL|', str(self.write_interval))
-                    line = line.replace('|WRITE_PRECISION|', str(self.write_precision))
-                    line = line.replace('|TIME_PRECISION|', str(self.time_precision))
-                    if '|BOUNDARY_NAMES|' in line:
-                        firstBoundary = True
-                        for interfaces in self.boundary_names:
-                            if firstBoundary:
-                                boundary_name_temp = "(" + interfaces
-                                firstBoundary = False
-                            else:
-                                boundary_name_temp += " , " + interfaces
-                        boundary_name_temp += ")"
-                        line = line.replace('|BOUNDARY_NAMES|', boundary_name_temp)
-                    new_file.write(line)
-
-        n_key = 0
-        if len(self.boundary_names) == 1:
-            for key in self.boundary_names:
-                self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                 "PRESSURE", key, True, False)
-                self.write_control_dict_function(controlDict_name, "wallShearStress", "libfieldFunctionObjects",
-                                                 "wallShearStress", key, False, False)
-                self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                 "TRACTION", key, False, True)
-        else:
-            for key in self.boundary_names:
-                if n_key == 0:
-                    self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                     "PRESSURE", key, True, False)
-                    self.write_control_dict_function(controlDict_name, "wallShearStress", "libfieldFunctionObjects",
-                                                     "wallShearStress", key, False, False)
-                    self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                     "TRACTION", key, False, False)
-                else:
-                    self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                     "PRESSURE", key, False, False)
-                    if n_key == (len(self.boundary_names) - 1):
-                        self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                         "TRACTION", key, False, True)
-                    else:
-                        self.write_control_dict_function(controlDict_name, "surfaceRegion", "libfieldFunctionObjects",
-                                                         "TRACTION", key, False, False)
-                n_key += 1
-        self.write_footer(controlDict_name)
-        # DynamicMeshDict: replace raw settings by actual settings defined by user in json-file
-        dynamicMeshDict_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "dynamicMeshDict_raw")
-        dynamic_mesh_dict_name = os.path.join(self.working_directory, "constant/dynamicMeshDict")
-        str_boundary = ""
-        for boundary in self.boundary_names:
-            str_boundary = str_boundary + " " + str(boundary)
-        with open(dynamicMeshDict_raw_name, 'r') as raw_file:
-            with open(dynamic_mesh_dict_name, 'w') as new_file:
-                for line in raw_file:
-                    line = line.replace('|MESHMOTION_SOLVER|', str(self.meshmotion_solver))
-                    line = line.replace('|DIFFUSIVITY|', str(self.diffusivity))
-                    line = line.replace('|NUM_INTERFACE_INPUT|', str(len(self.settings['boundary_names'])))
-                    line = line.replace('|INTERFACE_INPUT|', str_boundary)
-                    new_file.write(line)
-
-        self.write_footer(dynamic_mesh_dict_name)
-
-        # Creating Model
+        # creating Model
         self.model = data_structure.Model()
 
-        # Creating ModelParts and adding variables to these ModelParts - should happen before node addition
-        # for key, value in (self.settings['interface_input'].items() + self.settings['interface_output'].items()):
-        #     self.model.create_model_part(key)
-        #     mp = self.model[key]
-        #     for var_name in value:
-        #         var = vars(data_structure)[var_name]
-        #         mp.AddNodalSolutionStepVariable(var)
+        # writeCellcentres writes cellcentres in internal field and face centres in boundaryField
+        check_call(f'writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True,
+                   env=self.env)
+        boundary_filename = os.path.join(self.working_directory, 'constant/polyMesh/boundary')
 
-        # Adding nodes to ModelParts - should happen after variable definition; writeCellcentres writes cellcentres in internal field and face centres in boundaryField
-        check_call("cd " + self.working_directory + "; writeCellCentres -time " + str(
-            self.start_time) + " &> log.writeCellCentres;", shell=True, env=self.env)
-
-        # Want "cellCentres for face boundaries"
         for boundary in self.boundary_names:
-            source_file = self.working_directory + "/constant/polyMesh"
-            node_ids, node_coords, face_centres, start_face, nfaces, self.total_nfaces = self.get_point_ids(boundary,
-                                                                                                            source_file)
+            with open(boundary_filename, 'r') as boundary_file:
+                boundary_file_string = boundary_file.read()
+            boundary_dict = of_io.get_dict(input_string=boundary_file_string, keyword=boundary)
+            # get point ids and coordinates for all the faces in the boundary
+            node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory, time_folder='0',
+                                                              boundary_name=boundary)
+            nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
+            start_face = of_io.get_int(input_string=boundary_dict, keyword='startFace')
+
             # create input model part
             self.model.create_model_part(f'{boundary}_input', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
                                          node_ids)
 
-            name_x = os.path.join(self.working_directory, "0/ccx")
-            name_y = os.path.join(self.working_directory, "0/ccy")
-            name_z = os.path.join(self.working_directory, "0/ccz")
-            index_x = self.find_string_in_file(boundary, name_x)
-            index_y = self.find_string_in_file(boundary, name_y)
-            index_z = self.find_string_in_file(boundary, name_z)
+            filename_x = os.path.join(self.working_directory, '0/ccx')
+            filename_y = os.path.join(self.working_directory, '0/ccy')
+            filename_z = os.path.join(self.working_directory, '0/ccz')
 
-            with open(name_x, 'r') as fx:
-                fx_lines = fx.readlines()
-
-            with open(name_y, 'r') as fy:
-                fy_lines = fy.readlines()
-
-            with open(name_z, 'r') as fz:
-                fz_lines = fz.readlines()
-
-            x0 = np.empty(len(face_centres))
-            y0 = np.empty(len(face_centres))
-            z0 = np.empty(len(face_centres))
-            ids = np.arange(0, len(face_centres))
-
-            for i in np.arange(0, len(face_centres)):
-                x0[i] = float(fx_lines[i + 6 + index_x].split("\n")[0])
-                y0[i] = float(fy_lines[i + 6 + index_y].split("\n")[0])
-                z0[i] = float(fz_lines[i + 6 + index_z].split("\n")[0])
+            x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary, size=nfaces,
+                                          is_scalar=True)
+            y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary, size=nfaces,
+                                          is_scalar=True)
+            z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary, size=nfaces,
+                                          is_scalar=True)
+            ids = np.arange(0, nfaces)
 
             # create output model part
             mp_output = self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
             mp_output.start_face = start_face
             mp_output.nfaces = nfaces
 
-        # Create CoSimulationInterfaces
-        self.interface_input = Interface(self.settings["interface_input"], self.model)
-        self.interface_output = Interface(self.settings["interface_output"], self.model)
+        # create interfaces
+        self.interface_input = Interface(self.settings['interface_input'], self.model)
+        self.interface_output = Interface(self.settings['interface_output'], self.model)
 
         # run time
         self.run_time = 0.0
         solver_dir = os.path.join(os.path.dirname(__file__), self.application)
         check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env= self.env)
 
+        self.plot_of_residuals = False  # TODO: add in the parameters
+        self.residual_variables = self.settings.get('residual_variables', None)
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
+
+        if self.residual_variables is not None:
+            self.write_residuals_fileheader()
+
     def initialize(self):
         super().initialize()
 
-        # Define timestep and physical time
+        # define timestep and physical time
         self.timestep = 0
         self.physical_time = self.start_time
 
-        # If no pointDisplacement file is defined yet, initialize a pointDisplacement file in the start time folder
-        # Normally, after restart or from the second iteration onwards, a pointDisplacement-file already exists. In that case, that pointDisplacement-file will be used (and is NOT overwritten)
-        pointdisp_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "pointDisplacement_raw")
-        pointdisp_name = os.path.join(self.working_directory, str(self.physical_time), "pointDisplacement")
-        if not (os.path.isfile(pointdisp_name)):
-            self.write_pointdisplacement_file(pointdisp_raw_name, pointdisp_name)
-
-        ##Copy zero folder to folder with correctly named timeformat
-        if self.physical_time == 0:
+        # copy zero folder to folder with correctly named timeformat
+        if self.start_time == 0:
             timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
-            path_orig = os.path.join(self.working_directory, "0")
+            path_orig = os.path.join(self.working_directory, '0')
             path_new = os.path.join(self.working_directory, timestamp)
-            os.system("cp -r " + path_orig + " " + path_new)
+            shutil.rmtree(path_new, ignore_errors=True)
+            shutil.copytree(path_orig, path_new)
 
-        ## If parallell do a decomposition and establish a remapping for the output based on the faceProcAddressing
-        '''Note concerning the sequence: The file ./processorX/constant/polyMesh/pointprocAddressing contains a list of 
-        indices referring to the original index in the ./constant/polyMesh/points file, these indices go from 0 to nPoints -1
-        However, mesh faces can be shared between processors and it has to be tracekd whether these are inverted or not
-        This inversion is indicated by negative indices. However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
+        # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
+        """Note concerning the sequence: The file ./processorX/constant/polyMesh/pointprocAddressing contains a list of 
+        indices referring to the original index in the ./constant/polyMesh/points file, these indices go from 0 to 
+        nPoints -1
+        However, mesh faces can be shared between processors and it has to be tracked whether these are inverted or not
+        This inversion is indicated by negative indices
+        However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
         Therefore to get the correct index one should use |index|-1!!
         Normally no doubles should be encountered on an interface as these faces are not shared by processors
-        '''
-        if self.cores > 1:
-            check_call("cd " + self.working_directory + "; decomposePar -force -time " + str(
-                self.start_time) + " &> log.decomposePar;", shell=True, env=self.env)
+        """
+
+        if self.settings['parallel']:
+            if self.start_time == 0:
+                check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
+                           cwd=self.working_directory,
+                           shell=True, env=self.env)
+
             for boundary in self.boundary_names:
                 mp_output = self.model.get_model_part(f'{boundary}_output')
                 mp_output.sequence = []
-
                 for p in range(self.cores):
-                    count = 0
-                    path = os.path.join(self.working_directory, "processor" + str(p), "constant", "polyMesh",
-                                        "faceProcAddressing")
+                    path = os.path.join(self.working_directory, f'processor{p}/constant/polyMesh/faceProcAddressing')
                     with open(path, 'r') as f:
-                        face_Lines = f.readlines()
-                    nfaces = int(face_Lines[18].split("\n")[0])
-                    for i in range(20, 20 + nfaces):
-                        ind = np.abs(int(face_Lines[i].split("\n")[0])) - 1
+                        face_proc_add_string = f.read()
+                    face_proc_add = np.abs(of_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
+                    face_proc_add -= 1
 
-                        if ind >= mp_output.start_face and ind < mp_output.start_face + mp_output.nfaces:
-                            mp_output.sequence.append(ind - mp_output.start_face)
-                            count += 1
+                    mp_output.sequence += (face_proc_add[(face_proc_add >= mp_output.start_face) & (
+                            face_proc_add < mp_output.start_face + mp_output.nfaces)] - mp_output.start_face).tolist()
 
                 np.savetxt(os.path.join(self.working_directory, f'sequence_{boundary}.txt'),
-                           np.array(mp_output.sequence).astype(int), fmt='%i')
-                if len(mp_output.sequence) != mp_output.nfaces:
-                    print(f"sequence: {len(mp_output.sequence)}")
-                    print(f"nNodes: {mp_output.NumberOfNodes}")
-                    raise ValueError("Number of face indices in sequence does not correspond to number of elements")
+                           np.array(mp_output.sequence), fmt='%i')
 
-        # Don't forget to start OpenFOAM-loop!
-        if self.cores == 1:
-            cmd = self.application + "&> log." + self.application
+                if len(mp_output.sequence) != mp_output.nfaces:
+                    print(f'sequence: {len(mp_output.sequence)}')
+                    print(f'nNodes: {mp_output.size}')
+                    raise ValueError('Number of face indices in sequence does not correspond to number of faces')
+
+        # starting the OpenFOAM infinite loop for coupling!
+        if not self.settings['parallel']:
+            cmd = self.application + '&> log.' + self.application
         else:
-            cmd = "mpirun -np " + str(self.cores) + " " + self.application + " -parallel &> log." + self.application
+            cmd = 'mpirun -np ' + str(self.cores) + ' ' + self.application + ' -parallel &> log.' + self.application
 
         self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
-
-        ### CoConuT_OpenFOAMSolver is running from here on
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        # For parallel runs need to create a folder with the correct time stamp for decomposition of pointDisplacement_Next
-        # For serial runs, this folder will normally be present
+        # for parallel: create a folder with the correct time stamp for decomposition of pointDisplacement_Next
+        # for serial: folder will normally be present, except for time 0: make a folder 0.0000 with specified precision
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
         path = os.path.join(self.working_directory, timestamp)
-        if self.cores > 1:
-            os.system('mkdir -p ' + path)
-        elif self.physical_time == 0:  # for serial also need to make a folder 0.0000 with specified precision
-            os.system('mkdir -p ' + path)
+        if self.cores > 1 or self.physical_time == 0:
+            os.makedirs(path, exist_ok=True)
 
-        # # The displacement of the FSI interface is passed through pointDisplacement_Next, which is prepared here
-        # pointdisp_raw_name=os.path.join(os.path.realpath(os.path.dirname(__file__)),"pointDisplacement_raw")
-        # pointdisp_name=os.path.join(self.working_directory,str(self.physical_time),timestamp,"pointDisplacement_Next")
-        # self.write_pointdisplacement_file(pointdisp_raw_name,pointdisp_name)
-
-        # Prepare new time step folder and reset the number of iterations
+        # prepare new time step folder and reset the number of iterations
         self.timestep += 1
         self.iteration = 0
         self.physical_time += self.delta_t
 
         self.prev_timestamp = timestamp
-        self.cur_timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
+        self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
 
-        if self.cores < 2:  # if serial
+        if not self.settings['parallel']:  # if serial
             new_path = os.path.join(self.working_directory, self.cur_timestamp)
             if os.path.isdir(new_path):
-                print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder: " + str(
-                    new_path) + ". \n\n\n")
-                time.sleep(5)
-                os.system("rm -rf " + new_path)
-            os.system("mkdir -p " + new_path)
+                tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                check_call(f'rm -rf {new_path}', shell=True)
+            check_call(f'mkdir -p {new_path}', shell=True)
         else:
             for i in np.arange(self.cores):
-                new_path = os.path.join(self.working_directory, "processor" + str(i), self.cur_timestamp)
+                new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
                 if os.path.isdir(new_path):
                     if i == 0:
-                        print("\n\n\n Warning! In 5s, CoCoNuT will overwrite existing time step folder in "
-                              "processor-subfolders. \n\n\n")
-                        time.sleep(5)
-                    os.system("rm -rf " + new_path)
-                os.system("mkdir -p " + new_path)
+                        tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                    check_call(f'rm -rf {new_path}', shell=True)
+                check_call(f'mkdir -p {new_path}', shell=True)
 
-        self.send_message('next')  # Let OpenFOAM go to next time step
-        self.wait_message('next_ready')  # Let OpenFOAM wait for input data
+        self.send_message('next')
+        self.wait_message('next_ready')
 
     @tools.time_solve_solution_step
-    def solve_solution_step(self, interface_input):  # NOT CHANGED YET! PURELY COPIED FROM FLUENT WRAPPER!!!!!!
+    def solve_solution_step(self, interface_input):
         self.iteration += 1
 
         # store incoming displacements
@@ -341,37 +234,39 @@ class SolverWrapperOpenFOAM_41(Component):
         if self.debug:
             if self.cores > 1:
                 for i in range(0, self.cores):
-                    path = os.path.join(self.working_directory, "processor" + str(i), self.prev_timestamp,
-                                        "pointDisplacement_Next")
-                    path2 = os.path.join(self.working_directory, "processor" + str(i), self.prev_timestamp,
-                                         "pointDisplacement_Next_Iter" + str(self.iteration))
-                    cmd = f"cp {path} {path2}"
-                    os.system(cmd)
+                    path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
+                                             'pointDisplacement_Next')
+                    path_to = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
+                                           'pointDisplacement_Next_Iter' + str(self.iteration))
+                    shutil.copy(path_from, path_to)
             else:
-                path = os.path.join(self.working_directory, self.prev_timestamp, "pointDisplacement_Next")
-                path2 = os.path.join(self.working_directory, self.prev_timestamp,
-                                     "pointDisplacement_Next_Iter" + str(self.iteration))
-                cmd = f"cp {path} {path2}"
-                os.system(cmd)
+                path_from = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
+                path_to = os.path.join(self.working_directory, self.prev_timestamp,
+                                       'pointDisplacement_Next_Iter' + str(self.iteration))
+                shutil.copy(path_from, path_to)
 
-        # let OpenFOAM run, wait for data
-        '''OpenFOAM tends to keep on appending to files while already providing access, this causes issues when reading 
-        out the data. Therefore these files are removed if they already exist prior to generating new data output '''
-        for boundary in self.boundary_names:
-            # specify location of pressure and traction
-            traction_name = "TRACTION_" + boundary
-            pressure_name = "PRESSURE_" + boundary
-            wss_file = os.path.join(self.working_directory, "postProcessing", traction_name, "surface",
-                                    self.cur_timestamp, "wallShearStress_patch_" + boundary + ".raw")
-            pres_file = os.path.join(self.working_directory, "postProcessing", pressure_name, "surface",
-                                     self.cur_timestamp, "p_patch_" + boundary + ".raw")
-            if os.path.isfile(wss_file):
-                os.system(f"rm -rf {wss_file}")
-            if os.path.isfile(pres_file):
-                os.system(f"rm -rf {pres_file}")
+        self.delete_prev_iter_output()
 
         self.send_message('continue')
         self.wait_message('continue_ready')
+
+        # copy output data for debugging
+        if self.debug:
+            for boundary in self.boundary_names:
+                # specify location of pressure and traction
+                traction_name = 'TRACTION_' + boundary
+                pressure_name = 'PRESSURE_' + boundary
+                wss_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                            self.cur_timestamp, f'wallShearStress_patch_{boundary}.raw')
+                pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                             self.cur_timestamp, f'p_patch_{boundary}.raw')
+                wss_iter_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                                 self.cur_timestamp,
+                                                 f'wallShearStress_patch_{boundary}_{self.iteration}.raw')
+                pres_iter_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                                  self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
+                shutil.copy(wss_filepath, wss_iter_filepath)
+                shutil.copy(pres_filepath, pres_iter_filepath)
 
         # read data from OpenFOAM
         self.read_node_output()
@@ -382,23 +277,35 @@ class SolverWrapperOpenFOAM_41(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        # Let OpenFOAM check whether it needs to save this timestep (in OF-solver: runTime.write())
+        prev_timestep = self.timestep - 1
+        # remove the folder that was used for pointDisplacement_Next if not in writeInterval
+        if self.settings['parallel']:
+            dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
+            shutil.rmtree(dir_pointdisp_next)
+
+            if prev_timestep % self.write_interval:
+                for p in range(self.cores):
+                    prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
+                    shutil.rmtree(prev_timestep_dir)
+        else:
+            if prev_timestep % self.write_interval:
+                dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
+                shutil.rmtree(dir_pointdisp_next)
 
         if not (self.timestep % self.write_interval):
-            if self.cores > 1:  # Remove folder that was used for pointDisplacement_Next
-                # at end of time step if parallel run if not writeInterval
-                path = os.path.join(self.working_directory, self.prev_timestamp)
-                os.system("rm -rf " + path)
             self.send_message('save')
             self.wait_message('save_ready')
+
+        if self.residual_variables is not None:
+            self.write_of_residuals()
 
     def finalize(self):
         super().finalize()
 
         self.send_message('stop')
         self.wait_message('stop_ready')
-        os.system(f"pkill -f {self.application}")
         self.openfoam_process.kill()
+        self.openfoam_process.wait()
 
     def get_interface_input(self):
         return self.interface_input
@@ -406,261 +313,142 @@ class SolverWrapperOpenFOAM_41(Component):
     def get_interface_output(self):
         return self.interface_output
 
-    def write_header(self, file_loc, class_name, object_name):
-        f = open(file_loc, 'w')
-        f.write(r'/*--------------------------------*- C++ -*----------------------------------*\\' + "\n")
-        f.write(r'| =========                 |                                                 |' + "\n")
-        f.write(r'| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |' + "\n")
-        f.write(r'|  \\    /   O peration     | Version:  4.x                                   |' + "\n")
-        f.write(r'|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |' + "\n")
-        f.write(r'|    \\/     M anipulation  |                                                 |' + "\n")
-        f.write(r'\*---------------------------------------------------------------------------*/' + "\n")
-        f.write(r'FoamFile' + "\n")
-        f.write(r'{' + "\n")
-        f.write('\t version \t\t 4.1;' + "\n")
-        f.write('\t format \t\t ascii;' + "\n")
-        f.write('\t class \t\t ' + class_name + ';' + "\n")
-        f.write('\t object \t\t ' + object_name + ';' + "\n")
-        f.write('}' + "\n")
-        f.write(r'// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //' + "\n")
-        f.write("\n")
-        f.close()
+    def delete_prev_iter_output(self):
+        # pressure and wall shear stress files are removed to avoid openfoam to append data in the new iteration
+        for boundary in self.boundary_names:
+            # specify location of pressure and traction
+            traction_name = 'TRACTION_' + boundary
+            pressure_name = 'PRESSURE_' + boundary
+            wss_file = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                    self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
+            pres_file = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                     self.cur_timestamp, 'p_patch_' + boundary + '.raw')
+            if os.path.isfile(wss_file):
+                os.remove(wss_file)
+            if os.path.isfile(pres_file):
+                os.remove(pres_file)
 
     def read_node_output(self):
-        ''' This is to be verified but it might be imortant that when a calculation is started from a prior time step while there is still
-        data in the postprocessing folder for that time step from a previous run, that then the checks to see whether the file is completely updated might fail
-        and consequently cause the simulation to crash
-        Maybe it would be better to remove these files beforehand if they exist instead of overwriting them
-        This however can not be done here, but should be done in another part of the code '''
-        n_key = 0
+        """
+        reads the pressure and wall shear stress from the <case directory>/postProcessing for serial and parallel. In
+        case of parallel, it uses mp.sequence (using faceProcAddressing) to map the values to the face centres.
 
-        # Default value is 1.0 for compressible case. When the solver is incompressible, the pressure and shear stress are
-        # kinematic; therefore multiply with the fluid density.
+        :return:
+        """
+
+        # default value is 1.0 for compressible case
+        # when the solver is incompressible, the pressure and shear stress are kinematic; therefore multiply with
+        # the fluid density
         density = 1.0
         if self.settings['is_incompressible']:
             density = self.settings['density']
 
         for boundary in self.boundary_names:
             # specify location of pressure and traction
-            traction_name = "TRACTION_" + boundary
-            pressure_name = "PRESSURE_" + boundary
+            traction_name = 'TRACTION_' + boundary
+            pressure_name = 'PRESSURE_' + boundary
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
-            nfaces_tot = mp.size
-            wss_tmp = np.zeros([nfaces_tot, 3])
-            pres_tmp = np.zeros([nfaces_tot, 1])
-            wss_file = os.path.join(self.working_directory, "postProcessing", traction_name, "surface",
-                                    self.cur_timestamp, "wallShearStress_patch_" + boundary + ".raw")
-            pres_file = os.path.join(self.working_directory, "postProcessing", pressure_name, "surface",
-                                     self.cur_timestamp, "p_patch_" + boundary + ".raw")
+            nfaces = mp.size
+            wss_filename = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                        self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
+            pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                         self.cur_timestamp, 'p_patch_' + boundary + '.raw')
 
-            # read traction
-            counter = 0
-            nlines = 0
-            lim = 1000
-            while (nlines < nfaces_tot + 2) and counter < lim:
-                if os.path.isfile(wss_file):
-                    nlines = sum(1 for line in open(wss_file))
-                time.sleep(0.01)
-                counter += 1
-            if counter == lim:
-                raise RuntimeError("Timed out waiting for wss file: " + wss_file)
+            # check if the pressure and wall shear stress files completed by openfoam and read data
+            self.check_output_file(wss_filename, nfaces)
+            wss_tmp = np.loadtxt(wss_filename, comments='#')[:, 3:]
+            self.check_output_file(pres_filepath, nfaces)
+            pres_tmp = np.loadtxt(pres_filepath, comments='#')[:, 3]
 
-            with open(wss_file, 'r') as f:
-                f_lines = f.readlines()
-            index_start = 2
-            for i in range(nfaces_tot):
-                split = f_lines[index_start + i].split()
-                if self.physical_time == self.start_time:  # At start perform check of the mapping, CARE for restarts this check will need to be updated as the file will give coordinates of the deformed geometry
-                    # Could use the displacement vector for this which we most likely need to read anyways
-                    pos = np.array([float(split[0]), float(split[1]), float(split[2])])
-                    pos_mp = np.array([mp.x0[mp.sequence[i]], mp.y0[mp.sequence[i]], mp.z0[mp.sequence[i]]])
-
-                    if (np.linalg.norm(pos_mp - pos) > 1e-05):
-                        raise ValueError("Positions do not agree !!")
-                wss_tmp[i, 0] = split[3]
-                wss_tmp[i, 1] = split[4]
-                wss_tmp[i, 2] = split[5].split("\n")[0]
-            f.close()
-
-            # read pressure
-            counter = 0
-            nlines = 0
-            while (nlines < nfaces_tot + 2) and counter < lim:
-                nlines = 0
-                if os.path.isfile(pres_file):
-                    nlines = sum(1 for line in open(pres_file))
-
-                time.sleep(0.01)
-                counter += 1
-
-            if counter == lim:
-                raise RuntimeError("Timed out waiting for pressure file: " + pres_file)
-
-            with open(pres_file, 'r') as f:
-                f_lines = f.readlines()
-            index_start = 2
-
-            for i in np.arange(nfaces_tot):
-                val = f_lines[index_start + i].split()[3].split("\n")[0]
-                pres_tmp[i, 0] = float(val)
-            f.close()
-
-            if self.cores > 1:
+            if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
-                pos_list = [pos for pos in range(0, nfaces_tot)]
+                pos_list = [pos for pos in range(0, nfaces)]
 
-            wall_shear_stress = np.empty(wss_tmp.shape)
-            pressure = np.empty(pres_tmp.shape)
+            wall_shear_stress = np.empty_like(wss_tmp)
+            pressure = np.empty((pres_tmp.size, 1))
 
-            wall_shear_stress[pos_list,] = wss_tmp[:, ]
-            pressure[pos_list] = pres_tmp[:]
+            wall_shear_stress[pos_list, ] = wss_tmp[:, ]
+            pressure[pos_list, 0] = pres_tmp
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
             self.interface_output.set_variable_data(mp_name, 'pressure', pressure * density)
 
-            # go to next interface
-            n_key += 1
-
-    # writeFooter: to write OpenFOAM-footer in file at location 'file_loc'
-    def write_footer(self, file_loc):
-        f = open(file_loc, 'a+')
-        f.write("\n")
-        f.write(r'// ************************************************************************* //' + "\n")
-        f.close()
+    # noinspection PyMethodMayBeStatic
+    def write_footer(self, file_name):
+        # write OpenFOAM-footer at the end of file
+        with open(file_name, 'a') as f:
+            f.write('\n// ************************************************************************* //\n')
 
     def write_node_input(self):
-        # The displacement of the FSI interface is passed through the file "pointDisplacement_Next"
-        # This function will prepare that file in a "serial format" and then decompose it for parallel operation
+        """
+        creates pointDisplacementNext for supplying the displacement field in the FSI coupling. This file is created
+        from 0/pointDisplacement. The boundary field for boundaries participating in the FSI coupling is modified to
+        supply the boundary displacement field from structural solver. If the OpenFOAM solver is run in parallel,
+        the field is subsequently decomposed using the command: decomposePar.
+       :return:
+       """
 
-        pointdisp_raw_name = os.path.join(os.path.realpath(os.path.dirname(__file__)), "pointDisplacement_raw")
-        pointdisp_name = os.path.join(self.working_directory, self.prev_timestamp, "pointDisplacement_Next")
-        self.write_pointdisplacement_file(pointdisp_raw_name, pointdisp_name)
+        pointdisp_filename_ref = os.path.join(self.working_directory, '0', 'pointDisplacement')
 
-        disp_file = pointdisp_name
+        pointdisp_filename = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
 
-        n_key = 0
+        with open(pointdisp_filename_ref, 'r') as ref_file:
+            pointdisp_string = ref_file.read()
+
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
+            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
-            start_nr = self.find_string_in_file(boundary, disp_file)
-            os.system("head -n " + str(start_nr + 1) + " " + disp_file + " > tempDisp")
+        with open(pointdisp_filename, 'w') as f:
+            f.write(pointdisp_string)
 
-            with open('tempDisp', 'a+') as file:
-                file.write("\t { \n")
-                file.write("\t\t type  \t fixedValue; \n")
-                file.write('\t\t value \t nonuniform List<vector> ( \n')
-                for i in range(displacement.shape[0]):
-                    file.write(f' ({displacement[i, 0]:27.17e} {displacement[i, 1]:27.17e} '
-                               f'{displacement[i, 2]:27.17e}) \n')
-                file.write(');\n')
+        if self.settings['parallel']:
+            check_call(f'decomposePar -fields -time {self.prev_timestamp} &> log.decomposePar;',
+                       cwd=self.working_directory, shell=True, env=self.env)
 
-            os.system("wc -l " + disp_file + " > lengthDisp")
-            lengthDisp_file = open("lengthDisp", 'r')
-            length_disp = int(lengthDisp_file.readline().split(" ")[0])
-            lengthDisp_file.close()
-            os.system("tail -n " + str(length_disp - (start_nr + 1)) + " " + disp_file + " > tempDisp2")
-            start_to_end_nr = self.find_string_in_file("}", "tempDisp2")
-            os.system(
-                "tail -n " + str(length_disp - (start_nr + 1) - start_to_end_nr) + " " + disp_file + " > tempDisp3")
-            os.system("cat tempDisp tempDisp3 > " + disp_file)
-            os.system("rm tempDisp* lengthDisp")
-            n_key += 1
-
-        if self.cores > 1:
-            check_call(
-                "cd " + self.working_directory + "; decomposePar -fields -time " + self.prev_timestamp
-                + " &> log.decomposePar;", shell=True, env=self.env)
-
-    def write_control_dict_function(self, file_name, func_name, lib_name, variable_name, patch_name, write_start,
-                                    write_end):
-        with open(file_name, 'a+') as file:
-            if write_start:
-                file.write("functions \n")
-                file.write("{ \n ")
-            if variable_name == "wallShearStress":
-                file.write(" \n \t " + variable_name + " \n")
-            else:
-                file.write(" \n \t " + variable_name + "_" + patch_name + " \n")
-            file.write("\t { \n")
-            file.write("\t\t type  \t " + func_name + "; \n")
-            file.write('\t\t libs \t ("' + lib_name + '.so"); \n')
-            file.write('\t\t executeControl \t timeStep; \n')
-            file.write('\t\t executeInterval \t 1; \n')
-            file.write('\t\t writeControl \t timeStep; \n')
-            file.write('\t\t writeInterval \t 1; \n')
-            file.write('\t\t timeFormat \t fixed; \n')
-            file.write(f'\t\t timePrecision \t {self.time_precision}; \n')
-            if func_name == "surfaceRegion":
-                file.write('\t\t operation \t none; \n')
-                file.write('\t\t writeFields \t true; \n')
-                file.write('\t\t surfaceFormat \t raw; \n')
-                file.write('\t\t regionType \t patch; \n')
-                file.write('\t\t name \t ' + patch_name + ' ; \n')
-                file.write('\t\t fields \n')
-                file.write('\t\t ( \n')
-                if variable_name == "PRESSURE":
-                    file.write('\t\t\t p \n ')
-                elif variable_name == "TRACTION":
-                    file.write('\t\t\t wallShearStress \n')
-                file.write("\t\t ); \n")
-            elif func_name == "wallShearStress":
-                file.write('\t\t log \t false; \n')
-            file.write("\t } \n\n")
-            if write_end:
-                file.write("} \n ")
-
-        file.close()
-
-    def write_pointdisplacement_file(self, pointdisp_raw_name, pointdisp_name):
-        with open(pointdisp_raw_name, 'r') as raw_file:
-            with open(pointdisp_name, 'w') as new_file:
-                for line in raw_file:
-                    new_file.write(line)
-
-                for boundary in self.boundary_names:
-                    new_file.write(" \n \t " + boundary + " \n")
-                    new_file.write("\t { \n")
-                    new_file.write("\t\t type  \t fixedValue; \n")
-                    new_file.write("\t\t value \t uniform (0 0 0); \n")
-                    new_file.write("\t } \n")
-                new_file.write("} \n")
-                new_file.close()
-                self.write_footer(pointdisp_name)
-        raw_file.close()
-
-    def find_string_in_file(self, string_name, file_name):
-        index = -1
-        with open(file_name) as f:
-            for num, line in enumerate(f):
-                if string_name in line:
-                    index = num
-                    break
-        f.close()
-        return index
+    # noinspection PyMethodMayBeStatic
+    def check_output_file(self, filename, nfaces):
+        counter = 0
+        nlines = 0
+        lim = 1000
+        while (nlines < nfaces + 2) and counter < lim:
+            if os.path.isfile(filename):
+                with open(filename, 'r') as f:
+                    nlines = sum(1 for _ in f)
+            time.sleep(0.01)
+            counter += 1
+        if counter == lim:
+            raise RuntimeError(f'Timed out waiting for file: {filename}')
+        else:
+            return True
 
     def send_message(self, message):
-        file = os.path.join(self.working_directory, message + ".coco")
+        file = os.path.join(self.working_directory, message + '.coco')
         open(file, 'w').close()
         return
 
     def wait_message(self, message):
-        waitTimeLimit = 10 * 60  # 10 minutes maximum waiting time for a single flow solver iteration
-        cumulTime = 0
-        file = os.path.join(self.working_directory, message + ".coco")
+        wait_time_lim = 10 * 60  # 10 minutes maximum waiting time for a single flow solver iteration
+        cumul_time = 0
+        file = os.path.join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
             time.sleep(0.01)
-            cumulTime += 0.01
-            if cumulTime > waitTimeLimit:
-                os.system("pkill " + self.application)
-                sys.exit("CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: " + message + ".coco.")
+            cumul_time += 0.01
+            if cumul_time > wait_time_lim:
+                self.openfoam_process.kill()
+                self.openfoam_process.wait()
+                raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: '
+                                   f'{message}.coco')
         os.remove(file)
         return
 
     def check_message(self, message):
-        file = os.path.join(self.working_directory, message + ".coco")
+        file = os.path.join(self.working_directory, message + '.coco')
         if os.path.isfile(file):
             os.remove(file)
             return True
@@ -674,105 +462,178 @@ class SolverWrapperOpenFOAM_41(Component):
 
     def check_software(self):
         if check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
-            sys.exit("You either did not load the module for OpenFOAM/4.1, did not compile the solver you are trying "
-                     "to use or did not source $FOAM_BASH prior to execution of CoCoNuT.")
+            raise RuntimeError(f'OpenFOAM not loaded properly. You should perform the following steps:\n'
+                               f'-\tLoad the module for OpenFOAM-{self.version},\n'
+                               f'-\tSource $FOAM_BASH,\n'
+                               f'-\tCompile {self.application}')
 
-        # The statement above could work for other version of OpenFOAM is the solver is also compiled for that version. Therefore, the version number is checked explicity (don't forget to remove the end-of-line variable at the end of the String versionNr
+        # check version
         with open('checkSoftware', 'r') as f:
-            lastLine = f.readlines()[-2]  # Second last line contains 'Build: XX' with XX the version number
-        f.close()
-        os.system('rm checkSoftware')
-        versionNr = lastLine.split(' ')[-1]
-        if versionNr[:-1] != self.moduleVersion:
-            sys.exit("OpenFOAM 4.1 should be loaded! Currently, another version of OpenFOAM is loaded")
-
-    def get_point_ids(self, boundary, dir):
-        'Function that returns the local point IDs belonging to a specified boundary in the correct sequence for the pointDisplacement file'
-        f_b = f'{dir}/boundary'
-        f_f = f'{dir}/faces'
-        f_p = f'{dir}/points'
-
-        # Identify startface and endface for the boundary
-        with open(f_b) as f:
-            line = f.readline()
-            while not boundary in line:
-                line = f.readline()
-            for i in range(0, 4):
-                line = f.readline()
-            nfaces = int(line[:-2].split()[1])
-            line = f.readline()
-            start_face = int(line[:-2].split()[1])
-
-        # Get number of points to keep a list of booleans
-        prev_line = "("
-        with open(f_p) as f:
-            line = f.readline()
-            while not "(" in line:
-                prev_line = line
-                line = f.readline()
-            n_points = int(prev_line)
-            points = np.zeros((n_points, 3))
-            count = 0
-            line = f.readline()
-            while any(char.isdigit() for char in line):
-                temp = line.split(" ")
-                points[count, 0] = float(temp[0][1:])
-                points[count, 1] = float(temp[1][:])
-                points[count, 2] = float(temp[2][:-2])
-                count += 1
-                line = f.readline()
-
-        points_bool = np.zeros((n_points, 1))
-        boundary_ind = []
-
-        # Read in nodes file
-
-        # Read in the list of faces and the nodes constituting those faces
-        all_face_nodes = []
-        with open(f_f) as f:
-            line = f.readline()
-            while not "(" in line:
-                line = f.readline()
-            line = f.readline()
-            while any(char.isdigit() for char in line):
-                list = line[2:-2].split()
-                all_face_nodes.append(list)
-                line = f.readline()
-
-        # Extract the cell faces belonging to the boundary and create an ordered list of node id's
-        face_centers = np.zeros((nfaces, 3))
-        node_coords = []
-        for nf in range(start_face, start_face + nfaces):
-            face_center = np.zeros([1, 3])
-            list = all_face_nodes[nf]
-            for n in list:
-                face_center += points[int(n), :]
-                if points_bool[int(n) - 1, 0] == 0:  # If not yet in list, add it to the list
-                    boundary_ind.append(int(n))
-                    node_coords.append(points[int(n), :])
-                    points_bool[int(n) - 1, 0] = 1
-            face_centers[nf - start_face, :] = face_center / float(len(list))
-        boundary_ind = np.array(boundary_ind)
-        node_coords = np.array(node_coords, dtype=float)
-        os.path.join(self.working_directory, "faceCenters.txt")
-        np.savetxt(os.path.join(self.working_directory, "faceCenters.txt"), face_centers)
-
-        return boundary_ind, node_coords, face_centers, start_face, nfaces, len(all_face_nodes)
+            last_line = f.readlines()[-2]  # second last line contains 'Build: XX' with XX the version number
+        os.remove('checkSoftware')
+        version_nr = last_line.split(' ')[-1]
+        if version_nr[:-1] != self.version:
+            raise RuntimeError(
+                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded')
 
     def check_interfaces(self):
-        input_interface_model_parts = [param["model_part"] for param in self.settings["interface_input"]]
-        output_interface_model_parts = [param["model_part"] for param in self.settings["interface_output"]]
-        boundary_names = self.settings["boundary_names"]
+        """
+        checks the dictionaries from 'interface_input' and 'interface_output' in parameters.json file. The model part
+        name must be the concatenation of an entry from `boundary_names` and the string `_input`, for 'interface_input'
+        and for 'interface_output' it must be the concatenation of an entry from `boundary_names` and the string
+        `_output`.
+        :return:
+        """
+        input_interface_model_parts = [param['model_part'] for param in self.settings['interface_input']]
+        output_interface_model_parts = [param['model_part'] for param in self.settings['interface_output']]
+        boundary_names = self.settings['boundary_names']
 
         for boundary_name in boundary_names:
             if f'{boundary_name}_input' not in input_interface_model_parts:
                 raise RuntimeError(
                     f'Error in json file: {boundary_name}_input not listed in "interface_input": '
                     f'{self.settings["interface_input"]}.\n. <boundary> in the "boundary_names" in json file should '
-                    f'have corresponding <boundary>_input in "interface_input" list. ')
+                    f'have corresponding <boundary>_input in "interface_input" list')
 
             if f'{boundary_name}_output' not in output_interface_model_parts:
                 raise RuntimeError(
                     f'Error in json file: {boundary_name}_output not listed in "interface_output": '
                     f'{self.settings["interface_output"]}.\n. <boundary> in the "boundary_names" in json file should '
-                    f'have corresponding <boundary>_output in "interface_output" list.')
+                    f'have corresponding <boundary>_output in "interface_output" list')
+
+    def read_modify_controldict(self):
+        """
+        reads the controlDict file in the case-directory and modifies some entries required by the coconut_pimpleFoam.
+        The values of these entries are taken from paramters.json file.
+        :return:
+        """
+
+        file_name = os.path.join(self.working_directory, 'system/controlDict')
+        with open(file_name, 'r') as control_dict_file:
+            control_dict = control_dict_file.read()
+            self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
+            time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
+            self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
+
+            if not time_format == 'fixed':
+                msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
+                tools.print_info(msg, layout='warning')
+                control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
+                                      control_dict)
+            control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
+                                  control_dict)
+            control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
+                                  f'startTime    {self.start_time}', control_dict)
+            control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
+                                  control_dict)
+            control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
+                                  f'timePrecision    {self.time_precision}',
+                                  control_dict)
+            control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
+
+            # delete previously defined coconut functions
+            coconut_start_string = '// CoCoNuT function objects'
+            control_dict = re.sub(coconut_start_string + r'.*', '', control_dict, flags=re.S)
+
+        with open(file_name, 'w') as control_dict_file:
+            control_dict_file.write(control_dict)
+            control_dict_file.write(coconut_start_string + '\n')
+            control_dict_file.write('boundary_names (')
+
+            for boundary_name in self.boundary_names:
+                control_dict_file.write(boundary_name + ' ')
+
+            control_dict_file.write(');\n\n')
+            control_dict_file.write('functions\n{\n')
+
+            for boundary_name in self.boundary_names:
+                control_dict_file.write(f'PRESSURE_{boundary_name}\n'
+                                        f'{{\n'
+                                        f'type  	 surfaceRegion;\n'
+                                        f'libs 	 ("libfieldFunctionObjects.so");\n'
+                                        f'executeControl 	 timeStep;\n'
+                                        f'executeInterval 	 1;\n'
+                                        f'writeControl 	 timeStep;\n'
+                                        f'writeInterval 	 1;\n'
+                                        f'timeFormat 	 fixed;\n'
+                                        f'timePrecision 	 {self.time_precision};\n'
+                                        f'operation 	 none;\n'
+                                        f'writeFields 	 true;\n'
+                                        f'surfaceFormat 	 raw;\n'
+                                        f'regionType 	 patch;\n'
+                                        f'name 	 {boundary_name};\n'
+                                        f'fields (p);\n'
+                                        f'}}\n')
+                control_dict_file.write(f'wallShearStress\n'
+                                        f'{{\n'
+                                        f'type  	 wallShearStress;\n'
+                                        f'libs 	 ("libfieldFunctionObjects.so");\n'
+                                        f'executeControl 	 timeStep;\n'
+                                        f'executeInterval 	 1;\n'
+                                        f'writeControl 	 timeStep;\n'
+                                        f'writeInterval 	 1;\n'
+                                        f'timeFormat 	 fixed;\n'
+                                        f'timePrecision 	 {self.time_precision};\n'
+                                        f'log 	 false;\n'
+                                        f'}}\n')
+                control_dict_file.write(f'TRACTION_{boundary_name}\n'
+                                        f'{{\n'
+                                        f'type  	 surfaceRegion;\n'
+                                        f'libs 	 ("libfieldFunctionObjects.so");\n'
+                                        f''f'executeControl 	 timeStep;\n'
+                                        f'executeInterval 	 1;\n'
+                                        f'writeControl 	 timeStep;\n'
+                                        f'writeInterval 	 1;\n'
+                                        f'timeFormat 	 fixed;\n'
+                                        f'timePrecision 	 {self.time_precision};\n'
+                                        f'operation 	 none;\n'
+                                        f'writeFields 	 true;\n'
+                                        f'surfaceFormat 	 raw;\n'
+                                        f'regionType 	 patch;\n'
+                                        f'name 	 {boundary_name};\n'
+                                        f'fields ( wallShearStress);\n'
+                                        f'}}\n')
+            control_dict_file.write('}')
+        self.write_footer(file_name)
+
+    def write_residuals_fileheader(self):
+        header = ''
+        sep = ', '
+        with open(self.res_filepath, 'w') as f:
+            f.write('# Residuals\n')
+            for variable in self.residual_variables:
+                header += variable + sep
+            f.write(header.strip(sep) + '\n')
+
+    def write_of_residuals(self):
+        """
+        it reads the log file generated by coconut_pimpleFoam solver and writes the last initial residual of the fields
+        in the pimple iterations, for every coupling iteration. The fields should be given in the parameters.json file
+        with the key-'residual_variables' and values-list(OpenFOAM variables), e.g. 'residual_variables': ['U', 'p']
+        :return:
+        """
+        log_filepath = os.path.join(self.working_directory, f'log.{self.application}')
+        if os.path.isfile(log_filepath):
+            with open(log_filepath, 'r') as f:
+                log_string = f.read()
+            time_start_string = f'Time = {self.prev_timestamp}'
+            time_end_string = f'Time = {self.cur_timestamp}'
+            match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
+            if match is not None:
+                time_block = match.group(1)
+                iteration_block_list = re.findall(
+                    r'Coupling iteration = \d+(.*?)Coupling iteration \d+ end', time_block, flags=re.S)
+                for iteration_block in iteration_block_list:
+                    residual_array = np.empty(len(self.residual_variables))
+                    for i, variable in enumerate(self.residual_variables):
+                        search_string = f'Solving for {variable}, Initial residual = ({of_io.float_pattern})'
+                        var_residual_list = re.findall(search_string, iteration_block)
+                        if var_residual_list:
+                            # last initial residual of pimple loop
+                            var_residual = float(var_residual_list[-1])
+                            residual_array[i] = var_residual
+                        else:
+                            raise RuntimeError(f'Variable: {variable} equation is not solved in {self.application}')
+
+                    with open(self.res_filepath, 'a') as f:
+                        np.savetxt(f, [residual_array], delimiter=', ')
