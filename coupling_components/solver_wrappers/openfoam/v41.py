@@ -114,7 +114,7 @@ class SolverWrapperOpenFOAM41(Component):
         # run time
         self.run_time = 0.0
         solver_dir = os.path.join(os.path.dirname(__file__), self.application)
-        check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env= self.env)
+        check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
 
         self.plot_of_residuals = False  # TODO: add in the parameters
         self.residual_variables = self.settings.get('residual_variables', None)
