@@ -36,7 +36,7 @@ class SolverWrapperOpenFOAM_41(Component):
         self.version = '4.1'
 
         # set on True to save copy of input and output files in every iteration
-        self.debug = False
+        self.debug = True
 
         # check interface names in 'interface_input' and 'interface_output' with boundary names provided in boundary_names
         self.check_interfaces()
