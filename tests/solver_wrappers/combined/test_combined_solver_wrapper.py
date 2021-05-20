@@ -9,7 +9,7 @@ from unittest import mock
 
 def mock_create_instance(settings):
     object_type = settings['type']
-    if not 'dummy' in object_type:
+    if 'dummy' not in object_type:
         return create_instance(settings)
     else:
         object_module = __import__('coconut.tests.solver_wrappers.combined.' + object_type, fromlist=[object_type])

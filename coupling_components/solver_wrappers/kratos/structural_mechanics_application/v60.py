@@ -27,6 +27,7 @@ class SolverWrapperKratosStructure60(Component):
         delta_t = self.settings["delta_t"]
         timestep_start = self.settings["timestep_start"]
         dimensions = self.settings["dimensions"]
+        self.timestep = None
 
         input_file_name = join(self.working_directory, self.settings["input_file"])
 
@@ -77,7 +78,7 @@ class SolverWrapperKratosStructure60(Component):
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
 
-        if not self.residual_variables is None:
+        if self.residual_variables is not None:
             self.write_residuals_fileheader()
 
     def initialize(self):
@@ -105,7 +106,7 @@ class SolverWrapperKratosStructure60(Component):
         super().finalize_solution_step()
         self.send_message('save')
         self.wait_message('save_ready')
-        if not self.residual_variables is None:
+        if self.residual_variables is not None:
             self.write_residuals()
 
     def finalize(self):
@@ -223,10 +224,10 @@ class SolverWrapperKratosStructure60(Component):
             time_start_string = r'STEP:\s+' + str(self.timestep - 1)
             time_end_string = r'STEP:\s+' + str(self.timestep)
             match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
-            if not match is None:
+            if match is not None:
                 time_block = match.group(1)
                 iteration_block_list = re.findall(
-                    r'Coupling iteration: \d+' + r'(.*?)' + r'Coupling iteration \d+ end', time_block, flags=re.S)
+                    r'Coupling iteration: \d(.*?)Coupling iteration \d+ end', time_block, flags=re.S)
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
                     for i, variable in enumerate(self.residual_variables):
