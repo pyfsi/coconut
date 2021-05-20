@@ -84,8 +84,16 @@ For example, with a folder structure like
 export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 ```
 
-This line can also be added to your *`.bashrc`* file. 
+This line can also be added to your *`.bashrc`* file.
 
+### Checking the solver modules 
+
+Before using CoCoNuT, it is necessary to adapt some system specific commands in the *`solver_modules.py`* file in the *`coconut`* folder.
+This file has the commands to load solver modules in separate terminals when running a case. As these commands are system specific, it is important to check this file before testing CoCoNuT.
+The nested dictionary `solver_load_cmd_dict` contains an internal dictionary with the key `ugent_cluster` which in his turn contains keys for all solvers that can be used in CoCoNuT. The values are strings containing terminal commands to load the software.
+In case your system differs from the `ugent_cluster` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
+If a solver module is not present on your system the key should be removed, if a solver module is always present, i.e. no module load command is needed, an empty string should be given as value.
+When CoCoNuT tries to use a solver module that is not present in the `solver_load_cmd_dict` or that has the wrong value, an error will be thrown.
 
 ### Quick test
 
