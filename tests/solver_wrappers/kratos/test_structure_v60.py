@@ -1,13 +1,12 @@
-from coconut import data_structure
 from coconut.tools import create_instance
-from coconut.data_structure.interface import Interface
 
 import numpy as np
-import os
-import subprocess
+from os import getcwd
+from os.path import realpath, dirname, join, exists
 import unittest
 import json
 import pandas as pd
+from shutil import copytree, rmtree
 
 
 def print_box(text):
@@ -22,23 +21,27 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
 
     def setUp(self):
         folder_name = 'test_structure_tube_v60'
-        self.dir_tmp = os.path.join(os.path.realpath(os.path.dirname(__file__)), folder_name)
-        setup_file = os.path.join(self.dir_tmp, 'setup_kratos.sh')
-        p = subprocess.Popen(f'sh {setup_file}', cwd=self.dir_tmp, shell=True)
-        p.wait()
+        dir_test = join(realpath(dirname(__file__)), folder_name)
 
         # Create setup files for kratos
+        self.dir_csm = join(dir_test, 'CSM')
+        if exists(self.dir_csm):
+            rmtree(self.dir_csm)
+        copytree(join(dir_test, 'setup_kratos'), join(dir_test, 'CSM'))
 
-        parameter_file_name = os.path.join(self.dir_tmp, 'test_solver_wrapper.json')
+        parameter_file_name = join(dir_test, 'test_solver_wrapper.json')
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
             self.solver_param = parameters['solver_wrappers'][0]
 
-        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
+        if getcwd() == realpath(dirname(__file__)):
             self.solver_param['settings']['working_directory'] = f'{folder_name}/CSM'
 
         self.mp_out_name = self.solver_param['settings']['interface_output'][0]['model_part']
+
+    def tearDown(self):
+        rmtree(self.dir_csm)
 
     def test_apply_load(self):
         print_box('started tests for Kratos Tube3D: test_apply_load')
@@ -107,7 +110,7 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
 
         # run solver for 4 timesteps
         for i in range(4):
-            load = self.get_uniform_load_data(pressure*i, traction*i)
+            load = self.get_uniform_load_data(pressure * i, traction * i)
             load_interface.set_interface_data(load)
             solver.initialize_solution_step()
             solver.solve_solution_step(load_interface).copy()
@@ -125,7 +128,7 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
         solver = create_instance(self.solver_param)
         solver.initialize()
         for i in range(2, 4):
-            load = self.get_uniform_load_data(pressure*i, traction*i)
+            load = self.get_uniform_load_data(pressure * i, traction * i)
             load_interface.set_interface_data(load)
             solver.initialize_solution_step()
             solver.solve_solution_step(load_interface).copy()
@@ -147,7 +150,7 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
         max_value = np.max(np.abs(out_data))
 
         # check if pressure and traction are equal
-        np.testing.assert_allclose(out_data/max_value, out_data_restart/max_value, rtol=0, atol=1e-10)
+        np.testing.assert_allclose(out_data / max_value, out_data_restart / max_value, rtol=0, atol=1e-10)
 
     def get_uniform_load_data(self, pressure, traction):
         load = []
@@ -172,8 +175,8 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
     def read_pressure_traction(self):
         working_directory = self.solver_param['settings']['working_directory']
         input_mp_name = self.solver_param['settings']['kratos_interface_sub_model_parts_list'][0]
-        pr_fname = os.path.join(working_directory, f'{input_mp_name}_pressure.csv')
-        sl_fname = os.path.join(working_directory, f'{input_mp_name}_surface_load.csv')
+        pr_fname = join(working_directory, f'{input_mp_name}_pressure.csv')
+        sl_fname = join(working_directory, f'{input_mp_name}_surface_load.csv')
         df_pr = pd.read_csv(pr_fname, skipinitialspace=True)
         df_sl = pd.read_csv(sl_fname, skipinitialspace=True)
         pressure = np.array(df_pr['pressure'])

@@ -123,7 +123,7 @@ class SolverWrapperKratosStructure60(Component):
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.remove_all_messages()
-        self.kratos_process.kill()
+        self.kratos_process.wait()
 
     def get_interface_input(self):
         return self.interface_input
