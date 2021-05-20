@@ -4,14 +4,13 @@
       "type": "solver_wrappers.openfoam.v41",
       "settings": {
         "working_directory": "solver_wrappers/openfoam/test_tube_3d",
-        "application": "CoCoNuT_pimpleFoam",
-        "dimensions": 3,
+        "application": "coconut_pimpleFoam",
         "delta_t": 0.0001,
+        "time_precision": 4,
         "boundary_names": [
           "mantle"
         ],
-        "start_time": 0,
-        "end_time": 0.01,
+        "timestep_start": 0,
         "interface_input": [
           {
             "model_part": "mantle_input",
@@ -29,18 +28,10 @@
             ]
           }
         ],
-        "cores": 1,
-        "decomposeMethod": "scotch",
-        "newtonmax": 10,
-        "newtonmin": 1,
-        "newtontol": 1e-3,
-        "write_interval": 1,
-        "write_precision": 15,
-        "time_precision": 5,
-        "meshmotion_solver": "displacementLaplacian",
-        "diffusivity": "inverseDistance",
+
         "density": 1000,
-        "is_incompressible": true
+        "is_incompressible": true,
+        "parallel": true
       }
     }
   ]
