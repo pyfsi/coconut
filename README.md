@@ -30,12 +30,12 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 ### Requirements
 
 -   `python>=3.6` 
--   `numpy>=1.16.2`
--   `scipy>=1.2.1`
+-   `numpy>=1.16.4`
+-   `scipy>=1.3.0`
 -   `pandas>=0.24.2` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos))
--   `matplotlib=3.03` (recommended)
+-   `matplotlib=3.1.0` (recommended)
 
-We recommend Anaconda 2019.03 or newer.
+We recommend Anaconda 2019.07 or newer.
 
 
 ### Installation procedure
@@ -89,11 +89,11 @@ This line can also be added to your *`.bashrc`* file.
 ### Checking the solver modules 
 
 Before using CoCoNuT, it is necessary to adapt some system specific commands in the *`solver_modules.py`* file in the *`coconut`* folder.
-This file has the commands to load solver modules in separate terminals when running a case. As these commands are system specific, it is important to check this file before testing CoCoNuT.
-The nested dictionary `solver_load_cmd_dict` contains an internal dictionary with the key `ugent_cluster` which in his turn contains keys for all solvers that can be used in CoCoNuT. The values are strings containing terminal commands to load the software.
+This file has the commands to load solver modules in separate environments when running a case, to avoid conflicts. As these commands are system specific, it is important to check this file before testing CoCoNuT. 
+The file contains a nested dictionary `solver_load_cmd_dict`, an internal dictionary with the key `ugent_cluster` which in its turn contains keys for all solvers that can be used in CoCoNuT. The values are strings containing terminal commands to load the software, thus setting the environment which allows running the solver. On the UGent cluster the [Lmod system](https://lmod.readthedocs.io/en/latest/) is used for example, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semi-colon (;) or double ampersand (&&) can be used.
 In case your system differs from the `ugent_cluster` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
-If a solver module is not present on your system the key should be removed, if a solver module is always present, i.e. no module load command is needed, an empty string should be given as value.
-When CoCoNuT tries to use a solver module that is not present in the `solver_load_cmd_dict` or that has the wrong value, an error will be thrown.
+If a solver module is not present on your system the key should be removed, if a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
+When CoCoNuT tries to use a solver module that is not present in the `solver_load_cmd_dict` or that has the wrong value, an error will be raised.
 
 ### Quick test
 
@@ -126,10 +126,10 @@ cd $COCO/coconut/examples/tube_tube_flow_tube_structure/
 ```
 This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file *`parameters.json`* will be used to run the actual FSI simulation, but we will come back to that later. 
 First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
-In this case we provide a bash script *`setup.sh`* that sets up both solvers using the files in the folder *`../setup_files`*. When the script is run with
+In this case we provide a script *`setup.py`* that sets up both solvers using the files in the folder *`../setup_files`*. When the script is run with
 
 ```bash
-./setup.sh
+python3 setup.py
 ```
 
 new folders *`CFD`* and *`CSM`* appear, as well as the file *`run_simulation.py`*. The *`CFD`* folder contains all files required to start a simulation of the flow in the tube. 
@@ -138,7 +138,7 @@ Analogously, the *`CSM`* folder contains all files required to start a simulatio
 We can now start the FSI simulation in CoCoNuT by running the Python file *`run_simulation.py`*:
 
 ```bash
-python run_simulation.py
+python3 run_simulation.py
 ```
 
 The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself strats: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
