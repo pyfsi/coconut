@@ -7,6 +7,7 @@ import warnings
 import os
 import subprocess
 import pickle
+import importlib.util
 
 
 def create_instance(settings):
@@ -216,6 +217,20 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
         raise ValueError(msg)
     if error_max > tol_minmax_warning:
         warnings.warn(msg, Warning)
+
+
+# import module from path
+def import_module(module_name, path):
+    """
+    Loads module from a(n absolute) path
+    :param module_name: string
+    :param path: string
+    :return: module
+    """
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def write_env():
