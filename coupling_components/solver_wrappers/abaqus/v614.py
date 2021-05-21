@@ -12,6 +12,7 @@ import numpy as np
 import re
 import textwrap
 from pathlib import Path
+import warnings
 
 
 def create(parameters):
@@ -448,7 +449,8 @@ class SolverWrapperAbaqus614(Component):
 
         # compilers
         try:
-            subprocess.check_call('which ifort', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=self.env)
+            subprocess.check_call('which ifort', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                  env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError('Intel compiler ifort must be available.')
 
@@ -566,55 +568,47 @@ class SolverWrapperAbaqus614(Component):
                             else:
                                 line_new += f' inc={self.max_num_inc},'
                         else:
-                            line_new += s+','
-                    line_new = line_new[:-1]+'\n'  # remove the last added comma and add a newline
-
+                            line_new += s + ','
+                    line_new = line_new[:-1] + '\n'  # remove the last added comma and add a newline
                     of.write(line_new)
                     if bool_restart:
                         rf.write(line_new)
-                    line = f.readline()
-                elif '*dynamic' in line.lower():
-                    contents = line.split(',')
-                    for s in contents:
-                        if 'application' in s.lower():
-                            contents_B = s.split('=')
-                            app = contents_B[1].lower().strip()
-                            if app in ['quasi-static', 'moderate dissipation', 'transient fidelity']:
-                                if not self.subcycling:
-                                    line_2 = f'{self.delta_t}, {self.delta_t},\n'
-                                else:
-                                    line_2 = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
-                            else:
-                                raise NotImplementedError(
-                                    f'{contents_B[1]} not available: currently only quasi-static, moderate dissipation '
-                                    f'and transient fidelity are implemented for the Abaqus wrapper')
+                elif '*dynamic' in line.lower() or '*static' in line.lower():
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
-                        f.readline()  # need to skip the next line
-                        of.write(line_2)  # change the time step in the Abaqus step
-                        if bool_restart:
-                            rf.write(line_2)  # change the time step in the Abaqus step (restart-file)
-                        line = f.readline()
-                    elif '*static' in line.lower():
-                        of.write(line)
-                        if bool_restart:
-                            rf.write(line)
-                        f.readline()  # need to skip the next line
-                        if not self.subcycling:
-                            raise NotImplementedError(
-                                'Only Static with subcycling is implemented for the Abaqus wrapper')
-                        line_2 = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
-                        f.readline()
-                    of.write(line_2)  # change the time step in the Abaqus step
+                    if '*dynamic' in line.lower():
+                        contents = line.split(',')
+                        for s in contents:
+                            if 'application' in s.lower():
+                                contents_b = s.split('=')
+                                app = contents_b[1].lower().strip()
+                                if app not in {'quasi-static', 'moderate dissipation', 'transient fidelity'}:
+                                    raise NotImplementedError(
+                                        f'{contents_b[1]} not available: currently only quasi-static, moderate '
+                                        f'dissipation and transient fidelity are implemented for the Abaqus wrapper')
+                    check_line = f.readline()  # need to skip the next line, but contents are checked
+                    check_line = [float(line_part) for line_part in check_line.replace(',\n', '').split(',')]
+                    if not self.subcycling:
+                        line_new = f'{self.delta_t}, {self.delta_t},\n'
+                        check_ok = np.allclose(check_line, [self.delta_t, self.delta_t], atol=0)
+                    else:
+                        line_new = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
+                        check_ok = np.allclose(check_line, [self.initial_inc, self.delta_t, self.min_inc, self.max_inc],
+                                               atol=0)
+                    if not check_ok:
+                        with warnings.catch_warnings():
+                            warnings.filterwarnings('always', category=UserWarning)
+                            warnings.warn(f'{self.__class__.__name__} overwrites incrementation settings in '
+                                          f'{self.input_file}, make sure this is intended', category=UserWarning)
+                    of.write(line_new)  # change the time step in the Abaqus step
                     if bool_restart:
-                        rf.write(line_2)  # change the time step in the Abaqus step (restart-file)
-                    line = f.readline()
+                        rf.write(line_new)  # change the time step in the Abaqus step (restart-file)
                 else:
                     of.write(line)
                     if bool_restart:
                         rf.write(line)
-                    line = f.readline()
+                line = f.readline()
                 if '** --'in line:
                     bool_restart = True
         rf.close()
