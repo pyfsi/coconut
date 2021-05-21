@@ -7,7 +7,6 @@ import multiprocessing
 import re
 import json
 from subprocess import check_call, DEVNULL
-import numpy as np
 
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
