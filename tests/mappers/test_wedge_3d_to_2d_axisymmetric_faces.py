@@ -11,12 +11,10 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     gui = False
 
     def setUp(self):
-        self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d_mod',
+        self.parameters = {'type': 'mappers.wedge_3d_to_2d_axisymmetric',
                            'settings':
                                {'direction_axial': 'x',
-                                'direction_radial': 'y',
-                                'wedge':False,
-                                'n_tangential': 13}
+                                'direction_radial': 'y'}
                            }
 
     def test_instantiation(self):
@@ -29,50 +27,50 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         self.parameters['settings']['direction_radial'] = 2
         self.assertRaises(ValueError, create_instance, self.parameters)
 
-        self.parameters['settings']['direction_radial'] = 2
-        self.parameters['settings']['n_tangential'] = 3
-        self.assertRaises(ValueError, create_instance, self.parameters)
-
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
-        self.wedge = self.parameters['settings']['wedge']
 
-        # create model_part_in
+        # create geometry for 3D model_part_in
         n_in = 10
-        x_in = np.linspace(0, 2 * np.pi, n_in)
-        y_in = 1. + 0.2 * np.sin(x_in)
-        z_in = np.zeros(10)
-        model = data_structure.Model()
-        model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_in))
+        n_from = n_in
+        x = np.linspace(0,0.1, n_in)
+        r = 1 + 0.07 * np.sin(x * 600)
 
-        # create reference geometry for 3D model_part_out
-        if self.wedge:
-            n_t = 2
-        else:
-            n_t = self.parameters['settings']['n_tangential']
-        n_out_ref = n_in * n_t
+        x_in = np.zeros(n_from)
+        y_in = np.zeros(n_from)
+        z_in = np.zeros(n_from)
+
+        i = 0
+        for k in range(n_in):
+            x_in[i] = x[k]
+            y_in[i] = r[k] * np.cos(np.radians(2.5))
+            z_in[i] = 0
+            i += 1
+
+        model = data_structure.Model()
+        model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_from))
+
+        # create reference geometry for 2D model_part_out
+        n_out_ref = n_in
         x_out_ref = np.zeros(n_out_ref)
         y_out_ref = np.zeros(n_out_ref)
         z_out_ref = np.zeros(n_out_ref)
 
-        for i_t in range(n_t):
-            for i_from in range(n_in):
-                start = i_t * n_in
-                end = (i_t + 1) * n_in
-                if self.wedge:
-                    theta = np.radians(2.5)*(-1)**(i_t)
-                else:
-                    theta = i_t * 2 * np.pi / n_t
-                x_out_ref[start:end] = x_in
-                y_out_ref[start:end] = np.cos(theta) * y_in
-                z_out_ref[start:end] = np.sin(theta) * y_in
+        i_to = 0
+
+        for i_from in range(n_from):
+                r=y_in[i_from]
+                x_out_ref[i_to]=x_in[i_from]
+                y_out_ref[i_to] = r/np.cos(np.radians(2.5))
+                z_out_ref[i_to]=0
+                i_to +=1
 
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
         mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
 
-        # get mapped geometry from 3D model_part_out
+        # get mapped geometry from 2D model_part_out
         mp_out = model.get_model_part(mp_name_out)
         n_out = mp_out.size
         x_out = mp_out.x0
@@ -85,15 +83,15 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         np.testing.assert_array_equal(y_out, y_out_ref)
         np.testing.assert_array_equal(z_out, z_out_ref)
 
-    def test_call(self):
+    # def test_call(self):
         def fun_s(x):
             return 1. + 2.5 * x
 
         def fun_v(x, y, z):
-            theta = np.arctan2(z, y)
+            r = y/np.cos(np.radians(2.5))
             v_x = 1. + 2.5 * x
-            v_y = v_x * 0.5 * np.cos(theta)
-            v_z = v_x * 0.5 * np.sin(theta)
+            v_y = v_x * 0.5 * r
+            v_z = 0 * z
             return np.column_stack((v_x, v_y, v_z))
 
         mp_name_from = 'wall_from'
@@ -101,20 +99,37 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         var_s = 'pressure'
         var_v = 'displacement'
 
-        n_from = 7
-        tmp = np.linspace(0, 5, n_from)
-        x_from, y_from, z_from = tmp, 1. + 0.2 * np.sin(2 * np.pi / 5 * tmp), np.zeros_like(tmp)
-        v_s_from = fun_s(x_from).reshape(-1, 1)
-        v_v_from = fun_v(x_from, y_from, z_from)
+        n_in = 10
+        n_from = n_in
+        tmp = np.linspace(0, 0.05, n_in)
+        r_tmp = 0.01*(1. + 0.2 * np.sin(100 * np.pi / 5 * tmp))
+
+        # create model_part_from (3D)
+        x_from = np.zeros(n_from)
+        y_from = np.zeros(n_from)
+        z_from = np.zeros(n_from)
+
+        i = 0
+        for k in range(n_in):
+            x_from[i] = tmp[k]
+            y_from[i] = r_tmp[k] * np.cos(np.radians(2.5))
+            z_from[i] = r_tmp[k] * 0
+            i += 1
+
 
         model = data_structure.Model()
-        model.create_model_part(mp_name_from, x_from, y_from, y_from, np.arange(n_from))
+        model.create_model_part(mp_name_from, x_from, y_from, z_from, np.arange(n_from))
+
         parameters_from = [{'model_part': mp_name_from, 'variables': [var_s, var_v]}]
         interface_from = data_structure.Interface(parameters_from, model)
+
+        v_s_from = fun_s(x_from).reshape(-1, 1)
+        v_v_from = fun_v(x_from, y_from, z_from)
         interface_from.set_variable_data(mp_name_from, var_s, v_s_from)
         interface_from.set_variable_data(mp_name_from, var_v, v_v_from)
 
-        # initialize mapper
+
+        # initialize mapper to get model_part_to (2D)
         mapper = create_instance(self.parameters)
         mapper.initialize(model, mp_name_from, mp_name_to, forward=True)
         parameters_to = [{'model_part': mp_name_to, 'variables': [var_s, var_v]}]
@@ -136,7 +151,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         v_v_to = interface_to.get_variable_data(mp_name_to, var_v)
         np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-14)
 
-        # extra: visualization
+
+         # extra: visualization
         if self.gui:
             v_s_from, v_s_to = v_s_from.flatten(), v_s_to.flatten()
             c_from = cm.jet((v_s_from - v_s_from.min()) / (v_s_from.max() - v_s_from.min()))
@@ -152,9 +168,9 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
             ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1, colors='r', linewidth=3)
+                        pivot='tail', arrow_length_ratio=0.2, normalize=False, length=0.01, colors='r', linewidth=3)
             ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1)
+                        pivot='tail', arrow_length_ratio=0.2, normalize=False, length=0.01)
 
             for ax in [ax_s, ax_v]:
                 ax.set_xlabel('x')
@@ -162,6 +178,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
+            # plt.xlim(1,1.25)
+            # plt.ylim(0.99,1.02)
             plt.show()
             plt.close()
 
