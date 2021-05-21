@@ -5,11 +5,11 @@ import numpy as np
 
 
 def create(parameters):
-    return MapperAxisymmetric2DTo3D(parameters)
+    return MapperAxisymmetric2DTo3DMod(parameters)
 
 # TODO: mention in docs that these mappers cannot handle singular points (i.e. with r = 0, e.g. balloon)
 
-class MapperAxisymmetric2DTo3D(MapperTransformer):
+class MapperAxisymmetric2DTo3DMod(MapperTransformer):
     def __init__(self, parameters):
         super().__init__(parameters)
 

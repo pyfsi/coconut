@@ -7,31 +7,17 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = False
+class TestMapperAxisymmetric3DTo2DMod(unittest.TestCase):
+    gui = True
 
     def setUp(self):
-        self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d_mod',
+        self.parameters = {'type': 'mappers.axisymmetric_3d_to_2d_mod',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'wedge':True,
+                                'wedge':False,
                                 'n_tangential': 13}
                            }
-
-    def test_instantiation(self):
-        create_instance(self.parameters)
-
-        self.parameters['settings']['direction_axial'] = 'X'
-        self.assertRaises(ValueError, create_instance, self.parameters)
-
-        self.parameters['settings']['direction_axial'] = 'x'
-        self.parameters['settings']['direction_radial'] = 2
-        self.assertRaises(ValueError, create_instance, self.parameters)
-
-        self.parameters['settings']['direction_radial'] = 2
-        self.parameters['settings']['n_tangential'] = 3
-        self.assertRaises(ValueError, create_instance, self.parameters)
 
     def test_initialize(self):
         mp_name_in = 'wall_in'
@@ -70,7 +56,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
 
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
-        mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
+        mapper.initialize(model, mp_name_in, mp_name_out, forward=False)
 
         # get mapped geometry from 3D model_part_out
         mp_out = model.get_model_part(mp_name_out)
@@ -101,40 +87,42 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         var_s = 'pressure'
         var_v = 'displacement'
 
-        n_from = 7
-        tmp = np.linspace(0, 5, n_from)
-        x_from, y_from, z_from = tmp, 1. + 0.2 * np.sin(2 * np.pi / 5 * tmp), np.zeros_like(tmp)
-        v_s_from = fun_s(x_from).reshape(-1, 1)
-        v_v_from = fun_v(x_from, y_from, z_from)
+        n_to = 7
+        tmp = np.linspace(0, 5, n_to)
+        x_to, y_to, z_to = tmp, 1. + 0.2 * np.sin(2 * np.pi / 5 * tmp), np.zeros_like(tmp)
 
         model = data_structure.Model()
-        model.create_model_part(mp_name_from, x_from, y_from, y_from, np.arange(n_from))
-        parameters_from = [{'model_part': mp_name_from, 'variables': [var_s, var_v]}]
-        interface_from = data_structure.Interface(parameters_from, model)
-        interface_from.set_variable_data(mp_name_from, var_s, v_s_from)
-        interface_from.set_variable_data(mp_name_from, var_v, v_v_from)
+        model.create_model_part(mp_name_to, x_to, y_to, z_to, np.arange(n_to))
+        parameters_to = [{'model_part': mp_name_to, 'variables': [var_s, var_v]}]
+        interface_to = data_structure.Interface(parameters_to, model)
 
         # initialize mapper
         mapper = create_instance(self.parameters)
-        mapper.initialize(model, mp_name_from, mp_name_to, forward=True)
-        parameters_to = [{'model_part': mp_name_to, 'variables': [var_s, var_v]}]
-        interface_to = data_structure.Interface(parameters_to, model)
-        mp_to = interface_to.get_model_part(mp_name_to)
-        x_to, y_to, z_to = mp_to.x0, mp_to.y0, mp_to.z0
+        mapper.initialize(model, mp_name_to, mp_name_from, forward=False)
+        parameters_from = [{'model_part': mp_name_from, 'variables': [var_s, var_v]}]
+        interface_from = data_structure.Interface(parameters_from, model)
+        mp_from = interface_from.get_model_part(mp_name_from)
+        x_from, y_from, z_from = mp_from.x0, mp_from.y0, mp_from.z0
+
+        # set data
+        v_s_from = fun_s(x_from).reshape(-1, 1)
+        v_v_from = fun_v(x_from, y_from, z_from)
+        interface_from.set_variable_data(mp_name_from, var_s, v_s_from)
+        interface_from.set_variable_data(mp_name_from, var_v, v_v_from)
 
         # check mapped values for 1D variable
         mapper((interface_from, mp_name_from, var_s),
                (interface_to, mp_name_to, var_s))
         v_s_to_ref = fun_s(x_to).reshape(-1, 1)
         v_s_to = interface_to.get_variable_data(mp_name_to, var_s)
-        np.testing.assert_allclose(v_s_to, v_s_to_ref, rtol=1e-14)
+        np.testing.assert_allclose(v_s_to, v_s_to_ref, rtol=1e-15)
 
         # check mapped values for 3D variable
         mapper((interface_from, mp_name_from, var_v),
                (interface_to, mp_name_to, var_v))
         v_v_to_ref = fun_v(x_to, y_to, z_to)
         v_v_to = interface_to.get_variable_data(mp_name_to, var_v)
-        np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-14)
+        np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-15)
 
         # extra: visualization
         if self.gui:
@@ -146,14 +134,14 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
 
             ax_s = fig.add_subplot(121, projection='3d')
             ax_s.set_title('check geometry and scalar mapping')
-            ax_s.scatter(x_from, y_from, z_from, s=50, c=c_from, depthshade=True, marker='s')
-            ax_s.scatter(x_to, y_to, z_to, s=20, c=c_to, depthshade=True)
+            ax_s.scatter(x_to, y_to, z_to, s=50, c=c_to, depthshade=True, marker='s')
+            ax_s.scatter(x_from, y_from, z_from, s=20, c=c_from, depthshade=True)
 
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
-            ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1, colors='r', linewidth=3)
             ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
+                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1, colors='r', linewidth=3)
+            ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
                         pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1)
 
             for ax in [ax_s, ax_v]:
