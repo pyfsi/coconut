@@ -44,6 +44,7 @@ Description
 #include "Ostream.H"
 #include "forces.H"
 #include "fsiDisplacement.H"
+#include "Time.H"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -174,17 +175,18 @@ int main(int argc, char *argv[])
     		runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
     		remove("save.coco");
     		OFstream outfile ("save_ready.coco");
-			outfile << "save.coco" << endl;
 		}
-    	
-    	if (exists("stop.coco"))
+
+		if (exists("stop.coco"))
 		{
-    		remove("stop.coco");
-    		OFstream outfile ("stop_ready.coco"); 
-    		outfile << "stop.coco" << endl;
-    		break;
-		}  
+		    //remove("stop.coco"); // should not be uncommented
+            runTime.stopAt(Time::saNoWriteNow);
+            OFstream outfile ("stop_ready.coco");
+            break;
+		}
+
     }
+
     return 0;
 }
 

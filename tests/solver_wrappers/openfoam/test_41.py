@@ -6,11 +6,10 @@ import os
 import multiprocessing
 import re
 import json
-from subprocess import check_call, STDOUT, DEVNULL
+from subprocess import check_call, DEVNULL
 import numpy as np
 
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
-
 
 version = '41'
 
@@ -44,8 +43,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.clean_case()
 
     def clean_case(self):
-        check_call("""ps aux | awk '{{if (($0 !~ /awk/) && ($0 ~ /coconut_pimpleFoam/)) system("kill -9 " $2)}}'""",
-                   shell=True, stdout=DEVNULL, stderr=STDOUT)
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
 
     def set_up_case(self):
@@ -192,12 +189,12 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         solver.finalize_solution_step()
         solver.finalize()
 
-        pr_amp = 0.5*(np.max((pressure[0] + pressure[2])/2) - np.min((pressure[0] + pressure[2])/2))
-        tr_amp = 0.5*(np.max((traction[0] + traction[2])/2) - np.min((traction[0] + traction[2])/2))
+        pr_amp = 0.5 * (np.max((pressure[0] + pressure[2]) / 2) - np.min((pressure[0] + pressure[2]) / 2))
+        tr_amp = 0.5 * (np.max((traction[0] + traction[2]) / 2) - np.min((traction[0] + traction[2]) / 2))
 
         # check if same position gives same pressure & traction
-        np.testing.assert_allclose(pressure[0]/pr_amp, pressure[2]/pr_amp, atol=1e-4, rtol=0)
-        np.testing.assert_allclose(traction[0]/tr_amp, traction[2]/tr_amp, atol=1e-4, rtol=0)
+        np.testing.assert_allclose(pressure[0] / pr_amp, pressure[2] / pr_amp, atol=1e-4, rtol=0)
+        np.testing.assert_allclose(traction[0] / tr_amp, traction[2] / tr_amp, atol=1e-4, rtol=0)
 
         # check if different position gives different pressure & traction
         p01 = np.linalg.norm(pressure[0] - pressure[1])

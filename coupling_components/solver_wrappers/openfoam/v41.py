@@ -114,9 +114,14 @@ class SolverWrapperOpenFOAM41(Component):
         # run time
         self.run_time = 0.0
         solver_dir = os.path.join(os.path.dirname(__file__), self.application)
-        check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
 
-        self.plot_of_residuals = False  # TODO: add in the parameters
+        #compile openfoam adapted solver
+        try:
+            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+        except subprocess.CalledProcessError:
+            raise RuntimeError(
+                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
+
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
 
@@ -304,7 +309,6 @@ class SolverWrapperOpenFOAM41(Component):
 
         self.send_message('stop')
         self.wait_message('stop_ready')
-        self.openfoam_process.kill()
         self.openfoam_process.wait()
 
     def get_interface_input(self):
@@ -369,7 +373,7 @@ class SolverWrapperOpenFOAM41(Component):
             wall_shear_stress = np.empty_like(wss_tmp)
             pressure = np.empty((pres_tmp.size, 1))
 
-            wall_shear_stress[pos_list, ] = wss_tmp[:, ]
+            wall_shear_stress[pos_list,] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
