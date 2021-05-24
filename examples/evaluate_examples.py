@@ -54,6 +54,12 @@ class EvaluateExamples(unittest.TestCase):
     number_of_timesteps = 5
     additional_files = []
     compare_data = True
+    atol_solution_x = 1e-15
+    rtol_solution_x = 1e-5
+    atol_solution_y = 1e-15
+    rtol_solution_y = 1e-5
+    atol_convergence = 1e-15
+    rtol_convergence = 1e-5
 
     @classmethod
     def setUpClass(cls):
@@ -97,9 +103,11 @@ class EvaluateExamples(unittest.TestCase):
 
     def test_solution(self):
         if self.compare_data:
-            for interface in ('solution_x', 'solution_y'):
-                np.testing.assert_almost_equal(self.benchmark[interface][:, :self.number_of_timesteps],
-                                               self.results[interface][:, :self.number_of_timesteps])
+            for interface, rtol, atol in (('solution_x', self.rtol_solution_x, self.atol_solution_x),
+                                          ('solution_y', self.rtol_solution_y, self.atol_solution_y)):
+                np.testing.assert_allclose(self.benchmark[interface][:, :self.number_of_timesteps],
+                                           self.results[interface][:, :self.number_of_timesteps],
+                                           rtol=rtol, atol=atol)
         else:
             self.skipTest(f'Solution not compared for {self.__class__.__name__}')
 
@@ -107,7 +115,8 @@ class EvaluateExamples(unittest.TestCase):
         if self.compare_data:
             for time_step in range(self.number_of_timesteps):
                 np.testing.assert_allclose(np.array(self.benchmark['residual'][time_step]),
-                                           np.array(self.results['residual'][time_step]))
+                                           np.array(self.results['residual'][time_step]),
+                                           rtol=self.rtol_convergence, atol=self.atol_convergence)
         else:
             self.skipTest(f'Convergence history not compared for {self.__class__.__name__}')
 
@@ -157,6 +166,8 @@ class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
 class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
     example = 'tube_openfoam3d_kratos_structure3d'
     number_of_timesteps = 2
+    atol_solution_y = 1e-15
+    rtol_solution_y = 1e-4
 
 
 class TestTubeTubeFlowAbaqus2D(EvaluateExamples):
@@ -166,12 +177,24 @@ class TestTubeTubeFlowAbaqus2D(EvaluateExamples):
 
 class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
     example = 'tube_tube_flow_tube_ringmodel'
-    number_of_timesteps = 100
+    number_of_timesteps = 5
+    atol_solution_x = 1e-12
+    rtol_solution_x = 0
+    atol_solution_y = 1e-7
+    rtol_solution_y = 0
+    atol_convergence = 1e-9
+    rtol_convergence = 0
 
 
 class TestTubeTubeFlowTubeStructure(EvaluateExamples):
     example = 'tube_tube_flow_tube_structure'
-    number_of_timesteps = 100
+    number_of_timesteps = 5
+    atol_solution_x = 1e-12
+    rtol_solution_x = 0
+    atol_solution_y = 1e-7
+    rtol_solution_y = 0
+    atol_convergence = 1e-9
+    rtol_convergence = 0
 
 
 class TestTurekFluent2DAbaqus2D(EvaluateExamples):
