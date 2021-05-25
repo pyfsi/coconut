@@ -37,9 +37,9 @@ define dynamic-mesh controls remeshing y
 define dynamic-mesh controls remeshing-parameters remeshing-methods y y y n
 define dynamic-mesh controls remeshing-parameters cell-skew-max 0.6
 define dynamic-mesh controls remeshing-parameters face-skew-max 0.6
-define dynamic-mesh controls remeshing-parameters length-min 0.005
+define dynamic-mesh controls remeshing-parameters length-min 0.00125
 ;0.00500 0.00250 0.00125
-define dynamic-mesh controls remeshing-parameters length-max 0.05
+define dynamic-mesh controls remeshing-parameters length-max 0.0125
 ;0.0500 0.0250 0.0125
 define dynamic-mesh controls remeshing-parameters size-remesh-interval 1
 define dynamic-mesh controls remeshing-parameters sizing-function n
@@ -48,7 +48,7 @@ define dynamic-mesh controls remeshing-parameters sizing-function n
  (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary fluid constant 0 n" zone)))
  '(in out box circleoutside)
 )
-define dynamic-mesh zones create fluid deforming y y 0.005 0.05 0.6
+define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
 ;0.00500 0.00250 0.00125
 ;0.0500 0.0250 0.0125
 
