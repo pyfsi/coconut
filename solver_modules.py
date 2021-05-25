@@ -5,10 +5,10 @@ uses the environment variables in all the spawned processes, used for executing 
 in the various stages of the simulation.
 """
 
-machine_name = 'ugent_cluster'
+machine_name = 'ugent_cluster_SL6.3'
 
 solverload_cmd_dict = {
-    'ugent_cluster': {
+    'ugent_cluster_SL6.3': {
         'fluent.v2019R1': 'ml ANSYS_CFD/2019R1',
         'fluent.v2019R2': 'ml ANSYS_CFD/2019R2',
         'fluent.v2019R3': 'ml ANSYS_CFD/2019R3',
@@ -16,6 +16,13 @@ solverload_cmd_dict = {
         'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14',
         'kratos.structural_mechanics_application.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
         'openfoam.v41': 'ml OpenFOAM/4.1 && source $FOAM_BASH'
+    },
+    'ugent_cluster_CO7': {
+        'fluent.v2019R3': 'ml ANSYS_CFD/2019R3',
+        'fluent.v2020R1': 'ml ANSYS_CFD/2020R1',
+        'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14',
+        'kratos.structural_mechanics_application.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
+        'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH'
     },
     'ugent_hpc': {}
 }
