@@ -32,6 +32,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.folder_path = os.path.join(os.getcwd(), self.par_solver['settings']['working_directory'])
         self.delta_t = self.par_solver['settings']['delta_t']
         self.t_prec = self.par_solver['settings']['time_precision']
+        self.max_cores = min(4, multiprocessing.cpu_count())  # number of cores for parallel calculation
 
         solver_name = self.par_solver['type'].replace('solver_wrappers.', '')
         self.env = get_solver_env(solver_name, self.folder_path)
@@ -74,7 +75,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
         # create two solvers with different flow solver partitioning
         x0, y0, z0, ids = [], [], [], []
-        for cores in [1, multiprocessing.cpu_count()]:
+        for cores in [1, self.max_cores]:
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
             solver.initialize()
@@ -94,7 +95,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         print_box("Testing imposed node (radial) displacement")
 
         # test if nodes are moved to the correct position
-        for cores in [1, multiprocessing.cpu_count()]:
+        for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
@@ -131,7 +132,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         print_box("Testing if pressure/wall shear stress are imposed properly when run in parallel ")
         output_list = []
 
-        for cores in [1, multiprocessing.cpu_count()]:
+        for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
             solver = create_instance(self.par_solver)

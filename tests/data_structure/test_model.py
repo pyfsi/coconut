@@ -12,6 +12,7 @@ class TestModel(unittest.TestCase):
         self.size = 3
         self.name = 'mp1'
         self.ids = np.arange(self.size)
+        np.random.shuffle(self.ids)
         self.x0 = np.random.rand(self.size)
         self.y0 = np.random.rand(self.size)
         self.z0 = np.random.rand(self.size)
@@ -20,6 +21,7 @@ class TestModel(unittest.TestCase):
     def test_create_model_part(self):
         name = 'mp1'
         ids = np.arange(self.size)
+        np.random.shuffle(ids)
         x0 = np.random.rand(self.size)
         y0 = np.random.rand(self.size)
         z0 = np.random.rand(self.size)
@@ -27,6 +29,7 @@ class TestModel(unittest.TestCase):
         name = 'mp2'
         size = 5
         ids = np.arange(size)
+        np.random.shuffle(ids)
         x0 = np.random.rand(size)
         y0 = np.random.rand(size)
         z0 = np.random.rand(size)
@@ -41,6 +44,7 @@ class TestModel(unittest.TestCase):
         name = 'mp2'
         name_list.append(name)
         ids = np.arange(self.size)
+        np.random.shuffle(ids)
         x0 = np.random.rand(self.size)
         y0 = np.random.rand(self.size)
         z0 = np.random.rand(self.size)

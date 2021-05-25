@@ -1,8 +1,6 @@
 {
   "type": "coupled_solvers.iqni",
   "settings": {
-    "timestep_start": 0,
-    "delta_t": 0.01,
     "omega": 0.05,
     "model": {
       "type": "coupled_solvers.models.ls",
@@ -11,78 +9,5 @@
         "q": 10
       }
     }
-  },
-  "predictor": {
-    "type": "predictors.linear"
-  },
-  "convergence_criterion": {
-    "type": "convergence_criteria.or",
-    "settings": {
-      "criteria_list": [
-        {
-          "type": "convergence_criteria.iteration_limit",
-          "settings": {
-            "maximum": 20
-          }
-        },
-        {
-          "type": "convergence_criteria.relative_norm",
-          "settings": {
-            "tolerance": 1e-6,
-            "order": 2
-          }
-        }
-      ]
-    }
-  },
-  "solver_wrappers": [
-    {
-      "type": "solver_wrappers.python.tube_flow_solver",
-      "settings": {
-        "working_directory": "coupled_solvers/CFD",
-        "input_file": "solver_parameters.json",
-        "interface_input": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "displacement"
-            ]
-          }
-        ],
-        "interface_output": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "pressure",
-              "traction"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "type": "solver_wrappers.python.tube_ringmodel_solver",
-      "settings": {
-        "working_directory": "coupled_solvers/CSM",
-        "input_file": "solver_parameters.json",
-        "interface_input": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "pressure",
-              "traction"
-            ]
-          }
-        ],
-        "interface_output": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "displacement"
-            ]
-          }
-        ]
-      }
-    }
-  ]
+  }
 }

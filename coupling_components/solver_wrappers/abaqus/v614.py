@@ -22,6 +22,7 @@ def create(parameters):
 class SolverWrapperAbaqus614(Component):
     version = '6.14'
 
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -305,12 +306,14 @@ class SolverWrapperAbaqus614(Component):
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
         # debug
         self.debug = False  # set on True to save copy of input and output files in every iteration
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 

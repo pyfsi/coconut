@@ -18,6 +18,7 @@ def create(parameters):
 
 
 class SolverWrapperKratosStructure60(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -72,7 +73,8 @@ class SolverWrapperKratosStructure60(Component):
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_output = Interface(self.settings["interface_output"], self.model)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
         self.residual_variables = self.settings.get('residual_variables', None)
@@ -81,6 +83,7 @@ class SolverWrapperKratosStructure60(Component):
         if self.residual_variables is not None:
             self.write_residuals_fileheader()
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
         self.timestep = 0

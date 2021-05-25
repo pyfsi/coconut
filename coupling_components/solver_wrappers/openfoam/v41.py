@@ -19,6 +19,7 @@ def create(parameters):
 
 
 class SolverWrapperOpenFOAM41(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -111,11 +112,12 @@ class SolverWrapperOpenFOAM41(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
-        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
 
-        #compile openfoam adapted solver
+        # compile openfoam adapted solver
+        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
         try:
             check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
         except subprocess.CalledProcessError:
@@ -128,6 +130,7 @@ class SolverWrapperOpenFOAM41(Component):
         if self.residual_variables is not None:
             self.write_residuals_fileheader()
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 

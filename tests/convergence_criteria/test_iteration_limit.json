@@ -1,6 +1,0 @@
-{
-  "type": "convergence_criteria.iteration_limit",
-  "settings": {
-    "maximum": 2
-  }
-}

@@ -7,6 +7,7 @@ import time
 import pickle
 import os
 from datetime import datetime
+import socket
 
 
 def create(parameters):
@@ -19,12 +20,16 @@ class CoupledSolverGaussSeidel(Component):
 
         self.parameters = parameters
         self.settings = parameters['settings']
+        self.init_time = time.time()
 
         # read parameters
         self.case_name = self.settings.get('case_name', 'case')  # case name
         self.timestep_start_global = self.settings['timestep_start']  # time step for global calculation (restart)
         self.timestep_start_current = self.settings['timestep_start']  # time step start for this calculation (restart)
         self.restart = self.timestep_start_current != 0  # true if restart
+        self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
+        self.settings['save_restart'] = self.save_restart  # in order to pass on default value
+        self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
 
@@ -36,7 +41,8 @@ class CoupledSolverGaussSeidel(Component):
         for index in range(2):
             parameters = self.parameters['solver_wrappers'][index]
             # add timestep_start and delta_t to solver_wrapper settings
-            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t'])
+            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t',
+                                                                             'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
             if parameters['type'] == 'solver_wrappers.mapped':
@@ -58,13 +64,11 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = []
 
         # restart
-        self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         if self.restart:
             self.restart_case = self.settings.get('restart_case', self.case_name)  # case to restart from
             self.restart_data = self.load_restart_data()
 
         # save results variables
-        self.save_results = self.settings.get('save_results', False)  # set True in order to save for every iteration
         if self.save_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
@@ -93,6 +97,7 @@ class CoupledSolverGaussSeidel(Component):
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
         self.start_time = time.time()
+        self.init_time = self.start_time - self.init_time
 
         title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
         tools.print_info(title)
@@ -112,7 +117,7 @@ class CoupledSolverGaussSeidel(Component):
                 results_data = self.load_results_data()
             if results_data is None:  # no results file to append to
                 self.info = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} : ' \
-                    f'start calculation of time step {self.timestep_start_current}\n'
+                    f'start calculation of time step {self.timestep_start_current} on {socket.gethostname()}\n'
                 if self.debug:
                     self.complete_solution_x = np.empty((self.x.get_interface_data().shape[0], 0))
                     self.complete_solution_y = np.empty((self.y.get_interface_data().shape[0], 0))
@@ -188,11 +193,11 @@ class CoupledSolverGaussSeidel(Component):
             self.add_restart_data(output)
             with open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb') as file:
                 pickle.dump(output, file)
-        if self.save_restart < 0:
-            try:
-                os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
-            except OSError:
-                pass
+            if self.save_restart < 0:
+                try:
+                    os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
+                except OSError:
+                    pass
 
         # update save results
         self.iterations.append(self.iteration)
@@ -207,7 +212,8 @@ class CoupledSolverGaussSeidel(Component):
         super().output_solution_step()
 
         self.run_time = time.time() - self.start_time
-        if self.save_results:
+        if self.save_results != 0 and (self.time_step % self.save_results == 0 or
+                                       (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
                       'run_time': self.run_time + self.run_time_previous, 'residual': self.residual,
@@ -279,28 +285,48 @@ class CoupledSolverGaussSeidel(Component):
         self.run_time_previous = results_data['run_time']
         self.residual = results_data['residual'][:self.timestep_start_current - self.timestep_start_global]
         self.info = results_data.get('info', '') + '' + f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} :' \
-            f' restart calculation from time step {self.timestep_start_current}\n'
+            f' restart calculation from time step {self.timestep_start_current} on {socket.gethostname()}\n'
         if self.debug:
             tools.print_info(f'Restart in debug mode may not append results to pickle file correctly', layout='warning')
             self.complete_solution_r = results_data['solution_r']
         return results_data
 
     def print_summary(self):
-        solver_run_times = []
+        solver_init_time_percs = []
+        solver_run_time_percs = []
         pre = '║' + ' │' * self.solver_level
         out = ''
         if self.solver_level == 0:
-            out += f'{pre}Elapsed time: {self.run_time:0.3f}s\n'
-        out += f'{pre}Percentage of total calculation time:\n'
-        for solver in self.solver_wrappers:
-            solver_run_times.append(solver.run_time / self.run_time * 100)
-            out += f'{pre}\t{solver.__class__.__name__}: {solver_run_times[-1]:0.1f}%\n'
-            if solver.__class__.__name__ == 'SolverWrapperMapped':
-                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: ' \
-                       f'{solver.solver_wrapper.run_time / self.run_time * 100:0.1f}%\n'
+            out += f'{pre}Total calculation time{" (after restart)" if self.restart else ""}:' \
+                   f' {self.init_time + self.run_time:.3f}s\n'
+        # initialization time
         if self.solver_level == 0:
-            out += f'{pre}\tCoupling: {100 - sum(solver_run_times):0.1f}%\n'
-        out += f'{pre}Average number of iterations per time step: {np.array(self.iterations).mean():0.2f}'
+            out += f'{pre}Initialization time: {self.init_time:0.3f}s\n'
+        out += f'{pre}Distribution of initialization time:\n'
+        for solver in self.solver_wrappers:
+            solver_init_time_percs.append(solver.init_time / self.init_time * 100)
+            out += f'{pre}\t{solver.__class__.__name__}: {solver.init_time:.0f}s ({solver_init_time_percs[-1]:0.1f}%)\n'
+            if solver.__class__.__name__ == 'SolverWrapperMapped':
+                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.init_time:.0f}s' \
+                       f' ({solver.solver_wrapper.init_time / self.init_time * 100:0.1f}%)\n'
+        if self.solver_level == 0:
+            out += f'{pre}\tOther: {self.init_time - sum([s.init_time for s in self.solver_wrappers]):.0f}s' \
+                   f' ({100 - sum(solver_init_time_percs):0.1f}%)\n'
+        # run time
+        if self.solver_level == 0:
+            out += f'{pre}Run time{" (after restart)" if self.restart else ""}: {self.run_time:0.3f}s\n'
+        out += f'{pre}Distribution of run time:\n'
+        for solver in self.solver_wrappers:
+            solver_run_time_percs.append(solver.run_time / self.run_time * 100)
+            out += f'{pre}\t{solver.__class__.__name__}: {solver.run_time:.0f}s ({solver_run_time_percs[-1]:0.1f}%)\n'
+            if solver.__class__.__name__ == 'SolverWrapperMapped':
+                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.run_time:.0f}s' \
+                       f' ({solver.solver_wrapper.run_time / self.run_time * 100:0.1f}%)\n'
+        if self.solver_level == 0:
+            out += f'{pre}\tCoupling: {self.run_time - sum([s.run_time for s in self.solver_wrappers]):.0f}s' \
+                   f' ({100 - sum(solver_run_time_percs):0.1f}%)\n'
+        out += f'{pre}Average number of iterations per time step' \
+               f'{" (including before restart)" if self.restart else ""}: {np.array(self.iterations).mean():0.2f}'
         if self.solver_level == 0:
             out += '\n╚' + 79 * '═'
         tools.print_info(out)

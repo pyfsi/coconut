@@ -13,9 +13,9 @@ class ModelLS(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        self.settings = parameters["settings"]
-        self.min_significant = self.settings["min_significant"]
-        self.q = self.settings["q"]
+        self.settings = parameters['settings']
+        self.min_significant = self.settings['min_significant']
+        self.q = self.settings['q']
 
         self.size_in = None
         self.size_out = None
@@ -39,7 +39,7 @@ class ModelLS(Component):
     def filter(self):
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         if not v.shape[1]:
-            raise RuntimeError("No information to filter")
+            raise RuntimeError('No information to filter')
         # remove columns resulting in small diagonal elements in R
         singular = True
         while singular and v.shape[1]:
@@ -48,7 +48,7 @@ class ModelLS(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print_info("Removing column " + str(i) + ": " + str(m) + " < min_significant", layout='warning')
+                tools.print_info(f'Removing column {i}: {m} < min_significant', layout='warning')
                 if i < self.vcurr.shape[1]:
                     self.vcurr = np.delete(self.vcurr, i, 1)
                     self.wcurr = np.delete(self.wcurr, i, 1)
@@ -82,7 +82,7 @@ class ModelLS(Component):
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         w = np.hstack((self.wcurr, np.hstack(self.wprev)))
         if not v.shape[1]:
-            raise RuntimeError("No information to predict")
+            raise RuntimeError('No information to predict')
         # approximation for the inverse of the Jacobian from a least-squares model
         qq, rr = np.linalg.qr(v, mode='reduced')
         b = qq.T @ dr

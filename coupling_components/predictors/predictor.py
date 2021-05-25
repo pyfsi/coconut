@@ -28,7 +28,7 @@ class Predictor(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
         if not self.updated:
-            raise Exception("Not updated")
+            raise Exception('Not updated')
 
     def constant(self, x_in):
         x = x_in.copy()
@@ -37,7 +37,7 @@ class Predictor(Component):
             x.set_interface_data(y)
             return x
         else:
-            raise Exception("Already updated")
+            raise Exception('Already updated')
 
     def linear(self, x_in):
         x = x_in.copy()
@@ -49,40 +49,40 @@ class Predictor(Component):
             x.set_interface_data(y)
             return x
         else:
-            raise Exception("Already updated")
+            raise Exception('Already updated')
 
     def quadratic(self, x_in):
         x = x_in.copy()
         if not self.updated:
             if len(self.dataprev) < 3:
-                raise Exception("Not sufficient information for quadratic extrapolation")
+                raise Exception('Not sufficient information for quadratic extrapolation')
             y = 3.0 * self.dataprev[0] - 3.0 * self.dataprev[1] + 1.0 * self.dataprev[2]
             x.set_interface_data(y)
             return x
         else:
-            raise Exception("Already updated")
+            raise Exception('Already updated')
 
     def legacy(self, x_in):
         x = x_in.copy()
         if not self.updated:
             if len(self.dataprev) < 3:
-                raise Exception("Not sufficient information for quadratic extrapolation")
+                raise Exception('Not sufficient information for quadratic extrapolation')
             y = 2.5 * self.dataprev[0] - 2.0 * self.dataprev[1] + 0.5 * self.dataprev[2]
             x.set_interface_data(y)
             return x
         else:
-            raise Exception("Already updated")
+            raise Exception('Already updated')
 
     def cubic(self, x_in):
         x = x_in.copy()
         if not self.updated:
             if len(self.dataprev) < 4:
-                raise Exception("Not sufficient information for cubic extrapolation")
+                raise Exception('Not sufficient information for cubic extrapolation')
             y = 4.0 * self.dataprev[0] - 6.0 * self.dataprev[1] + 4.0 * self.dataprev[2] - 1.0 * self.dataprev[3]
             x.set_interface_data(y)
             return x
         else:
-            raise Exception("Already updated")
+            raise Exception('Already updated')
 
     def predict(self, x):
         pass
@@ -94,4 +94,4 @@ class Predictor(Component):
                 self.dataprev.pop()
             self.updated = True
         else:
-            raise Exception("Already updated")
+            raise Exception('Already updated')
