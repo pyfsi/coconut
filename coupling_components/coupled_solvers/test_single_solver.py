@@ -40,6 +40,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         # create dummy components
         self.predictor = DummyComponent()
         self.convergence_criterion = DummyComponent()
+        self.dummy_solver = None
 
         # solver wrapper settings
         parameters = self.parameters['solver_wrappers'][self.solver_index]
@@ -63,31 +64,6 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
 
         self.components = [self.solver_wrapper]  # will only contain 1 solver wrapper
-
-        # initialize test_class
-        interface_input = self.solver_wrapper.interface_input
-        if self.test_class is None:
-            self.dummy_solver = None
-            tools.print_info('No test class specified, zero input will be used')
-            for model_part_name, variable in interface_input.model_part_variable_pairs:
-                if data_structure.variables_dimensions[variable] == 1:
-                    tools.print_info(f'\t0 is used as {variable} input to {model_part_name}')
-                elif data_structure.variables_dimensions[variable] == 3:
-                    tools.print_info(f'\t[0 0 0] is used as {variable} input to {model_part_name}')
-        else:
-            if not os.path.isfile('dummy_solver.py'):
-                raise ModuleNotFoundError(f'Test class specified, but no file named dummy_solver.py in {os.getcwd()}')
-            module = __import__('dummy_solver')
-            if not hasattr(module, self.test_class):
-                raise NameError(f'Module dummy_solver has no class {self.test_class}')
-            self.dummy_solver = getattr(module, self.test_class)()
-            tools.print_info(f'The functions from {self.test_class} will be used to calculate the following inputs:')
-            for model_part_name, variable in interface_input.model_part_variable_pairs:
-                if data_structure.variables_dimensions[variable] == 1:
-                    tools.print_info(f'\t{variable} [Scalar] on {model_part_name}')
-                elif data_structure.variables_dimensions[variable] == 3:
-                    tools.print_info(f'\t{variable} [3D array] on {model_part_name}')
-        tools.print_info()
 
         self.x = None
         self.y = None
@@ -114,6 +90,31 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         Component.initialize(self)
 
         self.solver_wrapper.initialize()
+
+        # initialize test_class
+        interface_input = self.solver_wrapper.interface_input
+        if self.test_class is None:
+            self.dummy_solver = None
+            tools.print_info('No test class specified, zero input will be used')
+            for model_part_name, variable in interface_input.model_part_variable_pairs:
+                if data_structure.variables_dimensions[variable] == 1:
+                    tools.print_info(f'\t0 is used as {variable} input to {model_part_name}')
+                elif data_structure.variables_dimensions[variable] == 3:
+                    tools.print_info(f'\t[0 0 0] is used as {variable} input to {model_part_name}')
+        else:
+            if not os.path.isfile('dummy_solver.py'):
+                raise ModuleNotFoundError(f'Test class specified, but no file named dummy_solver.py in {os.getcwd()}')
+            module = __import__('dummy_solver')
+            if not hasattr(module, self.test_class):
+                raise NameError(f'Module dummy_solver has no class {self.test_class}')
+            self.dummy_solver = getattr(module, self.test_class)()
+            tools.print_info(f'The functions from {self.test_class} will be used to calculate the following inputs:')
+            for model_part_name, variable in interface_input.model_part_variable_pairs:
+                if data_structure.variables_dimensions[variable] == 1:
+                    tools.print_info(f'\t{variable} [Scalar] on {model_part_name}')
+                elif data_structure.variables_dimensions[variable] == 3:
+                    tools.print_info(f'\t{variable} [3D array] on {model_part_name}')
+        tools.print_info()
 
         # initialize variables
         if self.solver_index == 1:

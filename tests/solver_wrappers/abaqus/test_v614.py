@@ -1,4 +1,4 @@
-from coconut.tools import create_instance, get_solver_env
+from coconut.tools import create_instance, get_solver_env, solver_available
 
 import unittest
 import numpy as np
@@ -8,6 +8,10 @@ import subprocess
 import json
 
 
+version = '614'
+
+
+@unittest.skipUnless(solver_available(f'abaqus.v{version}'), f'abaqus.v{version} not available')
 class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     setup_case = True
     dimension = 2

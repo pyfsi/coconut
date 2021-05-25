@@ -7,6 +7,7 @@ import warnings
 import os
 import subprocess
 import pickle
+import importlib.util
 
 
 def create_instance(settings):
@@ -96,6 +97,20 @@ def print_components_info(pre, component_list):
     for component in component_list[:-1]:
         component.print_components_info(pre + '├─')
     component_list[-1].print_components_info(pre + '└─')
+
+
+# print box
+def print_box(text):
+    """
+    This functions prints adds a box around the string text
+    :param text: str
+    :return: str
+    """
+    n = len(text)
+    top = '\n┌─' + n * '─' + '─┐'
+    mid = '\n│ ' + text + ' │'
+    bottom = '\n└─' + n * '─' + '─┘'
+    print(top + mid + bottom)
 
 
 # timer-function
@@ -208,7 +223,7 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
     msg_1 = f'ModelParts "{mp_a.name}", "{mp_b.name}": '
     msg_2 = ' values differ by '
     msg_3 = f'\n\t"{mp_a.name}": minimal values = {mp_a_min} and maximal values = {mp_a_max}' \
-        f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
+            f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
 
     msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
     if error_center > tol_center_error:
@@ -229,6 +244,20 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
         warnings.warn(msg, Warning)
 
 
+# import module from path
+def import_module(module_name, path):
+    """
+    Loads module from a(n absolute) path
+    :param module_name: string
+    :param path: string
+    :return: module
+    """
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def write_env():
     """
     function to write all the environment variables as dict in a env.pickle file
@@ -246,6 +275,7 @@ def get_solver_env(solver_module_name, working_dir):
 
     @param solver_module_name: module name of the solver wrapper,
     e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
+    e.g. fluent.v2019R1
     @type key: str
 
     @param working_dir: working directory of the solver where the simulation is run .
@@ -277,6 +307,28 @@ def get_solver_env(solver_module_name, working_dir):
     os.remove(env_filepath)
 
     return env
+
+
+def solver_available(solver_module_name):
+    """
+    @param solver_module_name: module name of the solver wrapper,
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
+    e.g. fluent.v2019R1
+    @type key: str
+
+    @return: presence of solver env
+    @rtype: bool
+    """
+    pre_modules = 'coconut.coupling_components.solver_wrappers.'
+    # remove pre_modules from the solver_module_name
+    solver_name = solver_module_name.replace(pre_modules, '')
+
+    try:
+        # get the module load command for the solver
+        solver_modules.get_solver_cmd(solver_name)
+    except KeyError:
+        return False
+    return True
 
 
 class cd:

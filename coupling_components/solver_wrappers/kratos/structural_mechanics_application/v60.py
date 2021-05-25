@@ -10,6 +10,7 @@ from os.path import join
 from subprocess import Popen
 import pandas as pd
 import numpy as np
+import re
 
 
 def create(parameters):
@@ -27,6 +28,7 @@ class SolverWrapperKratosStructure60(Component):
         delta_t = self.settings["delta_t"]
         timestep_start = self.settings["timestep_start"]
         dimensions = self.settings["dimensions"]
+        self.timestep = None
 
         input_file_name = join(self.working_directory, self.settings["input_file"])
 
@@ -36,6 +38,7 @@ class SolverWrapperKratosStructure60(Component):
         kratos_parameters["problem_data"]["start_time"] = timestep_start
         kratos_parameters["problem_data"]["time_step"] = delta_t
         kratos_parameters["problem_data"]["domain_size"] = dimensions
+        kratos_parameters["problem_data"]["end_time"] = 1e15
 
         interface_sub_model_parts_list = self.settings["kratos_interface_sub_model_parts_list"]
 
@@ -74,12 +77,20 @@ class SolverWrapperKratosStructure60(Component):
         self.init_time = self.init_time
         self.run_time = 0.0
 
+        self.residual_variables = self.settings.get('residual_variables', None)
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
+
+        if self.residual_variables is not None:
+            self.write_residuals_fileheader()
+
     @tools.time_initialize
     def initialize(self):
         super().initialize()
+        self.timestep = 0
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
+        self.timestep += 1
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -98,6 +109,8 @@ class SolverWrapperKratosStructure60(Component):
         super().finalize_solution_step()
         self.send_message('save')
         self.wait_message('save_ready')
+        if self.residual_variables is not None:
+            self.write_residuals()
 
     def finalize(self):
         super().finalize()
@@ -195,3 +208,40 @@ class SolverWrapperKratosStructure60(Component):
             if file_name.endswith('.coco'):
                 file = join(self.working_directory, file_name)
                 os.remove(file)
+
+    def write_residuals_fileheader(self):
+        header = ''
+        sep = ', '
+        with open(self.res_filepath, 'w') as f:
+            f.write('# Residuals\n')
+            for variable in self.residual_variables:
+                header += variable + sep
+            f.write(header.strip(sep) + '\n')
+
+    def write_residuals(self):
+        float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
+        log_filepath = os.path.join(self.working_directory, f'log')
+        if os.path.isfile(log_filepath):
+            with open(log_filepath, 'r') as f:
+                log_string = f.read()
+            time_start_string = r'STEP:\s+' + str(self.timestep - 1)
+            time_end_string = r'STEP:\s+' + str(self.timestep)
+            match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
+            if match is not None:
+                time_block = match.group(1)
+                iteration_block_list = re.findall(
+                    r'Coupling iteration: \d(.*?)Coupling iteration \d+ end', time_block, flags=re.S)
+                for iteration_block in iteration_block_list:
+                    residual_array = np.empty(len(self.residual_variables))
+                    for i, variable in enumerate(self.residual_variables):
+                        search_string = r'\n' + variable + r' CRITERION.*[Nn]orm = ' + r'(' + float_pattern + r')'
+                        var_residual_list = re.findall(search_string, iteration_block)
+                        if var_residual_list:
+                            # last initial residual of the non-linear iteration
+                            var_residual = float(var_residual_list[-1])
+                            residual_array[i] = var_residual
+                        else:
+                            raise RuntimeError(f'{variable} CRITERION not found in kratos log file')
+
+                    with open(self.res_filepath, 'a') as f:
+                        np.savetxt(f, [residual_array], delimiter=', ')
