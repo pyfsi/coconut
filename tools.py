@@ -276,12 +276,12 @@ def get_solver_env(solver_module_name, working_dir):
     @param solver_module_name: module name of the solver wrapper,
     e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
     e.g. fluent.v2019R1
-    @type key: str
+    @type: str
 
-    @param working_dir: working directory of the solver where the simulation is run .
-    @type key: str
+    @param working_dir: working directory of the solver where the simulation is run.
+    @type: str
 
-    @return: environement variables as python-dict
+    @return: environment variables as python-dict
     @rtype: dict
     """
     env_filename = 'env.pickle'
@@ -314,7 +314,7 @@ def solver_available(solver_module_name):
     @param solver_module_name: module name of the solver wrapper,
     e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
     e.g. fluent.v2019R1
-    @type key: str
+    @type: str
 
     @return: presence of solver env
     @rtype: bool
