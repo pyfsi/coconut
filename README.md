@@ -90,9 +90,10 @@ This line can also be added to your *`.bashrc`* file.
 
 Before using CoCoNuT, it is necessary to adapt some system specific commands in the *`solver_modules.py`* file in the *`coconut`* folder.
 This file has the commands to load solver modules in separate environments when running a case, to avoid conflicts. As these commands are system specific, it is important to check this file before testing CoCoNuT. 
-The file contains a nested dictionary `solver_load_cmd_dict`, two internal dictionaries with keys `ugent_cluster_SL6.3` and `ugent_cluster_CO7` which in their turn contain keys for all solvers that can be used in CoCoNuT. 
+The file contains a nested dictionary `solver_load_cmd_dict`, which has keys such as `ugent_cluster_SL6.3` or `ugent_cluster_CO7` denoting the machine on which CoCoNuT is installed.
+In their turn, each of these dictionaries contains keys for all solvers that are available on that machine and can be used in CoCoNuT. 
 The values are strings containing terminal commands to load the software, thus setting the environment which allows running the solver. 
-On the UGent cluster the [Lmod system](https://lmod.readthedocs.io/en/latest/) is used for example, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. 
+For example, on the UGent cluster, the [Lmod system](https://lmod.readthedocs.io/en/latest/) is used, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. 
 If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semi-colon (;) or double ampersand (&&) can be used.
 Since `machine_name` is set to `ugent_cluster_SL6.3`, this dictionary is used by default.
 In case your system differs from the `ugent_cluster_SL6.3` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
