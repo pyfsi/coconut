@@ -6,7 +6,7 @@
     "type": "coupled_solvers.iqni",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0,
+      "delta_t": 1,
       "omega": 0.05,
       "save_results": 1,
       "model": {
