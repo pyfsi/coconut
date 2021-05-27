@@ -22,17 +22,17 @@ class MapperAxisymmetric2DTo3DMod(MapperTransformer):
         self.dir_a = dirs.index(self.settings['direction_axial'])
         self.dir_r = dirs.index(self.settings['direction_radial'])
         self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
-        self.wedge = self.settings['wedge']
-
-        # get number of nodes in wedge definition
-        if self.wedge:
-            self.n_t = 2
+        self.angle  = self.settings['angle']
 
         # get number of nodes in tangential direction
-        else:
-            self.n_t = self.settings['n_tangential']
-            if self.n_t < 6:
-                raise ValueError('minimum value for n_tangential is 6')
+
+        self.n_t = self.settings['n_tangential']
+        if self.n_t%2 ==1:
+            self.n_t += 1
+        self.limit = self.angle//72 +2
+
+        if self.n_t < self.limit:
+            raise ValueError('minimum value for n_tangential is ' + str(self.limit))
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         super().initialize()
@@ -51,10 +51,12 @@ class MapperAxisymmetric2DTo3DMod(MapperTransformer):
             self.theta = np.zeros(n_out)
 
             for i_t in range(self.n_t):  # new nodes ordered per theta
-                if self.wedge:
-                    theta = np.radians(2.5)*(-1)**(i_t)
+                if i_t%2 == 1:
+                    theta = (i_t)*((np.radians(self.angle)*(-1)**(i_t))/(2*self.n_t))
                 else:
-                    theta = i_t * 2 * np.pi / self.n_t
+                    theta = (i_t+1)*((np.radians(self.angle)*(-1)**(i_t))/(2*self.n_t))
+                # theta = i_t * 2 * np.pi / self.n_t
+                # print(theta)
                 i_start = i_t * n_in
                 i_end = (i_t + 1) * n_in
 

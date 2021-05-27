@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
+class TestMapperAxisymmetric2DTo3DMod(unittest.TestCase):
     gui = False
 
     def setUp(self):
@@ -15,8 +15,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'wedge':True,
-                                'n_tangential': 13}
+                                'angle':240,
+                                'n_tangential': 5}
                            }
 
     def test_instantiation(self):
@@ -36,7 +36,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
-        self.wedge = self.parameters['settings']['wedge']
+        self.angle = self.parameters['settings']['angle']
 
         # create model_part_in
         n_in = 10
@@ -47,10 +47,10 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_in))
 
         # create reference geometry for 3D model_part_out
-        if self.wedge:
-            n_t = 2
-        else:
-            n_t = self.parameters['settings']['n_tangential']
+
+        n_t = self.parameters['settings']['n_tangential']
+        if n_t%2 ==1:
+            n_t += 1
         n_out_ref = n_in * n_t
         x_out_ref = np.zeros(n_out_ref)
         y_out_ref = np.zeros(n_out_ref)
@@ -60,10 +60,11 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             for i_from in range(n_in):
                 start = i_t * n_in
                 end = (i_t + 1) * n_in
-                if self.wedge:
-                    theta = np.radians(2.5)*(-1)**(i_t)
+                if i_t % 2 == 1:
+                    theta = (i_t) * ((np.radians(self.angle) * (-1) ** (i_t)) / (2 * n_t))
                 else:
-                    theta = i_t * 2 * np.pi / n_t
+                    theta = (i_t + 1) * ((np.radians(self.angle) * (-1) ** (i_t)) / (2 * n_t))
+
                 x_out_ref[start:end] = x_in
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in
