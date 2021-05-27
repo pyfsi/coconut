@@ -8,15 +8,15 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3DMod(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
         self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d_mod',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle':240,
-                                'n_tangential': 5}
+                                'angle':360,
+                                'n_tangential': 10}
                            }
 
     def test_instantiation(self):
@@ -102,7 +102,7 @@ class TestMapperAxisymmetric2DTo3DMod(unittest.TestCase):
         var_s = 'pressure'
         var_v = 'displacement'
 
-        n_from = 7
+        n_from = 10
         tmp = np.linspace(0, 5, n_from)
         x_from, y_from, z_from = tmp, 1. + 0.2 * np.sin(2 * np.pi / 5 * tmp), np.zeros_like(tmp)
         v_s_from = fun_s(x_from).reshape(-1, 1)
@@ -163,6 +163,8 @@ class TestMapperAxisymmetric2DTo3DMod(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
+            # plt.xlim(0, 6)
+            # plt.ylim(0.7, 1.5)
             plt.show()
             plt.close()
 
