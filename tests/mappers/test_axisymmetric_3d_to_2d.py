@@ -8,15 +8,15 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric3DTo2DMod(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.axisymmetric_3d_to_2d_mod',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle':180,
-                                'n_tangential': 3}
+                                'angle':360,
+                                'n_tangential': 10}
                            }
 
     def test_initialize(self):
