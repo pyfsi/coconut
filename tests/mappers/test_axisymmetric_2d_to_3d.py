@@ -59,7 +59,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 start = i_t * n_in
                 end = (i_t + 1) * n_in
                 if self.angle == 360:
-                    theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
+                    theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t)
                     # theta = i_t * np.radians(self.angle) / (n_t)
                 else:
                     theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t - 1)
