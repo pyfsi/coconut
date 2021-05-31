@@ -48,7 +48,8 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
 
             for i_t in range(self.n_t):  # new nodes ordered per theta
                 if self.angle == 360:
-                    theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
+                    # theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
+                    theta = i_t*np.radians(self.angle)/(self.n_t)
                 else:
                     theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t - 1)
                 i_start = i_t * n_in

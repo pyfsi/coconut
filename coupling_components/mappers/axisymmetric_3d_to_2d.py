@@ -18,7 +18,6 @@ class MapperAxisymmetric3DTo2D(MapperAxisymmetric2DTo3D):
             n_to = self.n_from
             self.n_from = n_from
             self.n_to = n_to
-
         else:
             raise NotImplementedError('Forward Initialization not implemented for MapperAxisymmetric3DTo2D.')
 
@@ -37,7 +36,6 @@ class MapperAxisymmetric3DTo2D(MapperAxisymmetric2DTo3D):
                 i_end = (i_t + 1) * self.n_to
                 data_to += data_from[i_start:i_end] / self.n_t
         elif dimensions == 3:
-
             r = (np.cos(self.theta) * data_from[:, self.dir_r] +
                  np.sin(self.theta) * data_from[:, self.dir_3d])
             data_from[:, self.dir_r] = r
