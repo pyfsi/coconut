@@ -105,8 +105,8 @@ class EvaluateExamples(unittest.TestCase):
         if self.compare_data:
             for interface, rtol, atol in (('solution_x', self.rtol_solution_x, self.atol_solution_x),
                                           ('solution_y', self.rtol_solution_y, self.atol_solution_y)):
-                np.testing.assert_allclose(self.benchmark[interface][:, :self.number_of_timesteps],
-                                           self.results[interface][:, :self.number_of_timesteps],
+                np.testing.assert_allclose(self.benchmark[interface][:, :self.number_of_timesteps + 1],
+                                           self.results[interface][:, :self.number_of_timesteps + 1],
                                            rtol=rtol, atol=atol)
         else:
             self.skipTest(f'Solution not compared for {self.__class__.__name__}')
@@ -141,6 +141,7 @@ class TestTubeFluent2DAbaqus2DSteady(EvaluateExamples):
 class TestTubeFluent2DTubeStructure(EvaluateExamples):
     example = 'tube_fluent2d_tube_structure'
     number_of_timesteps = 2
+    rtol_solution_y = 1e-4
 
 
 class TestTubeFluent3DAbaqus2D(EvaluateExamples):
@@ -166,7 +167,6 @@ class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
 class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
     example = 'tube_openfoam3d_kratos_structure3d'
     number_of_timesteps = 2
-    atol_solution_y = 1e-15
     rtol_solution_y = 1e-4
 
 
