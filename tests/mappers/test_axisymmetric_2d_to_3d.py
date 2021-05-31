@@ -8,7 +8,7 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d',
@@ -38,7 +38,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         mp_name_out = 'wall_out'
         self.angle = self.parameters['settings']['angle']
 
-
         # create model_part_in
         n_in = 10
         x_in = np.linspace(0, 2 * np.pi, n_in)
@@ -60,8 +59,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 start = i_t * n_in
                 end = (i_t + 1) * n_in
                 if self.angle == 360:
-                    # theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
-                    theta = i_t * np.radians(self.angle) / (n_t)
+                    theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
+                    # theta = i_t * np.radians(self.angle) / (n_t)
                 else:
                     theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t - 1)
                 x_out_ref[start:end] = x_in
