@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class TestMapperAxisymmetric2DTo3DMod(unittest.TestCase):
+class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     gui = False
 
     def setUp(self):
-        self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d_mod',
+        self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
