@@ -22,17 +22,13 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
         self.dir_a = dirs.index(self.settings['direction_axial'])
         self.dir_r = dirs.index(self.settings['direction_radial'])
         self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
-        self.angle  = self.settings['angle']
+        self.angle  = self.settings.get('angle',360) #angle is set in degrees
 
         # get number of nodes in tangential direction
-
         self.n_t = self.settings['n_tangential']
-        if self.n_t%2 ==1:
-            self.n_t += 1
-        self.limit = self.angle//72 +2
-
-        if self.n_t < self.limit:
-            raise ValueError('minimum value for n_tangential is ' + str(self.limit))
+        limit = self.angle // 72 + 2
+        if self.n_t < limit:
+            raise ValueError('minimum value for n_tangential is ' + str(limit))
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         super().initialize()
@@ -51,10 +47,10 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
             self.theta = np.zeros(n_out)
 
             for i_t in range(self.n_t):  # new nodes ordered per theta
-                if i_t%2 == 1:
-                    theta = (i_t)*((np.radians(self.angle)*(-1)**(i_t))/(2*self.n_t))
+                if self.angle == 360:
+                    theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
                 else:
-                    theta = (i_t+1)*((np.radians(self.angle)*(-1)**(i_t))/(2*self.n_t))
+                    theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t - 1)
                 i_start = i_t * n_in
                 i_end = (i_t + 1) * n_in
 

@@ -8,15 +8,15 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
         self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle':360,
-                                'n_tangential': 10}
+                                'angle':90,
+                                'n_tangential': 8}
                            }
 
     def test_instantiation(self):
@@ -42,15 +42,13 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         n_in = 10
         x_in = np.linspace(0, 2 * np.pi, n_in)
         y_in = 1. + 0.2 * np.sin(x_in)
-        z_in = np.zeros(10)
+        z_in = np.zeros(n_in)
         model = data_structure.Model()
         model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_in))
 
         # create reference geometry for 3D model_part_out
 
         n_t = self.parameters['settings']['n_tangential']
-        if n_t%2 ==1:
-            n_t += 1
         n_out_ref = n_in * n_t
         x_out_ref = np.zeros(n_out_ref)
         y_out_ref = np.zeros(n_out_ref)
@@ -60,11 +58,10 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             for i_from in range(n_in):
                 start = i_t * n_in
                 end = (i_t + 1) * n_in
-                if i_t % 2 == 1:
-                    theta = (i_t) * ((np.radians(self.angle) * (-1) ** (i_t)) / (2 * n_t))
+                if self.angle == 360:
+                    theta =  -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(self.n_t)
                 else:
-                    theta = (i_t + 1) * ((np.radians(self.angle) * (-1) ** (i_t)) / (2 * n_t))
-
+                    theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t - 1)
                 x_out_ref[start:end] = x_in
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in
@@ -163,8 +160,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 ax.set_zlabel('z')
 
             plt.get_current_fig_manager().window.showMaximized()
-            # plt.xlim(0, 6)
-            # plt.ylim(0.7, 1.5)
             plt.show()
             plt.close()
 
