@@ -173,6 +173,7 @@ class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
 class TestTubeTubeFlowAbaqus2D(EvaluateExamples):
     example = 'tube_tube_flow_abaqus2d'
     number_of_timesteps = 2
+    rtol_solution_y = 1e-4
 
 
 class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
@@ -180,7 +181,7 @@ class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
-    atol_solution_y = 1e-7
+    atol_solution_y = 1e-6
     rtol_solution_y = 0
     atol_convergence = 1e-9
     rtol_convergence = 0
@@ -191,7 +192,7 @@ class TestTubeTubeFlowTubeStructure(EvaluateExamples):
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
-    atol_solution_y = 1e-7
+    atol_solution_y = 1e-6
     rtol_solution_y = 0
     atol_convergence = 1e-9
     rtol_convergence = 0
