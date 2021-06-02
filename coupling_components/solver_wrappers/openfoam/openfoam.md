@@ -110,7 +110,17 @@ Following files are modified or used as a reference to create files by CoCoNuT, 
 
 ## Version specific documentation
 
-### v_41 (OpenFOAM 4.1)
+### v41 (OpenFOAM 4.1)
 
-This is currently the only version.
+First version.
 
+### v8 (OpenFOAM 8)
+
+In this OpenFOAM version the name of some commands and classes are different. The required changes are visible in the version specific solver wrapper python file _`v8.py`_.
+
+Moreover there are some changes in the case setup. The following list provides some but is not all extensive:
+
+- The interpolation point for `arc` definitions using `blockMesh` has to be on the arc and not just on its 'elongation'
+- Using a macro expansion, such as `$R`, in combiantion with `#calc`, where a operator follows the macro expansion, requires to use protection: use `#calc "${R}/2` instead of `#calc "$R/2`
+- The file _`constant/turbulenceProperties`_ has been renamed to _`constant/momentumTransport`_
+- The keyword `residualControl` in the `PIMPLE` dictionarry is now called `outerCorrectorResidualControl`. The keyword `residualControl` still exists, but has a different meaning and is used as in `SIMPLE`.
