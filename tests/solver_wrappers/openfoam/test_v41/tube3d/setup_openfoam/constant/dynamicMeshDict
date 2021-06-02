@@ -10,12 +10,20 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      turbulenceProperties;
+    location	"constant";
+    object      dynamicMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-simulationType laminar;
+dynamicFvMesh      dynamicMotionSolverFvMesh;
 
+motionSolverLibs   ("libfvMotionSolvers.so");
+
+solver             displacementLaplacian;
+
+displacementLaplacianCoeffs
+{
+	diffusivity	   	inverseDistance 1 (mantle);
+}
 
 // ************************************************************************* //

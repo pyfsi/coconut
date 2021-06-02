@@ -21,7 +21,7 @@ L 0.05; 	// Length of tube
 
 Ntop 48; 	// Number of intervals along axis 
 N1 8;		// Number of intervals on the edges of the central block
-N2 2;		// Number of intervals on the diagonals connecting the central block to the outer cylinder
+N2 8;		// Number of intervals on the diagonals connecting the central block to the outer cylinder
 
 nR #calc "-$R";
 nL #calc "-$L";

@@ -1,46 +1,54 @@
 from coconut.tools import create_instance, get_solver_env, solver_available, print_box
+import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
 import unittest
 import numpy as np
 import os
+from os.path import join
 import multiprocessing
+import shutil
 import re
 import json
 from subprocess import check_call, DEVNULL
 
-import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
-version = '41'
+class TestSolverWrapperOpenFOAM(unittest.TestCase):
+    version = None  # OpenFOAM version without dot, e.g. 41 , set in sub-class
 
+    @classmethod
+    def setUpClass(cls):
+        dir_name = os.path.realpath(os.path.dirname(__file__))  # path to openfoam directory
+        cls.file_name = join(dir_name, f'test_v{cls.version}/tube3d/parameters.json')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube3d/CFD')
 
-@unittest.skipUnless(solver_available(f'openfoam.v{version}'), f'openfoam.v{version} not available')
-class TestSolverWrapperOpenFoam41(unittest.TestCase):
+        # setup
+        shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)
+        shutil.copytree(os.path.join(dir_name, f'test_v{cls.version}/tube3d/setup_openfoam'), cls.working_dir)
 
     def setUp(self):
-        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_tube_3d', 'parameters.json')
+        with open(self.file_name, 'r') as parameter_file:
+            self.parameters = json.load(parameter_file)
+        self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
+        
+        self.mp_name_in = self.parameters['settings']['interface_input'][0]['model_part']
+        self.mp_name_out = self.parameters['settings']['interface_output'][0]['model_part']
 
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = json.load(parameter_file)
-        self.par_solver = parameters['solver_wrappers'][0]
-        self.mp_name_in = self.par_solver['settings']['interface_input'][0]['model_part']
-        self.mp_name_out = self.par_solver['settings']['interface_output'][0]['model_part']
-
-        # if running from this folder
-        if os.getcwd() == os.path.realpath(os.path.dirname(__file__)):
-            self.par_solver['settings']['working_directory'] = 'test_tube_3d'
-
-        self.folder_path = os.path.join(os.getcwd(), self.par_solver['settings']['working_directory'])
-        self.delta_t = self.par_solver['settings']['delta_t']
-        self.t_prec = self.par_solver['settings']['time_precision']
+        self.folder_path = os.path.join(os.getcwd(), self.parameters['settings']['working_directory'])
+        self.delta_t = self.parameters['settings']['delta_t']
+        self.t_prec = self.parameters['settings']['time_precision']
         self.max_cores = min(4, multiprocessing.cpu_count())  # number of cores for parallel calculation
 
-        solver_name = self.par_solver['type'].replace('solver_wrappers.', '')
+        solver_name = self.parameters['type'].replace('solver_wrappers.', '')
         self.env = get_solver_env(solver_name, self.folder_path)
         self.clean_case()
         self.set_up_case()
 
     def tearDown(self):
         self.clean_case()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.working_dir)
 
     def clean_case(self):
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
@@ -50,9 +58,9 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
     def set_cores(self, cores):
         if cores == 1:
-            self.par_solver['settings']['parallel'] = False
+            self.parameters['settings']['parallel'] = False
         else:
-            self.par_solver['settings']['parallel'] = True
+            self.parameters['settings']['parallel'] = True
             decompose_file_name = os.path.join(self.folder_path, 'system', 'decomposeParDict')
             with open(decompose_file_name, 'r') as f:
                 dct = f.read()
@@ -77,7 +85,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         x0, y0, z0, ids = [], [], [], []
         for cores in [1, self.max_cores]:
             self.set_cores(cores)
-            solver = create_instance(self.par_solver)
+            solver = create_instance(self.parameters)
             solver.initialize()
             solver.finalize()
             model_part = solver.model.get_model_part(self.mp_name_in)
@@ -98,7 +106,8 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
-            solver = create_instance(self.par_solver)
+            solver = create_instance(self.parameters)
+            solver.initialize()
 
             model_part = solver.model.get_model_part(self.mp_name_in)
             x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
@@ -112,7 +121,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
 
             # update position by iterating once in solver
-            solver.initialize()
             solver.initialize_solution_step()
             solver.solve_solution_step(solver.get_interface_input())
             solver.finalize_solution_step()
@@ -135,7 +143,8 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
-            solver = create_instance(self.par_solver)
+            solver = create_instance(self.parameters)
+            solver.initialize()
             model_part = solver.model.get_model_part(self.mp_name_in)
             x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
             dx = np.zeros(x0.shape)
@@ -144,7 +153,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
             solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
 
             # update position by iterating once in solver
-            solver.initialize()
             solver.initialize_solution_step()
             output_interface = solver.solve_solution_step(solver.get_interface_input())
             output_list.append(output_interface.get_interface_data())
@@ -163,7 +171,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
         # adapt parameters, create solver
         self.set_cores(1)
-        solver = create_instance(self.par_solver)
+        solver = create_instance(self.parameters)
         solver.initialize()
         solver.initialize_solution_step()
         interface_input = solver.get_interface_input()
@@ -214,8 +222,9 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         print_box("Testing restart")
         cores = 4
         self.set_cores(cores)
-        self.par_solver['settings']['cores'] = cores
-        solver = create_instance(self.par_solver)
+        self.parameters['settings']['cores'] = cores
+        solver = create_instance(self.parameters)
+        solver.initialize()
         interface_input = solver.get_interface_input()
 
         # set displacement
@@ -228,7 +237,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         nr_time_steps = 4
 
         # run solver for 4 timesteps
-        solver.initialize()
         for i in range(nr_time_steps):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
@@ -250,12 +258,12 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
         # create solver which restarts at timestep 2
-        self.par_solver['settings']['timestep_start'] = 2
-        solver = create_instance(self.par_solver)
+        self.parameters['settings']['timestep_start'] = 2
+        solver = create_instance(self.parameters)
+        solver.initialize()
         interface_input = solver.get_interface_input()
 
         # run solver for 2 more timesteps
-        solver.initialize()
         for i in range(2, nr_time_steps):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)

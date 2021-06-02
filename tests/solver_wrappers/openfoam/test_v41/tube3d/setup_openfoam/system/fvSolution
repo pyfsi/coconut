@@ -66,17 +66,14 @@ PIMPLE
     {
         p
         {
-        tolerance   1e-10;
-        relTol         0;
+             tolerance   1e-10;
+             relTol      0;
         }
         U
         {
-
-        tolerance   1e-10;
-        relTol      0;
-
+             tolerance   1e-10;
+             relTol      0;
         }
-
     }
 }
 
