@@ -15,20 +15,26 @@ import re
 
 
 def create(parameters):
-    return SolverWrapperOpenFOAM41(parameters)
+    return SolverWrapperOpenFOAM(parameters)
 
 
-class SolverWrapperOpenFOAM41(Component):
+class SolverWrapperOpenFOAM(Component):
+    version = None  # OpenFOAM version with dot, e.g. 4.1 , set in sub-class
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
+        if self.version is None:
+            raise NotImplementedError(
+                'Base class method called, class variable version needs to be set in the derived class')
+
         # settings
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        self.env = get_solver_env(__name__, self.working_directory)
+        self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
         # adapted application from openfoam ('coconut_<application name>')
-        self.application = self.settings['application']
+        self.application = self.settings['application'] + f'_v{self.version.replace(".", "")}'
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
@@ -37,20 +43,31 @@ class SolverWrapperOpenFOAM41(Component):
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
-        self.version = '4.1'
 
         # set on True to save copy of input and output files in every iteration
         self.debug = False
 
+        # remove possible CoCoNuT-message from previous interrupt
+        self.remove_all_messages()
+
+        # time
+        self.init_time = self.init_time
+        self.run_time = 0.0
+
+        # residual variables
+        self.residual_variables = self.settings.get('residual_variables', None)
+        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
+
+        if self.residual_variables is not None:
+            self.write_residuals_fileheader()
+
+    @tools.time_initialize
+    def initialize(self):
+        super().initialize()
+
         # check interface names in 'interface_input' and 'interface_output' with boundary names provided in
         # boundary_names
         self.check_interfaces()
-
-        # check that the correct modules have been loaded
-        self.check_software()
-
-        # remove possible CoCoNuT-message from previous interrupt
-        self.remove_all_messages()
 
         # obtain number of cores from self.working_directory/system/decomposeParDict
         self.cores = 1
@@ -73,10 +90,9 @@ class SolverWrapperOpenFOAM41(Component):
         self.model = data_structure.Model()
 
         # writeCellcentres writes cellcentres in internal field and face centres in boundaryField
-        check_call(f'writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True,
-                   env=self.env)
-        boundary_filename = os.path.join(self.working_directory, 'constant/polyMesh/boundary')
+        self.write_cell_centres()
 
+        boundary_filename = os.path.join(self.working_directory, 'constant/polyMesh/boundary')
         for boundary in self.boundary_names:
             with open(boundary_filename, 'r') as boundary_file:
                 boundary_file_string = boundary_file.read()
@@ -91,16 +107,7 @@ class SolverWrapperOpenFOAM41(Component):
             self.model.create_model_part(f'{boundary}_input', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
                                          node_ids)
 
-            filename_x = os.path.join(self.working_directory, '0/ccx')
-            filename_y = os.path.join(self.working_directory, '0/ccy')
-            filename_z = os.path.join(self.working_directory, '0/ccz')
-
-            x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary, size=nfaces,
-                                          is_scalar=True)
-            y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary, size=nfaces,
-                                          is_scalar=True)
-            z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary, size=nfaces,
-                                          is_scalar=True)
+            x0, y0, z0 = self.read_face_centres(boundary, nfaces)
             ids = np.arange(0, nfaces)
 
             # create output model part
@@ -111,28 +118,6 @@ class SolverWrapperOpenFOAM41(Component):
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # compile openfoam adapted solver
-        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
-        try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
-        except subprocess.CalledProcessError:
-            raise RuntimeError(
-                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
-
-        self.residual_variables = self.settings.get('residual_variables', None)
-        self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
-
-        if self.residual_variables is not None:
-            self.write_residuals_fileheader()
-
-    @tools.time_initialize
-    def initialize(self):
-        super().initialize()
 
         # define timestep and physical time
         self.timestep = 0
@@ -319,6 +304,32 @@ class SolverWrapperOpenFOAM41(Component):
 
     def get_interface_output(self):
         return self.interface_output
+
+    def compile_adapted_openfoam_solver(self):
+        # compile openfoam adapted solver
+        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
+        try:
+            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+        except subprocess.CalledProcessError:
+            raise RuntimeError(
+                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
+
+    def write_cell_centres(self):
+        check_call('writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True,
+                   env=self.env)
+
+    def read_face_centres(self, boundary_name, nfaces):
+        filename_x = os.path.join(self.working_directory, '0/ccx')
+        filename_y = os.path.join(self.working_directory, '0/ccy')
+        filename_z = os.path.join(self.working_directory, '0/ccz')
+
+        x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces,
+                                      is_scalar=True)
+        y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces,
+                                      is_scalar=True)
+        z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces,
+                                      is_scalar=True)
+        return x0, y0, z0
 
     def delete_prev_iter_output(self):
         # pressure and wall shear stress files are removed to avoid openfoam to append data in the new iteration
@@ -554,54 +565,66 @@ class SolverWrapperOpenFOAM41(Component):
             control_dict_file.write('functions\n{\n')
 
             for boundary_name in self.boundary_names:
-                control_dict_file.write(f'PRESSURE_{boundary_name}\n'
-                                        f'{{\n'
-                                        f'type  	 surfaceRegion;\n'
-                                        f'libs 	 ("libfieldFunctionObjects.so");\n'
-                                        f'executeControl 	 timeStep;\n'
-                                        f'executeInterval 	 1;\n'
-                                        f'writeControl 	 timeStep;\n'
-                                        f'writeInterval 	 1;\n'
-                                        f'timeFormat 	 fixed;\n'
-                                        f'timePrecision 	 {self.time_precision};\n'
-                                        f'operation 	 none;\n'
-                                        f'writeFields 	 true;\n'
-                                        f'surfaceFormat 	 raw;\n'
-                                        f'regionType 	 patch;\n'
-                                        f'name 	 {boundary_name};\n'
-                                        f'fields (p);\n'
-                                        f'}}\n')
-                control_dict_file.write(f'wallShearStress\n'
-                                        f'{{\n'
-                                        f'type  	 wallShearStress;\n'
-                                        f'libs 	 ("libfieldFunctionObjects.so");\n'
-                                        f'executeControl 	 timeStep;\n'
-                                        f'executeInterval 	 1;\n'
-                                        f'writeControl 	 timeStep;\n'
-                                        f'writeInterval 	 1;\n'
-                                        f'timeFormat 	 fixed;\n'
-                                        f'timePrecision 	 {self.time_precision};\n'
-                                        f'log 	 false;\n'
-                                        f'}}\n')
-                control_dict_file.write(f'TRACTION_{boundary_name}\n'
-                                        f'{{\n'
-                                        f'type  	 surfaceRegion;\n'
-                                        f'libs 	 ("libfieldFunctionObjects.so");\n'
-                                        f''f'executeControl 	 timeStep;\n'
-                                        f'executeInterval 	 1;\n'
-                                        f'writeControl 	 timeStep;\n'
-                                        f'writeInterval 	 1;\n'
-                                        f'timeFormat 	 fixed;\n'
-                                        f'timePrecision 	 {self.time_precision};\n'
-                                        f'operation 	 none;\n'
-                                        f'writeFields 	 true;\n'
-                                        f'surfaceFormat 	 raw;\n'
-                                        f'regionType 	 patch;\n'
-                                        f'name 	 {boundary_name};\n'
-                                        f'fields ( wallShearStress);\n'
-                                        f'}}\n')
+                control_dict_file.write(self.pressure_dict(boundary_name))
+                control_dict_file.write(self.wall_shear_stress_dict(boundary_name))
+                control_dict_file.write(self.traction_dict(boundary_name))
             control_dict_file.write('}')
-        self.write_footer(file_name)
+            self.write_footer(file_name)
+
+    def pressure_dict(self, boundary_name):
+        dct = (f'PRESSURE_{boundary_name}\n'
+               f'{{\n'
+               f'type  	             surfaceRegion;\n'
+               f'libs 	             ("libfieldFunctionObjects.so");\n'
+               f'executeControl 	 timeStep;\n'
+               f'executeInterval 	 1;\n'
+               f'writeControl 	     timeStep;\n'
+               f'writeInterval 	     1;\n'
+               f'timeFormat 	     fixed;\n'
+               f'timePrecision 	     {self.time_precision};\n'
+               f'operation 	         none;\n'
+               f'writeFields 	     true;\n'
+               f'surfaceFormat 	     raw;\n'
+               f'regionType 	     patch;\n'
+               f'name 	             {boundary_name};\n'
+               f'fields              (p);\n'
+               f'}}\n')
+        return dct
+
+    def wall_shear_stress_dict(self, boundary_name):
+        dct = (f'wallShearStress\n'
+               f'{{\n'
+               f'type  	             wallShearStress;\n'
+               f'libs 	             ("libfieldFunctionObjects.so");\n'
+               f'executeControl 	 timeStep;\n'
+               f'executeInterval 	 1;\n'
+               f'writeControl 	     timeStep;\n'
+               f'writeInterval 	     1;\n'
+               f'timeFormat          fixed;\n'
+               f'timePrecision 	     {self.time_precision};\n'
+               f'log 	             false;\n'
+               f'}}\n')
+        return dct
+
+    def traction_dict(self, boundary_name):
+        dct = (f'TRACTION_{boundary_name}\n'
+               f'{{\n'
+               f'type  	             surfaceRegion;\n'
+               f'libs 	             ("libfieldFunctionObjects.so");\n'
+               f'executeControl      timeStep;\n'
+               f'executeInterval 	 1;\n'
+               f'writeControl 	     timeStep;\n'
+               f'writeInterval 	     1;\n'
+               f'timeFormat 	     fixed;\n'
+               f'timePrecision 	     {self.time_precision};\n'
+               f'operation 	         none;\n'
+               f'writeFields 	     true;\n'
+               f'surfaceFormat       raw;\n'
+               f'regionType 	     patch;\n'
+               f'name 	             {boundary_name};\n'
+               f'fields              (wallShearStress);\n'
+               f'}}\n')
+        return dct
 
     def write_residuals_fileheader(self):
         header = ''

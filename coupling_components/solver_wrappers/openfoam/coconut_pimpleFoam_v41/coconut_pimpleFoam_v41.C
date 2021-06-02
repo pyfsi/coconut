@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
     word prev_runTime;
 
     unsigned int iteration;
+    iteration = 0;
 
     IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
