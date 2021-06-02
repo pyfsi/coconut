@@ -28,10 +28,13 @@ class SolverWrapperFluent(Component):
     def __init__(self, parameters):
         super().__init__()
 
+        if self.version is None or self.version_bis is None:
+            raise NotImplementedError(
+                'Base class method called, class variable version and version_bis need to be set in the derived class')
+
         # set parameters
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        self.set_fluent_version()
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
@@ -331,10 +334,6 @@ class SolverWrapperFluent(Component):
     def get_interface_output(self):
         return self.interface_output
 
-    def set_fluent_version(self):
-        raise NotImplementedError(
-            'Base class method called, "set_fluent_version" method needs to be implemented by the derived class.')
-
     def check_software(self):
         # Python version: 3.6 or higher
         if sys.version_info < (3, 6):
@@ -343,7 +342,7 @@ class SolverWrapperFluent(Component):
         # Fluent version: see set_fluent_version
         result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
-            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
+            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required')
 
     # noinspection PyMethodMayBeStatic
     def get_unique_face_ids(self, data):
