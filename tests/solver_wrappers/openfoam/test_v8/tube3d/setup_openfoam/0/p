@@ -22,10 +22,10 @@ boundaryField
 {
     inlet
     {
-       type            uniformTotalPressure;
-       p0              table
+        type            uniformTotalPressure;
+        p0              table
     (
-    	(0 1.3332)  
+        (0 1.3332)
 	    (0.003 1.3332)
 	    (0.0031 0)
 	    (0.01 0)

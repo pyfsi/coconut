@@ -21,17 +21,17 @@ internalField   uniform (0 0 0);
 
 boundaryField
 {
-	 ".*"
-	 {
-		 type            fixedValue;
-	 	 value           uniform (0 0 0);
-	 }
+	".*"
+	{
+	    type            fixedValue;
+        value           uniform (0 0 0);
+	}
 
- 	 mantle 
-	 { 
-		 type  	 fixedValue; 
-		 value 	 uniform ( 0 0 0 );
-	 } 
+ 	mantle
+	{
+	    type  	        fixedValue;
+	    value           uniform ( 0 0 0 );
+	}
 } 
 
 // ************************************************************************* //
