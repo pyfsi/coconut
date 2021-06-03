@@ -4,11 +4,13 @@ from coconut.tools import create_instance
 import unittest
 import numpy as np
 import json
+import os
 
 
 class TestMapperCombined(unittest.TestCase):
     def test_mapper_combined(self):
-        with open('mappers/test_combined.json') as parameter_file:
+        parameter_file_name = os.path.join(os.path.dirname(__file__), 'test_combined.json')
+        with open(parameter_file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
 
         # compare 3 mappers: nearest, combined_a, combined_b

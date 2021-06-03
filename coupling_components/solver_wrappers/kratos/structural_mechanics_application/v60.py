@@ -18,43 +18,21 @@ def create(parameters):
 
 
 class SolverWrapperKratosStructure60(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
         self.settings = parameters['settings']
         self.working_directory = join(os.getcwd(), self.settings['working_directory'])
         self.env = tools.get_solver_env(__name__, self.working_directory)
-        delta_t = self.settings['delta_t']
-        timestep_start = self.settings['timestep_start']
-        dimensions = self.settings['dimensions']
-
+        self.delta_t = self.settings['delta_t']
+        self.timestep_start = self.settings['timestep_start']
+        self.save_restart = self.settings.get('save_restart',0)
+        self.dimensions = self.settings['dimensions']
+        self.timestep = None
+        self.interface_sub_model_parts_list = None
         input_file_name = join(self.working_directory, self.settings['input_file'])
-
-        with open(input_file_name, 'r') as parameter_file:
-            kratos_parameters = json.load(parameter_file)
-
-        kratos_parameters['problem_data']['start_time'] = 0.0
-        kratos_parameters['problem_data']['time_step'] = delta_t
-
-        if not 'restart_settings' in kratos_parameters['solver_settings']:
-            tools.print_info('restart_settings is missing in the kratos parameter file.', layout='warning')
-        elif not kratos_parameters['solver_settings']['restart_settings']['restart_control_type'] == 'step':
-                raise NotImplementedError('restart_settings other than "step" is not implemented.')
-
-        if not (timestep_start == 0):
-            kratos_parameters['solver_settings']['restart_settings']['load_restart'] = True
-            kratos_parameters['solver_settings']['restart_settings']['restart_load_file_label'] = f'{timestep_start}'
-
-        kratos_parameters['problem_data']['domain_size'] = dimensions
-        kratos_parameters['problem_data']['end_time'] = 1e15
-
-        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
-
-        kratos_parameters['interface_sub_model_parts_list'] = interface_sub_model_parts_list
-
-        with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
-            json.dump(kratos_parameters, f, indent=4)
-
+        self.update_kratos_parameter_file(input_file_name)
         self.check_interface()
 
         self.model = data_structure.Model()
@@ -67,7 +45,7 @@ class SolverWrapperKratosStructure60(Component):
 
         self.wait_message('start_ready')
 
-        for mp_name in interface_sub_model_parts_list:
+        for mp_name in self.interface_sub_model_parts_list:
             file_path = os.path.join(self.working_directory, f'{mp_name}_nodes.csv')
             node_data = pd.read_csv(file_path, skipinitialspace=True)
             node_ids = np.array(node_data.node_id)
@@ -81,7 +59,8 @@ class SolverWrapperKratosStructure60(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
         self.residual_variables = self.settings.get('residual_variables', None)
@@ -168,6 +147,38 @@ class SolverWrapperKratosStructure60(Component):
             disp_z = np.array(disp_data.displacement_z)
             displacement = np.column_stack((disp_x, disp_y, disp_z))
             self.interface_output.set_variable_data(output_mp_name, 'displacement', displacement)
+
+    def update_kratos_parameter_file(self, input_file_name):
+
+        with open(input_file_name, 'r') as parameter_file:
+            kratos_parameters = json.load(parameter_file)
+
+
+        kratos_parameters['problem_data']['start_time'] = 0.0
+        kratos_parameters['problem_data']['time_step'] = self.delta_t
+        kratos_parameters['solver_settings']['restart_settings'] = {}
+        if self.save_restart:
+            restart_save_dict = {'restart_control_type': 'step',
+                                 'restart_save_frequency': abs(self.save_restart), # kratos 6.0 does not support negative numbers
+                                 'save_restart': True}
+            kratos_parameters['solver_settings']['restart_settings'].update(restart_save_dict)
+
+        if not (self.timestep_start == 0):
+            restart_load_dict = {'load_restart': True,
+                                 'restart_load_file_label':f'{self.timestep_start}' }
+            kratos_parameters['solver_settings']['restart_settings'].update(restart_load_dict)
+
+
+        kratos_parameters['problem_data']['domain_size'] = self.dimensions
+        kratos_parameters['problem_data']['end_time'] = 1e15
+
+        self.interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
+
+        kratos_parameters['interface_sub_model_parts_list'] = self.interface_sub_model_parts_list
+
+        with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
+            json.dump(kratos_parameters, f, indent=4)
+
 
     def check_interface(self):
 

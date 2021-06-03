@@ -19,6 +19,7 @@ class StructuralMechanicsWrapper:
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
 
+        self.coupling_iteration = None
         self.interfaces = parameters["interface_sub_model_parts_list"]
 
         self.structural_analysis = StructuralMechanicsAnalysis(self.model, self.kratos_parameters)
@@ -75,8 +76,6 @@ class StructuralMechanicsWrapper:
                     with open(file_name, 'a') as f:
                         disp = node.GetSolutionStepValue(KM.DISPLACEMENT)
                         f.write(str(node.Id) + ', ' + str(disp[0]) + ', ' + str(disp[1]) + ', ' + str(disp[2]) + '\n')
-
-
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
@@ -127,7 +126,7 @@ if __name__ == '__main__':
     str_wrapper.Initialize()
     open('start_ready.coco', 'w').close()
 
-    while (True):
+    while True:
         time.sleep(0.01)
 
         if os.path.isfile('next.coco'):

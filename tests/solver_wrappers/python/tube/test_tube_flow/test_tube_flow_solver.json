@@ -1,30 +1,26 @@
 {
-  "solver_wrappers": [
-    {
-      "type": "solver_wrappers.python.tube_flow_solver",
-      "settings": {
-        "working_directory": "solver_wrappers/python/tube/test_tube_flow/CFD",
-        "input_file": "solver_parameters.json",
-        "save_restart": 0,
-        "delta_t": 0.0001,
-        "interface_input": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "displacement"
-            ]
-          }
-        ],
-        "interface_output": [
-          {
-            "model_part": "wall",
-            "variables": [
-              "pressure",
-              "traction"
-            ]
-          }
+  "type": "solver_wrappers.python.tube_flow_solver",
+  "settings": {
+    "working_directory": "solver_wrappers/python/tube/test_tube_flow/CFD",
+    "input_file": "solver_parameters.json",
+    "save_restart": 0,
+    "delta_t": 0.0001,
+    "interface_input": [
+      {
+        "model_part": "wall",
+        "variables": [
+          "displacement"
         ]
       }
-    }
-  ]
+    ],
+    "interface_output": [
+      {
+        "model_part": "wall",
+        "variables": [
+          "pressure",
+          "traction"
+        ]
+      }
+    ]
+  }
 }

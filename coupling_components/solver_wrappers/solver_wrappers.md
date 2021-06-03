@@ -1,7 +1,9 @@
 # Solver wrappers
 
 
-The goal of solver wrappers is to provide communication with the solvers. This  means that a solver wrapper must implement a way to communicate input to the solver (at the fluid-structure interface), run the solver with the provided input and obtain the solution from the solver (at the fluid-structure interface). 
+The goal of solver wrappers is to provide communication with the solvers. This  means that a solver wrapper must implement a way to communicate input to the solver (at the fluid-structure interface), run the solver with the provided input and obtain the solution from the solver (at the fluid-structure interface).
+
+**Important**: To avoid conflicts, each solver is run in its own environment. These environments are established on runtime, but the actions required to do so can differ between systems. Therefore it is necessary to first check (and if needed adapt) the file *`coconut/solver_modules.py`* after installing or updating CoCoNuT, as described in [the front documentation page](../../README.md#checking-the-solver-modules).
 
 As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from the `Component` class and must all implement the following methods: `initialize`, `initialize_solution_step`, `solve_solution_step`, `finalize_solution_step`, `finalize`, `get_interface_input` and `get_interface_output`.
 

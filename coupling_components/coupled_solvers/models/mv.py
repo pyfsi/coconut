@@ -12,8 +12,8 @@ class ModelMV(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        self.settings = parameters["settings"]
-        self.min_significant = self.settings.get("min_significant", 0)
+        self.settings = parameters['settings']
+        self.min_significant = self.settings.get('min_significant', 0)
 
         self.size_in = None
         self.size_out = None
@@ -35,7 +35,7 @@ class ModelMV(Component):
 
     def filter(self):
         if self.v.shape[1] == 0:
-            raise RuntimeError("No information to filter")
+            raise RuntimeError('No information to filter')
         # remove columns resulting in small diagonal elements in R
         singular = True
         while singular and self.v.shape[1]:
@@ -44,7 +44,7 @@ class ModelMV(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print_info("Removing column " + str(i) + ": " + str(m) + " < minsignificant", layout='warning')
+                tools.print_info(f'Removing column {i}: {m} < minsignificant', layout='warning')
                 self.v = np.delete(self.v, i, 1)
                 self.w = np.delete(self.w, i, 1)
             else:
@@ -57,7 +57,7 @@ class ModelMV(Component):
     def predict(self, dr_in):
         dr = dr_in.get_interface_data().reshape(-1, 1)
         if self.ncurr is None:
-            raise RuntimeError("No information to predict")
+            raise RuntimeError('No information to predict')
         # approximation for the inverse of the Jacobian from a multiple vector model
         dxt = self.ncurr @ dr
         dxt_out = self.out.copy()

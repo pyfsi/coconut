@@ -43,11 +43,7 @@
     ],
     "rotation_dofs": false,
     "time_integration_method": "implicit",
-    "scheme_type": "bossak",
-    "restart_settings": {
-      "restart_control_type": "step",
-      "save_restart": true
-    }
+    "scheme_type": "bossak"
   },
   "constraints_process_list": [
     {

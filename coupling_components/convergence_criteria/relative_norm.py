@@ -11,9 +11,9 @@ class ConvergenceCriterionRelativeNorm(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        settings = parameters["settings"]
-        self.tolerance = settings["tolerance"]
-        self.order = settings["order"]
+        settings = parameters['settings']
+        self.tolerance = settings['tolerance']
+        self.order = settings['order']
 
         self.initial_norm = 0
         self.last_norm = 0
@@ -32,7 +32,7 @@ class ConvergenceCriterionRelativeNorm(Component):
             self.initial_norm = self.last_norm
             self.is_initial_norm_set = True
             if self.initial_norm < np.finfo(type(self.initial_norm)).eps:
-                raise Exception("Initial norm is too small")
+                raise Exception('Initial norm is too small')
 
     def is_satisfied(self):
         if not self.is_initial_norm_set:

@@ -1,4 +1,4 @@
-from coconut.tools import create_instance
+from coconut.tools import create_instance, solver_available
 
 import numpy as np
 from os import getcwd
@@ -9,14 +9,11 @@ import pandas as pd
 from shutil import copytree, rmtree
 
 
-def print_box(text):
-    n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
-    mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
+version = '60'
 
 
+@unittest.skipUnless(solver_available(f'kratos.structural_mechanics_application.v{version}'),
+                     f'kratos.structural_mechanics_application.v{version} not available')
 class TestSolverWrapperKratosStructure60(unittest.TestCase):
 
     def setUp(self):
@@ -43,9 +40,8 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
     def tearDown(self):
         rmtree(self.dir_csm)
 
+    # test if the same load results in the same displacement.
     def test_apply_load(self):
-        print_box('started tests for Kratos Tube3D: test_apply_load')
-
         solver = create_instance(self.solver_param)
         self.mp_out = solver.model.get_model_part(self.mp_out_name)
 
@@ -91,9 +87,9 @@ class TestSolverWrapperKratosStructure60(unittest.TestCase):
         np.testing.assert_allclose(a1, a3, rtol=0, atol=1e-10)
         self.assertRaises(AssertionError, np.testing.assert_allclose, a1, a2, rtol=0, atol=1e-10)
 
+    # restart only works for memmabrane elements among planar elements (for kratos 6.0)
     def test_restart(self):
-        # restart only works for memmabrane elements among planar elements
-        print_box('started tests for Kratos Tube3D: restart')
+        self.solver_param['settings']['save_restart'] = -2
         solver = create_instance(self.solver_param)
         self.mp_out = solver.model.get_model_part(self.mp_out_name)
         load_interface = solver.get_interface_input()
