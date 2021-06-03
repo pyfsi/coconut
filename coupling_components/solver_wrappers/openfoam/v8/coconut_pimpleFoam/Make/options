@@ -1,6 +1,7 @@
 EXE_INC = \
     -I. \
     -I.. \
+    -I../.. \
     -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
     -I$(LIB_SRC)/MomentumTransportModels/incompressible/lnInclude \
     -I$(LIB_SRC)/transportModels/lnInclude \

@@ -124,3 +124,4 @@ Moreover there are some changes in the case setup. The following list provides s
 - Using a macro expansion, such as `$R`, in combiantion with `#calc`, where a operator follows the macro expansion, requires to use protection: use `#calc "${R}/2` instead of `#calc "$R/2`
 - The file _`constant/turbulenceProperties`_ has been renamed to _`constant/momentumTransport`_
 - The keyword `residualControl` in the `PIMPLE` dictionarry is now called `outerCorrectorResidualControl`. The keyword `residualControl` still exists, but has a different meaning and is used as in `SIMPLE`.
+- The file _`system/fvSolution`_ requires dictionaries `pcorr` and `pcorrFinal`, if the keyword `correctPhi` is `true` in _`system/fvSolution`_, which it is by default. The the tolerance settings should be sufficiently low (similar to `p`).

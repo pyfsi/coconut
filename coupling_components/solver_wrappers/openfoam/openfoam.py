@@ -34,7 +34,7 @@ class SolverWrapperOpenFOAM(Component):
         self.working_directory = self.settings['working_directory']
         self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
         # adapted application from openfoam ('coconut_<application name>')
-        self.application = self.settings['application'] + f'_v{self.version.replace(".", "")}'
+        self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
@@ -307,7 +307,7 @@ class SolverWrapperOpenFOAM(Component):
 
     def compile_adapted_openfoam_solver(self):
         # compile openfoam adapted solver
-        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
+        solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
             check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
         except subprocess.CalledProcessError:
@@ -529,29 +529,29 @@ class SolverWrapperOpenFOAM(Component):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-            self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
-            time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
-            self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
+        self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
+        time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
+        self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
 
-            if not time_format == 'fixed':
-                msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
-                tools.print_info(msg, layout='warning')
-                control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
-                                      control_dict)
-            control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
+        if not time_format == 'fixed':
+            msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
+            tools.print_info(msg, layout='warning')
+            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-            control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
-                                  f'startTime    {self.start_time}', control_dict)
-            control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
-                                  control_dict)
-            control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
-                                  f'timePrecision    {self.time_precision}',
-                                  control_dict)
-            control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
+        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
+                              control_dict)
+        control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
+                              f'startTime    {self.start_time}', control_dict)
+        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
+                              control_dict)
+        control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
+                              f'timePrecision    {self.time_precision}',
+                              control_dict)
+        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
 
-            # delete previously defined coconut functions
-            coconut_start_string = '// CoCoNuT function objects'
-            control_dict = re.sub(coconut_start_string + r'.*', '', control_dict, flags=re.S)
+        # delete previously defined coconut functions
+        coconut_start_string = '// CoCoNuT function objects'
+        control_dict = re.sub(coconut_start_string + r'.*', '', control_dict, flags=re.S)
 
         with open(file_name, 'w') as control_dict_file:
             control_dict_file.write(control_dict)
