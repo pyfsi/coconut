@@ -18,6 +18,7 @@ solver_load_cmd_dict = {
         'openfoam.v41': 'ml OpenFOAM/4.1 && source $FOAM_BASH'
     },
     'ugent_cluster_CO7': {
+        'fluent.v2019R1': 'ml ANSYS_CFD/2019R1',
         'fluent.v2019R3': 'ml ANSYS_CFD/2019R3',
         'fluent.v2020R1': 'ml ANSYS_CFD/2020R1',
         'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14',
