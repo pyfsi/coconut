@@ -14,10 +14,10 @@ import re
 
 
 def create(parameters):
-    return SolverWrapperKratosStructure60(parameters)
+    return SolverWrapperKratosStructure70(parameters)
 
 
-class SolverWrapperKratosStructure60(Component):
+class SolverWrapperKratosStructure70(Component):
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
@@ -38,7 +38,7 @@ class SolverWrapperKratosStructure60(Component):
         self.model = data_structure.Model()
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        run_script_file = os.path.join(dir_path, 'run_kratos_structural_60.py')
+        run_script_file = os.path.join(dir_path, 'v70','run_kratos_structural_70.py')
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
                                     shell=True, cwd=self.working_directory, env=self.env)
@@ -155,21 +155,21 @@ class SolverWrapperKratosStructure60(Component):
 
 
         kratos_parameters['problem_data']['start_time'] = 0.0
-        kratos_parameters['problem_data']['time_step'] = self.delta_t
-        kratos_parameters['solver_settings']['restart_settings'] = {}
-        if self.save_restart:
-            restart_save_dict = {'restart_control_type': 'step',
-                                 'restart_save_frequency': abs(self.save_restart), # kratos 6.0 does not support negative numbers
-                                 'save_restart': True}
-            kratos_parameters['solver_settings']['restart_settings'].update(restart_save_dict)
+        kratos_parameters['solver_settings']['time_stepping']['time_step'] = self.delta_t
+        #kratos_parameters['solver_settings']['restart_settings'] = {}
+        # if self.save_restart:
+        #     restart_save_dict = {'restart_control_type': 'step',
+        #                          'restart_save_frequency': abs(self.save_restart), # kratos 6.0 does not support negative numbers
+        #                          'save_restart': True}
+        #     kratos_parameters['solver_settings']['restart_settings'].update(restart_save_dict)
+        #
+        # if not (self.timestep_start == 0):
+        #     restart_load_dict = {'load_restart': True,
+        #                          'restart_load_file_label':f'{self.timestep_start}' }
+        #     kratos_parameters['solver_settings']['restart_settings'].update(restart_load_dict)
 
-        if not (self.timestep_start == 0):
-            restart_load_dict = {'load_restart': True,
-                                 'restart_load_file_label':f'{self.timestep_start}' }
-            kratos_parameters['solver_settings']['restart_settings'].update(restart_load_dict)
 
-
-        kratos_parameters['problem_data']['domain_size'] = self.dimensions
+        kratos_parameters['solver_settings']['domain_size'] = self.dimensions
         kratos_parameters['problem_data']['end_time'] = 1e15
 
         self.interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
@@ -251,7 +251,7 @@ class SolverWrapperKratosStructure60(Component):
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
                     for i, variable in enumerate(self.residual_variables):
-                        search_string = r'\n' + variable + r' CRITERION.*[Nn]orm = ' + r'(' + float_pattern + r')'
+                        search_string = r'\n' + variable + r' CRITERION.*?Absolute norm = ' + r'(' + float_pattern + r')'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of the non-linear iteration
