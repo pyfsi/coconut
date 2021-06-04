@@ -15,7 +15,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle': 250,
+                                'angle': 180,
                                 'n_tangential': 9}
                            }
 
