@@ -35,8 +35,8 @@ parameter|type|description
 `delta_t`|float|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
 `case_name`|string|(optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<name>_results.pickle`_) and a restart file (_`<name>_restart_ts<time_step>.pickle`_). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.
 `restart_case`|string|(optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
-`save_restart`|int|(optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained.
-`save_results`|bool|(optional) Default: `false`. If `true` a pickle file is stored containing some main [results](#save-results).
+`save_restart`|int|(optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers a [results save](#save-results), if `save_results` is non-zero.
+`save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written.
 <nobr>`time_step_start`</nobr>|int|Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.
 
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
@@ -273,7 +273,7 @@ parameter|type|description
 ---:|:---:|---
 `delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `case_name`|string|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
-`save_results`|bool|(optional) If `true` a pickle file is stored containing some main [results](#save-results). If not provided, the value from `settings` is used or if `settings` is not present: `false`.
+`save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.
 `solver_index`|int|Has a value `0` or `1` and indicates the solver that one wants to test. `0` indicates the first solver wrapper that appears in the JSON-file, `1` the second one.
 `test_class`|string|(optional) Refers to the class to use in the *`dummy_solver.py`*. If not provided or `None`, zero input will be used.
 <nobr>`timestep_start`</nobr>|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
@@ -290,7 +290,10 @@ During run time, the norm of $x$ and $y$ are printed. A residual does not exist 
 The test environment `test_single_solver` tests only the `solver_wrapper` itself, no mapping is included.
 
 ## Save results
-In each coupled solver, the `save_results` key can be set on `true`, in order to save some results into a [pickle](https://docs.python.org/3/library/pickle.html) file. The key `case_name` dictates the name of this file as explained above. The pickle file is saved after every time step and may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:
+In each coupled solver, a positive non-zero value can be assigned to the `save_results` parameter, in order to save some results into a [pickle](https://docs.python.org/3/library/pickle.html) file. The key `case_name` dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by `save_results`, but contains information for all time steps.
+In other words, if the parameter is non-zero, it only controls the writing frequency and not the content of the file. If `save_results` is zero, no result are kept and no file is written.
+For a non-zero value of `save_restart`, a save for [restart purposes](#saving-restart-files) also triggers the saving of the results file.
+The pickle file may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:
 
 key|value type|description
 ---:|:---:|---
@@ -304,7 +307,7 @@ key|value type|description
 `delta_t`|float|Equals the used time step size.
 <nobr>`timestep_start`</nobr>|int|Equals the used start time step.
 `case_name`|string|Name of the case.
-`info`|string|Additional info, such as date and restart history.
+`info`|string|Additional info, such as date, restart history and hostname of machine on which simulation is run.
 
 In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.
 
@@ -340,6 +343,9 @@ As described above the pickle file for restart has a name (_`<name>_restart_ts<t
 
 The frequency of saving a restart pickle file is determined by the `save_restart` interval as described above.
 Remark that it is only useful to save the restart pickle file, when the solver data are saved as well.
+Therefore, the `save_restart` parameter is transferred automatically to the solver wrappers.
+
+If `save_results` is non-zero, a save of restart information also triggers the saving of the [results pickle file](#save-results), to avoid discontinuity of this file.
 
 ### Performing restart
 To restart a case, `timestep_start` has to be a positive integer above zero.

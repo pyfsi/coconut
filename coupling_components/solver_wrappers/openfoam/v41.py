@@ -19,6 +19,7 @@ def create(parameters):
 
 
 class SolverWrapperOpenFOAM41(Component):
+    @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
 
@@ -111,16 +112,25 @@ class SolverWrapperOpenFOAM41(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
-        # run time
+        # time
+        self.init_time = self.init_time
         self.run_time = 0.0
 
-        self.plot_of_residuals = False  # TODO: add in the parameters
+        # compile openfoam adapted solver
+        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
+        try:
+            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+        except subprocess.CalledProcessError:
+            raise RuntimeError(
+                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
+
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
 
         if self.residual_variables is not None:
             self.write_residuals_fileheader()
 
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
 
@@ -302,7 +312,6 @@ class SolverWrapperOpenFOAM41(Component):
 
         self.send_message('stop')
         self.wait_message('stop_ready')
-        self.openfoam_process.kill()
         self.openfoam_process.wait()
 
     def get_interface_input(self):
@@ -367,7 +376,7 @@ class SolverWrapperOpenFOAM41(Component):
             wall_shear_stress = np.empty_like(wss_tmp)
             pressure = np.empty((pres_tmp.size, 1))
 
-            wall_shear_stress[pos_list, ] = wss_tmp[:, ]
+            wall_shear_stress[pos_list,] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)

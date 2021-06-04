@@ -99,6 +99,20 @@ def print_components_info(pre, component_list):
     component_list[-1].print_components_info(pre + '└─')
 
 
+# print box
+def print_box(text):
+    """
+    This functions prints adds a box around the string text
+    :param text: str
+    :return: str
+    """
+    n = len(text)
+    top = '\n┌─' + n * '─' + '─┐'
+    mid = '\n│ ' + text + ' │'
+    bottom = '\n└─' + n * '─' + '─┘'
+    print(top + mid + bottom)
+
+
 # timer-function
 @contextmanager
 def quick_timer(name=None, t=0, n=0, ms=False):
@@ -133,6 +147,18 @@ def quick_timer(name=None, t=0, n=0, ms=False):
     print(s)
 
 
+# initialization time measuring function
+def time_initialize(initialize):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'init_time'):
+            self.init_time = 0.0
+        start_time = time.time()
+        initialize(*args)
+        self.init_time += time.time() - start_time
+    return wrapper
+
+
 # run time measuring function
 def time_solve_solution_step(solve_solution_step):
     def wrapper(*args):
@@ -143,7 +169,6 @@ def time_solve_solution_step(solve_solution_step):
         interface_output = solve_solution_step(*args)
         self.run_time += time.time() - start_time
         return interface_output
-
     return wrapper
 
 
@@ -198,7 +223,7 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
     msg_1 = f'ModelParts "{mp_a.name}", "{mp_b.name}": '
     msg_2 = ' values differ by '
     msg_3 = f'\n\t"{mp_a.name}": minimal values = {mp_a_min} and maximal values = {mp_a_max}' \
-        f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
+            f'\n\t"{mp_b.name}": minimal values = {mp_b_min} and maximal values = {mp_b_max}'
 
     msg = f'{msg_1}center{msg_2}{100 * error_center:.1f}%' + msg_3
     if error_center > tol_center_error:
@@ -250,12 +275,13 @@ def get_solver_env(solver_module_name, working_dir):
 
     @param solver_module_name: module name of the solver wrapper,
     e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
-    @type key: str
+    e.g. fluent.v2019R1
+    @type: str
 
-    @param working_dir: working directory of the solver where the simulation is run .
-    @type key: str
+    @param working_dir: working directory of the solver where the simulation is run.
+    @type: str
 
-    @return: environement variables as python-dict
+    @return: environment variables as python-dict
     @rtype: dict
     """
     env_filename = 'env.pickle'
@@ -269,7 +295,7 @@ def get_solver_env(solver_module_name, working_dir):
     # run the module load command and store the environment
     try:
         subprocess.check_call(
-            f'{solver_load_cmd} && python -c "from coconut import tools;tools.write_env()"',
+            f'{solver_load_cmd} && python3 -c "from coconut import tools;tools.write_env()"',
             shell=True, cwd=working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed.')
@@ -281,3 +307,38 @@ def get_solver_env(solver_module_name, working_dir):
     os.remove(env_filepath)
 
     return env
+
+
+def solver_available(solver_module_name):
+    """
+    @param solver_module_name: module name of the solver wrapper,
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
+    e.g. fluent.v2019R1
+    @type: str
+
+    @return: presence of solver env
+    @rtype: bool
+    """
+    pre_modules = 'coconut.coupling_components.solver_wrappers.'
+    # remove pre_modules from the solver_module_name
+    solver_name = solver_module_name.replace(pre_modules, '')
+
+    try:
+        # get the module load command for the solver
+        solver_modules.get_solver_cmd(solver_name)
+    except KeyError:
+        return False
+    return True
+
+
+class cd:
+    """Context manager for changing the current working directory"""
+    def __init__(self, new_path):
+        self.new_path = os.path.expanduser(new_path)
+
+    def __enter__(self):
+        self.saved_path = os.getcwd()
+        os.chdir(self.new_path)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.saved_path)

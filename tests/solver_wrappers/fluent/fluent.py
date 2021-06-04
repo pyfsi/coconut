@@ -7,6 +7,7 @@ from os.path import join
 import subprocess
 import json
 import multiprocessing
+import shutil
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
@@ -15,19 +16,29 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        dir_name = os.path.realpath(os.path.dirname(__file__))  # path to fluent directory
+        cls.file_name = join(dir_name, f'test_v{cls.version}/tube2d/parameters.json')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube2d/CFD')
+
+        # setup
         if cls.setup_case:
-            dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube2d')
+            dir_tmp = join(dir_name, f'test_v{cls.version}/tube2d')
             fluent_solver_module = f'fluent.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
             p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
             p.wait()
 
     def setUp(self):
-        file_name = f'solver_wrappers/fluent/test_v{self.version}/tube2d/parameters.json'
-        with open(file_name) as parameter_file:
+        with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
+        self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
         self.mp_name_in = 'beamoutside_nodes'
         self.mp_name_out = 'beamoutside_faces'
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.setup_case:
+            shutil.rmtree(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy(self, x):
@@ -206,19 +217,29 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        dir_name = os.path.realpath(os.path.dirname(__file__))  # path to fluent directory
+        cls.file_name = join(dir_name, f'test_v{cls.version}/tube3d/parameters.json')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube3d/CFD')
+
+        # setup
         if cls.setup_case:
-            dir_tmp = join(os.getcwd(), f'solver_wrappers/fluent/test_v{cls.version}/tube3d')
+            dir_tmp = join(dir_name, f'test_v{cls.version}/tube3d')
             fluent_solver_module = f'fluent.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
             p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
             p.wait()
 
     def setUp(self):
-        file_name = f'solver_wrappers/fluent/test_v{self.version}/tube3d/parameters.json'
-        with open(file_name) as parameter_file:
+        with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
+        self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
         self.mp_name_in = 'wall_nodes'
         self.mp_name_out = 'wall_faces'
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.setup_case:
+            shutil.rmtree(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy_dz(self, x, y, z):

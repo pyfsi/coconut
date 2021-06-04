@@ -6,9 +6,9 @@
     "type": "coupled_solvers.iqni",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0,
+      "delta_t": 1,
       "omega": 0.05,
-      "save_results": true,
+      "save_results": 1,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -42,7 +42,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2019R1",
+        "type": "solver_wrappers.fluent.v2019R3",
         "settings": {
           "working_directory": "CFD",
           "case_file": "case_turek.cas",

@@ -12,11 +12,11 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.model_f = create_instance(self.parameters["settings"]["model_f"])
-        self.model_s = create_instance(self.parameters["settings"]["model_s"])
-        self.omega = self.settings["omega"]
-        self.atol = self.settings["absolute_tolerance_gmres"]
-        self.rtol = self.settings["relative_tolerance_gmres"]
+        self.model_f = create_instance(self.parameters['settings']['model_f'])
+        self.model_s = create_instance(self.parameters['settings']['model_s'])
+        self.omega = self.settings['omega']
+        self.atol = self.settings['absolute_tolerance_gmres']
+        self.rtol = self.settings['relative_tolerance_gmres']
 
         self.xtemp = self.ytemp = None
         self.dxtemp = self.dytemp = None
@@ -84,7 +84,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                 b = (xt - self.x).get_interface_data() + ms @ (yt - self.y).get_interface_data()
                 dx_sol, exitcode = gmres(a, b, tol=self.rtol, atol=self.atol, maxiter=20, callback=self.callback)
                 if exitcode != 0:
-                    RuntimeError("GMRES failed")
+                    RuntimeError('GMRES failed')
                 dx.set_interface_data(dx_sol)
             self.x += dx
             yt = self.solver_wrappers[0].solve_solution_step(self.x)
@@ -96,7 +96,7 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                 b = (yt - self.y).get_interface_data() + mf @ (xt - self.x).get_interface_data()
                 dy_sol, exitcode = gmres(a, b, tol=self.rtol, atol=self.atol, maxiter=20, callback=self.callback)
                 if exitcode != 0:
-                    RuntimeError("GMRES failed")
+                    RuntimeError('GMRES failed')
                 dy.set_interface_data(dy_sol)
             self.y += dy
             xt = self.solver_wrappers[1].solve_solution_step(self.y)

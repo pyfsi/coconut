@@ -317,7 +317,7 @@ class TestInterface(unittest.TestCase):
     def test_truediv(self):
         interface_data1, interface_data2, interface1, interface2 = self.create_test_interfaces()
 
-        for number in (np.random.rand(1), float(np.random.rand(1)), int(10 * np.random.rand(1))):
+        for number in (1 - np.random.rand(1), float(1 - np.random.rand(1)), int(10 * (1 - np.random.rand(1)))):
             interface_sum = interface1 / number
             self.interface.set_interface_data(interface_data1 / number)
             self.assertEqual(interface_sum, self.interface)

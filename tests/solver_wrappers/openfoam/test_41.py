@@ -1,24 +1,19 @@
-from coconut.tools import create_instance, get_solver_env
+from coconut.tools import create_instance, get_solver_env, solver_available, print_box
 
 import unittest
+import numpy as np
 import os
 import multiprocessing
 import re
 import json
-from subprocess import check_call, STDOUT, DEVNULL
-import numpy as np
+from subprocess import check_call, DEVNULL
 
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
-
-def print_box(text):
-    n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
-    mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
+version = '41'
 
 
+@unittest.skipUnless(solver_available(f'openfoam.v{version}'), f'openfoam.v{version} not available')
 class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
     def setUp(self):
@@ -37,6 +32,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.folder_path = os.path.join(os.getcwd(), self.par_solver['settings']['working_directory'])
         self.delta_t = self.par_solver['settings']['delta_t']
         self.t_prec = self.par_solver['settings']['time_precision']
+        self.max_cores = min(4, multiprocessing.cpu_count())  # number of cores for parallel calculation
 
         solver_name = self.par_solver['type'].replace('solver_wrappers.', '')
         self.env = get_solver_env(solver_name, self.folder_path)
@@ -47,8 +43,6 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         self.clean_case()
 
     def clean_case(self):
-        check_call("""ps aux | awk '{{if (($0 !~ /awk/) && ($0 ~ /coconut_pimpleFoam/)) system("kill -9 " $2)}}'""",
-                   shell=True, stdout=DEVNULL, stderr=STDOUT)
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
 
     def set_up_case(self):
@@ -81,7 +75,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
 
         # create two solvers with different flow solver partitioning
         x0, y0, z0, ids = [], [], [], []
-        for cores in [1, multiprocessing.cpu_count()]:
+        for cores in [1, self.max_cores]:
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
             solver.initialize()
@@ -101,7 +95,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         print_box("Testing imposed node (radial) displacement")
 
         # test if nodes are moved to the correct position
-        for cores in [1, multiprocessing.cpu_count()]:
+        for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
@@ -138,7 +132,7 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         print_box("Testing if pressure/wall shear stress are imposed properly when run in parallel ")
         output_list = []
 
-        for cores in [1, multiprocessing.cpu_count()]:
+        for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
             solver = create_instance(self.par_solver)
@@ -195,12 +189,12 @@ class TestSolverWrapperOpenFoam41(unittest.TestCase):
         solver.finalize_solution_step()
         solver.finalize()
 
-        pr_amp = 0.5*(np.max((pressure[0] + pressure[2])/2) - np.min((pressure[0] + pressure[2])/2))
-        tr_amp = 0.5*(np.max((traction[0] + traction[2])/2) - np.min((traction[0] + traction[2])/2))
+        pr_amp = 0.5 * (np.max((pressure[0] + pressure[2]) / 2) - np.min((pressure[0] + pressure[2]) / 2))
+        tr_amp = 0.5 * (np.max((traction[0] + traction[2]) / 2) - np.min((traction[0] + traction[2]) / 2))
 
         # check if same position gives same pressure & traction
-        np.testing.assert_allclose(pressure[0]/pr_amp, pressure[2]/pr_amp, atol=1e-4, rtol=0)
-        np.testing.assert_allclose(traction[0]/tr_amp, traction[2]/tr_amp, atol=1e-4, rtol=0)
+        np.testing.assert_allclose(pressure[0] / pr_amp, pressure[2] / pr_amp, atol=1e-4, rtol=0)
+        np.testing.assert_allclose(traction[0] / tr_amp, traction[2] / tr_amp, atol=1e-4, rtol=0)
 
         # check if different position gives different pressure & traction
         p01 = np.linalg.norm(pressure[0] - pressure[1])

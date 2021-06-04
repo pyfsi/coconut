@@ -6,9 +6,9 @@ class ConvergenceCriterionCombined(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        settings = parameters["settings"]
+        settings = parameters['settings']
         self.convergence_criteria = []
-        for criterion in settings["criteria_list"]:
+        for criterion in settings['criteria_list']:
             self.convergence_criteria.append(create_instance(criterion))
 
     def initialize(self):

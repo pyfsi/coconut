@@ -9,9 +9,9 @@ class ConvergenceCriterionAbsoluteNorm(Component):
     def __init__(self, parameters):
         super().__init__()
 
-        settings = parameters["settings"]
-        self.tolerance = settings["tolerance"]
-        self.order = settings["order"]
+        settings = parameters['settings']
+        self.tolerance = settings['tolerance']
+        self.order = settings['order']
 
         self.last_norm = 0
         self.is_updated = False
