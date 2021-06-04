@@ -15,14 +15,20 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle':360,
-                                'n_tangential': 10}
+                                'angle': 250,
+                                'n_tangential': 9}
                            }
 
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
-        self.angle = self.parameters['settings']['angle']
+        key = 'angle'
+        if key in self.parameters['settings']:
+            self.angle = self.parameters['settings']['angle']
+            print(key + ' is set on ' + str(self.angle) + ' degrees')
+        else:
+            self.angle = 360
+            print(key + ' is set on ' + str(self.angle) + ' degrees')
 
         # create model_part_in
         n_in = 10
@@ -35,8 +41,6 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
         # create reference geometry for 3D model_part_out
 
         n_t = self.parameters['settings']['n_tangential']
-        if n_t%2 ==1:
-            n_t += 1
         n_out_ref = n_in * n_t
         x_out_ref = np.zeros(n_out_ref)
         y_out_ref = np.zeros(n_out_ref)
@@ -46,10 +50,10 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
             for i_from in range(n_in):
                 start = i_t * n_in
                 end = (i_t + 1) * n_in
-                if i_t % 2 == 1:
-                    theta = (i_t) * ((np.radians(self.angle) * (-1) ** (i_t)) / (2 * n_t))
+                if self.angle == 360:
+                    theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t)
                 else:
-                    theta = (i_t + 1) * ((np.radians(self.angle) * (-1) ** (i_t)) / (2 * n_t))
+                    theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t - 1)
                 x_out_ref[start:end] = x_in
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in

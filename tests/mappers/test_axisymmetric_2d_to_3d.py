@@ -8,15 +8,15 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
         self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle':360,
-                                'n_tangential': 12}
+                                'angle': 250,
+                                'n_tangential': 11}
                            }
 
     def test_instantiation(self):
@@ -36,7 +36,13 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
-        self.angle = self.parameters['settings']['angle']
+        key = 'angle'
+        if key in self.parameters['settings']:
+            self.angle = self.parameters['settings']['angle']
+            print(key + ' is set on ' + str(self.angle) + ' degrees')
+        else:
+            self.angle = 360
+            print( key + ' is set on ' + str(self.angle) + ' degrees')
 
         # create model_part_in
         n_in = 10
