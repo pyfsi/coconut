@@ -82,7 +82,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.kratos.structural_mechanics_application.v60",
+            "type": "solver_wrappers.kratos.structure_v60",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,
