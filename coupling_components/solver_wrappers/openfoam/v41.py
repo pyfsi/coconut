@@ -47,6 +47,14 @@ class SolverWrapperOpenFOAM41(Component):
         # boundary_names
         self.check_interfaces()
 
+        # compile openfoam adapted solver
+        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
+        try:
+            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+        except subprocess.CalledProcessError:
+            raise RuntimeError(
+                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
+
         # check that the correct modules have been loaded
         self.check_software()
 
@@ -116,14 +124,6 @@ class SolverWrapperOpenFOAM41(Component):
         # time
         self.init_time = self.init_time
         self.run_time = 0.0
-
-        # compile openfoam adapted solver
-        solver_dir = os.path.join(os.path.dirname(__file__), self.application)
-        try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
-        except subprocess.CalledProcessError:
-            raise RuntimeError(
-                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
 
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
