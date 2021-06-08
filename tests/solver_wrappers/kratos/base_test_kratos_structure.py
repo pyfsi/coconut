@@ -8,7 +8,7 @@ import pandas as pd
 from shutil import copytree, rmtree
 
 
-class TestSolverWrapperKratosStructure(unittest.TestCase):
+class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     version_label = None
 
     @classmethod
@@ -174,7 +174,3 @@ class TestSolverWrapperKratosStructure(unittest.TestCase):
         traction_z = np.array(df_sl['surface_load_z'])
         traction = np.ravel(np.column_stack((traction_x, traction_y, traction_z)))
         return np.concatenate((pressure, traction))
-
-
-if __name__ == '__main__':
-    unittest.main()
