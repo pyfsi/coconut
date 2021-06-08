@@ -33,8 +33,14 @@
     "rotation_dofs": false,
     "time_integration_method": "implicit",
     "scheme_type": "bossak",
-    "problem_domain_sub_model_part_list" : ["Parts_tube"],
-    "processes_sub_model_part_list"      : ["DISPLACEMENT_inlet","DISPLACEMENT_outlet","SurfaceLoad3D_tube"]
+    "problem_domain_sub_model_part_list": [
+      "Parts_tube"
+    ],
+    "processes_sub_model_part_list": [
+      "DISPLACEMENT_inlet",
+      "DISPLACEMENT_outlet",
+      "SurfaceLoad3D_tube"
+    ]
   },
   "processes": {
     "constraints_process_list": [
@@ -45,11 +51,6 @@
           "mesh_id": 0,
           "model_part_name": "DISPLACEMENT_inlet",
           "variable_name": "DISPLACEMENT",
-          "constrained": [
-            true,
-            true,
-            true
-          ],
           "value": [
             0.0,
             0.0,

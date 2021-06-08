@@ -1,4 +1,4 @@
-# Kratos
+# KratosStructure
 
 KratosMultiphysics is an open source framework for finite element simulations. More information on Kratos and the source code can be found on the [Kratos Github page](https://github.com/KratosMultiphysics). 
 The `StructuralMechanicsApplication` in Kratos has been implemented in CoCoNuT and the basics of the solver wrapper and the setup of a case are explained below.
@@ -69,4 +69,8 @@ Following items are taken care of by CoCoNuT, and must therefore will be automat
 ### v60 (6.0)
 
 First version.
+
+### v70 (7.0)
+
+The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/7.0) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
 

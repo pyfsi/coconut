@@ -40,8 +40,7 @@ class BaseSolverWrapperKratosStructure(Component):
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        run_script_file = os.path.join(dir_path, f'v{self.version_label}',
-                                       f'run_kratos_structural_{self.version_label}.py')
+        run_script_file = os.path.join(dir_path, f'run_kratos_structural_{self.version_label}.py')
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
                                     shell=True, cwd=self.working_directory, env=self.env)

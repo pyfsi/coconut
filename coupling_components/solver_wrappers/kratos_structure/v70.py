@@ -1,21 +1,21 @@
-from coconut.coupling_components.solver_wrappers.kratos.base_kratos_structure import BaseSolverWrapperKratosStructure
+from coconut.coupling_components.solver_wrappers.kratos_structure.base_solver_wrapper import BaseSolverWrapperKratosStructure
 from coconut import tools
 
-import os
 import json
+import os
 import numpy as np
 import re
 
 
 def create(parameters):
-    return SolverWrapperKratosStructure60(parameters)
+    return SolverWrapperKratosStructure70(parameters)
 
 
-class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
+class SolverWrapperKratosStructure70(BaseSolverWrapperKratosStructure):
 
     @property
     def version_label(self):
-        return '60'
+        return '70'
 
     def set_solver_env(self):
         self.env = tools.get_solver_env(__name__, self.working_directory)
@@ -25,22 +25,26 @@ class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
         with open(input_file_name, 'r') as parameter_file:
             kratos_parameters = json.load(parameter_file)
 
+
         kratos_parameters['problem_data']['start_time'] = 0.0
-        kratos_parameters['problem_data']['time_step'] = self.delta_t
-        kratos_parameters['solver_settings']['restart_settings'] = {}
-        if self.save_restart:
-            restart_save_dict = {'restart_control_type': 'step',
-                                 'restart_save_frequency': abs(self.save_restart),
-                                 # kratos 6.0 does not support negative numbers
-                                 'save_restart': True}
-            kratos_parameters['solver_settings']['restart_settings'].update(restart_save_dict)
+        kratos_parameters['solver_settings']['time_stepping']['time_step'] = self.delta_t
+        restart_save_dict = {'restart_processes': [{'python_module': 'save_restart_process',
+                                                    'kratos_module': 'KratosMultiphysics',
+                                                    'process_name': 'SaveRestartProcess',
+                                                    'Parameters': {
+                                                        'model_part_name': 'Structure',
+                                                        'restart_control_type': 'step',
+                                                        'restart_save_frequency': abs(self.save_restart)}}]} # kratos 7.0 does not support negative numbers
+        kratos_parameters['output_processes'].update(restart_save_dict)
 
         if not (self.timestep_start == 0):
-            restart_load_dict = {'load_restart': True,
-                                 'restart_load_file_label': f'{self.timestep_start}'}
-            kratos_parameters['solver_settings']['restart_settings'].update(restart_load_dict)
+            restart_load_dict = {'restart_load_file_label': str(self.timestep_start),
+                                 'input_type' : 'rest',
+                                 'input_filename': 'Structure'}
+            kratos_parameters['solver_settings']['model_import_settings'].update(restart_load_dict)
 
-        kratos_parameters['problem_data']['domain_size'] = self.dimensions
+
+        kratos_parameters['solver_settings']['domain_size'] = self.dimensions
         kratos_parameters['problem_data']['end_time'] = 1e15
 
         self.interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
@@ -66,7 +70,7 @@ class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
                     for i, variable in enumerate(self.residual_variables):
-                        search_string = r'\n' + variable + r' CRITERION.*[Nn]orm = ' + r'(' + float_pattern + r')'
+                        search_string = r'\n' + variable + r' CRITERION.*?Absolute norm = ' + r'(' + float_pattern + r')'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of the non-linear iteration

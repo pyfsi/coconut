@@ -10,7 +10,6 @@ import shutil
 from unittest import TestSuite, TestLoader
 from os.path import join
 
-
 """
 This file runs the example cases and compares the results and convergence history, with previously save benchmark
 pickle files.
@@ -29,7 +28,6 @@ simulation besides 'setup.py' and 'parameters.json', and 'compare_data' is a boo
 comparison with a benchmark pickle file should be made.
 Once this class is made, you may need to create a benchmark file for this new example using the corresponding script.
 """
-
 
 # set paths
 execute_path = os.path.realpath(os.path.dirname(__file__))
@@ -210,20 +208,20 @@ class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
 
 # comment out examples that you do not want to evaluate
 test_cases = (
-    # TestTestSingleSolver,
-    # TestTubeFluent2DAbaqus2D,
-    # TestTubeFluent2DAbaqus2DSteady,
-    # TestTubeFluent2DTubeStructure,
-    # TestTubeFluent3DAbaqus2D,
-     TestTubeFluent3DAbaqus3D,
-    # TestTubeFluent3DKratosStructure3D,
-    # TestTubeOpenFOAM3DAbaqus3D,
-     TestTubeOpenFOAM3DKratosStructure3D,
-    # TestTubeTubeFlowAbaqus2D,
-    # TestTubeTubeFlowTubeRingmodel,
-    # TestTubeTubeFlowTubeStructure,
-    # TestTurekFluent2DAbaqus2D,
-    # TestTurekFluent2DAbaqus2DSteady,
+    TestTestSingleSolver,
+    TestTubeFluent2DAbaqus2D,
+    TestTubeFluent2DAbaqus2DSteady,
+    TestTubeFluent2DTubeStructure,
+    TestTubeFluent3DAbaqus2D,
+    TestTubeFluent3DAbaqus3D,
+    TestTubeFluent3DKratosStructure3D,
+    TestTubeOpenFOAM3DAbaqus3D,
+    TestTubeOpenFOAM3DKratosStructure3D,
+    TestTubeTubeFlowAbaqus2D,
+    TestTubeTubeFlowTubeRingmodel,
+    TestTubeTubeFlowTubeStructure,
+    TestTurekFluent2DAbaqus2D,
+    TestTurekFluent2DAbaqus2DSteady,
 )
 
 

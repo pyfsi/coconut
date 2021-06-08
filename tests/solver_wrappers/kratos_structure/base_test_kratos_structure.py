@@ -14,7 +14,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         dir_name = join(realpath(dirname(__file__)))
-        dir_test = f'test_structure_tube_v{cls.version_label}'
+        dir_test = f'test_v{cls.version_label}'
         # Create setup files for kratos
         cls.working_dir = join(dir_name, dir_test, 'CSM')
         rmtree(cls.working_dir, ignore_errors=True)
