@@ -1,7 +1,7 @@
 {
   "type": "solver_wrappers.openfoam.v8",
   "settings": {
-    "working_directory": "solver_wrappers/openfoam/test_tube_3d/CFD",
+    "working_directory": "this is changed upon running the test",
     "application": "coconut_pimpleFoam",
     "delta_t": 0.0001,
     "time_precision": 4,
