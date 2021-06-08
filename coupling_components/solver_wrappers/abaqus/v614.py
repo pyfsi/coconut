@@ -447,15 +447,16 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.save_interval == 0 or (self.timestep - 1) % self.save_interval != 0:
-            to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
-                                    'Surface*Cpu0Input.dat', 'Surface*Output.dat']
-            cmd = ''
-            for suffix in to_be_removed_suffix:
-                cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
-            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-        for f in self.dir_vault.iterdir():
-            f.unlink()  # empty vault
+        if self.timestep > 0:
+            if self.save_interval == 0 or (self.timestep - 1) % self.save_interval != 0:
+                to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
+                                        'Surface*Cpu0Input.dat', 'Surface*Output.dat']
+                cmd = ''
+                for suffix in to_be_removed_suffix:
+                    cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
+                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+            for f in self.dir_vault.iterdir():
+                f.unlink()  # empty vault
 
     def finalize(self):
         super().finalize()
