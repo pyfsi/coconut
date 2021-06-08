@@ -364,8 +364,6 @@ class SolverWrapperAbaqus614(Component):
             else:
                 if self.iteration == 1:
                     # run datacheck and store generated files safely
-                    for f in self.dir_vault.iterdir():
-                        f.unlink()  # empty vault
                     cmd = f'abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
                         f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
                         f'>> {self.logfile} 2>&1'
@@ -456,6 +454,8 @@ class SolverWrapperAbaqus614(Component):
             for suffix in to_be_removed_suffix:
                 cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+        for f in self.dir_vault.iterdir():
+            f.unlink()  # empty vault
 
     def finalize(self):
         super().finalize()
