@@ -460,6 +460,7 @@ class SolverWrapperAbaqus614(Component):
 
     def finalize(self):
         super().finalize()
+        self.dir_vault.rmdir()
 
     def get_interface_input(self):
         return self.interface_input
