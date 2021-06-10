@@ -5,7 +5,7 @@ uses the environment variables in all the spawned processes, used for executing 
 in the various stages of the simulation.
 """
 
-machine_name = 'ugent_cluster_SL6.3'
+machine_name = 'ugent_cluster_CO7'
 
 solver_load_cmd_dict = {
     'ugent_cluster_SL6.3': {

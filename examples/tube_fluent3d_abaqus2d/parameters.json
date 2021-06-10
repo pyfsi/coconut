@@ -140,7 +140,6 @@
                     "settings": {
                       "direction_axial": "y",
                       "direction_radial":"x",
-	              "angle":360,
                       "n_tangential": 10
                     }
                   }
@@ -159,7 +158,6 @@
                     "settings": {
                       "direction_axial": "y",
                       "direction_radial": "x",
-                      "angle":360,
                       "n_tangential": 10
                     }
                   },
