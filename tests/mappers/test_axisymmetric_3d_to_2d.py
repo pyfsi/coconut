@@ -8,7 +8,7 @@ from matplotlib import cm
 
 
 class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         self.parameters = {'type': 'mappers.axisymmetric_3d_to_2d',
