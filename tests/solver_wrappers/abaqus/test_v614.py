@@ -8,7 +8,6 @@ import subprocess
 import json
 import shutil
 
-
 version = '614'
 
 
@@ -16,7 +15,7 @@ version = '614'
 class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     setup_case = True
     dimension = 2
-    axial_dir = 1   # y-direction is axial direction
+    axial_dir = 1  # y-direction is axial direction
     radial_dirs = [0]
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
     mp_name_out = 'BEAMINSIDEMOVING_nodes'
@@ -44,12 +43,12 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver = create_instance(parameters)
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(cls.mp_name_in)
-        coords = (model_part.x0, model_part.y0)
+        coords = (model_part.x0, model_part.y0, model_part.z0)
 
         # give value to variables
         pressure = cls.get_p(coords[cls.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(cls.mp_name_in, 'pressure', pressure)
-        traction = np.zeros((coords[cls.axial_dir].shape[0], 3))
+        traction = np.zeros((model_part.size, 3))
         interface_input.set_variable_data(cls.mp_name_in, 'traction', traction)
 
         solver.initialize()
@@ -90,12 +89,12 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     @staticmethod
     def get_p(x):
-        return 1500*np.sin(2*np.pi/0.05 * x)
+        return 1500 * np.sin(2 * np.pi / 0.05 * x)
 
     @staticmethod
     def get_shear(x, axial_dir):
         shear = np.zeros((x.shape[0], 3))
-        shear[:, axial_dir] = (x+0.025)/0.05 * 10
+        shear[:, axial_dir] = (x + 0.025) / 0.05 * 10
         return shear
 
     def test_repeat_iteration(self):
@@ -120,12 +119,12 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(self.mp_name_in)
-        coords = [model_part.x0, model_part.y0]
+        coords = [model_part.x0, model_part.y0, model_part.z0]
 
         # give value to variables
         pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
-        traction = np.zeros((coords[self.axial_dir].shape[0], 3))
+        traction = np.zeros((model_part.size, 3))
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do step 3 and 4
@@ -149,7 +148,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         self.assertTrue(self.interface_x_single_run.has_same_model_parts(interface_x_restart))
         indices = sorted([self.axial_dir] + self.radial_dirs)  # columns that contain non-zero data
         a3_extra = np.delete(self.a3, indices, axis=1)  # remove columns containing data
-        np.testing.assert_array_equal(a3_extra, a3_extra * 0.0)   # if a column remains it should be all zeroes
+        np.testing.assert_array_equal(a3_extra, a3_extra * 0.0)  # if a column remains it should be all zeroes
         np.testing.assert_allclose(self.a3[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)  # non-zero columns
 
     def test_partitioning(self):
@@ -167,12 +166,12 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(self.mp_name_in)
-        coords = [model_part.x0, model_part.y0]
+        coords = [model_part.x0, model_part.y0, model_part.z0]
 
         # give value to variables
         pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
-        traction = np.zeros((coords[self.axial_dir].shape[0], 3))
+        traction = np.zeros((model_part.size, 3))
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do 4 steps
@@ -191,7 +190,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         indices = sorted([self.axial_dir] + self.radial_dirs)  # columns that contain non-zero data
         a4_extra = np.delete(self.a4, indices, axis=1)  # remove columns containing data
-        np.testing.assert_array_equal(a4_extra, a4_extra * 0.0)   # if a column remains it should be all zeroes
+        np.testing.assert_array_equal(a4_extra, a4_extra * 0.0)  # if a column remains it should be all zeroes
         np.testing.assert_allclose(self.a4[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)  # non-zero columns
 
     def test_shear(self):
@@ -203,7 +202,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(self.mp_name_in)
-        coords = [model_part.x0, model_part.y0]
+        coords = [model_part.x0, model_part.y0, model_part.z0]
 
         # give value to variables
         pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
@@ -236,7 +235,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 class TestSolverWrapperAbaqus614Tube3D(TestSolverWrapperAbaqus614Tube2D):
     setup_case = True
     dimension = 3
-    axial_dir = 0   # x-direction is axial direction
+    axial_dir = 0  # x-direction is axial direction
     radial_dirs = [1, 2]
     mp_name_in = 'WALLOUTSIDE_load_points'
     mp_name_out = 'WALLOUTSIDE_nodes'
