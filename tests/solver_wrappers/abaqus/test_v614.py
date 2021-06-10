@@ -6,6 +6,7 @@ import os
 from os.path import join
 import subprocess
 import json
+import shutil
 
 
 version = '614'
@@ -78,6 +79,11 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         output_single_run = solver.get_interface_output()
         cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement')
         print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.setup_case:
+            shutil.rmtree(cls.working_dir)
 
     def setUp(self):
         with open(self.file_name) as parameter_file:
