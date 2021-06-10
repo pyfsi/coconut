@@ -24,18 +24,22 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dir_tmp = join(os.path.dirname(__file__), f'test_v614/tube{int(cls.dimension)}d')
+        dir_name = os.path.realpath(os.path.dirname(__file__))
+        cls.file_name = join(dir_name, f'test_v614/tube{cls.dimension}d/parameters.json')
+        cls.working_dir = join(dir_name, f'test_v614/tube{cls.dimension}d/CSM')
+        dir_tmp = join(dir_name, f'test_v614/tube{cls.dimension}d')
 
         # perform reference calculation
-        with open(join(dir_tmp, 'parameters.json')) as parameter_file:
+        with open(cls.file_name) as parameter_file:
             parameters = json.load(parameter_file)
 
+        parameters['settings']['working_directory'] = os.path.relpath(cls.working_dir)  # set working directory
         solver_name = parameters['type'].replace('solver_wrappers.', '')
         env = get_solver_env(solver_name, dir_tmp)
 
         if cls.setup_case:
-            p_setup_abaqus = subprocess.Popen('sh ' + join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True, env=env)
-            p_setup_abaqus.wait()
+            p = subprocess.Popen('sh ' + join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True, env=env)
+            p.wait()
 
         # create the solver
         solver = create_instance(parameters)
@@ -76,9 +80,9 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
 
     def setUp(self):
-        dir_tmp = join(os.getcwd(), f'solver_wrappers/abaqus/test_v614/tube{int(self.dimension)}d')
-        with open(join(dir_tmp, 'parameters.json')) as parameter_file:
+        with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
+        self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
 
     def test_repeat_iteration(self):
         """
