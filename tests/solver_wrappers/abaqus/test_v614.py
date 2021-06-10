@@ -16,8 +16,6 @@ version = '614'
 class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
     setup_case = True
     dimension = 2
-    p = 1500
-    shear = np.array([0, 0, 0])
     axial_dir = 1   # y-direction is axial direction
     radial_dirs = [0]
     mp_name_in = 'BEAMINSIDEMOVING_load_points'
@@ -45,13 +43,13 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # create the solver
         solver = create_instance(parameters)
         interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(cls.mp_name_in)
+        coords = (model_part.x0, model_part.y0)
 
         # give value to variables
-        pressure = interface_input.get_variable_data(cls.mp_name_in, 'pressure')
-        pressure[:] = cls.p
+        pressure = cls.get_p(coords[cls.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(cls.mp_name_in, 'pressure', pressure)
-        traction = interface_input.get_variable_data(cls.mp_name_in, 'traction')
-        traction[:, :] = cls.shear
+        traction = np.zeros((coords[cls.axial_dir].shape[0], 3))
         interface_input.set_variable_data(cls.mp_name_in, 'traction', traction)
 
         solver.initialize()
@@ -78,7 +76,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         cls.interface_x_single_run = solver.get_interface_output()
         output_single_run = solver.get_interface_output()
         cls.a1 = output_single_run.get_variable_data(cls.mp_name_out, 'displacement')
-        print(f"Max disp a1: {np.max(np.abs(cls.a1), axis=0)}")
+        print(f'Max disp a1: {np.max(np.abs(cls.a1), axis=0)}')
 
     @classmethod
     def tearDownClass(cls):
@@ -89,6 +87,16 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
         self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
+
+    @staticmethod
+    def get_p(x):
+        return 1500*np.sin(2*np.pi/0.05 * x)
+
+    @staticmethod
+    def get_shear(x, axial_dir):
+        shear = np.zeros((x.shape[0], 3))
+        shear[:, axial_dir] = (x+0.025)/0.05 * 10
+        return shear
 
     def test_repeat_iteration(self):
         """
@@ -111,13 +119,13 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        coords = [model_part.x0, model_part.y0]
 
         # give value to variables
-        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
-        pressure[:] = self.p
+        pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
-        traction = interface_input.get_variable_data(self.mp_name_in, 'traction')
-        traction[:, :] = self.shear
+        traction = np.zeros((coords[self.axial_dir].shape[0], 3))
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do step 3 and 4
@@ -134,8 +142,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         interface_x_restart = solver.get_interface_output()
         output_restart = solver.get_interface_output()
         self.a3 = output_restart.get_variable_data(self.mp_name_out, 'displacement')
-        print(f"\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}")
-        print(f"Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}")
+        print(f'\nMax disp a3: {np.max(np.abs(self.a3), axis=0)}')
+        print(f'Max diff between a1 and a3: {np.abs(self.a1 - self.a3).max(axis=0)}')
 
         self.assertTrue(self.interface_y_single_run.has_same_model_parts(interface_y_restart))
         self.assertTrue(self.interface_x_single_run.has_same_model_parts(interface_x_restart))
@@ -158,13 +166,13 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         self.parameters['settings']['cores'] = 4
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        coords = [model_part.x0, model_part.y0]
 
         # give value to variables
-        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
-        pressure[:] = self.p
+        pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
-        traction = interface_input.get_variable_data(self.mp_name_in, 'traction')
-        traction[:, :] = self.shear
+        traction = np.zeros((coords[self.axial_dir].shape[0], 3))
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do 4 steps
@@ -178,8 +186,8 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # compare output, as input hasn't changed these should be the same
         output_4cores = solver.get_interface_output()
         self.a4 = output_4cores.get_variable_data(self.mp_name_out, 'displacement')
-        print(f"\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}")
-        print(f"Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}")
+        print(f'\nMax disp a4: {np.max(np.abs(self.a4), axis=0)}')
+        print(f'Max diff between a1 and a4: {np.abs(self.a1 - self.a4).max(axis=0)}')
 
         indices = sorted([self.axial_dir] + self.radial_dirs)  # columns that contain non-zero data
         a4_extra = np.delete(self.a4, indices, axis=1)  # remove columns containing data
@@ -194,17 +202,13 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # create solver
         solver = create_instance(self.parameters)
         interface_input = solver.get_interface_input()
-
-        # apply non-zero shear in axial_dir (y for 2D, x for 3D)
-        local_shear = self.shear.copy()
-        local_shear[self.axial_dir] = 5
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        coords = [model_part.x0, model_part.y0]
 
         # give value to variables
-        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
-        pressure[:] = self.p
+        pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
         interface_input.set_variable_data(self.mp_name_in, 'pressure', pressure)
-        traction = interface_input.get_variable_data(self.mp_name_in, 'traction')
-        traction[:, :] = local_shear
+        traction = self.get_shear(coords[self.axial_dir], self.axial_dir)
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do 4 steps

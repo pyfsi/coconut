@@ -484,7 +484,7 @@ RIGHTFIXED, 3, 3
 ** 
 *Step, name=Step-1, nlgeom=YES, inc=1
 *Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO
-0.0001,0.0001,
+0.001,0.001,
 ** 
 ** LOADS
 ** 
