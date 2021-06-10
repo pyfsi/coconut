@@ -15,7 +15,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle': 180,
+                                'angle' : 180,
                                 'n_tangential': 11}
                            }
 
@@ -36,13 +36,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
-        key = 'angle'
-        if key in self.parameters['settings']:
-            self.angle = self.parameters['settings']['angle']
-            print(key + ' is set on ' + str(self.angle) + ' degrees')
-        else:
-            self.angle = 360
-            print( key + ' is set on ' + str(self.angle) + ' degrees')
+        angle = self.parameters['settings'].get('angle',360)
 
         # create model_part_in
         n_in = 10
@@ -64,10 +58,10 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             for i_from in range(n_in):
                 start = i_t * n_in
                 end = (i_t + 1) * n_in
-                if self.angle == 360:
-                    theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t)
+                if angle == 360:
+                    theta = -np.radians(angle / 2) + i_t*np.radians(angle)/(n_t)
                 else:
-                    theta = -np.radians(self.angle / 2) + i_t*np.radians(self.angle)/(n_t - 1)
+                    theta = -np.radians(angle / 2) + i_t*np.radians(angle)/(n_t - 1)
                 x_out_ref[start:end] = x_in
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in
@@ -88,6 +82,12 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         np.testing.assert_array_equal(x_out, x_out_ref)
         np.testing.assert_array_equal(y_out, y_out_ref)
         np.testing.assert_array_equal(z_out, z_out_ref)
+
+    def test_initialize_360(self):
+        self.parameters['settings'].pop('angle')
+        self.test_initialize()
+        self.test_call()
+        self.gui
 
     def test_call(self):
         def fun_s(x):
