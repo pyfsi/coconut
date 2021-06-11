@@ -43,7 +43,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         solver = create_instance(parameters)
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(cls.mp_name_in)
-        coords = (model_part.x0, model_part.y0, model_part.z0)
+        coords = [model_part.x0, model_part.y0, model_part.z0]
 
         # give value to variables
         pressure = cls.get_p(coords[cls.axial_dir]).reshape(-1, 1)
