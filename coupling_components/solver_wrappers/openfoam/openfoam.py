@@ -3,7 +3,6 @@ from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
-from coconut.tools import get_solver_env
 
 from subprocess import check_call
 import numpy as np
@@ -43,6 +42,10 @@ class SolverWrapperOpenFOAM(Component):
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
+        self.cores = None
+        self.model = None
+        self.interface_input = None
+        self.interface_output = None
 
         # set on True to save copy of input and output files in every iteration
         self.debug = False
@@ -387,7 +390,7 @@ class SolverWrapperOpenFOAM(Component):
             wall_shear_stress = np.empty_like(wss_tmp)
             pressure = np.empty((pres_tmp.size, 1))
 
-            wall_shear_stress[pos_list,] = wss_tmp[:, ]
+            wall_shear_stress[pos_list, ] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
