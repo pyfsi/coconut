@@ -15,8 +15,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle' : 180,
-                                'n_tangential': 11}
+                                'angle' : 90,
+                                'n_tangential': 7}
                            }
 
     def test_instantiation(self):
@@ -39,7 +39,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         angle = self.parameters['settings'].get('angle',360)
 
         # create model_part_in
-        n_in = 10
+        n_in = 5
         x_in = np.linspace(0, 2 * np.pi, n_in)
         y_in = 1. + 0.2 * np.sin(x_in)
         z_in = np.zeros(n_in)
@@ -66,6 +66,33 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in
 
+
+        #test angle furthest and largest
+        radius = np.sqrt(y_out_ref[0]**2 + z_out_ref[0]**2)
+        cosalpha = abs(y_out_ref[0]) / radius
+        corner = 2 * np.arccos(cosalpha) * 180 / np.pi
+        if angle == 360:
+            corner = corner + 360
+        self.assertEqual(angle, corner)
+
+        #test angle between each point via cosine rule
+        if angle != 360:
+            ref = angle / (n_t -1)
+            a = np.zeros(n_t - 1)
+            b = np.zeros(n_t - 1)
+            c = np.zeros(n_t -1)
+
+            for i_t in range(n_t - 1):
+                a[i_t] = np.sqrt(y_out_ref[i_t * n_in]**2 + z_out_ref[i_t * n_in]**2)
+                b[i_t] = np.sqrt(y_out_ref[(i_t + 1) * n_in]**2 + z_out_ref[(i_t + 1) * n_in]**2)
+                c[i_t] = np.sqrt((y_out_ref[i_t * n_in] - y_out_ref[(i_t + 1) * n_in]) ** 2 + (z_out_ref[i_t * n_in ] - z_out_ref[(i_t + 1) * n_in ]) ** 2)
+
+        cosgamma = (a**2 + b**2 - c**2)/(2 * a * b)
+        check_out = np.arccos(cosgamma) * 180 / np.pi
+
+        for i_t in range(n_t -1):
+            self.assertAlmostEqual(ref,check_out[i_t])
+
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
         mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
@@ -83,11 +110,11 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         np.testing.assert_array_equal(y_out, y_out_ref)
         np.testing.assert_array_equal(z_out, z_out_ref)
 
-    def test_initialize_360(self):
-        self.parameters['settings'].pop('angle')
-        self.test_initialize()
-        self.test_call()
-        self.gui
+    # def test_initialize_360(self):
+    #     self.parameters['settings'].pop('angle')
+    #     self.test_initialize()
+    #     self.test_call()
+    #     self.gui
 
     def test_call(self):
         def fun_s(x):
@@ -152,6 +179,11 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             ax_s.set_title('check geometry and scalar mapping')
             ax_s.scatter(x_from, y_from, z_from, s=50, c=c_from, depthshade=True, marker='s')
             ax_s.scatter(x_to, y_to, z_to, s=20, c=c_to, depthshade=True)
+
+            # print("y_to")
+            # print(y_to)
+            # print("z_to")
+            # print(z_to)
 
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
