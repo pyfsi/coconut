@@ -16,7 +16,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
                                 'angle' : 90,
-                                'n_tangential': 7}
+                                'n_tangential': 8}
                            }
 
     def test_instantiation(self):
@@ -39,7 +39,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         angle = self.parameters['settings'].get('angle',360)
 
         # create model_part_in
-        n_in = 5
+        n_in = 10
         x_in = np.linspace(0, 2 * np.pi, n_in)
         y_in = 1. + 0.2 * np.sin(x_in)
         z_in = np.zeros(n_in)
@@ -66,32 +66,76 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in
 
+        #test angle parameter
+        radius = np.zeros(n_in)
+        corner = np.zeros(n_in)
 
-        #test angle furthest and largest
-        radius = np.sqrt(y_out_ref[0]**2 + z_out_ref[0]**2)
-        cosalpha = abs(y_out_ref[0]) / radius
-        corner = 2 * np.arccos(cosalpha) * 180 / np.pi
-        if angle == 360:
-            corner = corner + 360
-        self.assertEqual(angle, corner)
+        for i_t in range(n_in):
+            radius[i_t] = np.sqrt(y_out_ref[i_t]**2 + z_out_ref[i_t]**2)
+            cosalpha = abs(y_out_ref[i_t]) / radius[i_t]
+            corner[i_t] = 2 * np.arccos(cosalpha) * 180 / np.pi
+            if angle == 360:
+                corner[i_t] = 360
+        self.assertAlmostEqual(angle, corner[i_t])
 
         #test angle between each point via cosine rule
+
+        # if angle != 360:
+        #     ref = angle / (n_t -1)
+        #     a = np.zeros(n_t - 1)
+        #     b = np.zeros(n_t - 1)
+        #     c = np.zeros(n_t -1)
+        #
+        #     for i_t in range(n_t - 1):
+        #         a[i_t] = np.sqrt(y_out_ref[i_t * n_in]**2 + z_out_ref[i_t * n_in]**2)
+        #         b[i_t] = np.sqrt(y_out_ref[(i_t + 1) * n_in]**2 + z_out_ref[(i_t + 1) * n_in]**2)
+        #         c[i_t] = np.sqrt((y_out_ref[i_t * n_in] - y_out_ref[(i_t + 1) * n_in]) ** 2 + (z_out_ref[i_t * n_in ] - z_out_ref[(i_t + 1) * n_in ]) ** 2)
+        #
+        # cosgamma = (a**2 + b**2 - c**2)/(2 * a * b)
+        # check_out = np.arccos(cosgamma) * 180 / np.pi
+
         if angle != 360:
             ref = angle / (n_t -1)
-            a = np.zeros(n_t - 1)
-            b = np.zeros(n_t - 1)
-            c = np.zeros(n_t -1)
+            a = np.zeros((n_t - 1) * n_in)
+            b = np.zeros((n_t - 1) * n_in)
+            c = np.zeros((n_t - 1) * n_in)
 
-            for i_t in range(n_t - 1):
-                a[i_t] = np.sqrt(y_out_ref[i_t * n_in]**2 + z_out_ref[i_t * n_in]**2)
-                b[i_t] = np.sqrt(y_out_ref[(i_t + 1) * n_in]**2 + z_out_ref[(i_t + 1) * n_in]**2)
-                c[i_t] = np.sqrt((y_out_ref[i_t * n_in] - y_out_ref[(i_t + 1) * n_in]) ** 2 + (z_out_ref[i_t * n_in ] - z_out_ref[(i_t + 1) * n_in ]) ** 2)
+            k = 0
 
-        cosgamma = (a**2 + b**2 - c**2)/(2 * a * b)
-        check_out = np.arccos(cosgamma) * 180 / np.pi
+            for i_t in range(n_t -1):
+                for i in range (n_in):
+                    a[k] = np.sqrt(y_out_ref[k]**2 + z_out_ref[k]**2)
+                    b[k] = np.sqrt(y_out_ref[ k + n_in]**2 + z_out_ref[ k + n_in]**2)
+                    c[k] = np.sqrt((y_out_ref[k] - y_out_ref[k + n_in] )** 2 + (z_out_ref[k] - z_out_ref[k + n_in]) ** 2)
+                    k += 1
 
-        for i_t in range(n_t -1):
-            self.assertAlmostEqual(ref,check_out[i_t])
+            cosagamma = (a**2 + b**2 - c**2)/(2 * a * b)
+            check_out = np.arccos(cosagamma) * 180 / np.pi
+
+            for i_t in range((n_t -1)* n_in):
+                self.assertAlmostEqual(ref, check_out[i_t])
+
+        # else:
+        #     ref = angle / n_t
+        #     a = np.zeros(n_t * n_in)
+        #     b = np.zeros(n_t * n_in)
+        #     c = np.zeros(n_t * n_in)
+        #
+        #     k = 0
+        #
+        #     for i_t in range(n_t):
+        #         for i in range(n_in):
+        #             a[k] = np.sqrt(y_out_ref[k] ** 2 + z_out_ref[k] ** 2)
+        #             b[k] = np.sqrt(y_out_ref[k + n_in] ** 2 + z_out_ref[k + n_in] ** 2)
+        #             c[k] = np.sqrt((y_out_ref[k] - y_out_ref[k + n_in]) ** 2 + (z_out_ref[k] - z_out_ref[k + n_in]) ** 2)
+        #             k += 1
+        #             print(k)
+        #
+        #     cosagamma = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
+        #     check_out = np.arccos(cosagamma) * 180 / np.pi
+        #
+        #     for i_t in range(n_t * n_in):
+        #         self.assertAlmostEqual(ref, check_out[i_t])
 
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
@@ -110,11 +154,11 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         np.testing.assert_array_equal(y_out, y_out_ref)
         np.testing.assert_array_equal(z_out, z_out_ref)
 
-    # def test_initialize_360(self):
-    #     self.parameters['settings'].pop('angle')
-    #     self.test_initialize()
-    #     self.test_call()
-    #     self.gui
+    def test_initialize_360(self):
+        self.parameters['settings'].pop('angle')
+        self.test_initialize()
+        self.test_call()
+        self.gui
 
     def test_call(self):
         def fun_s(x):
