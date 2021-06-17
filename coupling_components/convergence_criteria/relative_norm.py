@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import Component
+from coconut.tools import print_info
 
 import numpy as np
 
@@ -32,7 +33,7 @@ class ConvergenceCriterionRelativeNorm(Component):
             self.initial_norm = self.last_norm
             self.is_initial_norm_set = True
             if self.initial_norm < np.finfo(type(self.initial_norm)).eps:
-                raise Exception('Initial norm is too small')
+                print_info('Initial norm is too small', layout='warning')
 
     def is_satisfied(self):
         if not self.is_initial_norm_set:

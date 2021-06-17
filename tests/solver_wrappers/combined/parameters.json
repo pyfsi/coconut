@@ -82,6 +82,7 @@
       {
         "type": "solver_wrappers.mapped",
         "settings": {
+          "mul_factor": -1.0,
           "solver_wrapper": {
             "type": "dummy_solver_2",
             "settings": {

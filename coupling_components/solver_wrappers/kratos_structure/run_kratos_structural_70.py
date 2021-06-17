@@ -4,67 +4,50 @@ from KratosMultiphysics.StructuralMechanicsApplication.structural_mechanics_anal
 
 import os
 import time
-import json
 import pandas as pd
+import numpy as np
 
 
-class StructuralMechanicsWrapper:
+class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
 
-    def __init__(self, parameter_file_name):
-
-        self.model = KratosMultiphysics.Model()
-        with open(parameter_file_name, 'r') as parameter_file:
-            self.kratos_parameters = KratosMultiphysics.Parameters(parameter_file.read())
-
-        with open(parameter_file_name, 'r') as parameter_file:
-            parameters = json.load(parameter_file)
-
+    def __init__(self, model, project_parameters):
+        self.interfaces = [elem.GetString() for elem in project_parameters["interface_sub_model_parts_list"]]
+        super(StructuralMechanicsAnalysis, self).__init__(model, project_parameters)
         self.coupling_iteration = None
-        self.interfaces = parameters["interface_sub_model_parts_list"]
-
-        self.structural_analysis = StructuralMechanicsAnalysis(self.model, self.kratos_parameters)
+        self.initial_displacement =  {}
 
     def Initialize(self):
-        self.structural_analysis.Initialize()
+        super(StructuralMechanicsAnalysis, self).Initialize()
 
-        for sub_model_part_name in self.interfaces:
-
-            sub_model_part = self.model[f'Structure.{sub_model_part_name}']
-            file_name = f'{sub_model_part_name}_nodes.csv'
+        for sub_mp_name in self.interfaces:
+            file_name = f'{sub_mp_name}_nodes.csv'
             with open(file_name, 'w') as f:
                 f.write('node_id, x0, y0, z0\n')
-
-            for node in sub_model_part.Nodes:
-                with open(file_name, 'a') as f:
-                    f.write(f'{node.Id}, {node.X0}, {node.Y0}, {node.Z0}\n')
+            sub_model_part = self.GetSubModelPart(sub_mp_name)
+            init_disp = self.GetInitialNodalDisplacement(sub_model_part_name=sub_mp_name)
+            with open(file_name, 'a') as f:
+                for i, node in enumerate(sub_model_part.Nodes):
+                    f.write(f'{node.Id}, {node.X0 + init_disp[i, 0]}, {node.Y0 + init_disp[i, 1]}, {node.Z0 + init_disp[i, 2]}\n')
 
     def InitializeSolutionStep(self):
-        self.structural_analysis.time = self.structural_analysis._GetSolver().AdvanceInTime(self.structural_analysis.time)
-        self.structural_analysis.InitializeSolutionStep()
-        self.structural_analysis._GetSolver().Predict()
+        self.time = self._GetSolver().AdvanceInTime(self.time)
+        super(StructuralMechanicsAnalysis, self).InitializeSolutionStep()
+        self._GetSolver().Predict()
         self.coupling_iteration = 0
 
     def SolveSolutionStep(self):
         self.coupling_iteration += 1
         KratosMultiphysics.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
         self.InputData()
-        self.structural_analysis._GetSolver().SolveSolutionStep()
+        self._GetSolver().SolveSolutionStep()
         KratosMultiphysics.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
-    def FinalizeSolutionStep(self):
-        self.structural_analysis.FinalizeSolutionStep()
-        self.OutputSolutionStep()
-
-    def OutputSolutionStep(self):
-        self.structural_analysis.OutputSolutionStep()
-
-    def Finalize(self):
-        self.structural_analysis.Finalize()
 
     def OutputData(self):
 
         for sub_model_part_name in self.interfaces:
+            init_disp = self.GetInitialNodalDisplacement(sub_model_part_name=sub_model_part_name)
             full_sub_model_part_name = "Structure." + sub_model_part_name
             if self.model["Structure"].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
@@ -72,10 +55,10 @@ class StructuralMechanicsWrapper:
                 with open(file_name, 'w') as f:
                     f.write('node_id, displacement_x, displacement_y, displacement_z\n')
 
-                for node in sub_model_part.Nodes:
+                for i, node in enumerate(sub_model_part.Nodes):
                     with open(file_name, 'a') as f:
                         disp = node.GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT)
-                        f.write(str(node.Id) + ', ' + str(disp[0]) + ', ' + str(disp[1]) + ', ' + str(disp[2]) + '\n')
+                        f.write(str(node.Id) + ', ' + str(disp[0]-init_disp[i, 0]) + ', ' + str(disp[1]-init_disp[i, 1]) + ', ' + str(disp[2]-init_disp[i, 2]) + '\n')
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
@@ -108,6 +91,19 @@ class StructuralMechanicsWrapper:
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
+    def GetInitialNodalDisplacement(self, sub_model_part_name):
+        sub_model_part = self.GetSubModelPart(sub_model_part_name)
+        file_name = f'{sub_model_part_name}_init_displacement.csv'
+        try:
+            init_disp = np.loadtxt(file_name, comments='#')
+        except IOError:
+            init_disp = np.zeros((sub_model_part.NumberOfNodes(), 3))
+
+        return init_disp
+
+    def GetSubModelPart(self, sub_model_part_name):
+        full_sub_model_part_name = "Structure." + sub_model_part_name
+        return self.model[full_sub_model_part_name]
 
 if __name__ == '__main__':
     from sys import argv
@@ -121,8 +117,11 @@ if __name__ == '__main__':
 
     # Import data structure
     parameter_file_name = argv[1]
+    model = KratosMultiphysics.Model()
+    with open(parameter_file_name, 'r') as parameter_file:
+        kratos_parameters = KratosMultiphysics.Parameters(parameter_file.read())
 
-    str_wrapper = StructuralMechanicsWrapper(parameter_file_name)
+    str_wrapper = StructuralMechanicsWrapper(model, kratos_parameters)
     str_wrapper.Initialize()
     open('start_ready.coco', 'w').close()
 
@@ -141,6 +140,7 @@ if __name__ == '__main__':
 
         if os.path.isfile('save.coco'):
             str_wrapper.FinalizeSolutionStep()
+            str_wrapper.OutputSolutionStep()
             os.remove('save.coco')
             open(os.path.join('save_ready.coco'), 'w').close()
 

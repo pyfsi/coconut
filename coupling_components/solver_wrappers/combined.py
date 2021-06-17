@@ -12,26 +12,30 @@ class SolverWrapperCombined(Component):
         super().__init__()
 
         self.parameters = parameters
-        self.settings = parameters["settings"]
+        self.settings = parameters['settings']
+        self.mul_factors = []
+        self.save_restart = self.settings.get('save_restart', 0)  # time step interval to save restart data
+        self.settings['save_restart'] = self.save_restart
 
         # create solvers
-        for sol_wrapper_param in self.settings["solver_wrappers"]:
-            tools.pass_on_parameters(self.settings, sol_wrapper_param["settings"],
-                                     ["timestep_start", "delta_t"])
+        for sol_wrapper_param in self.settings['solver_wrappers']:
+            tools.pass_on_parameters(self.settings, sol_wrapper_param['settings'],
+                                     ['timestep_start', 'delta_t','save_restart'])
         nr_mapped_sol_wrappers = 0
-        for index, sol_wrapper_param in enumerate(self.settings["solver_wrappers"]):
-            if sol_wrapper_param["type"] == "solver_wrappers.mapped":
+        for index, sol_wrapper_param in enumerate(self.settings['solver_wrappers']):
+            if sol_wrapper_param['type'] == 'solver_wrappers.mapped':
                 nr_mapped_sol_wrappers += 1
+                self.mul_factors.append(sol_wrapper_param['settings'].get('mul_factor', 1))
             else:
                 self.master_sol_index = index
 
-        nr_sol_wrappers = len(self.settings["solver_wrappers"])
+        nr_sol_wrappers = len(self.settings['solver_wrappers'])
         if not nr_mapped_sol_wrappers == nr_sol_wrappers - 1:
             raise RuntimeError(f'Required  number of  mapped solver wrappers: {nr_sol_wrappers - 1}, '
                                f'but {nr_mapped_sol_wrappers} is provided.')
 
         self.solver_wrapper_list = []
-        for sol_wrapper_param in self.settings["solver_wrappers"]:
+        for sol_wrapper_param in self.settings['solver_wrappers']:
             self.solver_wrapper_list.append(create_instance(sol_wrapper_param))
 
         self.mapped_solver_wrapper_list = []
@@ -43,7 +47,8 @@ class SolverWrapperCombined(Component):
 
         self.interface_output = None
 
-        # run time
+        #time
+        self.init_time = 0.0
         self.run_time = 0.0
 
     def initialize(self):
@@ -63,9 +68,9 @@ class SolverWrapperCombined(Component):
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.interface_output = self.master_solver_wrapper.solve_solution_step(interface_input)
-        for sol_wrapper in self.mapped_solver_wrapper_list:
+        for mul_factor, sol_wrapper in zip(self.mul_factors, self.mapped_solver_wrapper_list):
             other_interface_output = sol_wrapper.solve_solution_step(interface_input)
-            self.interface_output += other_interface_output
+            self.interface_output += mul_factor*other_interface_output
 
         return self.interface_output
 
@@ -90,18 +95,18 @@ class SolverWrapperCombined(Component):
 
     def get_interface_output(self):
         self.interface_output = self.master_solver_wrapper.get_interface_output()
-        for sol_wrapper in self.mapped_solver_wrapper_list:
+        for mul_factor, sol_wrapper in zip(self.mul_factors,self.mapped_solver_wrapper_list):
             other_interface_output = sol_wrapper.get_interface_output()
-            self.interface_output += other_interface_output
+            self.interface_output += mul_factor*other_interface_output
         return self.interface_output
 
     def print_components_info(self, pre):
-        tools.print_info(pre, "The component ", self.__class__.__name__, " combines the following solver wrappers:")
+        tools.print_info(pre, 'The component ', self.__class__.__name__, ' combines the following solver wrappers:')
         pre = tools.update_pre(pre)
-        tools.print_info(pre, '├─', "Mapped solver wrappers:")
+        tools.print_info(pre, '├─', 'Mapped solver wrappers:')
         for sol_wrapper in self.mapped_solver_wrapper_list[:-1]:
             sol_wrapper.print_components_info(pre + '│ ├─')
         self.solver_wrapper_list[-1].print_components_info(pre + '│ └─')
 
-        tools.print_info(pre, '└─', "Master solver wrapper:")
+        tools.print_info(pre, '└─', 'Master solver wrapper:')
         self.master_solver_wrapper.print_components_info(pre + '  └─')

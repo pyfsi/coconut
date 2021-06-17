@@ -20,13 +20,16 @@ class TestSolverWrapperCombined(unittest.TestCase):
 
     def setUp(self):
         parameter_file_name = os.path.join(os.path.dirname(__file__), 'parameters.json')
+        self.mul_factors= []
 
         with open(parameter_file_name, 'r') as parameter_file:
             parameters = json.load(parameter_file)
 
         for sol_param in parameters['settings']['solver_wrappers']:
-            if not sol_param["type"] == "solver_wrappers.mapped":
+            if not sol_param['type'] == 'solver_wrappers.mapped':
                 self.master_par_solver = sol_param
+            else:
+                self.mul_factors.append(sol_param['settings'].get('mul_factor', 1.0))
 
         self.comb_sol_par = parameters
 
@@ -90,19 +93,15 @@ class TestSolverWrapperCombined(unittest.TestCase):
         pres_ref, trac_ref = comb_solver.master_solver_wrapper.calculate_output(displacement.ravel(),
                                                                                 comb_solver.get_interface_output(),
                                                                                 self.mp_name_out)
-        for index, mapped_sol_wrapper in enumerate(comb_solver.solver_wrapper_list):
-            if not index == comb_solver.master_sol_index:
-                pres_other, trac_other = mapped_sol_wrapper.solver_wrapper.calculate_output(displacement.ravel(),
-                                                                                            comb_solver.get_interface_output(),
-                                                                                            self.mp_name_out)
-                pres_ref += pres_other
-                trac_ref += trac_other
+        for mul_factor, mapped_sol_wrapper in zip(self.mul_factors,comb_solver.mapped_solver_wrapper_list):
+            pres_other, trac_other = mapped_sol_wrapper.solver_wrapper.calculate_output(displacement.ravel(),
+                                                                                        comb_solver.get_interface_output(),
+                                                                                        self.mp_name_out)
+            pres_ref += mul_factor*pres_other
+            trac_ref += mul_factor*trac_other
 
         np.testing.assert_allclose(pressure, pres_ref, rtol=1e-12)
         np.testing.assert_allclose(traction, trac_ref, rtol=1e-12)
-        print('\n')
-        comb_solver.print_components_info('├─')
-
 
 if __name__ == '__main__':
     unittest.main()

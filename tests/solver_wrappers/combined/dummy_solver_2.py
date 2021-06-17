@@ -24,7 +24,7 @@ class DummySolver2(Component):
         dy = ly / (ny - 1)
         perturb_factor = 0.0
         x = np.linspace(0, lx, nx) + np.random.rand(nx) * dx * perturb_factor
-        y = np.linspace(0, ly, ny) + np.random.rand(nx) * dy * perturb_factor
+        y = np.linspace(0, ly, ny) + np.random.rand(ny) * dy * perturb_factor
 
         xx, yy = np.meshgrid(x, y)
         x0_in = xx.ravel()

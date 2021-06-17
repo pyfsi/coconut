@@ -78,7 +78,7 @@ libs 	 ("libfieldFunctionObjects.so");
 executeControl 	 timeStep;
 executeInterval 	 1;
 writeControl 	 timeStep;
-writeInterval 	 1;
+writeInterval 	 1000000000;
 timeFormat 	 fixed;
 timePrecision 	 4;
 log 	 false;
