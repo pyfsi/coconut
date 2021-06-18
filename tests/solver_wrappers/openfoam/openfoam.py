@@ -29,7 +29,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         with open(self.file_name, 'r') as parameter_file:
             self.parameters = json.load(parameter_file)
         self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
-        
+
         self.mp_name_in = self.parameters['settings']['interface_input'][0]['model_part']
         self.mp_name_out = self.parameters['settings']['interface_output'][0]['model_part']
 
@@ -54,7 +54,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
 
     def set_up_case(self):
-        check_call('sh ' + os.path.join(self.folder_path, 'Allrun'), shell=True, env=self.env)
+        check_call('sh ' + os.path.join(self.folder_path, 'prepareCase'), shell=True, env=self.env)
 
     def set_cores(self, cores):
         if cores == 1:
@@ -77,10 +77,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         dz = dr * np.sin(theta)
         return dy, dz
 
+    # test if order of nodes vary with different decomposition
     def test_model_part_nodes_with_different_cores(self):
-        # test if order of nodes vary with different decomposition
-        print_box("Testing model part nodes with different partitioning")
-
         # create two solvers with different flow solver partitioning
         x0, y0, z0, ids = [], [], [], []
         for cores in [1, self.max_cores]:
@@ -98,11 +96,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         for attr in [x0, y0, z0, ids]:
             np.testing.assert_array_equal(attr[0], attr[1])
 
+    # test if nodes are moved to the correct position
     def test_displacement_on_nodes(self):
-        # test if nodes are moved to the correct position
-        print_box("Testing imposed node (radial) displacement")
-
-        # test if nodes are moved to the correct position
         for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
@@ -135,11 +130,9 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
             self.clean_case()
 
+    # check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
-        # check if different partitioning gives the same pressure and traction results
-        print_box("Testing if pressure/wall shear stress are imposed properly when run in parallel ")
         output_list = []
-
         for cores in [1, self.max_cores]:
             self.set_up_case()
             self.set_cores(cores)
@@ -165,10 +158,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         for output in output_list[1:]:
             np.testing.assert_allclose(output / max_value, ref_output / max_value, atol=1e-10, rtol=0)
 
+    # test if same coordinates always gives same pressure & traction
     def test_pressure_wall_shear(self):
-        # test if same coordinates always gives same pressure & traction
-        print_box("Testing if same displacement gives same pressure/traction")
-
         # adapt parameters, create solver
         self.set_cores(1)
         solver = create_instance(self.parameters)
@@ -213,13 +204,9 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         t02 = np.linalg.norm(traction[0] - traction[2])
         self.assertTrue(t02 / t01 < 1e-4)
 
-        # print(np.c_[pressure[0], pressure[1], pressure[2]])
-
+    # test if restart option works correctly
     def test_restart(self):
-        # test if restart option works correctly
-
         # adapt parameters, create solver
-        print_box("Testing restart")
         cores = 4
         self.set_cores(cores)
         self.parameters['settings']['cores'] = cores

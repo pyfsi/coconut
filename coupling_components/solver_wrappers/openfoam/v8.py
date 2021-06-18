@@ -57,6 +57,21 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
                f'}}\n')
         return dct
 
+    def wall_shear_stress_dict(self, boundary_name):
+        dct = (f'wallShearStress\n'
+               f'{{\n'
+               f'type  	             wallShearStress;\n'
+               f'libs 	             ("libfieldFunctionObjects.so");\n'
+               f'executeControl 	 timeStep;\n'
+               f'executeInterval 	 1;\n'
+               f'writeControl 	     timeStep;\n'
+               f'writeInterval 	     {int(1e9)};\n'  # very high value for not printing wallShearStress
+               f'timeFormat          fixed;\n'
+               f'timePrecision 	     {self.time_precision};\n'
+               f'log 	             false;\n'
+               f'}}\n')
+        return dct
+
     def traction_dict(self, boundary_name):
         dct = (f'TRACTION_{boundary_name}\n'
                f'{{\n'
