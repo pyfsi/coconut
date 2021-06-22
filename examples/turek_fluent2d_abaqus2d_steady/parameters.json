@@ -48,6 +48,7 @@
           "case_file": "case_turek.cas",
           "dimensions": 2,
           "unsteady": false,
+          "end_of_timestep_commands": "(ti-menu-load-string \"report forces wall-forces n circleoutside beamtopoutside beamrightoutside beambottomoutside () 1 0 y forces.frp\")",
           "thread_names": [
             "beamtopoutside",
             "beamrightoutside",
@@ -114,7 +115,7 @@
               "dimensions": 2,
               "arraysize": 500,
               "subcycling": true,
-              "initial_inc":0.01,
+              "initial_inc": 0.01,
               "max_inc": 1,
               "min_inc": 0.0001,
               "max_num_inc": 1000,
