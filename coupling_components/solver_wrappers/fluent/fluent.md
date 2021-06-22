@@ -24,11 +24,12 @@ parameter|type|description
 `cores`|int|Number of processor cores to use when running Fluent (tested only on single node so far).
 `dimensions`|int|Dimension used in flow solver: `2` for 2D and axisymmetric, `3` for 3D. 
 `delta_t`|float|Fixed time step size in flow solver. This parameter is usually specified in a higher `Component`.
+<nobr>`end_of_timestep_commands`</nobr>|string|Fluent journal command(s) to be executed after every time step, to store drag and lift forces for example.
 `flow_iterations`|int|Number of non-linear iterations in Fluent per coupling iteration.
 `fluent_gui`|bool|Set to `true` to run Fluent with the graphical interface.
 `interface_input`|list|List of dictionaries to describe the input `Interface` (Fluent nodes). Each dictionary defines one `ModelPart` with two keys: `model_part` contains the name of the `ModelPart` and `variables` contains a list of variable names. Each `ModelPart` name must be the concatenation of an entry from `thread_names` and "_nodes". The variable names must be chosen from *`data_structure/variables.py`*. 
 `interface_output`|dict|Analogous to `interface_input`, but for the output `Interface` (Fluent faces). Each `ModelPart` name must be the concatenation of an entry from the file `thread_names` and "_faces".
-<nobr>`max_nodes_per_face`</nobr>|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.
+`max_nodes_per_face`</nobr>|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.
 `save_iterations`|int|Number of time steps between consecutive saves of the Fluent case and data files.
 `thread_names`|list|List with Fluent names of the surface threads on the FSI interface. 
 `timestep_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the `case_file`, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.
