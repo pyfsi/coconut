@@ -45,4 +45,4 @@ physics create "BeamInsideFixed" btype "NODE" edge "BeamLeftInside"
 physics create "Beam" ctype "SOLID" face "BeamInternal"
 export gambit "mesh_turek.neu"
 save
-abort
+end
