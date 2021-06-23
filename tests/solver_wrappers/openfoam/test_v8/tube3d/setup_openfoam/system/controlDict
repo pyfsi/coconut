@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     coconut_pimpleFoam_v8;
+application     pimpleFoam;
 
 startFrom       startTime;
 

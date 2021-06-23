@@ -142,7 +142,6 @@ class SolverWrapperOpenFOAM(Component):
         This inversion is indicated by negative indices
         However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
         Therefore to get the correct index one should use |index|-1!!
-        Normally no doubles should be encountered on an interface as these faces are not shared by processors
         """
 
         if self.settings['parallel']:
@@ -472,10 +471,7 @@ class SolverWrapperOpenFOAM(Component):
 
     def check_software(self):
         if check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
-            raise RuntimeError(f'OpenFOAM not loaded properly. You should perform the following steps:\n'
-                               f'-\tLoad the module for OpenFOAM-{self.version},\n'
-                               f'-\tSource $FOAM_BASH,\n'
-                               f'-\tCompile {self.application}')
+            raise RuntimeError(f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name" are correct.')
 
         # check version
         with open('checkSoftware', 'r') as f:
