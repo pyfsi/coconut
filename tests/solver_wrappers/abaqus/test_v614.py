@@ -89,7 +89,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
     @staticmethod
     def get_p(x):
-        return 1500 * np.sin(2 * np.pi / 0.05 * x)
+        return 1500 * np.cos(2 * np.pi / 0.05 * x)
 
     @staticmethod
     def get_shear(x, axial_dir):
