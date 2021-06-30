@@ -13,6 +13,7 @@ import re
 import textwrap
 from pathlib import Path
 import warnings
+from getpass import getuser
 
 
 def create(parameters):
@@ -75,6 +76,7 @@ class SolverWrapperAbaqus614(Component):
                         else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
                     line = line.replace('|MP_MODE|', self.mp_mode)
                     line = line.replace('|PID|', str(os.getpid()))
+                    line = line.replace('|USER|', getuser())
                     if '|' in line:
                         raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
                                          f'substitution: \n \t{line} \n Probably a parameter was not substituted')

@@ -10,6 +10,8 @@ import time
 import numpy as np
 import sys
 import hashlib
+from getpass import getuser
+import shutil
 
 
 # TODO: issue: id and hash shadow built-in names
@@ -38,6 +40,7 @@ class SolverWrapperFluent(Component):
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
+        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
         self.cores = self.settings['cores']
         if self.cores < 1 or self.cores > multiprocessing.cpu_count():
             self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
@@ -95,13 +98,15 @@ class SolverWrapperFluent(Component):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        if self.timestep_start == 0:
-            udf = f'v{self.version}.c'
-            with open(join(self.dir_src, udf)) as infile:
-                with open(join(self.dir_cfd, udf), 'w') as outfile:
-                    for line in infile:
-                        line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
-                        outfile.write(line)
+        udf = f'v{self.version}.c'
+        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
+        os.mkdir(join('/tmp', self.tmp_directory_name))
+        with open(join(self.dir_src, udf)) as infile:
+            with open(join(self.dir_cfd, udf), 'w') as outfile:
+                for line in infile:
+                    line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
+                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_directory_name)
+                    outfile.write(line)
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
@@ -324,6 +329,7 @@ class SolverWrapperFluent(Component):
 
     def finalize(self):
         super().finalize()
+        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
