@@ -129,6 +129,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
             self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
         self.start_time = time.time()
+        self.init_time = self.start_time - self.init_time
 
     def solve_solution_step(self):
         interface_input = self.solver_wrapper.interface_input
