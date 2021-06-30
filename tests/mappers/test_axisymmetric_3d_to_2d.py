@@ -1,9 +1,9 @@
+import unittest
+
+import matplotlib.pyplot as plt
+import numpy as np
 from coconut import data_structure
 from coconut.tools import create_instance
-
-import unittest
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
@@ -52,6 +52,75 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                 y_out_ref[start:end] = np.cos(theta) * y_in
                 z_out_ref[start:end] = np.sin(theta) * y_in
 
+        # test angle parameter
+        radius = np.zeros(n_in)
+        corner = np.zeros(n_in)
+
+        for i_t in range(n_in):
+            radius[i_t] = np.sqrt(y_out_ref[i_t] ** 2 + z_out_ref[i_t] ** 2)
+            cosalpha = abs(y_out_ref[i_t]) / radius[i_t]
+            corner[i_t] = 2 * np.arccos(cosalpha) * 180 / np.pi
+            if angle > 180:
+                corner[i_t] = 360 - corner[i_t]
+
+        self.assertAlmostEqual(angle, corner[i_t], 10)
+
+        # test angle between each point via cosine rule
+        if angle != 360:
+            ref = angle / (n_t - 1)
+            a = np.zeros((n_t - 1) * n_in)
+            b = np.zeros((n_t - 1) * n_in)
+            c = np.zeros((n_t - 1) * n_in)
+
+            k = 0
+
+            for i_t in range(n_t - 1):
+                for i in range(n_in):
+                    a[k] = np.sqrt(y_out_ref[k] ** 2 + z_out_ref[k] ** 2)
+                    b[k] = np.sqrt(y_out_ref[k + n_in] ** 2 + z_out_ref[k + n_in] ** 2)
+                    c[k] = np.sqrt(
+                        (y_out_ref[k] - y_out_ref[k + n_in]) ** 2 + (z_out_ref[k] - z_out_ref[k + n_in]) ** 2)
+                    k += 1
+
+            cos_gamma = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
+            check_out = np.arccos(cos_gamma) * 180 / np.pi
+
+            for i_t in range((n_t - 1) * n_in):
+                self.assertAlmostEqual(ref, check_out[i_t], 10)
+
+        else:
+            ref = angle / n_t
+            a = np.zeros(n_t * n_in)
+            b = np.zeros(n_t * n_in)
+            c = np.zeros(n_t * n_in)
+
+            k = 0
+
+            end_points = np.zeros(n_in)
+            for i in range(n_in):
+                end_points[i] = int(n_out_ref - n_in + i * 1)
+
+            for i_t in range(n_t):
+                for i in range(n_in):
+                    a[k] = np.sqrt(y_out_ref[k] ** 2 + z_out_ref[k] ** 2)
+                    if k in end_points:
+                        b[k] = np.sqrt(
+                            y_out_ref[k - ((n_t - 1) * n_in)] ** 2 + z_out_ref[k - ((n_t - 1) * n_in)] ** 2)
+                        c[k] = np.sqrt((y_out_ref[k] - y_out_ref[k - ((n_t - 1) * n_in)]) ** 2 + (
+                                z_out_ref[k] - z_out_ref[k - ((n_t - 1) * n_in)]) ** 2)
+                    else:
+                        b[k] = np.sqrt(y_out_ref[k + n_in] ** 2 + z_out_ref[k + n_in] ** 2)
+                        c[k] = np.sqrt(
+                            (y_out_ref[k] - y_out_ref[k + n_in]) ** 2 + (
+                                    z_out_ref[k] - z_out_ref[k + n_in]) ** 2)
+                    k += 1
+
+            cos_gamma_360 = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
+            check_out = np.arccos(cos_gamma_360) * 180 / np.pi
+
+            for i_t in range(n_t * n_in):
+                self.assertAlmostEqual(ref, check_out[i_t], 10)
+
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
         mapper.initialize(model, mp_name_in, mp_name_out, forward=False)
@@ -68,12 +137,6 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
         np.testing.assert_array_equal(x_out, x_out_ref)
         np.testing.assert_array_equal(y_out, y_out_ref)
         np.testing.assert_array_equal(z_out, z_out_ref)
-
-    def test_initialize_360(self):
-        self.parameters['settings'].pop('angle')
-        self.test_initialize()
-        self.test_call()
-        self.gui
 
     def test_call(self):
         def fun_s(x):
@@ -156,6 +219,13 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
             plt.get_current_fig_manager().window.showMaximized()
             plt.show()
             plt.close()
+
+    def test_initialize_360(self):
+        self.parameters['settings'].pop('angle')
+        self.test_initialize()
+        self.test_call()
+        self.gui
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,8 +1,7 @@
-from coconut.coupling_components.mappers.transformer import MapperTransformer
-from coconut.coupling_components.mappers.axisymmetric_2d_to_3d import MapperAxisymmetric2DTo3D
-from coconut.data_structure import variables_dimensions
-
 import numpy as np
+from coconut.coupling_components.mappers.axisymmetric_2d_to_3d import MapperAxisymmetric2DTo3D
+from coconut.coupling_components.mappers.transformer import MapperTransformer
+from coconut.data_structure import variables_dimensions
 
 
 def create(parameters):
@@ -12,7 +11,7 @@ def create(parameters):
 class MapperAxisymmetric3DTo2D(MapperAxisymmetric2DTo3D):
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         if not forward:
-            super().initialize(model, model_part_name_in, model_part_name_out, not(forward))
+            super().initialize(model, model_part_name_in, model_part_name_out, not (forward))
 
             n_from = self.n_to
             n_to = self.n_from
