@@ -4,7 +4,7 @@ This example calculates the well-known Turek benchmark, which consist laminar in
 The material parameters and boundary conditions correspond to the FSI1 setup, as detailed by Turek and Hron [[1](#1)].
 This is a steady simulation.
 The used solvers are Fluent and Abaqus.
-A script _`beam_tip.py`_ is provided to compare the results with the benchmark results in [[1](#1)].
+A script _`evaluate_benchmark.py`_ is provided to compare the results with the benchmark results in [[1](#1)].
 
 The figure below shows the resulting velocity contour plot (with Fluent).
 ![FSI1](images/turek_fsi1_velocity.png "Velocity contour plot of FSI1 setup produced with Fluent")

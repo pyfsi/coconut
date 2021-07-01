@@ -26,8 +26,8 @@ coordinates = animation.coordinates
 mask_x = (coordinates[:, 0] > -np.inf)
 mask_y = (abs(coordinates[:, 1] - 0.2) < 1e-16)
 mask_z = (coordinates[:, 2] > -np.inf)
-abscissa = 0  # x-axis, not used
-component = 1  # y-component, not used
+abscissa = 0  # x-axis
+component = 1  # y-component
 
 animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
 
@@ -54,13 +54,13 @@ turek_benchmark = {
     'fsi2':
         {
             'ux':
-                {'mean': -1.4580e-2, 'amplitude': 1.2440e-2, 'period': 3.8},
+                {'mean': -1.4580e-2, 'amplitude': 1.2440e-2, 'frequency': 3.8},
             'uy':
-                {'mean': 1.2300e-3, 'amplitude': 8.0600e-2, 'period': 2.0},
+                {'mean': 1.2300e-3, 'amplitude': 8.0600e-2, 'frequency': 2.0},
             'drag':
-                {'mean': 2.0883e+2, 'amplitude': 7.3750e+1, 'period': 3.8},
+                {'mean': 2.0883e+2, 'amplitude': 7.3750e+1, 'frequency': 3.8},
             'lift':
-                {'mean': 8.8000e-1, 'amplitude': 2.3420e+2, 'period': 2.0},
+                {'mean': 8.8000e-1, 'amplitude': 2.3420e+2, 'frequency': 2.0},
         }
 }
 
@@ -68,28 +68,26 @@ turek_benchmark = {
 # calculate coconut data
 def determine_data(u, time):
     if np.all(u == np.zeros_like(time)):
-        return {'mean': 0, 'amplitude': 0, 'period': 0}
+        return {'mean': 0, 'amplitude': 0, 'frequency': 0}
     else:
         n = min(int(0.12 * time.size), sum(~np.isnan(u)))
         u_lim = u[-n:]  # only look at last part
         time_lim = time[-n:]
         u_m = np.mean(u_lim)
         u_switch = np.where(np.diff(u_lim < u_m) != 0)[0]  # determine indices of mean crossings
-        if len(u_switch < 3):
-            raise RuntimeError('Not enough time step data to determine the mean, amplitude and period')
-        u_per = u_lim[u_switch[-3]:u_switch[-1]]  # last period of u (between two mean crossings)
-        time_per = time_lim[u_switch[-3]:u_switch[-1]]
+        if u_switch.size < 3:
+            raise RuntimeError('Not enough time step data to determine the mean, amplitude and frequency')
+        u_per = u_lim[u_switch[-3]:u_switch[-1] + 1]  # last period of u (between two mean crossings)
+        time_per = time_lim[u_switch[-3]:u_switch[-1] + 1]
         u_max = np.max(u_per)
-        time_u_max = time_per[np.where(u_per == u_max)][0]
         u_min = np.min(u_per)
-        time_u_min = time_per[np.where(u_per == u_min)][0]
         u_mean = 0.5 * (u_max + u_min)
         u_ampl = 0.5 * (u_max - u_min)
-        u_period = 1 / (2 * abs(time_u_max - time_u_min))
-    return {'mean': u_mean, 'amplitude': u_ampl, 'period': u_period}
+        u_frequency = 1 / (time_per[-1] - time_per[0])
+    return {'mean': u_mean, 'amplitude': u_ampl, 'frequency': u_frequency}
 
 
-stop = 34  # include simulation time up to 'stop' seconds
+stop = 35  # include simulation time up to 'stop' seconds
 coconut = {u_name: determine_data(u[time <= stop], time[time <= stop]) for u_name, u in
            (('ux', ux), ('uy', uy), ('drag', drag), ('lift', lift))}
 
@@ -100,7 +98,7 @@ for var1_str, var1_name, var2_str, var2_name in (('ux', 'displacement x', 'uy', 
     for dict_name, dict in (('benchmark', turek_benchmark[fsi_case]), ('coconut', coconut)):
         out += f"{dict_name:12}"
         for var in (var1_str, var2_str):
-            out += f"{dict[var]['mean']:11.4e} +/-{dict[var]['amplitude']:.4e} [{dict[var]['period']:.1f}]"
+            out += f"{dict[var]['mean']:11.4e} +/-{dict[var]['amplitude']:.4e} [{dict[var]['frequency']:.1f}]"
             out += '\t\t' if var == var1_str else '\n'
     print(out)
 

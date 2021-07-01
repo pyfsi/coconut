@@ -36,9 +36,11 @@ define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing y
 define dynamic-mesh controls remeshing-parameters remeshing-methods y y y n
 define dynamic-mesh controls remeshing-parameters cell-skew-max 0.6
+;0.6 0.6 0.6
 define dynamic-mesh controls remeshing-parameters face-skew-max 0.6
-define dynamic-mesh controls remeshing-parameters length-min 0.00125
-;0.00500 0.00250 0.00125
+;0.6 0.6 0.6
+define dynamic-mesh controls remeshing-parameters length-min 0.0010
+;0.0040 0.0020 0.0010
 define dynamic-mesh controls remeshing-parameters length-max 0.0125
 ;0.0500 0.0250 0.0125
 define dynamic-mesh controls remeshing-parameters size-remesh-interval 1
@@ -51,6 +53,7 @@ define dynamic-mesh controls remeshing-parameters sizing-function n
 define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
 ;0.00500 0.00250 0.00125
 ;0.0500 0.0250 0.0125
+;0.6 0.6 0.6
 
 solve monitors force drag-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 1 0
 solve monitors force lift-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 0 1

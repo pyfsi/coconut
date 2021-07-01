@@ -25,10 +25,22 @@ coordinates = animation.coordinates
 mask_x = (coordinates[:, 0] > -np.inf)
 mask_y = (abs(coordinates[:, 1] - 0.2) < 1e-16)
 mask_z = (coordinates[:, 2] > -np.inf)
-abscissa = 0  # x-axis, not used
-component = 1  # y-component, not used
+abscissa = 0  # x-axis
+component = 1  # y-component
 
 animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
+
+animation2 = animation_figure.add_animation(solution, interface, dt, time_step_start, variable='coordinates',
+                                           name=fsi_case, model_part_name='beamrightoutside_nodes')
+# select points and component of variable to plot
+coordinates = animation2.coordinates
+mask_x = (coordinates[:, 0] > -np.inf)
+mask_y = (abs(coordinates[:, 1] - 0.2) < 1e-16)
+mask_z = (coordinates[:, 2] > -np.inf)
+abscissa = 1  # y-axis, not used
+component = 0  # x-component
+
+animation2.initialize(mask_x, mask_y, mask_z, abscissa, component)
 
 # variables
 uy = np.mean(np.array(animation.solution), axis=1)  # y displacement of tip
@@ -51,18 +63,18 @@ turek_benchmark = {
     'fsi1':
         {
             'ux':
-                {'mean': 2.2700e-5, 'amplitude': 0, 'period': 0},
+                {'mean': 2.2700e-5, 'amplitude': 0, 'frequency': 0},
             'uy':
-                {'mean': 8.2090e-4, 'amplitude': 0, 'period': 0},
+                {'mean': 8.2090e-4, 'amplitude': 0, 'frequency': 0},
             'drag':
-                {'mean': 1.4295e+1, 'amplitude': 0, 'period': 0},
+                {'mean': 1.4295e+1, 'amplitude': 0, 'frequency': 0},
             'lift':
-                {'mean': 7.6380e-1, 'amplitude': 0, 'period': 0}
+                {'mean': 7.6380e-1, 'amplitude': 0, 'frequency': 0}
         },
 }
 
 
-coconut = {u_name: {'mean': u[1], 'amplitude': 0, 'period': 0} for u_name, u in
+coconut = {u_name: {'mean': u[1], 'amplitude': 0, 'frequency': 0} for u_name, u in
            (('ux', ux), ('uy', uy), ('drag', drag), ('lift', lift))}
 
 # summary
@@ -72,6 +84,6 @@ for var1_str, var1_name, var2_str, var2_name in (('ux', 'displacement x', 'uy', 
     for dict_name, dict in (('benchmark', turek_benchmark[fsi_case]), ('coconut', coconut)):
         out += f"{dict_name:12}"
         for var in (var1_str, var2_str):
-            out += f"{dict[var]['mean']:11.4e} +/-{dict[var]['amplitude']:.4e} [{dict[var]['period']:.1f}]"
+            out += f"{dict[var]['mean']:11.4e} +/-{dict[var]['amplitude']:.4e} [{dict[var]['frequency']:.1f}]"
             out += '\t\t' if var == var1_str else '\n'
     print(out)
