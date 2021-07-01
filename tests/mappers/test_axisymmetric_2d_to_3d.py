@@ -1,9 +1,9 @@
-import unittest
-
-import matplotlib.pyplot as plt
-import numpy as np
 from coconut import data_structure
 from coconut.tools import create_instance
+
+import numpy as np
+import unittest
+import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
@@ -18,6 +18,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
                                 'angle': 100,
                                 'n_tangential': 8}
                            }
+        self.forward = True
 
     def test_instantiation(self):
         create_instance(self.parameters)
@@ -36,7 +37,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
-        angle = self.parameters['settings'].get('angle', 360)
 
         # create model_part_in
         n_in = 10
@@ -46,108 +46,41 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         model = data_structure.Model()
         model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_in))
 
-        # create reference geometry for 3D model_part_out
-        n_t = self.parameters['settings']['n_tangential']
-        n_out_ref = n_in * n_t
-        x_out_ref = np.zeros(n_out_ref)
-        y_out_ref = np.zeros(n_out_ref)
-        z_out_ref = np.zeros(n_out_ref)
-
-        for i_t in range(n_t):
-            for i_from in range(n_in):
-                start = i_t * n_in
-                end = (i_t + 1) * n_in
-                if angle == 360:
-                    theta = -np.radians(angle / 2) + i_t * np.radians(angle) / (n_t)
-                else:
-                    theta = -np.radians(angle / 2) + i_t * np.radians(angle) / (n_t - 1)
-                x_out_ref[start:end] = x_in
-                y_out_ref[start:end] = np.cos(theta) * y_in
-                z_out_ref[start:end] = np.sin(theta) * y_in
-
-        # test angle parameter
-        radius = np.zeros(n_in)
-        corner = np.zeros(n_in)
-
-        for i_t in range(n_in):
-            radius[i_t] = np.sqrt(y_out_ref[i_t] ** 2 + z_out_ref[i_t] ** 2)
-            cosalpha = abs(y_out_ref[i_t]) / radius[i_t]
-            corner[i_t] = 2 * np.arccos(cosalpha) * 180 / np.pi
-            if angle > 180:
-                corner[i_t] = 360 - corner[i_t]
-
-        self.assertAlmostEqual(angle, corner[i_t], 10)
-
-        # test angle between each point via cosine rule
-        if angle != 360:
-            ref = angle / (n_t - 1)
-            a = np.zeros((n_t - 1) * n_in)
-            b = np.zeros((n_t - 1) * n_in)
-            c = np.zeros((n_t - 1) * n_in)
-
-            k = 0
-
-            for i_t in range(n_t - 1):
-                for i in range(n_in):
-                    a[k] = np.sqrt(y_out_ref[k] ** 2 + z_out_ref[k] ** 2)
-                    b[k] = np.sqrt(y_out_ref[k + n_in] ** 2 + z_out_ref[k + n_in] ** 2)
-                    c[k] = np.sqrt(
-                        (y_out_ref[k] - y_out_ref[k + n_in]) ** 2 + (z_out_ref[k] - z_out_ref[k + n_in]) ** 2)
-                    k += 1
-
-            cos_gamma = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
-            check_out = np.arccos(cos_gamma) * 180 / np.pi
-
-            for i_t in range((n_t - 1) * n_in):
-                self.assertAlmostEqual(ref, check_out[i_t], 10)
-
-        else:
-            ref = angle / n_t
-            a = np.zeros(n_t * n_in)
-            b = np.zeros(n_t * n_in)
-            c = np.zeros(n_t * n_in)
-
-            k = 0
-
-            end_points = np.zeros(n_in)
-            for i in range(n_in):
-                end_points[i] = int(n_out_ref - n_in + i * 1)
-
-            for i_t in range(n_t):
-                for i in range(n_in):
-                    a[k] = np.sqrt(y_out_ref[k] ** 2 + z_out_ref[k] ** 2)
-                    if k in end_points:
-                        b[k] = np.sqrt(y_out_ref[k - ((n_t - 1) * n_in)] ** 2 + z_out_ref[k - ((n_t - 1) * n_in)] ** 2)
-                        c[k] = np.sqrt((y_out_ref[k] - y_out_ref[k - ((n_t - 1) * n_in)]) ** 2 + (
-                                z_out_ref[k] - z_out_ref[k - ((n_t - 1) * n_in)]) ** 2)
-                    else:
-                        b[k] = np.sqrt(y_out_ref[k + n_in] ** 2 + z_out_ref[k + n_in] ** 2)
-                        c[k] = np.sqrt(
-                            (y_out_ref[k] - y_out_ref[k + n_in]) ** 2 + (z_out_ref[k] - z_out_ref[k + n_in]) ** 2)
-                    k += 1
-
-            cos_gamma_360 = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
-            check_out = np.arccos(cos_gamma_360) * 180 / np.pi
-
-            for i_t in range(n_t * n_in):
-                self.assertAlmostEqual(ref, check_out[i_t], 10)
-
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
-        mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
+        mapper.initialize(model, mp_name_in, mp_name_out, forward=self.forward)
 
         # get mapped geometry from 3D model_part_out
         mp_out = model.get_model_part(mp_name_out)
-        n_out = mp_out.size
         x_out = mp_out.x0
         y_out = mp_out.y0
         z_out = mp_out.z0
 
-        # compare mapped and reference geometries
-        self.assertEqual(n_out, n_out_ref)
-        np.testing.assert_array_equal(x_out, x_out_ref)
-        np.testing.assert_array_equal(y_out, y_out_ref)
-        np.testing.assert_array_equal(z_out, z_out_ref)
+        # check mapped geometry
+        n_t = self.parameters['settings']['n_tangential']
+        total_angle = self.parameters['settings'].get('angle', 360)
+        for x_i in x_in:
+            y = y_out[x_out == x_i]
+            z = z_out[x_out == x_i]
+
+            # check radius
+            radius_in = np.sqrt(y_in[x_in == x_i] ** 2 + z_in[x_in == x_i] ** 2)
+            radii_in = np.full((n_t,), radius_in)
+            radii_out = np.sqrt(y ** 2 + z ** 2)
+            np.testing.assert_allclose(radii_in, radii_out, rtol=1e-14)
+
+            # check angle between consecutive points
+            angle_in = total_angle / n_t if total_angle == 360 else total_angle / (n_t - 1)
+            angles_in = np.full((n_t - 1,), angle_in)
+            theta = np.arccos(y / radius_in) * np.sign(z) * 180 / np.pi
+            np.sort(theta)
+            angles_out = np.diff(theta)
+            np.testing.assert_allclose(angles_in, angles_out, rtol=1e-14)
+
+            # check total (wedge) angle of new model part
+            total_angle_in = total_angle - angle_in if total_angle == 360 else total_angle
+            total_angle_out = theta[-1] - theta[0]
+            self.assertAlmostEqual(total_angle_out, total_angle_in)
 
     def test_call(self):
         def fun_s(x):
@@ -213,11 +146,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             ax_s.scatter(x_from, y_from, z_from, s=50, c=c_from, depthshade=True, marker='s')
             ax_s.scatter(x_to, y_to, z_to, s=20, c=c_to, depthshade=True)
 
-            # print("y_to")
-            # print(y_to)
-            # print("z_to")
-            # print(z_to)
-
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
             ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
@@ -238,7 +166,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         self.parameters['settings'].pop('angle')
         self.test_initialize()
         self.test_call()
-        self.gui
 
 
 if __name__ == '__main__':

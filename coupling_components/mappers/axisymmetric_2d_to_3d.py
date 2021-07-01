@@ -1,6 +1,7 @@
-import numpy as np
 from coconut.coupling_components.mappers.transformer import MapperTransformer
 from coconut.data_structure import variables_dimensions
+
+import numpy as np
 
 
 def create(parameters):
@@ -23,6 +24,8 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
         self.dir_r = dirs.index(self.settings['direction_radial'])
         self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
         self.angle = self.settings.get('angle', 360)  # angle is set in degrees
+        self.n_from = self.n_to = None
+        self.theta = None
 
         # get number of nodes in tangential direction
         self.n_t = self.settings['n_tangential']
@@ -48,7 +51,7 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
 
             for i_t in range(self.n_t):  # new nodes ordered per theta
                 if self.angle == 360:
-                    theta = -np.radians(self.angle / 2) + i_t * np.radians(self.angle) / (self.n_t)
+                    theta = -np.radians(self.angle / 2) + i_t * np.radians(self.angle) / self.n_t
                 else:
                     theta = -np.radians(self.angle / 2) + i_t * np.radians(self.angle) / (self.n_t - 1)
                 i_start = i_t * n_in
