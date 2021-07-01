@@ -1,0 +1,1650 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="site_description">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Abaqus - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#4cae4f">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#abaqus" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoCoNuT
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Abaqus
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+      
+      <label class="md-nav__link" for="__nav_1">
+        Introduction
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Introduction" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Introduction
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        CoCoNuT
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        Coupling components
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Coupling components" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Coupling components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupling_components.html" class="md-nav__link">
+        General
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="convergence_criteria.html" class="md-nav__link">
+        Convergence criteria
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        Coupled solvers
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Coupled solvers" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Coupled solvers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupled_solvers.html" class="md-nav__link">
+        Coupled solvers
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models.html" class="md-nav__link">
+        Models
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mappers.html" class="md-nav__link">
+        Mappers
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="predictors.html" class="md-nav__link">
+        Predictors
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" checked>
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        Solver wrappers
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Solver wrappers" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          Solver wrappers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="solver_wrappers.html" class="md-nav__link">
+        General
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Abaqus
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="abaqus.html" class="md-nav__link md-nav__link--active">
+        Abaqus
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fluid-structure-interaction-with-abaqus" class="md-nav__link">
+    Fluid-structure interaction with Abaqus
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#terminology" class="md-nav__link">
+    Terminology
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment" class="md-nav__link">
+    Environment
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mandatory" class="md-nav__link">
+    Mandatory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional" class="md-nav__link">
+    Optional
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-operation" class="md-nav__link">
+    Overview of operation
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview of operation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-__init__-method" class="md-nav__link">
+    The __init__ method
+  </a>
+  
+    <nav class="md-nav" aria-label="The __init__ method">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files-written-in-the-working-directory-during-__init__" class="md-nav__link">
+    Files written in the working directory during __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-solve_solution_step-method" class="md-nav__link">
+    The solve_solution_step method
+  </a>
+  
+    <nav class="md-nav" aria-label="The solve_solution_step method">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files-written-in-the-working-directory-during-solve_solution_step" class="md-nav__link">
+    Files written in the working directory during solve_solution_step
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-case-abaqus-input-file-inp" class="md-nav__link">
+    Setting up a case: Abaqus input file (.inp)
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up a case: Abaqus input file (.inp)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    General
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-for-abaqus-input-loads" class="md-nav__link">
+    Setup for Abaqus input (loads)
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup for Abaqus input (loads)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-related-settings-in-json-file" class="md-nav__link">
+    Input-related settings in JSON file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-for-abaqus-output-displacements" class="md-nav__link">
+    Setup for Abaqus output (displacements)
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup for Abaqus output (displacements)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#output-related-settings-in-json-file" class="md-nav__link">
+    Output-related settings in JSON file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#note-about-choosing-modelparts" class="md-nav__link">
+    Note about choosing ModelParts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log-files" class="md-nav__link">
+    Log files
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fluent.html" class="md-nav__link">
+        Fluent
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kratos.html" class="md-nav__link">
+        Kratos
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="openfoam.html" class="md-nav__link">
+        OpenFOAM
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python.html" class="md-nav__link">
+        Python
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Data structure
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Data structure" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Data structure
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="data_structure.html" class="md-nav__link">
+        Data structure
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Documentation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Documentation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="docs.html" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Examples
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Examples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples.html" class="md-nav__link">
+        General
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+      
+      <label class="md-nav__link" for="__nav_5_2">
+        Tube
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tube" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Tube
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure.html" class="md-nav__link">
+        Python TubeFlow - Python TubeStructre
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
+        Python TubeFlow - Python TubeRingmodel
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_abaqus2d.html" class="md-nav__link">
+        Python TubeFlow - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_tube_structure.html" class="md-nav__link">
+        Fluent 2D - Python TubeStructure
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D - Steady
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
+        Fluent 3D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
+        Fluent 3D - Abaqus 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
+        Fluent 3D - Kratos Structure 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_abaqus3d.html" class="md-nav__link">
+        OpenFOAM 3D - Abaqus 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
+        OpenFOAM 3D - Kratos Structure 3D
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      <label class="md-nav__link" for="__nav_5_3">
+        Turek benchmark
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Turek benchmark
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D - Steady
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="test_single_solver.html" class="md-nav__link">
+        Test single solver
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      <label class="md-nav__link" for="__nav_6">
+        Tests
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tests" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Tests
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tests.html" class="md-nav__link">
+        Tests
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fluid-structure-interaction-with-abaqus" class="md-nav__link">
+    Fluid-structure interaction with Abaqus
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#terminology" class="md-nav__link">
+    Terminology
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment" class="md-nav__link">
+    Environment
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mandatory" class="md-nav__link">
+    Mandatory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional" class="md-nav__link">
+    Optional
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-operation" class="md-nav__link">
+    Overview of operation
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview of operation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-__init__-method" class="md-nav__link">
+    The __init__ method
+  </a>
+  
+    <nav class="md-nav" aria-label="The __init__ method">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files-written-in-the-working-directory-during-__init__" class="md-nav__link">
+    Files written in the working directory during __init__
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-solve_solution_step-method" class="md-nav__link">
+    The solve_solution_step method
+  </a>
+  
+    <nav class="md-nav" aria-label="The solve_solution_step method">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files-written-in-the-working-directory-during-solve_solution_step" class="md-nav__link">
+    Files written in the working directory during solve_solution_step
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-case-abaqus-input-file-inp" class="md-nav__link">
+    Setting up a case: Abaqus input file (.inp)
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up a case: Abaqus input file (.inp)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    General
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-for-abaqus-input-loads" class="md-nav__link">
+    Setup for Abaqus input (loads)
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup for Abaqus input (loads)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-related-settings-in-json-file" class="md-nav__link">
+    Input-related settings in JSON file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-for-abaqus-output-displacements" class="md-nav__link">
+    Setup for Abaqus output (displacements)
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup for Abaqus output (displacements)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#output-related-settings-in-json-file" class="md-nav__link">
+    Output-related settings in JSON file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#note-about-choosing-modelparts" class="md-nav__link">
+    Note about choosing ModelParts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log-files" class="md-nav__link">
+    Log files
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="abaqus">Abaqus</h1>
+<p>This is the documentation for all Abaqus solver wrappers. Abaqus is a structural solver implementing the finite element method.
+Currently this wrapper only supports FSI simulations, no other multi-physics problems. 
+Subcycling within the structural solver is possible.</p>
+<h2 id="fluid-structure-interaction-with-abaqus">Fluid-structure interaction with Abaqus</h2>
+<p>Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a <em>surfaces</em> in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node <em>sets</em>, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points (Gauss points, quadrature points), the displacements are exported in the elements' nodes. The input loads are collected in one or more <code>ModelParts</code> in the <em>input</em> <code>Interface</code>, the output nodes are collected in one or more <code>ModelParts</code> of the <em>output</em> <code>Interface</code>. Each <code>ModelPart</code> on the input <code>Interface</code> has a counterpart on the output <code>Interface</code>. More information about <code>ModelParts</code> and <code>Interface</code> can be found in the <a href="https://pyfsi.github.io/coconut/data_structure">data structure documentation</a>.</p>
+<h2 id="terminology">Terminology</h2>
+<ul>
+<li>Main directory: Directory where the analysis is started.</li>
+<li>Working directory: Subdirectory of the main directory in which Abaqus runs.</li>
+<li>Source directory: Directory where the source files of the Abaqus solver wrapper are found: <em><code>coupling_components/solver_wrappers/abaqus</code></em>.</li>
+<li>Extra directory: Subdirectory of the source directory with some files to assist with the setup.</li>
+<li>Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported. </li>
+<li>Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.</li>
+<li>Time step: Time step from the viewpoint of the fluid-structure interaction, usually equal to the time-step of the flow solver and structural solver, although one of the solvers can deviate in the case of subcycling.</li>
+<li>Increment: Time increment in the nomenclature of the Abaqus software. This is usually equal to the time step of the flow solver and overall coupled simulation, but in case of subcycling within the Abaqus solver, a time step can be subdivided in multiple increments.</li>
+</ul>
+<h2 id="environment">Environment</h2>
+<ul>
+<li>A working directory for Abaqus needs to be created within the main directory. Its <strong>relative path to the main directory</strong> should be specified in the JSON file. In the <a href="https://pyfsi.github.io/coconut/examples">CoCoNuT examples</a> this folder is typically called <em><code>CSM</code></em>, but any name is allowed.</li>
+<li>The <strong>Abaqus license server</strong> needs to be specified in the parametrized file <code>abaqus_v6.env</code> which is present in the <code>source directory</code>. For use at Ghent University no changes are required. </li>
+<li>The <strong>Abaqus software should be available as well as compilers</strong> to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. </li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<p>This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in the <em><code>examples</code></em> folder.</p>
+<h3 id="mandatory">Mandatory</h3>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>arraysize</code></td>
+<td align="center">int</td>
+<td>Size specification for array in FORTRAN part of the code, to reserve sufficient memory. Should be large enough and depends on the number of load points in the structural model.</td>
+</tr>
+<tr>
+<td align="right"><code>cores</code></td>
+<td align="center">int</td>
+<td>Number of cores to be used by Abaqus.</td>
+</tr>
+<tr>
+<td align="right"><code>delta_t</code></td>
+<td align="center">float</td>
+<td>Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> object in which case it is not mandatory.</td>
+</tr>
+<tr>
+<td align="right"><code>dimensions</code></td>
+<td align="center">int</td>
+<td>Dimensionality of the problem (2 or 3).</td>
+</tr>
+<tr>
+<td align="right"><code>surfaceIDs</code></td>
+<td align="center">list</td>
+<td>List with the names of the node sets associated with the geometrical nodes on the FSI-interface surfaces. <br><br> <strong>Example:</strong> ["NODESET_NAME_A", "NODESET_NAME_B"] <br> <br> <strong>Important notes:</strong><br> &emsp;•   The sequence of these surfaces has to correspond with the integer specified in the corresponding load-surface (see the <a href="#setting-up-a-case-abaqus-input-file-inp">input file section</a>).<br>&emsp;•  The names of these surfaces should be all UPPERCASE as Abaqus recasts these when opening the .inp file.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_input</code></td>
+<td align="center">list</td>
+<td>Should contain a dictionary for each corresponding element in <code>surfaceIDs</code>, with a key <code>"model_part"</code> that provides the name of a <code>ModelPart</code> for Abaqus load points as value. The second key of the dictionary is <code>variables</code>. The list given as value specifies the input variables that should be included, chosen from <em><code>data_structure/variables.py</code></em>. Currently only <code>"pressure"</code> and <code>"traction"</code> are allowed (case-sensitive). An example can be found in <a href="#input-related-settings-in-json-file">this part of the input file section</a>.</td>
+</tr>
+<tr>
+<td align="right"><code>interface_output</code></td>
+<td align="center">list</td>
+<td>Similar to interface_input but for Abaqus geometrical nodes. In this case the <code>"variables"</code> key specifies the output variable, chosen from <em><code>data_structure/variables.py</code></em>. Currently only <code>"displacement"</code> is allowed (case-sensitive). An example can be found in <a href="#output-related-settings-in-json-file">this part of the input file section</a>.</td>
+</tr>
+<tr>
+<td align="right"><code>input_file</code></td>
+<td align="center">str</td>
+<td>Name of the Abaqus input file (.inp) provided by the user. <br> <br> <strong>Example:</strong> <code>"case.inp"</code></td>
+</tr>
+<tr>
+<td align="right"><code>mp_mode</code></td>
+<td align="center">str</td>
+<td>Determines how Abaqus is executed in parallel. It is recommended to use <code>"THREADS"</code>. <code>"MPI"</code> works as well but requires a host-file called <em><code>AbaqusHosts.txt</code></em>. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script <em><code>make_host_file.sh</code></em> which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.</td>
+</tr>
+<tr>
+<td align="right"><code>save_interval</code></td>
+<td align="center">int</td>
+<td>(optional) Default: 1. Determines what files are kept by Abaqus. Only the files corresponding to (i.e. of which the time step is a multiple of) <code>save_interval</code> are kept at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).</td>
+</tr>
+<tr>
+<td align="right"><code>timestep_start</code></td>
+<td align="center">int</td>
+<td>Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> in which case it is not mandatory to specify.</td>
+</tr>
+<tr>
+<td align="right"><nobr><code>working_directory</code></nobr></td>
+<td align="center">str</td>
+<td>Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file <em><code>AbaqusHosts.txt</code></em>, see the <a href="#environment">environment section</a>.</td>
+</tr>
+</tbody>
+</table>
+<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined in a higher <code>Component</code>. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher object and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<h3 id="optional">Optional</h3>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>subcycling</code></td>
+<td align="center">boolean</td>
+<td><code>false</code>: [Default] Abaqus solves the requested time step using one increment. <br> <code>true</code>: Abaqus is allowed to solve the time step using multiple <em>increments</em>. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small <em>increments</em>.</td>
+</tr>
+<tr>
+<td align="right"><nobr><code>initial_inc</code></nobr></td>
+<td align="center">float</td>
+<td>Required when subcycling is enabled. Contains the size of the first time <em>increment</em> attempted by Abaqus.</td>
+</tr>
+<tr>
+<td align="right"><code>max_inc</code></td>
+<td align="center">float</td>
+<td>Required when subcycling is enabled. Contains the maximal time <em>increment</em> size allowed. This value should not be higher than <code>delta_t</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>max_num_inc</code></td>
+<td align="center">int</td>
+<td>Required when subcycling is enabled. Contains the maximum number of <em>increments</em> that Abaqus is allowed to perform for one time step.</td>
+</tr>
+<tr>
+<td align="right"><code>min_inc</code></td>
+<td align="center">float</td>
+<td>Required when subcycling is enabled. Contains the minimal size allowed for a time <em>increment</em>.</td>
+</tr>
+<tr>
+<td align="right"><code>ramp</code></td>
+<td align="center">boolean</td>
+<td>Only used when subcycling is enabled in Abaqus. <br> <code>false</code>: Load is considered to be constant throughout the time step. <br><code>true</code>: Load is applied in a ramped fashion throughout the time step.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview-of-operation">Overview of operation</h2>
+<p>The solver wrapper consists of 5 files located in the source directory (with <em><code>X</code></em> denoting the Abaqus version, e.g. <em><code>v614.py</code></em>):</p>
+<ul>
+<li><em><code>X.py</code></em>: defines the <code>SolverWrapperAbaqusX</code>class. </li>
+<li><em><code>abaqus_v6.env</code></em>: environment file setting the environment for the Abaqus solver.</li>
+<li><em><code>GetOutput.cpp</code></em>: Extracts the output (from Abaqus .odb files) and writes it to a file for each output<code>ModelPart</code>. Written in C++.</li>
+<li><em><code>USR.f</code></em>: An Abaqus user-subroutine that reads the loads from files (one for each input <code>ModelPart</code>) and applies them on the load points. Written in FORTRAN.</li>
+<li><em><code>USRinit.f</code></em>: An Abaqus user-subroutine that extract the coordinates of the load points and writes them to files (one for each input <code>ModelPart</code>) to initialize each input <code>ModelPart</code>. Written in FORTRAN.</li>
+</ul>
+<h3 id="the-__init__-method">The <code>__init__</code> method</h3>
+<p>During initialization of the <code>SolverWrapperAbaqusX</code> object, some parameters are substituted in <em><code>abaqus_v6.env</code></em>, <em><code>GetOutput.cpp</code></em>, <em><code>USR.f</code></em> and <em><code>USRinit.f</code></em> and these files are copied to the working directory. The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE<strong>B</strong>", where <strong>B</strong> should correspond to the index of the elements in <code>surfaceIDs</code> (0, 1, 2, ...). These coordinates are stored in <code>ModelParts</code> of which the name corresponds to the entries in <code>interface_input</code> (which also correspond to elements in <code>surfaceIDs</code>). GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to <code>ModelParts</code> of which the names corresponds to entries of <code>interface_output</code> (also matched with <code>surfaceIDs</code>). The input <code>ModelParts</code> are added to an <a href="https://pyfsi.github.io/coconut/data_structure"><code>Interface</code></a> object taking care of the inputs (i.e. loads), the output <code>ModelParts</code> to another instance of <code>Interface</code>taking care of outputs (i.e. displacements).</p>
+<h4 id="files-written-in-the-working-directory-during-__init__">Files written in the working directory during <code>__init__</code></h4>
+<p>In the file conventions <em><code>A</code></em> is the start time step (<code>timestep_start</code> in the JSON file) and <em><code>B</code></em> the index of the corresponding element of <code>surfaceIDs</code>.</p>
+<ul>
+<li>The Abaqus input file (<code>input_file</code> in JSON file) is processed into a file <em><code>CSM_TimeA.inp</code></em> and <code>CSM_Restart.inp</code>, the latter taking care of all simulations (i.e. coupling iterations) but the first.</li>
+<li>Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to <em><code>CSM_TimeACpu0SurfaceBFaces.dat</code></em> and <em><code>CSM_TimeACpu0SurfaceBFacesBis.dat</code></em>. When these are processed by the solver wrapper, also <em><code>CSM_TimeASurfaceBElements.dat</code></em> is created.</li>
+<li>Upon running GetOutput the geometrical nodes are written to <em><code>CSM_TimeASurfaceBNodes.dat</code></em>. </li>
+</ul>
+<h3 id="the-solve_solution_step-method">The <code>solve_solution_step</code> method</h3>
+<p>This method of <code>SolverWrapperAbaqusX</code> is called each coupling iteration with an <code>Interface</code> object (input_interface) containing loads, which are written to files that are read by the (compiled) <em><code>USR.f</code></em> during the invoked Abaqus simulation. The Abaqus software is started and shut down for each calculation, i.e. each coupling iteration. When the simulation has ran successfully (log-file <em><code>abaqus.log</code></em> is checked for errors), the outputs are read from Abaqus by GetOuput and written to a file. The file is read in Python and the output (displacements) are stored in the output_interface <code>Interface</code> object which is returned.</p>
+<h4 id="files-written-in-the-working-directory-during-solve_solution_step">Files written in the working directory during <code>solve_solution_step</code></h4>
+<p>In the file conventions <em><code>A</code></em> is the time step and <em><code>B</code></em> the index of the corresponding element of <code>surfaceIDs</code>.</p>
+<ul>
+<li>Files written by Abaqus for allowing a restart (required every coupling iteration): <em><code>CSM_TimeA.odb</code></em>, <em><code>CSM_TimeA.res</code></em>, <em><code>CSM_TimeA.mdl</code></em>, <em><code>CSM_TimeA.prt</code></em>, <em><code>CSM_TimeA.stt</code></em>.</li>
+<li>Output database file written by Abaqus called <em><code>CSM_TimeA.odb</code></em> and read by GetOutput (also needed for restart).</li>
+<li>Output text file <em><code>CSM_TimeASurfaceBOutput.dat</code></em> containing displacements written by GetOutput and read by the solver wrapper.</li>
+<li>Input text file <em><code>CSM_TimeASurfaceBCpu0Input.dat</code></em> containing the loads written by the solver wrapper and read by the USR.</li>
+</ul>
+<h2 id="setting-up-a-case-abaqus-input-file-inp">Setting up a case: Abaqus input file (.inp)</h2>
+<p>The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter <code>input_file</code>. For the remainder of this section this file will be referred to as "base-file".</p>
+<p>Creation of the base-file is not considered a part of the solver wrapper functionality as it is case-specific. However, in order for the solver wrapper to work, the base-file has to comply with certain general conditions. This section aims at informing the user about the requirements for the base-file.</p>
+<h3 id="general">General</h3>
+<p>The base-file needs to be of the ".inp" type, this is an "input file for Abaqus". ".inp-files" are created via Abaqus by, after configuration, creating a "job" and requesting a "write input" for that job. These files can be opened in Abaqus by using "file &gt; import &gt; model".
+The base-file has to contain all necessary information about the structural model, which includes:</p>
+<ul>
+<li>Mesh defining the structure geometry and discretization.<ul>
+<li>Also the element type needs to be defined.</li>
+</ul>
+</li>
+<li>Material properties.</li>
+<li>Boundary conditions.</li>
+<li>Surfaces where external loads need to be applied.<ul>
+<li>Here <em>"Surface"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.</li>
+</ul>
+</li>
+<li>Node sets where displacement data will be extracted.<ul>
+<li>Here <em>"Set"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".</li>
+</ul>
+</li>
+<li>A <em>Step</em> definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them rather than leaving it to Abaqus to fill in a default) are supported:<ul>
+<li>Implicit dynamic, application quasi-static</li>
+<li>Implicit dynamic, application moderate dissipation</li>
+<li>Static general</li>
+</ul>
+</li>
+<li>Additional loads not dependent on the flow solver.</li>
+</ul>
+<p>Abaqus models contain parts and those parts are used to create assemblies. The base-file should contain one assembly, which will then be used by the coupling. The assembly, thus, determines the position and orientation that will be used by the coupling software. Also the sets and surfaces required by CoCoNuT should be defined on the assembly level.</p>
+<p>Abaqus has a GUI as well as a Python 2 interface (which is also accessible) via the GUI. References to both the Python interface and GUI will be made below.</p>
+<h3 id="setup-for-abaqus-input-loads">Setup for Abaqus input (loads)</h3>
+<p>Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created <strong>in the assembly</strong>. There are multiple possibilities to create these surfaces:</p>
+<ul>
+<li>From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.</li>
+<li>From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.</li>
+<li>By converting a "node set" containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <code>make_surface.py</code> file in the extra directory.</li>
+</ul>
+<p>The name of the surface has to be <strong>MOVINGSURFACE followed by an integer</strong>. The integer of the surface has to correspond with the index of that specific surface in the <code>surfaceIDs</code> parameter (index starts from 0). For example MOVINGSURFACE0 is associated with the first item in <code>surfaceIDs</code> and MOVINGSURFACE1 would be associated with the second item in <code>surfaceIDs</code>.</p>
+<p>An example on the use of <code>SurfaceFromNodeSet</code> (via the Python console in Abaqus or a Python script for Abaqus):</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">makeSurface</span> <span class="kn">import</span> <span class="n">SurfaceFromNodeSet</span>
+<span class="n">my_model</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;Model-1&#39;</span><span class="p">]</span>
+<span class="n">my_assembly</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">rootAssembly</span>  
+<span class="n">my_instance</span> <span class="o">=</span> <span class="n">my_assembly</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="s1">&#39;PART-1-1&#39;</span><span class="p">]</span>
+<span class="n">movingSurface0</span> <span class="o">=</span> <span class="n">SurfaceFromNodeSet</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="n">my_instance</span><span class="p">,</span> <span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">,</span> <span class="s1">&#39;MOVINGSURFACE0&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. <strong>Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in <code>GetOutput.cpp</code></strong>. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">step</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">step1</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">ImplicitDynamicsStep</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">previous</span><span class="o">=</span><span class="s1">&#39;Initial&#39;</span><span class="p">,</span> <span class="n">timePeriod</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nlgeom</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">maxNumInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">haftol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initialInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">RAMP</span><span class="p">,</span> <span class="n">noStop</span><span class="o">=</span><span class="n">OFF</span><span class="p">,</span> <span class="n">nohaf</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">initialConditions</span><span class="o">=</span><span class="n">OFF</span><span class="p">,</span> <span class="n">timeIncrementationMethod</span><span class="o">=</span><span class="n">FIXED</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">QUASI_STATIC</span><span class="p">)</span>
+<span class="n">step1</span><span class="o">.</span><span class="n">Restart</span><span class="p">(</span><span class="n">frequency</span> <span class="o">=</span> <span class="mi">99999</span><span class="p">,</span> <span class="n">overlay</span> <span class="o">=</span> <span class="n">ON</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">Pressure</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;DistributedPressure&#39;</span><span class="p">,</span> <span class="n">createStepName</span> <span class="o">=</span> <span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">distributionType</span> <span class="o">=</span> <span class="n">USER_DEFINED</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">magnitude</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">movingSurface0</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">SurfaceTraction</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;DistributedShear&#39;</span><span class="p">,</span> <span class="n">createStepName</span> <span class="o">=</span> <span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">region</span> <span class="o">=</span> <span class="n">movingSurface0</span><span class="p">,</span> <span class="n">magnitude</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">traction</span> <span class="o">=</span> <span class="n">GENERAL</span><span class="p">,</span> <span class="n">directionVector</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> <span class="n">distributionType</span> <span class="o">=</span> <span class="n">USER_DEFINED</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The second command enables writing of restart files by Abaqus, which is required for running unsteady cases. This can be done from the GUI when the "Step" module is active in the viewport, by selecting "Output" in the top menu and subsequently "Restart Requests". <em>Frequency</em> should be put on <em>99999</em>, <em>overlay</em> <em>activated</em> (this spares disk space since only the last increment is kept) and <em>interval</em> on <em>1</em> (also see <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAECAERefMap/simacae-t-simodbrestart.htm">this Abaqus documentation page</a>).
+Note that the step type "ImplicitDynamicsStep" is an example, it depends on the analysis procedure chosen to run the Abaqus part of the FSI simulation. For a steady simulation this could for example be "StaticStep":</p>
+<div class="codehilite"><pre><span></span><code><span class="n">step1</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">StaticStep</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">previous</span><span class="o">=</span><span class="s1">&#39;Initial&#39;</span><span class="p">,</span> <span class="n">timePeriod</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">initialInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minInc</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">maxNumInc</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nlgeom</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">RAMP</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Currently, the Abaqus wrapper automatically checks if the increments comply with the <code>delta_t</code>, <code>subcycling</code> and related settings and adjusts them accordingly or raises an error, but <em>only</em> for a <em>dynamic step</em> or a <em>static step with subcycling</em>.
+<strong>Attention:</strong> Replacing the incrementation settings is done by looking up some keywords in the base-file (<code>*Step</code>, <code>*Dynamic</code>, <code>application</code>). This procedure fails when these keywords are not found. When using the GUI to create the base-file (.inp) and using the default settings for the step, often the keyword <code>application</code> is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (<code>inc=1</code>), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the base-file (.inp) should look similar to this:</p>
+<div class="codehilite"><pre><span></span><code>*Step, name=Step-1, nlgeom=YES, inc=1
+*Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO
+0.0001,0.0001,
+</code></pre></div>
+
+<p>The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information can be found in <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm">this Abaqus documentation page</a>.</p>
+<h4 id="input-related-settings-in-json-file">Input-related settings in JSON file</h4>
+<p>Although it is imperative to use MOVINGSURFACE followed by an integer in the base-file to identify the surfaces <em>for input</em>, some lines in the JSON file (see example below) related to input contains names specified by the user. The names in the <code>interface_input["model_part"]</code> keys are matched by the elements (and their index) in <code>surfaceIDs</code>. </p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;surfaceIDs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;NODESET_NAME_A&quot;</span><span class="p">,</span> <span class="s2">&quot;NODESET_NAME_B&quot;</span><span class="p">],</span>
+  <span class="nt">&quot;interface_input&quot;</span><span class="p">:</span> 
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_A_load_points&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;traction&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_B_load_points&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;traction&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="setup-for-abaqus-output-displacements">Setup for Abaqus output (displacements)</h3>
+<p>After creation of the step, Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. To do so one must create node sets in the assembly (if this had not been done before) with names corresponding to <code>surfaceIDs</code> and containing all structural nodes of the surfaces, then create a Field Output Request for at least the coordinates and the displacements. This Field Output Request can in the GUI be found as part of the model tree, but below also an example for the Python interface is given. A Field Output Request requests field output (as the name says) to be written to the output database file (.odb).</p>
+<p>In the previous section an example was given of how a surface can be created from a node set, but the other way around is also possible, creating a node set from a surface (presuming that this surface was already created):</p>
+<div class="codehilite"><pre><span></span><code><span class="n">my_assembly</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">rootAssembly</span>
+<span class="n">movingSurface0</span> <span class="o">=</span> <span class="n">my_assembly</span><span class="o">.</span><span class="n">surfaces</span><span class="p">[</span><span class="s2">&quot;MOVINGSURFACE0&quot;</span><span class="p">]</span>
+<span class="n">outputSet</span> <span class="o">=</span> <span class="n">my_assembly</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="n">movingSurface0</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">FieldOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;F-Output-1&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">my_assembly</span><span class="o">.</span><span class="n">sets</span><span class="p">[</span><span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;COORD&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Furthermore, it may be interesting (for post-processing and debugging) to preserve the default Abaqus output and therefore also configure a Field Output and History Output with PRESELECTED variables. This can be done via the GUI or using Python lines similar to the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">my_model</span><span class="o">.</span><span class="n">FieldOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;F-Output-2&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">PRESELECT</span><span class="p">)</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">HistoryOutputRequest</span><span class="p">(</span><span class="n">createStepName</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">LAST_INCREMENT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;H-Output-1&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">PRESELECT</span><span class="p">)</span>
+</code></pre></div>
+
+<h4 id="output-related-settings-in-json-file">Output-related settings in JSON file</h4>
+<p>The values of the <code>interface_output["model_part"]</code> keys are matched by the elements (and their index) in <code>surfaceIDs</code>. These values are internally used in CoCoNuT to distinguish the different <code>ModelParts</code>. The elements of <code>surfaceIDs</code> should match the names of the node sets defined in Abaqus.</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;surfaceIDs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;NODESET_NAME_A&quot;</span><span class="p">,</span> <span class="s2">&quot;NODESET_NAME_B&quot;</span><span class="p">],</span>
+  <span class="nt">&quot;interface_output&quot;</span><span class="p">:</span> 
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_A_nodes&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_B_nodes&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="note-about-choosing-modelparts">Note about choosing <code>ModelParts</code></h3>
+<p>The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to <code>ModelParts</code> in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different <code>ModelPart</code>. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different <code>ModelParts</code> at each side of the corner. Another reason to do this is because the code cannot handle elements with two or more faces being part of the same <code>ModelPart</code>. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same <code>ModelPart</code>: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or load point on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.</p>
+<h2 id="log-files">Log files</h2>
+<p>A general event log of the procedure can be found in the working directory, in a file named <em><code>abaqus.log</code></em>. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: <em><code>CSM_TimeA.msg</code></em>, <em><code>A</code></em> being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="solver_wrappers.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: General" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              General
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="fluent.html" class="md-footer__link md-footer__link--next" aria-label="Next: Fluent" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Fluent
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

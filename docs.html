@@ -1,0 +1,1216 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="site_description">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Documentation - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#4cae4f">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#documentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoCoNuT
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Documentation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+      
+      <label class="md-nav__link" for="__nav_1">
+        Introduction
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Introduction" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Introduction
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        CoCoNuT
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        Coupling components
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Coupling components" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Coupling components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupling_components.html" class="md-nav__link">
+        General
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="convergence_criteria.html" class="md-nav__link">
+        Convergence criteria
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      <label class="md-nav__link" for="__nav_2_3">
+        Coupled solvers
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Coupled solvers" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Coupled solvers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupled_solvers.html" class="md-nav__link">
+        Coupled solvers
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models.html" class="md-nav__link">
+        Models
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mappers.html" class="md-nav__link">
+        Mappers
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="predictors.html" class="md-nav__link">
+        Predictors
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+      
+      <label class="md-nav__link" for="__nav_2_6">
+        Solver wrappers
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Solver wrappers" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          Solver wrappers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="solver_wrappers.html" class="md-nav__link">
+        General
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="abaqus.html" class="md-nav__link">
+        Abaqus
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fluent.html" class="md-nav__link">
+        Fluent
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kratos.html" class="md-nav__link">
+        Kratos
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="openfoam.html" class="md-nav__link">
+        OpenFOAM
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python.html" class="md-nav__link">
+        Python
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Data structure
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Data structure" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Data structure
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="data_structure.html" class="md-nav__link">
+        Data structure
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      <label class="md-nav__link" for="__nav_4">
+        Documentation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Documentation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Documentation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="docs.html" class="md-nav__link md-nav__link--active">
+        Documentation
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-in-markdown" class="md-nav__link">
+    Documentation in MarkDown
+  </a>
+  
+    <nav class="md-nav" aria-label="Documentation in MarkDown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#links-to-other-markdown-files" class="md-nav__link">
+    Links to other MarkDown files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#math" class="md-nav__link">
+    Math
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#images" class="md-nav__link">
+    Images
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#style-layout-guide" class="md-nav__link">
+    Style &amp; layout guide
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-static-website-with-mkdocs" class="md-nav__link">
+    Creating a static website with MkDocs
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Examples
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Examples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples.html" class="md-nav__link">
+        General
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+      
+      <label class="md-nav__link" for="__nav_5_2">
+        Tube
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tube" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Tube
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure.html" class="md-nav__link">
+        Python TubeFlow - Python TubeStructre
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
+        Python TubeFlow - Python TubeRingmodel
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_abaqus2d.html" class="md-nav__link">
+        Python TubeFlow - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_tube_structure.html" class="md-nav__link">
+        Fluent 2D - Python TubeStructure
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D - Steady
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
+        Fluent 3D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
+        Fluent 3D - Abaqus 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
+        Fluent 3D - Kratos Structure 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_abaqus3d.html" class="md-nav__link">
+        OpenFOAM 3D - Abaqus 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
+        OpenFOAM 3D - Kratos Structure 3D
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      <label class="md-nav__link" for="__nav_5_3">
+        Turek benchmark
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Turek benchmark
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D - Steady
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="test_single_solver.html" class="md-nav__link">
+        Test single solver
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      <label class="md-nav__link" for="__nav_6">
+        Tests
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Tests" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Tests
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tests.html" class="md-nav__link">
+        Tests
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-in-markdown" class="md-nav__link">
+    Documentation in MarkDown
+  </a>
+  
+    <nav class="md-nav" aria-label="Documentation in MarkDown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#links-to-other-markdown-files" class="md-nav__link">
+    Links to other MarkDown files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#math" class="md-nav__link">
+    Math
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#images" class="md-nav__link">
+    Images
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#style-layout-guide" class="md-nav__link">
+    Style &amp; layout guide
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-static-website-with-mkdocs" class="md-nav__link">
+    Creating a static website with MkDocs
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="documentation">Documentation</h1>
+<p>This website is a collection of all MarkDown (MD) files found in the <code>coconut</code> package.
+These files are converted to a static website using <a href="https://www.mkdocs.org/">MkDocs</a>, based on the outline defined in the <code>mkdocs.yml</code> file.</p>
+<h2 id="documentation-in-markdown">Documentation in MarkDown</h2>
+<p>MD files are easy to write and read in raw form, and can easily be converted to HTML for nicer rendering. It is easy to learn, see e.g. this <a href="https://www.markdowntutorial.com/">MarkDown tutorial</a>. Several flavors of MD exist, which differ only in some details. GitHub has its own <a href="https://github.github.com/gfm/">GitHub Flavored Markdown (GFM)</a>, which is used to render MD documents found in repositories on the run. PyCharm comes with an automatic rendering tool built in, and I assume many other IDE's too. </p>
+<p>The MD documents for the CoCoNuT documentation must be written in the <a href="https://python-markdown.github.io/">Python-Markdown</a> flavor, because they are processed by <a href="https://www.mkdocs.org/">MkDocs</a>. This flavor stays very close to the <em>reference implementation</em> of MD. Pay attention to lists: they should be indented with 4 spaces (contrary to GFM). </p>
+<p>An important rule for writing MD files for this documentation website is that the name of the file must be unique: use names like <code>fluent.md</code> or <code>examples.md</code>, not <code>readme.md</code>.</p>
+<h3 id="links-to-other-markdown-files">Links to other MarkDown files</h3>
+<p>It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax</p>
+<div class="codehilite"><pre><span></span><code>[<span class="nt">link description</span>](<span class="na">relative_path</span>)
+</code></pre></div>
+
+<p>where <code>relative_path</code> is the relative path to another MarkDown file, e.g. <code>../coupling_components/mappers/mappers.md</code>. </p>
+<p>These links can be used in rendered MarkDown, e.g. in PyCharm, but also on GitHub itself (see <a href="https://github.blog/2013-01-31-relative-links-in-markup-files/">this blogpost</a>). 
+These links also work on the documentation website, as they are automatically replaced by the correct URL. 
+Take for example a look at the documentation of the <a href="https://pyfsi.github.io/coconut/mappers">mappers</a> or the <a href="https://pyfsi.github.io/coconut/examples">examples</a>. </p>
+<p>In addition, it is also possible to link to (sub)sections of a file. It is less straightforward to find the correct address in this case, but PyCharm gives you suggestions if you type a # behind the filename. Some examples: <a href="https://pyfsi.github.io/coconut/docs/#links-to-other-markdown-files">this paragraph</a>, <a href="https://pyfsi.github.io/coconut/#getting-started">a CoCoNuT tutorial</a>, <a href="https://pyfsi.github.io/coconut/fluent/#setting-up-a-new-case">setting up a Fluent case</a>, <a href="https://pyfsi.github.io/coconut/mappers/#mapperradialbasis">radial basis mappers</a>. This feature has some limitations: it is not possible to link to a section name that appears several times in a file (non-unique name), or to a section name that is a link itself.</p>
+<h3 id="math">Math</h3>
+<p>LaTeX notation can be used for writing mathematical expressions. Inline equations must be enclosed in single dollar signs (e.g. <span><span class="MathJax_Preview">E = m c^2</span><script type="math/tex">E = m c^2</script></span>), block-style equations in double dolar signs, e.g.</p>
+<div>
+<div class="MathJax_Preview">
+e^{i \pi} + 1 = 0.
+</div>
+<script type="math/tex; mode=display">
+e^{i \pi} + 1 = 0.
+</script>
+</div>
+<p>LaTeX expressions will <em>not</em> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="https://facelessuser.github.io/pymdown-extensions/extensions/arithmatex/">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
+<h3 id="images">Images</h3>
+<p>External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory <code>images</code> next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. </p>
+<p>An image can be added with the MD command</p>
+<div class="codehilite"><pre><span></span><code>![<span class="nt">alt</span>](<span class="na">images/example.png &quot;description&quot;</span>)
+</code></pre></div>
+
+<p>with <code>alt</code> displayed when the image cannot be shown/viewed for some reason, and <code>description</code> appearing when hovering over the image with your mouse. For example:</p>
+<p><img alt="example image" src="images/lachend_kakske.png" title="diefstal in Oostende" /></p>
+<p>Only image formats specified in <code>run_mkdocs.py</code> (i.e. png, jpg, jpeg, gif, svg) are copied to the website; missing extensions can be added. 
+Images from all <code>coconut</code> subdirectories called <code>images</code> are copied to the website, so care must be taken that <code>images</code> is not used in e.g. the output of the test examples.</p>
+<h3 id="style-layout-guide">Style &amp; layout guide</h3>
+<p>This section gives some guidelines about style and layout of MarkDown files, to keep the documentation consistent.</p>
+<ul>
+<li>
+<p>Use code style for:</p>
+<ul>
+<li>class and method names (and plurals): <code>Model</code>, <code>ModelParts</code>,<code>__init__</code>,<code>finalize</code></li>
+<li>JSON keys and values: <code>coupled_solver</code>,<code>delta_t</code></li>
+</ul>
+</li>
+<li>
+<p>Use code style + italics for:</p>
+<ul>
+<li>files: <code>run_simulation.py</code>, <code>parameters.json</code></li>
+<li>folders: <code>data_structure</code></li>
+<li>paths: <code>coupling_components/solver_wrappers/mapped.py</code></li>
+</ul>
+</li>
+<li>
+<p>Use normal text for:</p>
+<ul>
+<li>referring to abstract terms and concepts in CoCoNuT (i.e. not a specific class): solver wrappers, mappers, coupled solver, data structure</li>
+</ul>
+</li>
+<li>
+<p>Titles of MD files (e.g. <code># Mappers</code>, the first line of the MarkDown file):</p>
+<ul>
+<li>should be brief and not repeat information that can be deducted from the structure of the documentation, e.g. for the Fluent solver wrapper: just use <code># Fluent</code> and not <code># Fluent solver wrapper</code>, as it is beneath <code>Solver wrappers</code> on the website.</li>
+<li>don't use class names (and hence no <em>camelcase</em>), e.g. not <code># SolverWrapperOpenFOAM</code></li>
+</ul>
+</li>
+<li>
+<p>If you refer to other MarkDown pages in the documentation, it can be useful to use a <a href="https://pyfsi.github.io/coconut/docs/#links-to-other-markdown-files">relative link</a>.</p>
+</li>
+<li>
+<p>Recommendation for links: it is nice that the link text gives you some information about where the link goes, for example: </p>
+<ul>
+<li>good example: <a href="https://pyfsi.github.io/coconut/">coconut documentation</a></li>
+<li>bad example: <a href="https://www.youtube.com/watch?v=5ZCgbGgA-_8&amp;t=99s">this link</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="creating-a-static-website-with-mkdocs">Creating a static website with MkDocs</h2>
+<p><a href="https://www.mkdocs.org/">MkDocs</a> can be installed using pip: </p>
+<div class="codehilite"><pre><span></span><code>pip install mkdocs-material
+</code></pre></div>
+
+<p>Apart from MkDocs, this also automatically installs the <a href="https://squidfunk.github.io/mkdocs-material/">Material theme</a> and the <a href="https://squidfunk.github.io/mkdocs-material/extensions/pymdown/">PyMdown</a> MD extensions (including Arithmatex). </p>
+<p>To install locally, add a relative or absolute path with the <code>-t</code> argument:</p>
+<div class="codehilite"><pre><span></span><code>pip install mkdocs-material -t /some/absolute/path
+</code></pre></div>
+
+<p>In this case, two lines must be added to your <code>.bashrc</code> file: </p>
+<div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span>/some/absolute/path/bin:<span class="nv">$PATH</span>
+</code></pre></div>
+
+<p>The structure/outline of the website is dictated by the <code>nav</code> variable in <code>mkdocs.yml</code>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
+<p>The complete process to create the documentation website is automated by <code>run_mkdocs.py</code>. This does the following things:</p>
+<ul>
+<li>Copy all MD files in <code>coconut</code> and its subfolders to folder <code>docs</code>. </li>
+<li>Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.</li>
+<li>Check if each MD file is mentioned in <code>mkdocs.yml</code>. If a file is not mentioned, a warning is given.</li>
+<li>Build static HTML website using <code>mkdocs build</code>. </li>
+</ul>
+<p>You can run <code>run_mkdocs.py</code> with an extra command line argument: </p>
+<div class="codehilite"><pre><span></span><code>python run_mkdocs.py --preview example
+</code></pre></div>
+
+<p>opens a preview of the website in Firefox, showing the webpage corresponding to the file <code>example.md</code>. This can be used to check MD and LaTeX syntax. </p>
+<div class="codehilite"><pre><span></span><code>python run_mkdocs.py --deploy
+</code></pre></div>
+
+<p>deploys the website on GitHub Pages using <code>mkdocs gh-deploy</code>. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  </p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="data_structure.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data structure" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Data structure
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="examples.html" class="md-footer__link md-footer__link--next" aria-label="Next: General" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              General
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>
