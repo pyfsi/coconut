@@ -1,7 +1,9 @@
 site_name: CoCoNuT
 repo_url: https://github.com/pyfsi/coconut
 edit_uri: ''
+site_url: ''
 site_description: site_description
+use_directory_urls: false
 theme:
     name: 'material'
     logo: 'images/logo.png'
