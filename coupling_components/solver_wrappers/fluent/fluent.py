@@ -95,6 +95,8 @@ class SolverWrapperFluent(Component):
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
+                    line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
+                                                                                        '\n'))
                     outfile.write(line)
 
         # prepare Fluent UDF

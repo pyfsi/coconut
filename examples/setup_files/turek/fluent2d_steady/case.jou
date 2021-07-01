@@ -39,9 +39,10 @@ define dynamic-mesh controls remeshing n
  (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary fluid constant 0" zone)))
  '(in out box circleoutside)
 )
-define dynamic-mesh zones create fluid deforming y y 0.005 0.05 0.6
+define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
 ;0.00500 0.00250 0.00125
 ;0.0500 0.0250 0.0125
+;0.6 0.6 0.6
 
 solve monitors force drag-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 1 0
 solve monitors force lift-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 0 1
