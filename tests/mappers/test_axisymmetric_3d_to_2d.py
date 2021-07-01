@@ -1,13 +1,14 @@
 from coconut import data_structure
 from coconut.tools import create_instance
+from coconut.tests.mappers import test_axisymmetric_2d_to_3d
 
-import unittest
 import numpy as np
+import unittest
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
+class TestMapperAxisymmetric3DTo2D(test_axisymmetric_2d_to_3d.TestMapperAxisymmetric2DTo3D):
     gui = False
 
     def setUp(self):
@@ -15,53 +16,10 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'n_tangential': 13}
+                                'angle': 180,
+                                'n_tangential': 9}
                            }
-
-    def test_initialize(self):
-        mp_name_in = 'wall_in'
-        mp_name_out = 'wall_out'
-
-        # create model_part_in
-        n_in = 10
-        x_in = np.linspace(0, 2 * np.pi, n_in)
-        y_in = 1. + 0.2 * np.sin(x_in)
-        z_in = np.zeros(10)
-        model = data_structure.Model()
-        model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_in))
-
-        # create reference geometry for 3D model_part_out
-        n_t = self.parameters['settings']['n_tangential']
-        n_out_ref = n_in * n_t
-        x_out_ref = np.zeros(n_out_ref)
-        y_out_ref = np.zeros(n_out_ref)
-        z_out_ref = np.zeros(n_out_ref)
-
-        for i_t in range(n_t):
-            for i_from in range(n_in):
-                start = i_t * n_in
-                end = (i_t + 1) * n_in
-                theta = i_t * 2 * np.pi / n_t
-                x_out_ref[start:end] = x_in
-                y_out_ref[start:end] = np.cos(theta) * y_in
-                z_out_ref[start:end] = np.sin(theta) * y_in
-
-        # initialize mapper to get model_part_out
-        mapper = create_instance(self.parameters)
-        mapper.initialize(model, mp_name_in, mp_name_out, forward=False)
-
-        # get mapped geometry from 3D model_part_out
-        mp_out = model.get_model_part(mp_name_out)
-        n_out = mp_out.size
-        x_out = mp_out.x0
-        y_out = mp_out.y0
-        z_out = mp_out.z0
-
-        # compare mapped and reference geometries
-        self.assertEqual(n_out, n_out_ref)
-        np.testing.assert_array_equal(x_out, x_out_ref)
-        np.testing.assert_array_equal(y_out, y_out_ref)
-        np.testing.assert_array_equal(z_out, z_out_ref)
+        self.forward = False
 
     def test_call(self):
         def fun_s(x):
@@ -79,7 +37,7 @@ class TestMapperAxisymmetric3DTo2D(unittest.TestCase):
         var_s = 'pressure'
         var_v = 'displacement'
 
-        n_to = 7
+        n_to = 10
         tmp = np.linspace(0, 5, n_to)
         x_to, y_to, z_to = tmp, 1. + 0.2 * np.sin(2 * np.pi / 5 * tmp), np.zeros_like(tmp)
 
