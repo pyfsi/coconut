@@ -48,7 +48,10 @@ file start-transcript "transcript.txt"
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
-        (ti-menu-load-string "solve set expert y n y")
+        (if multiphase
+            (ti-menu-load-string "solve set expert y y n y")
+            (ti-menu-load-string "solve set expert y n y")
+        )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
         (ti-menu-load-string "define user-defined compiled-functions compile \"v2019R2\" y \"v2019R2.c\" \"\" \"\"")
