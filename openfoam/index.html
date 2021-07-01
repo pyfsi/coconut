@@ -488,35 +488,35 @@
         
           <li class="md-nav__item">
   <a href="#the-initialize-method" class="md-nav__link">
-    The Initialize method
+    The initialize method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-initializesolutionstep-method" class="md-nav__link">
-    The InitializeSolutionStep method
+  <a href="#the-initialize_solution_step-method" class="md-nav__link">
+    The initialize_solution_step method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-solvesolutionstep-method" class="md-nav__link">
-    The SolveSolutionStep method
+  <a href="#the-solve_solution_step-method" class="md-nav__link">
+    The solve_solution_step method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-finalizesolutionstep-method" class="md-nav__link">
-    The FinalizeSolutionStep method
+  <a href="#the-finalize_solution_step-method" class="md-nav__link">
+    The finalize_solution_step method
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#the-finalize-method" class="md-nav__link">
-    The Finalize method
+    The finalize method
   </a>
   
 </li>
@@ -569,8 +569,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v_41-openfoam-41" class="md-nav__link">
-    v_41 (OpenFOAM 4.1)
+  <a href="#v41-openfoam-41" class="md-nav__link">
+    v41 (OpenFOAM 4.1)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v8-openfoam-8" class="md-nav__link">
+    v8 (OpenFOAM 8)
   </a>
   
 </li>
@@ -1054,35 +1061,35 @@
         
           <li class="md-nav__item">
   <a href="#the-initialize-method" class="md-nav__link">
-    The Initialize method
+    The initialize method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-initializesolutionstep-method" class="md-nav__link">
-    The InitializeSolutionStep method
+  <a href="#the-initialize_solution_step-method" class="md-nav__link">
+    The initialize_solution_step method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-solvesolutionstep-method" class="md-nav__link">
-    The SolveSolutionStep method
+  <a href="#the-solve_solution_step-method" class="md-nav__link">
+    The solve_solution_step method
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-finalizesolutionstep-method" class="md-nav__link">
-    The FinalizeSolutionStep method
+  <a href="#the-finalize_solution_step-method" class="md-nav__link">
+    The finalize_solution_step method
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#the-finalize-method" class="md-nav__link">
-    The Finalize method
+    The finalize method
   </a>
   
 </li>
@@ -1135,8 +1142,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v_41-openfoam-41" class="md-nav__link">
-    v_41 (OpenFOAM 4.1)
+  <a href="#v41-openfoam-41" class="md-nav__link">
+    v41 (OpenFOAM 4.1)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v8-openfoam-8" class="md-nav__link">
+    v8 (OpenFOAM 8)
   </a>
   
 </li>
@@ -1163,8 +1177,8 @@
                 
                 
                 <h1 id="openfoam">OpenFOAM</h1>
-<p>This is the documentation for all OpenFOAM solver wrappers.
-Currently only FSI simulations are supported, no other multiphysics problems.</p>
+<p>This is the documentation for all OpenFOAM solver wrappers. Currently, only FSI simulations are supported, no other
+multiphysics problems.</p>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
 <table>
@@ -1179,22 +1193,12 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <tr>
 <td align="right"><nobr><code>application</code></nobr></td>
 <td align="center">string</td>
-<td>Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with <code>CoCoNuT_</code>.</td>
+<td>Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with <code>coconut_</code>.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>boundary_names</code></nobr></td>
 <td align="center">list</td>
 <td>List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.</td>
-</tr>
-<tr>
-<td align="right"><code>cores</code></td>
-<td align="center">int</td>
-<td>Number of cores on which the OpenFOAM-solver can run. This variable will be replaced in the raw <code>decomposeParDict</code>-file, after which the case is decomposed of the given number of cores.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>decomposeMethod</code></nobr></td>
-<td align="center">string</td>
-<td>Name of the mesh decomposition method to be used in OpenFOAM (e.g. <code>simple</code>,<code>scotch</code>...).</td>
 </tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
@@ -1205,21 +1209,6 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <td align="right"><code>density</code></td>
 <td align="center">int</td>
 <td>The applied density of the fluid in an incompressible case. The density will be applied if <code>is_incompressible</code> is set to <code>true</code>.</td>
-</tr>
-<tr>
-<td align="right"><code>diffusivity</code></td>
-<td align="center">string</td>
-<td>Name of the diffusivity constant used in the mesh motion solver in OpenFOAM (e.g. <code>inverseDistance</code>...).</td>
-</tr>
-<tr>
-<td align="right"><code>dimensions</code></td>
-<td align="center">int</td>
-<td>Dimension used in flow solver: 2 for 2D and axisymmetric, 3 for 3D.</td>
-</tr>
-<tr>
-<td align="right"><code>end_time</code></td>
-<td align="center">double</td>
-<td>Physical end time of the simulation.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>interface_input</code></nobr></td>
@@ -1237,14 +1226,14 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <td>Set it to <code>True</code> if the solver solves incompressible Navier-Stokes equation.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>meshmotion_solver</code></nobr></td>
-<td align="center">string</td>
-<td>Name of the mesh motion solver to be used in OpenFOAM (e.g. <code>displacementLaplacian</code>...).</td>
+<td align="right"><nobr><code>parallel</code></nobr></td>
+<td align="center">boolean</td>
+<td>Set it to <code>True</code> if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the <em><code>&lt;case_directory&gt;/system/decomposeParDict</code></em> file.</td>
 </tr>
 <tr>
-<td align="right"><code>start_time</code></td>
-<td align="center">double</td>
-<td>Physical start time of the simulation. This should correspond to the name of the time step folder in OpenFOAM from which the initial data and boundary conditions are read.</td>
+<td align="right"><nobr><code>residual_variables</code></td>
+<td align="center">list (optional)</td>
+<td>A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in <em><code>&lt;case_directory&gt;/residuals.csv</code></em>.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>time_precision</code></nobr></td>
@@ -1252,14 +1241,9 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 <td>Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>write_interval</code></nobr></td>
-<td align="center">double</td>
-<td>Period between subsequent saves of the entire flow field.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>write_precision</code></nobr></td>
-<td align="center">int</td>
-<td>Number of digits after the decimal sign to be used when writing data to time step folders or the <em><code>postProcessing</code></em> folder.</td>
+<td align="right"><code>timestep_start</code></td>
+<td align="center">int (optional)</td>
+<td>Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>working_directory</code></nobr></td>
@@ -1268,62 +1252,181 @@ Currently only FSI simulations are supported, no other multiphysics problems.</p
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined already in the parameters of the coupled solver. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters, but are usually defined already in the parameters of the
+coupled solver. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone
+testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used, and a
+warning is printed.</p>
 <h2 id="overview-of-the-openfoam-wrapper">Overview of the OpenFOAM-wrapper</h2>
-<p>The solver wrapper can be found in <em><code>solver_wrappers/openfoam</code></em> and consists of a python-file named <em><code>vX.py</code></em>, with <code>X</code> the identifier of the OpenFOAM-version (e.g. <em><code>v41.py</code></em> for OpenFOAM 4.1). Aside from this, the python-file constructs a number of files such as <em><code>controlDict</code></em>, <em><code>pointDisplacement</code></em>, <em><code>dynamicMeshDict</code></em> and <em><code>decomposeParDict</code></em> by starting from the <em><code>&lt;openfoam_input_filename&gt;_raw</code></em>-files in the solver wrapper directory and replacing the names of the settings with their user-defined values (listed in the table above). Finally, using an OpenFOAM-solver in CoCoNuT requires the adaptation of the solver to accommodate communications with the <code>coupled_solvers</code> during the FSI-simulation. Currently, only <code>pimpleFoam</code> and <code>interFoam</code> have been adapted; the solvers called by the solver wrapper have the same name as the original OpenFOAM-solver but with the prefix <code>CoCoNuT_</code>. Upon using the OpenFOAM-wrapper, the solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the OpenFOAM-module and using <code>wmake</code> in the directory <em><code>solver_wrapper/CoCoNuT_&lt;solver_name&gt;</code></em>).</p>
+<p>The solver wrapper can be found in <em><code>solver_wrappers/openfoam</code></em> and consists of a python-file named <em><code>vX.py</code></em>, with <code>X</code>
+the identifier of the OpenFOAM-version (e.g. <em><code>v41.py</code></em> for OpenFOAM 4.1). Finally, using an OpenFOAM-solver in CoCoNuT
+requires the adaptation of the solver to accommodate communications with the <code>coupled_solvers</code> during the
+FSI-simulation. Currently, only <code>pimpleFoam</code> and <code>interFoam</code> have been adapted; the solvers called by the solver wrapper
+have the same name as the original OpenFOAM-solver but with the prefix <code>coconut_</code>. Upon using the OpenFOAM-wrapper, the
+solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the
+OpenFOAM-module and using <code>wmake</code> in the directory <em><code>solver_wrapper/coconut_&lt;solver_name&gt;</code></em>).</p>
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
-<p>During initialization, the case settings as defined in the JSON-file are read into the corresponding python-variables. Afterwards, the required OpenFOAM-files are constructed and some checks are in place to verify whether the correct modules are loaded. Next, the model-parts for the <code>interface_input/output</code> are created. Finally, the variables on each interface are stored in the data-structure of CoCoNuT. </p>
-<h3 id="the-initialize-method">The <code>Initialize</code> method</h3>
-<p>The OpenFOAM-solver, which should be adapted to work with CoCoNuT, is launched in a subprocess. Other variables, such as time step index and physical time, are initialized.</p>
-<h3 id="the-initializesolutionstep-method">The <code>InitializeSolutionStep</code> method</h3>
-<p>This function is called at the start of every time step. The time step index is increased by one, the iteration index is set to zero and the OpenFOAM file directory is made in which the time step data needs to be stored.</p>
-<h3 id="the-solvesolutionstep-method">The <code>SolveSolutionStep</code> method</h3>
-<p>The interface displacement is converted into an OpenFOAM-readable format (with the function <code>write_node_input</code>), after which the OpenFOAM-loop is called in a subprocess. After completion of the OpenFOAM-loop, the function <code>read_node_output</code> is called, which reads the interface loads from the corresponding OpenFOAM-directory (in the <em><code>postProcessing</code></em> folder).</p>
-<h3 id="the-finalizesolutionstep-method">The <code>FinalizeSolutionStep</code> method</h3>
-<p>In this method, it is checked whether the other flow variables need to be written in an OpenFOAM-directory. This save-option is done in OpenFOAM.</p>
-<h3 id="the-finalize-method">The <code>Finalize</code> method</h3>
+<p>During initialization, the case settings as defined in the JSON-file are read into the corresponding python-variables.
+Afterwards, the required OpenFOAM-files are modified, and some checks are in place to verify whether the correct modules
+are loaded. Next, the model-parts for the <code>interface_input/output</code> are created. Finally, the variables on each interface
+are stored in the data-structure of CoCoNuT.</p>
+<h3 id="the-initialize-method">The <code>initialize</code> method</h3>
+<p>The OpenFOAM-solver, which should be adapted to work with CoCoNuT, is launched in a subprocess. Other variables, such as
+time step index and physical time, are initialized.</p>
+<h3 id="the-initialize_solution_step-method">The <code>initialize_solution_step</code> method</h3>
+<p>This function is called at the start of every time step. The time step index is increased by one, the iteration index is
+set to zero, and the OpenFOAM file directory is made in which the time step data needs to be stored.</p>
+<h3 id="the-solve_solution_step-method">The <code>solve_solution_step</code> method</h3>
+<p>The interface displacement is converted into an OpenFOAM-readable format (with the function <code>write_node_input</code>), after
+which the OpenFOAM-loop is called in a subprocess. After completion of the OpenFOAM-loop, the
+function <code>read_node_output</code> is called, which reads the interface loads from the corresponding OpenFOAM-directory (in
+the <em><code>postProcessing</code></em> folder).</p>
+<h3 id="the-finalize_solution_step-method">The <code>finalize_solution_step</code> method</h3>
+<p>In this method, it is checked whether the other flow variables need to be written in an OpenFOAM-directory. This
+save-option is done in OpenFOAM.</p>
+<h3 id="the-finalize-method">The <code>finalize</code> method</h3>
 <p>The OpenFOAM-subprocess, which was launched in the <code>Initialize</code> method, is killed.</p>
 <h2 id="comments">Comments</h2>
 <ul>
-<li>Files with extension <code>.coco</code> are used to pass messages between python-script and OpenFOAM. After sending a message from python to OpenFOAM, the python-script is paused until it receives the corresponding message from OpenFOAM. The OpenFOAM-solver is operating in an infinite <code>while</code>-loop until it receives a message from Python. Upon receipt of this message, OpenFOAM executes the corresponding action after which it sends a response to Python and reverts into its infinite loop (waiting mode). </li>
-<li>The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the CoCoNuT-simulation. It is closed by the Python-code only in the <code>Finalize</code> method, but if CoCoNuT crashes, the OpenFOAM-programme keeps running. The user should take care to kill that OpenFOAM-loop manually (using <code>kill</code> or <code>pkill</code> in the Linux-terminal, e.g. <code>pkill CoCoNuT_*</code>).</li>
-<li>The interface displacement is stored in a <code>pointDisplacement</code> field, which is read in by OpenFOAM in every iteration (this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.</li>
-<li>The interface loads are stored in the directory <em><code>postProcessing</code></em>, under the names <em><code>PRESSURE_&lt;boundary_name&gt;</code></em> and <em><code>TRACTION_&lt;boundary_name&gt;</code></em>. These are constructed from the file <em><code>controlDict</code></em>, defined in the <code>_init_</code> method of the solver wrapper in python.</li>
+<li>Files with extension <code>.coco</code> are used to pass messages between python-script and OpenFOAM. After sending a message
+  from python to OpenFOAM, the python-script is paused until it receives the corresponding message from OpenFOAM. The
+  OpenFOAM-solver is operating in an infinite <code>while</code>-loop until it receives a message from Python. Upon receipt of this
+  message, OpenFOAM executes the corresponding action after which it sends a response to Python and reverts into its
+  infinite loop (waiting mode).</li>
+<li>The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the
+  CoCoNuT-simulation. It is closed by the Python-code only in the <code>Finalize</code> method, but if CoCoNuT crashes, the
+  OpenFOAM-programme keeps running. The user should take care to kill that OpenFOAM-loop manually (using <code>kill</code>
+  or <code>pkill</code> in the Linux-terminal, e.g. <code>pkill coconut_*</code>).</li>
+<li>The interface displacement is stored in a <code>pointDisplacement</code> field, which is read in by OpenFOAM in every iteration (
+  this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.</li>
+<li>The interface loads are stored in the directory <em><code>postProcessing</code></em>, under the names <em><code>PRESSURE_&lt;boundary_name&gt;</code></em>
+  and <em><code>TRACTION_&lt;boundary_name&gt;</code></em>. These are constructed from the file <em><code>controlDict</code></em>, defined in the <code>_init_</code> method
+  of the solver wrapper in python.</li>
 </ul>
 <h2 id="overview-of-an-openfoam-solver-used-in-coconut">Overview of an OpenFOAM-solver used in CoCoNuT</h2>
-<p>Default OpenFOAM-solvers cannot be used in the CoCoNuT-framework, but need to be modified. The adapted solvers are stored in the <em><code>coconut/coupling_components/solver_wrappers</code></em> directory and receive the name <em><code>CoCoNuT_&lt;solver_name&gt;</code></em>, where <code>solver_name</code> is the name of the original solver, e.g. <code>pimpleFoam</code>. If a new solver needs to be adapted to work with CoCoNuT, one of the already established solvers can work as an example. In brief, the following steps should be undertaken:</p>
+<p>Default OpenFOAM-solvers cannot be used in the CoCoNuT-framework, but need to be modified. The adapted solvers are
+stored in the <em><code>coconut/coupling_components/solver_wrappers</code></em> directory and receive the name <em><code>coconut_&lt;solver_name&gt;</code></em>,
+where <code>solver_name</code> is the name of the original solver, e.g. <code>pimpleFoam</code>. If a new solver needs to be adapted to work
+with CoCoNuT, one of the already established solvers can work as an example. In brief, the following steps should be
+undertaken:</p>
 <ul>
-<li>Except for the initial <code>include</code>-statements, the entire solver code should be put in a loop that starts with <code>while(true)</code>.</li>
-<li>Just before this while-loop, add the statement <code>runTime.run();</code>! This is important as it creates and initializes the functionObjects in the <em><code>controlDict</code></em> file which will be used for storing the interface loads.</li>
-<li>Due to the fact that the infinite loop is driven by <code>while(true)</code> and not the default OpenFOAM-expression <code>while(runTime.run())</code>, OpenFOAM does not check itself whether the final time step is reached. In proper CoCoNuT-operation, OpenFOAM is killed when the solver wrapper reaches the final time step.</li>
-<li>Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional statements. </li>
-<li>The while-loop contains several conditional statements, each of which check whether the python-code in CoCoNuT has sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: <em><code>next.coco</code></em>, <em><code>continue.coco</code></em>, <em><code>save.coco</code></em>, <em><code>stop.coco</code></em>.     </li>
-<li>If the file <em><code>next.coco</code></em> exists, the runTime-object should be increased by one. OpenFOAM should create a file <em><code>next_ready.coco</code></em> upon completion. Do not forget to delete the original <em><code>next.coco</code></em> file, which is advised to do just before creating the <em><code>next_ready.coco</code></em>, so near the end of the <code>if</code>-clause.</li>
-<li>If the file <em><code>continue.coco</code></em> exists, the flow equations need to be solved. This <code>if</code>-statement consequently contains most of the original solver definition, in which the flow equations are called in the same order as in the original CFD solver. OpenFOAM should create a file <em><code>continue_ready.coco</code></em> upon completion. Do not forget to delete the original <code>continue.coco</code>-file, which is advised to do just before creating the <code>continue_ready.coco</code>, so near the end of the <code>if</code>-clause.</li>
-<li>If the file <em><code>save.coco</code></em> exists, OpenFOAM checks whether the flow variables should be stored in corresponding files, according to the user-defined save interval. OpenFOAM should create a file <em><code>save_ready.coco</code></em> upon completion. Do not forget to delete the original <em><code>save.coco</code></em> file, which is advised to do just before creating the <em><code>save_ready.coco</code></em>, so near the end of the <code>if</code>-clause.</li>
-<li>If the file <em><code>stop.coco</code></em> exists, a <code>break</code>-statement should end the infinite loop (the subprocess is also killed in the python-code). OpenFOAM should create a file <em><code>stop_ready.coco</code></em> before breaking the <code>while</code>-loop. Do not forget to delete the original <em><code>stop.coco</code></em> file, which is advised to do just before creating the <em><code>stop_ready.coco</code></em>, so near the end of the <code>if</code>-clause.</li>
+<li>Except for the initial <code>include</code>-statements, the entire solver code should be put in a loop that starts
+  with <code>while(true)</code>.</li>
+<li>Just before this while-loop, add the statement <code>runTime.run();</code>! This is important as it creates and initializes the
+  functionObjects in the <em><code>controlDict</code></em> file which will be used for storing the interface loads.</li>
+<li>Due to the fact that the infinite loop is driven by <code>while(true)</code> and not the default
+  OpenFOAM-expression <code>while(runTime.run())</code>, OpenFOAM does not check itself whether the final time step is reached. In
+  proper CoCoNuT-operation, OpenFOAM is killed when the solver wrapper reaches the final time step.</li>
+<li>Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional
+  statements.</li>
+<li>The while-loop contains several conditional statements, each of which check whether the python-code in CoCoNuT has
+  sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the
+  OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: <em><code>next.coco</code></em>
+  , <em><code>continue.coco</code></em>, <em><code>save.coco</code></em>, <em><code>stop.coco</code></em>.</li>
+<li>If the file <em><code>next.coco</code></em> exists, the runTime-object should be increased by one. OpenFOAM should create a
+  file <em><code>next_ready.coco</code></em> upon completion. Do not forget to delete the original <em><code>next.coco</code></em> file, which is advised to
+  do just before creating the <em><code>next_ready.coco</code></em>, so near the end of the <code>if</code>-clause.</li>
+<li>If the file <em><code>continue.coco</code></em> exists, the flow equations need to be solved. This <code>if</code>-statement consequently contains
+  most of the original solver definition, in which the flow equations are called in the same order as in the original
+  CFD solver. OpenFOAM should create a file <em><code>continue_ready.coco</code></em> upon completion. Do not forget to delete the
+  original <code>continue.coco</code>-file, which is advised to do just before creating the <code>continue_ready.coco</code>, so near the end
+  of the <code>if</code>-clause.</li>
+<li>If the file <em><code>save.coco</code></em> exists, OpenFOAM checks whether the flow variables should be stored in corresponding files,
+  according to the user-defined save interval. OpenFOAM should create a file <em><code>save_ready.coco</code></em> upon completion. Do not
+  forget to delete the original <em><code>save.coco</code></em> file, which is advised to do just before creating the <em><code>save_ready.coco</code></em>,
+  so near the end of the <code>if</code>-clause.</li>
+<li>If the file <em><code>stop.coco</code></em> exists, a <code>break</code>-statement should end the infinite loop (the subprocess is also killed in
+  the python-code). OpenFOAM should create a file <em><code>stop_ready.coco</code></em> before breaking the <code>while</code>-loop. Do not forget to
+  delete the original <em><code>stop.coco</code></em> file, which is advised to do just before creating the <em><code>stop_ready.coco</code></em>, so near
+  the end of the <code>if</code>-clause.</li>
 </ul>
 <h2 id="setting-up-a-new-case">Setting up a new case</h2>
 <p>Following items should be present in the OpenFOAM-directory prior to launching CoCoNuT:</p>
 <ul>
-<li>The entire framework of the CFD-case in OpenFOAM which is to be used in the CoCoNuT simulation (so it should contain the <code>constant</code> and <code>system</code> directory as well as a time step directory). The working directory should be defined as if you would like to run it as a CFD case. The working directory is defined in a JSON-file and therefore the CoCoNuT-files do not need to be in the same folder as the OpenFOAM-case.</li>
-<li>a JSON-file containing all of the settings stipulated above.</li>
+<li>The entire framework of the CFD-case in OpenFOAM which is to be used in the CoCoNuT simulation (so it should contain
+  the <code>constant</code> and <code>system</code> directory as well as the <em><code>0</code></em> directory). The working directory should be defined as if
+  you would like to run it as a CFD case. The working directory is defined in a JSON-file and therefore the
+  CoCoNuT-files do not need to be in the same folder as the OpenFOAM-case.</li>
+<li>a JSON-file containing all the settings stipulated above.</li>
 </ul>
-<p>Following items are taken care of by CoCoNuT, and must therefore not be included in the original OpenFOAM-directory:</p>
+<p>Following files are modified or used as a reference to create files by CoCoNuT, and must be included in the original
+OpenFOAM-directory:</p>
 <ul>
-<li><em><code>controlDict</code></em>-file with the necessary function objects to define the interface pressure/traction</li>
-<li><em><code>dynamicMeshDict</code></em>-file which contains the settings for OpenFOAM's dynamic motion solver</li>
-<li><em><code>decomposeParDict</code></em>-file with the necessary decomposition of the fluid domain (if <code>cores</code>&gt;1)</li>
+<li><em><code>system/controlDict</code></em> with compulsory arguments:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">key</th>
+<th align="left">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>writeControl</code></td>
+<td align="left"><code>timeStep</code></td>
+</tr>
+<tr>
+<td align="center"><code>writeInterval</code></td>
+<td align="left">required write interval</td>
+</tr>
+<tr>
+<td align="center"><code>writeFormat</code></td>
+<td align="left"><code>ascii</code></td>
+</tr>
+<tr>
+<td align="center"><code>timeFormat</code></td>
+<td align="left"><code>fixed</code></td>
+</tr>
+<tr>
+<td align="center"><code>timePrecision</code></td>
+<td align="left">required time precision based on <code>delta_t</code> (used in the names of time step folders)</td>
+</tr>
+<tr>
+<td align="center"><code>runTimeModifiable</code></td>
+<td align="left"><code>false</code></td>
+</tr>
+<tr>
+<td align="center"><code>adjustTimeStep</code></td>
+<td align="left"><code>no</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><em><code>constant/dynamicMeshDict</code></em>which contains the settings for OpenFOAM's dynamic motion solver</li>
+<li><em><code>system/decomposeParDict</code></em> with the necessary decomposition of the fluid domain (if <code>cores</code>&gt;1)</li>
+<li><em><code>0/pointDisplacement</code></em> with all the boundary conditions, including <code>fixedValue</code> boundary condition for the FSI
+  boundaries. This is used as a template for the <em><code>pointDisplacement_Next</code></em> to supply displacement boundary conditon (
+  from structural solver) for the FSI-interface.</li>
 </ul>
 <h3 id="comments_1">Comments</h3>
 <ul>
-<li>It is probably best to derive a new case from the directory containing FSI simulation with OpenFOAM in <em><code>coconut/examples/</code></em> in order to copy its structure.</li>
-<li>If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers. You should compile the new solver before loading the CoCoNuT-modules as the overwriting of compiler modules can break the  <code>wmake</code>-command. Once the new solver is compiled, it works fine even after loading the CoCoNuT-modules.</li>
-<li>OpenFOAM is known for generating a lot of files, which is not different in CoCoNuT-operation. Make sure you have sufficient storage space on your cluster and that you are able to write a large number of files (the latter is specifically important when storing data in your home-directory).</li>
+<li>It is probably best to derive a new case from the directory containing FSI simulation with OpenFOAM
+  in <em><code>coconut/examples/</code></em> in order to copy its structure.</li>
+<li>If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the
+  solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers. You
+  should compile the new solver before loading the CoCoNuT-modules as the overwriting of compiler modules can break
+  the  <code>wmake</code>-command. Once the new solver is compiled, it works fine even after loading the CoCoNuT-modules.</li>
+<li>OpenFOAM is known for generating a lot of files, which is not different in CoCoNuT-operation. Make sure you have
+  sufficient storage space on your cluster and that you are able to write large number of files (the latter is
+  specifically important when storing data in your home-directory).</li>
 </ul>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="v_41-openfoam-41">v_41 (OpenFOAM 4.1)</h3>
-<p>This is currently the only version.</p>
+<h3 id="v41-openfoam-41">v41 (OpenFOAM 4.1)</h3>
+<p>First version.</p>
+<h3 id="v8-openfoam-8">v8 (OpenFOAM 8)</h3>
+<p>In this OpenFOAM version, the name of some commands and classes are different. The required changes are visible in the
+version specific solver wrapper python file <em><code>v8.py</code></em>.</p>
+<p>Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:</p>
+<ul>
+<li>The interpolation point for <code>arc</code> definitions using <code>blockMesh</code> has to be on the arc and not just on its 'elongation'</li>
+<li>Using a macro expansion, such as <code>$R</code>, in combination with <code>#calc</code>, where an operator follows the macro expansion,
+  requires using protection: use <code>#calc "${R}/2</code> instead of <code>#calc "$R/2</code></li>
+<li>The file <em><code>constant/turbulenceProperties</code></em> has been renamed to <em><code>constant/momentumTransport</code></em></li>
+<li>The keyword <code>residualControl</code> in the <code>PIMPLE</code> dictionary is now called <code>outerCorrectorResidualControl</code>. The
+  keyword <code>residualControl</code> still exists, but has a different meaning and is used as in <code>SIMPLE</code>.</li>
+<li>The file <em><code>system/fvSolution</code></em> requires dictionaries <code>pcorr</code> and <code>pcorrFinal</code>, if the keyword <code>correctPhi</code> is <code>true</code>
+  in <em><code>system/fvSolution</code></em>, which it is by default. The tolerance settings should be sufficiently low (similar to <code>p</code>).</li>
+</ul>
                 
               
               

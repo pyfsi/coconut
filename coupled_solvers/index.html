@@ -1383,12 +1383,12 @@ A considerable convergence stabilization and acceleration is obtained by modifyi
 <tr>
 <td align="right"><code>save_restart</code></td>
 <td align="center">int</td>
-<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained.</td>
+<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers a <a href="#save-results">results save</a>, if <code>save_results</code> is non-zero.</td>
 </tr>
 <tr>
 <td align="right"><code>save_results</code></td>
-<td align="center">bool</td>
-<td>(optional) Default: <code>false</code>. If <code>true</code> a pickle file is stored containing some main <a href="#save-results">results</a>.</td>
+<td align="center">int</td>
+<td>(optional) Default: <code>0</code>. Time step interval at which a pickle file is written containing some main <a href="#save-results">results</a> for ALL previous time steps. If <code>0</code>, no such information is stored and no pickle file is written.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>time_step_start</code></nobr></td>
@@ -1670,8 +1670,8 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 </tr>
 <tr>
 <td align="right"><code>save_results</code></td>
-<td align="center">bool</td>
-<td>(optional) If <code>true</code> a pickle file is stored containing some main <a href="#save-results">results</a>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>false</code>.</td>
+<td align="center">int</td>
+<td>(optional) Default: <code>0</code>. Time step interval at which a pickle file is written containing some main <a href="#save-results">results</a> for ALL previous time steps. If <code>0</code>, no such information is stored and no pickle file is written. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>0</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>solver_index</code></td>
@@ -1698,7 +1698,10 @@ The optional pickle file, which saves some <a href="#save-results">results</a>, 
 <p>During run time, the norm of <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
-<p>In each coupled solver, the <code>save_results</code> key can be set on <code>true</code>, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is saved after every time step and may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:</p>
+<p>In each coupled solver, a positive non-zero value can be assigned to the <code>save_results</code> parameter, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by <code>save_results</code>, but contains information for all time steps.
+In other words, if the parameter is non-zero, it only controls the writing frequency and not the content of the file. If <code>save_results</code> is zero, no result are kept and no file is written.
+For a non-zero value of <code>save_restart</code>, a save for <a href="#saving-restart-files">restart purposes</a> also triggers the saving of the results file.
+The pickle file may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:</p>
 <table>
 <thead>
 <tr>
@@ -1761,7 +1764,7 @@ The optional pickle file, which saves some <a href="#save-results">results</a>, 
 <tr>
 <td align="right"><code>info</code></td>
 <td align="center">string</td>
-<td>Additional info, such as date and restart history.</td>
+<td>Additional info, such as date, restart history and hostname of machine on which simulation is run.</td>
 </tr>
 </tbody>
 </table>
@@ -1808,7 +1811,9 @@ Only when both solver wrappers allow restart, is is possible to restart a calcul
 <p>During a calculation it is possible to save restart pickle files.
 As described above the pickle file for restart has a name (<em><code>&lt;name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>), based on the setting <code>case_name</code>.</p>
 <p>The frequency of saving a restart pickle file is determined by the <code>save_restart</code> interval as described above.
-Remark that it is only useful to save the restart pickle file, when the solver data are saved as well.</p>
+Remark that it is only useful to save the restart pickle file, when the solver data are saved as well.
+Therefore, the <code>save_restart</code> parameter is transferred automatically to the solver wrappers.</p>
+<p>If <code>save_results</code> is non-zero, a save of restart information also triggers the saving of the <a href="#save-results">results pickle file</a>, to avoid discontinuity of this file.</p>
 <h3 id="performing-restart">Performing restart</h3>
 <p>To restart a case, <code>timestep_start</code> has to be a positive integer above zero.
 The first time step that will be calculated is <code>timestep_start</code> plus one.

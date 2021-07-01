@@ -1018,9 +1018,10 @@
 <p>This example calculates the well-known Turek benchmark, which consist laminar incompressible flow around a flexible flag attached to a rigid cylinder in a 2D channel.
 The material parameters and boundary conditions correspond to the FSI1 setup, as detailed by Turek and Hron [<a href="#1">1</a>].
 This is a steady simulation.
-The used solvers are Fluent and Abaqus.</p>
+The used solvers are Fluent and Abaqus.
+A script <em><code>evaluate_benchmark.py</code></em> is provided to compare the results with the benchmark results in [<a href="#1">1</a>].</p>
 <p>The figure below shows the resulting velocity contour plot (with Fluent).
-<img alt="FSI1" src="../images/turek_steady.png" title="Velocity contour plot of FSI1 setup produced with Fluent" /></p>
+<img alt="FSI1" src="../images/turek_fsi1_velocity.png" title="Velocity contour plot of FSI1 setup produced with Fluent" /></p>
 <p>In the FSI1 setup a parabolic velocity profile is subscribed at the inlet with an average velocity of 0.2 m/s.
 The flow is intialized with a velocity in the x-direction equal to 0.2 m/s.<br />
 The fluid paramters are:</p>

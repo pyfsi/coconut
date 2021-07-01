@@ -268,6 +268,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#checking-the-solver-modules" class="md-nav__link">
+    Checking the solver modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#quick-test" class="md-nav__link">
     Quick test
   </a>
@@ -1038,6 +1045,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#checking-the-solver-modules" class="md-nav__link">
+    Checking the solver modules
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#quick-test" class="md-nav__link">
     Quick test
   </a>
@@ -1145,12 +1159,12 @@ We develop high-performance quasi-Newton algorithms to accelerate convergence of
 <h3 id="requirements">Requirements</h3>
 <ul>
 <li><code>python&gt;=3.6</code> </li>
-<li><code>numpy&gt;=1.16.2</code></li>
-<li><code>scipy&gt;=1.2.1</code></li>
+<li><code>numpy&gt;=1.16.4</code></li>
+<li><code>scipy&gt;=1.3.0</code></li>
 <li><code>pandas&gt;=0.24.2</code> (required for <a href="coupling_components/solver_wrappers/kratos">Kratos solver wrapper</a>)</li>
-<li><code>matplotlib=3.03</code> (recommended)</li>
+<li><code>matplotlib=3.1.0</code> (recommended)</li>
 </ul>
-<p>We recommend Anaconda 2019.03 or newer.</p>
+<p>We recommend Anaconda 2019.07 or newer.</p>
 <h3 id="installation-procedure">Installation procedure</h3>
 <p>CoCoNuT does not need to be compiled, hence installation is straightforward. 
 The source code can be downloaded as a zip file, or cloned directly from GitHub. For users that have no experience with Git or GitHub, we recommend the first option. The second option makes it easier to update the software and contribute to the code. </p>
@@ -1191,7 +1205,19 @@ For example, with a folder structure like</p>
 </code></pre></div>
 
 
-<p>This line can also be added to your <em><code>.bashrc</code></em> file. </p>
+<p>This line can also be added to your <em><code>.bashrc</code></em> file.</p>
+<h3 id="checking-the-solver-modules">Checking the solver modules</h3>
+<p>Before using CoCoNuT, it is necessary to adapt some system specific commands in the <em><code>solver_modules.py</code></em> file in the <em><code>coconut</code></em> folder.
+This file has the commands to load solver modules in separate environments when running a case, to avoid conflicts. As these commands are system specific, it is important to check this file before testing CoCoNuT. 
+The file contains a nested dictionary <code>solver_load_cmd_dict</code>, which has keys such as <code>ugent_cluster_SL6.3</code> or <code>ugent_cluster_CO7</code> denoting the machine on which CoCoNuT is installed.
+In their turn, each of these dictionaries contains keys for all solvers that are available on that machine and can be used in CoCoNuT. 
+The values are strings containing terminal commands to load the software, thus setting the environment which allows running the solver. 
+For example, on the UGent cluster, the <a href="https://lmod.readthedocs.io/en/latest/">Lmod system</a> is used, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. 
+If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semi-colon (;) or double ampersand (&amp;&amp;) can be used.
+Since <code>machine_name</code> is set to <code>ugent_cluster_SL6.3</code>, this dictionary is used by default.
+In case your system differs from the <code>ugent_cluster_SL6.3</code> settings, it is advised to add your own internal dictionary to <code>solver_load_cmd_dict</code> and provide this key to <code>machine_name</code>.
+If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
+When CoCoNuT tries to use a solver module that is not present in the <code>solver_load_cmd_dict</code> or that has the wrong value, an error will be raised.</p>
 <h3 id="quick-test">Quick test</h3>
 <p>We recommend to run the unit tests at the end of the installation, to make sure that everything works. </p>
 <ul>
@@ -1218,15 +1244,15 @@ For example, with a folder structure like</p>
 
 <p>This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file <em><code>parameters.json</code></em> will be used to run the actual FSI simulation, but we will come back to that later. 
 First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
-In this case we provide a bash script <em><code>setup.sh</code></em> that sets up both solvers using the files in the folder <em><code>../setup_files</code></em>. When the script is run with</p>
-<div class="codehilite"><pre><span></span><code>./setup.sh
+In this case we provide a script <em><code>setup.py</code></em> that sets up both solvers using the files in the folder <em><code>../setup_files</code></em>. When the script is run with</p>
+<div class="codehilite"><pre><span></span><code>python3 setup.py
 </code></pre></div>
 
 
 <p>new folders <em><code>CFD</code></em> and <em><code>CSM</code></em> appear, as well as the file <em><code>run_simulation.py</code></em>. The <em><code>CFD</code></em> folder contains all files required to start a simulation of the flow in the tube. 
 Analogously, the <em><code>CSM</code></em> folder contains all files required to start a simulation of the tube structure.</p>
 <p>We can now start the FSI simulation in CoCoNuT by running the Python file <em><code>run_simulation.py</code></em>:</p>
-<div class="codehilite"><pre><span></span><code>python run_simulation.py
+<div class="codehilite"><pre><span></span><code>python3 run_simulation.py
 </code></pre></div>
 
 

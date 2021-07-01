@@ -1357,7 +1357,7 @@ This transformer can be initialized in both directions. </p>
 </table>
 <h3 id="mapperaxisymmetric2dto3d"><code>MapperAxisymmetric2DTo3D</code></h3>
 <p>Transforms a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the <em>forward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>upstream</em> of the interpolator in the combined mapper.</p>
-<p>The 3D <code>ModelPart</code> is returned by the initialization. <code>n_tangential</code> specifies the number of points in the tangential (circumferential) direction, so that for each point in the 2D <code>ModelPart</code>, <code>n_tangential</code> points are created in the 3D <code>ModelPart</code>. It is important to make the value of <code>n_tangential</code> large enough, ideally close to the number of points in the tangential direction in the 3D solver. The code knows which directions are axial, radial and tangential thanks to the input parameters <code>direction_axial</code> and <code>direction_radial</code>. </p>
+<p>The 3D <code>ModelPart</code> is returned by the initialization.<code>angle</code> defines the 3D geometry and is based on the geometry of the 3D solver, e.g. the geometry of an axisymmtric simulation with an OpenFoam solver is defined with an angle of 5°.  <code>n_tangential</code> specifies the number of points in the tangential (circumferential) direction, so that for each point in the 2D <code>ModelPart</code>, <code>n_tangential</code> points are created in the 3D <code>ModelPart</code>. It is important to make the value of <code>n_tangential</code> large enough, ideally close to the number of points in the tangential direction in the 3D solver. The code knows which directions are axial, radial and tangential thanks to the input parameters <code>direction_axial</code> and <code>direction_radial</code>. </p>
 <p>It is not possible to change the axial direction between 2D and 3D: a separate <code>MapperPermutation</code> should be added to the combined mapper for that purpose. </p>
 <p>Scalar data is simply copied from the 2D point to all corresponding 3D points. For vector data, the axial component is simply copied, the radial component is rotated. The tangential component (e.g. swirl) is not taken into account currently.</p>
 <p>Points that lie on the symmetry axis can not be handled by the current transformer.</p>
@@ -1383,7 +1383,12 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><code>n_tangential</code></td>
 <td align="center">int</td>
-<td>Degrees of freedom in tangential (circumferential) direction of 3D <code>ModelPart</code> that is created during initialization. Must be <span><span class="MathJax_Preview">\geq 6</span><script type="math/tex">\geq 6</script></span>.</td>
+<td>Degrees of freedom in tangential (circumferential) direction of 3D <code>ModelPart</code> that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle.</td>
+</tr>
+<tr>
+<td align="right"><code>angle</code></td>
+<td align="center">int</td>
+<td>(optional) Default: <code>360</code>. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.</td>
 </tr>
 </tbody>
 </table>
