@@ -140,7 +140,7 @@ JSON setting|type|description
 
 Transforms a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the _forward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _upstream_ of the interpolator in the combined mapper.
 
-The 3D `ModelPart` is returned by the initialization. `n_tangential` specifies the number of points in the tangential (circumferential) direction, so that for each point in the 2D `ModelPart`, `n_tangential` points are created in the 3D `ModelPart`. It is important to make the value of `n_tangential` large enough, ideally close to the number of points in the tangential direction in the 3D solver. The code knows which directions are axial, radial and tangential thanks to the input parameters `direction_axial` and `direction_radial`. 
+The 3D `ModelPart` is returned by the initialization.`angle` defines the 3D geometry and is based on the geometry of the 3D solver, e.g. the geometry of an axisymmtric simulation with an OpenFoam solver is defined with an angle of 5°.  `n_tangential` specifies the number of points in the tangential (circumferential) direction, so that for each point in the 2D `ModelPart`, `n_tangential` points are created in the 3D `ModelPart`. It is important to make the value of `n_tangential` large enough, ideally close to the number of points in the tangential direction in the 3D solver. The code knows which directions are axial, radial and tangential thanks to the input parameters `direction_axial` and `direction_radial`. 
 
 It is not possible to change the axial direction between 2D and 3D: a separate `MapperPermutation` should be added to the combined mapper for that purpose. 
 
@@ -153,7 +153,8 @@ JSON setting|type|description
 ------:|:----:|-----------
 `direction_axial`|string|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
 <nobr>`direction_radial`</nobr>|string|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
-`n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. Must be $\geq 6$.
+`n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle.
+`angle`|int|(optional) Default: `360`. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.  
 
 
 ### `MapperAxisymmetric3DTo2D`
