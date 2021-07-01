@@ -1,0 +1,52 @@
+/BREAKING DAM
+    /PARAMETERS
+$A = 0.100
+$H = 0.140
+$L = 0.079
+$S = 0.005
+$G = 0.0025
+$beamtopoutsideintervals = 6
+$beamoutsideintervals = 36
+$growth = 1.03
+$sizelimit = 0.010
+    /CODE
+save name "mesh_breaking_dam.dbs"
+solver select "FLUENT 5/6"
+vertex create "BoxBottomLeft" coordinates (-3.0*$A) 0 0
+vertex create "BoxBottomRight" coordinates $A 0 0
+vertex create "BoxTopLeft" coordinates (-3.0*$A) ($G+$L) 0
+vertex create "BoxTopMiddle" coordinates 0 (1.1*$H) 0
+vertex create "BoxTopRight" coordinates $A (1.1*$H) 0
+vertex create "BeamBottomLeft" coordinates -$S $G 0
+vertex create "BeamBottomRight" coordinates 0 $G 0
+vertex create "BeamTopLeft" coordinates -$S ($G+$L) 0
+vertex create "BeamTopRight" coordinates 0 ($G+$L) 0
+edge create "BoxTopLeft" straight "BoxTopLeft" "BeamTopLeft"
+edge create "BoxTopMiddle" straight "BoxTopMiddle" "BeamTopRight"
+edge create "BoxTopRight" straight "BoxTopRight" "BoxTopMiddle"
+edge create "BoxLeft" straight "BoxTopLeft" "BoxBottomLeft"
+edge create "BoxRight" straight "BoxTopRight" "BoxBottomRight"
+edge create "BoxBottom" straight "BoxBottomLeft" "BoxBottomRight"
+edge create "BeamBottom" straight "BeamBottomLeft" "BeamBottomRight"
+edge create "BeamLeft" straight "BeamTopLeft" "BeamBottomLeft"
+edge create "BeamRight" straight "BeamTopRight" "BeamBottomRight"
+face create "Fluid" wireframe "BoxTopLeft" "BeamLeft" "BeamBottom" "BeamRight" "BoxTopMiddle" "BoxTopRight" "BoxRight" "BoxBottom" "BoxLeft" real
+edge mesh "BeamLeft" lastlength ratio1 ($S/$beamtopoutsideintervals) intervals $beamoutsideintervals
+edge mesh "BeamRight" lastlength ratio1 ($S/$beamtopoutsideintervals) intervals $beamoutsideintervals
+edge mesh "BeamBottom" intervals $beamtopoutsideintervals
+sfunction create "SizeFunction1" sourceedges "BeamLeft" "BeamBottom" "BeamRight" growthrate $growth sizelimit $sizelimit attachfaces "Fluid" meshed
+sfunction bgrid attachfaces "Fluid"
+face mesh "Fluid" triangle
+physics create "BoxLeft" btype "WALL" edge "BoxLeft"
+physics create "BoxTopLeft" btype "PRESSURE_OUTLET" edge "BoxTopLeft"
+physics create "BoxTopMiddle" btype "WALL" edge "BoxTopMiddle"
+physics create "BoxTopRight" btype "PRESSURE_OUTLET" edge "BoxTopRight"
+physics create "BoxRight" btype "WALL" edge "BoxRight"
+physics create "BoxBottom" btype "WALL" edge "BoxBottom"
+physics create "BeamLeft" btype "WALL" edge "BeamLeft"
+physics create "BeamBottom" btype "WALL" edge "BeamBottom"
+physics create "BeamRight" btype "WALL" edge "BeamRight"
+physics create "Fluid" ctype "FLUID" face "Fluid"
+export fluent5 "mesh_breaking_dam.msh" nozval
+save
+end
