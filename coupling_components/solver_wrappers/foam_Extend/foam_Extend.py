@@ -338,8 +338,8 @@ class SolverWrapperFoamExtend(Component):
         return self.interface_output
 
     def compile_adapted_foam_Extend_solver(self):
-        # compile openfoam adapted solver
-        solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
+        # compile foam-Extend adapted solver
+        solver_dir = os.path.join(os.path.dirname(__file__), f'vFE{self.version.replace(".", "")}', self.application)
         try:
             check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
         except subprocess.CalledProcessError:
@@ -379,7 +379,7 @@ class SolverWrapperFoamExtend(Component):
         #     density = self.settings['density']
 
         for boundary in self.boundary_names:
-            # specify location of pressure and traction
+            # specify location of displacement
             displacement_name = 'DISPLACEMENT_' + boundary
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
@@ -387,18 +387,18 @@ class SolverWrapperFoamExtend(Component):
             disp_filename = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
                                         self.cur_timestamp, f'DU_patch_{boundary}.raw')
 
-            # check if the pressure and wall shear stress files completed by openfoam and read data
+            # check if the displacement file completed by foam-Extend and read data
             self.check_output_file(disp_filename, nfaces)
-            wss_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
+            disp_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
 
             if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
 
-            displacement = np.empty_like(wss_tmp)
+            displacement = np.empty_like(disp_tmp)
 
-            displacement[pos_list, ] = wss_tmp[:, ]
+            displacement[pos_list, ] = disp_tmp[:, ]
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
 
