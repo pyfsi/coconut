@@ -171,23 +171,26 @@ class SolverWrapperFoamExtend(Component):
                     print(f'nNodes: {mp_output.size}')
                     raise ValueError('Number of face indices in sequence does not correspond to number of faces')
 
-        # starting the OpenFOAM infinite loop for coupling!
+        # starting the FOAM-Extend infinite loop for coupling!
         if not self.settings['parallel']:
             cmd = self.application + '&> log.' + self.application
         else:
             cmd = 'mpirun -np ' + str(self.cores) + ' ' + self.application + ' -parallel &> log.' + self.application
 
-        self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
+        self.foam_Extend_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        # for parallel: create a folder with the correct time stamp for decomposition of pressure_Next and traction_Next
+        # for parallel: create a folder with the correct time stamp for decomposition of pressure and traction
         # for serial: folder will normally be present, except for time 0: make a folder 0.0000 with specified precision
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
         path = os.path.join(self.working_directory, timestamp)
+        for boundary in self.boundary_names:
+            path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, timestamp)
         if self.cores > 1 or self.physical_time == 0:
             os.makedirs(path, exist_ok=True)
+            os.makedirs(path_boundaryData, exist_ok=True)
 
         # prepare new time step folder and reset the number of iterations
         self.timestep += 1
@@ -199,18 +202,33 @@ class SolverWrapperFoamExtend(Component):
 
         if not self.settings['parallel']:  # if serial
             new_path = os.path.join(self.working_directory, self.cur_timestamp)
+            for boundary in self.boundary_names:
+                new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, self.cur_timestamp)
             if os.path.isdir(new_path):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                 check_call(f'rm -rf {new_path}', shell=True)
+            if os.path.isdir(new_path_boundaryData):
+                tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                check_call(f'rm -rf {new_path_boundaryData}', shell=True)
             check_call(f'mkdir -p {new_path}', shell=True)
+            check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+
+        #TODO: Parallel running isn't checked yet! A prelimanary implementation has been done.
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
+                for boundary in self.boundary_names:
+                    new_path_boundaryData = os.path.join(self.working_directory,
+                                                     'constant/boundaryData', boundary, self.cur_timestamp)
                 if os.path.isdir(new_path):
                     if i == 0:
                         tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                     check_call(f'rm -rf {new_path}', shell=True)
+                if os.path.isdir(new_path_boundaryData):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                    check_call(f'rm -rf {new_path_boundaryData}', shell=True)
                 check_call(f'mkdir -p {new_path}', shell=True)
+                check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -225,43 +243,49 @@ class SolverWrapperFoamExtend(Component):
         # write interface data to OpenFOAM-file
         self.write_node_input()
 
-        # copy output data for debugging
+        # copy input data for debugging
         if self.debug:
-            if self.cores > 1:
-                for i in range(0, self.cores):
-                    path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-                                             'pointDisplacement_Next')
-                    path_to = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-                                           'pointDisplacement_Next_Iter' + str(self.iteration))
-                    shutil.copy(path_from, path_to)
-            else:
-                path_from = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
-                path_to = os.path.join(self.working_directory, self.prev_timestamp,
-                                       'pointDisplacement_Next_Iter' + str(self.iteration))
-                shutil.copy(path_from, path_to)
+            for boundary in self.boundary_names:
+                path_from_pressure = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                  self.cur_timestamp, 'pressure')
+                path_to_pressure = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                self.cur_timestamp, f'pressure_{self.iteration}')
+                shutil.copy(path_from_pressure, path_to_pressure)
+
+                path_from_traction = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                  self.cur_timestamp, 'traction')
+                path_to_traction = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                self.cur_timestamp, f'traction_{self.iteration}')
+                shutil.copy(path_from_traction, path_to_traction)
+
+        #     if self.cores > 1:
+        #         for i in range(0, self.cores):
+        #             path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
+        #                                      'pointDisplacement_Next')
+        #             path_to = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
+        #                                    'pointDisplacement_Next_Iter' + str(self.iteration))
+        #             shutil.copy(path_from, path_to)
+        #     else:
+        #         path_from = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
+        #         path_to = os.path.join(self.working_directory, self.prev_timestamp,
+        #                                'pointDisplacement_Next_Iter' + str(self.iteration))
+        #         shutil.copy(path_from, path_to)
 
         self.delete_prev_iter_output()
-
         self.send_message('continue')
         self.wait_message('continue_ready')
 
         # copy output data for debugging
         if self.debug:
             for boundary in self.boundary_names:
-                # specify location of pressure and traction
-                traction_name = 'TRACTION_' + boundary
-                pressure_name = 'PRESSURE_' + boundary
-                wss_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                            self.cur_timestamp, f'wallShearStress_patch_{boundary}.raw')
-                pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                             self.cur_timestamp, f'p_patch_{boundary}.raw')
-                wss_iter_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                # specify location of displacement
+                displacement_name = 'DISPLACEMENT_' + boundary
+                disp_filepath = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
+                                            self.cur_timestamp, f'DU_patch_{boundary}.raw')
+                disp_iter_filepath = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
                                                  self.cur_timestamp,
-                                                 f'wallShearStress_patch_{boundary}_{self.iteration}.raw')
-                pres_iter_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                                  self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
-                shutil.copy(wss_filepath, wss_iter_filepath)
-                shutil.copy(pres_filepath, pres_iter_filepath)
+                                                 f'DU_patch_{boundary}_{self.iteration}.raw')
+                shutil.copy(disp_filepath, disp_iter_filepath)
 
         # read data from OpenFOAM
         self.read_node_output()
@@ -272,20 +296,20 @@ class SolverWrapperFoamExtend(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        prev_timestep = self.timestep - 1
-        # remove the folder that was used for pointDisplacement_Next if not in writeInterval
-        if self.settings['parallel']:
-            dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-            shutil.rmtree(dir_pointdisp_next)
-
-            if prev_timestep % self.write_interval:
-                for p in range(self.cores):
-                    prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
-                    shutil.rmtree(prev_timestep_dir)
-        else:
-            if prev_timestep % self.write_interval:
-                dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-                shutil.rmtree(dir_pointdisp_next)
+        # prev_timestep = self.timestep - 1
+        # Propability not necessary. remove the folder that was used for pointDisplacement_Next if not in writeInterval
+        # if self.settings['parallel']:
+        #     dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
+        #     shutil.rmtree(dir_pointdisp_next)
+        #
+        #     if prev_timestep % self.write_interval:
+        #         for p in range(self.cores):
+        #             prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
+        #             shutil.rmtree(prev_timestep_dir)
+        # else:
+        #     if prev_timestep % self.write_interval:
+        #         dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
+        #         shutil.rmtree(dir_pointdisp_next)
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
@@ -299,7 +323,7 @@ class SolverWrapperFoamExtend(Component):
 
         self.send_message('stop')
         self.wait_message('stop_ready')
-        self.openfoam_process.wait()
+        self.foam_Extend_process.wait()
 
     def get_interface_input(self):
         return self.interface_input
@@ -307,7 +331,7 @@ class SolverWrapperFoamExtend(Component):
     def get_interface_output(self):
         return self.interface_output
 
-    def compile_adapted_openfoam_solver(self):
+    def compile_adapted_foam_Extend_solver(self):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
@@ -348,9 +372,9 @@ class SolverWrapperFoamExtend(Component):
         # default value is 1.0 for compressible case
         # when the solver is incompressible, the pressure and shear stress are kinematic; therefore multiply with
         # the fluid density
-        density = 1.0
-        if self.settings['is_incompressible']:
-            density = self.settings['density']
+        # density = 1.0
+        # if self.settings['is_incompressible']:
+        #     density = self.settings['density']
 
         for boundary in self.boundary_names:
             # specify location of pressure and traction
@@ -409,8 +433,8 @@ class SolverWrapperFoamExtend(Component):
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
+            boundary_dict = fe_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+            boundary_dict_new = fe_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
             pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
         with open(pointdisp_filename, 'w') as f:
@@ -449,8 +473,8 @@ class SolverWrapperFoamExtend(Component):
             time.sleep(0.01)
             cumul_time += 0.01
             if cumul_time > wait_time_lim:
-                self.openfoam_process.kill()
-                self.openfoam_process.wait()
+                self.foam_Extend_process.kill()
+                self.foam_Extend_process.wait()
                 raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: '
                                    f'{message}.coco')
         os.remove(file)
@@ -517,25 +541,25 @@ class SolverWrapperFoamExtend(Component):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-        self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
-        time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
-        self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
+        self.write_interval = fe_io.get_int(input_string=control_dict, keyword='writeInterval')
+        time_format = fe_io.get_string(input_string=control_dict, keyword='timeFormat')
+        self.write_precision = fe_io.get_int(input_string=control_dict, keyword='writePrecision')
 
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
             tools.print_info(msg, layout='warning')
-            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
+            control_dict = re.sub(r'timeFormat' + fe_io.delimter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
+        control_dict = re.sub(r'application' + fe_io.delimter + r'\w+', f'application    {self.application}',
                               control_dict)
-        control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
+        control_dict = re.sub(r'startTime' + fe_io.delimter + fe_io.float_pattern,
                               f'startTime    {self.start_time}', control_dict)
-        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
+        control_dict = re.sub(r'deltaT' + fe_io.delimter + fe_io.float_pattern, f'deltaT    {self.delta_t}',
                               control_dict)
-        control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
+        control_dict = re.sub(r'timePrecision' + fe_io.delimter + fe_io.int_pattern,
                               f'timePrecision    {self.time_precision}',
                               control_dict)
-        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
+        control_dict = re.sub(r'endTime' + fe_io.delimter + fe_io.float_pattern, f'endTime    1e15', control_dict)
 
         # delete previously defined coconut functions
         coconut_start_string = '// CoCoNuT function objects'
@@ -598,7 +622,7 @@ class SolverWrapperFoamExtend(Component):
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
                     for i, variable in enumerate(self.residual_variables):
-                        search_string = f'Solving for {variable}, Initial residual = ({of_io.float_pattern})'
+                        search_string = f'Solving for {variable}, Initial residual = ({fe_io.float_pattern})'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of pimple loop
