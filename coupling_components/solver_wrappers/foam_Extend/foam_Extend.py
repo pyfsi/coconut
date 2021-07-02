@@ -37,7 +37,7 @@ class SolverWrapperFoamExtend(Component):
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
-        self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
+        self.timestep = self.physical_time = self.iteration = self.cur_timestamp = None
         self.foam_extend_process = None
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in Foam-Extend used for coupling
@@ -126,13 +126,19 @@ class SolverWrapperFoamExtend(Component):
         self.timestep = 0
         self.physical_time = self.start_time
 
-        # copy zero folder to folder with correctly named timeformat
+        # copy zero folder to folder with correctly named timeformat. This is also done for the mapped spatial BC
         if self.start_time == 0:
             timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
             path_orig = os.path.join(self.working_directory, '0')
             path_new = os.path.join(self.working_directory, timestamp)
             shutil.rmtree(path_new, ignore_errors=True)
             shutil.copytree(path_orig, path_new)
+            for boundary in self.boundary_names:
+                path_orig_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0')
+                path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
+                shutil.rmtree(path_new_boundaryData, ignore_errors=True)
+                shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
+
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
         """Note concerning the sequence: The file ./processorX/constant/polyMesh/pointprocAddressing contains a list of 
@@ -197,7 +203,7 @@ class SolverWrapperFoamExtend(Component):
         self.iteration = 0
         self.physical_time += self.delta_t
 
-        self.prev_timestamp = timestamp
+        # self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
 
         if not self.settings['parallel']:  # if serial
@@ -347,19 +353,15 @@ class SolverWrapperFoamExtend(Component):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def delete_prev_iter_output(self):
-        # pressure and wall shear stress files are removed to avoid openfoam to append data in the new iteration
+        # displacement file is removed to avoid foam-Extend to append data in the new iteration
         for boundary in self.boundary_names:
-            # specify location of pressure and traction
-            traction_name = 'TRACTION_' + boundary
-            pressure_name = 'PRESSURE_' + boundary
-            wss_file = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                    self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
-            pres_file = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                     self.cur_timestamp, 'p_patch_' + boundary + '.raw')
-            if os.path.isfile(wss_file):
-                os.remove(wss_file)
-            if os.path.isfile(pres_file):
-                os.remove(pres_file)
+            # specify location of displacement
+            displacement_name = 'DISPLACEMENT_' + boundary
+            disp_file = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
+                                    self.cur_timestamp, f'DU_patch_{boundary}.raw')
+            if os.path.isfile(disp_file):
+                os.remove(disp_file)
+
 
     def read_node_output(self):
         """
@@ -378,35 +380,27 @@ class SolverWrapperFoamExtend(Component):
 
         for boundary in self.boundary_names:
             # specify location of pressure and traction
-            traction_name = 'TRACTION_' + boundary
-            pressure_name = 'PRESSURE_' + boundary
+            displacement_name = 'DISPLACEMENT_' + boundary
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
             nfaces = mp.size
-            wss_filename = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                        self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
-            pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                         self.cur_timestamp, 'p_patch_' + boundary + '.raw')
+            disp_filename = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
+                                        self.cur_timestamp, f'DU_patch_{boundary}.raw')
 
             # check if the pressure and wall shear stress files completed by openfoam and read data
-            self.check_output_file(wss_filename, nfaces)
-            wss_tmp = np.loadtxt(wss_filename, comments='#')[:, 3:]
-            self.check_output_file(pres_filepath, nfaces)
-            pres_tmp = np.loadtxt(pres_filepath, comments='#')[:, 3]
+            self.check_output_file(disp_filename, nfaces)
+            wss_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
 
             if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
 
-            wall_shear_stress = np.empty_like(wss_tmp)
-            pressure = np.empty((pres_tmp.size, 1))
+            displacement = np.empty_like(wss_tmp)
 
-            wall_shear_stress[pos_list, ] = wss_tmp[:, ]
-            pressure[pos_list, 0] = pres_tmp
+            displacement[pos_list, ] = wss_tmp[:, ]
 
-            self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * density)
+            self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
@@ -422,27 +416,43 @@ class SolverWrapperFoamExtend(Component):
         the field is subsequently decomposed using the command: decomposePar.
        :return:
        """
-
-        pointdisp_filename_ref = os.path.join(self.working_directory, '0', 'pointDisplacement')
-
-        pointdisp_filename = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
-
-        with open(pointdisp_filename_ref, 'r') as ref_file:
-            pointdisp_string = ref_file.read()
-
         for boundary in self.boundary_names:
+            pressure_filename_ref = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0',
+                                                 'pressure')
+            traction_filename_ref = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0',
+                                                 'traction')
+
+            pressure_filename = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                             self.cur_timestamp, 'pressure')
+            traction_filename = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                             self.cur_timestamp, 'traction')
+
+            with open(pressure_filename_ref, 'r') as ref_file:
+                pressure_string = ref_file.read()
+
+            with open(traction_filename_ref, 'r') as ref_file:
+                traction_string = ref_file.read()
+
             mp_name = f'{boundary}_input'
-            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            boundary_dict = fe_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-            boundary_dict_new = fe_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
-            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+            pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
+            boundary_dict = fe_io.get_dict(input_string=pressure_string, keyword=boundary)
+            boundary_dict_new = fe_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=pressure)
+            pressure_string = pressure_string.replace(boundary_dict, boundary_dict_new)
 
-        with open(pointdisp_filename, 'w') as f:
-            f.write(pointdisp_string)
+            traction = self.interface_input.get_variable_data(mp_name, 'traction')
+            boundary_dict = fe_io.get_dict(input_string=traction_string, keyword=boundary)
+            boundary_dict_new = fe_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=traction)
+            traction_string = traction_string.replace(boundary_dict, boundary_dict_new)
 
-        if self.settings['parallel']:
-            check_call(f'decomposePar -fields -time {self.prev_timestamp} &> log.decomposePar;',
-                       cwd=self.working_directory, shell=True, env=self.env)
+            with open(pressure_filename, 'w') as f:
+                f.write(pressure_string)
+
+            with open(traction_filename, 'w') as f:
+                f.write(traction_string)
+
+            if self.settings['parallel']:
+                check_call(f'decomposePar -fields -time {self.cur_timestamp} &> log.decomposePar;',
+                           cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
     def check_output_file(self, filename, nfaces):
