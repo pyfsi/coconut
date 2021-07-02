@@ -113,8 +113,8 @@ int main(int argc, char *argv[])
     runTime.run();
     word prev_runTime
 
-    unsigned int iteration;
-    iteration = 0;
+//    unsigned int iteration;
+//    iteration = 0;
 
     int maxUIterReached = 0;
     int maxTIterReached = 0;
@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-
         usleep(10000);
 
         if (exists("next_coco"))
@@ -138,7 +137,7 @@ int main(int argc, char *argv[])
             OFstream outfile ("next_ready.coco");
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
-            iteration = 0;
+//            iteration = 0;
 
             lduSolverPerformance solverPerf;
             bool converged = false;
@@ -146,11 +145,12 @@ int main(int argc, char *argv[])
             scalar materialResidual = 0.0;
             blockLduMatrix::debug = 0;
 
+
             // Optional predictor
             if (predictor)
-            {
-                solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
-            }
+                {
+                    solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
+                }
 
             // Store old points for moving the mesh
             const vectorField oldPoints = mesh.allPoints();
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
 
         if (exists("continue_coco"))
         {
-            iteration++;
-            Info<< "Coupling iteration = " << iteration << nl << endl;
+//            iteration++;
+            Info<< "Coupling iteration = " << iCorr << nl << endl;
 
             // Define movement of the coupling interface
             forAll(boundary_names, s)
@@ -386,10 +386,9 @@ int main(int argc, char *argv[])
             << nl << endl;
 
             runTime.run();
-            Info << "Coupling iteration " << iteration << " end" << nl << endl;
+            Info << "Coupling iteration " << iCorr << " end" << nl << endl;
             OFstream outfile ("continue_ready.coco");
         }
-
 
         // Print warnings if convergence was not achieved
         if (maxUIterReached > 0)
