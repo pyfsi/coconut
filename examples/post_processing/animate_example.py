@@ -79,7 +79,7 @@ movie_name = 'displacement.mp4'
 if save:
     # set up formatting for the movie files: mp4-file
     plt.rcParams['animation.ffmpeg_path'] = u'/apps/SL6.3/FFmpeg/3.1.3/bin/ffmpeg'  # path to ffmpeg conversion tool
-    writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='NicolasDelaissé'), fps=24, bitrate=2000)
+    writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='CoCoNuT'), fps=24, bitrate=2000)
 
     animation_figure.animation.save(movie_name, writer=writer)
 

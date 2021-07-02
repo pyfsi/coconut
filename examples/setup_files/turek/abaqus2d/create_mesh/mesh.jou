@@ -1,8 +1,8 @@
 /TUREK 2D
     /PARAMETERS
-$beamtopinsideintervals = 30
+$beamtopinsideintervals = 120
 /30 60 120
-$beamrightinsideintervals = 3
+$beamrightinsideintervals = 12
 /3 6 12
     /CODE
 save name "mesh_turek.dbs"
@@ -45,4 +45,4 @@ physics create "BeamInsideFixed" btype "NODE" edge "BeamLeftInside"
 physics create "Beam" ctype "SOLID" face "BeamInternal"
 export gambit "mesh_turek.neu"
 save
-abort
+end

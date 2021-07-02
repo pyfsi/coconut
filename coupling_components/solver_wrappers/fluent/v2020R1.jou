@@ -111,6 +111,7 @@ define user-defined execute-on-demand "get_thread_ids::v2020R1"
     )
     (if (check_message "next")
         (begin
+            |END_OF_TIMESTEP_COMMANDS|
             (rpsetvar 'udf/iteration 0)
             (rpsetvar 'udf/timestep (+ (%rpgetvar 'udf/timestep) 1))
             (print-iter-info)
@@ -151,6 +152,7 @@ define user-defined execute-on-demand "get_thread_ids::v2020R1"
     )
     (if (check_message "stop")
         (begin
+            |END_OF_TIMESTEP_COMMANDS|
             (set! j 1)
             (send_message "stop_ready")
         )
