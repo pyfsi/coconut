@@ -56,12 +56,12 @@ class EvaluateExamples(unittest.TestCase):
     number_of_timesteps = 5
     additional_files = []
     compare_data = True
-    atol_solution_x = 1e-15
-    rtol_solution_x = 1e-5
-    atol_solution_y = 1e-15
-    rtol_solution_y = 1e-5
-    atol_convergence = 1e-15
-    rtol_convergence = 1e-5
+    atol_solution_x = 1e-11
+    rtol_solution_x = 1e-4
+    atol_solution_y = 1e-7
+    rtol_solution_y = 1e-4
+    atol_convergence = 1e-14
+    rtol_convergence = 1e-4
 
     @classmethod
     def setUpClass(cls):
@@ -143,12 +143,12 @@ class TestTubeFluent2DAbaqus2DSteady(EvaluateExamples):
 class TestTubeFluent2DTubeStructure(EvaluateExamples):
     example = 'tube_fluent2d_tube_structure'
     number_of_timesteps = 2
-    rtol_solution_y = 1e-4
 
 
 class TestTubeFluent3DAbaqus2D(EvaluateExamples):
     example = 'tube_fluent3d_abaqus2d'
     number_of_timesteps = 2
+    atol_solution_y = 1e-6
 
 
 class TestTubeFluent3DAbaqus3D(EvaluateExamples):
@@ -164,18 +164,17 @@ class TestTubeFluent3DKratosStructure3D(EvaluateExamples):
 class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
     example = 'tube_openfoam3d_abaqus3d'
     number_of_timesteps = 2
+    atol_solution_y = 1e-4
 
 
 class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
     example = 'tube_openfoam3d_kratos_structure3d'
     number_of_timesteps = 2
-    rtol_solution_y = 1e-4
 
 
 class TestTubeTubeFlowAbaqus2D(EvaluateExamples):
     example = 'tube_tube_flow_abaqus2d'
     number_of_timesteps = 2
-    rtol_solution_y = 1e-4
 
 
 class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
@@ -183,7 +182,7 @@ class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
-    atol_solution_y = 1e-6
+    atol_solution_y = 1e-5
     rtol_solution_y = 0
     atol_convergence = 1e-9
     rtol_convergence = 0
@@ -194,7 +193,7 @@ class TestTubeTubeFlowTubeStructure(EvaluateExamples):
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
-    atol_solution_y = 1e-6
+    atol_solution_y = 1e-5
     rtol_solution_y = 0
     atol_convergence = 1e-9
     rtol_convergence = 0
