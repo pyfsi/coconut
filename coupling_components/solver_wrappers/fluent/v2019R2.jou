@@ -155,6 +155,7 @@ define user-defined execute-on-demand "get_thread_ids::v2019R2"
             |END_OF_TIMESTEP_COMMANDS|
             (set! j 1)
             (send_message "stop_ready")
+            (system "sleep 0.1")
         )
     )
 )

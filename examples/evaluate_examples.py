@@ -7,6 +7,7 @@ import unittest
 import json
 import os
 import shutil
+import time
 from unittest import TestSuite, TestLoader
 from os.path import join
 
@@ -46,6 +47,7 @@ def setUpModule():
 
 
 def tearDownModule():
+    time.sleep(0.1)
     shutil.rmtree(tmp_path)
 
 
