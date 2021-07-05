@@ -6,7 +6,7 @@ $G = 0.0025
 $beaminsideintervals = 20
 $beamtopinsideintervals = 4
     /CODE
-save name "mesh_turek.dbs"
+save name "mesh_breaking_dam.dbs"
 solver select "Generic"
 vertex create "BeamBottomLeft" coordinates -$S $G 0
 vertex create "BeamBottomRight" coordinates 0 $G 0

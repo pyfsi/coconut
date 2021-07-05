@@ -1,5 +1,4 @@
 import imageio
-import os
 
 
 step = 1

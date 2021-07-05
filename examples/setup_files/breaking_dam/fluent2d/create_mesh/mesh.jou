@@ -37,7 +37,7 @@ edge mesh "BeamBottom" intervals $beamtopoutsideintervals
 sfunction create "SizeFunction1" sourceedges "BeamLeft" "BeamBottom" "BeamRight" growthrate $growth sizelimit $sizelimit attachfaces "Fluid" meshed
 sfunction bgrid attachfaces "Fluid"
 face mesh "Fluid" triangle
-physics create "BoxLeft" btype "WALL" edge "BoxLeft"
+physics create "BoxLeft" btype "PRESSURE_OUTLET" edge "BoxLeft"
 physics create "BoxTopLeft" btype "PRESSURE_OUTLET" edge "BoxTopLeft"
 physics create "BoxTopMiddle" btype "WALL" edge "BoxTopMiddle"
 physics create "BoxTopRight" btype "PRESSURE_OUTLET" edge "BoxTopRight"

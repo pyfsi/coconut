@@ -47,7 +47,7 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 Fluent is used as flow solver.
-The mesh is provided. It is triangular and rather coarse to reduce the calculation time.
+The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
 
 The structure solver is Abaqus.
@@ -58,10 +58,6 @@ The Abaqus element type used is CPE8R.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
 In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
-When the case is run, a bounding box warning for the right most face of the flag appears.
-This is normal.
-The reason is that the distance between the load points in Abaqus and the face centers in Fluent is large compared to the overall dimension of this face, 
-due to the coarse resolution: only 3 cells in the flow mesh and 3 elements in structure mesh.
 
 ## References
 <a id="1">[1]</a> 

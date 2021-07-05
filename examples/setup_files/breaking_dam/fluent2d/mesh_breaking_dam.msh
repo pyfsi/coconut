@@ -4755,7 +4755,7 @@
 2 87 88 0 be9
 2 88 1 0 be6
 ))
-(13(b 15a 162  3 0)(
+(13(b 15a 162  5 0)(
 2 50 15b 1f99 0
 2 15b 15c 1fb1 0
 2 15c 15d 1faf 0
@@ -17227,5 +17227,5 @@
 (45 (8 pressure-outlet BoxTopRight)())
 (45 (9 wall BoxTopMiddle)())
 (45 (10 pressure-outlet BoxTopLeft)())
-(45 (11 wall BoxLeft)())
+(45 (11 pressure-outlet BoxLeft)())
 (45 (13 interior default-interior)())

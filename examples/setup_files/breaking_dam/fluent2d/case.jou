@@ -6,22 +6,23 @@ grid check
 grid modify-zones zone-name default-interior fluid-interior
 
 define materials copy fluid water-liquid
-define materials change-create water-liquid sunflower-oil y constant 1000 n n y constant 0.001 n n n y
+define materials change-create water-liquid water y constant 1000 n n y constant 0.001 n n n y
 
 define models multiphase model vof
 define models multiphase number-of-phases 2
-define models multiphase volume-fraction-parameters implicit 1e-6
-;define models multiphase volume-fraction-parameters explicit 0.25 1e-6
+define models multiphase volume-fraction-parameters explicit 0.25 1e-6
 define models multiphase body-force-formulation y
-;define models multiphase expert-options 1 y
+define models multiphase expert-options 1 no
+;1 flux based, 3 hybrid
 define models solver pressure-based y
 define models unsteady-1st-order
 define models viscous laminar y
-define phases phase-domain phase-2 liquid y sunflower-oil
+define phases phase-domain phase-2 liquid y water
 define phases phase-domain phase-1 air y air
 
 define boundary-conditions pressure-outlet boxtopleft mixture n 0 n y y
 define boundary-conditions pressure-outlet boxtopright mixture n 0 n y y
+;define boundary-conditions pressure-outlet boxleft mixture n 0 n y y
 (for-each
  (lambda (zone) (ti-menu-load-string (format #f "define boundary-conditions wall ~a mixture y motion-bc-stationary y shear-bc-noslip" zone)))
  '(beamleft beambottom beamright)
@@ -65,16 +66,18 @@ define dynamic-mesh controls remeshing-parameters sizing-funct-defaults
 mesh adapt cell-registers add initial_liquid_column type hexahedron min-point -0.005 0 max-point 0.100 0.140 q q
 ;min -S 0  max A H
 
-solve monitors residual check-convergence y y y y
-;solve monitors residual check-convergence y y y
-solve monitors residual convergence-criteria 1.0E-6 1.0E-6 1.0E-6 1.0E-6
-;solve monitors residual convergence-criteria 1.0E-6 1.0E-6 1.0E-6
+solve monitors residual check-convergence y y y
+solve monitors residual convergence-criteria 1.0E-6 1.0E-6 1.0E-6
 solve monitors force monitor-unsteady-iters y
 solve set discretization-scheme mom 0
 solve set discretization-scheme pressure 14
-solve set discretization-scheme mp 28
+solve set discretization-scheme mp 16
+;solve set discretization-scheme mp 28
 solve set p-v-coupling 22
 solve set gradient-scheme n y
+solve set vof-numerics n y y y n
+solve set vof-explicit-controls 1 1
+;1 flux based, 3 hybrid (first entry)
 solve set reporting-interval 10
 solve set flow-warnings n
 

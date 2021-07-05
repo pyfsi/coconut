@@ -6,7 +6,7 @@
     "type": "coupled_solvers.iqni",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.0005,
+      "delta_t": 0.001,
       "omega": 0.05,
       "save_results": 20,
       "save_restart": 50,
@@ -100,7 +100,7 @@
           ],
           "cores": 1,
           "fluent_gui": false,
-          "max_nodes_per_face": 3,
+          "max_nodes_per_face": 2,
           "flow_iterations": 500,
           "save_iterations": 1
         }
@@ -115,12 +115,6 @@
               "cores": 1,
               "dimensions": 2,
               "arraysize": 200,
-              "subcycling": true,
-              "initial_inc": 1e-6,
-              "max_inc": 0.001,
-              "min_inc": 1e-12,
-              "max_num_inc": 10000,
-              "ramp": true,
               "surfaceIDs": [
                 "BEAMINSIDEMOVING0",
                 "BEAMINSIDEMOVING1",

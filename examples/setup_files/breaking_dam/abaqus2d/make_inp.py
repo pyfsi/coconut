@@ -35,9 +35,8 @@ beamPart = beamModel.parts['PART-1']
 beamModel.HomogeneousSolidSection(material='Material', name='BeamSection', thickness=1.0)
 beamPart.SectionAssignment(offset=0.0, region=Region(elements=beamPart.elements), sectionName='BeamSection')
 step1 = beamModel.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=delta_t, nlgeom=ON,
-                                       maxNumInc=10000, haftol=0.1, initialInc=(delta_t / 1000.0),
-                                       minInc=(delta_t / 1000000000.0), maxInc=delta_t, amplitude=RAMP,
-                                       application=MODERATE_DISSIPATION)
+                                       maxNumInc=1, haftol=0.1, initialInc=delta_t, minInc=delta_t, maxInc=delta_t,
+                                       amplitude=RAMP, timeIncrementationMethod=FIXED, application=MODERATE_DISSIPATION)
 step1.Restart(frequency=99999, overlay=ON)
 movingSurface0 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING0', 'MOVINGSURFACE0')
 movingSurface1 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING1', 'MOVINGSURFACE1')

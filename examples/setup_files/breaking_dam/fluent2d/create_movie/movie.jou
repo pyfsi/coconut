@@ -14,6 +14,7 @@
   (ti-menu-load-string "display set contours filled-contours y")
   (ti-menu-load-string "display set contours n-contour 1")
   (ti-menu-load-string "display contour air vof 0.0 0.5")
+  (ti-menu-load-string "display view camera zoom-camera 1.8")
   (ti-menu-load-string (format #f "display save-picture \"case_timestep~d-phase.jpeg\" " n))
   (ti-menu-load-string "display mesh")
   (ti-menu-load-string (format #f "display save-picture \"case_timestep~d-mesh.jpeg\" " n))
