@@ -1,16 +1,16 @@
-from coconut.coupling_components.solver_wrappers.openfoam_extend.foam_Extend import SolverWrapperFoamExtend
+from coconut.coupling_components.solver_wrappers.openfoam_extend.openfoam_extend import SolverWrapperopenfoamextend
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.openfoam_extend import foam_Extend_io as fe_io
+from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
 from subprocess import check_call
 from os.path import join
 
 
 def create(parameters):
-    return SolverWrapperFoamExtend41(parameters)
+    return SolverWrapperopenfoamextend41(parameters)
 
 
-class SolverWrapperFoamExtend41(SolverWrapperFoamExtend):
+class SolverWrapperopenfoamextend41(SolverWrapperopenfoamextend):
     version = 'fe4.1'
 
     def __init__(self, parameters):
@@ -18,7 +18,7 @@ class SolverWrapperFoamExtend41(SolverWrapperFoamExtend):
         self.env = tools.get_solver_env(__name__, self.working_directory)
 
         # compile adapted openfoam software
-        self.compile_adapted_foam_Extend_solver()
+        self.compile_adapted_openfoam_extend_solver()
 
         # check that the correct software is available
         self.check_software()
@@ -32,11 +32,11 @@ class SolverWrapperFoamExtend41(SolverWrapperFoamExtend):
         filename_y = join(self.working_directory, '0/ccy')
         filename_z = join(self.working_directory, '0/ccz')
 
-        x0 = fe_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces,
+        x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces,
                                       is_scalar=True)
-        y0 = fe_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces,
+        y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces,
                                       is_scalar=True)
-        z0 = fe_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces,
+        z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces,
                                       is_scalar=True)
         return x0, y0, z0
 

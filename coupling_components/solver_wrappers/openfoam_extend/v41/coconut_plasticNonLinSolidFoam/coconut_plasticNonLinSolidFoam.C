@@ -81,23 +81,9 @@ Author
 #include "regionCoupledFvPatchFields.H"
 #include "pointGaussLeastSquaresGrad.H"
 #include "interpolationTable.H"
+#include "foamTime.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-int main(int argc, char *argv[])
-{
-#   include "setRootCase.H"
-#   include "createTime.H"
-#   include "checkDynamicMeshDict.H"
-#   include "createDynamicFvMesh.H"
-#   include "createNonLinearGeometry.H"
-#   include "createFields.H"
-#   include "axisymmetricSolid.H"
-#   include "readSolidMechanicsControls.H"
-#   include "checkForGlobalFaceZones.H"
-
-#   include "checkForGlobalFaceZones.H"
-
 #include <stdlib.h>
 #include <assert.h>
 #include <set>
@@ -108,10 +94,25 @@ int main(int argc, char *argv[])
 #include <fstream>
 #include <iostream>
 
+int main(int argc, char *argv[])
+{
+    #include "setRootCase.H"
+    #include "createTime.H"
+    #include "checkDynamicMeshDict.H"
+    #include "createDynamicFvMesh.H"
+    #include "createNonLinearGeometry.H"
+    #include "createFields.H"
+    #include "axisymmetricSolid.H"
+    #include "readSolidMechanicsControls.H"
+    #include "checkForGlobalFaceZones.H"
+    #include "checkForGlobalFaceZones.H"
+
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     runTime.run();
-    word prev_runTime
+    word prev_runTime;
 
 //    unsigned int iteration;
 //    iteration = 0;
@@ -124,12 +125,29 @@ int main(int argc, char *argv[])
 
     while (true)
     {
+        lduSolverPerformance solverPerf;
+        bool converged = false;
+        scalar relativeResidual = 1.0;
+        scalar materialResidual = 0.0;
+        blockLduMatrix::debug = 0;
+
+        // Optional predictor
+        if (predictor)
+            {
+                solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
+            }
+
+        // Store old points for moving the mesh
+        const vectorField oldPoints = mesh.allPoints();
+
+        int iCorr = 0;
+
         usleep(10000);
 
         if (exists("next_coco"))
         {
-            include "setDeltaT.H"
-            include "createNonLinearGeometry.H"
+            #include "setDeltaT.H"
+            #include "createNonLinearGeometry.H"
 
             prev_runTime = runTime.timeName();
             runTime++;
@@ -137,25 +155,6 @@ int main(int argc, char *argv[])
             OFstream outfile ("next_ready.coco");
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
-//            iteration = 0;
-
-            lduSolverPerformance solverPerf;
-            bool converged = false;
-            scalar relativeResidual = 1.0;
-            scalar materialResidual = 0.0;
-            blockLduMatrix::debug = 0;
-
-
-            // Optional predictor
-            if (predictor)
-                {
-                    solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
-                }
-
-            // Store old points for moving the mesh
-            const vectorField oldPoints = mesh.allPoints();
-
-            int iCorr = 0;
         }
 
         if (exists("continue_coco"))
@@ -164,11 +163,11 @@ int main(int argc, char *argv[])
             Info<< "Coupling iteration = " << iCorr << nl << endl;
 
             // Define movement of the coupling interface
-            forAll(boundary_names, s)
-            {
-                    word boundary_name = boundary_names[s];
-                    ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
-            }
+//            forAll(boundary_names, s)
+//            {
+//                    word boundary_name = boundary_names[s];
+//                    ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
+//            }
 
             // Momentum loop
             do
@@ -180,11 +179,11 @@ int main(int argc, char *argv[])
                 if (regionCoupled)
                 {
                     // Attach region coupled patches
-    #               include "attachPatches.H"
+                    #include "attachPatches.H"
                 }
 
                 // Update Cauchy traction vectors
-    #           include "calcCauchyTraction.H"
+                    #include "calcCauchyTraction.H"
 
                 // The Following lines are for coupled regions
                 // Update boundary gradient
@@ -230,7 +229,7 @@ int main(int argc, char *argv[])
                 // Detach region coupled patches
                 if (regionCoupled)
                 {
-    #               include "detachPatches.H"
+                    #include "detachPatches.H"
                 }
 
                 // Interpolate DU from cell-centres to points
@@ -245,7 +244,7 @@ int main(int argc, char *argv[])
                 gradDU = fvc::grad(DU);
 
                 // Correct gradDU on materialGgi patches
-    #           include "correctDispGrad.H"
+                       #include "correctDispGrad.H"
 
                 // Relative deformation gradient
                 relF = I + gradDU.T();
@@ -329,12 +328,12 @@ int main(int argc, char *argv[])
                 // Store coefficient field as it may be used by the mechanical law
                 // to calculate the pressure
                 const volScalarField DUEqnA("DUEqnA", DUEqn.A());
-
+                //#include "fsiDisplacement.H"
                 // Update tau using material model
                 mechanical.correct(tau);
 
                 // Calculate residuals and check convergence
-    #           include "checkConvergence.H"
+                    #include "checkConvergence.H"
             }
             while (!converged && ++iCorr < nCorr);
 
@@ -355,7 +354,7 @@ int main(int argc, char *argv[])
 
             if (thermalStress && runTime.value() > thermalStressStartTime)
             {
-    #            include "TEqn.H"
+                #include "TEqn.H"
             }
 
             // Mesh update
@@ -376,14 +375,14 @@ int main(int argc, char *argv[])
             twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
             RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
 
-    #       include "writeFields.H"
+            #include "writeFields.H"
 
             remove("continue_coco");
             //Return the coupling interface output
 
             Info<< "ExecutionTime = "<< runTime.elapsedCpuTime() << " s"
-            Info<< " clockTime = "<< runTime.elapsedclockTime() << " s"
-            << nl << endl;
+                << " clockTime = "<< runTime.elapsedClockTime() << " s"
+                << nl << endl;
 
             runTime.run();
             Info << "Coupling iteration " << iCorr << " end" << nl << endl;
@@ -415,7 +414,7 @@ int main(int argc, char *argv[])
         if (exists("stop.coco"))
         {
             // remove("stop.coco"); // should not be uncommented
-            runTime.stopAt(Time::stopAtControl::noWriteNow);
+            runTime.stopAt(Time::stopAtControls::saNoWriteNow);
             OFstream outfile ("stop_ready.coco");
             break;
         }

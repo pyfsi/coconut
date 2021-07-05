@@ -35,6 +35,7 @@ nav:
           - fluent.md
           - kratos.md
           - openfoam.md
+          - openfoam_extend.md
           - python.md
   - Data structure:
       - data_structure.md

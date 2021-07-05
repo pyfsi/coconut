@@ -14,10 +14,10 @@ import re
 
 
 def create(parameters):
-    return SolverWrapperFoamExtend(parameters)
+    return SolverWrapperopenfoamextend(parameters)
 
 
-class SolverWrapperFoamExtend(Component):
+class SolverWrapperopenfoamextend(Component):
     version = None  # FOAM-Extend version with dot, e.g. 4.1 , set in sub-class
 
     @tools.time_initialize
