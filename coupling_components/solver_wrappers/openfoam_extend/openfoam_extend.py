@@ -2,7 +2,7 @@ from coconut import data_structure
 from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.foam_Extend import foam_Extend_io as fe_io
+from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
 from subprocess import check_call
 import numpy as np
@@ -38,7 +38,7 @@ class SolverWrapperFoamExtend(Component):
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.cur_timestamp = self.prev_timestamp = None
-        self.foam_extend_process = None
+        self.openfoam_extend_process = None
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in Foam-Extend used for coupling
         self.boundary_names = self.settings['boundary_names']
@@ -83,7 +83,7 @@ class SolverWrapperFoamExtend(Component):
             else:
                 with open(file_name, 'r') as file:
                     decomposedict_string = file.read()
-                self.cores = fe_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
+                self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
 
         # modify controlDict file to add displacement functionObjects for all the boundaries in
         # self.settings["boundary_names"]
@@ -99,12 +99,12 @@ class SolverWrapperFoamExtend(Component):
         for boundary in self.boundary_names:
             with open(boundary_filename, 'r') as boundary_file:
                 boundary_file_string = boundary_file.read()
-            boundary_dict = fe_io.get_dict(input_string=boundary_file_string, keyword=boundary)
+            boundary_dict = of_io.get_dict(input_string=boundary_file_string, keyword=boundary)
             # get point ids and coordinates for all the faces in the boundary
-            node_ids, node_coords = fe_io.get_boundary_points(case_directory=self.working_directory, time_folder='0',
+            node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory, time_folder='0',
                                                               boundary_name=boundary)
-            nfaces = fe_io.get_int(input_string=boundary_dict, keyword='nFaces')
-            start_face = fe_io.get_int(input_string=boundary_dict, keyword='startFace')
+            nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
+            start_face = of_io.get_int(input_string=boundary_dict, keyword='startFace')
 
             # create input model part
             self.model.create_model_part(f'{boundary}_input', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
@@ -163,7 +163,7 @@ class SolverWrapperFoamExtend(Component):
                     path = os.path.join(self.working_directory, f'processor{p}/constant/polyMesh/faceProcAddressing')
                     with open(path, 'r') as f:
                         face_proc_add_string = f.read()
-                    face_proc_add = np.abs(fe_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
+                    face_proc_add = np.abs(of_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
                     face_proc_add -= 1
 
                     mp_output.sequence += (face_proc_add[(face_proc_add >= mp_output.start_face) & (
@@ -183,7 +183,7 @@ class SolverWrapperFoamExtend(Component):
         else:
             cmd = 'mpirun -np ' + str(self.cores) + ' ' + self.application + ' -parallel &> log.' + self.application
 
-        self.foam_Extend_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
+        self.openfoam_extend_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -329,7 +329,7 @@ class SolverWrapperFoamExtend(Component):
 
         self.send_message('stop')
         self.wait_message('stop_ready')
-        self.foam_Extend_process.wait()
+        self.openfoam_extend_process.wait()
 
     def get_interface_input(self):
         return self.interface_input
@@ -337,7 +337,7 @@ class SolverWrapperFoamExtend(Component):
     def get_interface_output(self):
         return self.interface_output
 
-    def compile_adapted_foam_Extend_solver(self):
+    def compile_adapted_openfoam_extend_solver(self):
         # compile foam-Extend adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'vFE{self.version.replace(".", "")}', self.application)
         try:
@@ -435,13 +435,13 @@ class SolverWrapperFoamExtend(Component):
 
             mp_name = f'{boundary}_input'
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
-            boundary_dict = fe_io.get_dict(input_string=pressure_string, keyword=boundary)
-            boundary_dict_new = fe_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=pressure)
+            boundary_dict = of_io.get_dict(input_string=pressure_string, keyword=boundary)
+            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=pressure)
             pressure_string = pressure_string.replace(boundary_dict, boundary_dict_new)
 
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
-            boundary_dict = fe_io.get_dict(input_string=traction_string, keyword=boundary)
-            boundary_dict_new = fe_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=traction)
+            boundary_dict = of_io.get_dict(input_string=traction_string, keyword=boundary)
+            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=traction)
             traction_string = traction_string.replace(boundary_dict, boundary_dict_new)
 
             with open(pressure_filename, 'w') as f:
@@ -483,8 +483,8 @@ class SolverWrapperFoamExtend(Component):
             time.sleep(0.01)
             cumul_time += 0.01
             if cumul_time > wait_time_lim:
-                self.foam_Extend_process.kill()
-                self.foam_Extend_process.wait()
+                self.openfoam_extend_process.kill()
+                self.openfoam_extend_process.wait()
                 raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: '
                                    f'{message}.coco')
         os.remove(file)
@@ -551,25 +551,25 @@ class SolverWrapperFoamExtend(Component):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-        self.write_interval = fe_io.get_int(input_string=control_dict, keyword='writeInterval')
-        time_format = fe_io.get_string(input_string=control_dict, keyword='timeFormat')
-        self.write_precision = fe_io.get_int(input_string=control_dict, keyword='writePrecision')
+        self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
+        time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
+        self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
 
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
             tools.print_info(msg, layout='warning')
-            control_dict = re.sub(r'timeFormat' + fe_io.delimter + r'\w+', f'timeFormat    fixed',
+            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-        control_dict = re.sub(r'application' + fe_io.delimter + r'\w+', f'application    {self.application}',
+        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
                               control_dict)
-        control_dict = re.sub(r'startTime' + fe_io.delimter + fe_io.float_pattern,
+        control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
                               f'startTime    {self.start_time}', control_dict)
-        control_dict = re.sub(r'deltaT' + fe_io.delimter + fe_io.float_pattern, f'deltaT    {self.delta_t}',
+        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
                               control_dict)
-        control_dict = re.sub(r'timePrecision' + fe_io.delimter + fe_io.int_pattern,
+        control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
                               f'timePrecision    {self.time_precision}',
                               control_dict)
-        control_dict = re.sub(r'endTime' + fe_io.delimter + fe_io.float_pattern, f'endTime    1e15', control_dict)
+        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
 
         # delete previously defined coconut functions
         coconut_start_string = '// CoCoNuT function objects'
@@ -624,7 +624,7 @@ class SolverWrapperFoamExtend(Component):
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
                     for i, variable in enumerate(self.residual_variables):
-                        search_string = f'Solving for {variable}, Initial residual = ({fe_io.float_pattern})'
+                        search_string = f'Solving for {variable}, Initial residual = ({of_io.float_pattern})'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of pimple loop

@@ -1,6 +1,6 @@
-from coconut.coupling_components.solver_wrappers.foam_Extend.foam_Extend import SolverWrapperFoamExtend
+from coconut.coupling_components.solver_wrappers.openfoam_extend.foam_Extend import SolverWrapperFoamExtend
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.foam_Extend import foam_Extend_io as fe_io
+from coconut.coupling_components.solver_wrappers.openfoam_extend import foam_Extend_io as fe_io
 
 from subprocess import check_call
 from os.path import join
@@ -40,24 +40,6 @@ class SolverWrapperFoamExtend41(SolverWrapperFoamExtend):
                                       is_scalar=True)
         return x0, y0, z0
 
-    def displacement_dict(self, boundary_name):
-        dct = (f'Displacement_{boundary_name}\n'
-               f'{{\n'
-               f'type  	             surfaceRegion;\n'
-               f'libs 	             ("libfieldFunctionObjects.so");\n'
-               f'executeControl 	 timeStep;\n'
-               f'executeInterval 	 1;\n'
-               f'writeControl 	     timeStep;\n'
-               f'writeInterval 	     1;\n'
-               f'timeFormat 	     fixed;\n'
-               f'timePrecision 	     {self.time_precision};\n'
-               f'operation 	         none;\n'
-               f'writeFields 	     true;\n'
-               f'surfaceFormat 	     raw;\n'
-               f'regionType 	     patch;\n'
-               f'name 	             {boundary_name};\n'
-               f'fields              (DU);\n'
-               f'}}\n')
-        return dct
+
 
 
