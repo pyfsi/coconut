@@ -41,6 +41,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # create the solver
         solver = create_instance(parameters)
+        solver.initialize()
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(cls.mp_name_in)
         coords = [model_part.x0, model_part.y0, model_part.z0]
@@ -51,7 +52,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         traction = np.zeros((model_part.size, 3))
         interface_input.set_variable_data(cls.mp_name_in, 'traction', traction)
 
-        solver.initialize()
         # step 1, coupling 1
         solver.initialize_solution_step()
         output1_1 = solver.solve_solution_step(interface_input)
@@ -117,6 +117,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
+        solver.initialize()
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(self.mp_name_in)
         coords = [model_part.x0, model_part.y0, model_part.z0]
@@ -128,7 +129,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do step 3 and 4
-        solver.initialize()
         for i in range(2):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
@@ -164,6 +164,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         # adapt Parameters, create solver
         self.parameters['settings']['cores'] = 4
         solver = create_instance(self.parameters)
+        solver.initialize()
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(self.mp_name_in)
         coords = [model_part.x0, model_part.y0, model_part.z0]
@@ -175,7 +176,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do 4 steps
-        solver.initialize()
         for i in range(4):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
@@ -200,6 +200,7 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
 
         # create solver
         solver = create_instance(self.parameters)
+        solver.initialize()
         interface_input = solver.get_interface_input()
         model_part = interface_input.get_model_part(self.mp_name_in)
         coords = [model_part.x0, model_part.y0, model_part.z0]
@@ -211,7 +212,6 @@ class TestSolverWrapperAbaqus614Tube2D(unittest.TestCase):
         interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
 
         # do 4 steps
-        solver.initialize()
         for i in range(4):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)

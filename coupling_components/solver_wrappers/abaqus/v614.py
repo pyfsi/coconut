@@ -35,7 +35,7 @@ class SolverWrapperAbaqus614(Component):
         self.dir_vault = Path(self.dir_csm) / 'vault'
         self.dir_vault.mkdir(exist_ok=True)
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
-        path_src = os.path.realpath(os.path.dirname(__file__))
+        self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -63,13 +63,24 @@ class SolverWrapperAbaqus614(Component):
             self.ramp = 0
             self.max_num_inc = 1
 
+        # time
+        self.init_time = self.init_time
+        self.run_time = 0.0
+
+        # debug
+        self.debug = False  # set on True to save copy of input and output files in every iteration
+
+    @tools.time_initialize
+    def initialize(self):
+        super().initialize()
+
         # prepare abaqus_v6.env
         hostname_replace = ''
         if self.mp_mode == 'MPI' and 'AbaqusHosts.txt' in os.listdir(self.dir_csm):
             with open(join(self.dir_csm, 'AbaqusHosts.txt'), 'r') as host_file:
                 host_names = host_file.read().split()
             hostname_replace = str([[hostname, host_names.count(hostname)] for hostname in set(host_names)])
-        with open(join(path_src, 'abaqus_v6.env'), 'r') as infile:
+        with open(join(self.path_src, 'abaqus_v6.env'), 'r') as infile:
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
@@ -88,7 +99,7 @@ class SolverWrapperAbaqus614(Component):
 
         # prepare Abaqus USRInit.f
         usr = 'USRInit.f'
-        with open(join(path_src, usr), 'r') as infile:
+        with open(join(self.path_src, usr), 'r') as infile:
             with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|dimension|', str(self.dimensions))
@@ -136,7 +147,7 @@ class SolverWrapperAbaqus614(Component):
             temp_str += f'\"{self.surfaceIDs[j]}\", '
         temp_str += f'\"{self.surfaceIDs[self.n_surfaces-1]}\"'
 
-        with open(join(path_src, get_output), 'r') as infile:
+        with open(join(self.path_src, get_output), 'r') as infile:
             with open(join(self.dir_csm, get_output), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|surfaces|', str(self.n_surfaces))
@@ -169,7 +180,7 @@ class SolverWrapperAbaqus614(Component):
 
         # prepare Abaqus USR.f
         usr = 'USR.f'
-        with open(join(path_src, usr), 'r') as infile:
+        with open(join(self.path_src, usr), 'r') as infile:
             with open(join(self.dir_csm, 'usr.f'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|dimension|', str(self.dimensions))
@@ -310,17 +321,6 @@ class SolverWrapperAbaqus614(Component):
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
-
-    @tools.time_initialize
-    def initialize(self):
-        super().initialize()
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
