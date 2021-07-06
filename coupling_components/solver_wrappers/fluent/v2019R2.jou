@@ -4,6 +4,7 @@ file start-transcript "transcript.txt"
 (enable-dynamic-mesh-node-ids #t)
 ;file binary-files n
 (define unsteady |UNSTEADY|)
+(define multiphase |MULTIPHASE|)
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
