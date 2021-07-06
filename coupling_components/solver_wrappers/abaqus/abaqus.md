@@ -19,7 +19,7 @@ Abaqus (Dassault Systèmes) can be used to solve for the structural displacement
 
 ## Environment
  - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the JSON file. In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
- - The **Abaqus license server** needs to be specified in the parametrized file `abaqus_v6.env` which is present in the `source directory`. For use at Ghent University no changes are required. 
+ - If the **Abaqus license server** needs to be specified explicitly, it is advised to do this in the [solver modules file](../../../README.md#checking-the-solver-modules).
  - The **Abaqus software should be available as well as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
 
 ## Parameters
@@ -54,9 +54,10 @@ parameter|type|description
 `ramp`|boolean| Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
 
 ## Overview of operation
-The solver wrapper consists of 5 files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
+The solver wrapper consists of 6 types of files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
 
- - *`X.py`*: defines the `SolverWrapperAbaqusX`class. 
+ - *`abaqus.py`*: Contains the base class `SolverWrapperAbaqus`.
+ - *`X.py`*: Defines the `SolverWrapperAbaqusX`class, which inherits from the base class. Some version specific parameters might be overwritten in these subclasses. 
  - *`abaqus_v6.env`*: environment file setting the environment for the Abaqus solver.
  - *`GetOutput.cpp`*: Extracts the output (from Abaqus .odb files) and writes it to a file for each output`ModelPart`. Written in C++.
  - *`USR.f`*: An Abaqus user-subroutine that reads the loads from files (one for each input `ModelPart`) and applies them on the load points. Written in FORTRAN.
