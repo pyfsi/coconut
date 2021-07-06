@@ -225,3 +225,11 @@ The created "surfaces" and "node sets" for load input and displacement output re
 ## Log files
 
 A general event log of the procedure can be found in the working directory, in a file named *`abaqus.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.
+
+## Version specific documentation
+
+### v6.14
+First version.
+
+### v2021
+No major changes. 

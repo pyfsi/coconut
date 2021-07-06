@@ -3,7 +3,7 @@ from coconut.tests.solver_wrappers.abaqus import abaqus
 
 import unittest
 
-version = '614'
+version = '2021'
 
 
 @unittest.skipUnless(solver_available(f'abaqus.v{version}'), f'abaqus.v{version} not available')
