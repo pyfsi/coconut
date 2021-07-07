@@ -16,7 +16,7 @@
     
     
       
-        <title>General - CoCoNuT</title>
+        <title>Fluent 2D - Abaqus 2D - CoCoNuT</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#coupling-components" class="md-skip">
+        <a href="#breaking-dam-with-fluent2d-and-abaqus2d" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              General
+              Fluent 2D - Abaqus 2D
             
           </span>
         </div>
@@ -214,14 +214,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
       <label class="md-nav__link" for="__nav_2">
         Coupling components
@@ -237,58 +235,11 @@
             
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          General
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="coupling_components.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="coupling_components.html" class="md-nav__link">
         General
       </a>
-      
-        
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#start-of-the-calculation" class="md-nav__link">
-    Start of the calculation
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tools" class="md-nav__link">
-    Tools
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -521,12 +472,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
       
       <label class="md-nav__link" for="__nav_5">
         Examples
@@ -554,12 +507,14 @@
             
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" checked>
       
       <label class="md-nav__link" for="__nav_5_2">
         Breaking dam
@@ -575,11 +530,79 @@
             
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Fluent 2D - Abaqus 2D
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link md-nav__link--active">
         Fluent 2D - Abaqus 2D
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#coupling-algorithm" class="md-nav__link">
+    Coupling algorithm
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictor" class="md-nav__link">
+    Predictor
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergence-criterion" class="md-nav__link">
+    Convergence criterion
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solvers" class="md-nav__link">
+    Solvers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -859,15 +882,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#start-of-the-calculation" class="md-nav__link">
-    Start of the calculation
+  <a href="#coupling-algorithm" class="md-nav__link">
+    Coupling algorithm
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#tools" class="md-nav__link">
-    Tools
+  <a href="#predictor" class="md-nav__link">
+    Predictor
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergence-criterion" class="md-nav__link">
+    Convergence criterion
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solvers" class="md-nav__link">
+    Solvers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
   </a>
   
 </li>
@@ -885,41 +929,99 @@
               
                 
                 
-                <h1 id="coupling-components">Coupling components</h1>
-<p>The coupling components are the basic building blocks of the CoCoNuT coupling tool. They are defined in the subdirectories of the <em><code>coconut/coupling_components</code></em> directory.
-There are five types: </p>
+                <h1 id="breaking-dam-with-fluent2d-and-abaqus2d">Breaking dam with Fluent2D and Abaqus2D</h1>
+<p>This example simulates a dam-break on a top-fixed flexible gate.
+The liquid, intially located in a free-surface tank, imposes a variable pressure on the bending flexible gate.
+This case has been examined numerically and experimentally by Antoci et al. [<a href="#1">1</a>].
+Here, this 2D FSI calculation is performed with Fluent and Abaqus.</p>
+<p>The figure below shows the bending of the gate and the flowing water (with Fluent).
+<img alt="breaking_dam_animation" src="images/breaking_dam_phase.gif" title="Animation of the bending of the breaking dam and the flowing liquid with Fluent" /></p>
+<p>The geometry is provided in the following figure. Pressure outlets and walls are indicated in blue and black, respectively.
+The gap beneath the gate is exagerated for clarity.
+<img alt="breaking_dam_geometry" src="images/breaking_dam_geometry.svg" title="Breaking dam geometry" /></p>
+<p>The corresponding parameters are:</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">value</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>A</code></td>
+<td align="center">0.1 m</td>
+<td>Width of the liquid tank.</td>
+</tr>
+<tr>
+<td align="right"><code>G</code></td>
+<td align="center">0.0025 m</td>
+<td>Clearance of the elastic gate.</td>
+</tr>
+<tr>
+<td align="right"><code>H</code></td>
+<td align="center">0.14 m</td>
+<td>Initial height of the liquid column.</td>
+</tr>
+<tr>
+<td align="right"><code>L</code></td>
+<td align="center">0.079 m</td>
+<td>Height of the elastic gate.</td>
+</tr>
+<tr>
+<td align="right"><code>S</code></td>
+<td align="center">0.005 m</td>
+<td>Thickness of the elastic gate.</td>
+</tr>
+</tbody>
+</table>
+<p>The elastic gate is made of rubber and has the following parameters:</p>
 <ul>
-<li><a href="https://pyfsi.github.io/coconut/convergence_criteria">Convergence criteria</a> which determine when the calculation has converged within a time step. Subdirectory: <em><code>convergence_criteria</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/coupled_solvers">Coupled solvers</a> (completed by <a href="https://pyfsi.github.io/coconut/models">Models</a>, subdirectory <em><code>coupled_solvers/models</code></em>) which perform the actual coupling, implementing a coupling algorithm. Subdirectory: <em><code>coupled_solvers</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/mappers">Mappers</a> which map from one interface discretization to another, i.e. interpolation between non-conformal meshes. Subdirectory: <em><code>mappers</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/predictors">Predictors</a> which provide an initial guess at the start of a new time step. Subdirectory: <em><code>predictors</code></em>.</li>
-<li><a href="https://pyfsi.github.io/coconut/solver_wrappers">Solver wrappers</a> which provide communication which the actual solvers. Subdirectory: <em><code>solver_wrappers</code></em>.</li>
+<li>density: 1100 kg/m³</li>
+<li>modulus of elasticity: 10<span><span class="MathJax_Preview">^7</span><script type="math/tex">^7</script></span> Pa</li>
+<li>poisson's ratio: 0.49</li>
 </ul>
-<p>The idea behind these components is modularity. For example, changing a solver wrapper or creating a new one can be done without having to adapt any other components.
-This allows for high degree of flexibility, a short learning curve and a limited development effort.
-Moreover, components can be used multiple times without the need for copying code.
-Detailed information on these components can be found in the specific documentation.</p>
-<p>All these coupling components inherit from a same superclass called <code>Component</code>, defined in <em><code>coconut/coupling_components/component.py</code></em>. 
-In this class some methods are implemented, which control the flow within CoCoNuT. 
-For every coupling component, there are <code>initialize</code> and <code>finalize</code>, which are called at the start and end of a calculation
-and there are <code>initialize_solution_step</code> and <code>finalize_solution_step</code>, which are called at the start and end of each time step.
-If needed these methods are overwritten to perform a specific action.
-For example in the <code>finalize</code> method of a <code>solver_wrapper</code>, the termination of the solver software could be implemented.</p>
-<p>A schematic of the relation between the coupling components for a basic calculation is given in the following figure.</p>
-<p><img alt="" src="images/coupling_components.png" title="Schematic of relation between coupling components" /></p>
-<p>These coupling components have to communicate with each other.
-This is done through the use of <em>interfaces</em>, indicated with arrows on the figure. 
-For these <code>Interface</code> objects (implemented in <em><code>coconut/data_structure/interfaces.py</code></em>) containing the (discretized) solution data on the FSI-interface and references to, among others, the coordinates of the discretized interface. The implementation of this <code>Interface</code> class is explained in more detail in <a href="https://pyfsi.github.io/coconut/data_structure">the documentation about the data structure</a>.</p>
-<h2 id="start-of-the-calculation">Start of the calculation</h2>
-<p>The main coupling component in which all other coupling components are instantiated is the coupled solver.
-The coupled solver itself is created in the <code>Analysis</code> class (<em><code>coconut/analysis.py</code></em>, which is the starting point of the CoCoNuT calculation.
-Upon the start of CoCoNuT, an instance of <code>Analysis</code> is made and its method <code>run</code> is executed.
-The coupled solver keeps track of all <code>Components</code> and runs the methods <code>initialize</code>, <code>finalize</code>, <code>initialize_solution_step</code> and <code>finalize_solution_step</code>,
-when its respective methods are executed.</p>
-<h2 id="tools">Tools</h2>
-<p>Some code to perform specific tasks, like printing with a certain layout or performing a time measurement is useful throughout the code.
-These functionalities are grouped in the file <em><code>coconut/tools.py</code></em>.
-It suffices to import the file to make uses of its functions.</p>
+<p>The flow calculation uses the volume of fluid (VOF) method to model the free-surface.
+The liquid phase is water with the following properties:</p>
+<ul>
+<li>density: 1000 kg/m³</li>
+<li>dynamic viscosity: 0.001 Pa<span><span class="MathJax_Preview">\cdot</span><script type="math/tex">\cdot</script></span>s</li>
+</ul>
+<p>The gas phase is air modelled with the following parameters:</p>
+<ul>
+<li>density: 1.225 kg/m³</li>
+<li>dynamic viscosity: 1.7894 10<span><span class="MathJax_Preview">^{-5}</span><script type="math/tex">^{-5}</script></span> Pa<span><span class="MathJax_Preview">\cdot</span><script type="math/tex">\cdot</script></span>s</li>
+</ul>
+<p>The gravitational accelartion is 9.81 m/s².
+The total simulated time is 0.4 s in time steps of 0.001 s.</p>
+<p>geometry</p>
+<h2 id="coupling-algorithm">Coupling algorithm</h2>
+<p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQNI-LS).
+The reuse parameter <code>q</code> is set to 10, which means that data from the last ten time steps will be used to stabilize and accelerate the convergence.</p>
+<h2 id="predictor">Predictor</h2>
+<p>The initial guess in every time step is done using the linear predictor.</p>
+<h2 id="convergence-criterion">Convergence criterion</h2>
+<p>Two convergence criteria have been specified:</p>
+<ul>
+<li>The number of iterations in every time step is larger than 20.</li>
+<li>The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</li>
+</ul>
+<p>When either criterion is satisfied the simulation stops.</p>
+<h2 id="solvers">Solvers</h2>
+<p>Fluent is used as flow solver.
+The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
+A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.</p>
+<p>The structure solver is Abaqus.
+The Abaqus case is built when setting up the case starting from the file <em><code>mesh_breaking_dam.inp</code></em> containing nodes and elements.
+This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
+The result of the setup is a completed input file <em><code>case_breaking_dam.inp</code></em>.
+The Abaqus element type used is CPE8R.</p>
+<p>To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
+In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.</p>
+<h2 id="references">References</h2>
+<p><a id="1">[1]</a>
+<a href="https://doi.org/10.1007/3-540-34596-5_15">Antoci C., Gallatie M., Sibilla, S., "Numerical simulation of fluid-structure interaction by sph", Computers &amp; Structures, vol. 85, no. 11, pp. 879-890, 2007.</a></p>
                 
               
               
@@ -939,7 +1041,7 @@ It suffices to import the file to make uses of its functions.</p>
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="index.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Introduction" rel="prev">
+        <a href="examples.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: General" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -948,20 +1050,20 @@ It suffices to import the file to make uses of its functions.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Introduction
+              General
             </div>
           </div>
         </a>
       
       
         
-        <a href="convergence_criteria.html" class="md-footer__link md-footer__link--next" aria-label="Next: Convergence criteria" rel="next">
+        <a href="tube_tube_flow_tube_structure.html" class="md-footer__link md-footer__link--next" aria-label="Next: Python TubeFlow - Python TubeStructre" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Convergence criteria
+              Python TubeFlow - Python TubeStructre
             </div>
           </div>
           <div class="md-footer__button md-icon">

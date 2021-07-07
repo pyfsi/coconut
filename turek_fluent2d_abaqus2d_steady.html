@@ -515,11 +515,50 @@
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
       
       <label class="md-nav__link" for="__nav_5_2">
+        Breaking dam
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Breaking dam" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Breaking dam
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      <label class="md-nav__link" for="__nav_5_3">
         Tube
         <span class="md-nav__icon md-icon"></span>
       </label>
       <nav class="md-nav" aria-label="Tube" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_2">
+        <label class="md-nav__title" for="__nav_5_3">
           <span class="md-nav__icon md-icon"></span>
           Tube
         </label>
@@ -673,14 +712,14 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" type="checkbox" id="__nav_5_4" checked>
       
-      <label class="md-nav__link" for="__nav_5_3">
+      <label class="md-nav__link" for="__nav_5_4">
         Turek benchmark
         <span class="md-nav__icon md-icon"></span>
       </label>
       <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_3">
+        <label class="md-nav__title" for="__nav_5_4">
           <span class="md-nav__icon md-icon"></span>
           Turek benchmark
         </label>
@@ -942,7 +981,7 @@ Note that the reuse parameter <code>q</code> is not used as only one time step i
 <p>When either criterion is satisfied the simulation stops.</p>
 <h2 id="solvers">Solvers</h2>
 <p>Fluent is used as flow solver.
-The mesh is provided. It is triangular and rather coarse to reduce the calculation time.
+The provided mesh is triangular.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.</p>
 <p>The structure solver is Abaqus.
 The Abaqus case is built when setting up the case starting from the file <em><code>mesh_turek.inp</code></em> containing nodes and elements. 
@@ -950,11 +989,7 @@ This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python
 The result of the setup is a completed input file <em><code>case_turek.inp</code></em>.
 The Abaqus element type used is CPE8R.</p>
 <p>To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
-In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
-When the case is run, a bounding box warning for the right most face of the flag appears.
-This is normal.
-The reason is that the distance between the load points in Abaqus and the face centers in Fluent is large compared to the overall dimension of this face, 
-due to the coarse resolution: only 3 cells in the flow mesh and 3 elements in structure mesh.</p>
+In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
 <a href="https://doi.org/10.1007/3-540-34596-5_15">Turek S., Hron J., "Proposal for Numerical Benchmarking of Fluid-Structure Interaction between an Elastic Object and Laminar Incompressible Flow", Bungartz HJ., Schäfer M. (eds) Fluid-Structure Interaction. Lecture Notes in Computational Science and Engineering, vol. 53. Springer, Berlin, Heidelberg, 2006.</a></p>
