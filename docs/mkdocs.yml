@@ -39,6 +39,8 @@ nav:
   - Documentation: docs.md
   - Examples:
       - General: examples.md
+      - Breaking dam:
+          - Fluent 2D - Abaqus 2D: breaking_dam_fluent2d_abaqus2d.md
       - Tube:
           - Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
           - Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md
