@@ -72,7 +72,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
         self.init_time = None
-        self.start_time = None
+        self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
         self.iterations = []
@@ -129,8 +129,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.save_results:
             self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
             self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
-        self.start_time = time.time()
-        self.init_time = self.start_time - self.start_init_time
+        self.start_run_time = time.time()  # start of calculation
+        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
     def solve_solution_step(self):
         interface_input = self.solver_wrapper.interface_input
