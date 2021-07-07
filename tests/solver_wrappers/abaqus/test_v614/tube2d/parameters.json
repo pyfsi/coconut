@@ -7,6 +7,7 @@
     "arraysize": 10e5,
     "delta_t": 1e-3,
     "timestep_start": 0,
+    "save_restart": 1,
     "surfaceIDs": [
       "BEAMINSIDEMOVING"
     ],
