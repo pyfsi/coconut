@@ -643,7 +643,7 @@ class SolverWrapperAbaqus614(Component):
                     if bool_restart:
                         rf.write(line)
                 line = f.readline()
-                if '** --'in line:
+                if '** --' in line:
                     bool_restart = True
         rf.close()
         of.close()

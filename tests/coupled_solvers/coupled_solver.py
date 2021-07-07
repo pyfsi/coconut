@@ -89,6 +89,10 @@ class TestCoupledSolver(unittest.TestCase):
             # adapt parameters, create coupled solver for restart
             self.parameters['settings']['save_restart'] = 2
             self.parameters['settings']['case_name'] = 'restart'
+            for solver_wrapper_parameters in self.parameters['solver_wrappers']:
+                for key in ('timestep_start', 'delta_t', 'save_restart'):
+                    # remove keys to avoid warnings
+                    solver_wrapper_parameters['settings'].pop(key)
             coupled_solver = create_instance(self.parameters)
             coupled_solver.initialize()
 
@@ -104,6 +108,10 @@ class TestCoupledSolver(unittest.TestCase):
             self.parameters['settings']['timestep_start'] = 2
             self.parameters['settings']['save_results'] = 2
             self.parameters['settings']['case_name'] = 'restart'
+            for solver_wrapper_parameters in self.parameters['solver_wrappers']:
+                for key in ('timestep_start', 'delta_t', 'save_restart'):
+                    # remove keys to avoid warnings
+                    solver_wrapper_parameters['settings'].pop(key)
             coupled_solver = create_instance(self.parameters)
             coupled_solver.initialize()
 
