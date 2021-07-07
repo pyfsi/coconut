@@ -51,10 +51,14 @@ class SolverWrapperAbaqus(Component):
         self.n_surfaces = len(self.surfaceIDs)
         self.mp_mode = self.settings['mp_mode']
         self.input_file = self.settings['input_file']
-        self.save_interval = self.settings.get('save_interval', 1)
+        self.save_results = self.settings.get('save_results', 1)
+        self.save_restart = self.settings['save_restart']
         self.timestep = self.timestep_start
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
+        self.model = None
+        self.interface_input = None
+        self.interface_output = None
 
         self.subcycling = self.settings.get('subcycling', False)  # value from parameters or False if not present
         if self.subcycling:
@@ -98,7 +102,7 @@ class SolverWrapperAbaqus(Component):
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
-                        else (line, '')['|LINK_EXE|' in line] # replace |LINK_EXE| if needed, else remove line
+                        else (line, '')['|LINK_EXE|' in line]  # replace |LINK_EXE| if needed, else remove line
                     if '|' in line:
                         raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
                                          f'substitution: \n \t{line} \n Probably a parameter was not substituted')
@@ -158,7 +162,7 @@ class SolverWrapperAbaqus(Component):
         temp_str = ''
         for j in range(0, self.n_surfaces - 1):
             temp_str += f'\"{self.surfaceIDs[j]}\", '
-        temp_str += f'\"{self.surfaceIDs[self.n_surfaces-1]}\"'
+        temp_str += f'\"{self.surfaceIDs[self.n_surfaces - 1]}\"'
 
         with open(join(self.path_src, get_output), 'r') as infile:
             with open(join(self.dir_csm, get_output), 'w') as outfile:
@@ -294,7 +298,7 @@ class SolverWrapperAbaqus(Component):
 
             # read in nodes file
             nodes0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Nodes.dat')
-            nodes0 = np.loadtxt(nodes0_file, skiprows=1)   # first line is a header
+            nodes0 = np.loadtxt(nodes0_file, skiprows=1)  # first line is a header
             n_nodes0 = nodes0.shape[0]
             if nodes0.shape[1] != self.dimensions:
                 raise ValueError(f'Given dimension does not match coordinates')
@@ -358,7 +362,7 @@ class SolverWrapperAbaqus(Component):
                 mp_id = self.model_part_surface_ids[mp_name]
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                                                f'_Iter{self.iteration}.dat')
+                f'_Iter{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
@@ -462,19 +466,47 @@ class SolverWrapperAbaqus(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        if self.timestep > 0:
-            if self.save_interval == 0 or (self.timestep - 1) % self.save_interval != 0:
-                to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.odb', '.prt', '.res', '.sim', '.sta', '.stt',
-                                        'Surface*Cpu0Input.dat', 'Surface*Output.dat']
+        to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
+                                'Surface*Cpu0Input.dat', 'Surface*Output.dat']
+        t = self.timestep - self.timestep_start  # make timestep relative to timestep_start (important for restart)
+
+        if t > 0:
+            if self.save_restart == 0 or (t - 1) % self.save_restart != 0:
+                # no files from previous timestep needed for restart
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
+                if (self.save_results == 0) or ((t - 1) % self.save_results != 0):
+                    # .odb not needed for post-processing
+                    cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
+                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+            if (self.save_restart < 0) and (t + self.save_restart > 0) and (t % self.save_restart == 0):
+                # If (t + self.save_restart < 0): don't touch files from previous calculation.
+                # Files from (t + self.save_restart) may be removed as new restart files are present at current timestep
+                cmd = ''
+                for suffix in to_be_removed_suffix:
+                    cmd += f'rm CSM_Time{self.timestep + self.save_restart}{suffix}; '
+                if (self.save_results == 0) or ((t + self.save_restart) % self.save_results != 0):
+                    cmd += f'rm CSM_Time{self.timestep + self.save_restart}.odb; '
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
             for f in self.dir_vault.iterdir():
                 f.unlink()  # empty vault
 
     def finalize(self):
         super().finalize()
+
+        to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
+                                'Surface*Cpu0Input.dat', 'Surface*Output.dat']
+        t = self.timestep - self.timestep_start
+        if self.save_restart == 0 or t % self.save_restart != 0:  # no files needed for restart
+            cmd = ''
+            for suffix in to_be_removed_suffix:
+                cmd += f'rm CSM_Time{self.timestep}{suffix}; '
+            if (self.save_results == 0) or (t % self.save_results != 0):
+                # .odb not needed for post-processing
+                cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
+            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+
         self.dir_vault.rmdir()
 
     def get_interface_input(self):
@@ -521,7 +553,7 @@ class SolverWrapperAbaqus(Component):
         element_0 = -1
         point_0 = -1
         n_elem = 0  # total number of elements
-        n_lp = 0    # total number of load points
+        n_lp = 0  # total number of load points
         element_list = []
 
         with open(face_file, 'r') as file:
@@ -656,7 +688,7 @@ class SolverWrapperAbaqus(Component):
                     if bool_restart:
                         rf.write(line)
                 line = f.readline()
-                if '** --'in line:
+                if '** --' in line:
                     bool_restart = True
         rf.close()
         of.close()
