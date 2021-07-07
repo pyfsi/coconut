@@ -119,17 +119,24 @@ int main(int argc, char *argv[])
 
     int maxUIterReached = 0;
     int maxTIterReached = 0;
+    int iCorr = 0;
+    lduSolverPerformance solverPerf;
+    bool converged = false;
+//    scalar relativeResidual = 1.0;
+//    scalar materialResidual = 0.0;
+    blockLduMatrix::debug = 0;
 
     IOdictionary controlDict(IOobject("controlDict",runTime.system(),mesh,IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
 
     while (true)
     {
-        lduSolverPerformance solverPerf;
-        bool converged = false;
-        scalar relativeResidual = 1.0;
-        scalar materialResidual = 0.0;
-        blockLduMatrix::debug = 0;
+//        lduSolverPerformance solverPerf;
+//        bool converged = false;
+          scalar relativeResidual = 1.0;
+          scalar materialResidual = 0.0;
+//        blockLduMatrix::debug = 0;
+        //int iCorr = 0;
 
         // Optional predictor
         if (predictor)
@@ -140,7 +147,6 @@ int main(int argc, char *argv[])
         // Store old points for moving the mesh
         const vectorField oldPoints = mesh.allPoints();
 
-        int iCorr = 0;
 
         usleep(10000);
 
@@ -155,6 +161,10 @@ int main(int argc, char *argv[])
             OFstream outfile ("next_ready.coco");
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
+            iCorr = 0;
+            lduSolverPerformance solverPerf;
+            converged = false;
+            blockLduMatrix::debug = 0;
         }
 
         if (exists("continue_coco"))

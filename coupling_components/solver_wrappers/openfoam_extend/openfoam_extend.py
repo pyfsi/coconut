@@ -356,37 +356,42 @@ class SolverWrapperopenfoamextend(Component):
         # displacement file is removed to avoid foam-Extend to append data in the new iteration
         for boundary in self.boundary_names:
             # specify location of displacement
-            displacement_name = 'DISPLACEMENT_' + boundary
-            disp_file = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
-                                    self.cur_timestamp, f'DU_patch_{boundary}.raw')
-            if os.path.isfile(disp_file):
-                os.remove(disp_file)
+            # displacement_name = 'DISPLACEMENT_' + boundary
+            # disp_file = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
+            #                         self.cur_timestamp, f'DU_patch_{boundary}.raw')
+            # if os.path.isfile(disp_file):
+            #     os.remove(disp_file)
+            displacement_name = os.path.join(self.working_directory, self.timestep, 'U')
+            velocity_name = os.path.join(self.working_directory, self.timestep, 'Velocity')
+            if os.path.isfile(displacement_name):
+                os.remove(displacement_name)
+            if os.path.isfile(velocity_name):
+                os.remove(velocity_name)
 
 
     def read_node_output(self):
         """
-        reads the pressure and wall shear stress from the <case directory>/postProcessing for serial and parallel. In
+        reads the pointDisplacement from the <case directory>/time step folders for serial and parallel. In
         case of parallel, it uses mp.sequence (using faceProcAddressing) to map the values to the face centres.
 
         :return:
         """
 
-        # default value is 1.0 for compressible case
-        # when the solver is incompressible, the pressure and shear stress are kinematic; therefore multiply with
-        # the fluid density
-        # density = 1.0
-        # if self.settings['is_incompressible']:
-        #     density = self.settings['density']
-
         for boundary in self.boundary_names:
             # specify location of displacement
-            displacement_name = 'DISPLACEMENT_' + boundary
+            # displacement_name = 'DISPLACEMENT_' + boundary
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
             nfaces = mp.size
-            disp_filename = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
-                                        self.cur_timestamp, f'DU_patch_{boundary}.raw')
+            # disp_filename = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
+            #                             self.cur_timestamp, f'DU_patch_{boundary}.raw')
 
+            filename_displacement = os.path.join(self.working_directory, self.timestep, 'U')
+            filename_velocity = os.path.join(self.working_directory, self.timestep, 'Velocity')
+
+            disp_filename = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary, size = nfaces, is_scalar =False)
+            velo_filename = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
+                                                     size=nfaces, is_scalar=False)
             # check if the displacement file completed by foam-Extend and read data
             self.check_output_file(disp_filename, nfaces)
             disp_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
