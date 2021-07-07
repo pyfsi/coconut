@@ -62,14 +62,14 @@ def create_benchmark(example, number_of_timesteps):
 
     # copy example folder to tmp
     os.mkdir(tmp_example_path)
-    for file in ('parameters.json', 'setup.py'):
+    for file in ('parameters.json', 'setup_case.py'):
         copy(join(examples_path, example, file), tmp_example_path)
 
     # go to this example directory
     os.chdir(tmp_example_path)
 
     # perform set up
-    tools.import_module('setup', join(tmp_example_path, 'setup.py'))
+    tools.import_module('setup_case', join(tmp_example_path, 'setup_case.py'))
 
     # read parameters and limit number of time steps
     parameter_file_name = "parameters.json"

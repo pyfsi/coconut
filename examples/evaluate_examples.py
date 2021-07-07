@@ -26,7 +26,7 @@ To include another example, create a new class analogous to the existing classes
 number of time steps that the example should be run (the benchmark file should have run for at least this number of 
 time steps).
 There are two other class variables; 'additional_files' is a list of additional files in the example required for the 
-simulation besides 'setup.py' and 'parameters.json', and 'compare_data' is a boolean which determines whether the
+simulation besides 'setup_case.py' and 'parameters.json', and 'compare_data' is a boolean which determines whether the
 comparison with a benchmark pickle file should be made.
 Once this class is made, you may need to create a benchmark file for this new example using the corresponding script.
 """
@@ -70,14 +70,14 @@ class EvaluateExamples(unittest.TestCase):
 
         # copy example folder to tmp
         os.mkdir(tmp_example_path)
-        for file in ['parameters.json', 'setup.py'] + cls.additional_files:
+        for file in ['parameters.json', 'setup_case.py'] + cls.additional_files:
             shutil.copy(join(examples_path, cls.example, file), tmp_example_path)
 
         # go to this example directory
         os.chdir(tmp_example_path)
 
         # perform set up
-        tools.import_module('setup', join(tmp_example_path, 'setup.py'))
+        tools.import_module('setup_case', join(tmp_example_path, 'setup_case.py'))
 
         # read parameters and limit number of time steps
         parameter_file_name = "parameters.json"
