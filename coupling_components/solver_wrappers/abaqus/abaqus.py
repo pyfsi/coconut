@@ -362,7 +362,7 @@ class SolverWrapperAbaqus(Component):
                 mp_id = self.model_part_surface_ids[mp_name]
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                f'_Iter{self.iteration}.dat')
+                                  f'_Iter{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors

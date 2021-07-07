@@ -37,7 +37,6 @@ parameter|type|description
 `interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"case.inp"`
 `mp_mode`|str|Determines how Abaqus is executed in parallel. It is recommended to use `"THREADS"`. `"MPI"` works as well but requires a host-file called *`AbaqusHosts.txt`*. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script *`make_host_file.sh`* which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.
-`save_results`|int|(optional) Default: 1. Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
 <nobr>`working_directory`</nobr>|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [environment section](#environment).
 
@@ -46,6 +45,7 @@ parameter|type|description
 ### Optional
 parameter|type|description
 ---:|:---:|---
+`save_results`|int| (Default: 1) Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
 `subcycling`|boolean|`false`: [Default] Abaqus solves the requested time step using one increment. <br> `true`: Abaqus is allowed to solve the time step using multiple *increments*. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small *increments*.
 <nobr>`initial_inc`</nobr>|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
 `max_inc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
@@ -87,6 +87,9 @@ In the file conventions *`A`* is the time step and *`B`* the index of the corres
  - Output database file written by Abaqus called *`CSM_TimeA.odb`* and read by GetOutput (also needed for restart).
  - Output text file *`CSM_TimeASurfaceBOutput.dat`* containing displacements written by GetOutput and read by the solver wrapper.
  - Input text file *`CSM_TimeASurfaceBCpu0Input.dat`* containing the loads written by the solver wrapper and read by the USR.
+ 
+ The parameter `save_restart` (defined at the level of the [`coupled_solver`](../../coupled_solvers/coupled_solvers.md#settings)) determines at which timesteps these files are saved.
+ Additionally, the `save_results` parameter defines the rate at which the output database files (*`.odb`*) are kept.
 
 ## Setting up a case: Abaqus input file (.inp)
 The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as "base-file".
