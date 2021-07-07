@@ -37,7 +37,7 @@ For example
 python run_test.py fluent abaqus
 ````
 will run all tests that have the `fluent` or `abaqus` in its path: e.g.
-`coconut.tests.solver_wrappers.test_v2019R1.test_move_nodes`.
+`coconut.tests.solver_wrappers.fluent.test_v2019R1.test_move_nodes`.
 
 Besides the method of running tests explained above, it is also possible to use commands of the form
 ````

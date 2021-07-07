@@ -8,6 +8,7 @@ import subprocess
 import json
 import multiprocessing
 import shutil
+import time
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
@@ -22,6 +23,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
         # setup
         if cls.setup_case:
+            shutil.rmtree(cls.working_dir, ignore_errors=True)
             dir_tmp = join(dir_name, f'test_v{cls.version}/tube2d')
             fluent_solver_module = f'fluent.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
@@ -38,6 +40,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
+            time.sleep(0.1)
             shutil.rmtree(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
@@ -223,6 +226,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
         # setup
         if cls.setup_case:
+            shutil.rmtree(cls.working_dir, ignore_errors=True)
             dir_tmp = join(dir_name, f'test_v{cls.version}/tube3d')
             fluent_solver_module = f'fluent.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
@@ -239,6 +243,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
+            time.sleep(0.1)
             shutil.rmtree(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
