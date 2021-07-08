@@ -112,48 +112,43 @@ class SolverWrapperAbaqus(Component):
         self.write_start_and_restart_inp(join(self.dir_csm, self.input_file), self.dir_csm + '/CSM_Time0.inp',
                                          self.dir_csm + '/CSM_Restart.inp')
 
-        # prepare Abaqus USRInit.f
-        usr = 'USRInit.f'
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))  # create tmp-directory
-        with open(join(self.path_src, usr), 'r') as infile:
-            with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
-                for line in infile:
-                    line = line.replace('|dimension|', str(self.dimensions))
-                    line = line.replace('|surfaces|', str(self.n_surfaces))
-                    line = line.replace('|cpus|', str(self.cores))
-
-                    # if PWD is too long then FORTRAN code can not compile so this needs special treatment
-                    line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
-                    line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
-                    if '|' in line:
-                        raise ValueError(f'The following line in USRInit.f still contains a \'|\' after substitution: '
-                                         f'\n \t{line} \nProbably a parameter was not substituted')
-                    outfile.write(line)
-
-        # compile Abaqus USRInit.f in library libusr
+        # create libusr and tmp folders
         path_libusr = join(self.dir_csm, 'libusr/')
         shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
         os.mkdir(path_libusr)
-        cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
-        self.print_log(f'### Compilation of usrInit.f ###')
-        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
+        os.mkdir(join('/tmp', self.tmp_directory_name))  # create tmp-directory
 
-        # get load points from usrInit.f at timestep_start
-        self.print_log(f'\n### Get load integration points using usrInit.f ###')
-        if self.timestep_start == 0:
+        if self.timestep_start == 0:  # run USRInit only for new calculation
+            # prepare Abaqus USRInit.f
+            usr = 'USRInit.f'
+            with open(join(self.path_src, usr), 'r') as infile:
+                with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
+                    for line in infile:
+                        line = line.replace('|dimension|', str(self.dimensions))
+                        line = line.replace('|surfaces|', str(self.n_surfaces))
+                        line = line.replace('|cpus|', str(self.cores))
+
+                        # if PWD is too long then FORTRAN code can not compile so this needs special treatment
+                        line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
+                        line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
+                        if '|' in line:
+                            raise ValueError(f'The following line in USRInit.f still contains a \'|\' after substitution: '
+                                             f'\n \t{line} \nProbably a parameter was not substituted')
+                        outfile.write(line)
+
+            # compile Abaqus USRInit.f in library libusr
+            cmd = f'abaqus make library=usrInit.f directory={path_libusr} >> {self.logfile} 2>&1'
+            self.print_log(f'### Compilation of usrInit.f ###')
+            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+
+            # get load points from usrInit.f at timestep_start
+            self.print_log(f'\n### Get load integration points using usrInit.f ###')
             cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
                 f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             # the output files will have a name with a higher time step  ('job=') than the input file ('input=')
             cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
                 f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
-            commands = cmd1 + '; ' + cmd2
-            subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-        else:  # restart: this only used for checks
-            cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
-                f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
-            cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} oldjob=CSM_Time{self.timestep_start} ' \
-                f'input=CSM_Restart cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
@@ -180,20 +175,21 @@ class SolverWrapperAbaqus(Component):
         cmd = f'abaqus make job=GetOutput user=GetOutput.cpp >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
-        # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
-        self.print_log(f'\n### Get geometrical node positions using GetOutput ###')
-        cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
-        subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
+        if self.timestep_start == 0:
+            # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
+            self.print_log(f'\n### Get geometrical node positions using GetOutput ###')
+            cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
+            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
-        for i in range(0, self.n_surfaces):
-            path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{i}Output.dat')
-            path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
-            shutil.move(path_output, path_nodes)
+            for i in range(0, self.n_surfaces):
+                path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{i}Output.dat')
+                path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
+                shutil.move(path_output, path_nodes)
 
-            # create elements file per surface
-            face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat')
-            output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Elements.dat')
-            self.make_elements(face_file, output_file)
+                # create elements file per surface
+                face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat')
+                output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Elements.dat')
+                self.make_elements(face_file, output_file)
 
         # prepare Abaqus USR.f
         usr = 'USR.f'
@@ -245,11 +241,6 @@ class SolverWrapperAbaqus(Component):
             if elements0.shape[0] - 1 != int(n_elem):  # elements remainder contains element numbers in interface
                 raise ValueError(f'Number of lines ({elements0.shape[0]}) in {elem0_file} does not correspond with '
                                  f'the number of elements ({n_elem})')
-            if self.timestep_start != 0:  # check if elements0 corresponds to timestep_start
-                elem_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
-                elements = np.loadtxt(elem_file)
-                if int(elements[0, 0]) != n_elem or int(elements[0, 1]) != n_lp:
-                    raise ValueError(f'Number of load points has changed for {mp_name}')
 
             # read in faces file for load points
             faces0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Cpu0Faces.dat')
@@ -302,12 +293,6 @@ class SolverWrapperAbaqus(Component):
             n_nodes0 = nodes0.shape[0]
             if nodes0.shape[1] != self.dimensions:
                 raise ValueError(f'Given dimension does not match coordinates')
-            if self.timestep_start != 0:  # check if nodes0 corresponds to timestep_start
-                nodes_file = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
-                nodes = np.loadtxt(nodes_file, skiprows=1)  # first line is a header
-                n_nodes = nodes.shape[0]
-                if n_nodes != n_nodes0:
-                    raise ValueError(f'Number of interface nodes has changed for {mp_name}')
 
             # get geometrical node coordinates
             ids = np.arange(n_nodes0)  # Abaqus does not use node ids but maintains the output order
