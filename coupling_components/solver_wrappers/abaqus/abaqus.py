@@ -455,25 +455,25 @@ class SolverWrapperAbaqus(Component):
         super().finalize_solution_step()
         to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
                                 'Surface*Cpu0Input.dat', 'Surface*Output.dat']
-        t = self.timestep - self.timestep_start  # make timestep relative to timestep_start (important for restart)
 
-        if t > 0:
-            if self.save_restart == 0 or (t - 1) % self.save_restart != 0:
+        if self.timestep > 0:
+            if self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0:
                 # no files from previous timestep needed for restart
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
-                if (self.save_results == 0) or ((t - 1) % self.save_results != 0):
+                if (self.save_results == 0) or ((self.timestep - 1) % self.save_results != 0):
                     # .odb not needed for post-processing
                     cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-            if (self.save_restart < 0) and (t + self.save_restart > 0) and (t % self.save_restart == 0):
+            if (self.save_restart < 0) and (self.timestep + self.save_restart > 0) and \
+                    (self.timestep % self.save_restart == 0):
                 # If (t + self.save_restart < 0): don't touch files from previous calculation.
                 # Files from (t + self.save_restart) may be removed as new restart files are present at current timestep
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep + self.save_restart}{suffix}; '
-                if (self.save_results == 0) or ((t + self.save_restart) % self.save_results != 0):
+                if (self.save_results == 0) or ((self.timestep + self.save_restart) % self.save_results != 0):
                     cmd += f'rm CSM_Time{self.timestep + self.save_restart}.odb; '
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
             for f in self.dir_vault.iterdir():
@@ -484,12 +484,11 @@ class SolverWrapperAbaqus(Component):
 
         to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
                                 'Surface*Cpu0Input.dat', 'Surface*Output.dat']
-        t = self.timestep - self.timestep_start
-        if self.save_restart == 0 or t % self.save_restart != 0:  # no files needed for restart
+        if self.save_restart == 0 or self.timestep % self.save_restart != 0:  # no files needed for restart
             cmd = ''
             for suffix in to_be_removed_suffix:
                 cmd += f'rm CSM_Time{self.timestep}{suffix}; '
-            if (self.save_results == 0) or (t % self.save_results != 0):
+            if (self.save_results == 0) or (self.timestep % self.save_results != 0):
                 # .odb not needed for post-processing
                 cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
