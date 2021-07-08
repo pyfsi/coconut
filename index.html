@@ -1095,7 +1095,7 @@ We develop high-performance quasi-Newton algorithms to accelerate convergence of
 <li><code>python&gt;=3.6</code> </li>
 <li><code>numpy&gt;=1.16.4</code></li>
 <li><code>scipy&gt;=1.3.0</code></li>
-<li><code>pandas&gt;=0.24.2</code> (required for <a href="coupling_components/solver_wrappers/kratos">Kratos solver wrapper</a>)</li>
+<li><code>pandas&gt;=0.24.2</code> (required for <a href="https://pyfsi.github.io/coconut/kratos">Kratos solver wrapper</a>)</li>
 <li><code>matplotlib=3.1.0</code> (recommended)</li>
 </ul>
 <p>We recommend Anaconda 2019.07 or newer.</p>
@@ -1173,8 +1173,8 @@ When CoCoNuT tries to use a solver module that is not present in the <code>solve
 
 <p>This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file <em><code>parameters.json</code></em> will be used to run the actual FSI simulation, but we will come back to that later. 
 First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
-In this case we provide a script <em><code>setup.py</code></em> that sets up both solvers using the files in the folder <em><code>../setup_files</code></em>. When the script is run with</p>
-<div class="codehilite"><pre><span></span><code>python3 setup.py
+In this case we provide a script <em><code>setup_case.py</code></em> that sets up both solvers using the files in the folder <em><code>../setup_files</code></em>. When the script is run with</p>
+<div class="codehilite"><pre><span></span><code>python3 setup_case.py
 </code></pre></div>
 
 <p>new folders <em><code>CFD</code></em> and <em><code>CSM</code></em> appear, as well as the file <em><code>run_simulation.py</code></em>. The <em><code>CFD</code></em> folder contains all files required to start a simulation of the flow in the tube. 

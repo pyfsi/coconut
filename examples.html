@@ -921,7 +921,7 @@ Currently all these examples calculate the flow in a flexible tube.</p>
 <p>The <em><code>examples</code></em> folder contains following subfolders:</p>
 <ul>
 <li><em><code>debug_files</code></em>: Python scripts that are useful for debugging of the cases. These files might need some adjustments to work. In order to use them, the debug boolean <code>self.debug</code> has to be set to <code>True</code> in the settings of the corresponding solver wrappers.</li>
-<li><em><code>post_processing</code></em>: contains scripts to visualize your results. In particular, the <em><code>animate_example.py</code></em> script provides the means to animate the variables stored in the interface (pressure, traction, displacement), given that your results are stored in a pickle file, see the <a href="https://pyfsi.github.io/coconut/coupled_solvers/#save-results">documentation on save results</a>.</li>
+<li><em><code>post_processing</code></em>: contains scripts to visualize your results. In particular, the <em><code>animate_example.py</code></em> script provides the means to animate the variables stored in the interface (pressure, traction, displacement), given that your results are stored in a pickle file, see the <a href="https://pyfsi.github.io/coconut/coupled_solvers#save-results">documentation on save results</a>.</li>
 <li><em><code>setup_files</code></em>: contains the necessary files to set up the case for each solver and the <em><code>run_simulation.py</code></em> script necessary to start the actual simulation.</li>
 <li><em><code>test_single_solver</code></em>: example to check the correct set up of your solver specific cases.</li>
 <li><em><code>tube_&lt;flow solver&gt;_&lt;structural solver&gt;</code></em>: main directory of the example cases.</li>
@@ -929,7 +929,7 @@ Currently all these examples calculate the flow in a flexible tube.</p>
 <p>The main directory of each example case contains following files: </p>
 <ul>
 <li><em><code>parameters.json</code></em>: parameter file in JSON format.</li>
-<li><em><code>setup.py</code></em>: python script, which needs to be run to set up the case.</li>
+<li><em><code>setup_case.py</code></em>: python script, which needs to be run to set up the case.</li>
 <li><em><code>tube_&lt;flow solver&gt;_&lt;structural solver&gt;.md</code></em>: description of the specific example.</li>
 </ul>
 <p>When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
@@ -945,7 +945,7 @@ The second is <code>coupled_solver</code> in which all parameters related to sol
 <p>In order to run an example case, first, the setup script has to be run to create the working directories.
 Then, the calculation is started by running <em><code>run_simulation.py</code></em>. Make sure to add the module-load commands for the required solvers in <code>solverload_cmd_dict</code> in the <em><code>coconut/solver_modules.py</code></em> file, to load the necessary modules for your solvers during the simulation. By default, the solvers for the UGent-cluster are added to the file.</p>
 <p>In practice, you would run the following commands:</p>
-<div class="codehilite"><pre><span></span><code>python setup.py
+<div class="codehilite"><pre><span></span><code>python setup_case.py
 python run_simulation.py
 </code></pre></div>
 

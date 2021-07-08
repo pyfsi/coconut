@@ -1141,13 +1141,13 @@ It contains 3 <code>Components</code>: a mapper for the input, a real solver wra
 </blockquote>
 <p>The two mappers in the <code>SolverWrapperMapped</code> are of a special type: they work on the level of the <a href="https://pyfsi.github.io/coconut/data_structure"><code>Interfaces</code></a>, while the actual mapping will be done on a lower level: the <code>ModelPart</code> level. The <code>Interface</code> mapper effectively acts as a <em>wrapper</em> around the actual <code>ModelPart</code> mappers. Currently only one mapper is available on the <code>Interface</code> level, aptly called <code>MapperInterface</code>.</p>
 <p>At the lowest level, mappers interpolate variable data (stored in <code>Interfaces</code>) between two <code>ModelParts</code>, based on their coordinates. Interpolation is always done from the <em>from</em> <code>ModelPart</code> to the <em>to</em>-<code>ModelPart</code>.
-Multiple <code>ModelPart</code> mappers can be chained together in a <code>MapperCombined</code> object, to add additional functionality, for example swapping the coordinate axes with the <a href="https://pyfsi.github.io/coconut/mappers/#mapperpermutation">permutation mapper</a>.</p>
+Multiple <code>ModelPart</code> mappers can be chained together in a <code>MapperCombined</code> object, to add additional functionality, for example swapping the coordinate axes with the <a href="https://pyfsi.github.io/coconut/mappers#mapperpermutation">permutation mapper</a>.</p>
 <h3 id="interpolators-and-transformers">Interpolators and transformers</h3>
 <p>The <code>ModelPart</code>-level mappers have two main methods: <code>initialize</code> and <code>__call__</code>. 
 The <code>initialize</code> method performs one-time expensive operations, such as a nearest-neighbour search and the calculation of interpolation coefficients. 
 The <code>__call__</code> method is used for the actual mapping. It takes two tuples as arguments (<em>from</em> and <em>to</em> respectively). Each tuple contains an <code>Interface</code> object, the name of the affected <code>ModelPart</code> and the name of the variable that must be mapped. This method returns nothing: the mapping is done in-place in the <em>to</em>-<code>Interface</code>.</p>
 <p>There are two types of <code>ModelPart</code> mappers: <em>interpolators</em> and <em>transformers</em>. They can be distinguished by their superclass. 
-All interpolators inherit from the superclass <code>MappedInterpolator</code>. These mappers do the actual interpolation. Currently <a href="https://pyfsi.github.io/coconut/mappers/#mappernearest">a nearest-neighbour mapper</a>, <a href="https://pyfsi.github.io/coconut/mappers/#mapperlinear">a linear mapper</a> and a <a href="https://pyfsi.github.io/coconut/mappers/#mapperradialbasis">radial basis mapper</a> are available.
+All interpolators inherit from the superclass <code>MappedInterpolator</code>. These mappers do the actual interpolation. Currently <a href="https://pyfsi.github.io/coconut/mappers#mappernearest">a nearest-neighbour mapper</a>, <a href="https://pyfsi.github.io/coconut/mappers#mapperlinear">a linear mapper</a> and a <a href="https://pyfsi.github.io/coconut/mappers#mapperradialbasis">radial basis mapper</a> are available.
 All transformers inherit from the superclass <code>MappedTransformer</code>. They provide additional functionality that can be useful during mapping. They do not map values from one point cloud to another like the interpolators, but perform <em>one-sided</em> transformations on the coordinates and/or the data. One example is the permutation transformer: it swaps the coordinate axes of the <code>ModelPart</code> and accordingly the components of vector variables. 
 A transformer can never be used by itself, it must always be combined with an interpolator. The reason is that interpolators use information that comes from two sides, which is exactly what the higher-level <code>SolverWrapperMapped</code> and <code>MapperInterface</code> objects are supplying. To chain together multiple <code>ModelPart</code> mappers, the <code>MapperCombined</code> is used: it contains always one interpolator and zero or more transformers, on either side of the interpolator.</p>
 <h2 id="special-mapper-classes">Special mapper classes</h2>
@@ -1177,7 +1177,7 @@ The same type of <code>ModelPart</code> mapper is used for each pair of <code>Mo
 </tbody>
 </table>
 <h3 id="mapperinterpolator"><code>MapperInterpolator</code></h3>
-<p>Superclass for all <a href="https://pyfsi.github.io/coconut/mappers/#interpolators">interpolators</a>. </p>
+<p>Superclass for all <a href="https://pyfsi.github.io/coconut/mappers#interpolators">interpolators</a>. </p>
 <table>
 <thead>
 <tr>
@@ -1214,7 +1214,7 @@ The same type of <code>ModelPart</code> mapper is used for each pair of <code>Mo
 </ul>
 <p>The <code>__call__</code> method should not be overridden in the child classes. It interpolates data based on coefficients that are calculated in the <code>initialize</code> method of the child classes. Both scalar and vector variables can be mapped.</p>
 <h3 id="mappertransformer"><code>MapperTransformer</code></h3>
-<p>Superclass for all <a href="https://pyfsi.github.io/coconut/mappers/#transformers">transformers</a>. A transformer cannot be used as a standalone mapper, but will always be part of a combined mapper. </p>
+<p>Superclass for all <a href="https://pyfsi.github.io/coconut/mappers#transformers">transformers</a>. A transformer cannot be used as a standalone mapper, but will always be part of a combined mapper. </p>
 <p>The <code>initialization</code> of transformers is very different from that of interpolators. A transformer is initialized from one side (either the <em>from</em> or the <em>to</em> side), i.e. based on a single <code>ModelPart</code>. From this input <code>ModelPart</code>, the <code>initialize</code> method creates and returns another <code>ModelPart</code> that is stored and used in the combined mapper. </p>
 <h3 id="mappercombined"><code>MapperCombined</code></h3>
 <table>
@@ -1323,7 +1323,7 @@ This transformer can be initialized in both directions. </p>
 <h3 id="mapperaxisymmetric3dto2d"><code>MapperAxisymmetric3DTo2D</code></h3>
 <p>Transforms a 3D geometry to a 2D axisymmetric geometry. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the interpolator in the combined mapper.</p>
 <p>For scalar data, the circumferential average is taken for each 2D point. For vector data too, taking into account the correct radial direction in each 3D point.  Again, swirl cannot be taken into account: if a tangential component is present in 3D, it is not transferred to 2D. </p>
-<p>More information and JSON settings can be found under <a href="https://pyfsi.github.io/coconut/mappers/#mapperaxisymmetric2dto3d"><code>MapperAxisymmetric2DTo3D</code></a>.</p>
+<p>More information and JSON settings can be found under <a href="https://pyfsi.github.io/coconut/mappers#mapperaxisymmetric2dto3d"><code>MapperAxisymmetric2DTo3D</code></a>.</p>
 <h2 id="interpolators">Interpolators</h2>
 <h3 id="mappernearest"><code>MapperNearest</code></h3>
 <p>Does not require additional settings compared to the <code>MapperInterpolator</code>. Does simple nearest-neighbour mapping.</p>
