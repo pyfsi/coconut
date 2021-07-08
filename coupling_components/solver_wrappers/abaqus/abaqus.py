@@ -53,6 +53,7 @@ class SolverWrapperAbaqus(Component):
         self.input_file = self.settings['input_file']
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
+        self.static = self.settings['static']
         self.timestep = self.timestep_start
         self.iteration = None
         self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
@@ -128,6 +129,7 @@ class SolverWrapperAbaqus(Component):
                         line = line.replace('|dimension|', str(self.dimensions))
                         line = line.replace('|surfaces|', str(self.n_surfaces))
                         line = line.replace('|cpus|', str(self.cores))
+                        line = line.replace('|increment|', str(int(self.static)))
 
                         # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                         line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
@@ -639,6 +641,12 @@ class SolverWrapperAbaqus(Component):
                         rf.write(line_new)
                 elif '*dynamic' in line.lower() or '*static' in line.lower():
                     of.write(line)
+                    if '*dynamic' in line.lower() and self.static:
+                        raise ValueError(f'keyword "*dynamic" found in input file while keyword "static" is set to True'
+                                         f' in parameter file')
+                    if '*static' in line.lower() and not self.static:
+                        raise ValueError(f'keyword "*static" found in input file while keyword "static" is set to False'
+                                         f' in parameter file')
                     if bool_restart:
                         rf.write(line)
                     if '*dynamic' in line.lower():

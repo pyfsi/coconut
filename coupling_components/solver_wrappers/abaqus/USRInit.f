@@ -3,10 +3,12 @@ C======================== GLOBAL DATA =========================================
 C==============================================================================
       BLOCK DATA
 
-      INTEGER NOEL_PREV
+      INTEGER S
+      PARAMETER (S = |surfaces|)
+      INTEGER NOEL_PREV(S)
       COMMON /PREV/ NOEL_PREV
       SAVE /PREV/
-      DATA NOEL_PREV/0/
+      DATA NOEL_PREV /S*0/
 
 #ifdef MPI
       INTEGER ID,IDENTIFIED
@@ -57,11 +59,11 @@ C==============================================================================
       IMPLICIT NONE
 
       INTEGER D,S
-      INTEGER NOEL_PREV
-      COMMON /PREV/ NOEL_PREV
-      SAVE /PREV/
       PARAMETER (D = |dimension|)
       PARAMETER (S = |surfaces|)
+      INTEGER NOEL_PREV(S)
+      COMMON /PREV/ NOEL_PREV
+      SAVE /PREV/
 
 #ifdef MPI
       INTEGER ID,IDENTIFIED
@@ -77,51 +79,39 @@ C==============================================================================
       CHARACTER(LEN=80) :: SNAME
       INTEGER KSTEP,KINC,NOEL,NPT,LAYER,KSPT,JLTYP,R,UNIT_FACES(S)
 
-      IF (KINC == 1) THEN
-         IF (NOEL >= NOEL_PREV) THEN
-             PRINT *, 'NOEL_PREV = ', NOEL_PREV
-             CALL FLUSH(6)
-             PRINT *, 'NOEL = ', NOEL
-             CALL FLUSH(6)
+      FMT_FACES = '(2I6,|dimension|ES27.17E2)'
+      UNIT_FACES = (/ (100+R,R=1,S) /)
 
-             FMT_FACES = '(2I6,|dimension|ES27.17E2)'
-             UNIT_FACES = (/ (100+R,R=1,S) /)
-     
 #ifdef MPI
-             IF (IDENTIFIED < 0) THEN
-                CALL IDENTIFY
-             END IF
+      IF (IDENTIFIED < 0) THEN
+         CALL IDENTIFY
+      END IF
 #else
-             ID = 0
+      ID = 0
 #endif
 
-             R = INDEX(SNAME,'SURFACE')
-             READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-             R = R+1
+      R = INDEX(SNAME,'SURFACE')
+      READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
+      R = R+1
 
+      IF (KINC == |increment|) THEN
+         IF (NOEL >= NOEL_PREV(R)) THEN
              WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
      &          '|PWD|',
      &          '/|CSM_dir|/CSM_Time',
      &          (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
-
              OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
-
              WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
-
              CLOSE(UNIT_FACES(R))
-             NOEL_PREV = NOEL
-
-         ELSE IF (NOEL < NOEL_PREV) THEN
-c             PRINT *, 'NOEL is smaller than NOEL_PREV:', NOEL, ' < ', NOEL_PREV
-c             PRINT *, 'Setting NOEL_PREV to 0'
-c             CALL FLUSH(6)
-             NOEL_PREV = 0
-             PRINT *, 'USR-abort: end of faces file'
+             NOEL_PREV(R) = NOEL
+         ELSE IF (NOEL < NOEL_PREV(R)) THEN
+             PRINT *, 'USR-abort: end of faces file reached. Normal termination'
              CALL FLUSH(6)
-             CALL STDB_ABQERR(-3,'USR-abort: end of faces file')
+             CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
          END IF
-      ELSE IF (KINC > 1) THEN
-         CALL STDB_ABQERR(-3,'USR-abort: normal termination')
+      ELSE IF (KINC > |increment|) THEN
+         PRINT *, 'USR-abort: end of increment. Normal termination.'
+         CALL STDB_ABQERR(-3,'USR-abort: end of increment.')
       END IF
           
       F = 0
