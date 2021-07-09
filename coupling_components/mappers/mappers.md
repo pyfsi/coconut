@@ -15,9 +15,7 @@ The terms *from* and *to* will be used to denote respectively the side that prov
 CoCoNuT interacts with the mappers through an instance of the `SolverWrapperMapped` class. This special solver wrapper appears and behaves exactly the same as real solver wrappers.
 It contains 3 `Components`: a mapper for the input, a real solver wrapper and a mapper for the output.
 
-> TODO: add links to Interfaces and ModelParts documentation sections when the terms are first mentioned here (that documentation doesn't exist yet...)
-
-The two mappers in the `SolverWrapperMapped` are of a special type: they work on the level of the [`Interfaces`](../../data_structure/data_structure.md), while the actual mapping will be done on a lower level: the `ModelPart` level. The `Interface` mapper effectively acts as a *wrapper* around the actual `ModelPart` mappers. Currently only one mapper is available on the `Interface` level, aptly called `MapperInterface`.
+The two mappers in the `SolverWrapperMapped` are of a special type: they work on the level of the [`Interfaces`](../../data_structure/data_structure.md#interface), while the actual mapping will be done on a lower level: the [`ModelPart`](../../data_structure/data_structure.md#modelpart) level. The `Interface` mapper effectively acts as a *wrapper* around the actual `ModelPart` mappers. Currently only one mapper is available on the `Interface` level, aptly called `MapperInterface`.
 
 At the lowest level, mappers interpolate variable data (stored in `Interfaces`) between two `ModelParts`, based on their coordinates. Interpolation is always done from the *from* `ModelPart` to the *to*-`ModelPart`.
 Multiple `ModelPart` mappers can be chained together in a `MapperCombined` object, to add additional functionality, for example swapping the coordinate axes with the [permutation mapper](mappers.md#mapperpermutation).

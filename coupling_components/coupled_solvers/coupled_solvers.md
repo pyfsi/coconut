@@ -69,7 +69,7 @@ For more challenging problems, with incompressible flow and high added-mass, thi
 
 ### Settings
 
-Besides the [parameters required in the class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
@@ -111,7 +111,7 @@ This method improves convergence speed drastically compared to Gauss-Seidel iter
 
 ### Settings
 
-Besides the [parameters required in the class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
@@ -173,7 +173,7 @@ More information about residual operator methods can be found in [[1](#1)].
 
 ### Settings
 
-Besides the [parameters required in the class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
@@ -245,7 +245,7 @@ More information about block methods can be found in [[1](#1)].
 
 ### Settings
 
-Besides the [parameters required in the class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
