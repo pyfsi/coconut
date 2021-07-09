@@ -123,6 +123,11 @@ class EvaluateExamples(unittest.TestCase):
             self.skipTest(f'Convergence history not compared for {self.__class__.__name__}')
 
 
+class TestBreakingDamFluent2DAbaqus2D(EvaluateExamples):
+    example = 'breaking_dam_fluent2d_abaqus2d'
+    number_of_timesteps = 2
+
+
 class TestTestSingleSolver(EvaluateExamples):
     example = 'test_single_solver'
     number_of_timesteps = 2
@@ -211,6 +216,7 @@ class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
 
 # comment out examples that you do not want to evaluate
 test_cases = (
+    TestBreakingDamFluent2DAbaqus2D,
     TestTestSingleSolver,
     TestTubeFluent2DAbaqus2D,
     TestTubeFluent2DAbaqus2DSteady,

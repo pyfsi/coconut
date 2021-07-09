@@ -28,6 +28,7 @@ benchmark = join(examples_path, 'benchmark_files')
 # example and tuple with number of time steps and optional additional files
 # comment out examples that you do not want to make benchmark files for
 examples = {
+    'breaking_dam_fluent2d_abaqus2d': 2,
     'tube_fluent2d_abaqus2d': 2,
     'tube_fluent2d_abaqus2d_steady': 1,
     'tube_fluent2d_tube_structure': 2,
