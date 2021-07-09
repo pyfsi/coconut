@@ -20,7 +20,7 @@ class CoupledSolverGaussSeidel(Component):
 
         self.parameters = parameters
         self.settings = parameters['settings']
-        self.init_time = time.time()
+        self.start_init_time = time.time()  # start of initialization
 
         # read parameters
         self.case_name = self.settings.get('case_name', 'case')  # case name
@@ -58,7 +58,8 @@ class CoupledSolverGaussSeidel(Component):
         self.y = None  # input interface of solver 1
         self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
-        self.start_time = None
+        self.init_time = None
+        self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
         self.iterations = []
@@ -96,8 +97,8 @@ class CoupledSolverGaussSeidel(Component):
         self.y = self.solver_wrappers[0].get_interface_output().copy()
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
-        self.start_time = time.time()
-        self.init_time = self.start_time - self.init_time
+        self.start_run_time = time.time()  # start of calculation
+        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
         title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
         tools.print_info(title)
@@ -211,7 +212,7 @@ class CoupledSolverGaussSeidel(Component):
     def output_solution_step(self):
         super().output_solution_step()
 
-        self.run_time = time.time() - self.start_time
+        self.run_time = time.time() - self.start_run_time  # duration of calculation
         if self.save_results != 0 and (self.time_step % self.save_results == 0 or
                                        (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,

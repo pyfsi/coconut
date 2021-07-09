@@ -4,6 +4,7 @@ from coconut import tools
 import json
 import os
 import shutil
+import time
 from shutil import copytree, copy
 from os.path import join
 
@@ -51,6 +52,7 @@ def set_up():
 
 
 def clean_up():
+    time.sleep(0.1)
     shutil.rmtree(tmp_path)
 
 
