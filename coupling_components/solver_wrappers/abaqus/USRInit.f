@@ -128,9 +128,8 @@ C==============================================================================
 
       IMPLICIT NONE
       
-      INTEGER D,S
+      INTEGER D
       PARAMETER (D = |dimension|)
-      PARAMETER (S = |surfaces|)
 
       DOUBLE PRECISION ALPHA,T_USER(D),TIME(2),COORDS(D),DIRCOS(D,D)
       CHARACTER(LEN=80) :: SNAME

@@ -29,7 +29,7 @@ class SolverWrapperAbaqus(Component):
 
         if self.version is None:
             raise NotImplementedError(
-                'Base class method called, class variable version and version_bis need to be set in the derived class')
+                'Base class method called, class variable version needs to be set in the derived class')
 
         # set parameters
         self.settings = parameters['settings']
@@ -135,8 +135,8 @@ class SolverWrapperAbaqus(Component):
                         line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
                         line = self.replace_fortran(line, '|CSM_dir|', self.settings['working_directory'])
                         if '|' in line:
-                            raise ValueError(f'The following line in USRInit.f still contains a \'|\' after substitution: '
-                                             f'\n \t{line} \nProbably a parameter was not substituted')
+                            raise ValueError(f'The following line in USRInit.f still contains a \'|\' after '
+                                             f'substitution: \n \t{line} \nProbably a parameter was not substituted')
                         outfile.write(line)
 
             # compile Abaqus USRInit.f in library libusr
@@ -458,7 +458,7 @@ class SolverWrapperAbaqus(Component):
 
         if self.timestep > 0:
             if self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0:
-                # no files from previous timestep needed for restart
+                # no files from previous time step needed for restart
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
@@ -468,8 +468,9 @@ class SolverWrapperAbaqus(Component):
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
             if (self.save_restart < 0) and (self.timestep + self.save_restart > 0) and \
                     (self.timestep % self.save_restart == 0):
-                # if (t + self.save_restart < 0): don't touch files from previous calculation
-                # files from (t + self.save_restart) may be removed as new restart files are present at current timestep
+                # if (self.timestep + self.save_restart < 0): don't touch files from previous calculation
+                # files from (self.timestep + self.save_restart) may be removed as new restart files are present at
+                # current timestep
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep + self.save_restart}{suffix}; '
