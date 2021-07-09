@@ -468,8 +468,8 @@ class SolverWrapperAbaqus(Component):
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
             if (self.save_restart < 0) and (self.timestep + self.save_restart > 0) and \
                     (self.timestep % self.save_restart == 0):
-                # If (t + self.save_restart < 0): don't touch files from previous calculation.
-                # Files from (t + self.save_restart) may be removed as new restart files are present at current timestep
+                # if (t + self.save_restart < 0): don't touch files from previous calculation
+                # files from (t + self.save_restart) may be removed as new restart files are present at current timestep
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep + self.save_restart}{suffix}; '

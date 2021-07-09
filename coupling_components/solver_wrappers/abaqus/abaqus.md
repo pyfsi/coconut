@@ -20,7 +20,7 @@ Abaqus (Dassault Systèmes) can be used to solve for the structural displacement
 ## Environment
  - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the JSON file. In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
  - The **Abaqus software should be available as well as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
-- If the **Abaqus license server** needs to be specified explicitly, it is advised to do this in the [solver modules file](../../../README.md#checking-the-solver-modules).
+ - If the **Abaqus license server** needs to be specified explicitly, it is advised to do this in the [solver modules file](../../../README.md#checking-the-solver-modules).
 
 ## Parameters
 This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in the *`examples`* folder.
