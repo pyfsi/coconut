@@ -46,9 +46,9 @@ parameter|type|description
 ### Optional
 parameter|type|description
 ---:|:---:|---
-`save_results`|int| (Default: 1) Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
+<nobr>`save_results`</nobr>|int| (Default: 1) Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
 `subcycling`|boolean|`false`: [Default] Abaqus solves the requested time step using one increment. <br> `true`: Abaqus is allowed to solve the time step using multiple *increments*. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small *increments*.
-<nobr>`initial_inc`</nobr>|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
+`initial_inc`|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
 `max_inc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
 `max_num_inc`|int|Required when subcycling is enabled. Contains the maximum number of *increments* that Abaqus is allowed to perform for one time step. 
 `min_inc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*.
@@ -64,17 +64,23 @@ The solver wrapper consists of 6 types of files located in the source directory 
  - *`USR.f`*: An Abaqus user-subroutine that reads the loads from files (one for each input `ModelPart`) and applies them on the load points. Written in FORTRAN.
  - *`USRinit.f`*: An Abaqus user-subroutine that extract the coordinates of the load points and writes them to files (one for each input `ModelPart`) to initialize each input `ModelPart`. Written in FORTRAN.
 
-### The `__init__` method
+### The `initialize` method
 
- During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE**B**", where **B** should correspond to the index of the elements in `surfaceIDs` (0, 1, 2, ...). These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` (which also correspond to elements in `surfaceIDs`). GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output` (also matched with `surfaceIDs`). The input `ModelParts` are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
+ During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. 
+ The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE**B**", where **B** should correspond to the index of the elements in `surfaceIDs` (0, 1, 2, ...). 
+ These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` (which also correspond to elements in `surfaceIDs`). 
+ GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output` (also matched with `surfaceIDs`). 
+ The input `ModelParts` are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
  
-#### Files written in the working directory during `__init__`
+#### Files written in the working directory during `initialize`
  
- In the file conventions *`A`* is the start time step (`timestep_start` in the JSON file) and *`B`* the index of the corresponding element of `surfaceIDs`.
+ In the file conventions *`B`* is the index of the corresponding element of `surfaceIDs`.
  
- - The Abaqus input file (`input_file` in JSON file) is processed into a file *`CSM_TimeA.inp`* and `CSM_Restart.inp`, the latter taking care of all simulations (i.e. coupling iterations) but the first.
- - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_TimeACpu0SurfaceBFaces.dat`* and *`CSM_TimeACpu0SurfaceBFacesBis.dat`*. When these are processed by the solver wrapper, also *`CSM_TimeASurfaceBElements.dat`* is created.
- - Upon running GetOutput the geometrical nodes are written to *`CSM_TimeASurfaceBNodes.dat`*. 
+ - The Abaqus input file (`input_file` in JSON file) is processed into a file *`CSM_Time0.inp`* and `CSM_Restart.inp`, the latter taking care of all simulations (i.e. coupling iterations) but the first.
+ - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_Time0Cpu0SurfaceBFaces.dat`*. When these are processed by the solver wrapper, also *`CSM_Time0SurfaceBElements.dat`* is created.
+ - Upon running GetOutput the geometrical nodes are written to *`CSM_Time0SurfaceBNodes.dat`*. 
+ 
+ Note that the *`CSM_Time0.inp`* and *`CSM_Restart.inp`* are created each initialization (even during restart), however the USRinit and GetOutput are only run when `timestep_start` equals 0.
  
 ### The `solve_solution_step` method
  
@@ -230,6 +236,15 @@ The created "surfaces" and "node sets" for load input and displacement output re
 ## Log files
 
 A general event log of the procedure can be found in the working directory, in a file named *`abaqus.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.
+
+## Restarting a calculation
+
+For a restart of a calculation, say at timestep `A`, it is necessary that all the Abaqus [simulation files](#files-written-in-the-working-directory-during-solve_solution_step) of the previous calculation at timestep `A` are still present.
+This is in accordance with the `save_restart` parameter defined in a higher [component](../../coupled_solvers/coupled_solvers.md#settings). 
+Particulary for the Abaqus solver wrapper, it is important that the files *`CSM_Time0Cpu0SurfaceBFaces.dat`*, *`CSM_Time0SurfaceBElements.dat`* and *`CSM_Time0SurfaceBNodes.dat`* are still present from previous calculation.
+The files *`CSM_Time0.inp`* and *`CSM_Restart.inp`* will be generated during initialization of the restarted calculation. 
+This allows the user to alter some parameters in the input file before restart, e.g. altering output requests, boundary conditions or applying additional loads. 
+Since Abaqus only uses the *`CSM_Restart.inp`* (which does not contain any mesh information) and output files of the previous calculation, it is pointless to change the mesh before a restart.
 
 ## Version specific documentation
 
