@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
 
     int maxUIterReached = 0;
     int maxTIterReached = 0;
+    unsigned int iteration = 0;
     int iCorr = 0;
     lduSolverPerformance solverPerf;
     bool converged = false;
@@ -129,24 +130,12 @@ int main(int argc, char *argv[])
     IOdictionary controlDict(IOobject("controlDict",runTime.system(),mesh,IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
 
+
+
     while (true)
     {
-//        lduSolverPerformance solverPerf;
-//        bool converged = false;
           scalar relativeResidual = 1.0;
           scalar materialResidual = 0.0;
-//        blockLduMatrix::debug = 0;
-        //int iCorr = 0;
-
-        // Optional predictor
-        if (predictor)
-            {
-                solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
-            }
-
-        // Store old points for moving the mesh
-        const vectorField oldPoints = mesh.allPoints();
-
 
         usleep(10000);
 
@@ -162,15 +151,25 @@ int main(int argc, char *argv[])
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
             iCorr = 0;
+            iteration = 0;
             lduSolverPerformance solverPerf;
             converged = false;
             blockLduMatrix::debug = 0;
+
+            // Optional predictor
+        if (predictor)
+            {
+                solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
+            }
+
+        // Store old points for moving the mesh
+        const vectorField oldPoints = mesh.allPoints();
         }
 
         if (exists("continue_coco"))
         {
-//            iteration++;
-            Info<< "Coupling iteration = " << iCorr << nl << endl;
+            iteration++;
+            Info<< "Coupling iteration = " << iteration << nl << endl;
 
             // Define movement of the coupling interface
 //            forAll(boundary_names, s)
@@ -385,8 +384,6 @@ int main(int argc, char *argv[])
             twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
             RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
 
-            #include "writeFields.H"
-
             remove("continue_coco");
             //Return the coupling interface output
 
@@ -395,7 +392,7 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             runTime.run();
-            Info << "Coupling iteration " << iCorr << " end" << nl << endl;
+            Info << "Coupling iteration " << iteration << " end" << nl << endl;
             OFstream outfile ("continue_ready.coco");
         }
 
@@ -416,7 +413,8 @@ int main(int argc, char *argv[])
 
         if (exists("save.coco"))
         {
-            runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+            #include "writeFields.H"
+            //runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
             remove("save.coco");
             OFstream outfile ("save_ready.coco");
         }

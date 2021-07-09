@@ -16,6 +16,9 @@ class Model:
             raise ValueError(f'no model part with name "{name}" in model')
         return self.__model_parts[name]
 
+    def delete_model_part(self, name):
+        self.__model_parts.pop(name)
+
     def __iter__(self):  # iterate over names of ModelParts
         return iter(self.__model_parts)
 

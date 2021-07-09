@@ -23,22 +23,23 @@ class SolverWrapperopenfoamextend41(SolverWrapperopenfoamextend):
         # check that the correct software is available
         self.check_software()
 
-    def write_cell_centres(self):
-        check_call('writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True,
-                   env=self.env)
+    # def write_cell_centres(self):
+    #     check_call('writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory, shell=True,
+    #                env=self.env)
+    #
+    # def read_face_centres(self, boundary_name, nfaces):
+    #     filename_x = join(self.working_directory, '0/ccx')
+    #     filename_y = join(self.working_directory, '0/ccy')
+    #     filename_z = join(self.working_directory, '0/ccz')
+    #
+    #     x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces,
+    #                                   is_scalar=True)
+    #     y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces,
+    #                                   is_scalar=True)
+    #     z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces,
+    #                                   is_scalar=True)
+    #     return x0, y0, z0
 
-    def read_face_centres(self, boundary_name, nfaces):
-        filename_x = join(self.working_directory, '0/ccx')
-        filename_y = join(self.working_directory, '0/ccy')
-        filename_z = join(self.working_directory, '0/ccz')
-
-        x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces,
-                                      is_scalar=True)
-        y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces,
-                                      is_scalar=True)
-        z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces,
-                                      is_scalar=True)
-        return x0, y0, z0
 
 
 

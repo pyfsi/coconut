@@ -3,6 +3,7 @@ from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
+from scipy import interpolate
 
 from subprocess import check_call
 import numpy as np
@@ -12,6 +13,8 @@ import time
 import subprocess
 import re
 
+
+#TODO:wrappper is not adapt to run in parallel
 
 def create(parameters):
     return SolverWrapperopenfoamextend(parameters)
@@ -106,17 +109,17 @@ class SolverWrapperopenfoamextend(Component):
             nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
             start_face = of_io.get_int(input_string=boundary_dict, keyword='startFace')
 
-            # create input model part
-            self.model.create_model_part(f'{boundary}_input', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
-                                         node_ids)
-
             x0, y0, z0 = self.read_face_centres(boundary, nfaces)
             ids = np.arange(0, nfaces)
 
-            # create output model part
-            mp_output = self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
+            # create input model part
+            mp_output = self.model.create_model_part(f'{boundary}_input', x0, y0, z0, ids)
             mp_output.start_face = start_face
             mp_output.nfaces = nfaces
+
+            # create output model part
+            self.model.create_model_part(f'{boundary}_output', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
+                                         node_ids)
 
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
@@ -150,32 +153,32 @@ class SolverWrapperopenfoamextend(Component):
         Therefore to get the correct index one should use |index|-1!!
         """
 
-        if self.settings['parallel']:
-            if self.start_time == 0:
-                check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
-                           cwd=self.working_directory,
-                           shell=True, env=self.env)
-
-            for boundary in self.boundary_names:
-                mp_output = self.model.get_model_part(f'{boundary}_output')
-                mp_output.sequence = []
-                for p in range(self.cores):
-                    path = os.path.join(self.working_directory, f'processor{p}/constant/polyMesh/faceProcAddressing')
-                    with open(path, 'r') as f:
-                        face_proc_add_string = f.read()
-                    face_proc_add = np.abs(of_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
-                    face_proc_add -= 1
-
-                    mp_output.sequence += (face_proc_add[(face_proc_add >= mp_output.start_face) & (
-                            face_proc_add < mp_output.start_face + mp_output.nfaces)] - mp_output.start_face).tolist()
-
-                np.savetxt(os.path.join(self.working_directory, f'sequence_{boundary}.txt'),
-                           np.array(mp_output.sequence), fmt='%i')
-
-                if len(mp_output.sequence) != mp_output.nfaces:
-                    print(f'sequence: {len(mp_output.sequence)}')
-                    print(f'nNodes: {mp_output.size}')
-                    raise ValueError('Number of face indices in sequence does not correspond to number of faces')
+        # if self.settings['parallel']:
+        #     if self.start_time == 0:
+        #         check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
+        #                    cwd=self.working_directory,
+        #                    shell=True, env=self.env)
+        #
+        #     for boundary in self.boundary_names:
+        #         mp_output = self.model.get_model_part(f'{boundary}_output')
+        #         mp_output.sequence = []
+        #         for p in range(self.cores):
+        #             path = os.path.join(self.working_directory, f'processor{p}/constant/polyMesh/faceProcAddressing')
+        #             with open(path, 'r') as f:
+        #                 face_proc_add_string = f.read()
+        #             face_proc_add = np.abs(of_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
+        #             face_proc_add -= 1
+        #
+        #             mp_output.sequence += (face_proc_add[(face_proc_add >= mp_output.start_face) & (
+        #                     face_proc_add < mp_output.start_face + mp_output.nfaces)] - mp_output.start_face).tolist()
+        #
+        #         np.savetxt(os.path.join(self.working_directory, f'sequence_{boundary}.txt'),
+        #                    np.array(mp_output.sequence), fmt='%i')
+        #
+        #         if len(mp_output.sequence) != mp_output.nfaces:
+        #             print(f'sequence: {len(mp_output.sequence)}')
+        #             print(f'nNodes: {mp_output.size}')
+        #             raise ValueError('Number of face indices in sequence does not correspond to number of faces')
 
         # starting the FOAM-Extend infinite loop for coupling!
         if not self.settings['parallel']:
@@ -285,12 +288,8 @@ class SolverWrapperopenfoamextend(Component):
         if self.debug:
             for boundary in self.boundary_names:
                 # specify location of displacement
-                displacement_name = 'DISPLACEMENT_' + boundary
-                disp_filepath = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
-                                            self.cur_timestamp, f'DU_patch_{boundary}.raw')
-                disp_iter_filepath = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
-                                                 self.cur_timestamp,
-                                                 f'DU_patch_{boundary}_{self.iteration}.raw')
+                disp_filepath = os.path.join(self.working_directory, self.cur.timestamp, 'U')
+                disp_iter_filepath = os.path.join(self.working_directory, self.cur_timestamp, f'U_{self.iteration}')
                 shutil.copy(disp_filepath, disp_iter_filepath)
 
         # read data from OpenFOAM
@@ -362,11 +361,11 @@ class SolverWrapperopenfoamextend(Component):
             # if os.path.isfile(disp_file):
             #     os.remove(disp_file)
             displacement_name = os.path.join(self.working_directory, self.timestep, 'U')
-            velocity_name = os.path.join(self.working_directory, self.timestep, 'Velocity')
+            # velocity_name = os.path.join(self.working_directory, self.timestep, 'Velocity')
             if os.path.isfile(displacement_name):
                 os.remove(displacement_name)
-            if os.path.isfile(velocity_name):
-                os.remove(velocity_name)
+            # if os.path.isfile(velocity_name):
+            #     os.remove(velocity_name)
 
 
     def read_node_output(self):
@@ -379,31 +378,57 @@ class SolverWrapperopenfoamextend(Component):
 
         for boundary in self.boundary_names:
             # specify location of displacement
-            # displacement_name = 'DISPLACEMENT_' + boundary
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
             nfaces = mp.size
-            # disp_filename = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
-            #                             self.cur_timestamp, f'DU_patch_{boundary}.raw')
+
+            self.write_cell_centres()
 
             filename_displacement = os.path.join(self.working_directory, self.timestep, 'U')
-            filename_velocity = os.path.join(self.working_directory, self.timestep, 'Velocity')
+            # filename_velocity = os.path.join(self.working_directory, self.timestep, 'Velocity')
 
-            disp_filename = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary, size = nfaces, is_scalar =False)
-            velo_filename = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
-                                                     size=nfaces, is_scalar=False)
+            disp_filename = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary,
+                                                     size = nfaces, is_scalar =False)
+            # velo_filename = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
+            #                                          size=nfaces, is_scalar=False)
+
+
+            x, y, z = self.read_face_centres(boundary, nfaces)
+
+            f = interpolate.interp1d(x,disp_filename[:,1])
+            g = interpolate.interp1d(x, disp_filename[:,2])
+
+            node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
+                                                                                time_folder = self.timestep,
+                                                          boundary_name = boundary)
+
+            mask = np.logical_and(node_coords[:, 0] > -0.003, node_coords[:, 0] < 0.0005)
+            filter_node_ids = node_ids[mask]
+            filter_node_coords = node_coords[mask, :]
+
+
+            displacement = np.zeros((len(filter_node_ids),3))
+
+            displacement[:,1] = f(filter_node_coords[:,0])
+            displacement[:,2] = g(filter_node_coords[:,0])
+
+            self.model.delete_model_part(mp)
+
+            self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],
+                                                  filter_node_coords[:, 2], filter_node_ids)
+
             # check if the displacement file completed by foam-Extend and read data
-            self.check_output_file(disp_filename, nfaces)
-            disp_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
+            # self.check_output_file(disp_filename, nfaces)
+            # disp_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
 
             if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
-
-            displacement = np.empty_like(disp_tmp)
-
-            displacement[pos_list, ] = disp_tmp[:, ]
+            #
+            # displacement = np.empty_like(disp_tmp)
+            #
+            # displacement[pos_list, ] = disp_tmp[:, ]
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
 
@@ -427,10 +452,14 @@ class SolverWrapperopenfoamextend(Component):
             traction_filename_ref = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0',
                                                  'traction')
 
+
             pressure_filename = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                              self.cur_timestamp, 'pressure')
             traction_filename = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                              self.cur_timestamp, 'traction')
+
+            shutil.copy(pressure_filename_ref, pressure_filename)
+            shutil.copy(traction_filename_ref, traction_filename)
 
             with open(pressure_filename_ref, 'r') as ref_file:
                 pressure_string = ref_file.read()
@@ -455,9 +484,9 @@ class SolverWrapperopenfoamextend(Component):
             with open(traction_filename, 'w') as f:
                 f.write(traction_string)
 
-            if self.settings['parallel']:
-                check_call(f'decomposePar -fields -time {self.cur_timestamp} &> log.decomposePar;',
-                           cwd=self.working_directory, shell=True, env=self.env)
+            # if self.settings['parallel']:
+            #     check_call(f'decomposePar -fields -time {self.cur_timestamp} &> log.decomposePar;',
+            #                cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
     def check_output_file(self, filename, nfaces):
@@ -640,3 +669,43 @@ class SolverWrapperopenfoamextend(Component):
 
                     with open(self.res_filepath, 'a') as f:
                         np.savetxt(f, [residual_array], delimiter=', ')
+
+    def write_cell_centres(self):
+        if self.timestep:
+            check_call('writeCellCentres -time' + self.cur_timestamp + ' &> log.writeCellCentres;',
+                       cwd=self.working_directory, shell=True,
+                       env=self.env)
+        else:
+            check_call('writeCellCentres -time 0' + ' &> log.writeCellCentres;',
+                       cwd=self.working_directory, shell=True,
+                       env=self.env)
+
+
+    def read_face_centres(self, boundary_name, nfaces):
+        if self.timestep:
+            filename_ccx = os.path.join(self.cur_timestamp,'ccx')
+            filename_ccy = os.path.join(self.cur_timestamp,'ccy')
+            filename_ccz = os.path.join(self.cur_timestamp,'ccz')
+
+            x = of_io.get_boundary_field(file_name=filename_ccx, boundary_name=boundary_name, size=nfaces,
+                                         is_scalar=True)
+            y = of_io.get_boundary_field(file_name=filename_ccy, boundary_name=boundary_name, size=nfaces,
+                                         is_scalar=True)
+            z = of_io.get_boundary_field(file_name=filename_ccz, boundary_name=boundary_name, size=nfaces,
+                                         is_scalar=True)
+
+        else:
+            filename_ccx = os.path.join('0/ccx')
+            filename_ccy = os.path.join('0/ccy')
+            filename_ccz = os.path.join('0/ccz')
+
+            x = of_io.get_boundary_field(file_name=filename_ccx, boundary_name=boundary_name, size=nfaces,
+                                         is_scalar=True)
+            y = of_io.get_boundary_field(file_name=filename_ccy, boundary_name=boundary_name, size=nfaces,
+                                         is_scalar=True)
+            z = of_io.get_boundary_field(file_name=filename_ccz, boundary_name=boundary_name, size=nfaces,
+                                         is_scalar=True)
+
+
+
+        return x, y, z
