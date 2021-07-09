@@ -3,11 +3,11 @@ from coconut import tools
 
 
 def create(parameters):
-    return SolverWrapperAbaqus614(parameters)
+    return SolverWrapperAbaqus2021(parameters)
 
 
-class SolverWrapperAbaqus614(SolverWrapperAbaqus):
-    version = '6.14'
+class SolverWrapperAbaqus2021(SolverWrapperAbaqus):
+    version = '2021'
 
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -15,4 +15,5 @@ class SolverWrapperAbaqus614(SolverWrapperAbaqus):
         self.check_software()
 
         # environment file parameters
-        self.link_sl = '-i-dynamic'
+        self.link_sl = '-Wl,--add-needed'
+        self.link_exe = '-Wl,--add-needed'

@@ -11,13 +11,13 @@ parameter|type|description
 ---:|:---:|---
 `cores`|int|Number of processor cores to use when running Kratos (works with 1 core, multi-processing is work in progress).
 `delta_t`|double (optional)|Fixed time step size in structural solver.
-`input_file`|string| Project parameters file used by Kratos in JSON format. In the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md), this is typically called *`ProjectParameters.json`*.
+`input_file`|str| Project parameters file used by Kratos in JSON format. In the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md), this is typically called *`ProjectParameters.json`*.
 `interface_input`|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_input`.
 `interface_output`|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
-`kratos_interface_sub_model_parts_list`|string| Names of sub-model parts used for input and output in Kratos.
-`solver_load_cmd`|string| Bash commands for loading required modules and environmental variables to run Kratos.
+`kratos_interface_sub_model_parts_list`|str| Names of sub-model parts used for input and output in Kratos.
+`solver_load_cmd`|str| Bash commands for loading required modules and environmental variables to run Kratos.
 `timestep_start`|int (optional)|Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.  
-<nobr>`working_directory`</nobr>|string|Path to the working directory (i.e. where the `input_file` for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).
+<nobr>`working_directory`</nobr>|str|Path to the working directory (i.e. where the `input_file` for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).
 
 
 `timestep_start` and `delta_t` are usually defined already in the parameters of the `coupled_solver`. However, they can also be given directly as a parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.

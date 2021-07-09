@@ -113,6 +113,7 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
+              "static": true,
               "arraysize": 500,
               "subcycling": true,
               "initial_inc": 0.01,

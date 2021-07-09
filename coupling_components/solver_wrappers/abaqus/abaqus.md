@@ -19,8 +19,8 @@ Abaqus (Dassault Systèmes) can be used to solve for the structural displacement
 
 ## Environment
  - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the JSON file. In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
- - The **Abaqus license server** needs to be specified in the parametrized file `abaqus_v6.env` which is present in the `source directory`. For use at Ghent University no changes are required. 
  - The **Abaqus software should be available as well as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
+ - If the **Abaqus license server** needs to be specified explicitly, it is advised to do this in the [solver modules file](../../../README.md#checking-the-solver-modules).
 
 ## Parameters
 This section describes the parameter settings in the JSON file. A distinction is made between mandatory and optional parameters. It can be useful to have a look at a JSON file of one of the examples in the *`examples`* folder.
@@ -37,7 +37,7 @@ parameter|type|description
 `interface_output`|list|Similar to interface_input but for Abaqus geometrical nodes. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*. Currently only `"displacement"` is allowed (case-sensitive). An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"case.inp"`
 `mp_mode`|str|Determines how Abaqus is executed in parallel. It is recommended to use `"THREADS"`. `"MPI"` works as well but requires a host-file called *`AbaqusHosts.txt`*. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script *`make_host_file.sh`* which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.
-`save_interval`|int|(optional) Default: 1. Determines what files are kept by Abaqus. Only the files corresponding to (i.e. of which the time step is a multiple of) `save_interval` are kept at the end of a time step. Important for restart options (also in correspondence with the save interval of the flow solver).
+`static`|bool|Indicates which type of analysis is performed: static (`True`) or dynamic (`False`).
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
 <nobr>`working_directory`</nobr>|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [environment section](#environment).
 
@@ -46,33 +46,41 @@ parameter|type|description
 ### Optional
 parameter|type|description
 ---:|:---:|---
-`subcycling`|boolean|`false`: [Default] Abaqus solves the requested time step using one increment. <br> `true`: Abaqus is allowed to solve the time step using multiple *increments*. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small *increments*.
-<nobr>`initial_inc`</nobr>|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
+`initial_inc`|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
 `max_inc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
 `max_num_inc`|int|Required when subcycling is enabled. Contains the maximum number of *increments* that Abaqus is allowed to perform for one time step. 
 `min_inc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*.
-`ramp`|boolean| Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
+`ramp`|bool|Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
+<nobr>`save_results`</nobr>|int|(Default: 1) Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
+`subcycling`|bool|`false`: [Default] Abaqus solves the requested time step using one increment. <br> `true`: Abaqus is allowed to solve the time step using multiple *increments*. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small *increments*.
 
 ## Overview of operation
-The solver wrapper consists of 5 files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
+The solver wrapper consists of 6 types of files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
 
- - *`X.py`*: defines the `SolverWrapperAbaqusX`class. 
+ - *`abaqus.py`*: Contains the base class `SolverWrapperAbaqus`.
+ - *`X.py`*: Defines the `SolverWrapperAbaqusX`class, which inherits from the base class. Some version specific parameters might be overwritten in these subclasses. 
  - *`abaqus_v6.env`*: environment file setting the environment for the Abaqus solver.
  - *`GetOutput.cpp`*: Extracts the output (from Abaqus .odb files) and writes it to a file for each output`ModelPart`. Written in C++.
  - *`USR.f`*: An Abaqus user-subroutine that reads the loads from files (one for each input `ModelPart`) and applies them on the load points. Written in FORTRAN.
  - *`USRinit.f`*: An Abaqus user-subroutine that extract the coordinates of the load points and writes them to files (one for each input `ModelPart`) to initialize each input `ModelPart`. Written in FORTRAN.
 
-### The `__init__` method
+### The `initialize` method
 
- During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE**B**", where **B** should correspond to the index of the elements in `surfaceIDs` (0, 1, 2, ...). These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` (which also correspond to elements in `surfaceIDs`). GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output` (also matched with `surfaceIDs`). The input `ModelParts` are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
+ During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. 
+ The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points of each surfaces of which the name matches "MOVINGSURFACE**B**", where **B** should correspond to the index of the elements in `surfaceIDs` (0, 1, 2, ...). 
+ These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` (which also correspond to elements in `surfaceIDs`). 
+ GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output` (also matched with `surfaceIDs`). 
+ The input `ModelParts` are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
  
-#### Files written in the working directory during `__init__`
+#### Files written in the working directory during `initialize`
  
- In the file conventions *`A`* is the start time step (`timestep_start` in the JSON file) and *`B`* the index of the corresponding element of `surfaceIDs`.
+ In the file conventions *`B`* is the index of the corresponding element of `surfaceIDs`.
  
- - The Abaqus input file (`input_file` in JSON file) is processed into a file *`CSM_TimeA.inp`* and `CSM_Restart.inp`, the latter taking care of all simulations (i.e. coupling iterations) but the first.
- - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_TimeACpu0SurfaceBFaces.dat`* and *`CSM_TimeACpu0SurfaceBFacesBis.dat`*. When these are processed by the solver wrapper, also *`CSM_TimeASurfaceBElements.dat`* is created.
- - Upon running GetOutput the geometrical nodes are written to *`CSM_TimeASurfaceBNodes.dat`*. 
+ - The Abaqus input file (`input_file` in JSON file) is processed into a file *`CSM_Time0.inp`* and `CSM_Restart.inp`, the latter taking care of all simulations (i.e. coupling iterations) but the first.
+ - Upon running USRinit the load point coordinates of each surface of which the name matches "MOVINGSURFACEB" are written to *`CSM_Time0Cpu0SurfaceBFaces.dat`*. When these are processed by the solver wrapper, also *`CSM_Time0SurfaceBElements.dat`* is created.
+ - Upon running GetOutput the geometrical nodes are written to *`CSM_Time0SurfaceBNodes.dat`*. 
+ 
+ Note that the *`CSM_Time0.inp`* and *`CSM_Restart.inp`* are created each initialization (even during restart), however the USRinit and GetOutput are only run when `timestep_start` equals 0.
  
 ### The `solve_solution_step` method
  
@@ -86,6 +94,9 @@ In the file conventions *`A`* is the time step and *`B`* the index of the corres
  - Output database file written by Abaqus called *`CSM_TimeA.odb`* and read by GetOutput (also needed for restart).
  - Output text file *`CSM_TimeASurfaceBOutput.dat`* containing displacements written by GetOutput and read by the solver wrapper.
  - Input text file *`CSM_TimeASurfaceBCpu0Input.dat`* containing the loads written by the solver wrapper and read by the USR.
+ 
+ The parameter `save_restart` (defined at the level of the [`coupled_solver`](../../coupled_solvers/coupled_solvers.md#settings)) determines at which timesteps these files are saved.
+ Additionally, the `save_results` parameter defines the rate at which the output database files (*`.odb`*) are kept.
 
 ## Setting up a case: Abaqus input file (.inp)
 The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as "base-file".
@@ -225,3 +236,20 @@ The created "surfaces" and "node sets" for load input and displacement output re
 ## Log files
 
 A general event log of the procedure can be found in the working directory, in a file named *`abaqus.log`*. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: *`CSM_TimeA.msg`*, *`A`* being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.
+
+## Restarting a calculation
+
+For a restart of a calculation, say at timestep `A`, it is necessary that all the Abaqus [simulation files](#files-written-in-the-working-directory-during-solve_solution_step) of the previous calculation at timestep `A` are still present.
+This is in accordance with the `save_restart` parameter defined in a higher [component](../../coupled_solvers/coupled_solvers.md#settings). 
+Particulary for the Abaqus solver wrapper, it is important that the files *`CSM_Time0Cpu0SurfaceBFaces.dat`*, *`CSM_Time0SurfaceBElements.dat`* and *`CSM_Time0SurfaceBNodes.dat`* are still present from previous calculation.
+The files *`CSM_Time0.inp`* and *`CSM_Restart.inp`* will be generated during initialization of the restarted calculation. 
+This allows the user to alter some parameters in the input file before restart, e.g. altering output requests, boundary conditions or applying additional loads. 
+Since Abaqus only uses the *`CSM_Restart.inp`* (which does not contain any mesh information) and output files of the previous calculation, it is pointless to change the mesh before a restart.
+
+## Version specific documentation
+
+### v6.14
+First version.
+
+### v2021
+No major changes. 

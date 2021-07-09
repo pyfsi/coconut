@@ -149,8 +149,8 @@ Points that lie on the symmetry axis can not be handled by the current transform
 
 JSON setting|type|description
 ------:|:----:|-----------
-`direction_axial`|string|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
-<nobr>`direction_radial`</nobr>|string|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
+`direction_axial`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+<nobr>`direction_radial`</nobr>|str|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
 `n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle.
 `angle`|int|(optional) Default: `360`. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.  
 

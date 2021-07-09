@@ -3,16 +3,16 @@ from coconut.tests.solver_wrappers.abaqus import abaqus
 
 import unittest
 
-version = '614'
+version = '2021'
 
 
 @unittest.skipUnless(solver_available(f'abaqus.v{version}'), f'abaqus.v{version} not available')
-class TestSolverWrapperAbaqus614Tube2D(abaqus.TestSolverWrapperAbaqusTube2D):
+class TestSolverWrapperAbaqus2021Tube2D(abaqus.TestSolverWrapperAbaqusTube2D):
     version = version
     setup_case = True
 
 
-class TestSolverWrapperAbaqus614Tube3D(abaqus.TestSolverWrapperAbaqusTube3D):
+class TestSolverWrapperAbaqus2021Tube3D(abaqus.TestSolverWrapperAbaqusTube3D):
     version = version
     setup_case = True
 

@@ -3,6 +3,13 @@ C======================== GLOBAL DATA =========================================
 C==============================================================================
       BLOCK DATA
 
+      INTEGER S
+      PARAMETER (S = |surfaces|)
+      INTEGER NOEL_PREV(S)
+      COMMON /PREV/ NOEL_PREV
+      SAVE /PREV/
+      DATA NOEL_PREV /S*0/
+
 #ifdef MPI
       INTEGER ID,IDENTIFIED
       COMMON /IDENT/ ID,IDENTIFIED
@@ -54,6 +61,9 @@ C==============================================================================
       INTEGER D,S
       PARAMETER (D = |dimension|)
       PARAMETER (S = |surfaces|)
+      INTEGER NOEL_PREV(S)
+      COMMON /PREV/ NOEL_PREV
+      SAVE /PREV/
 
 #ifdef MPI
       INTEGER ID,IDENTIFIED
@@ -69,34 +79,39 @@ C==============================================================================
       CHARACTER(LEN=80) :: SNAME
       INTEGER KSTEP,KINC,NOEL,NPT,LAYER,KSPT,JLTYP,R,UNIT_FACES(S)
 
-      IF (KINC == 1) THEN
-         FMT_FACES = '(2I6,|dimension|ES27.17E2)'
-         UNIT_FACES = (/ (100+R,R=1,S) /)
-     
+      FMT_FACES = '(2I6,|dimension|ES27.17E2)'
+      UNIT_FACES = (/ (100+R,R=1,S) /)
+
 #ifdef MPI
-         IF (IDENTIFIED < 0) THEN
-            CALL IDENTIFY
-         END IF
+      IF (IDENTIFIED < 0) THEN
+         CALL IDENTIFY
+      END IF
 #else
-         ID = 0
+      ID = 0
 #endif
 
-         R = INDEX(SNAME,'SURFACE')
-         READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-         R = R+1
+      R = INDEX(SNAME,'SURFACE')
+      READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
+      R = R+1
 
-         WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
-     &      '|PWD|',
-     &      '/|CSM_dir|/CSM_Time',
-     &      (KSTEP-1),'Surface',(R-1),'Cpu',ID,'FacesBis.dat'
-
-         OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
-
-         WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
-
-         CLOSE(UNIT_FACES(R))
-      ELSE IF (KINC > 1) THEN
-         CALL STDB_ABQERR(-3,'USR-abort: normal termination')
+      IF (KINC == |increment|) THEN
+         IF (NOEL >= NOEL_PREV(R)) THEN
+             WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
+     &          '|PWD|',
+     &          '/|CSM_dir|/CSM_Time',
+     &          (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
+             OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
+             WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
+             CLOSE(UNIT_FACES(R))
+             NOEL_PREV(R) = NOEL
+         ELSE IF (NOEL < NOEL_PREV(R)) THEN
+             PRINT *, 'USR-abort: end of faces file reached. Normal termination'
+             CALL FLUSH(6)
+             CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
+         END IF
+      ELSE IF (KINC > |increment|) THEN
+         PRINT *, 'USR-abort: end of increment. Normal termination.'
+         CALL STDB_ABQERR(-3,'USR-abort: end of increment.')
       END IF
           
       F = 0
@@ -113,53 +128,12 @@ C==============================================================================
 
       IMPLICIT NONE
       
-      INTEGER D,S
+      INTEGER D
       PARAMETER (D = |dimension|)
-      PARAMETER (S = |surfaces|)
-
-#ifdef MPI
-      INTEGER ID,IDENTIFIED
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-#else 
-      INTEGER ID
-#endif
 
       DOUBLE PRECISION ALPHA,T_USER(D),TIME(2),COORDS(D),DIRCOS(D,D)
-      CHARACTER(LEN=20) :: FMT_FACES
-      CHARACTER(LEN=200) :: FILENAME
       CHARACTER(LEN=80) :: SNAME
-      INTEGER KSTEP,KINC,NOEL,NPT,JLTYP,R,UNIT_FACES(S)
-
-      IF (KINC == 1) THEN
-         FMT_FACES = '(2I6,|dimension|ES27.17E2)'
-         UNIT_FACES = (/ (200+R,R=1,S) /)
-     
-#ifdef MPI
-         IF (IDENTIFIED < 0) THEN
-            CALL IDENTIFY
-         END IF
-#else
-         ID = 0
-#endif
-     
-         R = INDEX(SNAME,'SURFACE')
-         READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-         R = R+1
-
-         WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
-     &      '|PWD|',
-     &      '/|CSM_dir|/CSM_Time',
-     &      (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
-
-         OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
-
-         WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
-
-         CLOSE(UNIT_FACES(R))
-      ELSE IF (KINC > 1) THEN
-         CALL STDB_ABQERR(-3,'USR-abort: normal termination')
-      END IF
+      INTEGER KSTEP,KINC,NOEL,NPT,JLTYP
           
       T_USER(1) = 1
       T_USER(2:) = 0

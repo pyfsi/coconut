@@ -87,6 +87,7 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
+              "static": false,
               "arraysize": 10e5,
               "surfaceIDs": [
                 "WALLOUTSIDE"
