@@ -36,22 +36,22 @@ beamPart.SectionAssignment(offset=0.0, region=Region(elements=beamPart.elements)
 step1 = beamModel.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, nlgeom=ON, initialInc=0.01,
                              minInc=0.0001, maxNumInc=1000, amplitude=RAMP)
 step1.Restart(frequency=99999, overlay=ON)
-movingSurface0 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING0', 'MOVINGSURFACE0')
-movingSurface1 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING1', 'MOVINGSURFACE1')
-movingSurface2 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING2', 'MOVINGSURFACE2')
+beamInsideMoving0 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING0', 'BEAMINSIDEMOVING0')
+beamInsideMoving1 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING1', 'BEAMINSIDEMOVING1')
+beamInsideMoving2 = SurfaceFromNodeSet(beamAssembly, beamInstance, 'BEAMINSIDEMOVING2', 'BEAMINSIDEMOVING2')
 beamModel.Pressure(name='DistributedPressure0', createStepName='Step-1', distributionType=USER_DEFINED, field='',
-                   magnitude=1.0, region=movingSurface0)
+                   magnitude=1.0, region=beamInsideMoving0)
 beamModel.Pressure(name='DistributedPressure1', createStepName='Step-1', distributionType=USER_DEFINED, field='',
-                   magnitude=1.0, region=movingSurface1)
+                   magnitude=1.0, region=beamInsideMoving1)
 beamModel.Pressure(name='DistributedPressure2', createStepName='Step-1', distributionType=USER_DEFINED, field='',
-                   magnitude=1.0, region=movingSurface2)
-beamModel.SurfaceTraction(name='DistributedShear0', createStepName='Step-1', region=movingSurface0, magnitude=1,
+                   magnitude=1.0, region=beamInsideMoving2)
+beamModel.SurfaceTraction(name='DistributedShear0', createStepName='Step-1', region=beamInsideMoving0, magnitude=1,
                           traction=GENERAL, directionVector=((0, 0, 0), (1, 0, 0)), distributionType=USER_DEFINED,
                           follower=OFF)
-beamModel.SurfaceTraction(name='DistributedShear1', createStepName='Step-1', region=movingSurface1, magnitude=1,
+beamModel.SurfaceTraction(name='DistributedShear1', createStepName='Step-1', region=beamInsideMoving1, magnitude=1,
                           traction=GENERAL, directionVector=((0, 0, 0), (1, 0, 0)), distributionType=USER_DEFINED,
                           follower=OFF)
-beamModel.SurfaceTraction(name='DistributedShear2', createStepName='Step-1', region=movingSurface2, magnitude=1,
+beamModel.SurfaceTraction(name='DistributedShear2', createStepName='Step-1', region=beamInsideMoving2, magnitude=1,
                           traction=GENERAL, directionVector=((0, 0, 0), (1, 0, 0)), distributionType=USER_DEFINED,
                           follower=OFF)
 if gravity > 0.0:

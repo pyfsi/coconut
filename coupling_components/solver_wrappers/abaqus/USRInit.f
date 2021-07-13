@@ -10,6 +10,11 @@ C==============================================================================
       SAVE /PREV/
       DATA NOEL_PREV /S*0/
 
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
+      DATA SURFACEIDS /|surfaceIDs|/
+
 #ifdef MPI
       INTEGER ID,IDENTIFIED
       COMMON /IDENT/ ID,IDENTIFIED
@@ -64,6 +69,9 @@ C==============================================================================
       INTEGER NOEL_PREV(S)
       COMMON /PREV/ NOEL_PREV
       SAVE /PREV/
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
 
 #ifdef MPI
       INTEGER ID,IDENTIFIED
@@ -90,9 +98,15 @@ C==============================================================================
       ID = 0
 #endif
 
-      R = INDEX(SNAME,'SURFACE')
-      READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-      R = R+1
+      IF (S > 1) THEN
+         DO R = 1,S
+            IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+               EXIT
+            END IF
+         END DO
+      ELSE
+         R = 1
+      END IF
 
       IF (KINC == |increment|) THEN
          IF (NOEL >= NOEL_PREV(R)) THEN
@@ -105,7 +119,8 @@ C==============================================================================
              CLOSE(UNIT_FACES(R))
              NOEL_PREV(R) = NOEL
          ELSE IF (NOEL < NOEL_PREV(R)) THEN
-             PRINT *, 'USR-abort: end of faces file reached. Normal termination'
+             PRINT *, 'USR-abort: end of faces file reached. Normal term
+     &ination'
              CALL FLUSH(6)
              CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
          END IF

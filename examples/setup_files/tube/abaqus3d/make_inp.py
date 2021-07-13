@@ -42,13 +42,13 @@ tubeModel.DisplacementBC(amplitude=UNSET, createStepName='Initial', distribution
 tubeModel.DisplacementBC(amplitude=UNSET, createStepName='Initial', distributionType=UNIFORM, fieldName='',
                          localCsys=None, name='BC-2', region=tubeAssembly.sets['RIGHTFIXED'], u1=SET, u2=SET, u3=SET,
                          ur1=UNSET, ur2=UNSET, ur3=UNSET)
-movingSurface0 = tubeAssembly.Surface(name='MOVINGSURFACE0', side2Elements=tubeInstance.elements)
+wallOutside = tubeAssembly.Surface(name='WALLOUTSIDE', side2Elements=tubeInstance.elements)
 tubeAssembly.regenerate()
 tubeModel.Pressure(createStepName='Step-1', distributionType=USER_DEFINED, field='', magnitude=1.0, name='Load-1',
-                   region=movingSurface0)
+                   region=wallOutside)
 tubeModel.SurfaceTraction(createStepName='Step-1', directionVector=((0.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
                           distributionType=USER_DEFINED, field='', localCsys=None, magnitude=1.0, name='Load-2',
-                          region=movingSurface0, traction=GENERAL)
+                          region=wallOutside, traction=GENERAL)
 tubeAssembly.Set(name='WALLOUTSIDE', nodes=tubeInstance.nodes)
 tubeModel.FieldOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT, name='F-Output-1',
                              region=tubeAssembly.sets['WALLOUTSIDE'], variables=('COORD', 'U'))

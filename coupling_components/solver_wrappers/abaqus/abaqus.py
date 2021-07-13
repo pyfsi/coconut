@@ -9,7 +9,6 @@ import shutil
 import sys
 import time
 import numpy as np
-import re
 import textwrap
 from pathlib import Path
 import warnings
@@ -47,8 +46,6 @@ class SolverWrapperAbaqus(Component):
         self.array_size = self.settings['arraysize']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
-        self.surfaceIDs = self.settings['surfaceIDs']
-        self.n_surfaces = len(self.surfaceIDs)
         self.mp_mode = self.settings['mp_mode']
         self.input_file = self.settings['input_file']
         self.save_results = self.settings.get('save_results', 1)
@@ -56,8 +53,15 @@ class SolverWrapperAbaqus(Component):
         self.static = self.settings['static']
         self.timestep = self.timestep_start
         self.iteration = None
-        self.model_part_surface_ids = {}  # surface IDs corresponding to ModelParts
         self.model = None
+        self.mp_in = []
+        self.mp_out = []
+        for item in self.settings['interface_input']:
+            idx = item['model_part'].rindex('_load_points')
+            self.mp_in.append(item['model_part'][:idx])
+        for item in self.settings['interface_output']:
+            idx = item['model_part'].rindex('_nodes')
+            self.mp_out.append(item['model_part'][:idx])
         self.interface_input = None
         self.interface_output = None
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
@@ -110,14 +114,15 @@ class SolverWrapperAbaqus(Component):
         shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
         os.mkdir(join('/tmp', self.tmp_directory_name))  # create tmp-directory
 
+        # prepare Abaqus USRInit.f
         if self.timestep_start == 0:  # run USRInit only for new calculation
-            # prepare Abaqus USRInit.f
             usr = 'USRInit.f'
             with open(join(self.path_src, usr), 'r') as infile:
                 with open(join(self.dir_csm, 'usrInit.f'), 'w') as outfile:
                     for line in infile:
                         line = line.replace('|dimension|', str(self.dimensions))
-                        line = line.replace('|surfaces|', str(self.n_surfaces))
+                        line = line.replace('|surfaces|', str(len(self.mp_in)))
+                        line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                         line = line.replace('|cpus|', str(self.cores))
                         line = line.replace('|increment|', str(int(self.static)))
 
@@ -144,18 +149,19 @@ class SolverWrapperAbaqus(Component):
             commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
+            # create elements file per surface
+            for mp_id in range(len(self.mp_in)):
+                face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Cpu0Faces.dat')
+                output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Elements.dat')
+                self.make_elements(face_file, output_file)
+
         # prepare GetOutput.cpp
         get_output = 'GetOutput.cpp'
-        temp_str = ''
-        for j in range(0, self.n_surfaces - 1):
-            temp_str += f'\"{self.surfaceIDs[j]}\", '
-        temp_str += f'\"{self.surfaceIDs[self.n_surfaces - 1]}\"'
-
         with open(join(self.path_src, get_output), 'r') as infile:
             with open(join(self.dir_csm, get_output), 'w') as outfile:
                 for line in infile:
-                    line = line.replace('|surfaces|', str(self.n_surfaces))
-                    line = line.replace('|surfaceIDs|', temp_str)
+                    line = line.replace('|surfaces|', str(len(self.mp_out)))
+                    line = line.replace('|surfaceIDs|', '\"' + '\", \"'.join(self.mp_out) + '\"')
                     line = line.replace('|dimension|', str(self.dimensions))
                     if '|' in line:
                         raise ValueError(f'The following line in GetOutput.cpp still contains a \'|\' after '
@@ -167,21 +173,16 @@ class SolverWrapperAbaqus(Component):
         cmd = f'abaqus make job=GetOutput user=GetOutput.cpp >> {self.logfile} 2>&1'
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
+        # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
         if self.timestep_start == 0:
-            # get node positions (not load points) at timestep_start (0 is an argument to GetOutput.exe)
             self.print_log(f'\n### Get geometrical node positions using GetOutput ###')
             cmd = f'abaqus ./GetOutput.exe CSM_Time{self.timestep_start + 1} 0 >> {self.logfile} 2>&1'
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
-            for i in range(0, self.n_surfaces):
-                path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{i}Output.dat')
-                path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Nodes.dat')
+            for mp_id in range(len(self.mp_out)):
+                path_output = join(self.dir_csm, f'CSM_Time{self.timestep_start + 1}Surface{mp_id}Output.dat')
+                path_nodes = join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{mp_id}Nodes.dat')
                 shutil.move(path_output, path_nodes)
-
-                # create elements file per surface
-                face_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Cpu0Faces.dat')
-                output_file = os.path.join(self.dir_csm, f'CSM_Time{self.timestep_start}Surface{i}Elements.dat')
-                self.make_elements(face_file, output_file)
 
         # prepare Abaqus USR.f
         usr = 'USR.f'
@@ -190,7 +191,8 @@ class SolverWrapperAbaqus(Component):
                 for line in infile:
                     line = line.replace('|dimension|', str(self.dimensions))
                     line = line.replace('|arraySize|', str(self.array_size))
-                    line = line.replace('|surfaces|', str(self.n_surfaces))
+                    line = line.replace('|surfaces|', str(len(self.mp_in)))
+                    line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                     line = line.replace('|cpus|', str(self.cores))
                     line = line.replace('|ramp|', str(self.ramp))
                     line = line.replace('|deltaT|', str(self.delta_t))
@@ -214,16 +216,8 @@ class SolverWrapperAbaqus(Component):
         self.model = data_structure.Model()
 
         # create input ModelParts (load points)
-        for item in (self.settings['interface_input']):
+        for mp_id, item in enumerate(self.settings['interface_input']):
             mp_name = item['model_part']
-
-            for i, surfaceID in enumerate(self.surfaceIDs):  # identify surfaceID corresponding to ModelPart
-                if surfaceID in mp_name:
-                    self.model_part_surface_ids[mp_name] = i
-                    break
-            if mp_name not in self.model_part_surface_ids:
-                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}')
-            mp_id = self.model_part_surface_ids[mp_name]
 
             # read in elements file
             elem0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Elements.dat')
@@ -268,16 +262,8 @@ class SolverWrapperAbaqus(Component):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create output ModelParts (geometrical nodes)
-        for item in (self.settings['interface_output']):
+        for mp_id, item in enumerate(self.settings['interface_output']):
             mp_name = item['model_part']
-
-            for i, surfaceID in enumerate(self.surfaceIDs):  # identify surfaceID corresponding to ModelPart
-                if surfaceID in mp_name:
-                    self.model_part_surface_ids[mp_name] = i
-                    break
-            if mp_name not in self.model_part_surface_ids:
-                raise AttributeError(f'Could not identify surfaceID corresponding to ModelPart {mp_name}')
-            mp_id = self.model_part_surface_ids[mp_name]
 
             # read in nodes file
             nodes0_file = join(self.dir_csm, f'CSM_Time0Surface{mp_id}Nodes.dat')
@@ -299,18 +285,8 @@ class SolverWrapperAbaqus(Component):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # check whether the input ModelParts and output ModelParts have proper overlap
-        for surfaceID in self.surfaceIDs:
-            for item in self.settings['interface_input']:
-                mp_name = item['model_part']
-                if surfaceID in mp_name:
-                    mp_in = self.model.get_model_part(mp_name)
-                    break
-            for item in self.settings['interface_output']:
-                mp_name = item['model_part']
-                if surfaceID in mp_name:
-                    mp_out = self.model.get_model_part(mp_name)
-                    break
-            tools.check_bounding_box(mp_in, mp_out)
+        for item_in, item_out in zip(self.settings['interface_input'], self.settings['interface_output']):
+            tools.check_bounding_box(*map(self.model.get_model_part, [item_in['model_part'], item_out['model_part']]))
 
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
@@ -334,9 +310,7 @@ class SolverWrapperAbaqus(Component):
 
         # copy input data for debugging
         if self.debug:
-            for dct in self.interface_input.parameters:
-                mp_name = dct['model_part']
-                mp_id = self.model_part_surface_ids[mp_name]
+            for mp_id in range(len(self.mp_in)):
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
                                   f'_Iter{self.iteration}.dat')
@@ -412,11 +386,9 @@ class SolverWrapperAbaqus(Component):
         subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
         # read Abaqus output data
-        for dct in self.interface_output.parameters:
-            mp_name = dct['model_part']
-
+        for mp_id, item in enumerate(self.settings['interface_output']):
+            mp_name = item['model_part']
             # read in output file for surface nodes
-            mp_id = self.model_part_surface_ids[mp_name]
             file_name = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output.dat')
             data = np.loadtxt(file_name, skiprows=1)
 
@@ -654,9 +626,8 @@ class SolverWrapperAbaqus(Component):
 
     def write_loads(self):
         """Write the incoming loads to a file that is read by the READDATA subroutine in USR.f."""
-        for dct in self.interface_input.parameters:
-            mp_name = dct['model_part']
-            mp_id = self.model_part_surface_ids[mp_name]
+        for mp_id, item in enumerate(self.settings['interface_input']):
+            mp_name = item['model_part']
             model_part = self.model.get_model_part(mp_name)
 
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')

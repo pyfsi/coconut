@@ -10,6 +10,11 @@ C==============================================================================
       PARAMETER (N = |arraySize|)
       PARAMETER (S = |surfaces|)
 
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
+      DATA SURFACEIDS /|surfaceIDs|/
+
       DOUBLE PRECISION LOADNEW(D+1,N,S)
 #if RAMP
       DOUBLE PRECISION LOADOLD(D+1,N,S)
@@ -280,6 +285,9 @@ C==============================================================================
       PARAMETER (D = |dimension|)
       PARAMETER (N = |arraySize|)
       PARAMETER (S = |surfaces|)
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
 
       DOUBLE PRECISION LOADNEW(D+1,N,S)
 #if RAMP
@@ -324,9 +332,15 @@ C==============================================================================
       END IF
 #endif
 
-      R = INDEX(SNAME,'SURFACE')
-      READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-      R = R+1
+      IF (S > 1) THEN
+      DO R = 1,S
+         IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+             EXIT
+         END IF
+      END DO
+      ELSE
+          R = 1
+      END IF
 
 #ifdef MPI
 #if RAMP
@@ -368,6 +382,9 @@ C==============================================================================
       PARAMETER (D = |dimension|)
       PARAMETER (N = |arraySize|)
       PARAMETER (S = |surfaces|)
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
 
       DOUBLE PRECISION LOADNEW(D+1,N,S)
 #if RAMP
@@ -404,9 +421,15 @@ C==============================================================================
          CALL READDATA(KSTEP)
       END IF
 
-      R = INDEX(SNAME,'SURFACE')
-      READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-      R = R+1
+      IF (S > 1) THEN
+         DO R = 1,S
+            IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+               EXIT
+            END IF
+         END DO
+      ELSE
+         R = 1
+      END IF
 
 #ifdef MPI
       T_USER = LOADNEW(2:D+1,L(R),R)

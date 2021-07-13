@@ -86,9 +86,6 @@
               "dimensions": 3,
               "static": false,
               "arraysize": 1e5,
-              "surfaceIDs": [
-                "WALLOUTSIDE"
-              ],
               "interface_input": [
                 {
                   "model_part": "WALLOUTSIDE_load_points",
