@@ -88,6 +88,66 @@ class SolverWrapperopenfoamextend(Component):
                     decomposedict_string = file.read()
                 self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
 
+        #create a point file to define the spatial mapping of the timeVaryingMappedSolidTraction BC.
+        points = np.loadtxt(f'points.csv', delimiter = ',')
+
+        for boundary in self.boundary_names:
+            boundary_data_path = os.path.join(self.working_directory,'constant/boundaryData')
+            if not os.path.exists(boundary_data_path):
+                 os.mkdir(boundary_data_path)
+            boundary_path = os.path.join(boundary_data_path, boundary)
+            shutil.rmtree(boundary_path, ignore_errors = True)
+            os.mkdir(boundary_path)
+            data_folder = os.path.join(boundary_path,'0')
+            os.mkdir(data_folder)
+
+            with open(os.path.join(boundary_path, 'points'), 'w') as f:
+                 f.write("""
+            FoamFile
+            {
+                 version   2.0;
+                 format    ascii;
+                 class     vectorField;
+                 object    points;
+            }
+            //*************************************************************************//\n""")
+                 f.write('(\n')
+                 for point in points:
+                      f.write(f'({point[0]} {point[1]} {point[2]})\n')
+                 f.write(')')
+
+            with open(os.path.join(data_folder, 'pressure'), 'w') as g:
+                g.write("""
+            FoamFile
+            {
+                 version   2.0;
+                 format    ascii;
+                 class     scalarField;
+                 object    points;
+            }
+            //*************************************************************************//\n""")
+                g.write(f'{points.shape[0]}\n')
+                g.write('(\n')
+                for pressure in points:
+                    g.write(f'{0}\n')
+                g.write(')')
+
+            with open(os.path.join(data_folder, 'traction'), 'w') as h:
+                h.write("""
+            FoamFile
+            {
+                 version   2.0;
+                 format    ascii;
+                 class     vectorField;
+                 object    points;
+            }
+            //*************************************************************************//\n""")
+                h.write(f'{points.shape[0]}\n')
+                h.write('(\n')
+                for traction in points:
+                    h.write(f'({0} {0} {0} )\n')
+                h.write(')')
+
         # modify controlDict file to add displacement functionObjects for all the boundaries in
         # self.settings["boundary_names"]
         self.read_modify_controldict()
@@ -113,9 +173,9 @@ class SolverWrapperopenfoamextend(Component):
             ids = np.arange(0, nfaces)
 
             # create input model part
-            mp_output = self.model.create_model_part(f'{boundary}_input', x0, y0, z0, ids)
-            mp_output.start_face = start_face
-            mp_output.nfaces = nfaces
+            mp_input = self.model.create_model_part(f'{boundary}_input', x0, y0, z0, ids)
+            mp_input.start_face = start_face
+            mp_input.nfaces = nfaces
 
             # create output model part
             self.model.create_model_part(f'{boundary}_output', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
@@ -223,21 +283,21 @@ class SolverWrapperopenfoamextend(Component):
             check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         #TODO: Parallel running isn't checked yet! A prelimanary implementation has been done.
-        else:
-            for i in np.arange(self.cores):
-                new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
-                for boundary in self.boundary_names:
-                    new_path_boundaryData = os.path.join(self.working_directory,
-                                                     'constant/boundaryData', boundary, self.cur_timestamp)
-                if os.path.isdir(new_path):
-                    if i == 0:
-                        tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                    check_call(f'rm -rf {new_path}', shell=True)
-                if os.path.isdir(new_path_boundaryData):
-                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
-                    check_call(f'rm -rf {new_path_boundaryData}', shell=True)
-                check_call(f'mkdir -p {new_path}', shell=True)
-                check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+        # else:
+        #     for i in np.arange(self.cores):
+        #         new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
+        #         for boundary in self.boundary_names:
+        #             new_path_boundaryData = os.path.join(self.working_directory,
+        #                                              'constant/boundaryData', boundary, self.cur_timestamp)
+        #         if os.path.isdir(new_path):
+        #             if i == 0:
+        #                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+        #             check_call(f'rm -rf {new_path}', shell=True)
+        #         if os.path.isdir(new_path_boundaryData):
+        #             tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+        #             check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+        #         check_call(f'mkdir -p {new_path}', shell=True)
+        #         check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -280,7 +340,7 @@ class SolverWrapperopenfoamextend(Component):
         #                                'pointDisplacement_Next_Iter' + str(self.iteration))
         #         shutil.copy(path_from, path_to)
 
-        self.delete_prev_iter_output()
+        # self.delete_prev_iter_output()
         self.send_message('continue')
         self.wait_message('continue_ready')
 
@@ -447,42 +507,45 @@ class SolverWrapperopenfoamextend(Component):
        :return:
        """
         for boundary in self.boundary_names:
-            pressure_filename_ref = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0',
-                                                 'pressure')
-            traction_filename_ref = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0',
-                                                 'traction')
-
-
-            pressure_filename = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                             self.cur_timestamp, 'pressure')
-            traction_filename = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                             self.cur_timestamp, 'traction')
-
-            shutil.copy(pressure_filename_ref, pressure_filename)
-            shutil.copy(traction_filename_ref, traction_filename)
-
-            with open(pressure_filename_ref, 'r') as ref_file:
-                pressure_string = ref_file.read()
-
-            with open(traction_filename_ref, 'r') as ref_file:
-                traction_string = ref_file.read()
-
             mp_name = f'{boundary}_input'
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
-            boundary_dict = of_io.get_dict(input_string=pressure_string, keyword=boundary)
-            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=pressure)
-            pressure_string = pressure_string.replace(boundary_dict, boundary_dict_new)
-
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
-            boundary_dict = of_io.get_dict(input_string=traction_string, keyword=boundary)
-            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=traction)
-            traction_string = traction_string.replace(boundary_dict, boundary_dict_new)
+            data_folder = os.path.join(self.working_directory,'constant/boundaryData', boundary, self.cur_timestamp)
+            os.mkdir(data_folder)
 
-            with open(pressure_filename, 'w') as f:
-                f.write(pressure_string)
+            with open(os.path.join(data_folder,'pressure'),'w') as f:
+                f.write("""
+                FoamFile
+                {
+                     version   2.0;
+                     format    ascii;
+                     class     scalarField;
+                     object    values;
+                }
+                //***********************************************************************// //\n
+                """)
+                f.write(f'{pressure.shape[0]}\n')
+                f.write('(\n')
+                for pr in pressure:
+                    f.write(f'{pr[0]}\n')
+                f.write(')')
 
-            with open(traction_filename, 'w') as f:
-                f.write(traction_string)
+            with open(os.path.join(data_folder,'traction'),'w') as f:
+                f.write("""
+                FoamFile
+                {
+                     version   2.0;
+                     format    ascii;
+                     class     vectorField;
+                     object    values;
+                }
+                //***********************************************************************// //\n
+                """)
+                f.write(f'{traction.shape[0]}\n')
+                f.write('(\n')
+                for tr in traction:
+                    f.write(f'({tr[0]} {tr[1]} {tr[2]})\n')
+                f.write(')')
 
             # if self.settings['parallel']:
             #     check_call(f'decomposePar -fields -time {self.cur_timestamp} &> log.decomposePar;',
@@ -705,7 +768,5 @@ class SolverWrapperopenfoamextend(Component):
                                          is_scalar=True)
             z = of_io.get_boundary_field(file_name=filename_ccz, boundary_name=boundary_name, size=nfaces,
                                          is_scalar=True)
-
-
 
         return x, y, z
