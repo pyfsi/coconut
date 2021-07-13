@@ -60,17 +60,7 @@ class SolverWrapperAbaqus(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
-
-        self.subcycling = self.settings.get('subcycling', False)  # value from parameters or False if not present
-        if self.subcycling:
-            self.min_inc = self.settings['min_inc']
-            self.initial_inc = self.settings['initial_inc']
-            self.max_num_inc = self.settings['max_num_inc']
-            self.max_inc = self.settings['max_inc']
-            self.ramp = int(self.settings['ramp'])  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
-        else:
-            self.ramp = 0
-            self.max_num_inc = 1
+        self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
         self.link_sl = None
@@ -622,24 +612,7 @@ class SolverWrapperAbaqus(Component):
         with open(input_file) as f:
             line = f.readline()
             while line:
-                if '*step' in line.lower():
-                    contents = line.split(',')  # split string on commas
-                    line_new = ''
-                    for s in contents:
-                        if s.strip().startswith('inc='):
-                            numbers = re.findall(r'\d+', s)
-                            if (not self.subcycling) and int(numbers[0]) != 1:
-                                raise NotImplementedError(f'inc={numbers[0]}: subcycling was not requested but '
-                                                          f'max_num_inc > 1')
-                            else:
-                                line_new += f' inc={self.max_num_inc},'
-                        else:
-                            line_new += s + ','
-                    line_new = line_new[:-1] + '\n'  # remove the last added comma and add a newline
-                    of.write(line_new)
-                    if bool_restart:
-                        rf.write(line_new)
-                elif '*dynamic' in line.lower() or '*static' in line.lower():
+                if '*dynamic' in line.lower() or '*static' in line.lower():
                     of.write(line)
                     if '*dynamic' in line.lower() and self.static:
                         raise ValueError(f'keyword "*dynamic" found in input file while keyword "static" is set to True'
@@ -649,30 +622,23 @@ class SolverWrapperAbaqus(Component):
                                          f' in parameter file')
                     if bool_restart:
                         rf.write(line)
-                    if '*dynamic' in line.lower():
-                        contents = line.split(',')
-                        for s in contents:
-                            if 'application' in s.lower():
-                                contents_b = s.split('=')
-                                app = contents_b[1].lower().strip()
-                                if app not in {'quasi-static', 'moderate dissipation', 'transient fidelity'}:
-                                    raise NotImplementedError(
-                                        f'{contents_b[1]} not available: currently only quasi-static, moderate '
-                                        f'dissipation and transient fidelity are implemented for the Abaqus wrapper')
                     check_line = f.readline()  # need to skip the next line, but contents are checked
-                    check_line = [float(line_part) for line_part in check_line.replace(',\n', '').split(',')]
-                    if not self.subcycling:
-                        line_new = f'{self.delta_t}, {self.delta_t},\n'
-                        check_ok = np.allclose(check_line, [self.delta_t, self.delta_t], atol=0)
-                    else:
-                        line_new = f'{self.initial_inc}, {self.delta_t}, {self.min_inc}, {self.max_inc}\n'
-                        check_ok = np.allclose(check_line, [self.initial_inc, self.delta_t, self.min_inc, self.max_inc],
-                                               atol=0)
-                    if not check_ok:
+                    check_list = [float(line_part) for line_part in check_line.replace(',\n', '').split(',')]
+                    if len(check_list) < 2:
                         with warnings.catch_warnings():
                             warnings.filterwarnings('always', category=UserWarning)
-                            warnings.warn(f'{self.__class__.__name__} overwrites incrementation settings in '
-                                          f'{self.input_file}, make sure this is intended', category=UserWarning)
+                            warnings.warn(f'data line for time incrementation has a length smaller than 2, it will not '
+                                          f'be checked or modified by {self.__class__.__name__}', category=UserWarning)
+                        line_new = check_line
+                    else:
+                        check_ok = np.isclose(check_list[1], self.delta_t, atol=0)
+                        if not check_ok:
+                            with warnings.catch_warnings():
+                                warnings.filterwarnings('always', category=UserWarning)
+                                warnings.warn(f'{self.__class__.__name__} overwrites incrementation settings in '
+                                              f'{self.input_file}, make sure this is intended', category=UserWarning)
+                            check_list[1] = self.delta_t
+                        line_new = ' ,'.join(map(str, check_list)) + '\n'
                     of.write(line_new)  # change the time step in the Abaqus step
                     if bool_restart:
                         rf.write(line_new)  # change the time step in the Abaqus step (restart-file)

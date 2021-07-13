@@ -46,13 +46,8 @@ parameter|type|description
 ### Optional
 parameter|type|description
 ---:|:---:|---
-`initial_inc`|float|Required when subcycling is enabled. Contains the size of the first time *increment* attempted by Abaqus.
-`max_inc`|float|Required when subcycling is enabled. Contains the maximal time *increment* size allowed. This value should not be higher than `delta_t`.
-`max_num_inc`|int|Required when subcycling is enabled. Contains the maximum number of *increments* that Abaqus is allowed to perform for one time step. 
-`min_inc`|float|Required when subcycling is enabled. Contains the minimal size allowed for a time *increment*.
-`ramp`|bool|Only used when subcycling is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
-<nobr>`save_results`</nobr>|int|(Default: 1) Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
-`subcycling`|bool|`false`: [Default] Abaqus solves the requested time step using one increment. <br> `true`: Abaqus is allowed to solve the time step using multiple *increments*. This can be of use when Abaqus has convergence difficulties. For example cases where contact is involved often require small *increments*.
+`ramp`|bool|(Default: `false`) Only used when automatic time incrementation (subcycling) is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
+<nobr>`save_results`</nobr>|int|(Default: `1`) Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
 
 ## Overview of operation
 The solver wrapper consists of 6 types of files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
@@ -118,6 +113,7 @@ The base-file has to contain all necessary information about the structural mode
  - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them rather than leaving it to Abaqus to fill in a default) are supported:
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
+    - Implicit dynamic, application transient fidelity
     - Static general
  - Additional loads not dependent on the flow solver.
  
@@ -160,8 +156,7 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
-Currently, the Abaqus wrapper automatically checks if the increments comply with the `delta_t`, `subcycling` and related settings and adjusts them accordingly or raises an error, but *only* for a *dynamic step* or a *static step with subcycling*.
-**Attention:** Replacing the incrementation settings is done by looking up some keywords in the base-file (`*Step`, `*Dynamic`, `application`). This procedure fails when these keywords are not found. When using the GUI to create the base-file (.inp) and using the default settings for the step, often the keyword `application` is not written. It is hence advised not to use the default settings but use an application (quasi-static works for most cases and also moderate dissipation is allowed). If sub-cycling is not enabled, the maximal number of increments should be 1 (`inc=1`), otherwise an error is raised. This behavior may be changed in future versions of the code. The lines in the base-file (.inp) should look similar to this:
+The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly  (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this:
 
 ```
 *Step, name=Step-1, nlgeom=YES, inc=1
@@ -169,7 +164,7 @@ Currently, the Abaqus wrapper automatically checks if the increments comply with
 0.0001,0.0001,
 ```
 
-The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm).
+The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
 
 #### Input-related settings in JSON file
 Although it is imperative to use MOVINGSURFACE followed by an integer in the base-file to identify the surfaces *for input*, some lines in the JSON file (see example below) related to input contains names specified by the user. The names in the `interface_input["model_part"]` keys are matched by the elements (and their index) in `surfaceIDs`. 
