@@ -54,14 +54,12 @@ class SolverWrapperAbaqus(Component):
         self.timestep = self.timestep_start
         self.iteration = None
         self.model = None
-        self.mp_in = []
-        self.mp_out = []
+        self.mp_in = [item['model_part'].upper() for item in self.settings['interface_input']]
+        self.mp_out = [item['model_part'].upper() for item in self.settings['interface_output']]
         for item in self.settings['interface_input']:
-            idx = item['model_part'].rindex('_load_points')
-            self.mp_in.append(item['model_part'][:idx])
+            item['model_part'] += '_load_points'
         for item in self.settings['interface_output']:
-            idx = item['model_part'].rindex('_nodes')
-            self.mp_out.append(item['model_part'][:idx])
+            item['model_part'] += '_nodes'
         self.interface_input = None
         self.interface_output = None
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)

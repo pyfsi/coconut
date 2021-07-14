@@ -118,21 +118,21 @@
               "ramp": true,
               "interface_input": [
                 {
-                  "model_part": "BEAMINSIDEMOVING2_load_points",
+                  "model_part": "BEAMINSIDEMOVING2",
                   "variables": [
                     "pressure",
                     "traction"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING1_load_points",
+                  "model_part": "BEAMINSIDEMOVING1",
                   "variables": [
                     "pressure",
                     "traction"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING0_load_points",
+                  "model_part": "BEAMINSIDEMOVING0",
                   "variables": [
                     "pressure",
                     "traction"
@@ -141,19 +141,19 @@
               ],
               "interface_output": [
                 {
-                  "model_part": "BEAMINSIDEMOVING2_nodes",
+                  "model_part": "BEAMINSIDEMOVING2",
                   "variables": [
                     "displacement"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING1_nodes",
+                  "model_part": "BEAMINSIDEMOVING1",
                   "variables": [
                     "displacement"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING0_nodes",
+                  "model_part": "BEAMINSIDEMOVING0",
                   "variables": [
                     "displacement"
                   ]

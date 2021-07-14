@@ -88,7 +88,7 @@
               "arraysize": 1e5,
               "interface_input": [
                 {
-                  "model_part": "BEAMINSIDEMOVING_load_points",
+                  "model_part": "BEAMINSIDEMOVING",
                   "variables": [
                     "pressure",
                     "traction"
@@ -97,7 +97,7 @@
               ],
               "interface_output": [
                 {
-                  "model_part": "BEAMINSIDEMOVING_nodes",
+                  "model_part": "BEAMINSIDEMOVING",
                   "variables": [
                     "displacement"
                   ]

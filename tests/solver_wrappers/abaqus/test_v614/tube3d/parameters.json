@@ -11,7 +11,7 @@
     "save_restart": 1,
     "interface_input": [
       {
-        "model_part": "WALLOUTSIDE_load_points",
+        "model_part": "WALLOUTSIDE",
         "variables": [
           "pressure",
           "traction"
@@ -20,7 +20,7 @@
     ],
     "interface_output": [
       {
-        "model_part": "WALLOUTSIDE_nodes",
+        "model_part": "WALLOUTSIDE",
         "variables": [
           "displacement"
         ]
