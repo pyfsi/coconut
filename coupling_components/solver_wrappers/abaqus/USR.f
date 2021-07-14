@@ -326,20 +326,20 @@ C==============================================================================
 
 #if RAMP
       IF (|deltaT| > 0.0) THEN
-          DT = |deltaT|
+         DT = |deltaT|
       ELSE
-          DT = 1.0
+         DT = 1.0
       END IF
 #endif
 
       IF (S > 1) THEN
-      DO R = 1,S
-         IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
-             EXIT
-         END IF
-      END DO
+         DO R = 1,S
+            IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+               EXIT
+            END IF
+         END DO
       ELSE
-          R = 1
+         R = 1
       END IF
 
 #ifdef MPI
