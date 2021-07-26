@@ -32,8 +32,8 @@ parameter|type|description
 `cores`|int|Number of cores to be used by Abaqus.
 `delta_t`|float|Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` object in which case it is not mandatory.
 `dimensions`|int|Dimensionality of the problem (2 or 3).
-`interface_input`|list|Should contain a dictionary for each input `ModelPart` to be created, having a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The name should correspond to the *Surfaces* created in Abaqus. The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). The order of should correspond to the `interface_output` as well as the other solver wrapper's `Interface` definitions to which Abaqus is coupled. An example can be found in [this part of the input file section](#input-related-settings-in-json-file).
-`interface_output`|list|Similar to `interface_input` but contains the output `ModelParts` for Abaqus geometrical nodes. The name has to correspond to the *Node Sets* created in Abaqus. In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*.  Currently only `"displacement"` is allowed (case-sensitive). The order of should correspond to the `interface_input` as well as the other solver wrapper's `Interface` definitions to which Abaqus is coupled. An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
+`interface_input`|list|Should contain a dictionary for each input `ModelPart` to be created, having a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The name should correspond to the *Surfaces* created in Abaqus concatenated with "_load_points". The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). The order of should correspond to the `interface_output` as well as the other solver wrapper's `Interface` definitions to which Abaqus is coupled. An example can be found in [this part of the input file section](#input-related-settings-in-json-file).
+`interface_output`|list|Similar to `interface_input` but contains the output `ModelParts` for Abaqus geometrical nodes. The name has to correspond to the *Node Sets* created in Abaqus, concatenated with "_nodes". In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*.  Currently only `"displacement"` is allowed (case-sensitive). The order of should correspond to the `interface_input` as well as the other solver wrapper's `Interface` definitions to which Abaqus is coupled. An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"case.inp"`
 `mp_mode`|str|Determines how Abaqus is executed in parallel. It is recommended to use `"THREADS"`. `"MPI"` works as well but requires a host-file called *`AbaqusHosts.txt`*. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script *`make_host_file.sh`* which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.
 `static`|bool|Indicates which type of analysis is performed: static (`True`) or dynamic (`False`).
@@ -56,14 +56,14 @@ The solver wrapper consists of 6 types of files located in the source directory 
  - *`abaqus_v6.env`*: Environment file setting the environment for the Abaqus solver.
  - *`GetOutput.cpp`*: Extracts the output (from Abaqus .odb files) and writes it to a file for each output`ModelPart`. Written in C++.
  - *`USR.f`*: An Abaqus user-subroutine that reads the loads from files (one for each input `ModelPart`) and applies them on the load points. Written in FORTRAN.
- - *`USRinit.f`*: An Abaqus user-subroutine that extract the coordinates of the load points and writes them to files (one for each input `ModelPart`) to initialize each input `ModelPart`. Written in FORTRAN.
+ - *`USRInit.f`*: An Abaqus user-subroutine that extract the coordinates of the load points and writes them to files (one for each input `ModelPart`) to initialize each input `ModelPart`. Written in FORTRAN.
 
 ### The `initialize` method
 
- During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRinit.f`* and these files are copied to the working directory. 
- The C++ files and FORTRAN files are subsequently compiled. USRinit is ran to obtain the coordinates of the load points at the *Surfaces* defined in Abaqus.
- These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input` . 
- GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output`. 
+ During initialization of the `SolverWrapperAbaqusX` object, some parameters are substituted in *`abaqus_v6.env`*, *`GetOutput.cpp`*, *`USR.f`* and *`USRInit.f`* and these files are copied to the working directory. 
+ The C++ files and FORTRAN files are subsequently compiled. USRInit is ran to obtain the coordinates of the load points at the *Surfaces* defined in Abaqus.
+ These coordinates are stored in `ModelParts` of which the name corresponds to the entries in `interface_input`.
+ GetOutput is ran to extract the coordinates of the geometrical nodes. These coordinates are added to `ModelParts` of which the names corresponds to entries of `interface_output`.
  The input `ModelParts` are added to an [`Interface`](../../../data_structure/data_structure.md) object taking care of the inputs (i.e. loads), the output `ModelParts` to another instance of `Interface`taking care of outputs (i.e. displacements).
  
 #### Files written in the working directory during `initialize`
@@ -71,10 +71,10 @@ The solver wrapper consists of 6 types of files located in the source directory 
  In the file conventions *`A`* is the index of the corresponding element in the `interface_input` or `interface_output` list.
  
  - The Abaqus input file (`input_file` in JSON file) is processed into a file *`CSM_Time0.inp`* and `CSM_Restart.inp`, the latter taking care of all simulations (i.e. coupling iterations) but the first.
- - Upon running USRinit the load point coordinates of each surface are written to *`CSM_Time0Cpu0SurfaceAFaces.dat`*. When these are processed by the solver wrapper, also *`CSM_Time0SurfaceAElements.dat`* is created.
+ - Upon running USRInit the load point coordinates of each surface are written to *`CSM_Time0Cpu0SurfaceAFaces.dat`*. When these are processed by the solver wrapper, also *`CSM_Time0SurfaceAElements.dat`* is created.
  - Upon running GetOutput the geometrical nodes are written to *`CSM_Time0SurfaceANodes.dat`*. 
  
- Note that the *`CSM_Time0.inp`* and *`CSM_Restart.inp`* are created each initialization (even during restart), however the USRinit and GetOutput are only run when `timestep_start` equals 0.
+ Note that the *`CSM_Time0.inp`* and *`CSM_Restart.inp`* are created each initialization (even during restart), however the USRInit and GetOutput are only run when `timestep_start` equals 0.
  
 ### The `solve_solution_step` method
  
@@ -164,18 +164,18 @@ The Abaqus wrapper tries to check if the increments comply with the `delta_t` se
 The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
 
 #### Input-related settings in JSON file
-The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list. If multiple surfaces are defined, they should match those in the flow solver wrapper counterpart and be listed in the same order.
+The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list, but with "_load_points" appended to it. If multiple surfaces are defined, they should match those in the flow solver wrapper counterpart and be listed in the same order.
 
 ```json
 {
   "interface_input": 
   [
     {
-      "model_part": "SURFACE_NAME_A",
+      "model_part": "SURFACE_NAME_A_load_points",
       "variables": ["pressure", "traction"]
     },
     {
-      "model_part": "SURFACE_NAME_B",
+      "model_part": "SURFACE_NAME_B_load_points",
       "variables": ["pressure", "traction"]
     }
   ]
@@ -202,18 +202,18 @@ my_model.HistoryOutputRequest(createStepName='Step-1', frequency=LAST_INCREMENT,
 ```
 
 #### Output-related settings in JSON file
-The values of the `interface_output["model_part"]` keys should match the names of the node sets defined in Abaqus. These values are internally used in CoCoNuT to distinguish the different `ModelParts`. The order defined in the `interface_output` list should be the same as the `interface_input` list and match the flow solver wrapper counterpart. 
+The values of the `interface_output["model_part"]` keys should match the names of the node sets defined in Abaqus, appended with "_nodes". These values are internally used in CoCoNuT to distinguish the different `ModelParts`. The order defined in the `interface_output` list should be the same as the `interface_input` list and match the flow solver wrapper counterpart. 
 
 ```json
 {
   "interface_output": 
   [
     {
-      "model_part": "NODESET_NAME_A",
+      "model_part": "NODESET_NAME_A_nodes",
       "variables": ["displacement"]
     },
     {
-      "model_part": "NODESET_NAME_B",
+      "model_part": "NODESET_NAME_B_nodes",
       "variables": ["displacement"]
     }
   ]
