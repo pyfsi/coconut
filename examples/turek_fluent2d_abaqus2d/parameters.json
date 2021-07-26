@@ -118,21 +118,21 @@
               "arraysize": 500,
               "interface_input": [
                 {
-                  "model_part": "BEAMINSIDEMOVING2",
+                  "model_part": "BEAMINSIDEMOVING2_load_points",
                   "variables": [
                     "pressure",
                     "traction"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING1",
+                  "model_part": "BEAMINSIDEMOVING1_load_points",
                   "variables": [
                     "pressure",
                     "traction"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING0",
+                  "model_part": "BEAMINSIDEMOVING0_load_points",
                   "variables": [
                     "pressure",
                     "traction"
@@ -141,19 +141,19 @@
               ],
               "interface_output": [
                 {
-                  "model_part": "BEAMINSIDEMOVING2",
+                  "model_part": "BEAMINSIDEMOVING2_nodes",
                   "variables": [
                     "displacement"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING1",
+                  "model_part": "BEAMINSIDEMOVING1_nodes",
                   "variables": [
                     "displacement"
                   ]
                 },
                 {
-                  "model_part": "BEAMINSIDEMOVING0",
+                  "model_part": "BEAMINSIDEMOVING0_nodes",
                   "variables": [
                     "displacement"
                   ]

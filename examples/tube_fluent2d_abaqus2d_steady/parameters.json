@@ -89,7 +89,7 @@
               "ramp": true,
               "interface_input": [
                 {
-                  "model_part": "BEAMINSIDEMOVING",
+                  "model_part": "BEAMINSIDEMOVING_load_points",
                   "variables": [
                     "pressure",
                     "traction"
@@ -98,7 +98,7 @@
               ],
               "interface_output": [
                 {
-                  "model_part": "BEAMINSIDEMOVING",
+                  "model_part": "BEAMINSIDEMOVING_nodes",
                   "variables": [
                     "displacement"
                   ]
