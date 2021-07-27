@@ -153,7 +153,7 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
-The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly  (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this:
+The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this:
 
 ```
 *Step, name=Step-1, nlgeom=YES, inc=1
