@@ -84,10 +84,10 @@ The solver wrapper consists of 6 types of files located in the source directory 
  
 In the file conventions *`A`* is the index of the corresponding element in the `interface_input` or `interface_output` list and *`B`* the time step.
 
- - Files written by Abaqus for allowing a restart (required every coupling iteration): *`CSM_TimeB.odb`*, *`CSM_TimeB.res`*, *`CSM_TimeAB.mdl`*, *`CSM_TimeB.prt`*, *`CSM_TimeB.stt`*.
+ - Files written by Abaqus for allowing a restart (required every coupling iteration): *`CSM_TimeB.odb`*, *`CSM_TimeB.res`*, *`CSM_TimeB.mdl`*, *`CSM_TimeB.prt`*, *`CSM_TimeB.stt`*.
  - Output database file written by Abaqus called *`CSM_TimeB.odb`* and read by GetOutput (also needed for restart).
- - Output text file *`CSM_TimeASurfaceAOutput.dat`* containing displacements written by GetOutput and read by the solver wrapper.
- - Input text file *`CSM_TimeASurfaceACpu0Input.dat`* containing the loads written by the solver wrapper and read by the USR.
+ - Output text file *`CSM_TimeBSurfaceAOutput.dat`* containing displacements written by GetOutput and read by the solver wrapper.
+ - Input text file *`CSM_TimeBSurfaceACpu0Input.dat`* containing the loads written by the solver wrapper and read by the USR.
  
  The parameter `save_restart` (defined at the level of the [`coupled_solver`](../../coupled_solvers/coupled_solvers.md#settings)) determines at which timesteps these files are saved.
  Additionally, the `save_results` parameter defines the rate at which the output database files (*`.odb`*) are kept.
