@@ -28,14 +28,15 @@ class SolverWrapperKratosStructure70(BaseSolverWrapperKratosStructure):
 
         kratos_parameters['problem_data']['start_time'] = 0.0
         kratos_parameters['solver_settings']['time_stepping']['time_step'] = self.delta_t
-        restart_save_dict = {'restart_processes': [{'python_module': 'save_restart_process',
-                                                    'kratos_module': 'KratosMultiphysics',
-                                                    'process_name': 'SaveRestartProcess',
-                                                    'Parameters': {
-                                                        'model_part_name': 'Structure',
-                                                        'restart_control_type': 'step',
-                                                        'restart_save_frequency': abs(self.save_restart)}}]} # kratos 7.0 does not support negative numbers
-        kratos_parameters['output_processes'].update(restart_save_dict)
+        if self.save_restart:
+            restart_save_dict = {'restart_processes': [{'python_module': 'save_restart_process',
+                                                        'kratos_module': 'KratosMultiphysics',
+                                                        'process_name': 'SaveRestartProcess',
+                                                        'Parameters': {
+                                                            'model_part_name': 'Structure',
+                                                            'restart_control_type': 'step',
+                                                            'restart_save_frequency': abs(self.save_restart)}}]} # kratos 7.0 does not support negative numbers
+            kratos_parameters['output_processes'].update(restart_save_dict)
 
         if not (self.timestep_start == 0):
             restart_load_dict = {'restart_load_file_label': str(self.timestep_start),

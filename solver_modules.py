@@ -5,7 +5,7 @@ uses the environment variables in all the spawned processes, used for executing 
 in the various stages of the simulation.
 """
 
-machine_name = 'ugent_cluster_SL6.3'
+machine_name = 'ugent_cluster_CO7'
 
 solver_load_cmd_dict = {
     'ugent_cluster_SL6.3': {
@@ -23,6 +23,7 @@ solver_load_cmd_dict = {
         'fluent.v2020R1': 'ml ANSYS_CFD/2020R1',
         'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14',
         'kratos_structure.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
+        'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=$HOME/Software/Kratos-7.0:$PYTHONPATH && export LD_LIBRARY_PATH=$HOME/Software/Kratos-7.0/libs:$LD_LIBRARY_PATH',
         'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH'
     },
     'ugent_hpc': {

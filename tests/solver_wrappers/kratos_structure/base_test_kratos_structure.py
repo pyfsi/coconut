@@ -13,7 +13,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dir_name = join(realpath(dirname(__file__)))
+        dir_name = realpath(dirname(__file__))
         dir_test = f'test_v{cls.version_label}'
         # Create setup files for kratos
         cls.working_dir = join(dir_name, dir_test, 'CSM')
