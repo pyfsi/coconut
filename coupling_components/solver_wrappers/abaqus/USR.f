@@ -312,6 +312,7 @@ C==============================================================================
       DOUBLE PRECISION F,TIME(2),COORDS(D)
       CHARACTER(LEN=80) :: SNAME
       INTEGER KSTEP,KINC,NOEL,NPT,LAYER,KSPT,JLTYP,R
+      LOGICAL :: FOUND
 
 #ifndef MPI
       INTEGER K
@@ -332,16 +333,24 @@ C==============================================================================
       END IF
 #endif
 
+      FOUND  = .FALSE.
       IF (S > 1) THEN
          DO R = 1,S
             IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+               FOUND = .TRUE.
                EXIT
             END IF
          END DO
+         IF (.NOT. FOUND) THEN
+            PRINT *, 'USR-abort: no matching surface name found for Mod
+     &elPart.'
+            CALL FLUSH(6)
+            CALL STDB_ABQERR(-3,'USR-abort: no matching surface name fo
+     &und for ModelPart.')
+         END IF
       ELSE
          R = 1
       END IF
-
 #ifdef MPI
 #if RAMP
       F = LOADNEW(1,K(R),R)*(TIME(1)/DT)
@@ -409,6 +418,7 @@ C==============================================================================
       DOUBLE PRECISION ALPHA,T_USER(D),TIME(2),COORDS(D),DIRCOS(3,3)
       CHARACTER(LEN=80) :: SNAME
       INTEGER KSTEP,KINC,NOEL,NPT,JLTYP,R
+      LOGICAL :: FOUND
 
 #ifndef MPI
       INTEGER L
@@ -421,12 +431,21 @@ C==============================================================================
          CALL READDATA(KSTEP)
       END IF
 
+      FOUND  = .FALSE.
       IF (S > 1) THEN
          DO R = 1,S
             IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+               FOUND = .TRUE.
                EXIT
             END IF
          END DO
+         IF (.NOT. FOUND) THEN
+            PRINT *, 'USR-abort: no matching surface name found for Mod
+     &elPart.'
+            CALL FLUSH(6)
+            CALL STDB_ABQERR(-3,'USR-abort: no matching surface name fo
+     &und for ModelPart.')
+         END IF
       ELSE
          R = 1
       END IF

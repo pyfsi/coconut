@@ -59,6 +59,10 @@ class SolverWrapperAbaqus(Component):
         for item in self.settings['interface_input']:
             idx = item['model_part'].rindex('_load_points')
             self.mp_in.append(item['model_part'][:idx].upper())
+        for mp_1 in self.mp_in:
+            for mp_2 in self.mp_in:
+                if mp_1 in mp_2 and not mp_1 == mp_2:
+                    raise ValueError('Input interface contains names that are substrings of each other')
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
             self.mp_out.append(item['model_part'][:idx].upper())
