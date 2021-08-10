@@ -1,0 +1,11 @@
+{
+  "mesh_filename":  "circular_membrane.msh",
+  "sub_mp_name": "disc",
+  "rho_f":    1000,
+  "gravity":  9.81,
+  "zf":       1.0,
+  "relative_tolerance": 1e-9,
+  "absolute_tolerance": 1e-6,
+  "target_volume": 0.5,
+  "log":  true
+}

@@ -1,0 +1,17 @@
+{
+  "solver_wrappers": [
+    {
+      "type": "solver_wrappers.vol_cons_solver.v1",
+      "settings": {
+        "working_directory": "solver_wrappers/vol_cons_solver/test_circular_membrane",
+        "input_file": "vol_cons_solver_parameters.json",
+        "delta_t": 0.1,
+        "interface_list": [
+          "disc"
+        ],
+        "timestep_start": 0
+
+      }
+    }
+  ]
+}
