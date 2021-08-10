@@ -1,5 +1,7 @@
 from coconut.tools import create_instance, get_solver_env, solver_available, print_box
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
+from coconut.data_structure import Model
+from coconut.data_structure import Interface
 
 import unittest
 import numpy as np
@@ -20,7 +22,6 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to openfoam directory
         cls.file_name = join(dir_name, f'test_v{cls.version}/wire/parameters.json')
         cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/CFD')
-
 
         # setup
         shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)
@@ -69,6 +70,49 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
 
             with open(decompose_file_name, 'w') as f:
                 f.write(new_dict)
+
+    def get_p(self, x):
+        return 0.5e9 * np.sin(x) + 0.5e9
+
+    def get_shear(self, x):
+        shear = np.zeros((x.shape[0], 3))
+        return shear
+
+    def test_displacement(self):
+        # adapt parameters, create solver
+        self.set_cores(1)
+        solver = create_instance(self.parameters)
+        solver.initialize()
+        solver.initialize_solution_step()
+        interface_input = solver.get_interface_input()
+
+        #set pressure and traction
+        model_part=interface_input.get_model_part(self.mp_name_in)
+        x0 = model_part.x0
+        p = self.get_p(x0)
+        t = self.get_shear(x0)
+        pr = np.column_stack(p)
+        tr = np.column_stack(t)
+        pr_list = [pr,np.zeros_like(pr),pr]
+        tr_list = [tr,np.zeros_like(tr),tr]
+
+        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
+        traction = interface_input.get_variable_data(self.mp_name_in,'traction')
+
+        #run solver for three pressure and traction(first one = last one)
+        displacement = []
+
+        for pr in pr_list:
+            pressure = pr.reshape((-1, 1))
+            interface_input.set_variable_data("mp_name_in", "pressure", pressure)
+            interface_output = solver.solve_solution_step(interface_input)
+            displacement.append(interface_output.get_variable_data(self.mp_name_out,'displacement'))
+        solver.finalize_solution_step()
+        solver.finalize()
+
+        #check if same position give same displacement
+        np.testing.assert_allclose(displacement[0], displacement[2], atol=1e-4,rtol = 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -17,10 +17,10 @@ import re
 #TODO:wrappper is not adapt to run in parallel
 
 def create(parameters):
-    return SolverWrapperopenfoamextend(parameters)
+    return SolverWrapperOpenFOAMExtend(parameters)
 
 
-class SolverWrapperopenfoamextend(Component):
+class SolverWrapperOpenFOAMExtend(Component):
     version = None  # FOAM-Extend version with dot, e.g. 4.1 , set in sub-class
 
     @tools.time_initialize

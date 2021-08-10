@@ -1,4 +1,4 @@
-from coconut.coupling_components.solver_wrappers.openfoam_extend.openfoam_extend import SolverWrapperopenfoamextend
+from coconut.coupling_components.solver_wrappers.openfoam_extend.openfoam_extend import SolverWrapperOpenFOAMExtend
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
@@ -7,11 +7,11 @@ from os.path import join
 
 
 def create(parameters):
-    return SolverWrapperopenfoamextend41(parameters)
+    return SolverWrapperOpenFOAMExtend41(parameters)
 
 
-class SolverWrapperopenfoamextend41(SolverWrapperopenfoamextend):
-    version = 'fe4.1'
+class SolverWrapperOpenFOAMExtend41(SolverWrapperOpenFOAMExtend):
+    version = '4.1'
 
     def __init__(self, parameters):
         super().__init__(parameters)
