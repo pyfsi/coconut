@@ -1,6 +1,6 @@
 {
   "mesh_filename":  "circular_membrane.msh",
-  "sub_mp_name": "disc",
+  "sub_mesh_name": "this will be filled by the wrapper",
   "rho_f":    1000,
   "gravity":  9.81,
   "zf":       1.0,

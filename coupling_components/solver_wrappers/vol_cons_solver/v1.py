@@ -40,7 +40,7 @@ class VolConsSolverV1(Component):
         self.settings['interface_output']= []
         from vol_cons_solver.free_surface_updater import FreeSurfaceUpdater
         for mp_name in self.settings['interface_list']:
-            input_parameters['sub_mp_name'] = mp_name
+            input_parameters['sub_mesh_name'] = mp_name
             solver = FreeSurfaceUpdater(input_parameters)
             self.free_surface_updaters.append(solver)
             x0 = solver.get_mesh().points[:, 0]
