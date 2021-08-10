@@ -34,10 +34,10 @@ step1 = tubeModel.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePe
                                        noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED,
                                        application=QUASI_STATIC)
 step1.Restart(frequency=99999, overlay=ON)
-movingSurface0 = SurfaceFromNodeSet(tubeAssembly, tubeInstance, 'BEAMINSIDEMOVING', 'MOVINGSURFACE0')
+beamInsideMoving = SurfaceFromNodeSet(tubeAssembly, tubeInstance, 'BEAMINSIDEMOVING', 'BEAMINSIDEMOVING')
 tubeModel.Pressure(name='DistributedPressure', createStepName='Step-1', distributionType=USER_DEFINED, field='',
-                   magnitude=1, region=movingSurface0)
-tubeModel.SurfaceTraction(name='DistributedShear', createStepName='Step-1', region=movingSurface0, magnitude=1,
+                   magnitude=1, region=beamInsideMoving)
+tubeModel.SurfaceTraction(name='DistributedShear', createStepName='Step-1', region=beamInsideMoving, magnitude=1,
                           traction=GENERAL, directionVector=((0, 0, 0), (1, 0, 0)), distributionType=USER_DEFINED)
 tubeModel.DisplacementBC(name='FixedEnds', createStepName='Step-1', region=tubeAssembly.sets['BEAMINSIDEFIXED'], u1=0,
                          u2=0, ur3=UNSET)

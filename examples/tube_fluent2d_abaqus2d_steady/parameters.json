@@ -85,16 +85,8 @@
               "cores": 1,
               "dimensions": 2,
               "static": true,
-              "arraysize": 1000000.0,
-              "subcycling": true,
-              "min_inc": 0.0001,
-              "initial_inc": 0.01,
-              "max_num_inc": 1000,
-              "max_inc": 1.0,
+              "arraysize": 1e5,
               "ramp": true,
-              "surfaceIDs": [
-                "BEAMINSIDEMOVING"
-              ],
               "interface_input": [
                 {
                   "model_part": "BEAMINSIDEMOVING_load_points",

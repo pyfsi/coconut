@@ -10,6 +10,11 @@ C==============================================================================
       SAVE /PREV/
       DATA NOEL_PREV /S*0/
 
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
+      DATA SURFACEIDS /|surfaceIDs|/
+
 #ifdef MPI
       INTEGER ID,IDENTIFIED
       COMMON /IDENT/ ID,IDENTIFIED
@@ -64,6 +69,9 @@ C==============================================================================
       INTEGER NOEL_PREV(S)
       COMMON /PREV/ NOEL_PREV
       SAVE /PREV/
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      COMMON /SURF/ SURFACEIDS
+      SAVE /SURF/
 
 #ifdef MPI
       INTEGER ID,IDENTIFIED
@@ -78,6 +86,7 @@ C==============================================================================
       CHARACTER(LEN=200) :: FILENAME
       CHARACTER(LEN=80) :: SNAME
       INTEGER KSTEP,KINC,NOEL,NPT,LAYER,KSPT,JLTYP,R,UNIT_FACES(S)
+      LOGICAL :: FOUND
 
       FMT_FACES = '(2I6,|dimension|ES27.17E2)'
       UNIT_FACES = (/ (100+R,R=1,S) /)
@@ -90,24 +99,40 @@ C==============================================================================
       ID = 0
 #endif
 
-      R = INDEX(SNAME,'SURFACE')
-      READ(SNAME((R+7):LEN(TRIM(SNAME))),'(I)') R
-      R = R+1
+      FOUND  = .FALSE.
+      IF (S > 1) THEN
+         DO R = 1,S
+            IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+               FOUND = .TRUE.
+               EXIT
+            END IF
+         END DO
+         IF (.NOT. FOUND) THEN
+            PRINT *, 'USR-abort: no matching surface name found for Mod
+     &elPart.'
+            CALL FLUSH(6)
+            CALL STDB_ABQERR(-3,'USR-abort: no matching surface name fo
+     &und for ModelPart.')
+         END IF
+      ELSE
+         R = 1
+      END IF
 
       IF (KINC == |increment|) THEN
          IF (NOEL >= NOEL_PREV(R)) THEN
-             WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
-     &          '|PWD|',
-     &          '/|CSM_dir|/CSM_Time',
-     &          (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
-             OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
-             WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
-             CLOSE(UNIT_FACES(R))
-             NOEL_PREV(R) = NOEL
+            WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
+     &         '|PWD|',
+     &         '/|CSM_dir|/CSM_Time',
+     &         (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
+            OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
+            WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
+            CLOSE(UNIT_FACES(R))
+            NOEL_PREV(R) = NOEL
          ELSE IF (NOEL < NOEL_PREV(R)) THEN
-             PRINT *, 'USR-abort: end of faces file reached. Normal termination'
-             CALL FLUSH(6)
-             CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
+            PRINT *, 'USR-abort: end of faces file reached. Normal term
+     &ination'
+            CALL FLUSH(6)
+            CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
          END IF
       ELSE IF (KINC > |increment|) THEN
          PRINT *, 'USR-abort: end of increment. Normal termination.'

@@ -5,13 +5,10 @@
     "cores": 1,
     "dimensions": 2,
     "static": false,
-    "arraysize": 10e5,
+    "arraysize": 1e5,
     "delta_t": 1e-3,
     "timestep_start": 0,
     "save_restart": 1,
-    "surfaceIDs": [
-      "BEAMINSIDEMOVING"
-    ],
     "interface_input": [
       {
         "model_part": "BEAMINSIDEMOVING_load_points",

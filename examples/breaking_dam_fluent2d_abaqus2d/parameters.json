@@ -116,11 +116,6 @@
               "dimensions": 2,
               "static": false,
               "arraysize": 200,
-              "surfaceIDs": [
-                "BEAMINSIDEMOVING0",
-                "BEAMINSIDEMOVING1",
-                "BEAMINSIDEMOVING2"
-              ],
               "interface_input": [
                 {
                   "model_part": "BEAMINSIDEMOVING0_load_points",
