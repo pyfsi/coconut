@@ -32,6 +32,10 @@ class VolConsSolverV1(Component):
         with open(input_file_name, 'r') as parameter_file:
             input_parameters = json.load(parameter_file)
 
+        #supply time parameters from coconut to the solver
+        input_parameters['delta_t'] = self.delta_t
+        input_parameters['timestep_start'] = self.timestep_start
+        input_parameters['save_restart'] = self.save_restart
         # update the mesh path (rel to working directory)
         input_parameters['mesh_filename'] = os.path.join(self.working_directory, input_parameters['mesh_filename'])
         self.model = data_structure.Model()
@@ -49,7 +53,7 @@ class VolConsSolverV1(Component):
             self.model.create_model_part(f'{mp_name}_input', x0, y0, z0, np.arange(0, x0.size))
             self.model.create_model_part(f'{mp_name}_output', x0, y0, z0, np.arange(0, x0.size))
             self.settings['interface_input'].append({'model_part': f'{mp_name}_input', 'variables': ['displacement']})
-            self.settings['interface_output'].append({'model_part': f'{mp_name}_output', 'variables': ['pressure']})
+            self.settings['interface_output'].append({'model_part': f'{mp_name}_output', 'variables': ['pressure', 'traction']})
 
         # # Interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
@@ -107,5 +111,7 @@ class VolConsSolverV1(Component):
         for i, mp_name in enumerate(self.settings['interface_list']):
             output_mp_name = f'{mp_name}_output'
             pressure = self.free_surface_updaters[i].calculate_pressure()
+            traction = np.zeros((pressure.size, 3))
             self.interface_output.set_variable_data(output_mp_name, 'pressure', pressure[:, np.newaxis])
+            self.interface_output.set_variable_data(output_mp_name, 'traction', traction)
 
