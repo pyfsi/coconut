@@ -21,11 +21,11 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
     def setUpClass(cls):
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to openfoam directory
         cls.file_name = join(dir_name, f'test_v{cls.version}/wire/parameters.json')
-        cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/CFD')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/setup')
 
         # setup
         shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)
-        shutil.copytree(os.path.join(dir_name, f'test_v{cls.version}/wire/setup_openfoam_extend'), cls.working_dir)
+        shutil.copytree(os.path.join(dir_name, f'test_v{cls.version}/wire/setup'), cls.working_dir)
 
     def setUp(self):
         with open(self.file_name, 'r') as parameter_file:
@@ -42,7 +42,7 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
 
         solver_name = self.parameters['type'].replace('solver_wrappers.', '')
         self.env = get_solver_env(solver_name, self.folder_path)
-        self.clean_case()
+        # self.clean_case()
         self.set_up_case()
 
     def tearDown(self):
