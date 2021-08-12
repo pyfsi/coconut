@@ -22,7 +22,7 @@ define phases phase-domain phase-1 air y air
 
 define boundary-conditions pressure-outlet boxtopleft mixture n 0 n y y
 define boundary-conditions pressure-outlet boxtopright mixture n 0 n y y
-;define boundary-conditions pressure-outlet boxleft mixture n 0 n y y
+define boundary-conditions pressure-outlet boxleft mixture n 0 n y y
 (for-each
  (lambda (zone) (ti-menu-load-string (format #f "define boundary-conditions wall ~a mixture y motion-bc-stationary y shear-bc-noslip" zone)))
  '(beamleft beambottom beamright)
