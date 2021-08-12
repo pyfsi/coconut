@@ -33,6 +33,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.test_class = self.settings.get('test_class')
         self.timestep_start_current = self.timestep_start_global = self.settings.get('timestep_start', 0)
         self.restart = False  # no restart allowed
+        self.settings['save_restart'] = 0  # in order to pass on default value
         self.save_restart = 0  # no restart files are saved
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
         self.delta_t = self.settings['delta_t']
@@ -59,7 +60,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         tools.print_info(f'{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n')
 
         # add delta_t and timestep_start to solver_wrapper settings
-        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t'])
+        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t', 'save_restart'])
 
         self.solver_wrapper = tools.create_instance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary

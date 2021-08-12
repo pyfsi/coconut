@@ -84,10 +84,8 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
-              "arraysize": 10e5,
-              "surfaceIDs": [
-                "BEAMINSIDEMOVING"
-              ],
+              "static": false,
+              "arraysize": 1e5,
               "interface_input": [
                 {
                   "model_part": "BEAMINSIDEMOVING_load_points",

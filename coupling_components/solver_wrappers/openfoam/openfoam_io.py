@@ -105,6 +105,7 @@ def update_vector_array_dict(dict_string, vector_array):
     else:
         raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
+
 def get_scalar_array(input_string, is_int=False):
     scalar_string = re.search(r'\((.*)\)', input_string, re.S).group(1)
     data_list = scalar_string.split()
@@ -129,10 +130,6 @@ def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
             return np.full(size, value, dtype=np.float)
     else:
         raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
-
-def update_scalar_array_dict(dict_string, scalar_array):
-    keyword = 'value'
-
 
 
 def get_boundary_field(file_name, boundary_name, is_scalar, size=None, is_int=False):

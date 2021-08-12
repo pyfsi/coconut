@@ -21,7 +21,7 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
     def setUpClass(cls):
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to openfoam directory
         cls.file_name = join(dir_name, f'test_v{cls.version}/wire/parameters.json')
-        cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/setup')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/CFD')
 
         # setup
         shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)

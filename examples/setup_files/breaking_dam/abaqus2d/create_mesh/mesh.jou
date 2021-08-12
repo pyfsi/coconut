@@ -1,0 +1,33 @@
+/BREAKING DAM
+    /PARAMETERS
+$L = 0.079
+$S = 0.005
+$G = 0.0025
+$beaminsideintervals = 20
+$beamtopinsideintervals = 4
+    /CODE
+save name "mesh_breaking_dam.dbs"
+solver select "Generic"
+vertex create "BeamBottomLeft" coordinates -$S $G 0
+vertex create "BeamBottomRight" coordinates 0 $G 0
+vertex create "BeamTopLeft" coordinates -$S ($G+$L) 0
+vertex create "BeamTopRight" coordinates 0 ($G+$L) 0
+edge create "BeamTop" straight "BeamTopLeft" "BeamTopRight"
+edge create "BeamLeft" straight "BeamTopLeft" "BeamBottomLeft"
+edge create "BeamRight" straight "BeamTopRight" "BeamBottomRight"
+edge create "BeamBottom" straight "BeamBottomLeft" "BeamBottomRight"
+face create "Solid" wireframe "BeamRight" "BeamTop" "BeamLeft" "BeamBottom" real
+edge link "BeamTop" "BeamBottom" directions 0 0
+edge link "BeamRight" "BeamLeft" directions 0 0
+default set "MESH.NODES.QUAD" numeric 8
+edge mesh "BeamRight" intervals $beaminsideintervals
+edge mesh "BeamTop" intervals $beamtopinsideintervals
+face mesh "Solid" map
+physics create "BeamInsideMoving0" btype "NODE" edge "BeamLeft" 
+physics create "BeamInsideMoving1" btype "NODE" edge "BeamBottom"
+physics create "BeamInsideMoving2" btype "NODE" edge "BeamRight"
+physics create "BeamFixed" btype "NODE" edge "BeamTop"
+physics create "Solid" ctype "SOLID" face "Solid"
+export gambit "mesh_breaking_dam.neu"
+save
+end

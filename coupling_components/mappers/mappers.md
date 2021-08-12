@@ -15,9 +15,7 @@ The terms *from* and *to* will be used to denote respectively the side that prov
 CoCoNuT interacts with the mappers through an instance of the `SolverWrapperMapped` class. This special solver wrapper appears and behaves exactly the same as real solver wrappers.
 It contains 3 `Components`: a mapper for the input, a real solver wrapper and a mapper for the output.
 
-> TODO: add links to Interfaces and ModelParts documentation sections when the terms are first mentioned here (that documentation doesn't exist yet...)
-
-The two mappers in the `SolverWrapperMapped` are of a special type: they work on the level of the [`Interfaces`](../../data_structure/data_structure.md), while the actual mapping will be done on a lower level: the `ModelPart` level. The `Interface` mapper effectively acts as a *wrapper* around the actual `ModelPart` mappers. Currently only one mapper is available on the `Interface` level, aptly called `MapperInterface`.
+The two mappers in the `SolverWrapperMapped` are of a special type: they work on the level of the [`Interfaces`](../../data_structure/data_structure.md#interface), while the actual mapping will be done on a lower level: the [`ModelPart`](../../data_structure/data_structure.md#modelpart) level. The `Interface` mapper effectively acts as a *wrapper* around the actual `ModelPart` mappers. Currently only one mapper is available on the `Interface` level, aptly called `MapperInterface`.
 
 At the lowest level, mappers interpolate variable data (stored in `Interfaces`) between two `ModelParts`, based on their coordinates. Interpolation is always done from the *from* `ModelPart` to the *to*-`ModelPart`.
 Multiple `ModelPart` mappers can be chained together in a `MapperCombined` object, to add additional functionality, for example swapping the coordinate axes with the [permutation mapper](mappers.md#mapperpermutation).
@@ -151,8 +149,8 @@ Points that lie on the symmetry axis can not be handled by the current transform
 
 JSON setting|type|description
 ------:|:----:|-----------
-`direction_axial`|string|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
-<nobr>`direction_radial`</nobr>|string|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
+`direction_axial`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+<nobr>`direction_radial`</nobr>|str|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
 `n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle.
 `angle`|int|(optional) Default: `360`. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.  
 

@@ -113,18 +113,9 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
+              "static": true,
               "arraysize": 500,
-              "subcycling": true,
-              "initial_inc": 0.01,
-              "max_inc": 1,
-              "min_inc": 0.0001,
-              "max_num_inc": 1000,
               "ramp": true,
-              "surfaceIDs": [
-                "BEAMINSIDEMOVING0",
-                "BEAMINSIDEMOVING1",
-                "BEAMINSIDEMOVING2"
-              ],
               "interface_input": [
                 {
                   "model_part": "BEAMINSIDEMOVING2_load_points",
