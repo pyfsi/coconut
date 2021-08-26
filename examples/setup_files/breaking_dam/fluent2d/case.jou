@@ -49,7 +49,9 @@ define dynamic-mesh controls remeshing-parameters remeshing-methods y y y n
 define dynamic-mesh controls remeshing-parameters cell-skew-max 0.5
 define dynamic-mesh controls remeshing-parameters face-skew-max 0.7
 define dynamic-mesh controls remeshing-parameters length-min 0.0006
+;0.0006
 define dynamic-mesh controls remeshing-parameters length-max 0.0100
+;0.0100
 define dynamic-mesh controls remeshing-parameters size-remesh-interval 1
 define dynamic-mesh controls remeshing-parameters sizing-function y
 define dynamic-mesh controls remeshing-parameters sizing-funct-defaults
@@ -58,10 +60,7 @@ define dynamic-mesh controls remeshing-parameters sizing-funct-defaults
  (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a deforming y all y 0.0006 0.0100 0.5" zone)))
  '(fluid)
 )
-(for-each
- (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a deforming faceted n y n y y n 0.0006 0.0100 0.5" zone)))
- '()
-)
+;0.0006 0.0100
 
 mesh adapt cell-registers add initial_liquid_column type hexahedron min-point -0.005 0 max-point 0.100 0.140 q q
 ;min -S 0  max A H
@@ -72,7 +71,6 @@ solve monitors force monitor-unsteady-iters y
 solve set discretization-scheme mom 0
 solve set discretization-scheme pressure 14
 solve set discretization-scheme mp 16
-;solve set discretization-scheme mp 28
 solve set p-v-coupling 22
 solve set gradient-scheme n y
 solve set vof-numerics n y y y n

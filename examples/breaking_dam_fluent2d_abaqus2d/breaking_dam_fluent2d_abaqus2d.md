@@ -42,8 +42,6 @@ The gas phase is air modelled with the following parameters:
 The gravitational accelartion is 9.81 m/s².
 The total simulated time is 0.4 s in time steps of 0.001 s.
 
-geometry
-
 ## Coupling algorithm
 
 The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
