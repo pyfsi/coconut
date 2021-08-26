@@ -164,6 +164,29 @@ For scalar data, the circumferential average is taken for each 2D point. For vec
 More information and JSON settings can be found under [`MapperAxisymmetric2DTo3D`](mappers.md#mapperaxisymmetric2dto3d).
 
 
+### `MapperDepth2DTo3D`
+
+Transforms a 2D geometry to a 3D geometry, by extruding in a _depth_ direction. This transformer can only be initialized in the _forward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _upstream_ of the interpolator in the combined mapper.
+
+The 3D `ModelPart` is returned by the initialization. The depth direction in which the 2D `ModelPart` is extended, is specified by `direction_depth`. This direction has to be along one of the principal axes: x, y and z. The number of nodes in the depth direction and their location are given by the list `coordinates_depth`.
+
+Scalar data is simply copied from the 2D point to all corresponding 3D points. For vector data, all components other than the depth component are simply copied. The depth component is set to zero.
+
+
+JSON setting|type|description
+------:|:----:|-----------
+<nobr>`coordinates_depth`</nobr>|list|Contains the depth coordinates to which the nodes of the orignal 2D plane are copied.
+`direction_depth`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+
+
+### `MapperDepth3DTo2D`
+
+Transforms a 3D geometry to a 2D axisymmetric geometry, by collapsing in a _depth_ direction. This transformer can only be initialized in the _backward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _downstream_ of the interpolator in the combined mapper.
+
+For scalar data, the average is taken for each 2D point. For vector data too, again removing the depth component.
+
+More information and JSON settings can be found under [`MapperAxisymmetric2DTo3D`](mappers.md#mapperaxisymmetric2dto3d).
+
 
 ## Interpolators
 
