@@ -15,6 +15,7 @@ class MapperDepth3DTo2D(MapperDepth2DTo3D):
             super().initialize(model, model_part_name_in, model_part_name_out, not forward)
         else:
             raise NotImplementedError('Forward Initialization not implemented for MapperDepth3DTo2D.')
+
         # switch from and to variables
         n_from = self.n_to
         n_to = self.n_from

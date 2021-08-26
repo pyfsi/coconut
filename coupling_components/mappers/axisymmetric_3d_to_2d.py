@@ -13,13 +13,14 @@ class MapperAxisymmetric3DTo2D(MapperAxisymmetric2DTo3D):
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         if not forward:
             super().initialize(model, model_part_name_in, model_part_name_out, not forward)
-
-            n_from = self.n_to
-            n_to = self.n_from
-            self.n_from = n_from
-            self.n_to = n_to
         else:
             raise NotImplementedError('Forward Initialization not implemented for MapperAxisymmetric3DTo2D.')
+
+        # switch from and to variables
+        n_from = self.n_to
+        n_to = self.n_from
+        self.n_from = n_from
+        self.n_to = n_to
 
     def __call__(self, args_from, args_to):
         MapperTransformer.__call__(self, args_from, args_to)

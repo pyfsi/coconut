@@ -66,7 +66,6 @@ class TestMapperDepth2DTo3D(unittest.TestCase):
             z_coords = np.sort(z_out[mask])
             np.testing.assert_array_equal(z_coords, np.sort(np.array(coordinates_depth)))
 
-
     def test_call(self):
         def fun_s(x):
             return 1. + 2.5 * x
