@@ -17,9 +17,9 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
         # get axial and radial directions
         dirs = ['x', 'y', 'z']
         if self.settings['direction_axial'] not in dirs:
-            raise ValueError(f'invalid axial_direction {self.settings["direction_axial"]}')
+            raise ValueError(f'Invalid axial direction {self.settings["direction_axial"]}')
         if self.settings['direction_axial'] not in dirs:
-            raise ValueError(f'invalid radial_direction {self.settings["direction_radial"]}')
+            raise ValueError(f'Invalid radial direction {self.settings["direction_radial"]}')
         self.dir_a = dirs.index(self.settings['direction_axial'])
         self.dir_r = dirs.index(self.settings['direction_radial'])
         self.dir_3d = ({0, 1, 2} - {self.dir_a, self.dir_r}).pop()
@@ -31,7 +31,7 @@ class MapperAxisymmetric2DTo3D(MapperTransformer):
         self.n_t = self.settings['n_tangential']
         limit = self.angle // 72 + 2
         if self.n_t < limit:
-            raise ValueError('minimum value for n_tangential is ' + str(limit))
+            raise ValueError('Minimum value for n_tangential is ' + str(limit))
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         super().initialize()

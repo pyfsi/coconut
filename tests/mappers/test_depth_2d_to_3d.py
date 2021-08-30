@@ -7,36 +7,33 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
+class TestMapperDepth2DTo3D(unittest.TestCase):
     gui = False
 
     def setUp(self):
-        self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d',
+        self.parameters = {'type': 'mappers.depth_2d_to_3d',
                            'settings':
-                               {'direction_axial': 'x',
-                                'direction_radial': 'y',
-                                'angle': 100,
-                                'n_tangential': 8}
+                               {'direction_depth': 'z',
+                                'coordinates_depth': [-1, 1, -2, 2]}
                            }
         self.forward = True
 
     def test_instantiation(self):
         create_instance(self.parameters)
 
-        self.parameters['settings']['direction_axial'] = 'X'
+        self.parameters['settings']['direction_depth'] = 'Z'
         self.assertRaises(ValueError, create_instance, self.parameters)
 
-        self.parameters['settings']['direction_axial'] = 'x'
-        self.parameters['settings']['direction_radial'] = 2
+        self.parameters['settings']['direction_depth'] = 2
         self.assertRaises(ValueError, create_instance, self.parameters)
 
-        self.parameters['settings']['direction_radial'] = 2
-        self.parameters['settings']['n_tangential'] = 3
+        self.parameters['settings']['depth_coorindates'] = 2
         self.assertRaises(ValueError, create_instance, self.parameters)
 
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
+        coordinates_depth = self.parameters['settings']['coordinates_depth']
 
         # create model_part_in
         n_in = 10
@@ -60,40 +57,23 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         z_out = mp_out.z0
 
         # check mapped geometry
-        n_t = self.parameters['settings']['n_tangential']
-        total_angle = self.parameters['settings'].get('angle', 360)
-        for x_i in x_in:
-            y = y_out[x_out == x_i]
-            z = z_out[x_out == x_i]
+        for i in range(n_in):
+            x_i = x_in[i]
+            y_i = y_in[i]
 
-            # check radius
-            radius_in = np.sqrt(y_in[x_in == x_i] ** 2 + z_in[x_in == x_i] ** 2)
-            radii_in = np.full((n_t,), radius_in)
-            radii_out = np.sqrt(y ** 2 + z ** 2)
-            np.testing.assert_allclose(radii_in, radii_out, rtol=1e-14)
-
-            # check angle between consecutive points
-            angle_in = total_angle / n_t if total_angle == 360 else total_angle / (n_t - 1)
-            angles_in = np.full((n_t - 1,), angle_in)
-            theta = np.arccos(y / radius_in) * np.sign(z) * 180 / np.pi
-            np.sort(theta)
-            angles_out = np.diff(theta)
-            np.testing.assert_allclose(angles_in, angles_out, rtol=1e-14)
-
-            # check total (wedge) angle of new model part
-            total_angle_in = total_angle - angle_in if total_angle == 360 else total_angle
-            total_angle_out = theta[-1] - theta[0]
-            self.assertAlmostEqual(total_angle_out, total_angle_in)
+            # points in depth direction
+            mask = (x_out == x_i) & (y_out == y_i)
+            z_coords = np.sort(z_out[mask])
+            np.testing.assert_array_equal(z_coords, np.sort(np.array(coordinates_depth)))
 
     def test_call(self):
         def fun_s(x):
             return 1. + 2.5 * x
 
         def fun_v(x, y, z):
-            theta = np.arctan2(z, y)
-            v_x = 1. + 2.5 * x
-            v_y = v_x * 0.5 * np.cos(theta)
-            v_z = v_x * 0.5 * np.sin(theta)
+            v_x = 0.1 + 2.5 * x
+            v_y = 0.1 + 2.5 * y
+            v_z = 0 * x
             return np.column_stack((v_x, v_y, v_z))
 
         mp_name_from = 'wall_from'
@@ -164,11 +144,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             plt.get_current_fig_manager().window.showMaximized()
             plt.show()
             plt.close()
-
-    def test_initialize_360(self):
-        self.parameters['settings'].pop('angle')
-        self.test_initialize()
-        self.test_call()
 
 
 if __name__ == '__main__':
