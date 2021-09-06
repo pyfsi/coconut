@@ -106,3 +106,8 @@ After a restart, the partitioning can be different and hence the mesh deformatio
 ### v2020R1 (20.1.0)
 
 Same behavior as v2019R3.
+
+### v2021R1 (21.1.0)
+
+This version has an extra setting when using TUI command `define dynamic-mesh zones create ...` envolving the use of remeshing global values. 
+This has no implication for the user if the dynamic mesh is defined in a prepared fluent case file.
