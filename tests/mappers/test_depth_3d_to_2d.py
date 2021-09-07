@@ -4,8 +4,6 @@ from coconut.tests.mappers import test_depth_2d_to_3d
 
 import numpy as np
 import unittest
-import matplotlib.pyplot as plt
-from matplotlib import cm
 
 
 class TestMapperDepth3DTo2D(test_depth_2d_to_3d.TestMapperDepth2DTo3D):
@@ -73,6 +71,10 @@ class TestMapperDepth3DTo2D(test_depth_2d_to_3d.TestMapperDepth2DTo3D):
 
         # extra: visualization
         if self.gui:
+            # import here to avoid error on systems without matplotlib
+            import matplotlib.pyplot as plt
+            from matplotlib import cm
+
             v_s_from, v_s_to = v_s_from.flatten(), v_s_to.flatten()
             c_from = cm.jet((v_s_from - v_s_from.min()) / (v_s_from.max() - v_s_from.min()))
             c_to = cm.jet((v_s_to - v_s_from.min()) / (v_s_from.max() - v_s_from.min()))

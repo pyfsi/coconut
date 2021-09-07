@@ -3,9 +3,12 @@ from coconut.tools import create_instance
 
 import unittest
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+try:  # avoid error on systems without matplotlib
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib import cm
+except ModuleNotFoundError:
+    pass
 
 
 def split(coords):

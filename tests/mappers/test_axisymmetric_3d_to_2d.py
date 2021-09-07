@@ -4,8 +4,6 @@ from coconut.tests.mappers import test_axisymmetric_2d_to_3d
 
 import numpy as np
 import unittest
-import matplotlib.pyplot as plt
-from matplotlib import cm
 
 
 class TestMapperAxisymmetric3DTo2D(test_axisymmetric_2d_to_3d.TestMapperAxisymmetric2DTo3D):
@@ -76,6 +74,10 @@ class TestMapperAxisymmetric3DTo2D(test_axisymmetric_2d_to_3d.TestMapperAxisymme
 
         # extra: visualization
         if self.gui:
+            # import here to avoid error on systems without matplotlib
+            import matplotlib.pyplot as plt
+            from matplotlib import cm
+
             v_s_from, v_s_to = v_s_from.flatten(), v_s_to.flatten()
             c_from = cm.jet((v_s_from - v_s_from.min()) / (v_s_from.max() - v_s_from.min()))
             c_to = cm.jet((v_s_to - v_s_from.min()) / (v_s_from.max() - v_s_from.min()))
