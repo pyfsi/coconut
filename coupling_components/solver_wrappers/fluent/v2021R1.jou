@@ -4,6 +4,7 @@ file start-transcript "transcript.txt"
 (enable-dynamic-mesh-node-ids #t)
 ;file binary-files n
 (define unsteady |UNSTEADY|)
+(define multiphase |MULTIPHASE|)
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
@@ -48,7 +49,10 @@ file start-transcript "transcript.txt"
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
-        (ti-menu-load-string "solve set expert y n y")
+        (if multiphase
+            (ti-menu-load-string "solve set expert y y n y")
+            (ti-menu-load-string "solve set expert y n y")
+        )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
         (ti-menu-load-string "define user-defined compiled-functions compile \"v2021R1\" y \"v2021R1.c\" \"\" \"\"")

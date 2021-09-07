@@ -130,4 +130,4 @@ deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is c
 
 [1]:    https://www.mkdocs.org/
 [2]:    https://pyfsi.github.io/coconut/
-[3]:    https://www.youtube.com/watch?v=5ZCgbGgA-_8&t=99s
+[3]:    https://www.youtube.com/watch?v=w0AOGeqOnFY

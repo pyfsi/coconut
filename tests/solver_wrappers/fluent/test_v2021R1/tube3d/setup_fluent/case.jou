@@ -35,6 +35,7 @@ define dynamic-mesh controls remeshing n
 
 define dynamic-mesh zones create in deforming faceted n y n n n 0 0 1 n
 define dynamic-mesh zones create out deforming faceted n y n n n 0 0 1 n
+; additional setting compared to previous Fluent versions for remeshing global values
 
 solve monitors residual check-convergence y y y y
 solve monitors residual convergence-criteria 1.0E-12 1.0E-12 1.0E-12 1.0E-12
