@@ -34,7 +34,7 @@ class VolConsSolverV1(Component):
 
         #supply time parameters from coconut to the solver
         input_parameters['delta_t'] = self.delta_t
-        input_parameters['timestep_start'] = self.timestep_start
+        input_parameters['time_step_start'] = self.timestep_start
         input_parameters['save_restart'] = self.save_restart
         # update the mesh path (rel to working directory)
         input_parameters['mesh_filename'] = os.path.join(self.working_directory, input_parameters['mesh_filename'])

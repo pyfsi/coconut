@@ -14,20 +14,21 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
         self.interfaces = [elem.GetString() for elem in project_parameters["interface_sub_model_parts_list"]]
         super(StructuralMechanicsAnalysis, self).__init__(model, project_parameters)
         self.coupling_iteration = None
-        self.initial_displacement =  {}
+        self.initial_displacement = {}
 
     def Initialize(self):
         super(StructuralMechanicsAnalysis, self).Initialize()
 
         for sub_mp_name in self.interfaces:
             file_name = f'{sub_mp_name}_nodes.csv'
-            with open(file_name, 'w') as f:
-                f.write('node_id, x0, y0, z0\n')
             sub_model_part = self.GetSubModelPart(sub_mp_name)
-            init_disp = self.GetInitialNodalDisplacement(sub_model_part_name=sub_mp_name)
-            with open(file_name, 'a') as f:
-                for i, node in enumerate(sub_model_part.Nodes):
-                    f.write(f'{node.Id}, {node.X0 + init_disp[i, 0]}, {node.Y0 + init_disp[i, 1]}, {node.Z0 + init_disp[i, 2]}\n')
+            init_displacement = self.GetInitialNodalDisplacement(sub_model_part_name=sub_mp_name)
+            node_ids = np.array([node.Id for node in sub_model_part.Nodes])
+            node_coords0 = np.array([[node.X0, node.Y0, node.Z0] for node in sub_model_part.Nodes])
+            node_coords0 += init_displacement
+            node_coords0_df = pd.DataFrame(
+                {'node_id': node_ids, 'x0': node_coords0[:, 0], 'y0': node_coords0[:, 1], 'z0': node_coords0[:, 2]})
+            node_coords0_df.to_csv(file_name, index=False)
 
     def InitializeSolutionStep(self):
         self.time = self._GetSolver().AdvanceInTime(self.time)
@@ -43,22 +44,22 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
         KratosMultiphysics.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
-
     def OutputData(self):
 
         for sub_model_part_name in self.interfaces:
-            init_disp = self.GetInitialNodalDisplacement(sub_model_part_name=sub_model_part_name)
+            init_displacement = self.GetInitialNodalDisplacement(sub_model_part_name=sub_model_part_name)
             full_sub_model_part_name = "Structure." + sub_model_part_name
             if self.model["Structure"].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
                 file_name = f'{sub_model_part_name}_displacement.csv'
-                with open(file_name, 'w') as f:
-                    f.write('node_id, displacement_x, displacement_y, displacement_z\n')
-
-                for i, node in enumerate(sub_model_part.Nodes):
-                    with open(file_name, 'a') as f:
-                        disp = node.GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT)
-                        f.write(str(node.Id) + ', ' + str(disp[0]-init_disp[i, 0]) + ', ' + str(disp[1]-init_disp[i, 1]) + ', ' + str(disp[2]-init_disp[i, 2]) + '\n')
+                node_ids = np.array([node.Id for node in sub_model_part.Nodes])
+                displacement = np.array(
+                    [list(node.GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT)) for node in sub_model_part.Nodes])
+                displacement -= init_displacement
+                disp_df = pd.DataFrame(
+                    {'node_id': node_ids, 'displacement_x': displacement[:, 0], 'displacement_y': displacement[:, 1],
+                     'displacement_z': displacement[:, 2]})
+                disp_df.to_csv(file_name, index=False)
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
@@ -104,6 +105,7 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
     def GetSubModelPart(self, sub_model_part_name):
         full_sub_model_part_name = "Structure." + sub_model_part_name
         return self.model[full_sub_model_part_name]
+
 
 if __name__ == '__main__':
     from sys import argv

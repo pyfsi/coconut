@@ -23,7 +23,8 @@ solver_load_cmd_dict = {
         'fluent.v2020R1': 'ml ANSYS_CFD/2020R1',
         'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14',
         'kratos_structure.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
-        'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=$HOME/Software/Kratos-7.0:$PYTHONPATH && export LD_LIBRARY_PATH=$HOME/Software/Kratos-7.0/libs:$LD_LIBRARY_PATH',
+        #'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=$HOME/Software/Kratos-7.0:$PYTHONPATH && export LD_LIBRARY_PATH=$HOME/Software/Kratos-7.0/libs:$LD_LIBRARY_PATH',
+        'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=$HOME/Software/KratosHydrostatic:$PYTHONPATH && export LD_LIBRARY_PATH=$HOME/Software/KratosHydrostatic/libs:$LD_LIBRARY_PATH',
         'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH'
     },
     'ugent_hpc': {

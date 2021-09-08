@@ -10,7 +10,6 @@ from subprocess import Popen
 import pandas as pd
 import numpy as np
 
-
 def create(parameters):
     return BaseSolverWrapperKratosStructure(parameters)
 
@@ -119,23 +118,14 @@ class BaseSolverWrapperKratosStructure(Component):
             input_mp_name = f'{mp_name}_input'
             input_mp = self.model.get_model_part(input_mp_name)
             file_path_pr = os.path.join(self.working_directory, f'{mp_name}_pressure.csv')
-            with open(file_path_pr, 'w') as f:
-                f.write('node_id, pressure\n')
             file_path_sl = os.path.join(self.working_directory, f'{mp_name}_surface_load.csv')
-            with open(file_path_sl, 'w') as f:
-                f.write('node_id, surface_load_x, surface_load_y, surface_load_z\n')
-
-            pressure_array = np.ravel(self.interface_input.get_variable_data(input_mp_name, 'pressure'))
+            pressure_array = self.interface_input.get_variable_data(input_mp_name, 'pressure')
             surface_load_array = self.interface_input.get_variable_data(input_mp_name, 'traction')
-
-            for i in range(0, input_mp.size):
-                with open(file_path_pr, 'a') as f:
-                    f.write(str(input_mp.id[i]) + ', ' + str(pressure_array[i]) + '\n')
-
-                with open(file_path_sl, 'a') as f:
-                    f.write(str(input_mp.id[i]) + ', ' + str(surface_load_array[i, 0]) + ', ' + str(
-                        surface_load_array[i, 1]) + ', ' + str(
-                        surface_load_array[i, 2]) + '\n')
+            node_ids = np.array([input_mp.id[i] for i in range(input_mp.size)])
+            pressure_df = pd.DataFrame({'node_id': node_ids, 'pressure': pressure_array[:, 0]})
+            surface_load_df = pd.DataFrame({'node_id': node_ids, 'surface_load_x': surface_load_array[:,0], 'surface_load_y': surface_load_array[:,1], 'surface_load_z': surface_load_array[:,2] })
+            pressure_df.to_csv(file_path_pr, index=False)
+            surface_load_df.to_csv(file_path_sl, index=False)
 
     def update_interface_output(self):
         interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
