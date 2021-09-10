@@ -21,7 +21,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.parameters = parameters
         self.settings = parameters.get('settings', {})  # settings is optional as long as the necessary parameters...
         # ... are in test_settings
-        self.init_time = time.time()
+        self.start_init_time = time.time()  # start of initialization
 
         if 'test_settings' not in self.parameters.keys():  # requires a new parameter input 'test_settings'
             raise KeyError('The coupled_solver "test_single_solver" requires "test_settings" which was not detected.')
@@ -33,6 +33,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.test_class = self.settings.get('test_class')
         self.timestep_start_current = self.timestep_start_global = self.settings.get('timestep_start', 0)
         self.restart = False  # no restart allowed
+        self.settings['save_restart'] = 0  # in order to pass on default value
         self.save_restart = 0  # no restart files are saved
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
         self.delta_t = self.settings['delta_t']
@@ -59,7 +60,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         tools.print_info(f'{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n')
 
         # add delta_t and timestep_start to solver_wrapper settings
-        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t'])
+        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t', 'save_restart'])
 
         self.solver_wrapper = tools.create_instance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
@@ -71,7 +72,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.time_step = self.timestep_start_current
         self.iteration = None  # iteration
         self.solver_level = 0  # 0 is main solver (time step is printed)
-        self.start_time = None
+        self.init_time = None
+        self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
         self.iterations = []
@@ -128,7 +130,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.save_results:
             self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
             self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
-        self.start_time = time.time()
+        self.start_run_time = time.time()  # start of calculation
+        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
     def solve_solution_step(self):
         interface_input = self.solver_wrapper.interface_input

@@ -26,13 +26,13 @@ as `settings` of the solver wrapper.
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size. This parameter is usually specified in a higher component.
-`input_file`|string|Name of the input file, which must be present in the folder given in `working_directory`. The file contains all parameters required for the solver, in JSON-format.
+`input_file`|str|Name of the input file, which must be present in the folder given in `working_directory`. The file contains all parameters required for the solver, in JSON-format.
 `interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `['displacement']` for a flow solver and `['pressure','traction']` for a structure solver.
 `interface_output`|list|Analogous to `interface_input`. However, the variables are different: `['pressure','traction']` for a flow solver and `['displacement']` for a structure solver.
 `unsteady`|bool|(optional) Default: `true`. Indicates if case is steady or unsteady.
 `save_restart`|int|(optional) Default: 0. Determines the time step interval upon which a pickle file *`case_timestep<time step>.pickle`* is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.
 `time_step_start`|int|(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file *`case_timestep<timestep_start>.pickle`* to start from the corresponding time step. For a steady simulation, the value should be `0`.
-<nobr>`working_directory`</nobr>|string|Absolute path to the working directory or relative path with respect to the current directory.
+<nobr>`working_directory`</nobr>|str|Absolute path to the working directory or relative path with respect to the current directory.
 
 `delta_t` is a necessary parameter, while `timestep_start` and `save_restart` are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.
 
@@ -102,7 +102,7 @@ parameter|type|description
 `period`|double|Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type `4`).
 `reference`|double|(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `rhof` * `ureference`^2 / 2.
 `type`|int|Type of inlet boundary condition. <br>If `1`, a sine wave is used with amplitude, reference and period as specified. <br>If `2`, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If `3`, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If `4`, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.
-`variable`|string|Variable upon which the inlet boundary condition is defined, either `'pressure'`, `'velocity'` or `'total pressure'`.
+`variable`|str|Variable upon which the inlet boundary condition is defined, either `'pressure'`, `'velocity'` or `'total pressure'`.
 
 ##### Outlet Boundary
 
@@ -224,7 +224,7 @@ parameter|type|description
 `preference`|double|(optional) Default: `0`. Reference pressure.
 `rhof`|double|Density of the fluid.
 `rhos`|double|Density of the tube wall.
-`time_disretization`|string|(optional) Default: `backward Euler`. Specifies the time discretiation: either `Newmark` or `backward Euler`. Not case sensitive.
+`time_disretization`|str|(optional) Default: `backward Euler`. Specifies the time discretiation: either `Newmark` or `backward Euler`. Not case sensitive.
 
 ## References
 <a id="1">[1]</a> 

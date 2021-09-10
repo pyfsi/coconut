@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     pimpleDyMFoam;
+application     coconut_pimpleFoam_v41;
 
 startFrom       startTime;
 
@@ -31,11 +31,11 @@ writeControl    timeStep;
 
 writeInterval   1;
 
-purgeWrite      0;
+purgeWrite      2;
 
 writeFormat     ascii;
 
-writePrecision  5;
+writePrecision  15;
 
 writeCompression uncompressed;
 

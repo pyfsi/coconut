@@ -10,6 +10,8 @@ import time
 import numpy as np
 import sys
 import hashlib
+from getpass import getuser
+import shutil
 
 
 # TODO: issue: id and hash shadow built-in names
@@ -28,13 +30,17 @@ class SolverWrapperFluent(Component):
     def __init__(self, parameters):
         super().__init__()
 
+        if self.version is None or self.version_bis is None:
+            raise NotImplementedError(
+                'Base class method called, class variable version and version_bis need to be set in the derived class')
+
         # set parameters
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        self.set_fluent_version()
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
         self.remove_all_messages()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
+        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
         self.cores = self.settings['cores']
         if self.cores < 1 or self.cores > multiprocessing.cpu_count():
             self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
@@ -47,6 +53,7 @@ class SolverWrapperFluent(Component):
         self.mnpf = self.settings['max_nodes_per_face']
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
+        self.multiphase = self.settings.get('multiphase', False)
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -80,25 +87,33 @@ class SolverWrapperFluent(Component):
         unsteady = '#f'
         if self.unsteady:
             unsteady = '#t'
+        multiphase = '#f'
+        if self.multiphase:
+            multiphase = '#t'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
+                    line = line.replace('|MULTIPHASE|', multiphase)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
+                    line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
+                                                                                        '\n'))
                     outfile.write(line)
 
         # prepare Fluent UDF
-        if self.timestep_start == 0:
-            udf = f'v{self.version}.c'
-            with open(join(self.dir_src, udf)) as infile:
-                with open(join(self.dir_cfd, udf), 'w') as outfile:
-                    for line in infile:
-                        line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
-                        outfile.write(line)
+        udf = f'v{self.version}.c'
+        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
+        os.mkdir(join('/tmp', self.tmp_directory_name))
+        with open(join(self.dir_src, udf)) as infile:
+            with open(join(self.dir_cfd, udf), 'w') as outfile:
+                for line in infile:
+                    line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
+                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_directory_name)
+                    outfile.write(line)
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
@@ -119,19 +134,30 @@ class SolverWrapperFluent(Component):
         check = 0
         with open(report, 'r') as file:
             for line in file:
-                if check == 2 and 'Time' in line:
-                    if 'Steady' in line and self.unsteady:
-                        raise ValueError('unsteady in JSON does not match steady Fluent')
-                    elif 'Unsteady' in line and not self.unsteady:
-                        raise ValueError('steady in JSON does not match unsteady Fluent')
-                    break
-                if check == 1 and 'Space' in line:
-                    if str(self.dimensions) not in line:
-                        if not (self.dimensions == 2 and 'Axisymmetric' in line):
-                            raise ValueError(f'dimension in JSON does not match Fluent')
-                    check = 2
                 if 'Model' in line and 'Settings' in line:
                     check = 1
+                elif check == 1 and 'Space' in line:
+                    if str(self.dimensions) not in line:
+                        if not (self.dimensions == 2 and 'Axisymmetric' in line):
+                            raise ValueError(f'Dimension in JSON does not match Fluent')
+                    check = 2
+                elif check == 2 and 'Time' in line:
+                    if 'Steady' in line and self.unsteady:
+                        raise ValueError('Unsteady in JSON does not match steady Fluent')
+                    elif 'Unsteady' in line and not self.unsteady:
+                        raise ValueError('Steady in JSON does not match unsteady Fluent')
+                    check = 3
+                elif check == 3 and 'Equation' in line and 'Solved' in line:
+                    check = 4
+                elif check == 4:
+                    if 'Volume Fraction' in line and 'yes' in line:
+                        if not self.multiphase:
+                            raise ValueError('Singlephase in JSON does not match multiphase Fluent')
+                        break
+                    elif'Numerics' in line:
+                        if self.multiphase:
+                            raise ValueError('Multiphase in JSON does not match singlephase Fluent')
+                        break
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
@@ -215,7 +241,7 @@ class SolverWrapperFluent(Component):
             file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + self.mnpf:
-                raise ValueError(f'given dimension does not match coordinates')
+                raise ValueError(f'Given dimension does not match coordinates')
 
             # get face coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
@@ -279,7 +305,7 @@ class SolverWrapperFluent(Component):
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1)
             if data.shape[1] != self.dimensions + 1 + self.mnpf:
-                raise ValueError('given dimension does not match coordinates')
+                raise ValueError('Given dimension does not match coordinates')
 
             # copy output data for debugging
             if self.debug:  # TODO: Iter --> iter everywhere?
@@ -302,7 +328,7 @@ class SolverWrapperFluent(Component):
             # store pressure and traction in Nodes
             model_part = self.model.get_model_part(mp_name)
             if ids.size != model_part.size:
-                raise ValueError('size of data does not match size of ModelPart')
+                raise ValueError('Size of data does not match size of ModelPart')
             if not np.all(ids == model_part.id):
                 raise ValueError('IDs of data do not match ModelPart IDs')
 
@@ -321,6 +347,7 @@ class SolverWrapperFluent(Component):
 
     def finalize(self):
         super().finalize()
+        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
@@ -331,10 +358,6 @@ class SolverWrapperFluent(Component):
     def get_interface_output(self):
         return self.interface_output
 
-    def set_fluent_version(self):
-        raise NotImplementedError(
-            'Base class method called, "set_fluent_version" method needs to be implemented by the derived class.')
-
     def check_software(self):
         # Python version: 3.6 or higher
         if sys.version_info < (3, 6):
@@ -343,7 +366,7 @@ class SolverWrapperFluent(Component):
         # Fluent version: see set_fluent_version
         result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
-            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required.')
+            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required')
 
     # noinspection PyMethodMayBeStatic
     def get_unique_face_ids(self, data):
@@ -418,7 +441,7 @@ class SolverWrapperFluent(Component):
             tmp = f'nodes_timestep{self.timestep}_thread{thread_id}.dat'
             data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
             if data.shape[1] != self.dimensions + 1:
-                raise ValueError('given dimension does not match coordinates')
+                raise ValueError('Given dimension does not match coordinates')
 
             # get node coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
@@ -440,7 +463,7 @@ class SolverWrapperFluent(Component):
             tmp = f'faces_timestep{self.timestep}_thread{thread_id}.dat'
             data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
             if data.shape[1] != self.dimensions + self.mnpf:
-                raise ValueError(f'given dimension does not match coordinates')
+                raise ValueError(f'Given dimension does not match coordinates')
 
             # get face coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.

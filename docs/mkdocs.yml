@@ -1,7 +1,9 @@
 site_name: CoCoNuT
 repo_url: https://github.com/pyfsi/coconut
 edit_uri: ''
+site_url: ''
 site_description: site_description
+use_directory_urls: false
 theme:
     name: 'material'
     logo: 'images/logo.png'
@@ -17,8 +19,7 @@ markdown_extensions:
 extra_javascript:
     - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
 nav:
-  - Introduction:
-      - CoCoNuT: README.md
+  - Introduction: README.md
   - Coupling components:
       - General: coupling_components.md
       - convergence_criteria.md
@@ -34,12 +35,12 @@ nav:
           - kratos.md
           - openfoam.md
           - python.md
-  - Data structure:
-      - data_structure.md
-  - Documentation:
-      - docs.md
+  - Data structure: data_structure.md
+  - Documentation: docs.md
   - Examples:
       - General: examples.md
+      - Breaking dam:
+          - Fluent 2D - Abaqus 2D: breaking_dam_fluent2d_abaqus2d.md
       - Tube:
           - Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
           - Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md
@@ -56,5 +57,4 @@ nav:
           - Fluent 2D - Abaqus 2D: turek_fluent2d_abaqus2d.md
           - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
       - Test single solver: test_single_solver.md
-  - Tests:
-      - tests.md
+  - Tests: tests.md

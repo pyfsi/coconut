@@ -20,20 +20,22 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 
 parameter|type|description
 ---:|:---:|---
-`case_file`|string|Name of the case file. It must be present in the folder specified by `working_directory`. The corresponding data file must also be present but has no key in the JSON file.
+`case_file`|str|Name of the case file. It must be present in the folder specified by `working_directory`. The corresponding data file must also be present but has no key in the JSON file.
 `cores`|int|Number of processor cores to use when running Fluent (tested only on single node so far).
 `dimensions`|int|Dimension used in flow solver: `2` for 2D and axisymmetric, `3` for 3D. 
 `delta_t`|float|Fixed time step size in flow solver. This parameter is usually specified in a higher `Component`.
+<nobr>`end_of_timestep_commands`</nobr>|str|Fluent journal command(s) to be executed after every time step, to store drag and lift forces for example.
 `flow_iterations`|int|Number of non-linear iterations in Fluent per coupling iteration.
 `fluent_gui`|bool|Set to `true` to run Fluent with the graphical interface.
 `interface_input`|list|List of dictionaries to describe the input `Interface` (Fluent nodes). Each dictionary defines one `ModelPart` with two keys: `model_part` contains the name of the `ModelPart` and `variables` contains a list of variable names. Each `ModelPart` name must be the concatenation of an entry from `thread_names` and "_nodes". The variable names must be chosen from *`data_structure/variables.py`*. 
 `interface_output`|dict|Analogous to `interface_input`, but for the output `Interface` (Fluent faces). Each `ModelPart` name must be the concatenation of an entry from the file `thread_names` and "_faces".
-<nobr>`max_nodes_per_face`</nobr>|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces.
+`max_nodes_per_face`|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces and 2 in 2D simulations (edges).
+`multiphase`|bool|(optional) Default `false`. `true` for multiphase Fluent case, `false` for singlephase.
 `save_iterations`|int|Number of time steps between consecutive saves of the Fluent case and data files.
 `thread_names`|list|List with Fluent names of the surface threads on the FSI interface. 
 `timestep_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the `case_file`, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.
 `unsteady`|bool|`true` for transient FSI, `false` for steady FSI.
-`working_directory`|string|Absolute path to the working directory or relative path w.r.t the current directory.
+`working_directory`|str|Absolute path to the working directory or relative path w.r.t the current directory.
 
 
 `timestep_start` and `delta_t` are necessary parameters, but are usually defined already in the parameters of the coupled solver. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.

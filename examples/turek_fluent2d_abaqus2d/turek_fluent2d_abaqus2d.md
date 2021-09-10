@@ -4,10 +4,13 @@ This example calculates the well-known Turek benchmark, which consist laminar in
 The material parameters and boundary conditions correspond to the FSI2 setup, as detailed by Turek and Hron [[1](#1)].
 The challenging aspect of this benchmark lies in the large self-indcuced oscillation of the flag.
 The used solvers are Fluent and Abaqus.
+A script _`evaluate_benchmark.py`_ is provided to compare the results with the benchmark results in [[1](#1)].
+Furthermore, the script _`animate_beam.py`_ can be used to visualize the interface data throughout the calculation.
 
 Due to the time required for the oscillations to enter a periodic regime, this test case takes a long time to run.
 
-The figure below shows the result.
+The figure below shows the resulting velocity contour plot (with Fluent).
+![FSI2](images/turek_fsi2_velocity.gif "Velocity animation of FSI2 setup produced with Fluent")
 
 In the FSI2 setup a parabolic velocity profile is subscribed at the inlet with an average velocity of 1 m/s, ramped up slowly in time.  
 The fluid paramters are: 
@@ -44,7 +47,7 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 Fluent is used as flow solver.
-The mesh is provided. It is triangular and rather coarse to reduce the calculation time.
+The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
 
 The structure solver is Abaqus.
@@ -55,10 +58,6 @@ The Abaqus element type used is CPE8R.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
 In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
-When the case is run, a bounding box warning for the right most face of the flag appears.
-This is normal.
-The reason is that the distance between the load points in Abaqus and the face centers in Fluent is large compared to the overall dimension of this face, 
-due to the coarse resolution: only 3 cells in the flow mesh and 3 elements in structure mesh.
 
 ## References
 <a id="1">[1]</a> 

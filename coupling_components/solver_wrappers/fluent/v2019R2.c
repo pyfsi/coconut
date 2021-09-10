@@ -498,9 +498,9 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
 #else
-    sprintf(file_name, "/tmp/nodes_update_timestep%i_thread%i.dat",
+    sprintf(file_name, "/tmp/|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
-    host_to_node_sync_file("/tmp");
+    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
 
 #if RP_HOST

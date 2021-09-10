@@ -52,7 +52,7 @@ for sol, itf, var, uni, ani_fig in (('solution_x', 'interface_x', 'displacement'
             mask_y = (coordinates[:, 1] > 0)
             # mask_z = (abs(coordinates[:, 2]) < 1e-16)  # for nodes (displacement)
             # mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)  # for face centers (pressure, traction)
-            mask_z = (coordinates[:, 2] >= 0) & (coordinates[:, 2] < 0.0005)  # for both
+            mask_z = (coordinates[:, 2] >= 1e-16) & (coordinates[:, 2] < 0.0005)  # for both
             abscissa = 0  # x-axis
             component = 1  # y-component
 
@@ -79,7 +79,7 @@ movie_name = 'displacement.mp4'
 if save:
     # set up formatting for the movie files: mp4-file
     plt.rcParams['animation.ffmpeg_path'] = u'/apps/SL6.3/FFmpeg/3.1.3/bin/ffmpeg'  # path to ffmpeg conversion tool
-    writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='NicolasDelaissé'), fps=24, bitrate=2000)
+    writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='CoCoNuT'), fps=24, bitrate=2000)
 
     animation_figure.animation.save(movie_name, writer=writer)
 

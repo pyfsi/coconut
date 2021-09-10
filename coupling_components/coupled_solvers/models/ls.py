@@ -136,6 +136,6 @@ class ModelLS(Component):
         v = np.hstack((self.vcurr, np.hstack(self.vprev)))
         if v.shape[1]:
             qq, *_ = np.linalg.qr(v, mode='reduced')
-            r = dr - qq @ (qq.T @ dr)
+            dr = dr - qq @ (qq.T @ dr)
             dr_out.set_interface_data(dr.flatten())
         return dr_out

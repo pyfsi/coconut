@@ -48,6 +48,7 @@
           "case_file": "case_turek.cas",
           "dimensions": 2,
           "unsteady": false,
+          "end_of_timestep_commands": "(ti-menu-load-string \"report forces wall-forces n circleoutside beamtopoutside beamrightoutside beambottomoutside () 1 0 y forces.frp\")",
           "thread_names": [
             "beamtopoutside",
             "beamrightoutside",
@@ -96,7 +97,7 @@
               ]
             }
           ],
-          "cores": 4,
+          "cores": 8,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 1000,
@@ -112,18 +113,9 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
+              "static": true,
               "arraysize": 500,
-              "subcycling": true,
-              "initial_inc":0.01,
-              "max_inc": 1,
-              "min_inc": 0.0001,
-              "max_num_inc": 1000,
               "ramp": true,
-              "surfaceIDs": [
-                "BEAMINSIDEMOVING0",
-                "BEAMINSIDEMOVING1",
-                "BEAMINSIDEMOVING2"
-              ],
               "interface_input": [
                 {
                   "model_part": "BEAMINSIDEMOVING2_load_points",

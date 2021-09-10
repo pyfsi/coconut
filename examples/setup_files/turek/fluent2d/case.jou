@@ -13,8 +13,8 @@ define materials change-create air fluid y constant 1000 n n y constant 1 n n n 
 define models unsteady-1st-order y
 define models viscous laminar y
 define models solver pressure-based y
-define boundary-conditions velocity-inlet in n n y y y y "udf" "x_velocity_unsteady::udf_inlet" n 0
 
+define boundary-conditions velocity-inlet in n n y y y y "udf" "x_velocity_unsteady::udf_inlet" n 0
 define boundary-conditions pressure-outlet out y n 0 n y y n n
 define boundary-conditions wall circleoutside y motion-bc-stationary y shear-bc-noslip
 (for-each
@@ -36,10 +36,12 @@ define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing y
 define dynamic-mesh controls remeshing-parameters remeshing-methods y y y n
 define dynamic-mesh controls remeshing-parameters cell-skew-max 0.6
+;0.6 0.6 0.6
 define dynamic-mesh controls remeshing-parameters face-skew-max 0.6
-define dynamic-mesh controls remeshing-parameters length-min 0.005
-;0.00500 0.00250 0.00125
-define dynamic-mesh controls remeshing-parameters length-max 0.05
+;0.6 0.6 0.6
+define dynamic-mesh controls remeshing-parameters length-min 0.0010
+;0.0040 0.0020 0.0010
+define dynamic-mesh controls remeshing-parameters length-max 0.0125
 ;0.0500 0.0250 0.0125
 define dynamic-mesh controls remeshing-parameters size-remesh-interval 1
 define dynamic-mesh controls remeshing-parameters sizing-function n
@@ -48,9 +50,10 @@ define dynamic-mesh controls remeshing-parameters sizing-function n
  (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary fluid constant 0 n" zone)))
  '(in out box circleoutside)
 )
-define dynamic-mesh zones create fluid deforming y y 0.005 0.05 0.6
+define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
 ;0.00500 0.00250 0.00125
 ;0.0500 0.0250 0.0125
+;0.6 0.6 0.6
 
 solve monitors force drag-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 1 0
 solve monitors force lift-coefficient y circleoutside beamtopoutside beamrightoutside beambottomoutside () y n n n 0 1

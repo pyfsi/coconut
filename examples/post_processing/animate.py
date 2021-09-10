@@ -141,7 +141,7 @@ class Animation:
                             f"\tmask_z selects {sum(mask_z)} points")
 
         # chose sort direction
-        self.argsort = np.argsort(self.coordinates[self.mask, abscissa])
+        self.argsort = np.lexsort((self.coordinates[self.mask, abscissa], self.coordinates[self.mask, component]))
         self.abscissa = self.coordinates[self.mask, abscissa][self.argsort]
 
         if self.variable == 'coordinates':
