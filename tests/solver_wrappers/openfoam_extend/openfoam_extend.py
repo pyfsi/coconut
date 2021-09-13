@@ -15,13 +15,13 @@ from subprocess import check_call, DEVNULL
 
 
 class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
-    version = None  # OpenFOAM version without dot, e.g. 41 , set in sub-class
+    version = 41  # OpenFOAM version without dot, e.g. 41 , set in sub-class
 
     @classmethod
     def setUpClass(cls):
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to openfoam directory
         cls.file_name = join(dir_name, f'test_v{cls.version}/wire/parameters.json')
-        cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/CFD')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/CSM')
 
         # setup
         shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)
@@ -45,12 +45,13 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
         # self.clean_case()
         self.set_up_case()
 
-    def tearDown(self):
-        self.clean_case()
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.working_dir)
+    # def tearDown(self):
+    #     self.clean_case()
+    #
+    # @classmethod
+    # def tearDownClass(cls):
+    #     shutil.rmtree(cls.working_dir)
 
     def clean_case(self):
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
@@ -72,7 +73,12 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
                 f.write(new_dict)
 
     def get_p(self, x):
-        return 0.5e9 * np.sin(x) + 0.5e9
+        return np.sin(x) + 0.5e9
+        # return x * 0
+
+    def get_p0(self, x):
+        return np.sin(x) + 1.3e9
+        # return x * 0
 
     def get_shear(self, x):
         shear = np.zeros((x.shape[0], 3))
@@ -88,31 +94,45 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
 
         #set pressure and traction
         model_part=interface_input.get_model_part(self.mp_name_in)
+        # model_part2=interface_input.get_model_part(self.mp_name_out)
         x0 = model_part.x0
+        # x02 = model_part2.x0
+        # print(x0.size)
+        # print(x02.size)
         p = self.get_p(x0)
+        p0 = self.get_p0(x0)
         t = self.get_shear(x0)
         pr = np.column_stack(p)
+        pr0 = np.column_stack(p0)
         tr = np.column_stack(t)
-        pr_list = [pr,np.zeros_like(pr),pr]
+        pr_list = [pr,pr0,pr]
         tr_list = [tr,np.zeros_like(tr),tr]
-
-        pressure = interface_input.get_variable_data(self.mp_name_in, 'pressure')
-        traction = interface_input.get_variable_data(self.mp_name_in,'traction')
 
         #run solver for three pressure and traction(first one = last one)
         displacement = []
 
         for pr in pr_list:
             pressure = pr.reshape((-1, 1))
-            interface_input.set_variable_data("mp_name_in", "pressure", pressure)
+            interface_input.set_variable_data(self.mp_name_in, "pressure", pressure)
             interface_output = solver.solve_solution_step(interface_input)
             displacement.append(interface_output.get_variable_data(self.mp_name_out,'displacement'))
+            # node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
+            #                                                                     time_folder = 0.0001,
+            #                                               boundary_name = "wireTopContact")
+            # # for item_from in interface_output.parameters:
+            # #     mp = interface_output.get_model_part(item_from['model_part'])
+            # nodes.append(node_coords)
         solver.finalize_solution_step()
         solver.finalize()
 
-        #check if same position give same displacement
-        np.testing.assert_allclose(displacement[0], displacement[2], atol=1e-4,rtol = 0)
+        # print("displacement_test")
+        # print(displacement[0].size)
+        # print(displacement[1].size)
+        # print(displacement[2].size)
 
+
+        #check if same position give same displacement
+        np.testing.assert_allclose(displacement[0], displacement[2], atol=1e-6,rtol = 0)
 
 if __name__ == "__main__":
     unittest.main()

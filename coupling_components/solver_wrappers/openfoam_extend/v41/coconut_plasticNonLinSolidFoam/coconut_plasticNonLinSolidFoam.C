@@ -114,23 +114,16 @@ int main(int argc, char *argv[])
     runTime.run();
     word prev_runTime;
 
-//    unsigned int iteration;
-//    iteration = 0;
-
     int maxUIterReached = 0;
     int maxTIterReached = 0;
     unsigned int iteration = 0;
     int iCorr = 0;
     lduSolverPerformance solverPerf;
     bool converged = false;
-//    scalar relativeResidual = 1.0;
-//    scalar materialResidual = 0.0;
     blockLduMatrix::debug = 0;
 
     IOdictionary controlDict(IOobject("controlDict",runTime.system(),mesh,IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
-
-
 
     while (true)
     {
@@ -138,19 +131,22 @@ int main(int argc, char *argv[])
           scalar materialResidual = 0.0;
 
         usleep(10000);
+        const vectorField oldPoints = mesh.allPoints();
 
-        if (exists("next_coco"))
+//        Info<<"mesh"
+//                <<mesh.allPoints()<<endl;
+
+        if (exists("next.coco"))
         {
             #include "setDeltaT.H"
             #include "createNonLinearGeometry.H"
 
             prev_runTime = runTime.timeName();
             runTime++;
-            remove("next_coco");
+            remove("next.coco");
             OFstream outfile ("next_ready.coco");
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
-            iCorr = 0;
             iteration = 0;
             lduSolverPerformance solverPerf;
             converged = false;
@@ -163,26 +159,28 @@ int main(int argc, char *argv[])
             }
 
         // Store old points for moving the mesh
-        const vectorField oldPoints = mesh.allPoints();
+         const vectorField oldPoints = mesh.allPoints();
         }
 
-        if (exists("continue_coco"))
+        if (exists("continue.coco"))
         {
+
             iteration++;
             Info<< "Coupling iteration = " << iteration << nl << endl;
 
-            // Define movement of the coupling interface
-//            forAll(boundary_names, s)
-//            {
-//                    word boundary_name = boundary_names[s];
-//                    ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
-//            }
+            iCorr = 0;
 
+            //mesh.allPoints();
+            //DU.correctBoundaryConditions();
+//            mesh.movePoints(oldPoints)
+//
             // Momentum loop
             do
                 {
                 // Store previous iteration of DU to allow under-relaxation and
                 // calculation of a relative residual
+
+
                 DU.storePrevIter();
 
                 if (regionCoupled)
@@ -194,15 +192,15 @@ int main(int argc, char *argv[])
                 // Update Cauchy traction vectors
                     #include "calcCauchyTraction.H"
 
-                // The Following lines are for coupled regions
-                // Update boundary gradient
-                // forAll(DU.boundaryField(), patchI)
-                // {
-                //     const vectorField n = mesh.boundary()[patchI].nf();
-                //     gradDU.boundaryField()[patchI] +=
-                //         n*DU.boundaryField()[patchI].snGrad()
-                //       - (sqr(n) & gradDU.boundaryField()[patchI]);
-                // }
+                 //The Following lines are for coupled regions
+                 //Update boundary gradient
+//                 forAll(DU.boundaryField(), patchI)
+//                 {
+//                     const vectorField n = mesh.boundary()[patchI].nf();
+//                     gradDU.boundaryField()[patchI] +=
+//                         n*DU.boundaryField()[patchI].snGrad()
+//                       - (sqr(n) & gradDU.boundaryField()[patchI]);
+//                 }
 
                 // Discretise the linear momentum equation using an updated
                 // Lagrangian approach
@@ -352,15 +350,16 @@ int main(int argc, char *argv[])
             // Cauchy stress
             sigmaCauchy = tau/J;
 
-
             // Total displacement at cell-centres
             gradU = fvc::grad(U.oldTime() + DU);
             U = U.oldTime() + DU;
+//            Info<< "displacement_old= "<< U.oldTime() << " "<< nl << endl;
+//            Info<< "displacement_change= "<< DU << " "<< nl << endl;
+            Info<< "displacement= "<< U << " "<< nl << endl;
 
             // Total velocity at cell-centres
             //V = fvc::ddt(U);
             V = DU/runTime.deltaT();
-
             if (thermalStress && runTime.value() > thermalStressStartTime)
             {
                 #include "TEqn.H"
@@ -380,11 +379,11 @@ int main(int argc, char *argv[])
             // Update surface fields after a topoChange
             mu = mechanical.mu();
             lambda = mechanical.lambda();
-            twoMuLambda = 2.0*mu + lambda;
+            twoMuLambda = 2.0 * mu + lambda;
             twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
             RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
 
-            remove("continue_coco");
+            remove("continue.coco");
             //Return the coupling interface output
 
             Info<< "ExecutionTime = "<< runTime.elapsedCpuTime() << " s"
@@ -392,10 +391,11 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             runTime.run();
+            runTime.write();
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
             OFstream outfile ("continue_ready.coco");
-        }
 
+        }
         // Print warnings if convergence was not achieved
         if (maxUIterReached > 0)
         {
@@ -421,7 +421,7 @@ int main(int argc, char *argv[])
 
         if (exists("stop.coco"))
         {
-            // remove("stop.coco"); // should not be uncommented
+            remove("stop.coco"); // should not be uncommented
             runTime.stopAt(Time::stopAtControls::saNoWriteNow);
             OFstream outfile ("stop_ready.coco");
             break;

@@ -12,6 +12,7 @@ import shutil
 import time
 import subprocess
 import re
+import csv
 
 
 #TODO:wrappper is not adapt to run in parallel
@@ -49,7 +50,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
-
+        # print(self.working_directory)
         # set on True to save copy of input and output files in every iteration
         self.debug = False
 
@@ -88,66 +89,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                     decomposedict_string = file.read()
                 self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
 
-        #create a point file to define the spatial mapping of the timeVaryingMappedSolidTraction BC.
-        points = np.loadtxt(f'points.csv', delimiter = ',')
-
-        for boundary in self.boundary_names:
-            boundary_data_path = os.path.join(self.working_directory,'constant/boundaryData')
-            if not os.path.exists(boundary_data_path):
-                 os.mkdir(boundary_data_path)
-            boundary_path = os.path.join(boundary_data_path, boundary)
-            shutil.rmtree(boundary_path, ignore_errors = True)
-            os.mkdir(boundary_path)
-            data_folder = os.path.join(boundary_path,'0')
-            os.mkdir(data_folder)
-
-            with open(os.path.join(boundary_path, 'points'), 'w') as f:
-                 f.write("""
-            FoamFile
-            {
-                 version   2.0;
-                 format    ascii;
-                 class     vectorField;
-                 object    points;
-            }
-            //*************************************************************************//\n""")
-                 f.write('(\n')
-                 for point in points:
-                      f.write(f'({point[0]} {point[1]} {point[2]})\n')
-                 f.write(')')
-
-            with open(os.path.join(data_folder, 'pressure'), 'w') as g:
-                g.write("""
-            FoamFile
-            {
-                 version   2.0;
-                 format    ascii;
-                 class     scalarField;
-                 object    points;
-            }
-            //*************************************************************************//\n""")
-                g.write(f'{points.shape[0]}\n')
-                g.write('(\n')
-                for pressure in points:
-                    g.write(f'{0}\n')
-                g.write(')')
-
-            with open(os.path.join(data_folder, 'traction'), 'w') as h:
-                h.write("""
-            FoamFile
-            {
-                 version   2.0;
-                 format    ascii;
-                 class     vectorField;
-                 object    points;
-            }
-            //*************************************************************************//\n""")
-                h.write(f'{points.shape[0]}\n')
-                h.write('(\n')
-                for traction in points:
-                    h.write(f'({0} {0} {0} )\n')
-                h.write(')')
-
         # modify controlDict file to add displacement functionObjects for all the boundaries in
         # self.settings["boundary_names"]
         self.read_modify_controldict()
@@ -184,6 +125,85 @@ class SolverWrapperOpenFOAMExtend(Component):
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
+
+        for boundary in self.boundary_names:
+            mp_name = f'{boundary}_input'
+            mp = self.model.get_model_part(mp_name)
+            x0, y0, z0 = mp.x0, mp.y0, mp.z0
+
+            x = np.zeros( 2 * x0.size)
+            y = np.zeros( 2 * x0.size)
+            z = np.zeros( 2 * x0.size)
+
+            j = 0
+
+            for i in range(len(x)):
+                if i < x0.size:
+                    x[j] = x0[i]
+                    y[j] = y0[i]*np.cos(1.25*np.pi/180)
+                    z[j] = y0[i] * - np.sin(1.25 * np.pi / 180)
+                else:
+                    x[j]= x0[i -x0.size]
+                    y[j] = y0[i - x0.size] * np.cos(1.25 * np.pi / 180)
+                    z[j] = y0[i - x0.size] * np.sin(1.25 * np.pi / 180)
+                j+=1
+
+            boundary_data_path = os.path.join(self.working_directory,'constant/boundaryData')
+            if not os.path.exists(boundary_data_path):
+                 os.mkdir(boundary_data_path)
+            boundary_path = os.path.join(boundary_data_path, boundary)
+            shutil.rmtree(boundary_path, ignore_errors = True)
+            os.mkdir(boundary_path)
+            data_folder = os.path.join(boundary_path,'0')
+            os.mkdir(data_folder)
+
+            with open(os.path.join(boundary_path, 'points'), 'w') as f:
+                 f.write("""
+            FoamFile
+            {
+                 version   2.0;
+                 format    ascii;
+                 class     vectorField;
+                 object    points;
+            }
+            //*************************************************************************//\n""")
+                 f.write('(\n')
+                 for point in range(x.size):
+                      f.write(f'({x[point]} {y[point]} {z[point]})\n')
+                 f.write(')')
+
+
+            with open(os.path.join(data_folder, 'pressure'), 'w') as g:
+                g.write("""
+            FoamFile
+            {
+                 version   2.0;
+                 format    ascii;
+                 class     scalarField;
+                 object    pressure;
+            }
+            //*************************************************************************//\n""")
+                g.write(f'{x.size}\n')
+                g.write('(\n')
+                for i in range(x.size):
+                    g.write(f'{0}\n')
+                g.write(')')
+
+            with open(os.path.join(data_folder, 'traction'), 'w') as h:
+                h.write("""
+            FoamFile
+            {
+                 version   2.0;c
+                 format    ascii;
+                 class     vectorField;
+                 object    traction;
+            }
+            //*************************************************************************//\n""")
+                h.write(f'{x.size}\n')
+                h.write('(\n')
+                for i in range(x.size):
+                    h.write(f'({0} {0} {0} )\n')
+                h.write(')')
 
         # define timestep and physical time
         self.timestep = 0
@@ -340,7 +360,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         #                                'pointDisplacement_Next_Iter' + str(self.iteration))
         #         shutil.copy(path_from, path_to)
 
-        # self.delete_prev_iter_output()
+        self.delete_prev_iter_output()
         self.send_message('continue')
         self.wait_message('continue_ready')
 
@@ -398,18 +418,18 @@ class SolverWrapperOpenFOAMExtend(Component):
 
     def compile_adapted_openfoam_extend_solver(self):
         # compile foam-Extend adapted solver
-        solver_dir = os.path.join(os.path.dirname(__file__), f'vFE{self.version.replace(".", "")}', self.application)
+        solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
             check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
 
-    def write_cell_centres(self):
-        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+    # def write_cell_centres(self):
+    #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
-    def read_face_centres(self, boundary_name, nfaces):
-        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+    # def read_face_centres(self, boundary_name, nfaces):
+    #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def delete_prev_iter_output(self):
         # displacement file is removed to avoid foam-Extend to append data in the new iteration
@@ -420,7 +440,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             #                         self.cur_timestamp, f'DU_patch_{boundary}.raw')
             # if os.path.isfile(disp_file):
             #     os.remove(disp_file)
-            displacement_name = os.path.join(self.working_directory, self.timestep, 'U')
+            displacement_name = os.path.join(self.working_directory, self.cur_timestamp, 'U')
             # velocity_name = os.path.join(self.working_directory, self.timestep, 'Velocity')
             if os.path.isfile(displacement_name):
                 os.remove(displacement_name)
@@ -444,24 +464,28 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             self.write_cell_centres()
 
-            filename_displacement = os.path.join(self.working_directory, self.timestep, 'U')
+            filename_displacement = os.path.join(self.working_directory, self.cur_timestamp, 'U')
             # filename_velocity = os.path.join(self.working_directory, self.timestep, 'Velocity')
 
-            disp_filename = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary,
+            disp_field = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary,
                                                      size = nfaces, is_scalar =False)
             # velo_filename = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
             #                                          size=nfaces, is_scalar=False)
-
+            # print("displacement_field")
+            # print(disp_field)
 
             x, y, z = self.read_face_centres(boundary, nfaces)
+            print("x,y,z")
+            print(x,y,z)
 
-            f = interpolate.interp1d(x,disp_filename[:,1])
-            g = interpolate.interp1d(x, disp_filename[:,2])
+            f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
+            g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
 
             node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
-                                                                                time_folder = self.timestep,
+                                                                                time_folder = self.cur_timestamp,
                                                           boundary_name = boundary)
-
+            # print("nodes")
+            # print(node_coords)
             mask = np.logical_and(node_coords[:, 0] > -0.003, node_coords[:, 0] < 0.0005)
             filter_node_ids = node_ids[mask]
             filter_node_coords = node_coords[mask, :]
@@ -472,7 +496,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             displacement[:,1] = f(filter_node_coords[:,0])
             displacement[:,2] = g(filter_node_coords[:,0])
 
-            self.model.delete_model_part(mp)
+            self.model.delete_model_part(mp_name)
 
             self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],
                                                   filter_node_coords[:, 2], filter_node_ids)
@@ -485,12 +509,11 @@ class SolverWrapperOpenFOAMExtend(Component):
                 pos_list = mp.sequence
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
-            #
-            # displacement = np.empty_like(disp_tmp)
-            #
-            # displacement[pos_list, ] = disp_tmp[:, ]
+
+            self.interface_output = Interface(self.settings['interface_output'],self.model)
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
+
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
@@ -511,7 +534,28 @@ class SolverWrapperOpenFOAMExtend(Component):
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             data_folder = os.path.join(self.working_directory,'constant/boundaryData', boundary, self.cur_timestamp)
-            os.mkdir(data_folder)
+            os.makedirs(data_folder, exist_ok = True)
+            # print("pressure")
+            # print(pressure)
+
+            pressure_in = np.zeros((2 * pressure.size))
+            traction_in = np.zeros((2 * traction.shape[0], 3))
+
+            k = 0
+            for i in range(len(pressure_in)):
+                if i < pressure.size:
+                    pressure_in[k] = pressure[i]
+                else:
+                    pressure_in[k] = pressure[i - pressure.size]
+                k += 1
+
+            l = 0
+            for i in range(traction_in.shape[0]):
+                if i < traction.shape[0]:
+                    traction_in[l] = traction[i]
+                else:
+                    traction_in[l] = traction[i - traction.shape[0]]
+                l += 1
 
             with open(os.path.join(data_folder,'pressure'),'w') as f:
                 f.write("""
@@ -524,10 +568,10 @@ class SolverWrapperOpenFOAMExtend(Component):
                 }
                 //***********************************************************************// //\n
                 """)
-                f.write(f'{pressure.shape[0]}\n')
+                f.write(f'{pressure_in.shape[0]}\n')
                 f.write('(\n')
-                for pr in pressure:
-                    f.write(f'{pr[0]}\n')
+                for i in range(pressure_in.size):
+                    f.write(f'{pressure_in[i]}\n')
                 f.write(')')
 
             with open(os.path.join(data_folder,'traction'),'w') as f:
@@ -541,10 +585,10 @@ class SolverWrapperOpenFOAMExtend(Component):
                 }
                 //***********************************************************************// //\n
                 """)
-                f.write(f'{traction.shape[0]}\n')
+                f.write(f'{traction_in.shape[0]}\n')
                 f.write('(\n')
-                for tr in traction:
-                    f.write(f'({tr[0]} {tr[1]} {tr[2]})\n')
+                for i in range(traction_in.shape[0]):
+                    f.write(f'({traction_in[i,0]} {traction_in[i,1]} {traction_in[i,2]})\n')
                 f.write(')')
 
             # if self.settings['parallel']:
@@ -609,9 +653,10 @@ class SolverWrapperOpenFOAMExtend(Component):
             last_line = f.readlines()[-2]  # second last line contains 'Build: XX' with XX the version number
         os.remove('checkSoftware')
         version_nr = last_line.split(' ')[-1]
-        if version_nr[:-1] != self.version:
+        #TODO: Make it general for each foam-extend version
+        if version_nr[:-10] != self.version:
             raise RuntimeError(
-                f'Foam-Extend-{self.version} should be loaded! Currently, Foam-Extend-{version_nr[:-1]} is loaded')
+                f'Foam-Extend-{self.version} should be loaded! Currently, Foam-Extend-{version_nr[:-10]} is loaded')
 
     def check_interfaces(self):
         """
@@ -681,15 +726,15 @@ class SolverWrapperOpenFOAMExtend(Component):
                 control_dict_file.write(boundary_name + ' ')
 
             control_dict_file.write(');\n\n')
-            control_dict_file.write('functions\n{\n')
+            # control_dict_file.write('functions\n{\n')
 
-            for boundary_name in self.boundary_names:
-                control_dict_file.write(self.displacement_dict(boundary_name))
-            control_dict_file.write('}')
+            # for boundary_name in self.boundary_names:
+            #     control_dict_file.write(self.displacement_dict(boundary_name))
+            # control_dict_file.write('}')
             self.write_footer(file_name)
 
-    def displacement_dict(self, boundary_name):
-        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+    # def displacement_dict(self, boundary_name):
+    #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def write_residuals_fileheader(self):
         header = ''
@@ -735,7 +780,7 @@ class SolverWrapperOpenFOAMExtend(Component):
 
     def write_cell_centres(self):
         if self.timestep:
-            check_call('writeCellCentres -time' + self.cur_timestamp + ' &> log.writeCellCentres;',
+            check_call('writeCellCentres -time ' + self.cur_timestamp + ' &> log.writeCellCentres;',
                        cwd=self.working_directory, shell=True,
                        env=self.env)
         else:
@@ -746,9 +791,9 @@ class SolverWrapperOpenFOAMExtend(Component):
 
     def read_face_centres(self, boundary_name, nfaces):
         if self.timestep:
-            filename_ccx = os.path.join(self.cur_timestamp,'ccx')
-            filename_ccy = os.path.join(self.cur_timestamp,'ccy')
-            filename_ccz = os.path.join(self.cur_timestamp,'ccz')
+            filename_ccx = os.path.join(self.working_directory, self.cur_timestamp,'ccx')
+            filename_ccy = os.path.join(self.working_directory, self.cur_timestamp,'ccy')
+            filename_ccz = os.path.join(self.working_directory, self.cur_timestamp,'ccz')
 
             x = of_io.get_boundary_field(file_name=filename_ccx, boundary_name=boundary_name, size=nfaces,
                                          is_scalar=True)
@@ -758,9 +803,9 @@ class SolverWrapperOpenFOAMExtend(Component):
                                          is_scalar=True)
 
         else:
-            filename_ccx = os.path.join('0/ccx')
-            filename_ccy = os.path.join('0/ccy')
-            filename_ccz = os.path.join('0/ccz')
+            filename_ccx = os.path.join(self.working_directory,'0/ccx')
+            filename_ccy = os.path.join(self.working_directory,'0/ccy')
+            filename_ccz = os.path.join(self.working_directory,'0/ccz')
 
             x = of_io.get_boundary_field(file_name=filename_ccx, boundary_name=boundary_name, size=nfaces,
                                          is_scalar=True)

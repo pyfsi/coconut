@@ -26,7 +26,7 @@ solver_load_cmd_dict = {
         'kratos.structural_mechanics_application.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
         'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH',
-        'openfoam-extend.v41' : 'ml OpenFOAM-Extend/4.1-20200408-foss-2019b-Python-2.7.16 && source $FOAM_BASH'
+        'openfoam_extend.v41' : 'ml OpenFOAM-Extend/4.1-20200408-foss-2019b-Python-2.7.16 && source $FOAM_BASH'
     },
     'ugent_hpc': {
         'fluent.v2019R1': 'ml ANSYS_CFD/2019R1',

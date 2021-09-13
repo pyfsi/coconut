@@ -11,6 +11,12 @@ class Model:
         self.__model_parts[name] = ModelPart(name, x0, y0, z0, id)
         return self.__model_parts[name]
 
+    def delete_model_part(self, name):
+        if name not in self.__model_parts:
+            raise ValueError(f'model part: {name} does not exist in the model')
+        self.__model_parts.pop(name)
+        # return self.__model_parts[name]
+
     def get_model_part(self, name):
         if name not in self.__model_parts:
             raise ValueError(f'no model part with name "{name}" in model')
