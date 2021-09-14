@@ -8,6 +8,7 @@ import os
 import subprocess
 import pickle
 import importlib.util
+import shutil
 
 
 def create_instance(settings):
@@ -342,3 +343,23 @@ class cd:
 
     def __exit__(self, etype, value, traceback):
         os.chdir(self.saved_path)
+
+
+# try several times to remove file or directory
+def rm_timed(path: str, sleep: float = 0.5, attempts: int = 100) -> None:
+    """
+    Tries to remove path several times
+    :param str path: path to be removed
+    :param float sleep: wait time after each attempt
+    :param int attempts: number of attempts
+    :return: None
+    """
+    for i in range(attempts):
+        try:
+            shutil.rmtree(path)
+            break
+        except OSError:
+            time.sleep(sleep)
+    if os.path.exists(path):
+        print_info(f'Timed out removing {path}', layout='warning')
+        shutil.rmtree(path)
