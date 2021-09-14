@@ -73,11 +73,11 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
                 f.write(new_dict)
 
     def get_p(self, x):
-        return np.sin(x) + 0.5e9
+        return np.sin(x) + 1e9
         # return x * 0
 
     def get_p0(self, x):
-        return np.sin(x) + 1.3e9
+        return np.sin(x) * 0 + 1
         # return x * 0
 
     def get_shear(self, x):
@@ -100,12 +100,14 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
         # print(x0.size)
         # print(x02.size)
         p = self.get_p(x0)
+        print("pressure")
+        print(p)
         p0 = self.get_p0(x0)
         t = self.get_shear(x0)
         pr = np.column_stack(p)
         pr0 = np.column_stack(p0)
         tr = np.column_stack(t)
-        pr_list = [pr,pr0,pr]
+        pr_list = [pr,np.zeros_like(pr),pr]
         tr_list = [tr,np.zeros_like(tr),tr]
 
         #run solver for three pressure and traction(first one = last one)

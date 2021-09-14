@@ -131,6 +131,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             mp = self.model.get_model_part(mp_name)
             x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
+
             x = np.zeros( 2 * x0.size)
             y = np.zeros( 2 * x0.size)
             z = np.zeros( 2 * x0.size)
@@ -475,8 +476,8 @@ class SolverWrapperOpenFOAMExtend(Component):
             # print(disp_field)
 
             x, y, z = self.read_face_centres(boundary, nfaces)
-            print("x,y,z")
-            print(x,y,z)
+            # print("x,y,z")
+            # print(x,y,z)
 
             f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
             g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
@@ -513,6 +514,8 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.interface_output = Interface(self.settings['interface_output'],self.model)
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
+            print("interface_output_solid")
+            print(self.interface_output)
 
 
     # noinspection PyMethodMayBeStatic
@@ -535,8 +538,6 @@ class SolverWrapperOpenFOAMExtend(Component):
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             data_folder = os.path.join(self.working_directory,'constant/boundaryData', boundary, self.cur_timestamp)
             os.makedirs(data_folder, exist_ok = True)
-            # print("pressure")
-            # print(pressure)
 
             pressure_in = np.zeros((2 * pressure.size))
             traction_in = np.zeros((2 * traction.shape[0], 3))
@@ -617,7 +618,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         return
 
     def wait_message(self, message):
-        wait_time_lim = 10 * 60  # 10 minutes maximum waiting time for a single flow solver iteration
+        wait_time_lim = 100 * 60  # 10 minutes maximum waiting time for a single flow solver iteration
         cumul_time = 0
         file = os.path.join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
