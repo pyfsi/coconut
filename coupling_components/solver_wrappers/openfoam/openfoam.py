@@ -398,7 +398,6 @@ class SolverWrapperOpenFOAM(Component):
         the field is subsequently decomposed using the command: decomposePar.
        :return:
        """
-
         pointdisp_filename_ref = os.path.join(self.working_directory, '0', 'pointDisplacement')
 
         pointdisp_filename = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')

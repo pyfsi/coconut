@@ -59,17 +59,12 @@ class SolverWrapperMapped(Component):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input_from):
-        self.iteration +=1
-        print("iteration")
-        print(self.iteration)
         self.interface_input_from = interface_input_from.copy()
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
         interface_output_from = self.solver_wrapper.solve_solution_step(self.interface_input_to)
-        self.mapper_interface_output_it = create_instance(self.settings['mapper_interface_output'])
-        self.mapper_interface_output_it.initialize(interface_output_from, self.interface_output_to)
-        print("interface_output_mapped")
-        print(interface_output_from)
-        self.mapper_interface_output_it(interface_output_from, self.interface_output_to)
+        mapper_interface_output_it = create_instance(self.settings['mapper_interface_output'])
+        mapper_interface_output_it.initialize(interface_output_from, self.interface_output_to)
+        mapper_interface_output_it(interface_output_from, self.interface_output_to)
         return self.interface_output_to
 
     def finalize_solution_step(self):

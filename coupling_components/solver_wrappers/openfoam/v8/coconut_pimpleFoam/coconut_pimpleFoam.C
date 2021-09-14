@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 
         if (exists("stop.coco"))
         {
-            // remove("stop.coco"); // should not be uncommented
+            remove("stop.coco"); // should not be uncommented
             runTime.stopAt(Time::stopAtControl::noWriteNow);
             OFstream outfile ("stop_ready.coco");
             break;

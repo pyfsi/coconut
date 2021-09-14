@@ -472,8 +472,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                                                      size = nfaces, is_scalar =False)
             # velo_filename = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
             #                                          size=nfaces, is_scalar=False)
-            # print("displacement_field")
-            # print(disp_field)
 
             x, y, z = self.read_face_centres(boundary, nfaces)
             # print("x,y,z")
@@ -485,8 +483,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
                                                                                 time_folder = self.cur_timestamp,
                                                           boundary_name = boundary)
-            # print("nodes")
-            # print(node_coords)
+
             mask = np.logical_and(node_coords[:, 0] > -0.003, node_coords[:, 0] < 0.0005)
             filter_node_ids = node_ids[mask]
             filter_node_coords = node_coords[mask, :]
@@ -502,10 +499,6 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],
                                                   filter_node_coords[:, 2], filter_node_ids)
 
-            # check if the displacement file completed by foam-Extend and read data
-            # self.check_output_file(disp_filename, nfaces)
-            # disp_tmp = np.loadtxt(disp_filename, comments='#')[:, 3:]
-
             if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
@@ -514,8 +507,6 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.interface_output = Interface(self.settings['interface_output'],self.model)
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
-            print("interface_output_solid")
-            print(self.interface_output)
 
 
     # noinspection PyMethodMayBeStatic
