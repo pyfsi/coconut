@@ -348,9 +348,12 @@ class SolverWrapperFluent(Component):
     def finalize(self):
         super().finalize()
         shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
+        # delete log file (fluent.log is sufficient)
+        os.unlink(join(self.dir_cfd,'log'))
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
+
 
     def get_interface_input(self):
         return self.interface_input

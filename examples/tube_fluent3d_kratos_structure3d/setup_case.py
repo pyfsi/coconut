@@ -1,5 +1,7 @@
 import shutil
 import subprocess
+import os
+from os.path import join
 
 from coconut import tools
 
@@ -22,3 +24,6 @@ subprocess.check_call('./setup_fluent3d.sh', shell=True, cwd=cfd_dir, env=cfd_en
 
 # create new CSM folder
 shutil.copytree('../setup_files/tube/kratos_structure3d', csm_dir)
+
+# delete log file (fluent.log is sufficient)
+os.unlink(join(cfd_dir,'log'))

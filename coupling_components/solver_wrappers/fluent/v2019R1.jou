@@ -1,6 +1,6 @@
 ;   GENERAL SETTINGS
-file set-batch-options n n n
-file start-transcript "transcript.txt"
+file set-batch-options n y n
+;file start-transcript "transcript.txt"
 (enable-dynamic-mesh-node-ids #t)
 ;file binary-files n
 (define unsteady |UNSTEADY|)

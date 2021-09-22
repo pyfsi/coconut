@@ -1,5 +1,7 @@
 import shutil
 import subprocess
+import os
+from os.path import join
 
 from coconut import tools
 
@@ -24,3 +26,6 @@ subprocess.check_call('./setup_fluent2d.sh', shell=True, cwd=cfd_dir, env=cfd_en
 shutil.copytree('../setup_files/tube/abaqus2d', csm_dir)
 csm_env = tools.get_solver_env(csm_solver, csm_dir)
 subprocess.check_call('./setup_abaqus2d.sh', shell=True, cwd=csm_dir, env=csm_env)
+
+# delete log file (fluent.log is sufficient)
+os.unlink(join(cfd_dir,'log'))
