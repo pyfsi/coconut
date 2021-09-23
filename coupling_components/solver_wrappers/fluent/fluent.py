@@ -39,6 +39,7 @@ class SolverWrapperFluent(Component):
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
         self.remove_all_messages()
+        self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
         self.cores = self.settings['cores']
@@ -128,8 +129,17 @@ class SolverWrapperFluent(Component):
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
-        # get general simulation info from report.sum
+        # get general simulation info from  fluent.log and report.sum
         self.wait_message('case_info_exported')
+
+
+        report_log = join(self.dir_cfd, 'fluent.log')
+
+        with open(report_log, 'r') as file:
+            for line in file:
+                if 'File has wrong dimension' in line:
+                    raise ValueError('Dimension in JSON does not match Fluent case')
+
         report = join(self.dir_cfd, 'report.sum')
         check = 0
         with open(report, 'r') as file:
@@ -504,3 +514,15 @@ class SolverWrapperFluent(Component):
             if file_name.endswith('.coco'):
                 file = join(self.dir_cfd, file_name)
                 os.remove(file)
+
+    def backup_fluent_log(self):
+        for file_name in os.listdir(self.dir_cfd):
+            if file_name == 'fluent_backup.log':
+                file = join(self.dir_cfd, file_name)
+                os.remove(file)
+            if file_name == 'fluent.log':
+                file = join(self.dir_cfd, file_name)
+                file_new = join(self.dir_cfd,'fluent_backup.log')
+                os.rename(file,file_new)
+
+
