@@ -25,4 +25,4 @@ subprocess.check_call('./setup_fluent2d.sh', shell=True, cwd=cfd_dir, env=cfd_en
 shutil.copytree('../setup_files/tube/tube_structure', 'CSM')
 
 # delete log file (fluent.log is sufficient)
-os.unlink(join(cfd_dir,'log'))
+os.unlink(join(cfd_dir, 'log'))

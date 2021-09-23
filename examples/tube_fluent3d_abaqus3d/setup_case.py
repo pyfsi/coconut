@@ -28,4 +28,4 @@ csm_env = tools.get_solver_env(csm_solver, csm_dir)
 subprocess.check_call('./setup_abaqus3d.sh', shell=True, cwd=csm_dir, env=csm_env)
 
 # delete log file (fluent.log is sufficient)
-os.unlink(join(cfd_dir,'log'))
+os.unlink(join(cfd_dir, 'log'))

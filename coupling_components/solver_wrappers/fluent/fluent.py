@@ -13,7 +13,6 @@ import hashlib
 from getpass import getuser
 import shutil
 
-
 # TODO: issue: id and hash shadow built-in names
 
 
@@ -132,10 +131,7 @@ class SolverWrapperFluent(Component):
         # get general simulation info from  fluent.log and report.sum
         self.wait_message('case_info_exported')
 
-
-        report_log = join(self.dir_cfd, 'fluent.log')
-
-        with open(report_log, 'r') as file:
+        with open(log, 'r') as file:
             for line in file:
                 if 'File has wrong dimension' in line:
                     raise ValueError('Dimension in JSON does not match Fluent case')
@@ -168,6 +164,9 @@ class SolverWrapperFluent(Component):
                         if self.multiphase:
                             raise ValueError('Multiphase in JSON does not match singlephase Fluent')
                         break
+
+        if os.path.isfile(join(self.dir_cfd, 'log')):
+            os.unlink(join(self.dir_cfd, 'log'))  # delete log file (fluent.log is sufficient)
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
@@ -358,12 +357,9 @@ class SolverWrapperFluent(Component):
     def finalize(self):
         super().finalize()
         shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        # delete log file (fluent.log is sufficient)
-        os.unlink(join(self.dir_cfd,'log'))
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
-
 
     def get_interface_input(self):
         return self.interface_input
@@ -516,13 +512,9 @@ class SolverWrapperFluent(Component):
                 os.remove(file)
 
     def backup_fluent_log(self):
-        for file_name in os.listdir(self.dir_cfd):
-            if file_name == 'fluent_backup.log':
-                file = join(self.dir_cfd, file_name)
-                os.remove(file)
-            if file_name == 'fluent.log':
-                file = join(self.dir_cfd, file_name)
-                file_new = join(self.dir_cfd,'fluent_backup.log')
-                os.rename(file,file_new)
-
-
+        file = join(self.dir_cfd, 'fluent.log')
+        file_backup = join(self.dir_cfd, 'fluent_backup.log')
+        if os.path.isfile(file_backup):
+            os.remove(file_backup)
+        if os.path.isfile(file):
+            os.rename(file, file_backup)
