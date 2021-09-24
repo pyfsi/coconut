@@ -70,7 +70,7 @@ def get_vector_array_from_dict(dict_string, size=None, is_int=False):
     # keyword = 'value'+r'\s+\n*'+r'nonuniform List\<vector\>'
     keyword = 'value'
     result_non_uniform = re.search(
-        keyword + delimter + 'nonuniform List<vector>' + delimter + r'\d*' + delimter + r'(.*)', dict_string, re.S)
+        keyword + delimter + 'nonuniform List<vector>' + delimter + r'\d*' + r'(.*)', dict_string, re.S)
     result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'\((.*)\)', dict_string)
     if not result_non_uniform is None:
         return get_vector_array(input_string=result_non_uniform.group(1), is_int=is_int)
@@ -118,7 +118,7 @@ def get_scalar_array(input_string, is_int=False):
 def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
     keyword = 'value'
     result_non_uniform = re.search(
-        keyword + delimter + 'nonuniform List<scalar>' + delimter + r'\d*' + delimter + r'(.*)', dict_string, re.S)
+        keyword + delimter + 'nonuniform List<scalar>' + delimter + r'\d*' + r'(.*)', dict_string, re.S)
     result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'(' + float_pattern + r')', dict_string)
     if not result_non_uniform is None:
         return get_scalar_array(input_string=result_non_uniform.group(1), is_int=is_int)

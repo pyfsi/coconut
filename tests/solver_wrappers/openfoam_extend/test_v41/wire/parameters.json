@@ -3,8 +3,8 @@
   "settings": {
     "working_directory": "this is changed upon running the test",
     "application": "coconut_plasticNonLinSolidFoam",
-    "delta_t": 0.0001,
-    "time_precision": 4,
+    "delta_t": 0.000001,
+    "time_precision": 6,
     "boundary_names": [
       "wireTopContact"
     ],

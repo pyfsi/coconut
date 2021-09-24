@@ -1,3 +1,18 @@
+volVectorField DU_oldFSIiteration
+(
+    IOobject
+    (
+        "DU_oldFSIiteration",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedVector("DU_oldFSIiteration", dimLength, vector::zero)
+
+);
+
 // Displacement increment
 Info<< "Reading field DU\n" << endl;
 volVectorField DU
@@ -224,6 +239,20 @@ volScalarField rho
     ),
     mechanical.rho()
 );
+
+volScalarField rho_oldFSIiteration
+(
+    IOobject
+    (
+        "rho_oldFSIiteration",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    mechanical.rho()
+//    dimensionedScalar("rho_oldFSIiteration", dimLength, 0.0)
+);
 #include "correctFieldsOnRestart.H"
 
 volScalarField mu = mechanical.mu();
@@ -278,8 +307,6 @@ if (regionCoupled)
 {
     #include "detachPatches.H"
 }
-
-
 
 // Correct material property fields on bi-material GGI interfaces
 bool materialGgi = false;

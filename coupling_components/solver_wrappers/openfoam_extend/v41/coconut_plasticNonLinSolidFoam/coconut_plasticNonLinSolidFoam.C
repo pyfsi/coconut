@@ -109,10 +109,12 @@ int main(int argc, char *argv[])
 
 
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     runTime.run();
-    word prev_runTime;
+    word prevRunTime;
+    pointField oldPoints_;
 
     int maxUIterReached = 0;
     int maxTIterReached = 0;
@@ -131,17 +133,13 @@ int main(int argc, char *argv[])
           scalar materialResidual = 0.0;
 
         usleep(10000);
-        const vectorField oldPoints = mesh.allPoints();
-
-//        Info<<"mesh"
-//                <<mesh.allPoints()<<endl;
 
         if (exists("next.coco"))
         {
             #include "setDeltaT.H"
             #include "createNonLinearGeometry.H"
 
-            prev_runTime = runTime.timeName();
+            prevRunTime = runTime.timeName();
             runTime++;
             remove("next.coco");
             OFstream outfile ("next_ready.coco");
@@ -151,38 +149,36 @@ int main(int argc, char *argv[])
             lduSolverPerformance solverPerf;
             converged = false;
             blockLduMatrix::debug = 0;
+            oldPoints_ = mesh.points();
+
 
             // Optional predictor
-        if (predictor)
-            {
-                solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
-            }
+            if (predictor)
+                {
+                    solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
+                }
 
-        // Store old points for moving the mesh
-         const vectorField oldPoints = mesh.allPoints();
         }
 
         if (exists("continue.coco"))
         {
+
+        pointField &oldPoints = const_cast<pointField&>(oldPoints_);
+        mesh.movePoints(oldPoints);
 
             iteration++;
             Info<< "Coupling iteration = " << iteration << nl << endl;
 
             iCorr = 0;
 
-            //mesh.allPoints();
-            //DU.correctBoundaryConditions();
-//            mesh.movePoints(oldPoints)
-//
             // Momentum loop
             do
                 {
                 // Store previous iteration of DU to allow under-relaxation and
                 // calculation of a relative residual
 
-
                 DU.storePrevIter();
-
+//
                 if (regionCoupled)
                 {
                     // Attach region coupled patches
@@ -190,24 +186,16 @@ int main(int argc, char *argv[])
                 }
 
                 // Update Cauchy traction vectors
-                    #include "calcCauchyTraction.H"
+                 #include "calcCauchyTraction.H"
 
-                 //The Following lines are for coupled regions
-                 //Update boundary gradient
-//                 forAll(DU.boundaryField(), patchI)
-//                 {
-//                     const vectorField n = mesh.boundary()[patchI].nf();
-//                     gradDU.boundaryField()[patchI] +=
-//                         n*DU.boundaryField()[patchI].snGrad()
-//                       - (sqr(n) & gradDU.boundaryField()[patchI]);
-//                 }
 
                 // Discretise the linear momentum equation using an updated
                 // Lagrangian approach
+
                 fvVectorMatrix DUEqn
                 (
                     fvm::d2dt2(rho, DU)
-                  + fvc::d2dt2(rho.oldTime(), U.oldTime())
+                  + fvc::d2dt2(rho.oldTime(), U.oldTime()) //fvc::d2dt2(rho_oldFSIiteration, U_oldFSIiteration) //MATHIEU
                  == fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
                   + fvc::div(cauchyTraction*mag(curS))
                   - fvc::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
@@ -215,7 +203,8 @@ int main(int argc, char *argv[])
                    *(
                         fvc::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
                       - fvc::div(twoMuLambdaf*(mesh.Sf() & gradDUf))
-                    )
+                     )
+
                 );
 
                 // to stop the RVE 'drifting' off we fix the first cell
@@ -251,7 +240,7 @@ int main(int argc, char *argv[])
                 gradDU = fvc::grad(DU);
 
                 // Correct gradDU on materialGgi patches
-                       #include "correctDispGrad.H"
+                #include "correctDispGrad.H"
 
                 // Relative deformation gradient
                 relF = I + gradDU.T();
@@ -264,6 +253,8 @@ int main(int argc, char *argv[])
                     const tensor avgFold =
                         avgFSeries(runTime.timeOutputValue() - runTime.deltaTValue());
 
+
+
                     // Add relative deformation contribution
                     relF += (avgF & inv(avgFold)) - I;
                 }
@@ -272,7 +263,7 @@ int main(int argc, char *argv[])
                 relFinv = hinv(relF);
 
                 // Total deformation gradient
-                F = relF & F.oldTime();
+               F = relF & F.oldTime(); //F = relF & F_oldFSIiteration; //MATHIEU
 
                 // Relative Jacobian (Jacobian of relative deformation gradient)
                 if (stabilisePressure)
@@ -329,13 +320,12 @@ int main(int argc, char *argv[])
                 relFbar = pow(relJ, -1.0/3.0)*relF;
 
                 // Jacobian of deformation gradient
-                //J = relJ*J.oldTime();
                 J = det(F);
 
                 // Store coefficient field as it may be used by the mechanical law
                 // to calculate the pressure
                 const volScalarField DUEqnA("DUEqnA", DUEqn.A());
-                //#include "fsiDisplacement.H"
+
                 // Update tau using material model
                 mechanical.correct(tau);
 
@@ -353,18 +343,15 @@ int main(int argc, char *argv[])
             // Total displacement at cell-centres
             gradU = fvc::grad(U.oldTime() + DU);
             U = U.oldTime() + DU;
-//            Info<< "displacement_old= "<< U.oldTime() << " "<< nl << endl;
-//            Info<< "displacement_change= "<< DU << " "<< nl << endl;
-            Info<< "displacement= "<< U << " "<< nl << endl;
 
-            // Total velocity at cell-centres
-            //V = fvc::ddt(U);
             V = DU/runTime.deltaT();
             if (thermalStress && runTime.value() > thermalStressStartTime)
             {
                 #include "TEqn.H"
             }
 
+//            Info<<"mesh before update"
+//            <<mesh.allPoints()<<endl;
             // Mesh update
             // Note: after remeshing, geometric surface field may be incorrect on
             // the new faces so we will re-created all surface fields here
