@@ -20,7 +20,7 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to openfoam directory
-        cls.file_name = join(dir_name, f'test_v{cls.version}/wire/parameters.json')
+        cls.file_name = join(dir_name, f'test_v{cls.version}_updated_solver/wire/parameters.json')
         cls.working_dir = join(dir_name, f'test_v{cls.version}/wire/CSM')
 
         # setup

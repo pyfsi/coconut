@@ -246,7 +246,7 @@ class SolverWrapperOpenFOAM(Component):
         self.wait_message('continue_ready')
 
         # copy output data for debugging
-        if self.debug:
+        if True: #self.debug:
             for boundary in self.boundary_names:
                 # specify location of pressure and traction
                 traction_name = 'TRACTION_' + boundary

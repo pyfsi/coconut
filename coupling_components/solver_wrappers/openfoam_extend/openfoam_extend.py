@@ -531,7 +531,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             os.makedirs(data_folder, exist_ok = True)
 
             pressure_in = np.zeros((2 * pressure.size))
-            traction_in = np.zeros((2 * traction.shape[0], 3))
+            traction_in = np.zeros((2 * traction.shape[0],3))
 
             k = 0
             for i in range(len(pressure_in)):

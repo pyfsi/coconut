@@ -378,7 +378,7 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             runTime.run();
-            runTime.write();
+            runTime.write(); //debugging
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
             OFstream outfile ("continue_ready.coco");
 
