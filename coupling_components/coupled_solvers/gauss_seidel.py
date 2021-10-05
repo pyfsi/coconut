@@ -45,7 +45,7 @@ class CoupledSolverGaussSeidel(Component):
                                                                              'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
-            if parameters['type'] == 'solver_wrappers.mapped':
+            if parameters['type'] == 'solver_wrappers.mapped' or parameters['type'] == 'solver_wrappers.mapped_updated'  :
                 self.index_mapped = index
             else:
                 self.index_other = index
