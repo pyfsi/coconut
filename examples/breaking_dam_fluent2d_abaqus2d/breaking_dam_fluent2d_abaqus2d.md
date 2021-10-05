@@ -1,7 +1,7 @@
 # Breaking dam with Fluent2D and Abaqus2D
 
 This example simulates a dam-break on a top-fixed flexible gate.
-The liquid, intially located in a free-surface tank, imposes a variable pressure on the bending flexible gate.
+The liquid, initially located in a free-surface tank, imposes a variable pressure on the bending flexible gate.
 This case has been examined numerically and experimentally by Antoci et al. [[1](#1)].
 Here, this 2D FSI calculation is performed with Fluent and Abaqus.
 
@@ -41,8 +41,6 @@ The gas phase is air modelled with the following parameters:
 
 The gravitational accelartion is 9.81 m/s².
 The total simulated time is 0.4 s in time steps of 0.001 s.
-
-geometry
 
 ## Coupling algorithm
 

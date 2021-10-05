@@ -48,6 +48,9 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
 
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
+        with self.assertRaises(NotImplementedError):
+            mapper.initialize(model, mp_name_in, mp_name_out, forward=not self.forward)
+        mapper = create_instance(self.parameters)
         mapper.initialize(model, mp_name_in, mp_name_out, forward=self.forward)
 
         # get mapped geometry from 3D model_part_out
