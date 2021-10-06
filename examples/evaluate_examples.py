@@ -47,8 +47,7 @@ def setUpModule():
 
 
 def tearDownModule():
-    time.sleep(0.1)
-    shutil.rmtree(tmp_path)
+    tools.rm_timed(tmp_path)
 
 
 class EvaluateExamples(unittest.TestCase):
