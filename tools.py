@@ -182,8 +182,8 @@ def pass_on_parameters(settings_from, settings_to, keys):
 
 
 # compare bounding box of ModelParts
-def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
-                       tol_minmax_warning=.1, tol_minmax_error=.3):
+def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=1,
+                       tol_minmax_warning=.1, tol_minmax_error=3):
     """
     Use this function to compare the bounding boxes of 2 ModelParts.
 

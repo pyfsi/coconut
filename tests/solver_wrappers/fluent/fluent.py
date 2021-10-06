@@ -1,4 +1,4 @@
-from coconut.tools import create_instance, get_solver_env
+from coconut.tools import create_instance, get_solver_env, rm_timed
 
 import unittest
 import numpy as np
@@ -8,11 +8,10 @@ import subprocess
 import json
 import multiprocessing
 import shutil
-import time
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
-    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     setup_case = True
 
     @classmethod
@@ -40,8 +39,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
-            time.sleep(0.1)
-            shutil.rmtree(cls.working_dir)
+            rm_timed(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy(self, x):
@@ -215,7 +213,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
 
 class TestSolverWrapperFluentTube3D(unittest.TestCase):
-    version = 'xxxRx'
+    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     setup_case = True
 
     @classmethod
@@ -243,8 +241,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
-            time.sleep(0.1)
-            shutil.rmtree(cls.working_dir)
+            rm_timed(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy_dz(self, x, y, z):
