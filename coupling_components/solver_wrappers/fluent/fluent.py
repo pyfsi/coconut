@@ -58,6 +58,8 @@ class SolverWrapperFluent(Component):
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
+        self.save_results = self.settings.get('save_results', 1)
+        self.save_restart = self.settings['save_restart']
         self.iteration = None
         self.fluent_process = None
         self.thread_ids = {}  # thread IDs corresponding to thread names
@@ -350,9 +352,42 @@ class SolverWrapperFluent(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        if not self.timestep % self.settings['save_iterations']:
+        #Save if required
+        save = False
+        if self.save_results != 0 and self.timestep % self.save_results ==0:
+            save = True
+        if self.save_restart != 0 and self.timestep % self.save_restart ==0:
+            save = True
+        if save:
             self.send_message('save')
             self.wait_message('save_ready')
+
+        #Delete unnecessary files
+        if self.timestep > self.timestep_start + 1:
+            cmd = ''
+
+            for thread_id in self.thread_ids.values():
+                cmd += f'rm nodes_update_timestep{self.timestep - 1}_thread{thread_id}.dat; '
+                cmd += f'rm pressure_traction_timestep{self.timestep - 1}_thread{thread_id}.dat; '
+
+            if self.save_results == 0 and  self.save_restart < 0 and self.timestep > abs(self.save_restart) and self.timestep % self.save_restart ==0 :
+                # A new restart file is written (self.timestep % self.save_restart ==0), so previous one can be deleted if:
+                # - save_restart is negative
+                # - it is not the first time save_restart files are written: self.timestep > abs(self.save_restart)
+                # - previous restart is not saved by save_results: self.save_results == 0
+                cmd += f'rm case_timestep{self.timestep + self.save_restart}.cas.h5; '
+                cmd += f'rm case_timestep{self.timestep + self.save_restart}.dat.h5; '
+
+            if abs(self.save_results) > 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and self.timestep % self.save_restart ==0 \
+                    and (self.timestep + self.save_restart) % self.save_results != 0  :
+                # A new restart file is written (self.timestep % self.save_restart == 0), so previous one can be deleted if:
+                # - save_restart is negative
+                # - it is not the first time save_restart files are written: self.timestep > abs(self.save_restart)
+                # - previous restart is not saved by save_results: (self.timestep + self.save_restart) % self.save_results !=0
+                cmd += f'rm case_timestep{self.timestep + self.save_restart}.cas.h5; '
+                cmd += f'rm case_timestep{self.timestep + self.save_restart}.dat.h5; '
+
+            subprocess.run(cmd, shell=True, cwd=self.dir_cfd, executable='/bin/bash', env=self.env)
 
     def finalize(self):
         super().finalize()
@@ -360,6 +395,19 @@ class SolverWrapperFluent(Component):
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
+
+        #Delete unnecessary files
+        cmd = ''
+        for thread_id in self.thread_ids.values():
+            cmd += f'rm nodes_update_timestep{self.timestep}_thread{thread_id}.dat; '
+            cmd += f'rm pressure_traction_timestep{self.timestep}_thread{thread_id}.dat; '
+        subprocess.run(cmd, shell=True, cwd=self.dir_cfd, executable='/bin/bash', env=self.env)
+
+        #Delete .trn files
+        for file_name in os.listdir(self.dir_cfd):
+            if file_name.endswith('.trn'):
+                file = join(self.dir_cfd, file_name)
+                os.remove(file)
 
     def get_interface_input(self):
         return self.interface_input
