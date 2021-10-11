@@ -366,11 +366,13 @@ class SolverWrapperFluent(Component):
         if self.timestep > self.timestep_start + 1:
             cmd = ''
 
-            for thread_id in self.thread_ids.values():
-                cmd += f'rm nodes_update_timestep{self.timestep - 1}_thread{thread_id}.dat; '
-                cmd += f'rm pressure_traction_timestep{self.timestep - 1}_thread{thread_id}.dat; '
+            if not self.debug:
+                for thread_id in self.thread_ids.values():
+                    cmd += f'rm nodes_update_timestep{self.timestep - 1}_thread{thread_id}.dat; '
+                    cmd += f'rm pressure_traction_timestep{self.timestep - 1}_thread{thread_id}.dat; '
 
-            if self.save_results == 0 and  self.save_restart < 0 and self.timestep > abs(self.save_restart) and self.timestep % self.save_restart ==0 :
+            if self.save_results == 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and\
+                    self.timestep % self.save_restart == 0:
                 # A new restart file is written (self.timestep % self.save_restart ==0), so previous one can be deleted if:
                 # - save_restart is negative
                 # - it is not the first time save_restart files are written: self.timestep > abs(self.save_restart)
@@ -378,8 +380,9 @@ class SolverWrapperFluent(Component):
                 cmd += f'rm case_timestep{self.timestep + self.save_restart}.cas.h5; '
                 cmd += f'rm case_timestep{self.timestep + self.save_restart}.dat.h5; '
 
-            if abs(self.save_results) > 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and self.timestep % self.save_restart ==0 \
-                    and (self.timestep + self.save_restart) % self.save_results != 0  :
+            if abs(self.save_results) > 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and\
+                    self.timestep % self.save_restart == 0 and\
+                    (self.timestep + self.save_restart) % self.save_results != 0:
                 # A new restart file is written (self.timestep % self.save_restart == 0), so previous one can be deleted if:
                 # - save_restart is negative
                 # - it is not the first time save_restart files are written: self.timestep > abs(self.save_restart)

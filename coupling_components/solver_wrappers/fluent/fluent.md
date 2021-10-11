@@ -31,7 +31,7 @@ parameter|type|description
 `interface_output`|dict|Analogous to `interface_input`, but for the output `Interface` (Fluent faces). Each `ModelPart` name must be the concatenation of an entry from the file `thread_names` and "_faces".
 `max_nodes_per_face`|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces and 2 in 2D simulations (edges).
 `multiphase`|bool|(optional) Default `false`. `true` for multiphase Fluent case, `false` for singlephase.
-`save_results`|int|Number of time steps between consecutive saves of the Fluent case and data files.
+`save_results`|int|(optional) Default `1`. Number of time steps between consecutive saves of the Fluent case and data files.
 `thread_names`|list|List with Fluent names of the surface threads on the FSI interface. 
 `timestep_start`|int|Time step number to (re)start a transient FSI calculation. If 0 is given, the simulation starts from the `case_file`, else the code looks for the relevant case and data files. This parameter is usually specified in a higher `Component`.
 `unsteady`|bool|`true` for transient FSI, `false` for steady FSI.
