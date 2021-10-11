@@ -422,7 +422,7 @@ class SolverWrapperAbaqus(Component):
         to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
                                 'Surface*Cpu0Input.dat', 'Surface*Output.dat']
 
-        if self.timestep > 0:
+        if self.timestep > self.timestep_start:
             if self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0:
                 # no files from previous time step needed for restart
                 cmd = ''
@@ -432,11 +432,11 @@ class SolverWrapperAbaqus(Component):
                     # .odb not needed for post-processing
                     cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-            if (self.save_restart < 0) and (self.timestep + self.save_restart > 0) and \
+            if (self.save_restart < 0) and (self.timestep + self.save_restart > self.timestep_start) and \
                     (self.timestep % self.save_restart == 0):
-                # if (self.timestep + self.save_restart < 0): don't touch files from previous calculation
-                # files from (self.timestep + self.save_restart) may be removed as new restart files are present at
-                # current timestep
+                # if (self.timestep + self.save_restart < self.timestep_start): don't touch files from previous
+                # calculation. Files from (self.timestep + self.save_restart) may be removed as new restart files are
+                # present at current timestep
                 cmd = ''
                 for suffix in to_be_removed_suffix:
                     cmd += f'rm CSM_Time{self.timestep + self.save_restart}{suffix}; '
@@ -457,7 +457,7 @@ class SolverWrapperAbaqus(Component):
                 cmd += f'rm CSM_Time{self.timestep}{suffix}; '
             if (self.save_results == 0) or (self.timestep % self.save_results != 0):
                 # .odb not needed for post-processing
-                cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
+                cmd += f'rm CSM_Time{self.timestep}.odb; '
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
         self.dir_vault.rmdir()
