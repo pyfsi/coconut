@@ -368,8 +368,8 @@ class SolverWrapperFluent(Component):
 
             if not self.debug:
                 for thread_id in self.thread_ids.values():
-                    cmd += f'rm nodes_update_timestep{self.timestep - 1}_thread{thread_id}.dat; '
-                    cmd += f'rm pressure_traction_timestep{self.timestep - 1}_thread{thread_id}.dat; '
+                    cmd += f'rm -f nodes_update_timestep{self.timestep - 1}_thread{thread_id}.dat; '
+                    cmd += f'rm -f pressure_traction_timestep{self.timestep - 1}_thread{thread_id}.dat; '
 
             if self.save_results == 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and\
                     self.timestep % self.save_restart == 0:
@@ -401,9 +401,10 @@ class SolverWrapperFluent(Component):
 
         #Delete unnecessary files
         cmd = ''
-        for thread_id in self.thread_ids.values():
-            cmd += f'rm nodes_update_timestep{self.timestep}_thread{thread_id}.dat; '
-            cmd += f'rm pressure_traction_timestep{self.timestep}_thread{thread_id}.dat; '
+        if not self.debug:
+            for thread_id in self.thread_ids.values():
+                cmd += f'rm -f nodes_update_timestep{self.timestep}_thread{thread_id}.dat; '
+                cmd += f'rm -f pressure_traction_timestep{self.timestep}_thread{thread_id}.dat; '
         subprocess.run(cmd, shell=True, cwd=self.dir_cfd, executable='/bin/bash', env=self.env)
 
         #Delete .trn files
