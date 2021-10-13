@@ -7,6 +7,7 @@
     "unsteady": true,
     "delta_t": 0.0001,
     "timestep_start": 0,
+    "save_restart": 1,
     "thread_names": [
       "wall"
     ],
