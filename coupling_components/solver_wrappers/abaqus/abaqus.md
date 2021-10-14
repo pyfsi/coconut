@@ -125,11 +125,11 @@ Per surface in the fluid-structure interface (where loads and displacements need
 
  - From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.
  - From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.
- - By converting a "node set" containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `make_surface.py` file in the extra directory.
+ - By converting a "node set" containing all the nodes on the surface and then calling the `SurfaceFromNodeSet` method which can be found in the `make_surface.py` file in the extra directory. It is advised to copy this file to the working directory.
 
 An example on the use of `SurfaceFromNodeSet` (via the Python console in Abaqus or a Python script for Abaqus):
 ```python
-from makeSurface import SurfaceFromNodeSet
+from make_surface import SurfaceFromNodeSet
 my_model = mdb.models['Model-1']
 my_assembly = my_model.rootAssembly  
 my_instance = my_assembly.instances['PART-1-1']
