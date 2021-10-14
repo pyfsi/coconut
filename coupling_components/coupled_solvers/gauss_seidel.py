@@ -194,7 +194,7 @@ class CoupledSolverGaussSeidel(Component):
             self.add_restart_data(output)
             with open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb') as file:
                 pickle.dump(output, file)
-            if self.save_restart < 0:
+            if self.save_restart < 0 and self.time_step + self.save_restart > self.timestep_start_current:
                 try:
                     os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
                 except OSError:

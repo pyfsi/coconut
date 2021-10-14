@@ -4,6 +4,7 @@ from coconut import tools
 
 import os
 from os.path import join
+import glob
 import subprocess
 import multiprocessing
 import time
@@ -352,45 +353,28 @@ class SolverWrapperFluent(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        #Save if required
-        save = False
-        if self.save_results != 0 and self.timestep % self.save_results ==0:
-            save = True
-        if self.save_restart != 0 and self.timestep % self.save_restart ==0:
-            save = True
-        if save:
+        # save if required
+        if (self.save_results != 0 and self.timestep % self.save_results == 0) \
+                or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.send_message('save')
             self.wait_message('save_ready')
 
-        #Delete unnecessary files
-        if self.timestep > self.timestep_start + 1:
-            cmd = ''
-
-            if not self.debug:
-                for thread_id in self.thread_ids.values():
-                    cmd += f'rm -f nodes_update_timestep{self.timestep - 1}_thread{thread_id}.dat; '
-                    cmd += f'rm -f pressure_traction_timestep{self.timestep - 1}_thread{thread_id}.dat; '
-
-            if self.save_results == 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and\
-                    self.timestep % self.save_restart == 0:
-                # A new restart file is written (self.timestep % self.save_restart ==0), so previous one can be deleted if:
+        # remove unnecessary files
+        if self.timestep - 1 > self.timestep_start:
+            self.remove_dat_files(self.timestep - 1)
+            if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
+                    self.timestep % self.save_restart == 0 \
+                    and (self.save_results == 0 or self.timestep + self.save_restart % self.save_results != 0):
+                # new restart file is written (self.timestep % self.save_restart ==0),
+                # so previous one (at self.timestep + self.save_restart) can be deleted if:
                 # - save_restart is negative
-                # - it is not the first time save_restart files are written: self.timestep > abs(self.save_restart)
-                # - previous restart is not saved by save_results: self.save_results == 0
-                cmd += f'rm case_timestep{self.timestep + self.save_restart}.cas.h5; '
-                cmd += f'rm case_timestep{self.timestep + self.save_restart}.dat.h5; '
-
-            if abs(self.save_results) > 0 and self.save_restart < 0 and self.timestep > abs(self.save_restart) and\
-                    self.timestep % self.save_restart == 0 and\
-                    (self.timestep + self.save_restart) % self.save_results != 0:
-                # A new restart file is written (self.timestep % self.save_restart == 0), so previous one can be deleted if:
-                # - save_restart is negative
-                # - it is not the first time save_restart files are written: self.timestep > abs(self.save_restart)
-                # - previous restart is not saved by save_results: (self.timestep + self.save_restart) % self.save_results !=0
-                cmd += f'rm case_timestep{self.timestep + self.save_restart}.cas.h5; '
-                cmd += f'rm case_timestep{self.timestep + self.save_restart}.dat.h5; '
-
-            subprocess.run(cmd, shell=True, cwd=self.dir_cfd, executable='/bin/bash', env=self.env)
+                # - files from a previous calculation are not touched
+                # - files are not kept for save_results
+                for extension in ('cas.h5', 'cas', 'dat.h5', 'dat'):
+                    try:
+                        os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
+                    except OSError:
+                        pass
 
     def finalize(self):
         super().finalize()
@@ -399,19 +383,21 @@ class SolverWrapperFluent(Component):
         self.wait_message('stop_ready')
         self.fluent_process.wait()
 
-        #Delete unnecessary files
-        cmd = ''
+        # remove unnecessary files
+        self.remove_dat_files(self.timestep)
+
+        # delete .trn files
+        for path in glob.glob(join(self.dir_cfd, '*.trn')):
+            os.remove(path)
+
+    def remove_dat_files(self, timestep):
         if not self.debug:
             for thread_id in self.thread_ids.values():
-                cmd += f'rm -f nodes_update_timestep{self.timestep}_thread{thread_id}.dat; '
-                cmd += f'rm -f pressure_traction_timestep{self.timestep}_thread{thread_id}.dat; '
-        subprocess.run(cmd, shell=True, cwd=self.dir_cfd, executable='/bin/bash', env=self.env)
-
-        #Delete .trn files
-        for file_name in os.listdir(self.dir_cfd):
-            if file_name.endswith('.trn'):
-                file = join(self.dir_cfd, file_name)
-                os.remove(file)
+                try:
+                    os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
+                    os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
+                except OSError:
+                    pass
 
     def get_interface_input(self):
         return self.interface_input
