@@ -133,7 +133,7 @@ from make_surface import SurfaceFromNodeSet
 my_model = mdb.models['Model-1']
 my_assembly = my_model.rootAssembly  
 my_instance = my_assembly.instances['PART-1-1']
-inputSurfaceA = SurfaceFromNodeSet(my_model, my_instance, 'NODESET_NAME_A', 'SURFACE_NAME_A')
+inputSurfaceA = SurfaceFromNodeSet(my_assembly, my_instance, 'NODESET_NAME_A', 'SURFACE_NAME_A')
 ```
 
 On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. **Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in `GetOutput.cpp`**. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
