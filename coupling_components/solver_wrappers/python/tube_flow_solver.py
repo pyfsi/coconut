@@ -26,10 +26,13 @@ class SolverWrapperTubeFlow(Component):
         self.parameters = parameters
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        input_file = self.settings['input_file']
-        case_file_name = join(self.working_directory, input_file)
-        with open(case_file_name, 'r') as case_file:
-            self.settings.update(json.load(case_file))
+        input_file = self.settings.get('input_file')
+        if input_file is not None:
+            case_file_name = join(self.working_directory, input_file)
+            with open(case_file_name, 'r') as case_file:
+                case_file_settings = json.load(case_file)
+            case_file_settings.update(self.settings)
+            self.settings.update(case_file_settings)
 
         # settings
         self.unsteady = self.settings.get('unsteady', True)
