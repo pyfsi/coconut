@@ -225,7 +225,7 @@ class SolverWrapperOpenFOAM(Component):
         # write interface data to OpenFOAM-file
         self.write_node_input()
 
-        # copy output data for debugging
+        # copy input data for debugging
         if self.debug:
             if self.cores > 1:
                 for i in range(0, self.cores):

@@ -49,8 +49,8 @@ class SolverWrapperMapped(Component):
         self.interface_output_to = interface_output_to.copy()
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output.initialize(interface_output_from, self.interface_output_to)
-        print("interface_output_initialize")
-        print(interface_output_from)
+        # print("interface_output_initialize")
+        # print(interface_output_from)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()

@@ -1,6 +1,4 @@
 from coconut.coupling_components.mappers.transformer import MapperTransformer
-from coconut.data_structure import variables_dimensions
-from scipy import interpolate
 
 import numpy as np
 
@@ -12,12 +10,13 @@ class Mapper_initial_load(MapperTransformer):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.v_min = self.settings['coords_min']
-        if type(self.v_min) != float:
+        self.radius = self.settings['initial_radius']
+        if type(self.radius) != float:
             raise TypeError('coords_min must be a float')
 
-        self.first_iteration = False
-
+        self.depth = self.settings['initial_depth']
+        if type(self.depth) != float:
+            raise TypeError('coords_min must be a float')
 
     def initialize(self, model, model_part_name_in, model_part_name_out, forward):
         if forward:
@@ -42,73 +41,18 @@ class Mapper_initial_load(MapperTransformer):
 
     def __call__(self, args_from, args_to):
         super().__call__(args_from, args_to)
+        interface_from, mp_name_from, var = args_from
+        interface_to, mp_name_to, _ = args_to
 
-        print(self.first_iteration)
+        for input_from in interface_from.parameters:
+            mp_from = interface_from.get_model_part(input_from['model_part'])
 
-        if self.first_iteration:
-            interface_from, mp_name_from, var = args_from
-            interface_to, mp_name_to, _ = args_to
-            self.v_min = self.settings['coords_min']
-
-            dimensions = variables_dimensions[var]
-            self.data_from = interface_from.get_variable_data(mp_name_from, var)
-
-            a = np.loadtxt('initial_pressure.dat')
-            b = np.hsplit(a, 2)
-            x = b[0]
-            y = b[1]
-            x_axis = x.flatten()
-            pressure = y.flatten()
-
-            f = interpolate.interp1d(x_axis, pressure, fill_value='extrapolate')
-
-            if dimensions == 1:
-                data_to = self.data_from
-                # data_to = np.zeros((self.mp_input_to.size, 1))
-                # for i in range(self.mp_input_to.size):
-                #     if self.mp_input_to.x0[i] > self.v_min:
-                #         data_to[i] = f(self.mp_input_to.x0[i])
-                #     else:
-                #         data_to[i] = 0
-
-            elif dimensions == 3:
-
-                # data_to = np.zeros((self.mp_input_to.size, 3))
-                data_to = self.data_from
-                # for j in range(self.mp_input_to.size):
-                #     if self.mp_input_to.x0[j] < self.v_min:
-                #         data_to[j, 0] = 0
-                #         data_to[j, 1] = 0
-                #         data_to[j, 2] = 0
-                #     else:
-                #         data_to[j, 0] = 0
-                #         data_to[j, 1] = 0
-                #         data_to[j, 2] = 0
+        data_to = np.zeros((3,len(mp_from.y0)))
+        data_to[1] = mp_from.y0 - self.radius
+        for i in range((len(mp_from.z0))):
+            if mp_from.z0[i] < 0:
+                data_to[2,i] = mp_from.z0[i] + self.depth
             else:
-                raise NotImplementedError(
-                    f'MapperUpdateLoad not implemented for variable of dimension {dimensions}')
-            interface_to.set_variable_data(mp_name_to, var, data_to)
-
-        else:
-            interface_from, mp_name_from, var = args_from
-            interface_to, mp_name_to, _ = args_to
-
-            dimensions = variables_dimensions[var]
-            self.data_from = interface_from.get_variable_data(mp_name_from, var)
-
-            if dimensions == 1:
-                data_to = self.data_from
-
-            elif dimensions == 3:
-
-                data_to = self.data_from
-
-            else:
-                raise NotImplementedError(
-                    f'MapperUpdateLoad not implemented for variable of dimension {dimensions}')
-            interface_to.set_variable_data(mp_name_to, var, data_to)
-
-
-
-
-
+                data_to[2,i] = mp_from.z0[i] - self.depth
+        data_to = np.transpose(data_to)
+        interface_to.set_variable_data(mp_name_to, var, data_to)
