@@ -364,7 +364,7 @@ class SolverWrapperFluent(Component):
             self.remove_dat_files(self.timestep - 1)
             if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
                     self.timestep % self.save_restart == 0 \
-                    and (self.save_results == 0 or self.timestep + self.save_restart % self.save_results != 0):
+                    and (self.save_results == 0 or (self.timestep + self.save_restart) % self.save_results != 0):
                 # new restart file is written (self.timestep % self.save_restart ==0),
                 # so previous one (at self.timestep + self.save_restart) can be deleted if:
                 # - save_restart is negative
@@ -374,7 +374,7 @@ class SolverWrapperFluent(Component):
                     try:
                         os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
                     except OSError:
-                        pass
+                        continue
 
     def finalize(self):
         super().finalize()
