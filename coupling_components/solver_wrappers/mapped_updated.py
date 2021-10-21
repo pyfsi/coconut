@@ -17,7 +17,7 @@ class SolverWrapperMapped(Component):
 
         # create solver
         tools.pass_on_parameters(self.settings, self.settings['solver_wrapper']['settings'],
-                                 ['timestep_start', 'delta_t', 'save_restart'])
+                                 ['timestep_start', 'delta_t', 'save_restart', 'number_of_timesteps'])
         self.solver_wrapper = create_instance(self.settings['solver_wrapper'])
 
         # create mappers

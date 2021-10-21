@@ -46,8 +46,8 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
 
         # solver wrapper settings
         parameters = self.parameters['solver_wrappers'][self.solver_index]
-        if parameters['type'] == 'solver_wrappers.mapped':
-            parameters = parameters['settings']['solver_wrapper']  # for mapped solver: the solver_wrapper itself tested
+        if parameters['type'] == 'solver_wrappers.mapped'or parameters['type'] == 'solver_wrappers.mapped_updated' :
+            parameters = parameters['settings']['solver_wrapper']# for mapped solver: the solver_wrapper itself teste
         settings = parameters['settings']
 
         orig_wd = settings['working_directory']  # working directory changed to a test_working_directory
@@ -139,9 +139,11 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.dummy_solver is not None:
             for model_part_name, variable in interface_input.model_part_variable_pairs:
                 model_part = interface_input.get_model_part(model_part_name)
-                data = [getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
+                for i in range(model_part.size):
+                    print(i)
+                    data = getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
                                                                             model_part.z0[i], self.time_step)
-                        for i in range(model_part.size)]
+                        # for i in range(model_part.size)]
                 interface_input.set_variable_data(model_part_name, variable, np.array(data))
         # store data in self.x and self.y
         if self.solver_index == 1:

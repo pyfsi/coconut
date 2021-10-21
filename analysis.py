@@ -1,5 +1,6 @@
-from coconut.tools import create_instance
+from coconut.tools import create_instance, pass_on_parameters
 import json
+
 
 
 class Analysis:
@@ -8,7 +9,7 @@ class Analysis:
         self.settings = parameters["settings"]
 
         self.number_of_timesteps = self.settings["number_of_timesteps"]
-
+        pass_on_parameters(self.settings, parameters['coupled_solver']["settings"], ['number_of_timesteps'])
         self.coupled_solver = create_instance(self.parameters["coupled_solver"])
 
     def run(self):

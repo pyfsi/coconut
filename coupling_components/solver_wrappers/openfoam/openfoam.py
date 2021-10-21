@@ -35,6 +35,7 @@ class SolverWrapperOpenFOAM(Component):
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
+        self.number_of_timesteps = self.settings['number_of_timesteps']
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
@@ -122,6 +123,52 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
+        if self.settings['timeVaryingMappedFixedValue']:
+            for boundary in self.boundary_names:
+                mp_name = f'{boundary}_input'
+                mp = self.model.get_model_part(mp_name)
+                x0, y0, z0 = mp.x0, mp.y0, mp.z0
+
+                x = np.zeros(x0.size)
+                y = np.zeros(x0.size)
+                z = np.zeros(x0.size)
+                index = int(len(x)/2)
+
+                j = 0
+                for i in range(len(x)):
+                    if z0[i] < 0:
+                        x[j] = x0[i]
+                        y[j] = y0[i]
+                        z[j] = z0[i]
+
+                    else:
+                        x[j + index] = x0[i]
+                        y[j + index] = y0[i]
+                        z[j + index] = z0[i]
+                        j += 1
+
+                boundary_data_path = os.path.join(self.working_directory, 'constant/boundaryData')
+                if not os.path.exists(boundary_data_path):
+                    os.mkdir(boundary_data_path)
+                boundary_path = os.path.join(boundary_data_path, boundary)
+                shutil.rmtree(boundary_path, ignore_errors=True)
+                os.mkdir(boundary_path)
+                data_folder = os.path.join(boundary_path, '0')
+                os.mkdir(data_folder)
+
+                with open(os.path.join(boundary_path, 'points'), 'w') as f:
+                    f.write('(\n')
+                    for point in range(x.size):
+                        f.write(f'({x[point]} {y[point]} {z[point]})\n')
+                    f.write(')')
+
+                with open(os.path.join(data_folder, 'U'), 'w') as h:
+                    h.write(f'{x.size}\n')
+                    h.write('(\n')
+                    for i in range(x.size):
+                        h.write(f'({0} {0} {0} )\n')
+                    h.write(')')
+
         # define timestep and physical time
         self.timestep = 0
         self.physical_time = self.start_time
@@ -133,6 +180,18 @@ class SolverWrapperOpenFOAM(Component):
             path_new = os.path.join(self.working_directory, timestamp)
             shutil.rmtree(path_new, ignore_errors=True)
             shutil.copytree(path_orig, path_new)
+            if self.settings['timeVaryingMappedFixedValue']:
+                for boundary in self.boundary_names:
+                    path_orig_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0')
+                    path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
+                    shutil.rmtree(path_new_boundaryData, ignore_errors=True)
+                    shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
+                    for i in range(self.number_of_timesteps):
+                        time = self.delta_t * (i + 1)
+                        timestamp = '{:.{}f}'.format(time, self.time_precision)
+                        new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                                 timestamp)
+                        shutil.copytree(path_orig_boundaryData, new_path_boundaryData)
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
         """Note concerning the sequence: The file ./processorX/constant/polyMesh/pointprocAddressing contains a list of 
@@ -189,6 +248,12 @@ class SolverWrapperOpenFOAM(Component):
         if self.cores > 1 or self.physical_time == 0:
             os.makedirs(path, exist_ok=True)
 
+        if self.settings['timeVaryingMappedFixedValue']:
+            for boundary in self.boundary_names:
+                path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, timestamp)
+                if self.cores > 1 or self.physical_time == 0:
+                    os.makedirs(path_boundaryData, exist_ok=True)
+
         # prepare new time step folder and reset the number of iterations
         self.timestep += 1
         self.iteration = 0
@@ -203,6 +268,19 @@ class SolverWrapperOpenFOAM(Component):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                 check_call(f'rm -rf {new_path}', shell=True)
             check_call(f'mkdir -p {new_path}', shell=True)
+
+            if self.settings['timeVaryingMappedFixedValue']:
+                for boundary in self.boundary_names:
+                    new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                         self.cur_timestamp)
+                if os.path.isdir(new_path):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                    check_call(f'rm -rf {new_path}', shell=True)
+                if os.path.isdir(new_path_boundaryData):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                    check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+                check_call(f'mkdir -p {new_path}', shell=True)
+                check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
@@ -411,6 +489,32 @@ class SolverWrapperOpenFOAM(Component):
             boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
             boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
             pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+
+            if self.settings['timeVaryingMappedFixedValue']:
+                data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                           self.cur_timestamp)
+                velocity = self.interface_input.get_variable_data(mp_name, 'velocity')
+                velocity_input = np.zeros((len(velocity), 3))
+                index = int(len(velocity)/ 2)
+
+                j = 0
+                for i in range(len(velocity)):
+                    if i%2 == 0:
+                        velocity_input[j, 0] = velocity[i, 0]
+                        velocity_input[j, 1] = velocity[i, 1]
+                        velocity_input[j, 2] = velocity[i, 2]
+                    else:
+                        velocity_input[j + index,0] = velocity[i,0]
+                        velocity_input[j + index,1] = velocity[i,1]
+                        velocity_input[j + index,2] = velocity[i,2]
+                        j += 1
+
+                with open(os.path.join(data_folder, 'U'), 'w') as f:
+                    f.write(f'{velocity_input.shape[0]}\n')
+                    f.write('(\n')
+                    for i in range(velocity_input.shape[0]):
+                        f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
+                    f.write(')')
 
         with open(pointdisp_filename, 'w') as f:
             f.write(pointdisp_string)

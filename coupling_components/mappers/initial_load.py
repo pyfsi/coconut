@@ -43,16 +43,23 @@ class Mapper_initial_load(MapperTransformer):
         super().__call__(args_from, args_to)
         interface_from, mp_name_from, var = args_from
         interface_to, mp_name_to, _ = args_to
+        data_from = interface_from.get_variable_data(mp_name_from, var)
 
         for input_from in interface_from.parameters:
             mp_from = interface_from.get_model_part(input_from['model_part'])
 
-        data_to = np.zeros((3,len(mp_from.y0)))
-        data_to[1] = mp_from.y0 - self.radius
-        for i in range((len(mp_from.z0))):
-            if mp_from.z0[i] < 0:
-                data_to[2,i] = mp_from.z0[i] + self.depth
-            else:
-                data_to[2,i] = mp_from.z0[i] - self.depth
-        data_to = np.transpose(data_to)
-        interface_to.set_variable_data(mp_name_to, var, data_to)
+        if var == 'displacement':
+            data_to = np.zeros((3,len(mp_from.y0)))
+            data_to[1] = mp_from.y0 - self.radius
+            for i in range((len(mp_from.z0))):
+                if mp_from.z0[i] < 0:
+                    data_to[2,i] = mp_from.z0[i] + self.depth
+                else:
+                    data_to[2,i] = mp_from.z0[i] - self.depth
+            data_to = np.transpose(data_to)
+            interface_to.set_variable_data(mp_name_to, var, data_to)
+
+        else:
+            data_to = np.zeros((len(mp_from.x0),3))
+            data_to[:,0] = data_from[:,0]
+            interface_to.set_variable_data(mp_name_to, var, data_to)
