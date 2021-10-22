@@ -424,22 +424,25 @@ class SolverWrapperOpenFOAM(Component):
             with open(pointdisp_filename, 'w') as f:
                 f.write(pointdisp_string)
         else:
-            for boundary in self.boundary_names:
-                mp_name = f'{boundary}_input'
-                displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-                for proc in range(self.cores):
-                    pointdisp_filename_ref = os.path.join(self.working_directory, f'processor{proc}','0/pointDisplacement')
-                    pointdisp_filename = os.path.join(self.working_directory, f'processor{proc}','constant/pointDisplacement_Next')
+
+            for proc in range(self.cores):
+                pointdisp_filename_ref = os.path.join(self.working_directory, f'processor{proc}','0/pointDisplacement')
+                pointdisp_filename = os.path.join(self.working_directory, f'processor{proc}','constant/pointDisplacement_Next')
+
+                with open(pointdisp_filename_ref, 'r') as ref_file:
+                    pointdisp_string = ref_file.read()
+
+                for boundary in self.boundary_names:
+                    mp_name = f'{boundary}_input'
+                    displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
                     seq = self.proc_bound_point_seq_dict[boundary][proc]
-                    with open(pointdisp_filename_ref, 'r') as ref_file:
-                        pointdisp_string = ref_file.read()
                     if seq is not None:
                         boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
                         boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement[seq])
                         pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
-                    with open(pointdisp_filename, 'w') as f:
-                        f.write(pointdisp_string)
+                with open(pointdisp_filename, 'w') as f:
+                    f.write(pointdisp_string)
     #old way of implementation (with decomposePar)
         # if self.settings['parallel']:
         #     subprocess.check_call(f'decomposePar -fields -time '' -constant &> log.decomposePar;',
