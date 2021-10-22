@@ -4,13 +4,14 @@ from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
-from subprocess import check_call
 import numpy as np
 import os
 import shutil
 import time
 import subprocess
 import re
+from glob import glob
+
 
 
 def create(parameters):
@@ -146,7 +147,7 @@ class SolverWrapperOpenFOAM(Component):
 
         if self.settings['parallel']:
             if self.start_time == 0:
-                check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
+                subprocess.check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
                            cwd=self.working_directory,
                            shell=True, env=self.env)
 
@@ -185,9 +186,6 @@ class SolverWrapperOpenFOAM(Component):
         # for parallel: create a folder with the correct time stamp for decomposition of pointDisplacement_Next
         # for serial: folder will normally be present, except for time 0: make a folder 0.0000 with specified precision
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
-        path = os.path.join(self.working_directory, timestamp)
-        if self.cores > 1 or self.physical_time == 0:
-            os.makedirs(path, exist_ok=True)
 
         # prepare new time step folder and reset the number of iterations
         self.timestep += 1
@@ -201,16 +199,14 @@ class SolverWrapperOpenFOAM(Component):
             new_path = os.path.join(self.working_directory, self.cur_timestamp)
             if os.path.isdir(new_path):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                check_call(f'rm -rf {new_path}', shell=True)
-            check_call(f'mkdir -p {new_path}', shell=True)
+                subprocess.check_call(f'rm -rf {new_path}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
                 if os.path.isdir(new_path):
                     if i == 0:
                         tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                    check_call(f'rm -rf {new_path}', shell=True)
-                check_call(f'mkdir -p {new_path}', shell=True)
+                    subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -229,15 +225,12 @@ class SolverWrapperOpenFOAM(Component):
         if self.debug:
             if self.cores > 1:
                 for i in range(0, self.cores):
-                    path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-                                             'pointDisplacement_Next')
-                    path_to = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-                                           'pointDisplacement_Next_Iter' + str(self.iteration))
+                    path_from = os.path.join(self.working_directory, f'processor{i}/constant/pointDisplacement_Next')
+                    path_to = os.path.join(self.working_directory, f'processor{i}/constant/pointDisplacement_Next_{self.timestep}_{self.iteration}')
                     shutil.copy(path_from, path_to)
             else:
-                path_from = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
-                path_to = os.path.join(self.working_directory, self.prev_timestamp,
-                                       'pointDisplacement_Next_Iter' + str(self.iteration))
+                path_from = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
+                path_to = os.path.join(self.working_directory, f'constant/pointDisplacement_Next_{self.timestep}_{self.iteration}')
                 shutil.copy(path_from, path_to)
 
         self.delete_prev_iter_output()
@@ -271,21 +264,16 @@ class SolverWrapperOpenFOAM(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-
-        prev_timestep = self.timestep - 1
-        # remove the folder that was used for pointDisplacement_Next if not in writeInterval
-        if self.settings['parallel']:
-            dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-            shutil.rmtree(dir_pointdisp_next)
-
-            if prev_timestep % self.write_interval:
-                for p in range(self.cores):
-                    prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
-                    shutil.rmtree(prev_timestep_dir)
-        else:
-            if prev_timestep % self.write_interval:
-                dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-                shutil.rmtree(dir_pointdisp_next)
+        if not self.debug:
+            for boundary in self.boundary_names:
+                traction_name = 'TRACTION_' + boundary
+                pressure_name = 'PRESSURE_' + boundary
+                trac_time_folder = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                                self.cur_timestamp)
+                pres_time_folder = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                                self.cur_timestamp)
+                shutil.rmtree(trac_time_folder)
+                shutil.rmtree(pres_time_folder)
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
@@ -300,6 +288,11 @@ class SolverWrapperOpenFOAM(Component):
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.openfoam_process.wait()
+        if not self.debug:
+            files_to_delete = glob(os.path.join(self.working_directory, 'constant/pointDisplacement_Next*')) + glob(
+                os.path.join(self.working_directory, 'processor*/constant/pointDisplacement_Next*'))
+            for filepath in files_to_delete:
+                os.remove(filepath)
 
     def get_interface_input(self):
         return self.interface_input
@@ -311,7 +304,7 @@ class SolverWrapperOpenFOAM(Component):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+            subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
@@ -399,9 +392,8 @@ class SolverWrapperOpenFOAM(Component):
        :return:
        """
 
-        pointdisp_filename_ref = os.path.join(self.working_directory, '0', 'pointDisplacement')
-
-        pointdisp_filename = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
+        pointdisp_filename_ref = os.path.join(self.working_directory,'0/pointDisplacement')
+        pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
 
         with open(pointdisp_filename_ref, 'r') as ref_file:
             pointdisp_string = ref_file.read()
@@ -417,7 +409,7 @@ class SolverWrapperOpenFOAM(Component):
             f.write(pointdisp_string)
 
         if self.settings['parallel']:
-            check_call(f'decomposePar -fields -time {self.prev_timestamp} &> log.decomposePar;',
+            subprocess.check_call(f'decomposePar -fields -time '' -constant &> log.decomposePar',
                        cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
@@ -470,7 +462,7 @@ class SolverWrapperOpenFOAM(Component):
                 os.remove(file)
 
     def check_software(self):
-        if check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
+        if subprocess.check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
             raise RuntimeError(f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name" are correct.')
 
         # check version

@@ -52,6 +52,7 @@ Description
 #include "IOstream.H"
 #include "Ostream.H"
 #include "fsiDisplacement.H"
+#include "Time.H"
 
 
 #include <stdlib.h>
@@ -151,31 +152,30 @@ int main(int argc, char *argv[])
             {
                if (pimple.firstIter() || moveMeshOuterCorrectors)
                 {
+
                     scalar timeBeforeMeshUpdate = runTime.elapsedCpuTime();
                     mesh.update();
 
-                    if (mesh.changing())
-                    {
-                         Info<< "Execution time for mesh.update() = "
-                             << runTime.elapsedCpuTime() - timeBeforeMeshUpdate
-                             << " s" << endl;
+                    Info<< "Execution time for mesh.update() = "
+                     << runTime.elapsedCpuTime() - timeBeforeMeshUpdate
+                     << " s" << endl;
 
-                         gh = (g & mesh.C()) - ghRef;
-                         ghf = (g & mesh.Cf()) - ghRef;
-                    }
+                    gh = (g & mesh.C()) - ghRef;
+                    ghf = (g & mesh.Cf()) - ghRef;
+
+                    // Calculate absolute flux from the mapped surface velocity
+                    phi = mesh.Sf() & Uf;
 
                     if (mesh.changing() && correctPhi)
                     {
-                         // Calculate absolute flux from the mapped surface velocity
-                         phi = mesh.Sf() & Uf;
 
                          #include "correctPhi.H"
-
-                         // Make the flux relative to the mesh motion
-                         fvc::makeRelative(phi, U);
-
-                         mixture.correct();
                     }
+
+                    // Make the flux relative to the mesh motion
+                    fvc::makeRelative(phi, U);
+
+                    mixture.correct();
 
                     if (mesh.changing() && checkMeshCourantNo)
                     {
@@ -225,7 +225,8 @@ int main(int argc, char *argv[])
         	
         if (exists("stop.coco"))
     	{
-        	remove("stop.coco");
+            //remove("stop.coco"); // should not be uncommented
+        	runTime.stopAt(Time::saNoWriteNow);
         	OFstream outfile ("stop_ready.coco"); 
         	outfile << "stop.coco" << endl;
         	break;
