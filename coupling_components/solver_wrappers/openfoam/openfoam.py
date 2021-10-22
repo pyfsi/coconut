@@ -61,6 +61,7 @@ class SolverWrapperOpenFOAM(Component):
         # residual variables
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
+        self.proc_bound_point_seq_dict = {}
 
         if self.residual_variables is not None:
             self.write_residuals_fileheader()
@@ -171,6 +172,21 @@ class SolverWrapperOpenFOAM(Component):
                     print(f'sequence: {len(mp_output.sequence)}')
                     print(f'nNodes: {mp_output.size}')
                     raise ValueError('Number of face indices in sequence does not correspond to number of faces')
+
+                mp_input = self.model.get_model_part(f'{boundary}_input')
+                self.proc_bound_point_seq_dict[boundary] = {}
+                # get the point sequence in the boundary for points in different processors
+                for p in range(self.cores):
+                    proc_dir = os.path.join(self.working_directory, f'processor{p}')
+                    point_ids, points = of_io.get_boundary_points(proc_dir, '0', boundary)
+
+                    if point_ids.size:
+                        with open(os.path.join(proc_dir, 'constant/polyMesh/pointProcAddressing'), 'r') as f:
+                            point_proc_add = np.abs(of_io.get_scalar_array(input_string=f.read(), is_int=True))
+                        sorter = np.argsort(mp_input.id)
+                        self.proc_bound_point_seq_dict[boundary][p] = sorter[np.searchsorted(mp_input.id, point_proc_add[point_ids], sorter=sorter)]
+                    else:
+                        self.proc_bound_point_seq_dict[boundary][p] = None
 
         # starting the OpenFOAM infinite loop for coupling!
         if not self.settings['parallel']:
@@ -391,26 +407,44 @@ class SolverWrapperOpenFOAM(Component):
         the field is subsequently decomposed using the command: decomposePar.
        :return:
        """
+        if not self.settings['parallel']:
+            pointdisp_filename_ref = os.path.join(self.working_directory,'0/pointDisplacement')
+            pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
 
-        pointdisp_filename_ref = os.path.join(self.working_directory,'0/pointDisplacement')
-        pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
+            with open(pointdisp_filename_ref, 'r') as ref_file:
+                pointdisp_string = ref_file.read()
 
-        with open(pointdisp_filename_ref, 'r') as ref_file:
-            pointdisp_string = ref_file.read()
+            for boundary in self.boundary_names:
+                mp_name = f'{boundary}_input'
+                displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
+                pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
-        for boundary in self.boundary_names:
-            mp_name = f'{boundary}_input'
-            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
-            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+            with open(pointdisp_filename, 'w') as f:
+                f.write(pointdisp_string)
+        else:
+            for proc in range(self.cores):
+                pointdisp_filename_ref = os.path.join(self.working_directory, f'processor{proc}','0/pointDisplacement')
+                pointdisp_filename = os.path.join(self.working_directory, f'processor{proc}','constant/pointDisplacement_Next')
+                with open(pointdisp_filename_ref, 'r') as ref_file:
+                    pointdisp_string = ref_file.read()
+                for boundary in self.boundary_names:
+                    mp_name = f'{boundary}_input'
+                    displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                    seq = self.proc_bound_point_seq_dict[boundary][proc]
+                    if seq is not None:
+                        boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                        boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement[seq])
+                        pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
-        with open(pointdisp_filename, 'w') as f:
-            f.write(pointdisp_string)
+                with open(pointdisp_filename, 'w') as f:
+                    f.write(pointdisp_string)
+    #old way of implementation (with decomposePar)
+        # if self.settings['parallel']:
+        #     subprocess.check_call(f'decomposePar -fields -time '' -constant &> log.decomposePar;',
+        #                cwd=self.working_directory, shell=True, env=self.env)
 
-        if self.settings['parallel']:
-            subprocess.check_call(f'decomposePar -fields -time '' -constant &> log.decomposePar',
-                       cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
     def check_output_file(self, filename, nfaces):
