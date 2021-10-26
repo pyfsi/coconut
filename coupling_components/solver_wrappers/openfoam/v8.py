@@ -64,8 +64,7 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
                f'libs 	             ("libfieldFunctionObjects.so");\n'
                f'executeControl 	 timeStep;\n'
                f'executeInterval 	 1;\n'
-               f'writeControl 	     timeStep;\n'
-               f'writeInterval 	     {int(1e9)};\n'  # very high value for not printing wallShearStress
+               f'writeControl 	     none;\n'
                f'timeFormat          fixed;\n'
                f'timePrecision 	     {self.time_precision};\n'
                f'log 	             false;\n'
