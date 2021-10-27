@@ -194,11 +194,11 @@ class SolverWrapperTubeStructure(Component):
         super().finalize()
 
     def output_solution_step(self):
-        if self.save_restart != 0 and self.n % self.save_restart == 0:
+        if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
             file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
             with open(file_name, 'wb') as file:
                 pickle.dump({'r': self.r, 'rdot': self.rdot, 'rddot': self.rddot}, file)
-            if self.save_restart < 0:
+            if self.save_restart < 0 and self.n + self.save_restart > self.timestep_start:
                 try:
                     os.remove(join(self.working_directory, f'case_timestep{self.n + self.save_restart}.pickle'))
                 except OSError:

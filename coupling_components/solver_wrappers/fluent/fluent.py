@@ -4,6 +4,7 @@ from coconut import tools
 
 import os
 from os.path import join
+import glob
 import subprocess
 import multiprocessing
 import time
@@ -58,6 +59,8 @@ class SolverWrapperFluent(Component):
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
+        self.save_results = self.settings.get('save_results', 1)
+        self.save_restart = self.settings['save_restart']
         self.iteration = None
         self.fluent_process = None
         self.thread_ids = {}  # thread IDs corresponding to thread names
@@ -350,9 +353,28 @@ class SolverWrapperFluent(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-        if not self.timestep % self.settings['save_iterations']:
+        # save if required
+        if (self.save_results != 0 and self.timestep % self.save_results == 0) \
+                or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.send_message('save')
             self.wait_message('save_ready')
+
+        # remove unnecessary files
+        if self.timestep - 1 > self.timestep_start:
+            self.remove_dat_files(self.timestep - 1)
+            if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
+                    self.timestep % self.save_restart == 0 \
+                    and (self.save_results == 0 or (self.timestep + self.save_restart) % self.save_results != 0):
+                # new restart file is written (self.timestep % self.save_restart ==0),
+                # so previous one (at self.timestep + self.save_restart) can be deleted if:
+                # - save_restart is negative
+                # - files from a previous calculation are not touched
+                # - files are not kept for save_results
+                for extension in ('cas.h5', 'cas', 'dat.h5', 'dat'):
+                    try:
+                        os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
+                    except OSError:
+                        continue
 
     def finalize(self):
         super().finalize()
@@ -360,6 +382,22 @@ class SolverWrapperFluent(Component):
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
+
+        # remove unnecessary files
+        self.remove_dat_files(self.timestep)
+
+        # delete .trn files
+        for path in glob.glob(join(self.dir_cfd, '*.trn')):
+            os.remove(path)
+
+    def remove_dat_files(self, timestep):
+        if not self.debug:
+            for thread_id in self.thread_ids.values():
+                try:
+                    os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
+                    os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
+                except OSError:
+                    pass
 
     def get_interface_input(self):
         return self.interface_input
