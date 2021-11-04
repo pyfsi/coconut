@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.4">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.f7f47774.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.3f5d1f46.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
         
           
           
@@ -113,18 +113,14 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
       <label class="md-search__icon md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
-        
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-        </button>
-      </nav>
-      
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
     </form>
     <div class="md-search__output">
       <div class="md-search__scrollwrap" data-md-scrollfix>
@@ -443,6 +439,20 @@
           <li class="md-nav__item">
   <a href="#mapperaxisymmetric3dto2d" class="md-nav__link">
     MapperAxisymmetric3DTo2D
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperdepth2dto3d" class="md-nav__link">
+    MapperDepth2DTo3D
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperdepth3dto2d" class="md-nav__link">
+    MapperDepth3DTo2D
   </a>
   
 </li>
@@ -1081,6 +1091,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#mapperdepth2dto3d" class="md-nav__link">
+    MapperDepth2DTo3D
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapperdepth3dto2d" class="md-nav__link">
+    MapperDepth3DTo2D
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1325,6 +1349,35 @@ This transformer can be initialized in both directions. </p>
 <p>Transforms a 3D geometry to a 2D axisymmetric geometry. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the interpolator in the combined mapper.</p>
 <p>For scalar data, the circumferential average is taken for each 2D point. For vector data too, taking into account the correct radial direction in each 3D point.  Again, swirl cannot be taken into account: if a tangential component is present in 3D, it is not transferred to 2D. </p>
 <p>More information and JSON settings can be found under <a href="https://pyfsi.github.io/coconut/mappers#mapperaxisymmetric2dto3d"><code>MapperAxisymmetric2DTo3D</code></a>.</p>
+<h3 id="mapperdepth2dto3d"><code>MapperDepth2DTo3D</code></h3>
+<p>Transforms a 2D geometry to a 3D geometry, by extruding in a <em>depth</em> direction. This transformer can only be initialized in the <em>forward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>upstream</em> of the interpolator in the combined mapper.</p>
+<p>The 3D <code>ModelPart</code> is returned by the initialization. The depth direction in which the 2D <code>ModelPart</code> is extended, is specified by <code>direction_depth</code>. This direction has to be along one of the principal axes: x, y and z. The number of nodes in the depth direction and their location are given by the list <code>coordinates_depth</code>.</p>
+<p>Scalar data is simply copied from the 2D point to all corresponding 3D points. For vector data, all components other than the depth component are simply copied. The depth component is set to zero.</p>
+<table>
+<thead>
+<tr>
+<th align="right">JSON setting</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><nobr><code>coordinates_depth</code></nobr></td>
+<td align="center">list</td>
+<td>Contains the depth coordinates to which the nodes of the orignal 2D plane are copied.</td>
+</tr>
+<tr>
+<td align="right"><code>direction_depth</code></td>
+<td align="center">str</td>
+<td>Must be <code>"x"</code>, <code>"y"</code> or <code>"z"</code>, specifies the symmetry axis.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapperdepth3dto2d"><code>MapperDepth3DTo2D</code></h3>
+<p>Transforms a 3D geometry to a 2D axisymmetric geometry, by collapsing in a <em>depth</em> direction. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the interpolator in the combined mapper.</p>
+<p>For scalar data, the average is taken for each 2D point. For vector data too, again removing the depth component.</p>
+<p>More information and JSON settings can be found under <a href="https://pyfsi.github.io/coconut/mappers#mapperaxisymmetric2dto3d"><code>MapperAxisymmetric2DTo3D</code></a>.</p>
 <h2 id="interpolators">Interpolators</h2>
 <h3 id="mappernearest"><code>MapperNearest</code></h3>
 <p>Does not require additional settings compared to the <code>MapperInterpolator</code>. Does simple nearest-neighbour mapping.</p>
@@ -1522,10 +1575,10 @@ A warning is printed when the condition number of an interpolation matrix become
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.709b4209.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.febc23d1.min.js"></script>
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

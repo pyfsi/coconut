@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.4">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.f7f47774.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.3f5d1f46.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
         
           
           
@@ -113,18 +113,14 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
       <label class="md-search__icon md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
-        
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-        </button>
-      </nav>
-      
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
     </form>
     <div class="md-search__output">
       <div class="md-search__scrollwrap" data-md-scrollfix>
@@ -1469,14 +1465,14 @@ The base-file has to contain all necessary information about the structural mode
 <ul>
 <li>From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.</li>
 <li>From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.</li>
-<li>By converting a "node set" containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <code>make_surface.py</code> file in the extra directory.</li>
+<li>By converting a "node set" containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <code>make_surface.py</code> file in the extra directory. It is advised to copy this file to the working directory.</li>
 </ul>
 <p>An example on the use of <code>SurfaceFromNodeSet</code> (via the Python console in Abaqus or a Python script for Abaqus):</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">makeSurface</span> <span class="kn">import</span> <span class="n">SurfaceFromNodeSet</span>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">make_surface</span> <span class="kn">import</span> <span class="n">SurfaceFromNodeSet</span>
 <span class="n">my_model</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;Model-1&#39;</span><span class="p">]</span>
 <span class="n">my_assembly</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">rootAssembly</span>  
 <span class="n">my_instance</span> <span class="o">=</span> <span class="n">my_assembly</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="s1">&#39;PART-1-1&#39;</span><span class="p">]</span>
-<span class="n">inputSurfaceA</span> <span class="o">=</span> <span class="n">SurfaceFromNodeSet</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="n">my_instance</span><span class="p">,</span> <span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">,</span> <span class="s1">&#39;SURFACE_NAME_A&#39;</span><span class="p">)</span>
+<span class="n">inputSurfaceA</span> <span class="o">=</span> <span class="n">SurfaceFromNodeSet</span><span class="p">(</span><span class="n">my_assembly</span><span class="p">,</span> <span class="n">my_instance</span><span class="p">,</span> <span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">,</span> <span class="s1">&#39;SURFACE_NAME_A&#39;</span><span class="p">)</span>
 </code></pre></div>
 
 <p>On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. <strong>Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in <code>GetOutput.cpp</code></strong>. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:</p>
@@ -1633,10 +1629,10 @@ Since Abaqus only uses the <em><code>CSM_Restart.inp</code></em> (which does not
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.709b4209.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.febc23d1.min.js"></script>
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

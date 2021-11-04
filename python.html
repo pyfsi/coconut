@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.4">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.f7f47774.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.3f5d1f46.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
         
           
           
@@ -113,18 +113,14 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
       <label class="md-search__icon md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
-        
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-        </button>
-      </nav>
-      
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
     </form>
     <div class="md-search__output">
       <div class="md-search__scrollwrap" data-md-scrollfix>
@@ -1079,7 +1075,7 @@
                 
                 <h1 id="python">Python</h1>
 <p>This is the documentation for all Python solver wrappers.
-Currently only solvers exist for the one-dimensional (1D) calculation of a straight flexible tube.</p>
+Currently, only solvers exist for the one-dimensional (1D) calculation of a straight flexible tube.</p>
 <h2 id="tube">Tube</h2>
 <p>There are three tube solvers for a straight tube with circular cross-section.
 The axial direction is along the z-axis.
@@ -1093,8 +1089,7 @@ These solvers are very simple and provide insight in the physics, especially in 
 Nonetheless, they are not meant to provide an accurate representation of reality.
 Especially the pressure stabilization term in the flow solver smooths the pressure distribution.</p>
 <h3 id="settings">Settings</h3>
-<p>The following parameters, listed in alphabetical order, need to be provided in the JSON parameter file 
-as <code>settings</code> of the solver wrapper.</p>
+<p>The following parameters, listed in alphabetical order, need to be provided in the main JSON parameter file as <code>settings</code> of the solver wrapper.</p>
 <table>
 <thead>
 <tr>
@@ -1112,7 +1107,7 @@ as <code>settings</code> of the solver wrapper.</p>
 <tr>
 <td align="right"><code>input_file</code></td>
 <td align="center">str</td>
-<td>Name of the input file, which must be present in the folder given in <code>working_directory</code>. The file contains all parameters required for the solver, in JSON-format.</td>
+<td>(optional) Name of the input file, which may be present in the folder given in <code>working_directory</code>. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_input</code></td>
@@ -1147,13 +1142,13 @@ as <code>settings</code> of the solver wrapper.</p>
 </tbody>
 </table>
 <p><code>delta_t</code> is a necessary parameter, while <code>timestep_start</code> and <code>save_restart</code> are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.</p>
-<p>Because these solvers are simple it is possible to omit the use of interpolation between two solver wrappers.
-In that case , the names of the <code>ModelParts</code> of both flow and structure solver need to be the same.</p>
+<p>Because these solvers are simple, it is possible to omit the use of interpolation between two solver wrappers.
+In that case, the names of the <code>ModelParts</code> of both flow and structure solver need to be the same.</p>
 <h3 id="tube-flow-solver">Tube flow solver</h3>
 <p>This flow solver calculates the flow inside a 1D straight and flexible tube.
 The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.tube_flow_solver</code>.
 The required input is the radial displacement of the tube wall.
-The other components of displacement are ingnored.
+The other components of displacement are ignored.
 The resulting output is the pressure on the tube wall.
 Although a required variable in <code>interface_output</code>, <code>traction</code> is always returned as being zero.</p>
 <p>From the radial displacements the area of each cross-section is calculated.
@@ -1170,14 +1165,13 @@ At the start and at the end of the tube the boundary conditions have to be appli
 Discretizing these equations results in a system of linear algebraic equations which can be solved for the pressure and velocity
 by performing Newton-Raphson iterations.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.</p>
-<p>The boundary condtions are implemented by four additional equations: at the in- and outlet for both pressure and velocity.
+<p>The boundary conditions are implemented by four additional equations: at the in- and outlet for both pressure and velocity.
 At the inlet, the pressure, velocity or total pressure can be specified.
 At the outlet, the pressure can be set to a fixed value or a non-reflecting boundary conditions.
 These settings are specified in the <code>input_file</code> in the <code>working directory</code>.</p>
-<p>For more information about the implementation this solver refer to [<a href="#1">1</a>].</p>
+<p>For more information about the implementation of this solver refer to [<a href="#1">1</a>].</p>
 <h4 id="solver-parameters">Solver parameters</h4>
-<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <em><code>input_file</code></em>.
-This file should be located in the <code>working_directory</code>.
+<p>The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name <em><code>input_file</code></em>, located in the <code>working_directory</code>.
 Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the structural solver.</p>
 <table>
 <thead>
@@ -1342,8 +1336,7 @@ No boundary conditions are required.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.</p>
 <p>More information about the implementation of this solver can be found in [<a href="#2">2</a>].</p>
 <h4 id="solver-parameters_1">Solver parameters</h4>
-<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <em><code>input_file</code></em>.
-This file should be located in the <code>working_directory</code>.
+<p>The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name <em><code>input_file</code></em>, located in the <code>working_directory</code>.
 Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
 <table>
 <thead>
@@ -1357,7 +1350,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <tr>
 <td align="right"><nobr><code>axial_offset</code></nobr></td>
 <td align="center">double</td>
-<td>(optional) Defalult: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
+<td>(optional) Default: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
 <td align="right"><code>d</code></td>
@@ -1421,8 +1414,14 @@ $$
 $$
 with <span><span class="MathJax_Preview">E</span><script type="math/tex">E</script></span> the Young's modulus and <span><span class="MathJax_Preview">\nu</span><script type="math/tex">\nu</script></span> Poisson's coefficient.
 The second term of <span><span class="MathJax_Preview">b_3</span><script type="math/tex">b_3</script></span> is considered small compared to the first one because <span><span class="MathJax_Preview">h\ll r_o</span><script type="math/tex">h\ll r_o</script></span> and is thus neglected.
-Discretizing these equations results in a system of linear algebraic equations with a Jacobian that does not depend on the pressure.
-The system can be solved for the radius in one step.</p>
+Discretizing these equations results in a system of linear algebraic equations with a Jacobian that does not depend on the pressure, nor the radius.
+This system is solved for the radius without requiring iterations.</p>
+<p>There are two solving options available, specified with the parameter <code>solver</code>. The fastest and most memory efficient is the "solve_banded" option, which writes the matrix in a diagonal ordered form.
+In this way, memory use and the number of operations is reduced.
+However, when the number of discretization intervals increases, the condition number of the coefficient matrix quickly increases.
+For high condition number, the "direct" method is more accurate and allows deeper convergence.
+This option calculates the inverse of the coefficient matrix directly, at the start of the calculation.
+The inverse is only calculated once and thereafter stored. When the number of intervals is high, it is clear that this option will use a high amount of memory.</p>
 <p>The tube is considered clamped at both ends. This boundary condition is imposed by adding four equations: two at the inlet and two at the outlet.</p>
 <p>For more information about the implementation of this solver refer to [<a href="#1">1</a>].
 In this work the Newmark-beta time discretization is used. Here, however, backward Euler time discretization is used as well.</p>
@@ -1437,7 +1436,7 @@ Typical values are <span><span class="MathJax_Preview">\gamma</span><script type
 As most flow solvers are discretized using the backward Euler method, it is advised to chose the same method for the structure solver (the time discretization of <code>SolverWrapperTubeFlowSolver</code> is also backward Euler).
 This avoids the occurrence of spurious oscillations of the pressure in time [<a href="#3">3</a>].</p>
 <h4 id="solver-parameters_2">Solver parameters</h4>
-<p>The following parameters, listed in alphabetical order, need to be specified in a file with name <em><code>input_file</code></em>.This file should be located in the <code>working_directory</code>.
+<p>The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name <em><code>input_file</code></em>, located in the <code>working_directory</code>.
 Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h</code>, <code>l</code> and <code>rhof</code> match the corresponding values of the flow solver.</p>
 <table>
 <thead>
@@ -1509,9 +1508,14 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>Density of the tube wall.</td>
 </tr>
 <tr>
+<td align="right"><code>solver</code></td>
+<td align="center">str</td>
+<td>(optional) Default: <code>solve_banded</code>. Either <code>solve_banded</code> or <code>direct</code>. Specifies the solution method for the linear system of equations.</td>
+</tr>
+<tr>
 <td align="right"><code>time_disretization</code></td>
 <td align="center">str</td>
-<td>(optional) Default: <code>backward Euler</code>. Specifies the time discretiation: either <code>Newmark</code> or <code>backward Euler</code>. Not case sensitive.</td>
+<td>(optional) Default: <code>backward Euler</code>. Specifies the time discretization: either <code>Newmark</code> or <code>backward Euler</code>. Not case sensitive.</td>
 </tr>
 </tbody>
 </table>
@@ -1592,10 +1596,10 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.709b4209.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.febc23d1.min.js"></script>
+      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
