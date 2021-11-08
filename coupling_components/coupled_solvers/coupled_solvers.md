@@ -255,6 +255,21 @@ parameter|type|description
 `omega`|float|Relaxation factor.
 <nobr>`relative_tolerance_gmres`</nobr>|float|Relative tolerance used in the GMRES method.
 
+
+## Explicit solver
+
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
+The `type` for this coupled solver is `coupled_solvers.explicit`.
+
+### Algorithm
+
+In contrast to the coupled solvers presented above (strongly coupled or implicit techniques), the explicit solver will not iterate between the solvers whitin a timestep. Instead, the solvers are only evaluated once per time step. Therefore, equilibrium between fluid and structure is not exactly satisfied. This technique is suitable for problems with low added mass, such as aeroelastic simulations. However, it will cause stability issues for problems with high added mass.
+
+### Settings
+
+No additional parameters are required besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings). Parameters from `convergence_criteria` are ignored.
+
+
 ## Test single solver
 
 The solver `test_single_solver` can be used to test new cases and solver settings. The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy. This test environment inherits from the class `CoupledSolverGaussSeidel`. The `type` for this coupled solver is `coupled_solvers.test_single_solver`.
