@@ -37,7 +37,7 @@ parameter|type|description
 `restart_case`|str|(optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
 `save_restart`|int|(optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers a [results save](#save-results), if `save_results` is non-zero.
 `save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written.
-<nobr>`time_step_start`</nobr>|int|Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.
+<nobr>`timestep_start`</nobr>|int|Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.
 
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
@@ -254,6 +254,19 @@ parameter|type|description
 `model_s`|dict|Model component corresponding to the second solver wrapper.
 `omega`|float|Relaxation factor.
 <nobr>`relative_tolerance_gmres`</nobr>|float|Relative tolerance used in the GMRES method.
+
+## Explicit solver
+
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
+The `type` for this coupled solver is `coupled_solvers.explicit`.
+
+### Algorithm
+
+In contrast to the coupled solvers presented above (strongly coupled or implicit techniques), the explicit solver will not iterate between the solvers whitin a timestep. Instead, the solvers are only evaluated once per time step. Therefore, equilibrium between fluid and structure is not exactly satisfied. This technique is suitable for problems with low added mass, such as aeroelastic simulations. However, it will cause stability issues for problems with high added mass.
+
+### Settings
+
+No additional parameters are required besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings). Parameters from `convergence_criteria` are ignored.
 
 ## Test single solver
 

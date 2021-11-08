@@ -556,3 +556,26 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }
 
+  /*------------*/
+ /* move_zone */
+/*------------*/
+
+DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
+
+Message0("\n\nRunning UDF 'loop_motion'\n");
+
+real r_loop = 265.5;
+real V = 80.0;
+
+real Rc_x = 50;
+real Rc_y = 0;
+real Rc_z = 310;
+
+*omega = V/r_loop;
+
+N3V_D(axis,=,1.0,0.0,0);
+N3V_D(origin,=,50,0,310);
+N3V_D (velocity,=,0.0,0.0,0.0);
+
+return;
+}
