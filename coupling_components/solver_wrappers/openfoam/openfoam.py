@@ -38,6 +38,7 @@ class SolverWrapperOpenFOAM(Component):
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
+        self.save_restart = self.settings.get('save_restart', 0)
         self.openfoam_process = None
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in OpenFoam used for coupling
@@ -90,6 +91,10 @@ class SolverWrapperOpenFOAM(Component):
         # modify controlDict file to add pressure and wall shear stress functionObjects for all the boundaries in
         # self.settings["boundary_names"]
         self.read_modify_controldict()
+
+        if self.save_restart % self.write_interval:
+            raise RuntimeError(
+                f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval (= {self.write_interval}). Modify the controlDict accordingly.')
 
         # creating Model
         self.model = data_structure.Model()
@@ -163,7 +168,7 @@ class SolverWrapperOpenFOAM(Component):
                     face_proc_add = np.abs(of_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
                     face_proc_add -= 1  # in openfoam face ids are incremented by 1
                     self.mp_out_reconstruct_seq_dict[mp_out_name] += (face_proc_add[(face_proc_add >= start_face) & (
-                                face_proc_add < start_face + nfaces)] - start_face).tolist()
+                            face_proc_add < start_face + nfaces)] - start_face).tolist()
 
                 if len(self.mp_out_reconstruct_seq_dict[mp_out_name]) != nfaces:
                     print(f'sequence: {len(mp_output.sequence)}')

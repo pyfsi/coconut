@@ -13,7 +13,7 @@ from subprocess import check_call, DEVNULL
 
 
 class TestSolverWrapperOpenFOAM(unittest.TestCase):
-    version = None  # OpenFOAM version without dot, e.g. 41 , set in sub-class
+    version = '41'  # OpenFOAM version without dot, e.g. 41 , set in sub-class
 
     @classmethod
     def setUpClass(cls):
@@ -210,6 +210,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         cores = 4
         self.set_cores(cores)
         self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['save_restart'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
