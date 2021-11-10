@@ -562,19 +562,33 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 
 DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
 
-Message0("\n\nRunning UDF 'loop_motion'\n");
+Message0("\n\nRunning UDF 'move_zone'\n");
 
+/* loop */
+/*
 real r_loop = 265.5;
 real V = 80.0;
-
-real Rc_x = 50;
-real Rc_y = 0;
-real Rc_z = 310;
 
 *omega = V/r_loop;
 
 N3V_D(axis,=,1.0,0.0,0);
 N3V_D(origin,=,50,0,310);
+N3V_D (velocity,=,0.0,0.0,0.0);
+*/
+
+/* test_rectangle */
+
+if (time < 1)
+{
+    *omega = -15*M_PI/180.0;
+}
+else
+{
+    *omega = 15*M_PI/180.0;
+}
+
+N3V_D(axis,=,0.0,0.0,1.0);
+N3V_S(origin,=,0.0);
 N3V_D (velocity,=,0.0,0.0,0.0);
 
 return;
