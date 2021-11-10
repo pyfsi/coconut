@@ -67,8 +67,8 @@ class SolverWrapperFluent(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
-        self.moving_zone = self.settings['moving_zone'] #name of moving zone
-        self.rigid_body_motion = self.settings['rigid_body_motion'] #true or false
+        self.moving_zone = self.settings['moving_zone'] #name of moving zone todo:default is None
+        self.rigid_body_motion_on = self.settings['rigid_body_motion'] #true or false todo: default is False
 
         # time
         self.init_time = self.init_time
@@ -92,6 +92,12 @@ class SolverWrapperFluent(Component):
         multiphase = '#f'
         if self.multiphase:
             multiphase = '#t'
+        rigid_body_motion_on = '#f'
+        if self.rigid_body_motion_on:
+            rigid_body_motion_on = '#t'
+        dimension_2D = '#f'
+        if self.dimensions == 2:
+            dimension_2D = '#t'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -105,7 +111,8 @@ class SolverWrapperFluent(Component):
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
                                                                                         '\n'))
                     line = line.replace('|MOVING_ZONE|', self.moving_zone)
-                    line = line.replace('|RIGID_BODY_MOTION|', str(self.rigid_body_motion))
+                    line = line.replace('|RIGID_BODY_MOTION|',rigid_body_motion_on)
+                    line = line.replace('|DIMENSION_2D|',dimension_2D)
                     outfile.write(line)
 
         # prepare Fluent UDF
@@ -286,6 +293,13 @@ class SolverWrapperFluent(Component):
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
+        # import rigid_body_motion
+        if self.rigid_body_motion_on:
+            if not os.path.isfile('rigid_body_motion.py'):
+                raise ModuleNotFoundError(f'No file named rigid_body_motion.py in {os.getcwd()}')
+            module = tools.import_module('rigid_body_motion', 'rigid_body_motion.py')
+            self.rigid_body_motion = getattr(module, 'RigidBodyMotion')()
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
@@ -457,9 +471,14 @@ class SolverWrapperFluent(Component):
             thread_id = self.model_part_thread_ids[mp_name]
             model_part = self.model.get_model_part(mp_name)
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            x = self.rigid_body_motion(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep*self.delta_t)[0]
-            y = self.rigid_body_motion(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep*self.delta_t)[1]
-            z = self.rigid_body_motion(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep*self.delta_t)[2]
+
+            if self.rigid_body_motion_on:
+                x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep*self.delta_t)
+            else:
+                x = model_part.x0 + displacement[:, 0]
+                y = model_part.y0 + displacement[:, 1]
+                z = model_part.z0 + displacement[:, 2]
+
             if self.dimensions == 2:
                 data = np.rec.fromarrays([x, y, model_part.id])
                 fmt = '%27.17e%27.17e%27d'
@@ -540,72 +559,3 @@ class SolverWrapperFluent(Component):
             os.remove(file_backup)
         if os.path.isfile(file):
             os.rename(file, file_backup)
-
-    #TODO: include rigid_body_motion in separate module (class?)
-
-    def rigid_body_motion(self,x0,y0,z0,displacement,time):
-        #This motion describes a loop with constant speed
-
-        #print('x0 = ', x0)
-        #print('y0 = ',y0)
-        #print('z0 = ',z0)
-        #print('displacement = ', displacement)
-
-        r_loop = 265.5
-        V = 80.0
-
-        R0 = np.array([[50],[r_loop],[310]])
-        Rc = np.array([[50],[0],[310]])
-        r0 = R0 - Rc
-        X0 = np.array([x0,y0,z0])
-        l0 = X0 - R0   #probably this will error due to other dimension vectors
-
-        #translation
-        r = np.array([[0],[r_loop*np.cos(V*time/r_loop)],[r_loop*np.sin(V*time/r_loop)]])
-        R = Rc + r
-
-        #rotation
-        phi = np.deg2rad(0)
-        theta = np.deg2rad(0)
-        psi = V/r_loop*time
-        T =  self.Tx(psi) * self.Ty(theta) * self.Tz(phi) #complete transformation matrices
-
-        #final motion
-        X = R + T*(l0 + displacement.T)
-        X = X.T
-
-        x = np.array(X[:,0]).reshape((-1,))
-        y = np.array(X[:,1]).reshape((-1,))
-        z = np.array(X[:,2]).reshape((-1,))
-
-        return x,y,z
-
-    def Tx(self,theta):
-        return np.matrix([[ 1, 0           , 0           ],
-                          [ 0, np.cos(theta),-np.sin(theta)],
-                          [ 0, np.sin(theta), np.cos(theta)]])
-
-    def Ty(self,theta):
-        return np.matrix([[ np.cos(theta), 0, np.sin(theta)],
-                          [ 0           , 1, 0           ],
-                          [-np.sin(theta), 0, np.cos(theta)]])
-
-    def Tz(self, theta):
-        return np.matrix([[ np.cos(theta), -np.sin(theta), 0 ],
-                          [ np.sin(theta), np.cos(theta) , 0 ],
-                          [ 0           , 0            , 1 ]])
-
-    def rigid_body_motion_disp_test_rectangle(self,x,y,z,time):
-
-        if time < 1:
-            omega = -15*np.pi/180.0;
-            theta = omega*time
-        else:
-            omega = 15*np.pi/180.0
-            theta = -15*np.pi/180.0 + omega*(time-1)
-
-        ox, oy = (0,0)
-        x_m = ox + np.cos(theta) * (x - ox) - np.sin(theta) * (y - oy) - x
-        y_m = oy + np.sin(theta) * (x - ox) + np.cos(theta) * (y - oy) - y
-        z_m = 0
-        return x_m,y_m,z_m
