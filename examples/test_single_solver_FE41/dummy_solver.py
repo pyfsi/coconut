@@ -2,161 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
 
-"""
-This is an example of dummy_solver.py.
-To use test functions for the testing of a single solver, a file with this name should be included in the working directory.
-The functions that need to be defined depend on the variables for the interface.
-The names of these functions are fixed as calculate_<variable>(x,y,z,n).
-The functions receive the x, y and z-coordinate of the nodes in undeformed state and the current time step (n).
-They have to return a list or numpy array of 1 or 3 elements for a scalar or vector, respectively.
-Several types of test can be grouped into this dummy_solver.py file by creating additional classes.
-The name of the class to be used should be specified in the .json file containing the settings for the case.
-"""
-
-
-class SimpleTest:
-    def calculate_displacement(self, x, y, z, n):
-        """ Specify the displacement of a point on the interface relative to its original position"""
-        if 0.01 < x < 0.024:
-            disp = [0, 0, 0.001]
-        else:
-            disp = [0, 0, 0]
-        return disp
-
-    def calculate_pressure(self, x, y, z, n):
-        """ Specify the pressure on the surface"""
-        if x > 0.01:
-            pres = [1000]
-        else:
-            pres = [0]
-        return pres
-
-    def calculate_traction(self, x, y, z, n):
-        """ Specify the traction on the surface"""
-        if x > 0.01:
-            trac = [0, 0, 100]
-        else:
-            trac = [0, 0, 0]
-        return trac
-
-
-class TransientTest:
-    def calculate_displacement(self, x, y, z, n):
-        """ Specify the displacement of a point on the interface relative to its original position"""
-        if n < 5:
-            if 0.01 < x < 0.024:
-                disp = [0, 0, 0.001]
-            else:
-                disp = [0, 0, 0]
-        else:
-            if 0.01 < x < 0.024:
-                disp = [0, 0, -0.001]
-            else:
-                disp = [0, 0, 0]
-        return disp
-
-    def calculate_pressure(self, x, y, z, n):
-        """ Specify the pressure on the surface"""
-        if n < 5:
-            if x > 0.01:
-                pres = [1000]
-            else:
-                pres = [0]
-        else:
-            if x > 0.01:
-                pres = [-1000]
-            else:
-                pres = [0]
-        return pres
-
-    def calculate_traction(self, x, y, z, n):
-        """ Specify the traction on the surface"""
-        if n < 5:
-            if x > 0.01:
-                trac = [0, 0, 100]
-            else:
-                trac = [0, 0, 0]
-        else:
-            if x > 0.01:
-                trac = [0, 100, 0]
-            else:
-                trac = [0, 0, 0]
-        return trac
-
-
-class PythonSolverTest:
-    def calculate_displacement(self, x, y, z, n):
-        """ Specify the displacement of a point on the interface relative to its original position"""
-        if n < 5:
-            if 0.01 < z < 0.024:
-                disp = [0, 0.0002, 0]
-            else:
-                disp = [0, 0, 0]
-        else:
-            if 0.01 < z < 0.024:
-                disp = [0, -0.0001, 0]
-            else:
-                disp = [0, 0, 0]
-        return disp
-
-    def calculate_pressure(self, x, y, z, n):
-        """ Specify the pressure on the surface"""
-        if n < 5:
-            if z > 0.01:
-                pres = [1000]
-            else:
-                pres = [0]
-        else:
-            if z > 0.01:
-                pres = [-1000]
-            else:
-                pres = [0]
-        return pres
-
-    def calculate_traction(self, x, y, z, n):
-        """ Specify the traction on the surface"""
-        if n < 5:
-            if z > 0.01:
-                trac = [0, 0, 100]
-            else:
-                trac = [0, 0, 0]
-        else:
-            if z > 0.01:
-                trac = [0, 100, 0]
-            else:
-                trac = [0, 0, 0]
-        return trac
-
-
-class InterpolatedData:
-    def __init__(self):
-        abscissa = np.array([-0.025, -0.02433333, -0.02366667, -0.023, -0.02233333,
-                             -0.02166667, -0.021, -0.02, -0.01666667, -0.01333333,
-                             -0.01, -0.00666667, -0.00333333, 0., 0.00333333,
-                             0.00666667, 0.01, 0.01333333, 0.01666667, 0.02,
-                             0.02066667, 0.02133333, 0.022, 0.02266667, 0.02333333,
-                             0.024, 0.02466667])
-        y_displacement = np.array([1.16621303e-10, 1.95088490e-04, 3.60966621e-04, 4.83640889e-04,
-                                   5.66206281e-04, 6.17896253e-04, 6.48283040e-04, 6.70057566e-04,
-                                   6.78144584e-04, 6.75857193e-04, 6.74728085e-04, 6.73872500e-04,
-                                   6.73091675e-04, 6.72355520e-04, 6.71655600e-04, 6.70986983e-04,
-                                   6.70345131e-04, 6.69822764e-04, 6.70441553e-04, 6.63535153e-04,
-                                   6.52518454e-04, 6.31071264e-04, 5.92546400e-04, 5.28036801e-04,
-                                   4.27512507e-04, 2.83584753e-04, 9.96992219e-05])
-        self.interpolant = interpolate.splrep(abscissa, y_displacement, s=0)
-        plt.plot(abscissa, y_displacement)
-
-    def calculate_displacement(self, x, y, z, n):
-
-        #""" Specify the displacement of a point on the interface relative to its original position"""
-        if -0.025 <= x <= 0.025:
-            disp = [0, float(interpolate.splev(x, self.interpolant, der=0)), 0]
-        else:
-            disp = [0, 0, 0]
-        return disp
-
 class boundaryData:
     def __init__(self):
+        self.scaling = 0.33
         points = np.array([-0.00296500005411233, -0.00289499991413968, -0.00282500033512334, -0.00275500024178281,
                            -0.00268500022903399, -0.00261500030262096,
                            -0.00254500032142289, -0.00247500030084457, -0.00240500022992312, -0.00233500023945582,
@@ -190,7 +38,8 @@ class boundaryData:
             3345115953.42972,
             5244651206.39622, 4687269103.86258, 4762840107.35952, 4034559510.34207, 3305402301.49215, 2367644874.79225,
             1428726372.25248,
-            478799253.5599])
+            478799253.5599]) * self.scaling
+
         self.interpolant_pressure = interpolate.interp1d(points, pressure, fill_value="extrapolate")
         plt.plot(points,pressure)
 
@@ -243,7 +92,7 @@ class boundaryData:
                                  [26036308.2675188, - 361242.599498109, - 9.43012577180967e-09],
                                  [15176530.1673735, 3365410.88619825, - 5.99094884886286e-09],
                                  [12407094.0802307, -7012396.84468801, -5.11367251201859e-09],
-                                 [9584855.25094096, 8256248.01610988, - 8.55696100428801e-12]])
+                                 [9584855.25094096, 8256248.01610988, - 8.55696100428801e-12]]) * self.scaling
 
 
         self.interpolant_traction_0 = interpolate.interp1d(points, traction[:,0])
@@ -251,12 +100,15 @@ class boundaryData:
         self.interpolant_traction_2 = interpolate.interp1d(points, traction[:,2])
 
     def calculate_pressure(self, x, y, z, n):
-        print(x)
-        pressure = [self.interpolant_pressure(x)]
-        print(pressure)
+        if x>= -0.003 and x <= 0.0005:
+            pressure = [self.interpolant_pressure(x)]
+        else:
+            pressure =[0]
         return pressure
 
     def calculate_traction(self, x, y, z, n):
         if -0.003 <= x <= 0.0005:
-            traction  = [self.interpolant_traction_0(x), self.interpolant_traction_1(x), self.interpolant_traction_0[2]]
+            traction  = [self.interpolant_traction_0(x), self.interpolant_traction_1(x), self.interpolant_traction_2(x)]
+        else:
+            traction = [0, 0, 0]
         return traction

@@ -123,6 +123,72 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
+        if self.settings['moving_rigid_body']:
+            moving_rigid_bodies_name = self.settings['moving_rigid_bodies_name']
+            radial_displacement = self.settings['radial_displacement_rigid_body']
+            number_of_timeIncrements = self.settings['number_of_time_increments_rigid_body'] # number of timeIncrements is the value how many times a displacement of the rigid body is done.
+            rigid_body_filename = os.path.join( self.working_directory,'constant/polyMesh/boundary')
+
+            with open (rigid_body_filename,'r') as rigidBody_file:
+                rigidBody_string = rigidBody_file.read()
+            rigidBody_dict = of_io.get_dict(input_string=rigidBody_string, keyword=moving_rigid_bodies_name)
+            # get point ids and coordinates for all the faces in the boundary
+            node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory, time_folder='0',
+                                                                  boundary_name=moving_rigid_bodies_name)
+
+            rigid_model = data_structure.Model()
+            # create input model part
+            rigid_model.create_model_part(f'{moving_rigid_bodies_name}', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
+                                             node_ids)
+
+            mp_name = f'{moving_rigid_bodies_name}'
+            mp = rigid_model.get_model_part(mp_name)
+            x0, y0, z0 = mp.x0, mp.y0, mp.z0
+
+            x0[0],x0[1] = x0[1],x0[0]
+            y0[0],y0[1] = y0[1],y0[0]
+            z0[0],z0[1] = z0[1],z0[0]
+
+            x = np.zeros(x0.size)
+            y = np.zeros(x0.size)
+            z = np.zeros(x0.size)
+            index = int(len(x) / 2)
+
+            j = 0
+            for i in range(len(x)):
+                if z0[i] > 0:
+                    x[j + index] = x0[i]
+                    y[j + index] = y0[i]
+                    z[j + index] = z0[i]
+
+                else:
+                    x[j ] = x0[i]
+                    y[j] = y0[i]
+                    z[j] = z0[i]
+                    j += 1
+
+            rigid_data_path = os.path.join(self.working_directory, 'constant/boundaryData')
+            if not os.path.exists(rigid_data_path):
+                os.mkdir(rigid_data_path)
+            rigid_path = os.path.join(rigid_data_path, moving_rigid_bodies_name)
+            shutil.rmtree(rigid_path, ignore_errors=True)
+            os.mkdir(rigid_path)
+            data_folder = os.path.join(rigid_path, '0')
+            os.mkdir(data_folder)
+
+            with open(os.path.join(rigid_path,'points'), 'w') as f:
+                f.write('(\n')
+                for point in range(x.size):
+                    f.write(f'({x[point]} {y[point]} {z[point]})\n')
+                f.write(')')
+
+            with open(os.path.join(data_folder,'pointDisplacement'), 'w') as h:
+                h.write(f'{x.size}\n')
+                h.write('(\n')
+                for i in range(x.size):
+                    h.write(f'({0} {0} {0} )\n')
+                h.write(')')
+
         if self.settings['timeVaryingMappedFixedValue']:
             for boundary in self.boundary_names:
                 mp_name = f'{boundary}_input'
@@ -180,6 +246,36 @@ class SolverWrapperOpenFOAM(Component):
             path_new = os.path.join(self.working_directory, timestamp)
             shutil.rmtree(path_new, ignore_errors=True)
             shutil.copytree(path_orig, path_new)
+            if self.settings['moving_rigid_body']:
+               timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
+               path_orig_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', moving_rigid_bodies_name, '0')
+               path_new_rigidData = os.path.join(self.working_directory,'constant/boundaryData', moving_rigid_bodies_name, timestamp )
+               shutil.rmtree(path_new_rigidData, ignore_errors=True)
+               shutil.copytree(path_orig_rigidData, path_new_rigidData)
+               for i in range(number_of_timeIncrements):
+                   time = self.delta_t * (i + 1)
+                   timestamp = '{:.{}f}'.format(time,self.time_precision)
+                   new_path_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', moving_rigid_bodies_name,
+                                                         timestamp)
+                   shutil.copytree(path_orig_rigidData, new_path_rigidData)
+
+                   deltaY = np.zeros(len(y))
+                   deltaZ = np.zeros(len(z))
+
+                   for j in range(len(z)):
+                       deltaY[j] = -radial_displacement * (i + 1) * np.cos(2.5 * np.pi / 180)
+                       if z[j] < 0:
+                           deltaZ[j] = radial_displacement * (i +1) * np.sin(2.5 * np.pi / 180)
+                       else:
+                           deltaZ[j] = -radial_displacement * (i + 1) * np.sin(2.5 * np.pi / 180)
+
+                   with open(os.path.join(new_path_rigidData,'pointDisplacement'), 'w') as h:
+                       h.write(f'{x.size}\n')
+                       h.write('(\n')
+                       for k in range(x.size):
+                           h.write(f'({0} {deltaY[k]} {deltaZ[k]})\n')
+                       h.write(')')
+
             if self.settings['timeVaryingMappedFixedValue']:
                 for boundary in self.boundary_names:
                     path_orig_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0')

@@ -471,12 +471,12 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.write_cell_centres()
 
             filename_displacement = os.path.join(self.working_directory, self.cur_timestamp, 'U')
-            filename_velocity = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
+            # filename_velocity = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
 
             disp_field = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary,
                                                      size = nfaces, is_scalar =False)
-            velo_field = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
-                                                       size=nfaces, is_scalar=False)
+            # velo_field = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
+            #                                            size=nfaces, is_scalar=False)
 
             x, y, z = self.read_face_centres(boundary, nfaces)
             # print("x,y,z")
@@ -484,43 +484,28 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
             g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
-            h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
-            m = interpolate.interp1d(x, velo_field[:,1],fill_value="extrapolate")
-            n = interpolate.interp1d(x, velo_field[:, 2], fill_value="extrapolate")
+            # h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
+            # m = interpolate.interp1d(x, velo_field[:,1],fill_value="extrapolate")
+            # n = interpolate.interp1d(x, velo_field[:, 2], fill_value="extrapolate")
 
 
             node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
                                                                                 time_folder = self.cur_timestamp,
                                                           boundary_name = boundary)
-            # for item_out in self.test.parameters:
-            #     mp_initialize = self.test.get_model_part(item_out['model_part'])
-            #     mask0 = np.logical_and(mp_initialize.x0 > -0.003, mp_initialize.x0 < 0.0005)
-            #
-            # filter_mp_axial = mp_initialize.x0[mask0]
-            # filter_mp_radial = mp_initialize.y0[mask0]
-            # filter_mp_deep = mp_initialize.z0[mask0]
-            # print("filter_axial")
-            # print(filter_mp_axial)
-            # print("filter_radial")
-            # print(filter_mp_radial)
-            # print("filter_deep")
-            # print(filter_mp_deep)
 
             mask = np.logical_and(node_coords[:, 0] > -0.003, node_coords[:, 0] < 0.0005)
             filter_node_ids = node_ids[mask]
             filter_node_coords = node_coords[mask, :]
-
 
             displacement = np.zeros((len(filter_node_ids),3))
             velocity = np.zeros((len(filter_node_ids),3))
 
             displacement[:,1] = f(filter_node_coords[:,0])
             displacement[:,2] = g(filter_node_coords[:,0])
-            velocity[:, 0] = h(filter_node_coords[:, 0])
-            velocity[:, 1] = m(filter_node_coords[:, 0])
-            velocity[:, 2] = n(filter_node_coords[:, 0])
-            # print("velocity")
-            # print(velocity)
+            # velocity[:, 0] = h(filter_node_coords[:, 0])
+            # velocity[:, 1] = m(filter_node_coords[:, 0])
+            # velocity[:, 2] = n(filter_node_coords[:, 0])
+
 
             self.model.delete_model_part(mp_name)
 
@@ -528,21 +513,14 @@ class SolverWrapperOpenFOAMExtend(Component):
                                                   filter_node_coords[:, 2], filter_node_ids)
 
             if self.settings['parallel']:
-                pos_list = mp.sequence# velocity[:, 0] = h(filter_node_coords[:, 0])
-            # velocity[:, 1] = m(filter_node_coords[:, 0])
-            # velocity[:, 2] = n(filter_node_coords[:, 0])
-            # print("velocity")
-            # print(velocity)
+                pos_list = mp.sequence
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
 
             self.interface_output = Interface(self.settings['interface_output'],self.model)
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
-            self.interface_output.set_variable_data(mp_name, 'velocity', velocity)
-
-            # for item_output in self.interface_output.parameters:
-            #     data_out = self.interface_output.get_variable_data(item_output['model_part'], 'velocity')
+            # self.interface_output.set_variable_data(mp_name, 'velocity', velocity)
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):

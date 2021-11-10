@@ -7,7 +7,6 @@ import unittest
 import json
 import os
 import shutil
-import time
 from unittest import TestSuite, TestLoader
 from os.path import join
 

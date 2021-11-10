@@ -151,7 +151,7 @@ class CoupledSolverGaussSeidel(Component):
         # first coupling iteration
         y = self.solver_wrappers[0].solve_solution_step(self.x.copy())
         self.y = y.copy()
-        xt = self.solver_wrappers[1].solve_solution_step(y)
+        xt = self.solver_wrappers[1].solve_solucomplete_solution_xtion_step(y)
         r = xt - self.x
         self.finalize_iteration(r)
         # coupling iteration loop

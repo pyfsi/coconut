@@ -60,7 +60,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         tools.print_info(f'{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n')
 
         # add delta_t and timestep_start to solver_wrapper settings
-        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t', 'save_restart'])
+        tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t', 'save_restart', 'number_of_timesteps'])
 
         self.solver_wrapper = tools.create_instance(parameters)
         self.solver_wrappers = [self.solver_wrapper]  # used for printing summary
@@ -139,11 +139,9 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if self.dummy_solver is not None:
             for model_part_name, variable in interface_input.model_part_variable_pairs:
                 model_part = interface_input.get_model_part(model_part_name)
-                for i in range(model_part.size):
-                    print(i)
-                    data = getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
+                data = [getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
                                                                             model_part.z0[i], self.time_step)
-                        # for i in range(model_part.size)]
+                        for i in range(model_part.size)]
                 interface_input.set_variable_data(model_part_name, variable, np.array(data))
         # store data in self.x and self.y
         if self.solver_index == 1:
