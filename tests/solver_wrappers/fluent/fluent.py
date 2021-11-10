@@ -36,10 +36,10 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         self.mp_name_in = 'beamoutside_nodes'
         self.mp_name_out = 'beamoutside_faces'
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     if cls.setup_case:
-    #         rm_timed(cls.working_dir)
+    @classmethod
+    def tearDownClass(cls):
+        if cls.setup_case:
+            rm_timed(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy(self, x):
