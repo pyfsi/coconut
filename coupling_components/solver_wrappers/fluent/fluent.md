@@ -110,3 +110,5 @@ Same behavior as v2019R3.
 ### v2021R1 (21.1.0)
 
 Same behavior as v2019R3.
+
+### v2021R2 (21.2.0)
