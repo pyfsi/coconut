@@ -12,26 +12,26 @@ class SolverWrapperCombined(Component):
         super().__init__()
 
         self.parameters = parameters
-        self.settings = parameters["settings"]
+        self.settings = parameters['settings']
 
         # create solvers
-        for sol_wrapper_param in self.settings["solver_wrappers"]:
-            tools.pass_on_parameters(self.settings, sol_wrapper_param["settings"],
-                                     ["timestep_start", "delta_t"])
+        for sol_wrapper_param in self.settings['solver_wrappers']:
+            tools.pass_on_parameters(self.settings, sol_wrapper_param['settings'],
+                                     ['timestep_start', 'delta_t', 'save_restart'])
         nr_mapped_sol_wrappers = 0
-        for index, sol_wrapper_param in enumerate(self.settings["solver_wrappers"]):
-            if sol_wrapper_param["type"] == "solver_wrappers.mapped":
+        for index, sol_wrapper_param in enumerate(self.settings['solver_wrappers']):
+            if sol_wrapper_param['type'] == 'solver_wrappers.mapped':
                 nr_mapped_sol_wrappers += 1
             else:
                 self.master_sol_index = index
 
-        nr_sol_wrappers = len(self.settings["solver_wrappers"])
+        nr_sol_wrappers = len(self.settings['solver_wrappers'])
         if not nr_mapped_sol_wrappers == nr_sol_wrappers - 1:
             raise RuntimeError(f'Required  number of  mapped solver wrappers: {nr_sol_wrappers - 1}, '
                                f'but {nr_mapped_sol_wrappers} is provided.')
 
         self.solver_wrapper_list = []
-        for sol_wrapper_param in self.settings["solver_wrappers"]:
+        for sol_wrapper_param in self.settings['solver_wrappers']:
             self.solver_wrapper_list.append(create_instance(sol_wrapper_param))
 
         self.mapped_solver_wrapper_list = []
@@ -96,12 +96,12 @@ class SolverWrapperCombined(Component):
         return self.interface_output
 
     def print_components_info(self, pre):
-        tools.print_info(pre, "The component ", self.__class__.__name__, " combines the following solver wrappers:")
+        tools.print_info(pre, 'The component ', self.__class__.__name__, ' combines the following solver wrappers:')
         pre = tools.update_pre(pre)
-        tools.print_info(pre, '├─', "Mapped solver wrappers:")
+        tools.print_info(pre, '├─', 'Mapped solver wrappers:')
         for sol_wrapper in self.mapped_solver_wrapper_list[:-1]:
             sol_wrapper.print_components_info(pre + '│ ├─')
         self.solver_wrapper_list[-1].print_components_info(pre + '│ └─')
 
-        tools.print_info(pre, '└─', "Master solver wrapper:")
+        tools.print_info(pre, '└─', 'Master solver wrapper:')
         self.master_solver_wrapper.print_components_info(pre + '  └─')
