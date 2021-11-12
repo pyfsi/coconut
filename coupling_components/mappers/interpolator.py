@@ -10,7 +10,6 @@ def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
 
-
 class MapperInterpolator(Component):
     def __init__(self, parameters):
         super().__init__()
@@ -72,6 +71,8 @@ class MapperInterpolator(Component):
 
         # apply scaling to coordinates
         if self.scaling is not None:
+            tools.print_info(f'Scaling {self.scaling} applied for interpolation from {model_part_from.name} '
+                             f'to {model_part_to.name}')
             self.coords_from *= self.scaling
             self.coords_to *= self.scaling
 
