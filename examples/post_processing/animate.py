@@ -199,6 +199,7 @@ class AnimationFigure:
         self.figure = plt.figure()
         self.number = self.figure.number
         self.text = None
+        self.print_time = self.print_time_default
         self.min = None
         self.max = None
 
@@ -222,9 +223,16 @@ class AnimationFigure:
         self.animations_list.append(animation)
 
         # find common denominator for updating time step sizes
-        def common_denominator(a, b):
-            fraction_a = Fraction(a).limit_denominator()
-            fraction_b = Fraction(b).limit_denominator()
+        def common_denominator(a, b, max_denominator=1e9):
+            """
+            Finds common denominator between two floats that have been converted to fractions.
+            :param a: First float.
+            :param b: Second float.
+            :param max_denominator: Max denominator allowed for conversion to fraction.
+            :return: Smallest common denominator.
+            """
+            fraction_a = Fraction(a).limit_denominator(int(max_denominator))
+            fraction_b = Fraction(b).limit_denominator(int(max_denominator))
             multiple = np.lcm(fraction_a.denominator, fraction_b.denominator)
             return multiple
 
@@ -270,10 +278,16 @@ class AnimationFigure:
             lines += animation.case_animate(ts // dt_ratio)
         if self.text is None:
             plt.figure(self.number)  # make figure active
-            self.text = plt.text(0.1, 0.1, f"time = {0:.5f} s", transform=self.figure.axes[0].transAxes,
+            self.text = plt.text(0.1, 0.1, self.print_time(0), transform=self.figure.axes[0].transAxes,
                                  bbox=dict(facecolor='lightgray', edgecolor='black', pad=5.0, alpha=0.5))
-        self.text.set_text(f"time = {ts * self.base_dt:.5f} s")
+        self.text.set_text(self.print_time(ts * self.base_dt))
         return lines
+
+    def print_time_default(self, time):
+        if self.base_dt >= 1e-4:
+            return f"time = {time:.4f} s"
+        else:
+            return f"time = {time * 1e6:.3f} µs"
 
     def make_animation(self, interval=100, blit=False, save_count=100, repeat=True, frames=None):
         # inteval: interval between frames in ms
