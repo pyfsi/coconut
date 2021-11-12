@@ -38,7 +38,7 @@ def get_string(input_string, keyword):
 def get_dict(input_string, keyword):
     result = re.search(keyword + delimter + r'\{.*?\}', input_string, flags=re.S)
     if result is None:
-        RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
     else:
         return result.group()
 

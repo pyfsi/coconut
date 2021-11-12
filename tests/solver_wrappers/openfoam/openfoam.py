@@ -13,7 +13,7 @@ from subprocess import check_call, DEVNULL
 
 
 class TestSolverWrapperOpenFOAM(unittest.TestCase):
-    version = '41'  # OpenFOAM version without dot, e.g. 41 , set in sub-class
+    version = None  # OpenFOAM version without dot, e.g. 41 , set in sub-class
 
     @classmethod
     def setUpClass(cls):
