@@ -22,8 +22,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         cls.working_dir = join(dir_name, f'test_v{cls.version}/tube3d/CFD')
 
         # setup
-        shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)
-        shutil.copytree(os.path.join(dir_name, f'test_v{cls.version}/tube3d/setup_openfoam'), cls.working_dir)
+        shutil.rmtree(cls.working_dir, ignore_errors=True)
+        shutil.copytree(join(dir_name, f'test_v{cls.version}/tube3d/setup_openfoam'), cls.working_dir)
 
     def setUp(self):
         with open(self.file_name, 'r') as parameter_file:

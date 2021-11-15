@@ -1,7 +1,7 @@
 # Python
 
 This is the documentation for all Python solver wrappers.
-Currently only solvers exist for the one-dimensional (1D) calculation of a straight flexible tube.
+Currently, only solvers exist for the one-dimensional (1D) calculation of a straight flexible tube.
 
 ## Tube
 
@@ -20,13 +20,12 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 
 ### Settings
 
-The following parameters, listed in alphabetical order, need to be provided in the JSON parameter file 
-as `settings` of the solver wrapper.
+The following parameters, listed in alphabetical order, need to be provided in the main JSON parameter file as `settings` of the solver wrapper.
 
 parameter|type|description
 ---:|:---:|---
 `delta_t`|double|Fixed time step size. This parameter is usually specified in a higher component.
-`input_file`|str|Name of the input file, which must be present in the folder given in `working_directory`. The file contains all parameters required for the solver, in JSON-format.
+`input_file`|str|(optional) Name of the input file, which may be present in the folder given in `working_directory`. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.
 `interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `['displacement']` for a flow solver and `['pressure','traction']` for a structure solver.
 `interface_output`|list|Analogous to `interface_input`. However, the variables are different: `['pressure','traction']` for a flow solver and `['displacement']` for a structure solver.
 `unsteady`|bool|(optional) Default: `true`. Indicates if case is steady or unsteady.
@@ -36,14 +35,14 @@ parameter|type|description
 
 `delta_t` is a necessary parameter, while `timestep_start` and `save_restart` are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.
 
-Because these solvers are simple it is possible to omit the use of interpolation between two solver wrappers.
-In that case , the names of the `ModelParts` of both flow and structure solver need to be the same.
+Because these solvers are simple, it is possible to omit the use of interpolation between two solver wrappers.
+In that case, the names of the `ModelParts` of both flow and structure solver need to be the same.
 
 ### Tube flow solver
 This flow solver calculates the flow inside a 1D straight and flexible tube.
 The `type` for this solver wrapper is `solver_wrappers.python.tube_flow_solver`.
 The required input is the radial displacement of the tube wall.
-The other components of displacement are ingnored.
+The other components of displacement are ignored.
 The resulting output is the pressure on the tube wall.
 Although a required variable in `interface_output`, `traction` is always returned as being zero.
 
@@ -62,17 +61,16 @@ Discretizing these equations results in a system of linear algebraic equations w
 by performing Newton-Raphson iterations.
 Inside the solver the kinematic pressure is used, which is the pressure divided by the density of the fluid.
 
-The boundary condtions are implemented by four additional equations: at the in- and outlet for both pressure and velocity.
+The boundary conditions are implemented by four additional equations: at the in- and outlet for both pressure and velocity.
 At the inlet, the pressure, velocity or total pressure can be specified.
 At the outlet, the pressure can be set to a fixed value or a non-reflecting boundary conditions.
 These settings are specified in the `input_file` in the `working directory`.
 
-For more information about the implementation this solver refer to [[1](#1)].
+For more information about the implementation of this solver refer to [[1](#1)].
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name *`input_file`*.
-This file should be located in the `working_directory`.
+The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the structural solver.
 
 parameter|type|description
@@ -143,13 +141,12 @@ More information about the implementation of this solver can be found in [[2](#2
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name *`input_file`*.
-This file should be located in the `working_directory`.
+The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
 parameter|type|description
 ---:|:---:|---
-<nobr>`axial_offset`</nobr>|double|(optional) Defalult: `0`. Distance over which tube is displaced axially in the coordinate system.
+<nobr>`axial_offset`</nobr>|double|(optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.
 `d`|double|Nominal diameter of the tube.
 `e`|double|Modulus of elasticity of the tube wall.
 `h`|double|Thickness of tube wall.
@@ -185,8 +182,15 @@ $$
 $$
 with $E$ the Young's modulus and $\nu$ Poisson's coefficient.
 The second term of $b_3$ is considered small compared to the first one because $h\ll r_o$ and is thus neglected.
-Discretizing these equations results in a system of linear algebraic equations with a Jacobian that does not depend on the pressure.
-The system can be solved for the radius in one step.
+Discretizing these equations results in a system of linear algebraic equations with a Jacobian that does not depend on the pressure, nor the radius.
+This system is solved for the radius without requiring iterations.
+
+There are two solving options available, specified with the parameter `solver`. The fastest and most memory efficient is the "solve_banded" option, which writes the matrix in a diagonal ordered form.
+In this way, memory use and the number of operations is reduced.
+However, when the number of discretization intervals increases, the condition number of the coefficient matrix quickly increases.
+For high condition number, the "direct" method is more accurate and allows deeper convergence.
+This option calculates the inverse of the coefficient matrix directly, at the start of the calculation.
+The inverse is only calculated once and thereafter stored. When the number of intervals is high, it is clear that this option will use a high amount of memory.
 
 The tube is considered clamped at both ends. This boundary condition is imposed by adding four equations: two at the inlet and two at the outlet.
 
@@ -207,7 +211,7 @@ This avoids the occurrence of spurious oscillations of the pressure in time [[3]
 
 #### Solver parameters
 
-The following parameters, listed in alphabetical order, need to be specified in a file with name *`input_file`*.This file should be located in the `working_directory`.
+The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
 parameter|type|description
@@ -224,7 +228,8 @@ parameter|type|description
 `preference`|double|(optional) Default: `0`. Reference pressure.
 `rhof`|double|Density of the fluid.
 `rhos`|double|Density of the tube wall.
-`time_disretization`|str|(optional) Default: `backward Euler`. Specifies the time discretiation: either `Newmark` or `backward Euler`. Not case sensitive.
+`solver`|str|(optional) Default: `solve_banded`. Either `solve_banded` or `direct`. Specifies the solution method for the linear system of equations.
+`time_disretization`|str|(optional) Default: `backward Euler`. Specifies the time discretization: either `Newmark` or `backward Euler`. Not case sensitive.
 
 ## References
 <a id="1">[1]</a> 
