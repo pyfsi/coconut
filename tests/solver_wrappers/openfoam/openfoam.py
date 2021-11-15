@@ -210,6 +210,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         cores = 4
         self.set_cores(cores)
         self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['save_restart'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()

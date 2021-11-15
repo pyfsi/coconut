@@ -26,7 +26,7 @@ void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name, word pre
             IOobject
             (
                 "pointDisplacement_Next",
-                prev_runTime,
+                mesh.time().constant(),
                 mesh,
                 IOobject::MUST_READ,
                 IOobject::AUTO_WRITE
