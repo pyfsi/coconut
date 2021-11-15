@@ -146,7 +146,7 @@ We can now start the FSI simulation in CoCoNuT by running the Python file *`run_
 python3 run_simulation.py
 ```
 
-The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself strats: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
+The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself starts: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
 
 Let us now take a closer look at the two files that are used to run CoCoNuT. 
 The Python file *`run_simulation.py`* typically does not have to be adapted by the user. Its task is to read in the settings file *`parameters.json`* and launch a simulation using those settings. 
