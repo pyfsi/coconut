@@ -316,6 +316,9 @@ class SolverWrapperFluent(Component):
         # store incoming displacements
         self.interface_input.set_interface_data(interface_input.get_interface_data())
 
+        # write move_zone
+        self.write_move_zone()
+
         # write interface data
         self.write_node_positions()
 
@@ -464,6 +467,15 @@ class SolverWrapperFluent(Component):
             hash_id = hashlib.sha1(str.encode(unique_string))
             ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
         return ids
+
+    def write_move_zone(self):
+        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+            self.rigid_body_motion.move_zone_component(self.timestep*self.delta_t)
+        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+        fmt = '%27.17e'
+        tmp = f'move_zone_update_timestep0.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
 
     def write_node_positions(self):
         for dct in self.interface_input.parameters:
