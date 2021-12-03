@@ -93,7 +93,6 @@ DEFINE_ON_DEMAND(get_thread_ids) {
     host_to_node_int(thread_ids, n_threads);
 }
 
-
   /*----------------------*/
  /* store_coordinates_id */
 /*----------------------*/
@@ -303,11 +302,9 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
     if (myid == 0) {printf("\nFinished UDF store_coordinates_id.\n"); fflush(stdout);}
 }
 
-
   /*-------------------------*/
  /* store_pressure_traction */
 /*-------------------------*/
-
 
 DEFINE_ON_DEMAND(store_pressure_traction) {
     if (myid == 0) {printf("\nStarted UDF store_pressure_traction.\n"); fflush(stdout);}
@@ -466,7 +463,6 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
     if (myid == 0) {printf("\nFinished UDF store_pressure_traction.\n"); fflush(stdout);}
 }
 
-
   /*------------*/
  /* move_nodes */
 /*------------*/
@@ -562,7 +558,79 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 
 DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
 
-Message0("\n\nRunning UDF 'move_zone'\n");
+    Message0("\n\nRunning UDF 'move_zone.'\n");
+
+    char file_name_zone[256];
+    real axis_x;
+    real axis_y;
+    real axis_z;
+    real origin_x;
+    real origin_y;
+    real origin_z;
+    real velocity_x;
+    real velocity_y;
+    real velocity_z;
+
+    /*real Omega;*/
+    DECLARE_MEMORY(Omega, real);
+    ASSIGN_MEMORY(Omega, 1, real);
+
+    FILE *file = NULL;
+
+#if !RP_NODE
+    timestep = RP_Get_Integer("udf/timestep");
+#endif /* !RP_NODE */
+
+    host_to_node_int_1(timestep);
+#if !RP_NODE
+    sprintf(file_name_zone, "move_zone_update_timestep0.dat"
+            );
+#else
+    sprintf(file_name_zone, "/tmp/|TMP_DIRECTORY_NAME|/move_zone_update_timestep0.dat"
+            );
+    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
+#endif /* !RP_NODE */
+
+#if RP_HOST
+    host_to_node_sync_file(file_name_zone);
+#endif /* RP_HOST */
+
+
+    if (NULLP(file = fopen(file_name_zone, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name_zone);
+        exit(1);
+    }
+
+    fscanf(file, "%lf", &Omega[0]);
+    fscanf(file, "%lf", &axis_x);
+    fscanf(file, "%lf", &axis_y);
+    fscanf(file, "%lf", &axis_z);
+    fscanf(file, "%lf", &origin_x);
+    fscanf(file, "%lf", &origin_y);
+    fscanf(file, "%lf", &origin_z);
+    fscanf(file, "%lf", &velocity_x);
+    fscanf(file, "%lf", &velocity_y);
+    fscanf(file, "%lf", &velocity_z);
+    fclose(file);
+
+    *omega = Omega[0];
+    Message0("\n\nValue of Omega= %lf'\n", Omega[0]);
+    Message0("\n\nValue of axis_x= %lf'\n", axis_x);
+    Message0("\n\nValue of axis_y= %lf'\n", axis_y);
+    Message0("\n\nValue of axis_z= %lf'\n", axis_z);
+    Message0("\n\nValue of origin_x= %lf'\n", origin_x);
+    Message0("\n\nValue of origin_y= %lf'\n", origin_y);
+    Message0("\n\nValue of origin_z= %lf'\n", origin_z);
+    Message0("\n\nValue of velocity_x= %lf'\n", velocity_x);
+    Message0("\n\nValue of velocity_y= %lf'\n", velocity_y);
+    Message0("\n\nValue of velocity_z= %lf'\n", velocity_z);
+
+
+    RELEASE_MEMORY(Omega);
+
+    N3V_D(axis,=,axis_x,axis_y,axis_z);
+    N3V_D(origin,=,origin_x,origin_y,origin_z);
+    N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
 
 /* loop */
 /*
@@ -578,6 +646,7 @@ N3V_D (velocity,=,0.0,0.0,0.0);
 
 /* test_rectangle */
 
+/*
 if (time < 1)
 {
     *omega = -15*M_PI/180.0;
@@ -587,9 +656,12 @@ else
     *omega = 15*M_PI/180.0;
 }
 
+
 N3V_D(axis,=,0.0,0.0,1.0);
 N3V_S(origin,=,0.0);
 N3V_D (velocity,=,0.0,0.0,0.0);
+*/
 
+Message0("\n\nFinished UDF 'move_zone.'\n");
 return;
 }
