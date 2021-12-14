@@ -44,8 +44,13 @@ class SolverWrapperFluent(Component):
         self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
         self.cores = self.settings['cores']
         self.hostfile = self.settings.get('hostfile', False)
-        if self.cores < 1 or (self.cores > multiprocessing.cpu_count() and not self.hostfile):
-            self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
+        if self.hostfile:
+            with open(self.hostfile) as fp:
+                max_cores = len(fp.readlines())
+        else:
+            max_cores = multiprocessing.cpu_count()
+        if self.cores < 1 or self.cores > max_cores:
+            self.cores = max_cores
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
