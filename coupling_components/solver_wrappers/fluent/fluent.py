@@ -45,6 +45,7 @@ class SolverWrapperFluent(Component):
         self.cores = self.settings['cores']
         if self.cores < 1 or self.cores > multiprocessing.cpu_count():
             self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
+        self.hostfile = self.settings.get('hostfile', False)
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -123,6 +124,8 @@ class SolverWrapperFluent(Component):
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
+        if self.hostfile:
+            cmd2 += f' -cnf={self.hostfile} -ssh'
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
         else:
