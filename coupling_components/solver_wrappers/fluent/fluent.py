@@ -125,7 +125,7 @@ class SolverWrapperFluent(Component):
         cmd2 = f'-t{self.cores} -i {journal}'
 
         if self.hostfile:
-            cmd2 += f' -cnf={self.hostfile} -ssh'
+            cmd1 += f' -cnf={self.hostfile} -ssh'
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
         else:
