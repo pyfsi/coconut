@@ -497,17 +497,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 #if !RP_NODE
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
-#else
-    sprintf(file_name, "/tmp/|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
-            timestep, thread_id);
-    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
-#endif /* !RP_NODE */
 
-#if RP_HOST
-    host_to_node_sync_file(file_name);
-#endif /* RP_HOST */
-
-#if !RP_HOST
     if (NULLP(file = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
         exit(1);
@@ -526,7 +516,9 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     }
 
     fclose(file);
+#endif /* !RP_NODE */
 
+#if !RP_HOST
     begin_f_loop(face, face_thread) {
         f_node_loop(face, face_thread, node_number) {
             node = F_NODE(face, face_thread, node_number);
@@ -555,4 +547,3 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }
-
