@@ -108,8 +108,6 @@ class SolverWrapperFluent(Component):
 
         # prepare Fluent UDF
         udf = f'v{self.version}.c'
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:

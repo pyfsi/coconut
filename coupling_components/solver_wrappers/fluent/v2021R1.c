@@ -1,6 +1,8 @@
 #include "udf.h"
 #include <math.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* dynamic memory allocation for 1D and 2D arrays */
 #define DECLARE_MEMORY(name, type) type *name = NULL
@@ -476,12 +478,14 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     char file_name[256];
     Thread *face_thread = DT_THREAD(dynamic_thread);
     int thread_id = THREAD_ID(face_thread);
-    int i, d, n;
 
 #if !RP_HOST
     face_t face;
     Node *node;
-    int node_number;
+    int i, d, n, node_number;
+    DECLARE_MEMORY_N(coords, real, ND_ND);
+    DECLARE_MEMORY(ids, int);
+    FILE *file = NULL;
 #endif /* !RP_HOST */
 
 #if !RP_NODE
@@ -492,17 +496,25 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     host_to_node_int_1(iteration);
     host_to_node_int_1(timestep);
 
-#if PARALLEL
-    DECLARE_MEMORY_N(coords, real, ND_ND);
-    DECLARE_MEMORY(ids, int);
-#endif
-
 #if !RP_NODE
-    FILE *file = NULL;
-
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
+#else
+    struct stat st = {0};
 
+    if (stat("/tmp/|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("/tmp/|TMP_DIRECTORY_NAME|", 0700);
+    }
+    sprintf(file_name, "/tmp/|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
+            timestep, thread_id);
+    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
+#endif /* !RP_NODE */
+
+#if RP_HOST
+    host_to_node_sync_file(file_name);
+#endif /* RP_HOST */
+
+#if !RP_HOST
     if (NULLP(file = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
         exit(1);
@@ -521,9 +533,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     }
 
     fclose(file);
-#endif /* !RP_NODE */
 
-#if !RP_HOST
     begin_f_loop(face, face_thread) {
         f_node_loop(face, face_thread, node_number) {
             node = F_NODE(face, face_thread, node_number);
