@@ -480,9 +480,6 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 #if !RP_HOST
     face_t face;
     Node *node;
-    int i, d, n, node_number;
-    DECLARE_MEMORY_N(coords, real, ND_ND);
-    DECLARE_MEMORY(ids, int);
 #endif /* !RP_HOST */
 
 #if !RP_NODE
@@ -494,7 +491,11 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     host_to_node_int_1(timestep);
 
 #if !RP_NODE
+    int i, d, n, node_number;
+    DECLARE_MEMORY_N(coords, real, ND_ND);
+    DECLARE_MEMORY(ids, int);
     FILE *file = NULL;
+
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
 
