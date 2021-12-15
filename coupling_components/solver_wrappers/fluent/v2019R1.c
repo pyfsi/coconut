@@ -1,6 +1,8 @@
 #include "udf.h"
 #include <math.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* dynamic memory allocation for 1D and 2D arrays */
 #define DECLARE_MEMORY(name, type) type *name = NULL
@@ -498,6 +500,11 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
 #else
+    struct stat st = {0};
+
+    if (stat("/tmp/|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("/tmp/|TMP_DIRECTORY_NAME|", 0700);
+    }
     sprintf(file_name, "/tmp/|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
     host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
