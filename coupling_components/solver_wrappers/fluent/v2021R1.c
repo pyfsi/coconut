@@ -476,6 +476,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     char file_name[256];
     Thread *face_thread = DT_THREAD(dynamic_thread);
     int thread_id = THREAD_ID(face_thread);
+    int i, d, n;
 
 #if !RP_HOST
     face_t face;
@@ -492,7 +493,6 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     host_to_node_int_1(timestep);
 
 #if !RP_NODE
-    int i, d, n;
     DECLARE_MEMORY_N(coords, real, ND_ND);
     DECLARE_MEMORY(ids, int);
     FILE *file = NULL;
