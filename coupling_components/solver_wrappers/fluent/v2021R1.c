@@ -622,6 +622,7 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
     fclose(file);
 
     *omega = Omega[0];
+
     Message0("\n\nValue of Omega= %lf'\n", Omega[0]);
     Message0("\n\nValue of axis_x= %lf'\n", axis_x);
     Message0("\n\nValue of axis_y= %lf'\n", axis_y);
@@ -633,42 +634,11 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
     Message0("\n\nValue of velocity_y= %lf'\n", velocity_y);
     Message0("\n\nValue of velocity_z= %lf'\n", velocity_z);
 
-
     RELEASE_MEMORY(Omega);
 
     N3V_D(axis,=,axis_x,axis_y,axis_z);
     N3V_D(origin,=,origin_x,origin_y,origin_z);
     N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
-
-/* loop */
-/*
-real r_loop = 265.5;
-real V = 80.0;
-
-*omega = V/r_loop;
-
-N3V_D(axis,=,1.0,0.0,0);
-N3V_D(origin,=,50,0,310);
-N3V_D (velocity,=,0.0,0.0,0.0);
-*/
-
-/* test_rectangle */
-
-/*
-if (time < 1)
-{
-    *omega = -15*M_PI/180.0;
-}
-else
-{
-    *omega = 15*M_PI/180.0;
-}
-
-
-N3V_D(axis,=,0.0,0.0,1.0);
-N3V_S(origin,=,0.0);
-N3V_D (velocity,=,0.0,0.0,0.0);
-*/
 
 Message0("\n\nFinished UDF 'move_zone.'\n");
 return;
