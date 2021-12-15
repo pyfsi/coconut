@@ -119,7 +119,7 @@ class SolverWrapperFluent(Component):
 
         # check number of cores
         if self.hostfile:
-            with open(self.hostfile) as fp:
+            with open(join(self.working_directory, self.hostfile)) as fp:
                 max_cores = len(fp.readlines())
         else:
             max_cores = multiprocessing.cpu_count()
