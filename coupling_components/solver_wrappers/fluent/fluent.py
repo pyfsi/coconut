@@ -44,13 +44,6 @@ class SolverWrapperFluent(Component):
         self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
         self.cores = self.settings['cores']
         self.hostfile = self.settings.get('hostfile', False)
-        if self.hostfile:
-            with open(self.hostfile) as fp:
-                max_cores = len(fp.readlines())
-        else:
-            max_cores = multiprocessing.cpu_count()
-        if self.cores < 1 or self.cores > max_cores:
-            self.cores = max_cores
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -123,6 +116,16 @@ class SolverWrapperFluent(Component):
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_directory_name)
                     outfile.write(line)
+
+        # check number of cores
+        if self.hostfile:
+            with open(self.hostfile) as fp:
+                max_cores = len(fp.readlines())
+        else:
+            max_cores = multiprocessing.cpu_count()
+        if self.cores < 1 or self.cores > max_cores:
+            tools.print_info(f'Number of cores not possible, changed from {self.cores} to {max_cores}')
+            self.cores = max_cores
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
