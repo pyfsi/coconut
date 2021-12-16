@@ -122,7 +122,7 @@ class SolverWrapperFluent(Component):
         else:
             max_cores = multiprocessing.cpu_count()
         if self.cores < 1 or self.cores > max_cores:
-            tools.print_info(f'Number of cores not possible, changed from {self.cores} to {max_cores}')
+            tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
             self.cores = max_cores
 
         # start Fluent with journal
