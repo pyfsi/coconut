@@ -43,7 +43,7 @@ class SolverWrapperFluent(Component):
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
         self.cores = self.settings['cores']
-        self.hostfile = self.settings.get('hostfile', False)
+        self.hostfile = self.settings.get('hostfile')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -116,7 +116,7 @@ class SolverWrapperFluent(Component):
                     outfile.write(line)
 
         # check number of cores
-        if self.hostfile:
+        if self.hostfile is not None:
             with open(join(self.dir_cfd, self.hostfile)) as fp:
                 max_cores = len(fp.readlines())
         else:
@@ -130,7 +130,7 @@ class SolverWrapperFluent(Component):
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
-        if self.hostfile:
+        if self.hostfile is not None:
             cmd1 += f' -cnf={self.hostfile} -ssh '
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
