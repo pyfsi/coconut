@@ -4,19 +4,29 @@ from scipy.sparse import diags
 
 def check_banded(j):
     rows = j.shape[0]
-    main_diag = 0
-    while j[main_diag, 0] == 0 or j[main_diag, -1] == 0:
-        main_diag += 1
-        if main_diag == rows:
-            return False, None, None
-    au = main_diag
-    al = rows - 1 - main_diag
-    for row in range(au):
-        if (j[row, :main_diag - row] != 0).all():
-            return False, None, None
-    for row in range(main_diag + 1, al):
-        if (j[row, row - main_diag:] != 0).all():
-            return False, None, None
+    au_max = rows - 1
+    for row in range(rows):
+        if row < au_max:
+            for col, el in enumerate(j[row, :au_max - row]):
+                if el != 0:
+                    au_max = row + col
+                    break
+        else:
+            break
+    au_min = 0
+    for row in range(rows - 1, -1, -1):
+        if row > au_min:
+            for col, el in enumerate(j[row, -1:au_min - row - 1:-1]):
+                if el != 0:
+                    au_min = row - col
+                    break
+        else:
+            break
+    if au_min != au_max:
+        return False, None, None
+    else:
+        au = au_min
+        al = rows - 1 - au
     return True, au, al
 
 

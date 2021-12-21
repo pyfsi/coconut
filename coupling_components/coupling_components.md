@@ -32,7 +32,7 @@ For these `Interface` objects (implemented in *`coconut/data_structure/interface
 ## Start of the calculation
 
 The main coupling component in which all other coupling components are instantiated is the coupled solver.
-The coupled solver itself is created in the `Analysis` class (*`coconut/analysis.py`*, which is the starting point of the CoCoNuT calculation.
+The coupled solver itself is created in the `Analysis` class (*`coconut/analysis.py`*), which is the starting point of the CoCoNuT calculation.
 Upon the start of CoCoNuT, an instance of `Analysis` is made and its method `run` is executed.
 The coupled solver keeps track of all `Components` and runs the methods `initialize`, `finalize`, `initialize_solution_step` and `finalize_solution_step`,
 when its respective methods are executed.

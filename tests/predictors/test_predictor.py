@@ -63,7 +63,7 @@ class TestPredictor(unittest.TestCase):
             self.assertAlmostEqual(a4, prediction_quadratic[i])
             self.assertAlmostEqual(a4, prediction_cubic[i])
 
-        # rror if no update
+        # error if no update
         with self.assertRaises(Exception):
             predictor_cubic.initialize_solution_step()
             predictor_cubic.finalize_solution_step()
@@ -71,16 +71,14 @@ class TestPredictor(unittest.TestCase):
         # error if updated twice
         with self.assertRaises(Exception):
             predictor_cubic.initialize_solution_step()
-            _ = predictor_cubic.predict(interface)
-            _ = predictor_cubic.predict(interface)
-            predictor_cubic.finalize_solution_step()
+            _ = predictor_cubic.update(interface)
+            _ = predictor_cubic.update(interface)
 
         # error if prediction after update
         with self.assertRaises(Exception):
             predictor_cubic.initialize_solution_step()
             _ = predictor_cubic.update(interface)
             _ = predictor_cubic.predict(interface)
-            predictor_cubic.finalize_solution_step()
 
 
 if __name__ == '__main__':

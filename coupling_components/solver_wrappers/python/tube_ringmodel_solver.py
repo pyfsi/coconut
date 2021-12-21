@@ -26,6 +26,8 @@ class SolverWrapperTubeRingmodel(Component):
             with open(case_file_name, 'r') as case_file:
                 case_file_settings = json.load(case_file)
             case_file_settings.update(self.settings)
+            with open(case_file_name, 'w') as case_file:
+                json.dump(case_file_settings, case_file, indent=2)
             self.settings.update(case_file_settings)
 
         # settings

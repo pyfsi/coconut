@@ -363,3 +363,14 @@ def rm_timed(path: str, sleep: float = 0.5, attempts: int = 100) -> None:
     if os.path.exists(path):
         print_info(f'Timed out removing {path}', layout='warning')
         shutil.rmtree(path)
+
+
+# remove a key in a nested dictionary/list
+def remove_recursively(key_to_remove, structure):
+    if isinstance(structure, dict):
+        structure.pop(key_to_remove, None)
+        structure = structure.values()
+    elif not isinstance(structure, list):
+        return
+    for value in structure:  # structure is either dict.values() or list
+        remove_recursively(key_to_remove, value)

@@ -68,6 +68,8 @@ These settings are specified in the `input_file` in the `working directory`.
 
 For more information about the implementation of this solver refer to [[1](#1)].
 
+Finally, this solver also provides a Jacobian of the change in radius with pressure, which can be used as surrogate Jacobian [[4](#4)].
+
 #### Solver parameters
 
 The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
@@ -209,6 +211,8 @@ A different time discretization for flow and structure can lead to difficulties 
 As most flow solvers are discretized using the backward Euler method, it is advised to chose the same method for the structure solver (the time discretization of `SolverWrapperTubeFlowSolver` is also backward Euler).
 This avoids the occurrence of spurious oscillations of the pressure in time [[3](#3)].
 
+Finally, this solver also provides a Jacobian of the change in radius with pressure, which can be used as surrogate Jacobian [[4](#4)].
+
 #### Solver parameters
 
 The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
@@ -240,3 +244,6 @@ parameter|type|description
 
 <a id="3">[3]</a> 
 [Vierendeels J., Dumont K., Dick E., Verdonck P., "Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion", American Institute of Aeronautics and Astronautics Journal", vol. 43, no. 12, pp. 2549–2557, 2005.](http://hdl.handle.net/1854/LU-325786)
+
+<a id="4">[4]</a>
+[Delaissé, N., Demeester, T., Fauconnier, D., & Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

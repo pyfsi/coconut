@@ -86,6 +86,7 @@
               "dimensions": 3,
               "static": false,
               "arraysize": 1e5,
+              "save_results": 1,
               "interface_input": [
                 {
                   "model_part": "WALLOUTSIDE_load_points",
