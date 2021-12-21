@@ -33,6 +33,8 @@ class SolverWrapperTubeStructure(Component):
             with open(case_file_name, 'r') as case_file:
                 case_file_settings = json.load(case_file)
             case_file_settings.update(self.settings)
+            with open(case_file_name, 'w') as case_file:
+                json.dump(case_file_settings, case_file, indent=2)
             self.settings.update(case_file_settings)
 
         # settings
@@ -267,14 +269,30 @@ class SolverWrapperTubeStructure(Component):
         j[self.au + 0 - 0, 0] = 1.0  # [0, 0]
         j[self.au + 1 - 1, 1] = 1.0  # [1, 1]
         j[self.au + 2, 0:self.m] = self.b1 / self.dz ** 4 / self.conditioning  # [i, (i - 2)]
-        j[self.au + 1, 1:self.m + 1] = (- 4.0 * self.b1 / self.dz ** 4
+        j[self.au + 1, 1:self.m + 1] = (-4.0 * self.b1 / self.dz ** 4
                                         - self.b2 / self.dz ** 2) / self.conditioning  # [i, (i - 1)]
         j[self.au + 0, 2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.unsteady
                                         + 6.0 * self.b1 / self.dz ** 4 + 2.0 * self.b2 / self.dz ** 2
                                         + self.b3) / self.conditioning  # [i, i]
-        j[self.au - 1, 3:self.m + 3] = (- 4.0 * self.b1 / self.dz ** 4
+        j[self.au - 1, 3:self.m + 3] = (-4.0 * self.b1 / self.dz ** 4
                                         - self.b2 / self.dz ** 2) / self.conditioning  # [i, (i + 1)]
         j[self.au - 2, 4:self.m + 4] = self.b1 / self.dz ** 4 / self.conditioning  # [i, (i + 2)]
         j[self.au + (self.m + 2) - (self.m + 2), self.m + 2] = 1.0  # [m + 2, m + 2]
         j[self.au + (self.m + 3) - (self.m + 3), self.m + 3] = 1.0  # [m + 3, m + 3]
         return j
+
+    def get_surrogate_jacobian(self):
+        # df/dr
+        js = self.get_jacobian()
+        js = bnd.remove_boundaries(js, 2) * self.conditioning
+        js = bnd.to_dense(js)
+
+        # dr/df
+        jis = np.linalg.inv(js)
+
+        # df/dp
+        jp = -1
+
+        # dr/dp
+        jsurrogate = jis * -jp
+        return jsurrogate

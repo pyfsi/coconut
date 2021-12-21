@@ -64,7 +64,9 @@ class MapperInterpolator(Component):
 
         # check if n_from is large enough
         if self.n_from < self.n_nearest:
-            raise ValueError(f'Not enough from-points: {self.n_from} < {self.n_nearest}')
+            tools.print_info(f'Model part {model_part_from} has not enough from-points:'
+                             f'{self.n_from} < {self.n_nearest}', layout='warning')
+            self.n_nearest = self.n_from
 
         # check bounding boxes
         tools.check_bounding_box(model_part_from, model_part_to)
