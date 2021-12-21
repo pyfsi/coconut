@@ -16,7 +16,7 @@
     
     
       
-        <title>Fluent 3D - Kratos Structure 3D - CoCoNuT</title>
+        <title>Python TubeFlow - Python TubeStructre - Analytical - CoCoNuT</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tube-case-with-fluent3d-and-kratosstructure3d" class="md-skip">
+        <a href="#tube-case-with-tubeflow-and-tubestructure-and-with-analytical1d-model" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Fluent 3D - Kratos Structure 3D
+              Python TubeFlow - Python TubeStructre - Analytical
             
           </span>
         </div>
@@ -686,11 +686,51 @@
             
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Python TubeFlow - Python TubeStructre - Analytical
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link md-nav__link--active">
         Python TubeFlow - Python TubeStructre - Analytical
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#coupling-algorithm" class="md-nav__link">
+    Coupling algorithm
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -794,72 +834,11 @@
             
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Fluent 3D - Kratos Structure 3D
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
         Fluent 3D - Kratos Structure 3D
       </a>
-      
-        
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#coupling-algorithm" class="md-nav__link">
-    Coupling algorithm
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#predictor" class="md-nav__link">
-    Predictor
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    Convergence criterion
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#solvers" class="md-nav__link">
-    Solvers
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1010,27 +989,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#predictor" class="md-nav__link">
-    Predictor
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    Convergence criterion
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#solvers" class="md-nav__link">
-    Solvers
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1044,38 +1002,12 @@
               
                 
                 
-                <h1 id="tube-case-with-fluent3d-and-kratosstructure3d">Tube case with Fluent3D and KratosStructure3D</h1>
-<p>This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
-This done by using Fluent and StructuralMechanicsApplication of Kratos, both with a fully 3D case.</p>
+                <h1 id="tube-case-with-tubeflow-and-tubestructure-and-with-analytical1d-model">Tube case with TubeFlow and TubeStructure and with Analytical1D model</h1>
+<p>This example is identical to Python TubeFlow - Python TubeStructure, with the only difference that a different model is used.</p>
 <h2 id="coupling-algorithm">Coupling algorithm</h2>
-<p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQNI-LS).</p>
-<h2 id="predictor">Predictor</h2>
-<p>The initial guess in every time step is done using the linear predictor.</p>
-<h2 id="convergence-criterion">Convergence criterion</h2>
-<p>Two convergence criteria have been specified:</p>
-<ul>
-<li>The number of iterations in every time step is larger than 20.</li>
-<li>The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</li>
-</ul>
-<p>When either criterion is satisfied the simulation stops.</p>
-<h2 id="solvers">Solvers</h2>
-<p>The flow solver is Fluent, used to solve a fully 3D tube,
-with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
-When setting up the case, the mesh is build based on the file <em><code>mesh.jou</code></em> using Gambit.
-The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
-The axial direction is along the x-axis.
-The setup script runs Fluent with the <em><code>case.jou</code></em> journal file to setup the case parameters, starting from the mesh file <em><code>mesh_tube3d.msh</code></em>.
-This case is written to the <em><code>case_tube3d.cas</code></em> file, which serves as input for CoCoNuT. 
-Additionally, a folder <em><code>create_mesh</code></em> is provided containing a script to create the mesh in Gambit using a journal file.
-The mesh can be created by running the script <em><code>create_mesh.sh</code></em>, given that Gambit v2.4.6 is available.</p>
-<p>The structure solver is Kratos, used to solve a fully 3D tube,
-with 24 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction. 
-The Kratos element type used is ShellThickElementCorotational3D4N. These are 4-node shell elements.
-The displacement and loads are calculated/applied on the nodes. There are 200 nodes on the fluid-structure interface.
-The axial direction is along the x-axis. The parameter file <em><code>ProjectParameters.json</code></em> is passed to CoCoNuT.</p>
-<p>The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
-On the other hand, difference in the discretization between the fluid and the structure mesh requires the use of interpolation mappers.
-Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-direction.</p>
+<p>The coupled solver used is <code>coupled_solvers.iqni</code>, just as in the example Python TubeFlow - Python TubeStructure.
+Only, now, the model is not <code>coupled_solvers.models.ls</code>, but <code>coupled_solvers.models.analytical_1d</code>, which uses two solver models (that should be the same as the actual solvers) to calculate an analytical Jacobian.</p>
+<p>Note that the relaxation factor <span><span class="MathJax_Preview">omega</span><script type="math/tex">omega</script></span> may be equal to 1, as the analytical model is ready from the start, in contradiction to a secant model, which needs to collect input-output-pairs first.</p>
                 
               
               
@@ -1099,7 +1031,7 @@ Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-dire
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="tube_fluent3d_abaqus3d.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Fluent 3D - Abaqus 3D" rel="prev">
+        <a href="tube_tube_flow_tube_structure.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Python TubeFlow - Python TubeStructre" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1108,20 +1040,20 @@ Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-dire
               <span class="md-footer__direction">
                 Previous
               </span>
-              Fluent 3D - Abaqus 3D
+              Python TubeFlow - Python TubeStructre
             </div>
           </div>
         </a>
       
       
         
-        <a href="tube_openfoam3d_abaqus3d.html" class="md-footer__link md-footer__link--next" aria-label="Next: OpenFOAM 3D - Abaqus 3D" rel="next">
+        <a href="tube_tube_flow_tube_structure_surrogate.html" class="md-footer__link md-footer__link--next" aria-label="Next: Python TubeFlow - Python TubeStructre - Surrogate" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              OpenFOAM 3D - Abaqus 3D
+              Python TubeFlow - Python TubeStructre - Surrogate
             </div>
           </div>
           <div class="md-footer__button md-icon">

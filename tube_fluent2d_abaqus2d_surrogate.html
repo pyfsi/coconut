@@ -16,7 +16,7 @@
     
     
       
-        <title>Fluent 3D - Kratos Structure 3D - CoCoNuT</title>
+        <title>Fluent 2D - Abaqus 2D - Surrogate - CoCoNuT</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tube-case-with-fluent3d-and-kratosstructure3d" class="md-skip">
+        <a href="#tube-case-with-tubeflow-and-tubestructure-and-surrogate-model" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Fluent 3D - Kratos Structure 3D
+              Fluent 2D - Abaqus 2D - Surrogate
             
           </span>
         </div>
@@ -758,42 +758,6 @@
             
   
   
-  
-    <li class="md-nav__item">
-      <a href="tube_fluent2d_abaqus2d_surrogate.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D - Surrogate
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
-        Fluent 3D - Abaqus 2D
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
-        Fluent 3D - Abaqus 3D
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
     
   
   
@@ -806,12 +770,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Fluent 3D - Kratos Structure 3D
+          Fluent 2D - Abaqus 2D - Surrogate
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link md-nav__link--active">
-        Fluent 3D - Kratos Structure 3D
+      <a href="tube_fluent2d_abaqus2d_surrogate.html" class="md-nav__link md-nav__link--active">
+        Fluent 2D - Abaqus 2D - Surrogate
       </a>
       
         
@@ -843,8 +807,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    Convergence criterion
+  <a href="#mappers" class="md-nav__link">
+    Mappers
   </a>
   
 </li>
@@ -860,6 +824,42 @@
   
 </nav>
       
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
+        Fluent 3D - Abaqus 2D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
+        Fluent 3D - Abaqus 3D
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
+        Fluent 3D - Kratos Structure 3D
+      </a>
     </li>
   
 
@@ -1018,8 +1018,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    Convergence criterion
+  <a href="#mappers" class="md-nav__link">
+    Mappers
   </a>
   
 </li>
@@ -1044,38 +1044,61 @@
               
                 
                 
-                <h1 id="tube-case-with-fluent3d-and-kratosstructure3d">Tube case with Fluent3D and KratosStructure3D</h1>
-<p>This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
-This done by using Fluent and StructuralMechanicsApplication of Kratos, both with a fully 3D case.</p>
+                <h1 id="tube-case-with-tubeflow-and-tubestructure-and-surrogate-model">Tube case with TubeFlow and TubeStructure and Surrogate model</h1>
+<p>This example is identical to the example Fluent2D and Abaqus2D, except for the use of a surrogate model.
+This is reflected in a different coupled solver and corresponding models, and the type of predictor.
+The used surrogate model is the combination of the 1D python solvers TubeFlow and TubeStructure.</p>
 <h2 id="coupling-algorithm">Coupling algorithm</h2>
-<p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQNI-LS).</p>
+<p>The coupled solver used is <code>coupled_solvers.iqnism</code>, which has a <code>model</code> and <code>surrogate</code> setting, both of which are a type of model component.
+The secant model used is <code>coupled_solvers.models.mvmf</code> where 100 time steps are reused: the previous time steps are used as surrogate model.
+In addition, a <code>surrogate</code> model is defined, which uses the 1D python solvers TubeFlow and TubeStructure.
+Because of this different discretization, mapping is required. This is achieved using the <code>mapped</code> model.
+The <code>surrogate</code> model has its own coupled solver with its own predictor, convergence criterion, solver wrappers and models.
+The model is once more <code>coupled_solvers.models.mvmf</code> that reuses 100 time steps as surrogate model.
+Note that the surrogate solvers have their own working directory.</p>
+<p>The <code>settings</code> of <code>coupled_solvers.iqnism</code> dictate that <code>surrogate_synchronize</code> is enabled.
+This means that at the end of each time step, the surrogate solvers are solved once more with final solution of the actual solvers, such that they are synchronized.
+This is also shown in the printing of the residuals.</p>
+<p>Note that the relaxation factor <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span> is omitted in <code>coupled_solvers.iqnism</code>, such that its default value, equal to 1, is used.
+This is possible because the surrogate model provides a Jacobian, when the secant model is not yet able to.
+The coupled solver <code>coupled_solvers.iqni</code> inside of the <code>surrogate</code> does require a relaxation factor.</p>
 <h2 id="predictor">Predictor</h2>
-<p>The initial guess in every time step is done using the linear predictor.</p>
-<h2 id="convergence-criterion">Convergence criterion</h2>
-<p>Two convergence criteria have been specified:</p>
+<p>The predictor of the <code>coupled_solvers.iqnism</code> is <code>predictors.surrogate</code>, which means the surrogate solution is used for the prediction of the actual solver.
+As the <code>predict_change</code> is not disabled, it is the change in surrogate solution with respect to the previous time step that will be used to determine the prediction for the current time step starting from the previous one.</p>
+<h2 id="mappers">Mappers</h2>
+<p>Mappers are used in three locations:</p>
 <ul>
-<li>The number of iterations in every time step is larger than 20.</li>
-<li>The residual norm on the displacement is a factor <span><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</li>
+<li>To map the input and output of the actual solvers</li>
+<li>To map the input and output of the surrogate solvers</li>
+<li>To map the discretization of the surrogate and actual solvers</li>
 </ul>
-<p>When either criterion is satisfied the simulation stops.</p>
+<p>Here, <code>mappers.linear</code> are used each time.</p>
 <h2 id="solvers">Solvers</h2>
-<p>The flow solver is Fluent, used to solve a fully 3D tube,
-with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+<p>The flow solver is Fluent, used to solve an axisymmetric representation of the tube,
+with 100 cells on the fluid-structure interface. 
 When setting up the case, the mesh is build based on the file <em><code>mesh.jou</code></em> using Gambit.
-The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
-The axial direction is along the x-axis.
-The setup script runs Fluent with the <em><code>case.jou</code></em> journal file to setup the case parameters, starting from the mesh file <em><code>mesh_tube3d.msh</code></em>.
-This case is written to the <em><code>case_tube3d.cas</code></em> file, which serves as input for CoCoNuT. 
+The displacements are applied in the nodes, of which there are 101. 
+In contrast, the loads (pressure and traction) are calculated in the cell centers, of which there are 100.
+The axial direction is along the x-axis, the radial direction along the y-axis. 
+The setup script runs Fluent with the <em><code>case.jou</code></em> journal file to setup the case parameters, starting from the mesh file <em><code>mesh_tube2d.msh</code></em>.
+This case is written to the <em><code>case_tube2d.cas</code></em> file, which serves as input for CoCoNuT. 
 Additionally, a folder <em><code>create_mesh</code></em> is provided containing a script to create the mesh in Gambit using a journal file.
 The mesh can be created by running the script <em><code>create_mesh.sh</code></em>, given that Gambit v2.4.6 is available.</p>
-<p>The structure solver is Kratos, used to solve a fully 3D tube,
-with 24 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction. 
-The Kratos element type used is ShellThickElementCorotational3D4N. These are 4-node shell elements.
-The displacement and loads are calculated/applied on the nodes. There are 200 nodes on the fluid-structure interface.
-The axial direction is along the x-axis. The parameter file <em><code>ProjectParameters.json</code></em> is passed to CoCoNuT.</p>
-<p>The coordinate frames of both solvers are the same so there is no need for a permutation mapper.
-On the other hand, difference in the discretization between the fluid and the structure mesh requires the use of interpolation mappers.
-Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-direction.</p>
+<p>The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
+with 50 elements on the fluid-structure interface.
+The Abaqus case is built when setting up the case starting from the file <em><code>mesh_tube2d.inp</code></em> containing nodes and elements. 
+This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
+The result of the setup is a completed input file <em><code>case_tube2d.inp</code></em>.
+The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
+They are: 8-node biquadratic, reduced integration, hybrid with linear pressure.
+See the <a href="http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb">Abaqus documentation</a> for more information. 
+The loads are applied on the faces in three points per element, which means on 150 load points in total. 
+The displacement is calculated in the nodes. There are 101 nodes on the fluid-structure interface.
+The axial direction is along the y-axis, the radial direction along the x-axis.</p>
+<p>The difference in reference frames and number of cells on the fluid-structure interface requires the use of mappers.
+In the structure solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
+Thereafter, a linear interpolation mapper is used to interpolate in the x- and y-direction from the 100 cell centers of Fluent to the 150 load points in Abaqus.
+For the output the same is done in the opposite order: first interpolating and then flipping the axes.</p>
                 
               
               
@@ -1099,7 +1122,7 @@ Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-dire
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="tube_fluent3d_abaqus3d.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Fluent 3D - Abaqus 3D" rel="prev">
+        <a href="tube_fluent2d_abaqus2d_steady.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Fluent 2D - Abaqus 2D - Steady" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1108,20 +1131,20 @@ Therefore, a radial basis mapper is used to interpolate in the x-, y- and z-dire
               <span class="md-footer__direction">
                 Previous
               </span>
-              Fluent 3D - Abaqus 3D
+              Fluent 2D - Abaqus 2D - Steady
             </div>
           </div>
         </a>
       
       
         
-        <a href="tube_openfoam3d_abaqus3d.html" class="md-footer__link md-footer__link--next" aria-label="Next: OpenFOAM 3D - Abaqus 3D" rel="next">
+        <a href="tube_fluent3d_abaqus2d.html" class="md-footer__link md-footer__link--next" aria-label="Next: Fluent 3D - Abaqus 2D" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              OpenFOAM 3D - Abaqus 3D
+              Fluent 3D - Abaqus 2D
             </div>
           </div>
           <div class="md-footer__button md-icon">

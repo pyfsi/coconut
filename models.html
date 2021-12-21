@@ -144,7 +144,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
-    GitHub
+    pyfsi/coconut
   </div>
 </a>
       </div>
@@ -155,6 +155,97 @@
     <div class="md-container" data-md-component="container">
       
       
+        
+          
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="index.html" class="md-tabs__link">
+      Introduction
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="coupling_components.html" class="md-tabs__link md-tabs__link--active">
+        Coupling components
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="data_structure.html" class="md-tabs__link">
+      Data structure
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="docs.html" class="md-tabs__link">
+      Documentation
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="examples.html" class="md-tabs__link">
+        Examples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="tests.html" class="md-tabs__link">
+      Tests
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
         
       
       <main class="md-main" data-md-component="main">
@@ -167,8 +258,10 @@
                   <div class="md-sidebar__inner">
                     
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="index.html" title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
       
@@ -186,7 +279,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
-    GitHub
+    pyfsi/coconut
   </div>
 </a>
     </div>
@@ -338,36 +431,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#jacobian-approximation-from-secant-information" class="md-nav__link">
+    Jacobian approximation from secant information
+  </a>
+  
+    <nav class="md-nav" aria-label="Jacobian approximation from secant information">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#least-squares" class="md-nav__link">
     Least-squares
   </a>
   
-    <nav class="md-nav" aria-label="Least-squares">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#settings" class="md-nav__link">
-    Settings
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#multi-vector" class="md-nav__link">
     Multi-vector
   </a>
   
-    <nav class="md-nav" aria-label="Multi-vector">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#settings_1" class="md-nav__link">
-    Settings
+  <a href="#multi-vector-matrix-free" class="md-nav__link">
+    Multi-vector matrix-free
   </a>
   
 </li>
@@ -378,22 +465,56 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#multi-vector-matrix-free" class="md-nav__link">
-    Multi-vector matrix-free
+  <a href="#jacobian-approximation-from-surrogate-model" class="md-nav__link">
+    Jacobian approximation from surrogate model
   </a>
   
-    <nav class="md-nav" aria-label="Multi-vector matrix-free">
+    <nav class="md-nav" aria-label="Jacobian approximation from surrogate model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#settings_2" class="md-nav__link">
-    Settings
+  <a href="#surrogate" class="md-nav__link">
+    Surrogate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapped" class="md-nav__link">
+    Mapped
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analytically-determined-jacobian" class="md-nav__link">
+    Analytically determined Jacobian
+  </a>
+  
+    <nav class="md-nav" aria-label="Analytically determined Jacobian">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analytical-1d" class="md-nav__link">
+    Analytical 1D
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dummy-model" class="md-nav__link">
+    Dummy model
+  </a>
   
 </li>
       
@@ -450,7 +571,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" data-md-state="indeterminate" type="checkbox" id="__nav_2_6" checked>
       
       <label class="md-nav__link" for="__nav_2_6">
         Solver wrappers
@@ -588,7 +709,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
       
       <label class="md-nav__link" for="__nav_5">
         Examples
@@ -621,7 +742,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" data-md-state="indeterminate" type="checkbox" id="__nav_5_2" checked>
       
       <label class="md-nav__link" for="__nav_5_2">
         Breaking dam
@@ -660,7 +781,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" data-md-state="indeterminate" type="checkbox" id="__nav_5_3" checked>
       
       <label class="md-nav__link" for="__nav_5_3">
         Tube
@@ -672,6 +793,18 @@
           Tube
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
+        Python TubeFlow - Python TubeRingmodel
+      </a>
+    </li>
+  
+
           
             
   
@@ -690,8 +823,20 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
-        Python TubeFlow - Python TubeRingmodel
+      <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link">
+        Python TubeFlow - Python TubeStructre - Analytical
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure_surrogate.html" class="md-nav__link">
+        Python TubeFlow - Python TubeStructre - Surrogate
       </a>
     </li>
   
@@ -740,6 +885,18 @@
     <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
         Fluent 2D - Abaqus 2D - Steady
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_surrogate.html" class="md-nav__link">
+        Fluent 2D - Abaqus 2D - Surrogate
       </a>
     </li>
   
@@ -819,7 +976,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" type="checkbox" id="__nav_5_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" data-md-state="indeterminate" type="checkbox" id="__nav_5_4" checked>
       
       <label class="md-nav__link" for="__nav_5_4">
         Turek benchmark
@@ -928,36 +1085,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#jacobian-approximation-from-secant-information" class="md-nav__link">
+    Jacobian approximation from secant information
+  </a>
+  
+    <nav class="md-nav" aria-label="Jacobian approximation from secant information">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#least-squares" class="md-nav__link">
     Least-squares
   </a>
   
-    <nav class="md-nav" aria-label="Least-squares">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#settings" class="md-nav__link">
-    Settings
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#multi-vector" class="md-nav__link">
     Multi-vector
   </a>
   
-    <nav class="md-nav" aria-label="Multi-vector">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#settings_1" class="md-nav__link">
-    Settings
+  <a href="#multi-vector-matrix-free" class="md-nav__link">
+    Multi-vector matrix-free
   </a>
   
 </li>
@@ -968,22 +1119,56 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#multi-vector-matrix-free" class="md-nav__link">
-    Multi-vector matrix-free
+  <a href="#jacobian-approximation-from-surrogate-model" class="md-nav__link">
+    Jacobian approximation from surrogate model
   </a>
   
-    <nav class="md-nav" aria-label="Multi-vector matrix-free">
+    <nav class="md-nav" aria-label="Jacobian approximation from surrogate model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#settings_2" class="md-nav__link">
-    Settings
+  <a href="#surrogate" class="md-nav__link">
+    Surrogate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapped" class="md-nav__link">
+    Mapped
   </a>
   
 </li>
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analytically-determined-jacobian" class="md-nav__link">
+    Analytically determined Jacobian
+  </a>
+  
+    <nav class="md-nav" aria-label="Analytically determined Jacobian">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analytical-1d" class="md-nav__link">
+    Analytical 1D
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dummy-model" class="md-nav__link">
+    Dummy model
+  </a>
   
 </li>
       
@@ -1008,29 +1193,44 @@
                 
                 
                 <h1 id="models">Models</h1>
-<p>This documentation describes the different types of available models. The purpose of a model is always to approximate a (inverse) Jacobian of a system, based on secant information from input and output pairs.
-In order to approximate the Jacobian <span><span class="MathJax_Preview">\mathcal{A}'</span><script type="math/tex">\mathcal{A}'</script></span> of a general function <span><span class="MathJax_Preview">a=\mathcal{A}(b)</span><script type="math/tex">a=\mathcal{A}(b)</script></span>, the model needs to be supplied with matching input and output pairs, (<span><span class="MathJax_Preview">b^i</span><script type="math/tex">b^i</script></span>, <span><span class="MathJax_Preview">a^i=\mathcal{A}(b^i)</span><script type="math/tex">a^i=\mathcal{A}(b^i)</script></span>).
-Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span>.
-In other words, when the a vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span> is given it outputs <span><span class="MathJax_Preview">\Delta a=\widehat{\mathcal{A}}'\Delta b</span><script type="math/tex">\Delta a=\widehat{\mathcal{A}}'\Delta b</script></span>, where the hat symbol is used to denote that an approximation of the Jacobain is used.</p>
+<p>This documentation describes the different types of available models. The purpose of a model always is to provide a (approximated) (inverse) Jacobian of a system.
+Often this achieved with the help of secant information from input-output-pairs, resulting in a so-called quasi-Newton method.
+Another approach to obtain a approximated Jacobian is the use of a surrogate model. Finally, in some cases, the Jacobian can be derived analytically.
+These three types of models will be discussed further.</p>
 <p>Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
 For example, using the coupled solver <code>CoupledSolverIQNI</code> with the model <code>ModelLS</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>]. In that case, the approximated Jacobian is <span><span class="MathJax_Preview">\mathcal{R}'^{-1}</span><script type="math/tex">\mathcal{R}'^{-1}</script></span>.
 If the coupled solver <code>CoupledSolverIBQN</code> is combined with two instances the model <code>ModelLS</code>, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>]. Then, the two models each approximate one Jacobian: <span><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span>.
 Refer to the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers documentation</a> for more information on these notations.</p>
-<p>In the following, the example from IQN-ILS will be used: the inverse Jacobian of <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> with respect to <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span> is approximated which has an input vector <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> and an output vector <span><span class="MathJax_Preview">\tilde{x}</span><script type="math/tex">\tilde{x}</script></span>.
-For brevity, the approximation will denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
 <h2 id="common-methods">Common methods</h2>
-<p>There are three model-specific methods which are implemented by all models.</p>
-<p>The first of which is the <code>predict(dr)</code> method, which returns an estimation of <span><span class="MathJax_Preview">\Delta \tilde{x}=N^k\Delta r</span><script type="math/tex">\Delta \tilde{x}=N^k\Delta r</script></span> from an input <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>, based on stored input and output pairs.
-Second, in order to improve the estimation, input-output pairs can be added to the model using the method <code>add(r, xt)</code>.
-Third, the method <code>filter_q(dr)</code> returns the part of vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. In other words, it returns the part of the input vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> for which the deficient approximation of the Jacobian holds no information. Note that it is equal to the part of the vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is inside the nullspace of the approximation of the Jacobian represented by the model.</p>
-<h2 id="least-squares">Least-squares</h2>
+<p>There are four model-specific methods, which are implemented by all models.</p>
+<ul>
+<li>The first of which is the <code>predict(dr)</code> method, which returns an estimation of the change in output variable based on a change in input variable using the Jacobian approximation.</li>
+<li>Second, the method <code>is_ready()</code> return a boolean signalling if the model is ready to <em>predict</em> using the previous method.</li>
+<li>Third, in order to improve the estimation, information from a current iteration can be added to the model using the method <code>add(r, xt)</code>.</li>
+<li>And finally, the method <code>filter_q(dr)</code> returns the part of supplied vector which falls inside of the nullspace of the Jacobian. This is the part of the supplied vector for which the model has no derivative information.</li>
+</ul>
+<h2 id="jacobian-approximation-from-secant-information">Jacobian approximation from secant information</h2>
+<p>In order to approximate the Jacobian <span><span class="MathJax_Preview">\mathcal{A}'</span><script type="math/tex">\mathcal{A}'</script></span> of a general function <span><span class="MathJax_Preview">a=\mathcal{A}(b)</span><script type="math/tex">a=\mathcal{A}(b)</script></span>, the model needs to be supplied with matching input-output-pairs, (<span><span class="MathJax_Preview">b^i</span><script type="math/tex">b^i</script></span>, <span><span class="MathJax_Preview">a^i=\mathcal{A}(b^i)</span><script type="math/tex">a^i=\mathcal{A}(b^i)</script></span>).
+Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span>.
+In other words, when a vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span> is given it outputs <span><span class="MathJax_Preview">\Delta a=\widehat{\mathcal{A}}'\Delta b</span><script type="math/tex">\Delta a=\widehat{\mathcal{A}}'\Delta b</script></span>, where the hat symbol is used to denote that an approximation of the Jacobain is used.</p>
+<p>In the following, the example from IQN-ILS will be used: the inverse Jacobian of <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> with respect to <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> is approximated which has an input vector <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> and an output vector <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>.
+For brevity, the approximation will denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
+<p>The four model-specific methods can be made concrete for this type of model:</p>
+<ul>
+<li>The <code>predict(dr)</code> method returns an estimation of <span><span class="MathJax_Preview">\Delta \widetilde{x}=N^k\Delta r</span><script type="math/tex">\Delta \widetilde{x}=N^k\Delta r</script></span> from an input <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>, based on stored input-output-pairs.</li>
+<li>The method <code>is_ready()</code> return a boolean signalling if the <code>model</code> is ready to <em>predict</em> using the previous method. This is the case when two input-output-pairs have been added.</li>
+<li>The method <code>add(r, xt)</code> adds an input-output-pair to the model in order to improve the estimation.</li>
+<li>The method <code>filter_q(dr)</code> returns the part of vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. This is the part of the input vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> for which the deficient approximation of the Jacobian holds no information.</li>
+</ul>
+<p>Three different methods in this category are discussed.</p>
+<h3 id="least-squares">Least-squares</h3>
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.ls</code>.
-The abbreviation LS stands for <em>least-squares</em>.
-From the received input vectors <span><span class="MathJax_Preview">r^i</span><script type="math/tex">r^i</script></span> and output vectors <span><span class="MathJax_Preview">\tilde{x}^i</span><script type="math/tex">\tilde{x}^i</script></span>, differences are constructed
+The abbreviation LS stands for <em>least-squares</em>.</p>
+<p>From the received input vectors <span><span class="MathJax_Preview">r^i</span><script type="math/tex">r^i</script></span> and output vectors <span><span class="MathJax_Preview">\widetilde{x}^i</span><script type="math/tex">\widetilde{x}^i</script></span>, differences are constructed
 $$
 \delta r^{i-1}=r^i-r^{i-1},
 \;
-\delta \tilde{x}^{i-1}=\tilde{x}^i-\tilde{x}^{i-1}.
+\delta \widetilde{x}^{i-1}=\widetilde{x}^i-\widetilde{x}^{i-1}.
 $$
 These are stored as column of the matrices <span><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> and <span><span class="MathJax_Preview">W</span><script type="math/tex">W</script></span>.
 This model requires the approximation of the Jacobian, denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, to fulfill the secant equations:
@@ -1047,9 +1247,7 @@ If the diagonal element in <span><span class="MathJax_Preview">R</span><script t
 The implementation is as such that the most recent information is kept.</p>
 <p>For more information refer to [<a href="#3">3</a>].</p>
 <p>As mentioned before, the combination of this model wiht the coupled solver <code>CoupledSolverIQNI</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>], while using twice this model with the coupled solver <code>CoupledSolverIBQN</code> corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>].</p>
-<h3 id="settings">Settings</h3>
-<p>The following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>The following parameters need to be included in the <code>settings</code> dictionary.</p>
 <table>
 <thead>
 <tr>
@@ -1062,24 +1260,22 @@ They are listed in alphabetical order.</p>
 <tr>
 <td align="right"><nobr><code>min_significant</code></nobr></td>
 <td align="center">double</td>
-<td>Absolute tolerance for filtering. To disable filtering set to <code>0</code>.</td>
+<td>Absolute tolerance for filtering. To disable filtering, set to <code>0</code>.</td>
 </tr>
 <tr>
 <td align="right"><code>q</code></td>
 <td align="center">int</td>
-<td>Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be <code>0</code>.</td>
+<td>Number of previous time steps that are reused. In a steady simulation, there are no previous time steps, so then the value is irrelevant.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="multi-vector">Multi-vector</h2>
+<h3 id="multi-vector">Multi-vector</h3>
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.mv</code>. The abbreviation MV stands for <em>multi-vector</em>.</p>
 <p>In this model, differences are constructed similar to the least-squares model. However, it requires the approximation <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span> to fulfill the secant equations of the current time step only. Moreover, it is required that the approximation is as close as possible to the previous time step. In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.</p>
 <p>Filtering can also be applied here, then (almost) linear columns in the matrix containing the input information from the current time step are removed. However, filtering is much less critical compared to the <code>LS</code> model as it concerns only the information from the current time step. If no filtering is wanted, the tolerance level should be set to zero.</p>
 <p>For more information refer to [<a href="#3">3</a>].</p>
 <p>The combination of this model with the coupled solver <code>CoupledSolverIQNI</code> corresponds to the IQN-MVJ from Lindner et al. [<a href="#4">4</a>], while using twice this model with the coupled solver <code>CoupledSolverIBQN</code> corresponds to the MVQN method developed by Bogaers et al. [<a href="#5">5</a>].</p>
-<h3 id="settings_1">Settings</h3>
-<p>The following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>The following parameter needs to be included in the <code>settings</code> dictionary.</p>
 <table>
 <thead>
 <tr>
@@ -1096,14 +1292,12 @@ They are listed in alphabetical order.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="multi-vector-matrix-free">Multi-vector matrix-free</h2>
-<p>The <code>type</code> for this model is <code>coupled_solvers.models.mv_mf</code>. The abbreviation MV-MF stands for <em>multi-vector matrix-free</em>.</p>
-<p>By combining the QR-approach from the least-squares model with the time step wise storage of secant information, a matrix-free implementation of the multi-vector approach is obtained quite naturally. This implementation was also thought of by Spenke et al. [<a href="#6">6</a>].</p>
+<h3 id="multi-vector-matrix-free">Multi-vector matrix-free</h3>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.mvmf</code>. The abbreviation MV-MF stands for <em>multi-vector matrix-free</em>.</p>
+<p>By combining the QR-approach from the least-squares model with the time step wise storage of secant information, a matrix-free implementation of the multi-vector approach is obtained quite naturally. This implementation was also thought of by Spenke et al. [<a href="#6">6</a>] and is part of the IQN-ILSM framework [<a href="#7">7</a>].</p>
 <p>In this approach, the contribution of each time step is grouped into a separate term, where the most recent time step has priority over the later ones. Therefore, a parameter <code>q</code> is used to denote how many time steps are reused. Setting this parameter very large, this model will act the same as <code>MV</code>, which reuses all time steps. Generally, the performance will increase when this parameter is chosen larger, but so will be the computational cost. Nonetheless, this cost is much smaller compared to the non-matrix-free multi-vector approach.</p>
 <p>Filtering can be applied similar to the above described models, but this is typically not necessary.</p>
-<h3 id="settings_2">Settings</h3>
-<p>The following parameters need to be included in the <code>settings</code> dictionary.
-They are listed in alphabetical order.</p>
+<p>The following parameters need to be included in the <code>settings</code> dictionary.</p>
 <table>
 <thead>
 <tr>
@@ -1125,6 +1319,108 @@ They are listed in alphabetical order.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="jacobian-approximation-from-surrogate-model">Jacobian approximation from surrogate model</h2>
+<h3 id="surrogate">Surrogate</h3>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.surrogate</code>.</p>
+<p>Instead of relying on previously obtained input-output-pairs, this model uses a surrogate model to approximate the Jacobian.
+To achieve this a surrogate coupled calculation is performed at the start of every time step.
+From this calculation the Jacobian is extracted and used as approximation for the actual calculation.
+Besides the Jacobian, also the solution can be used as prediction for the actual calculation using the <a href="https://pyfsi.github.io/coconut/predictors#surrogate">surrogate predictor</a>.
+Once the actual calculation has converged, the surrogate can be <em>synchronized</em> with the actual solution. For more information refer to the <a href="https://pyfsi.github.io/coconut/coupled_solvers#iqnism"><code>CoupledSolverIQNISM</code></a>.</p>
+<p>Beside the four methods shared by all models, this one has two additional important methods:</p>
+<ul>
+<li>The method <code>get_solution</code> starts the surrogate coupled calculation and returns the solution.</li>
+<li>The method <code>set_solution</code> allows to provide an interface solution that is used to perform one iteration (flow solver calculation and using result for structure solver calculation). In this way the surrogate can be <em>synchronized</em> with actual calculation. This method does not need to be implemented.</li>
+</ul>
+<p>The surrogate coupled calculation is performed with a <code>coupled_solver</code> that has its own <code>predictor</code>, <code>convergence_criterion</code>, <code>solver_wrappers</code> and coupling algorithm.
+The surrogate solver_wrappers should be cheaper to calculate, but still representative for the actual solver wrappers.
+For example, they might solve the same equations, but on a coarser mesh. Or, they might be a simplified 1D solver that can approximate the actual 2D or 3D simulation.
+Similarly, 2D surrogate solver wrappers can approximate a 3D calculation, for an axisymmetric case. For more details refer to [<a href="#7">7</a>].</p>
+<p>The following parameter needs to be included in the <code>settings</code> dictionary.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><nobr><code>coupled_solver</code></nobr></td>
+<td align="center">dict</td>
+<td>Dictionary of the coupled solver used for the surrogate coupled calculation. The following parameter are not required in the <code>settings</code> of <code>coupled_solver</code>, as they are inherited from a higher component: <code>delta_t</code>, <code>save_restart</code>, <code>timestep_start</code>. The <code>case_name</code> parameter is set by default to <code>&lt;case_name&gt;_surrogate</code>, where <code>&lt;case_name&gt;</code> is the value of the <code>coupled_solver</code>, where this <code>surrogate</code> model is part of.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mapped">Mapped</h3>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.mapped</code>.</p>
+<p>As a <code>surrogate</code> model usually won't have the same discretization as the actual solvers, mapping capabilities are provided.
+This special model acts analogously, to the <a href="https://pyfsi.github.io/coconut/mappers"><code>mapped</code> solver wrapper</a>.
+It contains 3 <code>Components</code>: a mapper for the input, a real model and a mapper for the output.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>mapper_interface_input</code></td>
+<td align="center">dict</td>
+<td>Interface input mapper.</td>
+</tr>
+<tr>
+<td align="right"><nobr><code>mapper_interface_output</code></nobr></td>
+<td align="center">dict</td>
+<td>Interface output mapper.</td>
+</tr>
+<tr>
+<td align="right"><code>surrogate</code></td>
+<td align="center">dict</td>
+<td>Dictionary of a model, e.g. <code>surrogate</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="analytically-determined-jacobian">Analytically determined Jacobian</h2>
+<p>Analytically determining the Jacobian is only possible for very simple solvers.
+One such <code>model</code> is available, that accomplishes this for the combination of the <a href="https://pyfsi.github.io/coconut/python#tube_flow_solver">python tube flow solver</a> and <a href="https://pyfsi.github.io/coconut/python#tube_structure_solver">python tube structure solver</a>.
+This code can also serve as example or template for the use of own analytically determined Jacobians.</p>
+<h3 id="analytical-1d">Analytical 1D</h3>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.analytical_1d</code>.
+This <code>model</code> creates it own two <code>solver_wrappers</code> (<code>tube flow solver</code> and <code>tube structure solver</code>) that should be equal to the <code>solver_wrappers</code> used in the <code>coupled_solver</code>.
+A flow Jacobian and structure Jacobian are called from these <code>solver_wrappers</code> and combined to obtain the final Jacobian. For more information refer to [<a href="#7">7</a>].</p>
+<p>This Jacobian can be updated every iteration. Then the Jacobian will be determined in the current solution.
+Typically, however, this is not advised because the Jacobian doesn't change that much from iteration to iteration and because the computation of the Jacobian is rather expensive, as it involves explict matrix construction and storage as well as inversion of square dense matrices.</p>
+<p>The following parameters need to be included in the <code>settings</code> dictionary.</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>solver_models</code></td>
+<td align="center">list</td>
+<td>List of <code>solver_wrappers</code> to be used by the <code>model</code>: <code>tube flow solver</code> and <code>tube structure solver</code>. Normally these are equal to the ones used by the <code>coupled_solver</code>.</td>
+</tr>
+<tr>
+<td align="right"><nobr><code>update_every_iteration</code></nobr></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>False</code>. Whether or not the Jacobian has to be recalculated every iteration (using the solution of the previous iteration).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dummy-model">Dummy model</h2>
+<p>The <code>type</code> for this model is <code>coupled_solvers.models.dummy_model</code>.</p>
+<p>This special dummy model can be used in a coupled solver that requires a secant or surrogate model, without the model actually performing any secant or surrogate calculation. (e.g. in <a href="https://pyfsi.github.io/coconut/coupled_solvers#iqnism">CoupledSolverIQNISM</a>)
+This model will not provide any (surrogate) Jacobian approximation nor surrogate solution if used as surrogate model.</p>
+<p>No <code>settings</code> are required.</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
 <a href="http://hdl.handle.net/1854/LU-533365">Degroote J., Bathe K.-J., Vierendeels J., "Performance of a new partitioned procedure versus a monolithic procedure in fluid-structure interaction", Computers &amp; Structures, vol. 87, no. 11–12, pp. 793-801, 2009.</a></p>
@@ -1138,6 +1434,8 @@ They are listed in alphabetical order.</p>
 <a href="https://doi.org/10.1016/j.cma.2014.06.033">Bogaers A., Kok S., Reddy B., Franz T., "Quasi-Newton methods for implicit black-box FSI coupling", ComputerMethods in AppliedMechanics and Engineering, vol. 279, pp. 113–132, 2014.</a></p>
 <p><a id="6">[6]</a> 
 <a href="https://doi.org/10.1016/j.cma.2019.112810">Spenke T., Hosters N., Behr M., "A multi-vector interface quasi-newton method with linear complexity for partitioned fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 361, pp. 112810, 2020.</a></p>
+<p><a id="7">[7]</a>
+<a href="http://hdl.handle.net/1854/LU-8728347">Delaissé, N., Demeester, T., Fauconnier, D., &amp; Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
                 
               
               
@@ -1148,6 +1446,10 @@ They are listed in alphabetical order.</p>
             </article>
           </div>
         </div>
+        
+          <a href="#" class="md-top md-icon" title="Back to top" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+          </a>
         
       </main>
       
@@ -1208,7 +1510,7 @@ They are listed in alphabetical order.</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
     
     
       <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
