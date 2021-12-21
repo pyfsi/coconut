@@ -10,9 +10,8 @@
       
       
       
-      
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -20,14 +19,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#4cae4f">
+        <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
         
       
     
@@ -37,14 +32,13 @@
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
     
-    
+    <script>__md_scope=new URL(".",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
-
 
     
     
@@ -53,13 +47,16 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="green" data-md-color-accent="green">
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
-    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -76,7 +73,12 @@
       
     </div>
     
-      <header class="md-header" data-md-component="header">
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="index.html" title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
       
@@ -103,24 +105,49 @@
       </div>
     </div>
     
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
     
     
       <label class="md-header__button md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
       </label>
-      
-<div class="md-search" data-md-component="search" role="dialog">
+      <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-      </button>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
     </form>
     <div class="md-search__output">
       <div class="md-search__scrollwrap" data-md-scrollfix>
@@ -137,8 +164,7 @@
     
     
       <div class="md-header__source">
-        
-<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
@@ -150,13 +176,9 @@
       </div>
     
   </nav>
-</header>
+  
     
-    <div class="md-container" data-md-component="container">
       
-      
-        
-          
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
@@ -246,6 +268,13 @@
     </ul>
   </div>
 </nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
         
       
       <main class="md-main" data-md-component="main">
@@ -261,7 +290,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="index.html" title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
       
@@ -272,8 +303,7 @@
   </label>
   
     <div class="md-nav__source">
-      
-<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
@@ -316,10 +346,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
-      <label class="md-nav__link" for="__nav_2">
-        Coupling components
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Coupling components
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Coupling components" data-md-level="1">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
@@ -328,6 +362,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -338,8 +373,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -350,8 +387,10 @@
     </li>
   
 
+            
           
             
+              
   
   
     
@@ -363,10 +402,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" checked>
       
-      <label class="md-nav__link" for="__nav_2_3">
-        Coupled solvers
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Coupled solvers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Coupled solvers" data-md-level="2">
         <label class="md-nav__title" for="__nav_2_3">
           <span class="md-nav__icon md-icon"></span>
@@ -375,6 +418,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
     
@@ -398,6 +442,7 @@
       </a>
       
         
+
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
@@ -521,8 +566,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -533,14 +580,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -551,8 +601,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -563,8 +615,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -574,10 +628,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" data-md-state="indeterminate" type="checkbox" id="__nav_2_6" checked>
       
-      <label class="md-nav__link" for="__nav_2_6">
-        Solver wrappers
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_6">
+          Solver wrappers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Solver wrappers" data-md-level="2">
         <label class="md-nav__title" for="__nav_2_6">
           <span class="md-nav__icon md-icon"></span>
@@ -586,6 +644,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -596,8 +655,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -608,8 +669,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -620,8 +683,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -632,8 +697,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -644,8 +711,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -656,12 +725,14 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
         </ul>
       </nav>
@@ -712,10 +783,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
       
-      <label class="md-nav__link" for="__nav_5">
-        Examples
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Examples" data-md-level="1">
         <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
@@ -724,6 +799,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -734,8 +810,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -745,10 +823,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" data-md-state="indeterminate" type="checkbox" id="__nav_5_2" checked>
       
-      <label class="md-nav__link" for="__nav_5_2">
-        Breaking dam
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
+          Breaking dam
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Breaking dam" data-md-level="2">
         <label class="md-nav__title" for="__nav_5_2">
           <span class="md-nav__icon md-icon"></span>
@@ -757,6 +839,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -767,14 +850,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -784,10 +870,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" data-md-state="indeterminate" type="checkbox" id="__nav_5_3" checked>
       
-      <label class="md-nav__link" for="__nav_5_3">
-        Tube
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_3">
+          Tube
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Tube" data-md-level="2">
         <label class="md-nav__title" for="__nav_5_3">
           <span class="md-nav__icon md-icon"></span>
@@ -796,6 +886,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -806,8 +897,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -818,8 +911,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -830,8 +925,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -842,8 +939,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -854,8 +953,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -866,8 +967,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -878,8 +981,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -890,8 +995,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -902,8 +1009,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -914,8 +1023,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -926,8 +1037,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -938,8 +1051,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -950,8 +1065,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -962,14 +1079,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -979,10 +1099,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" data-md-state="indeterminate" type="checkbox" id="__nav_5_4" checked>
       
-      <label class="md-nav__link" for="__nav_5_4">
-        Turek benchmark
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_4">
+          Turek benchmark
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
         <label class="md-nav__title" for="__nav_5_4">
           <span class="md-nav__icon md-icon"></span>
@@ -991,6 +1115,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -1001,8 +1126,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -1013,14 +1140,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -1031,6 +1161,7 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
@@ -1060,155 +1191,27 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#gauss-seidel" class="md-nav__link">
-    Gauss-Seidel
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#relaxation" class="md-nav__link">
-    Relaxation
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#aitken" class="md-nav__link">
-    Aitken
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#iqni" class="md-nav__link">
-    IQNI
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ibqn" class="md-nav__link">
-    IBQN
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#iqnism" class="md-nav__link">
-    IQNISM
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#test-single-solver" class="md-nav__link">
-    Test single solver
-  </a>
-  
-    <nav class="md-nav" aria-label="Test single solver">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dummy-solver" class="md-nav__link">
-    Dummy solver
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save-results" class="md-nav__link">
-    Save results
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#restart" class="md-nav__link">
-    Restart
-  </a>
-  
-    <nav class="md-nav" aria-label="Restart">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#saving-restart-files" class="md-nav__link">
-    Saving restart files
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#performing-restart" class="md-nav__link">
-    Performing restart
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    References
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
                 
-                
-                <h1 id="coupled-solvers">Coupled solvers</h1>
+
+<h1 id="coupled-solvers">Coupled solvers</h1>
 <p>This documentation describes the different types of coupled solvers which are available. A coupled solver refers to a coupling algorithm used to couple two solvers, typically a flow and a structure solver.
 Some of these coupled solvers make use of one or more <a href="https://pyfsi.github.io/coconut/models">models</a>. An odd one out is <code>test_single_solver</code> which allows to test only one solver by coupling it to a dummy solver. 
 All coupled solvers inherit from the class <code>CoupledSolverGaussSeidel</code>.</p>
 <p>In the parameter JSON file, the dictionary <code>coupled_solver</code> holds the <code>type</code> and the dictionary <code>settings</code>, but also the dictionary <code>predictor</code>, the dictionary <code>convergence_criterion</code> and the list <code>solver_wrappers</code> containing 2 dictionaries: one for each solver wrapper. More information on these last three can be found in the <a href="https://pyfsi.github.io/coconut/predictors">predictors</a>, <a href="https://pyfsi.github.io/coconut/convergence_criteria">convergence criteria</a> and the <a href="https://pyfsi.github.io/coconut/solver_wrappers">solver wrappers</a> documentation, respectively.</p>
-<p>In the following subsections, explanatory schematics will be shown. In those schematics, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\widetilde{y}</span><script type="math/tex">\widetilde{y}</script></span> and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>. Typically, these solvers are a flow and structure solver, respectively.
-Note that the column vectors such as <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> typically contain different components of the same variables or even different variables.
-Often, the vectors <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> contain the three components of displacement, whereas the vectors <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and <span><span class="MathJax_Preview">\widetilde{y}</span><script type="math/tex">\widetilde{y}</script></span> contain the pressure and the three components of traction. However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
-Further, the superscript <span><span class="MathJax_Preview">k=0\dots</span><script type="math/tex">k=0\dots</script></span> denotes the iteration, where <span><span class="MathJax_Preview">k+1</span><script type="math/tex">k+1</script></span> is the current iteration.
-Finally, the difference between the output <span><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span> and input <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> in the same iteration is defined as the residual <span><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>, which is used to monitor the convergence of the calculation.</p>
+<p>In the following subsections, explanatory schematics will be shown. In those schematics, <span class="arithmatex"><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span class="arithmatex"><span class="MathJax_Preview">\widetilde{y}</span><script type="math/tex">\widetilde{y}</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>. Typically, these solvers are a flow and structure solver, respectively.
+Note that the column vectors such as <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> typically contain different components of the same variables or even different variables.
+Often, the vectors <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> contain the three components of displacement, whereas the vectors <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\widetilde{y}</span><script type="math/tex">\widetilde{y}</script></span> contain the pressure and the three components of traction. However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
+Further, the superscript <span class="arithmatex"><span class="MathJax_Preview">k=0\dots</span><script type="math/tex">k=0\dots</script></span> denotes the iteration, where <span class="arithmatex"><span class="MathJax_Preview">k+1</span><script type="math/tex">k+1</script></span> is the current iteration.
+Finally, the difference between the output <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span> and input <span class="arithmatex"><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> in the same iteration is defined as the residual <span class="arithmatex"><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>, which is used to monitor the convergence of the calculation.</p>
 <h2 id="gauss-seidel">Gauss-Seidel</h2>
 <p>The <code>type</code> for this coupled solver is <code>coupled_solvers.gauss_seidel</code>.</p>
 <p>Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solvers: the output of one solver is given to the other one without adjustment.</p>
-<p>The following figure shows the basic methodology.
-<img alt="gauss_seidel" src="images/iteration_gauss_seidel.png" title="Gauss-Seidel iterations" /></p>
+<p>The following figure shows the basic methodology.</p>
+<p><img alt="gauss_seidel" src="images/iteration_gauss_seidel.png" title="Gauss-Seidel iterations" /></p>
 <p>Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
 A considerable convergence stabilization and acceleration is obtained by modifying the input to one or both of the solvers using derivative information, as will be shown further.</p>
 <p>The following parameters need to be included in the <code>settings</code> dictionary. Here they are listed in alphabetical order.</p>
@@ -1264,13 +1267,13 @@ A simple approach to mitigate this is applying relaxation, also called simple mi
 $$
 x^{k+1}=(1-\omega)x^k+\omega\widetilde{x}^k=x^k+\omega r^k
 $$
-with <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> and <span><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span>, respectively the input for the first solver and the output of the second solver in iteration <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span>.
-The difference between both is called the residual <span><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.
-The mixing or relaxation factor is <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.</p>
-<p>A symbolic schematic is given in the following figure.
-<img alt="relaxation" src="images/iteration_relaxation.png" title="Relaxed Gauss-Seidel iterations" /></p>
+with <span class="arithmatex"><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span>, respectively the input for the first solver and the output of the second solver in iteration <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span>.
+The difference between both is called the residual <span class="arithmatex"><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.
+The mixing or relaxation factor is <span class="arithmatex"><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.</p>
+<p>A symbolic schematic is given in the following figure.</p>
+<p><img alt="relaxation" src="images/iteration_relaxation.png" title="Relaxed Gauss-Seidel iterations" /></p>
 <p>This method is again quite simple, but able to stabilize some cases that fail with Gauss-Seidel iterations.
-One can see that a lower <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span> corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
+One can see that a lower <span class="arithmatex"><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span> corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
 For more challenging problems, with incompressible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.</p>
 <p>Beside the parameters required in the <a href="#settings">class <code>CoupledSolverGaussSeidel</code></a>, the following parameter needs to be included in the <code>settings</code> dictionary.</p>
 <table>
@@ -1293,26 +1296,26 @@ For more challenging problems, with incompressible flow and high added-mass, thi
 <p>This coupled solver inherits from the class <code>CoupledSolverGaussSeidel</code>.
 The <code>type</code> for this coupled solver is <code>coupled_solvers.aitken</code>.</p>
 <p>Gauss-Seidel iterations are very simple, but are unstable for many cases.
-An approach to mitigate this is applying relaxation. However, the choice of a relaxation factor can be difficult: a high factor leads to a higher degree of stability, but a lower convergence speed. In more challenging cases there will be no acceptable value for <span><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.
+An approach to mitigate this is applying relaxation. However, the choice of a relaxation factor can be difficult: a high factor leads to a higher degree of stability, but a lower convergence speed. In more challenging cases there will be no acceptable value for <span class="arithmatex"><span class="MathJax_Preview">\omega</span><script type="math/tex">\omega</script></span>.
 In this coupling method a dynamic relaxation factor is used. The output of the first solver is still given to the other one without adjustment, but the output of the second solver is relaxed as follows:
 $$
 x^{k+1}=(1-\omega^k)x^k+\omega^k\widetilde{x}^k=x^k+\omega^k r^k
 $$
-with <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> and <span><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span>, respectively the input for the first solver and the output of the second solver in iteration <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span>.
-The difference between both is called the residual <span><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.
-The mixing or relaxation factor is <span><span class="MathJax_Preview">\omega^k</span><script type="math/tex">\omega^k</script></span> is dynamic in the sense that its value changes between iterations.</p>
-<p>A symbolic schematic is given in the following figure.
-<img alt="aitken" src="images/iteration_aitken.png" title="Aitken iterations" /></p>
-<p>The value of <span><span class="MathJax_Preview">\omega^k</span><script type="math/tex">\omega^k</script></span> is determined by applying the secant method for scalars directly to vectors and projecting it on <span><span class="MathJax_Preview">r^k-r^{k-1}</span><script type="math/tex">r^k-r^{k-1}</script></span>
+with <span class="arithmatex"><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span>, respectively the input for the first solver and the output of the second solver in iteration <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span>.
+The difference between both is called the residual <span class="arithmatex"><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.
+The mixing or relaxation factor is <span class="arithmatex"><span class="MathJax_Preview">\omega^k</span><script type="math/tex">\omega^k</script></span> is dynamic in the sense that its value changes between iterations.</p>
+<p>A symbolic schematic is given in the following figure.</p>
+<p><img alt="aitken" src="images/iteration_aitken.png" title="Aitken iterations" /></p>
+<p>The value of <span class="arithmatex"><span class="MathJax_Preview">\omega^k</span><script type="math/tex">\omega^k</script></span> is determined by applying the secant method for scalars directly to vectors and projecting it on <span class="arithmatex"><span class="MathJax_Preview">r^k-r^{k-1}</span><script type="math/tex">r^k-r^{k-1}</script></span>
 as follows
 $$
 \omega^k=-\omega^{k-1}\frac{(r^{k-1})^T(r^k-r^{k-1})}{(r^k-r^{k-1})^T(r^k-r^{k-1})}.
 $$</p>
-<p>The first relaxation factor in a time step is equal to the last relaxation factor from the previous time step <span><span class="MathJax_Preview">\omega^n</span><script type="math/tex">\omega^n</script></span>, but limited to <span><span class="MathJax_Preview">\omega^{max}</span><script type="math/tex">\omega^{max}</script></span>.
+<p>The first relaxation factor in a time step is equal to the last relaxation factor from the previous time step <span class="arithmatex"><span class="MathJax_Preview">\omega^n</span><script type="math/tex">\omega^n</script></span>, but limited to <span class="arithmatex"><span class="MathJax_Preview">\omega^{max}</span><script type="math/tex">\omega^{max}</script></span>.
 $$
 \omega^0=\textrm{sign}(\omega^n)\min(|\omega^n|,\omega^{max}).
 $$
-The relaxation factor in the first time step is equal to <span><span class="MathJax_Preview">\omega^{max}</span><script type="math/tex">\omega^{max}</script></span>.</p>
+The relaxation factor in the first time step is equal to <span class="arithmatex"><span class="MathJax_Preview">\omega^{max}</span><script type="math/tex">\omega^{max}</script></span>.</p>
 <p>This method improves convergence speed drastically compared to Gauss-Seidel iterations, but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for different Fourier modes of the output of the second solver.</p>
 <p>Beside the parameters required in the <a href="#settings">class <code>CoupledSolverGaussSeidel</code></a>, the following parameter needs to be included in the <code>settings</code> dictionary.</p>
 <table>
@@ -1335,20 +1338,20 @@ The relaxation factor in the first time step is equal to <span><span class="Math
 <p>This coupled solver inherits from the class <code>CoupledSolverGaussSeidel</code>.
 The <code>type</code> for this coupled solver is <code>coupled_solvers.iqni</code>.</p>
 <p>The abbreviation IQNI refers to <em>interface quasi-Newton with inverse Jacobian</em>. In this type of coupling algorithm, the combination of the two solvers is seen as one system.
-The input of the first solver <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> in iteration <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> is denoted by <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>. The output of this solver is transferred unchanged to the second solver. The output of the second solver is denoted <span><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span>. The difference between output and input is called the residual <span><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.</p>
-<p>A residual operator <span><span class="MathJax_Preview">\mathcal{R}(x)</span><script type="math/tex">\mathcal{R}(x)</script></span> is defined, which returns the residual <span><span class="MathJax_Preview">r^k</span><script type="math/tex">r^k</script></span> as a function of <span><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>. The goal is to find <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> for which <span><span class="MathJax_Preview">\mathcal{R}(x)=0</span><script type="math/tex">\mathcal{R}(x)=0</script></span>, i.e. the root. This system of non-linear equations is solved using Newton-Raphson iterations as follows
+The input of the first solver <span class="arithmatex"><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> in iteration <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> is denoted by <span class="arithmatex"><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>. The output of this solver is transferred unchanged to the second solver. The output of the second solver is denoted <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}^k</span><script type="math/tex">\widetilde{x}^k</script></span>. The difference between output and input is called the residual <span class="arithmatex"><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.</p>
+<p>A residual operator <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}(x)</span><script type="math/tex">\mathcal{R}(x)</script></span> is defined, which returns the residual <span class="arithmatex"><span class="MathJax_Preview">r^k</span><script type="math/tex">r^k</script></span> as a function of <span class="arithmatex"><span class="MathJax_Preview">x^k</span><script type="math/tex">x^k</script></span>. The goal is to find <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> for which <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}(x)=0</span><script type="math/tex">\mathcal{R}(x)=0</script></span>, i.e. the root. This system of non-linear equations is solved using Newton-Raphson iterations as follows
 $$
 \Delta x^k=\mathcal{R}'^{-1}(x^k)\Delta r,
 $$
-where <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> is the Jacobian of <span><span class="MathJax_Preview">\mathcal{R}</span><script type="math/tex">\mathcal{R}</script></span> with respect to <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span>, <span><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span> is the difference between the input of two subsequent iterations 
-and <span><span class="MathJax_Preview">\Delta r^k=0-r^k=-r^k</span><script type="math/tex">\Delta r^k=0-r^k=-r^k</script></span> is the difference between the desired and the current residual.
+where <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> is the Jacobian of <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}</span><script type="math/tex">\mathcal{R}</script></span> with respect to <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span>, <span class="arithmatex"><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span> is the difference between the input of two subsequent iterations 
+and <span class="arithmatex"><span class="MathJax_Preview">\Delta r^k=0-r^k=-r^k</span><script type="math/tex">\Delta r^k=0-r^k=-r^k</script></span> is the difference between the desired and the current residual.
 The iteration update can also be written as
 $$
 x^{k+1}=x^k-\mathcal{R}'^{-1}(x^k)r^k.
 $$</p>
-<p>However, this Jacobian is not accessible and therefore has to be approximated. Instead of approximating <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span>, solving the linear system can be avoided by approximating its inverse directly.</p>
+<p>However, this Jacobian is not accessible and therefore has to be approximated. Instead of approximating <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span>, solving the linear system can be avoided by approximating its inverse directly.</p>
 <p>The approximation procedure typically results in a low-rank Jacobian.
-Whereas, a full rank Jacobian is required for the Newton-Raphson update to function properly. Therefore, the inverse Jacobian of an altered residual operator <span><span class="MathJax_Preview">\widetilde{\mathcal{R}}</span><script type="math/tex">\widetilde{\mathcal{R}}</script></span> is approximated.
+Whereas, a full rank Jacobian is required for the Newton-Raphson update to function properly. Therefore, the inverse Jacobian of an altered residual operator <span class="arithmatex"><span class="MathJax_Preview">\widetilde{\mathcal{R}}</span><script type="math/tex">\widetilde{\mathcal{R}}</script></span> is approximated.
 This altered residual operator is defined as follows
 $$
 r^{k+1}=\widetilde{\mathcal{R}}(\widetilde{x}^{k+1})=\mathcal{R}(\widetilde{x}^{k+1}-r^{k+1}).
@@ -1357,13 +1360,13 @@ The inverse of both Jacobians are linked by
 $$
 \widetilde{\mathcal{R}}'^{-1}=\mathcal{R}'^{-1}+I,
 $$
-where <span><span class="MathJax_Preview">\widetilde{\mathcal{R}}'</span><script type="math/tex">\widetilde{\mathcal{R}}'</script></span> is the Jacobian of <span><span class="MathJax_Preview">\widetilde{\mathcal{R}}</span><script type="math/tex">\widetilde{\mathcal{R}}</script></span> with respect to <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> and <span><span class="MathJax_Preview">I</span><script type="math/tex">I</script></span> is the identity matrix.
+where <span class="arithmatex"><span class="MathJax_Preview">\widetilde{\mathcal{R}}'</span><script type="math/tex">\widetilde{\mathcal{R}}'</script></span> is the Jacobian of <span class="arithmatex"><span class="MathJax_Preview">\widetilde{\mathcal{R}}</span><script type="math/tex">\widetilde{\mathcal{R}}</script></span> with respect to <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> and <span class="arithmatex"><span class="MathJax_Preview">I</span><script type="math/tex">I</script></span> is the identity matrix.
 For this Jacobian the following is valid
 $$
 \Delta \widetilde{x}^k=\widetilde{\mathcal{R}}'^{-1}(x^k)\Delta r^k,
 $$
-where <span><span class="MathJax_Preview">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</script></span> is the difference between the the output of two subsequent iterations.
-This Jacobian is also not known, but is approximated using a <code>model</code> and denoted by <span><span class="MathJax_Preview">\widetilde{N}^k</span><script type="math/tex">\widetilde{N}^k</script></span>. The type of <code>model</code> and its settings are specified in the <code>settings</code> dictionary. This model returns an estimation of <span><span class="MathJax_Preview">\Delta\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k</script></span> given a value <span><span class="MathJax_Preview">\Delta r^k=-r^k</span><script type="math/tex">\Delta r^k=-r^k</script></span>
+where <span class="arithmatex"><span class="MathJax_Preview">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</script></span> is the difference between the the output of two subsequent iterations.
+This Jacobian is also not known, but is approximated using a <code>model</code> and denoted by <span class="arithmatex"><span class="MathJax_Preview">\widetilde{N}^k</span><script type="math/tex">\widetilde{N}^k</script></span>. The type of <code>model</code> and its settings are specified in the <code>settings</code> dictionary. This model returns an estimation of <span class="arithmatex"><span class="MathJax_Preview">\Delta\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k</script></span> given a value <span class="arithmatex"><span class="MathJax_Preview">\Delta r^k=-r^k</span><script type="math/tex">\Delta r^k=-r^k</script></span>
 $$
 \Delta\widetilde{x}^k=\widetilde{N}^k \Delta r^k.
 $$
@@ -1371,8 +1374,8 @@ Finally resulting in the update formula
 $$
 x^{k+1}=x^k+(\widetilde{N}^k-I)\Delta r^k=x^k-\widetilde{N}^k r^k+r^k.
 $$</p>
-<p>A symbolic schematic is given in the following figure.
-<img alt="iqni" src="images/iteration_iqni.png" title="Residual operator iterations" /></p>
+<p>A symbolic schematic is given in the following figure.</p>
+<p><img alt="iqni" src="images/iteration_iqni.png" title="Residual operator iterations" /></p>
 <p>For more information with respect to the approximation of the Jacobian, refer to the <a href="https://pyfsi.github.io/coconut/models">models documentation</a>.
 More information about residual operator methods can be found in [<a href="#1">1</a>].</p>
 <p>Beside the parameters required in the <a href="#settings">class <code>CoupledSolverGaussSeidel</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
@@ -1410,7 +1413,7 @@ $$
 \end{cases}
 $$
 is solved in block form.
-Again, <span><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span><span class="MathJax_Preview">\widetilde{y}</span><script type="math/tex">\widetilde{y}</script></span> and <span><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>. In this iteration scheme, the output of each solver is altered before being transferred to the other one.
+Again, <span class="arithmatex"><span class="MathJax_Preview">\mathcal{F}</span><script type="math/tex">\mathcal{F}</script></span> is the first solver with input <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and output <span class="arithmatex"><span class="MathJax_Preview">\widetilde{y}</span><script type="math/tex">\widetilde{y}</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\mathcal{S}</span><script type="math/tex">\mathcal{S}</script></span> is the second solver with input <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> and output <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>. In this iteration scheme, the output of each solver is altered before being transferred to the other one.
 Solving the system in block Newton-Raphson iterations results in
 $$
     \begin{bmatrix}
@@ -1430,26 +1433,26 @@ $$
         \mathcal{S}(y)-x
     \end{bmatrix},
 $$
-where <span><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span> denote the Jacobians of the first and second solver, respectively.
-These Jacobians are, however, not accessible and are approximated using a <code>model</code> as specified in the <code>settings</code> dictionary. To the first and second solver correspond <code>model_f</code>, denoted here by <span><span class="MathJax_Preview">M_f</span><script type="math/tex">M_f</script></span>, and <code>model_s</code>, denoted bye <span><span class="MathJax_Preview">M_s</span><script type="math/tex">M_s</script></span>, respectively. For example, <code>model_f</code> returns an estimation of <span><span class="MathJax_Preview">\Delta\widetilde{y}^k=\widetilde{y}^{k+1}-\widetilde{y}^k</span><script type="math/tex">\Delta\widetilde{y}^k=\widetilde{y}^{k+1}-\widetilde{y}^k</script></span> given <span><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span>
+where <span class="arithmatex"><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span> denote the Jacobians of the first and second solver, respectively.
+These Jacobians are, however, not accessible and are approximated using a <code>model</code> as specified in the <code>settings</code> dictionary. To the first and second solver correspond <code>model_f</code>, denoted here by <span class="arithmatex"><span class="MathJax_Preview">M_f</span><script type="math/tex">M_f</script></span>, and <code>model_s</code>, denoted bye <span class="arithmatex"><span class="MathJax_Preview">M_s</span><script type="math/tex">M_s</script></span>, respectively. For example, <code>model_f</code> returns an estimation of <span class="arithmatex"><span class="MathJax_Preview">\Delta\widetilde{y}^k=\widetilde{y}^{k+1}-\widetilde{y}^k</span><script type="math/tex">\Delta\widetilde{y}^k=\widetilde{y}^{k+1}-\widetilde{y}^k</script></span> given <span class="arithmatex"><span class="MathJax_Preview">\Delta x^k=x^{k+1}-x^k</span><script type="math/tex">\Delta x^k=x^{k+1}-x^k</script></span>
 $$
 \Delta\widetilde{y}^k=M_f^k \Delta x^k.
 $$</p>
-<p>Solving for <span><span class="MathJax_Preview">x^{k+1}=x^k+\Delta x^k</span><script type="math/tex">x^{k+1}=x^k+\Delta x^k</script></span> requires solving the system
+<p>Solving for <span class="arithmatex"><span class="MathJax_Preview">x^{k+1}=x^k+\Delta x^k</span><script type="math/tex">x^{k+1}=x^k+\Delta x^k</script></span> requires solving the system
 $$
 \left(I-M_s^k M_f^k\right)\Delta x^k
 =\widetilde{x}^k-x^k+M_s^k(\widetilde{y}^k-y^k)
 $$
-for <span><span class="MathJax_Preview">\Delta x^k</span><script type="math/tex">\Delta x^k</script></span>.
+for <span class="arithmatex"><span class="MathJax_Preview">\Delta x^k</span><script type="math/tex">\Delta x^k</script></span>.
 This is done matrix-free using the Generalized minimal residual method (GMRES).
-Analogously, the input <span><span class="MathJax_Preview">y^{k+1}=y^k+\Delta y^k</span><script type="math/tex">y^{k+1}=y^k+\Delta y^k</script></span> for the structural solver by solving 
+Analogously, the input <span class="arithmatex"><span class="MathJax_Preview">y^{k+1}=y^k+\Delta y^k</span><script type="math/tex">y^{k+1}=y^k+\Delta y^k</script></span> for the structural solver by solving 
 $$
 \left(I-M_f^{k+1}M_s^k\right)\Delta y^k
 =\widetilde{y}^{k+1}-y^k+M_f^{k+1}(\widetilde{x}^k-x^{k+1})
 $$
-for <span><span class="MathJax_Preview">\Delta y^k</span><script type="math/tex">\Delta y^k</script></span>.</p>
-<p>A symbolic schematic is given in the following figure.
-<img alt="ibqn" src="images/iteration_ibqn.png" title="Block iterations" /></p>
+for <span class="arithmatex"><span class="MathJax_Preview">\Delta y^k</span><script type="math/tex">\Delta y^k</script></span>.</p>
+<p>A symbolic schematic is given in the following figure.</p>
+<p><img alt="ibqn" src="images/iteration_ibqn.png" title="Block iterations" /></p>
 <p>The actual approximation of the Jacobian occurs with the same <a href="https://pyfsi.github.io/coconut/models">models</a> as before.
 More information about block methods can be found in [<a href="#1">1</a>].</p>
 <p>Beside the parameters required in the <a href="#settings">class <code>CoupledSolverGaussSeidel</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
@@ -1495,12 +1498,12 @@ The <code>type</code> for this coupled solver is <code>coupled_solvers.iqnism</c
 This coupled solver is linked to the IQN-ILSM framework [<a href="#2">2</a>].</p>
 <p>The abbreviation IQNISM refers to <em>interface quasi-Newton with inverse Jacobian from surrogate model</em>.
 This coupled solver belongs in the same category as the IQNI coupled solver: the combination of the two solvers is seen as one system, where the input of the first solver is transferred unchanged to the second solver.
-The difference between output and input of this system is called the residual <span><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.</p>
-<p>Just like for IQNI, a residual operator <span><span class="MathJax_Preview">\mathcal{R}(x)</span><script type="math/tex">\mathcal{R}(x)</script></span> is defined and the root of this system of non-linear equations is solved using Newton-Raphson iterations, as follows
+The difference between output and input of this system is called the residual <span class="arithmatex"><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.</p>
+<p>Just like for IQNI, a residual operator <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}(x)</span><script type="math/tex">\mathcal{R}(x)</script></span> is defined and the root of this system of non-linear equations is solved using Newton-Raphson iterations, as follows
 $$
 x^{k+1}=x^k-\widetilde{N}^k r^k+r^k,
 $$
-where <span><span class="MathJax_Preview">\widetilde{N}^k</span><script type="math/tex">\widetilde{N}^k</script></span> is an approximation of the inverse Jacobian of <span><span class="MathJax_Preview">\mathcal{R}</span><script type="math/tex">\mathcal{R}</script></span> with respect to <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>.</p>
+where <span class="arithmatex"><span class="MathJax_Preview">\widetilde{N}^k</span><script type="math/tex">\widetilde{N}^k</script></span> is an approximation of the inverse Jacobian of <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}</span><script type="math/tex">\mathcal{R}</script></span> with respect to <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>.</p>
 <p>As in IQNI, this approximation is obtained using the <code>model</code> components.
 Only here, two of them ar used: a <code>surrogate</code> model is used, in addition to a secant model.
 The type of the models and their settings are specified in the <code>settings</code> dictionary:
@@ -1555,28 +1558,73 @@ Note that, in this way, the secant Jacobian has preference over the surrogate Ja
 </table>
 <p>This coupled solver is closely related to the IQN-ILSM framework described in [<a href="#2">2</a>].
 The settings structure for the different surrogate models discussed in this work are:</p>
-<table>
-<thead>
-<tr>
-<th align="right">surrogate model</th>
-<th>settings</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="right">previous time steps (e.g. 100) (=reuse)</td>
-<td>"type": "coupled_solvers.iqnism",<br />"settings": {<br />&ensp;"model": {<br />&emsp;"type": "coupled_solvers.models.mvmf",<br />&emsp;"settings": {"q": 100}<br />&ensp;},<br />&ensp;"surrogate": {<br />&emsp;"type": "coupled_solvers.models.dummy_model"<br />...}</td>
-</tr>
-<tr>
-<td align="right">other surrogate model</td>
-<td>"type": "coupled_solvers.iqnism",<br />"settings": {<br />&ensp;"model": {<br />&emsp;"type": "coupled_solvers.models.mvmf",<br />&emsp;"settings": {"q": 0}<br />&ensp;},<br />&ensp;"surrogate": {<br />&emsp;"type": "coupled_solvers.models.surrogate",<br />&emsp;"settings": {...}<br />&ensp;}<br />...}</td>
-</tr>
-<tr>
-<td align="right">previous time steps + other surrogate model</td>
-<td>"type": "coupled_solvers.iqnism",<br />"settings": {<br />&ensp;"model": {<br />&emsp;"type": "coupled_solvers.models.mvmf",<br />&emsp;"settings": {"q": 100}<br />&ensp;},<br />&ensp;"surrogate": {<br />&emsp;"type": "coupled_solvers.models.surrogate",<br />&emsp;"settings": {...}<br />&ensp;}<br />...}</td>
-</tr>
-</tbody>
-</table>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">previous time steps (e.g. 100) (=reuse)</label><label for="__tabbed_1_2">other surrogate model</label><label for="__tabbed_1_3">previous time steps + other surrogate model</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.iqnism&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;model&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.mvmf&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">100</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;surrogate&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.dummy_model&quot;</span>
+    <span class="p">},</span>
+    <span class="err">...</span>
+  <span class="p">},</span>
+  <span class="err">...</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.iqnism&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;model&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.mvmf&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">0</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;surrogate&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.surrogate&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="err">...</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="err">...</span>
+  <span class="p">},</span>
+  <span class="err">...</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.iqnism&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;model&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.mvmf&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">100</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;surrogate&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.surrogate&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="err">...</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="err">...</span>
+  <span class="p">},</span>
+  <span class="err">...</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="test-single-solver">Test single solver</h2>
 <p>The solver <code>test_single_solver</code> can be used to test new cases and solver settings. The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy. This test environment inherits from the class <code>CoupledSolverGaussSeidel</code>. The <code>type</code> for this coupled solver is <code>coupled_solvers.test_single_solver</code>.</p>
 <h3 id="dummy-solver">Dummy solver</h3>
@@ -1630,7 +1678,7 @@ The <a href="#settings"><code>settings</code> dictionary</a> is used to look up 
 An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>.</p>
 <p>The working directory of the solver is copied to a new directory with the same name and a suffix <code>_testX</code> with <code>X</code> an integer starting from 0. As such, previous test solver working directories are not overwritten.
 The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver test working directory. As such, the pickle file can always be linked to the corresponding test working directory.</p>
-<p>During run time, the norm of <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
+<p>During run time, the norm of <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
 <p>In each coupled solver, a positive non-zero value can be assigned to the <code>save_results</code> parameter, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by <code>save_results</code>, but contains information for all time steps.
@@ -1649,12 +1697,12 @@ The pickle file may be used by the postprocessing files included with the exampl
 <tr>
 <td align="right"><code>solution_x</code></td>
 <td align="center">numpy array</td>
-<td>Contains the values of the vector <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> (typically displacement) for every time step as columns of a 2 dimensional np-array. The initial value is included as well, such that the number of column will be one higher than the number of calculated time steps. The vector <span><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> refers to the input of the first solver wrapper.</td>
+<td>Contains the values of the vector <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> (typically displacement) for every time step as columns of a 2 dimensional np-array. The initial value is included as well, such that the number of column will be one higher than the number of calculated time steps. The vector <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> refers to the input of the first solver wrapper.</td>
 </tr>
 <tr>
 <td align="right"><code>solution_y</code></td>
 <td align="center">numpy array</td>
-<td>Contains the values of the vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> (typically pressure and traction) for every time step as columns of a 2 dimensional np-array, similar to <code>solution_x</code>. The vector <span><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> refers to the input of the second solver wrapper.</td>
+<td>Contains the values of the vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> (typically pressure and traction) for every time step as columns of a 2 dimensional np-array, similar to <code>solution_x</code>. The vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> refers to the input of the second solver wrapper.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_x</code></td>
@@ -1709,7 +1757,7 @@ This option is only meant for debugging a new coupling algorithm. It should not 
 <h2 id="restart">Restart</h2>
 <p>The restart functionality is very useful to continue a calculation which has been stopped, either intentionally or unintentionally.
 The goal is to continue as if the code had never been interrupted.</p>
-<p>In order to restart from time step <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>, the coupled solver saves the predictor and possibly one or more models in the state at the end of time step <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> in a pickle file.
+<p>In order to restart from time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>, the coupled solver saves the predictor and possibly one or more models in the state at the end of time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> in a pickle file.
 By saving the predictor, the initial guess at the start of the first time step(s) will be the same, as the predictor typically extrapolates the solution from the previous time step(s) in some way.
 The model(s) are saved such that the behavior of the coupling algorithm is the same.
 This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse (q&gt;0).
@@ -1737,11 +1785,11 @@ The following table gives an overview of the coupled solvers which save one or m
 </tbody>
 </table>
 <p>However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
-Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>.
+Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>.
 Moreover, its vital that they reconstruct the exact same model parts as in the initial calculation.
 In other words, the undeformed coordinates must be the same.
-Conversely, they are not required to initialize the interfaces with the correct data from time step <span><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>, as this taken care of by the predictor in the coupled solver.
-Only when both solver wrappers allow restart, is is possible to restart a calculation!</p>
+Conversely, they are not required to initialize the interfaces with the correct data from time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>, as this taken care of by the predictor in the coupled solver.
+Only when both solver wrappers allow restart, is it possible to restart a calculation!</p>
 <h3 id="saving-restart-files">Saving restart files</h3>
 <p>During a calculation it is possible to save restart pickle files.
 As described above the pickle file for restart has a name (<em><code>&lt;name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>), based on the setting <code>case_name</code>.</p>
@@ -1769,25 +1817,20 @@ Note that the presence of the restart pickle file on the other hand is required.
 <a href="http://hdl.handle.net/1854/LU-8685199">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.</a></p>
 <p><a id="2">[2]</a>
 <a href="http://hdl.handle.net/1854/LU-8728347">Delaissé, N., Demeester, T., Fauconnier, D., &amp; Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
-                
-              
-              
-                
-
 
               
             </article>
           </div>
         </div>
         
-          <a href="#" class="md-top md-icon" title="Back to top" data-md-component="top" data-md-state="hidden">
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
           </a>
         
       </main>
       
-        
-<footer class="md-footer">
+        <footer class="md-footer">
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
@@ -1826,14 +1869,15 @@ Note that the presence of the restart pickle file on the other hand is required.
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
-      <div class="md-footer-copyright">
-        
-        Made with
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-          Material for MkDocs
-        </a>
-        
-      </div>
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
       
     </div>
   </div>
@@ -1843,10 +1887,10 @@ Note that the presence of the restart pickle file on the other hand is required.
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

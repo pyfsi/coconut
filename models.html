@@ -10,9 +10,8 @@
       
       
       
-      
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -20,14 +19,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ca7ac06f.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.f1a3b89f.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#4cae4f">
+        <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
         
       
     
@@ -37,14 +32,13 @@
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
     
-    
+    <script>__md_scope=new URL(".",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
-
 
     
     
@@ -53,13 +47,16 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="green" data-md-color-accent="green">
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
-    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -76,7 +73,12 @@
       
     </div>
     
-      <header class="md-header" data-md-component="header">
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="index.html" title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
       
@@ -103,24 +105,49 @@
       </div>
     </div>
     
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
     
     
       <label class="md-header__button md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
       </label>
-      
-<div class="md-search" data-md-component="search" role="dialog">
+      <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
       </label>
-      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-      </button>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
     </form>
     <div class="md-search__output">
       <div class="md-search__scrollwrap" data-md-scrollfix>
@@ -137,8 +164,7 @@
     
     
       <div class="md-header__source">
-        
-<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
@@ -150,13 +176,9 @@
       </div>
     
   </nav>
-</header>
+  
     
-    <div class="md-container" data-md-component="container">
       
-      
-        
-          
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
@@ -246,6 +268,13 @@
     </ul>
   </div>
 </nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
         
       
       <main class="md-main" data-md-component="main">
@@ -261,7 +290,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="index.html" title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
       
@@ -272,8 +303,7 @@
   </label>
   
     <div class="md-nav__source">
-      
-<a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
@@ -316,10 +346,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
-      <label class="md-nav__link" for="__nav_2">
-        Coupling components
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Coupling components
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Coupling components" data-md-level="1">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
@@ -328,6 +362,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -338,8 +373,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -350,8 +387,10 @@
     </li>
   
 
+            
           
             
+              
   
   
     
@@ -363,10 +402,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" checked>
       
-      <label class="md-nav__link" for="__nav_2_3">
-        Coupled solvers
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Coupled solvers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Coupled solvers" data-md-level="2">
         <label class="md-nav__title" for="__nav_2_3">
           <span class="md-nav__icon md-icon"></span>
@@ -375,6 +418,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -385,8 +429,10 @@
     </li>
   
 
+            
           
             
+              
   
   
     
@@ -410,6 +456,7 @@
       </a>
       
         
+
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
@@ -532,14 +579,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -550,8 +600,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -562,8 +614,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -573,10 +627,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" data-md-state="indeterminate" type="checkbox" id="__nav_2_6" checked>
       
-      <label class="md-nav__link" for="__nav_2_6">
-        Solver wrappers
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_6">
+          Solver wrappers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Solver wrappers" data-md-level="2">
         <label class="md-nav__title" for="__nav_2_6">
           <span class="md-nav__icon md-icon"></span>
@@ -585,6 +643,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -595,8 +654,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -607,8 +668,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -619,8 +682,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -631,8 +696,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -643,8 +710,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -655,12 +724,14 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
         </ul>
       </nav>
@@ -711,10 +782,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
       
-      <label class="md-nav__link" for="__nav_5">
-        Examples
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Examples" data-md-level="1">
         <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
@@ -723,6 +798,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -733,8 +809,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -744,10 +822,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" data-md-state="indeterminate" type="checkbox" id="__nav_5_2" checked>
       
-      <label class="md-nav__link" for="__nav_5_2">
-        Breaking dam
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
+          Breaking dam
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Breaking dam" data-md-level="2">
         <label class="md-nav__title" for="__nav_5_2">
           <span class="md-nav__icon md-icon"></span>
@@ -756,6 +838,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -766,14 +849,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -783,10 +869,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" data-md-state="indeterminate" type="checkbox" id="__nav_5_3" checked>
       
-      <label class="md-nav__link" for="__nav_5_3">
-        Tube
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_3">
+          Tube
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Tube" data-md-level="2">
         <label class="md-nav__title" for="__nav_5_3">
           <span class="md-nav__icon md-icon"></span>
@@ -795,6 +885,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -805,8 +896,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -817,8 +910,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -829,8 +924,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -841,8 +938,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -853,8 +952,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -865,8 +966,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -877,8 +980,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -889,8 +994,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -901,8 +1008,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -913,8 +1022,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -925,8 +1036,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -937,8 +1050,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -949,8 +1064,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -961,14 +1078,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -978,10 +1098,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" data-md-state="indeterminate" type="checkbox" id="__nav_5_4" checked>
       
-      <label class="md-nav__link" for="__nav_5_4">
-        Turek benchmark
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_4">
+          Turek benchmark
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
         <label class="md-nav__title" for="__nav_5_4">
           <span class="md-nav__icon md-icon"></span>
@@ -990,6 +1114,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -1000,8 +1125,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -1012,14 +1139,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -1030,6 +1160,7 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
@@ -1059,147 +1190,20 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#common-methods" class="md-nav__link">
-    Common methods
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jacobian-approximation-from-secant-information" class="md-nav__link">
-    Jacobian approximation from secant information
-  </a>
-  
-    <nav class="md-nav" aria-label="Jacobian approximation from secant information">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#least-squares" class="md-nav__link">
-    Least-squares
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multi-vector" class="md-nav__link">
-    Multi-vector
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multi-vector-matrix-free" class="md-nav__link">
-    Multi-vector matrix-free
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#jacobian-approximation-from-surrogate-model" class="md-nav__link">
-    Jacobian approximation from surrogate model
-  </a>
-  
-    <nav class="md-nav" aria-label="Jacobian approximation from surrogate model">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#surrogate" class="md-nav__link">
-    Surrogate
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mapped" class="md-nav__link">
-    Mapped
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#analytically-determined-jacobian" class="md-nav__link">
-    Analytically determined Jacobian
-  </a>
-  
-    <nav class="md-nav" aria-label="Analytically determined Jacobian">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#analytical-1d" class="md-nav__link">
-    Analytical 1D
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dummy-model" class="md-nav__link">
-    Dummy model
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    References
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
                 
-                
-                <h1 id="models">Models</h1>
+
+<h1 id="models">Models</h1>
 <p>This documentation describes the different types of available models. The purpose of a model always is to provide a (approximated) (inverse) Jacobian of a system.
 Often this achieved with the help of secant information from input-output-pairs, resulting in a so-called quasi-Newton method.
 Another approach to obtain a approximated Jacobian is the use of a surrogate model. Finally, in some cases, the Jacobian can be derived analytically.
 These three types of models will be discussed further.</p>
 <p>Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
-For example, using the coupled solver <code>CoupledSolverIQNI</code> with the model <code>ModelLS</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>]. In that case, the approximated Jacobian is <span><span class="MathJax_Preview">\mathcal{R}'^{-1}</span><script type="math/tex">\mathcal{R}'^{-1}</script></span>.
-If the coupled solver <code>CoupledSolverIBQN</code> is combined with two instances the model <code>ModelLS</code>, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>]. Then, the two models each approximate one Jacobian: <span><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span>.
+For example, using the coupled solver <code>CoupledSolverIQNI</code> with the model <code>ModelLS</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>]. In that case, the approximated Jacobian is <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}'^{-1}</span><script type="math/tex">\mathcal{R}'^{-1}</script></span>.
+If the coupled solver <code>CoupledSolverIBQN</code> is combined with two instances the model <code>ModelLS</code>, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>]. Then, the two models each approximate one Jacobian: <span class="arithmatex"><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span>.
 Refer to the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers documentation</a> for more information on these notations.</p>
 <h2 id="common-methods">Common methods</h2>
 <p>There are four model-specific methods, which are implemented by all models.</p>
@@ -1210,30 +1214,30 @@ Refer to the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled s
 <li>And finally, the method <code>filter_q(dr)</code> returns the part of supplied vector which falls inside of the nullspace of the Jacobian. This is the part of the supplied vector for which the model has no derivative information.</li>
 </ul>
 <h2 id="jacobian-approximation-from-secant-information">Jacobian approximation from secant information</h2>
-<p>In order to approximate the Jacobian <span><span class="MathJax_Preview">\mathcal{A}'</span><script type="math/tex">\mathcal{A}'</script></span> of a general function <span><span class="MathJax_Preview">a=\mathcal{A}(b)</span><script type="math/tex">a=\mathcal{A}(b)</script></span>, the model needs to be supplied with matching input-output-pairs, (<span><span class="MathJax_Preview">b^i</span><script type="math/tex">b^i</script></span>, <span><span class="MathJax_Preview">a^i=\mathcal{A}(b^i)</span><script type="math/tex">a^i=\mathcal{A}(b^i)</script></span>).
-Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span>.
-In other words, when a vector <span><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span> is given it outputs <span><span class="MathJax_Preview">\Delta a=\widehat{\mathcal{A}}'\Delta b</span><script type="math/tex">\Delta a=\widehat{\mathcal{A}}'\Delta b</script></span>, where the hat symbol is used to denote that an approximation of the Jacobain is used.</p>
-<p>In the following, the example from IQN-ILS will be used: the inverse Jacobian of <span><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> with respect to <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> is approximated which has an input vector <span><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> and an output vector <span><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>.
-For brevity, the approximation will denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
+<p>In order to approximate the Jacobian <span class="arithmatex"><span class="MathJax_Preview">\mathcal{A}'</span><script type="math/tex">\mathcal{A}'</script></span> of a general function <span class="arithmatex"><span class="MathJax_Preview">a=\mathcal{A}(b)</span><script type="math/tex">a=\mathcal{A}(b)</script></span>, the model needs to be supplied with matching input-output-pairs, (<span class="arithmatex"><span class="MathJax_Preview">b^i</span><script type="math/tex">b^i</script></span>, <span class="arithmatex"><span class="MathJax_Preview">a^i=\mathcal{A}(b^i)</span><script type="math/tex">a^i=\mathcal{A}(b^i)</script></span>).
+Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector <span class="arithmatex"><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span>.
+In other words, when a vector <span class="arithmatex"><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span> is given it outputs <span class="arithmatex"><span class="MathJax_Preview">\Delta a=\widehat{\mathcal{A}}'\Delta b</span><script type="math/tex">\Delta a=\widehat{\mathcal{A}}'\Delta b</script></span>, where the hat symbol is used to denote that an approximation of the Jacobain is used.</p>
+<p>In the following, the example from IQN-ILS will be used: the inverse Jacobian of <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> with respect to <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> is approximated which has an input vector <span class="arithmatex"><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> and an output vector <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>.
+For brevity, the approximation will denoted by <span class="arithmatex"><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
 <p>The four model-specific methods can be made concrete for this type of model:</p>
 <ul>
-<li>The <code>predict(dr)</code> method returns an estimation of <span><span class="MathJax_Preview">\Delta \widetilde{x}=N^k\Delta r</span><script type="math/tex">\Delta \widetilde{x}=N^k\Delta r</script></span> from an input <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>, based on stored input-output-pairs.</li>
+<li>The <code>predict(dr)</code> method returns an estimation of <span class="arithmatex"><span class="MathJax_Preview">\Delta \widetilde{x}=N^k\Delta r</span><script type="math/tex">\Delta \widetilde{x}=N^k\Delta r</script></span> from an input <span class="arithmatex"><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>, based on stored input-output-pairs.</li>
 <li>The method <code>is_ready()</code> return a boolean signalling if the <code>model</code> is ready to <em>predict</em> using the previous method. This is the case when two input-output-pairs have been added.</li>
 <li>The method <code>add(r, xt)</code> adds an input-output-pair to the model in order to improve the estimation.</li>
-<li>The method <code>filter_q(dr)</code> returns the part of vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. This is the part of the input vector <span><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> for which the deficient approximation of the Jacobian holds no information.</li>
+<li>The method <code>filter_q(dr)</code> returns the part of vector <span class="arithmatex"><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> which is orthogonal to the columnspace of the matrix containing the differences between consecutively stored inputs. This is the part of the input vector <span class="arithmatex"><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span> for which the deficient approximation of the Jacobian holds no information.</li>
 </ul>
 <p>Three different methods in this category are discussed.</p>
 <h3 id="least-squares">Least-squares</h3>
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.ls</code>.
 The abbreviation LS stands for <em>least-squares</em>.</p>
-<p>From the received input vectors <span><span class="MathJax_Preview">r^i</span><script type="math/tex">r^i</script></span> and output vectors <span><span class="MathJax_Preview">\widetilde{x}^i</span><script type="math/tex">\widetilde{x}^i</script></span>, differences are constructed
+<p>From the received input vectors <span class="arithmatex"><span class="MathJax_Preview">r^i</span><script type="math/tex">r^i</script></span> and output vectors <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}^i</span><script type="math/tex">\widetilde{x}^i</script></span>, differences are constructed
 $$
 \delta r^{i-1}=r^i-r^{i-1},
 \;
 \delta \widetilde{x}^{i-1}=\widetilde{x}^i-\widetilde{x}^{i-1}.
 $$
-These are stored as column of the matrices <span><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> and <span><span class="MathJax_Preview">W</span><script type="math/tex">W</script></span>.
-This model requires the approximation of the Jacobian, denoted by <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, to fulfill the secant equations:
+These are stored as column of the matrices <span class="arithmatex"><span class="MathJax_Preview">V</span><script type="math/tex">V</script></span> and <span class="arithmatex"><span class="MathJax_Preview">W</span><script type="math/tex">W</script></span>.
+This model requires the approximation of the Jacobian, denoted by <span class="arithmatex"><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, to fulfill the secant equations:
 $$
 W=N^k V.
 $$
@@ -1242,8 +1246,8 @@ In addition to this a minimal norm requirement is imposed (hence the name).</p>
 It is important to note that differences between the input and outputs from different time steps are not considered.
 Reuse may greatly improve the convergence speed and stability. The optimal value of <code>q</code> is problem dependent. Typically, however, an optimal value is around 10.</p>
 <p>This model is matrix-free, due to an implementation using QR-decomposition. With matrix-free is meant that no large dense matrices are constructed, not that no matrices are used at all.
-The <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> matrix from the QR-decomposition has to be invertible. Therefore, (almost) linearly dependent columns in the matrix containing the input information from the current and previous time steps should be removed. This is called filtering. The larger <code>q</code>, the more important filtering becomes.
-If the diagonal element in <span><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level <code>min_significant</code>, the corresponding column is removed.
+The <span class="arithmatex"><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> matrix from the QR-decomposition has to be invertible. Therefore, (almost) linearly dependent columns in the matrix containing the input information from the current and previous time steps should be removed. This is called filtering. The larger <code>q</code>, the more important filtering becomes.
+If the diagonal element in <span class="arithmatex"><span class="MathJax_Preview">R</span><script type="math/tex">R</script></span> is smaller than an absolute tolerance level <code>min_significant</code>, the corresponding column is removed.
 The implementation is as such that the most recent information is kept.</p>
 <p>For more information refer to [<a href="#3">3</a>].</p>
 <p>As mentioned before, the combination of this model wiht the coupled solver <code>CoupledSolverIQNI</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>], while using twice this model with the coupled solver <code>CoupledSolverIBQN</code> corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>].</p>
@@ -1271,7 +1275,7 @@ The implementation is as such that the most recent information is kept.</p>
 </table>
 <h3 id="multi-vector">Multi-vector</h3>
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.mv</code>. The abbreviation MV stands for <em>multi-vector</em>.</p>
-<p>In this model, differences are constructed similar to the least-squares model. However, it requires the approximation <span><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span> to fulfill the secant equations of the current time step only. Moreover, it is required that the approximation is as close as possible to the previous time step. In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.</p>
+<p>In this model, differences are constructed similar to the least-squares model. However, it requires the approximation <span class="arithmatex"><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span> to fulfill the secant equations of the current time step only. Moreover, it is required that the approximation is as close as possible to the previous time step. In this model large dense matrices are constructed and is hence discouraged for cases with a large number of degrees of freedom on the interface.</p>
 <p>Filtering can also be applied here, then (almost) linear columns in the matrix containing the input information from the current time step are removed. However, filtering is much less critical compared to the <code>LS</code> model as it concerns only the information from the current time step. If no filtering is wanted, the tolerance level should be set to zero.</p>
 <p>For more information refer to [<a href="#3">3</a>].</p>
 <p>The combination of this model with the coupled solver <code>CoupledSolverIQNI</code> corresponds to the IQN-MVJ from Lindner et al. [<a href="#4">4</a>], while using twice this model with the coupled solver <code>CoupledSolverIBQN</code> corresponds to the MVQN method developed by Bogaers et al. [<a href="#5">5</a>].</p>
@@ -1386,7 +1390,7 @@ It contains 3 <code>Components</code>: a mapper for the input, a real model and 
 </table>
 <h2 id="analytically-determined-jacobian">Analytically determined Jacobian</h2>
 <p>Analytically determining the Jacobian is only possible for very simple solvers.
-One such <code>model</code> is available, that accomplishes this for the combination of the <a href="https://pyfsi.github.io/coconut/python#tube_flow_solver">python tube flow solver</a> and <a href="https://pyfsi.github.io/coconut/python#tube_structure_solver">python tube structure solver</a>.
+One such <code>model</code> is available, that accomplishes this for the combination of the <a href="https://pyfsi.github.io/coconut/python#tube-flow-solver">python tube flow solver</a> and <a href="https://pyfsi.github.io/coconut/python#tube-structure-solver">python tube structure solver</a>.
 This code can also serve as example or template for the use of own analytically determined Jacobians.</p>
 <h3 id="analytical-1d">Analytical 1D</h3>
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.analytical_1d</code>.
@@ -1436,25 +1440,20 @@ This model will not provide any (surrogate) Jacobian approximation nor surrogate
 <a href="https://doi.org/10.1016/j.cma.2019.112810">Spenke T., Hosters N., Behr M., "A multi-vector interface quasi-newton method with linear complexity for partitioned fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 361, pp. 112810, 2020.</a></p>
 <p><a id="7">[7]</a>
 <a href="http://hdl.handle.net/1854/LU-8728347">Delaissé, N., Demeester, T., Fauconnier, D., &amp; Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
-                
-              
-              
-                
-
 
               
             </article>
           </div>
         </div>
         
-          <a href="#" class="md-top md-icon" title="Back to top" data-md-component="top" data-md-state="hidden">
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
           </a>
         
       </main>
       
-        
-<footer class="md-footer">
+        <footer class="md-footer">
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
@@ -1493,14 +1492,15 @@ This model will not provide any (surrogate) Jacobian approximation nor surrogate
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
-      <div class="md-footer-copyright">
-        
-        Made with
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-          Material for MkDocs
-        </a>
-        
-      </div>
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
       
     </div>
   </div>
@@ -1510,10 +1510,10 @@ This model will not provide any (surrogate) Jacobian approximation nor surrogate
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.82b56eb2.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
