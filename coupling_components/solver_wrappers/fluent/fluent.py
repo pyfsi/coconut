@@ -41,7 +41,8 @@ class SolverWrapperFluent(Component):
         self.remove_all_messages()
         self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
-        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp') # dir for host-node communication
+        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
         self.cores = self.settings['cores']
         self.hostfile = self.settings.get('hostfile')
         self.case_file = self.settings['case_file']
@@ -112,7 +113,7 @@ class SolverWrapperFluent(Component):
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
-                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_directory_name)
+                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     outfile.write(line)
 
         # check number of cores
@@ -387,7 +388,7 @@ class SolverWrapperFluent(Component):
 
     def finalize(self):
         super().finalize()
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
+        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()

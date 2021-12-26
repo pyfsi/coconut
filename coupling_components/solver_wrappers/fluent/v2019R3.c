@@ -502,12 +502,12 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 #else
     struct stat st = {0};
 
-    if (stat("/tmp/|TMP_DIRECTORY_NAME|", &st) == -1) {
-        mkdir("/tmp/|TMP_DIRECTORY_NAME|", 0700);
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
-    sprintf(file_name, "/tmp/|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
+    sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
-    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
 
 #if RP_HOST
