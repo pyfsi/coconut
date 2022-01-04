@@ -63,14 +63,14 @@ class ModelMapped(Component):
     def predict(self, interface_input_from, **kwargs):
         self.interface_input_from = interface_input_from.copy()
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
-        self.interface_output_from = self.surrogate.predict(self.interface_input_to, **kwargs)
-        self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
+        interface_output_from = self.surrogate.predict(self.interface_input_to, **kwargs)
+        self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
 
     @tools.time_solve_solution_step
     def get_solution(self):
-        self.interface_output_from = self.surrogate.get_solution()
-        self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
+        interface_output_from = self.surrogate.get_solution()
+        self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
 
     @tools.time_solve_solution_step
@@ -91,11 +91,11 @@ class ModelMapped(Component):
     def is_ready(self):
         return self.surrogate.is_ready()
 
-    def filter_q(self, interface_input_from):
+    def filter_q(self, interface_input_from, **kwargs):
         self.interface_input_from = interface_input_from.copy()
         self.mapper_interface_input(self.interface_input_from, self.interface_input_to)
-        self.interface_output_from = self.surrogate.filter_q(self.interface_input_to)
-        self.mapper_interface_output(self.interface_output_from, self.interface_output_to)
+        interface_output_from = self.surrogate.filter_q(self.interface_input_to, **kwargs)
+        self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
 
     def finalize_solution_step(self):

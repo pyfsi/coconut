@@ -93,8 +93,11 @@ class Analytical1D(Component):
 
     def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data()[1::3]  # only y-displacement
-        if modes is not None:
-            tools.print_info(f'Mode limiting not possible for the 1d analytical surrogate model', layout='warning')
+        if modes == 0:
+            tools.print_info("Jacobian of model Analytical1D disabled: zero returned", layout='warning')
+            return dr_in * 0
+        elif modes is not None:
+            tools.print_info(f'Mode limiting not possible for Analytical1D model', layout='warning')
 
         # approximation for the inverse of the Jacobian from a surrogate model
         dxt = self.jit @ dr
@@ -143,13 +146,18 @@ class Analytical1D(Component):
         jit = ji + np.identity(self.m)
         return jit
 
-    def filter_q(self, r_in):
-        r = r_in.get_interface_data().reshape(-1, 1)[1::3]
-        r_out = self.out.copy()
-        qt, *_ = np.linalg.qr(self.jit.T)
-        q = qt[:, :np.linalg.matrix_rank(self.jit)]
-        r = r - q @ (q.T @ r)
+    def filter_q(self, dr_in, modes=None):
+        dr = dr_in.get_interface_data().reshape(-1, 1)[1::3]
+        dr_out = self.out.copy()
+        if modes == 0:
+            pass  # return copy of dr_in
+        elif modes is None:
+            qt, *_ = np.linalg.qr(self.jit.T)
+            q = qt[:, :np.linalg.matrix_rank(self.jit)]
+            dr = dr - q @ (q.T @ dr)
+        else:
+            tools.print_info(f'Mode limiting not possible for Analytical1D model', layout='warning')
         r_full = np.zeros(3 * self.m)
-        r_full[1::3] = r.flatten()
-        r_out.set_interface_data(r_full)
-        return r_out
+        r_full[1::3] = dr.flatten()
+        dr_out.set_interface_data(r_full)
+        return dr_out

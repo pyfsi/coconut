@@ -56,8 +56,11 @@ class ModelMV(Component):
 
     def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
-        if modes is not None:
-            tools.print_info(f'Mode limiting not possible for the multi-vector model', layout='warning')
+        if modes == 0:
+            tools.print_info("Jacobian of model MV disabled: zero returned", layout='warning')
+            return dr_in * 0
+        elif modes is not None:
+            tools.print_info(f'Mode limiting not possible for MV model', layout='warning')
         if self.ncurr is None:
             raise RuntimeError('No information to predict')
         # approximation for the inverse of the Jacobian from a multiple vector model
@@ -100,11 +103,16 @@ class ModelMV(Component):
 
         self.nprev = self.ncurr
 
-    def filter_q(self, dr_in):
+    def filter_q(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
         dr_out = dr_in.copy()
-        qt, *_ = np.linalg.qr(self.ncurr.T)
-        q = qt[:, :np.linalg.matrix_rank(self.ncurr)]
-        dr = dr - q @ (q.T @ dr)
+        if modes == 0:
+            pass  # return copy of dr_in
+        elif modes is None:
+            qt, *_ = np.linalg.qr(self.ncurr.T)
+            q = qt[:, :np.linalg.matrix_rank(self.ncurr)]
+            dr = dr - q @ (q.T @ dr)
+        else:
+            tools.print_info(f'Mode limiting not possible for MV model', layout='warning')
         dr_out.set_interface_data(dr.flatten())
         return dr_out

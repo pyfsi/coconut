@@ -84,7 +84,7 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
                 else:
                     dx = self.surrogate.predict(dr, modes=self.surrogate_modes) - dr
                     # relax other modes
-                    dx -= (self.omega - 1.0) * self.surrogate.filter_q(dr)
+                    dx -= (self.omega - 1.0) * self.surrogate.filter_q(dr, modes=self.surrogate_modes)
             else:
                 if not self.surrogate.is_ready():
                     dx = self.model.predict(dr) - dr

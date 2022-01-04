@@ -95,8 +95,8 @@ class Surrogate(Component):
     def is_ready(self):
         return self.coupled_solver.model.is_ready()
 
-    def filter_q(self, dr):
-        return self.coupled_solver.model.filter_q(dr)
+    def filter_q(self, dr, **kwargs):
+        return self.coupled_solver.model.filter_q(dr, **kwargs)
 
     def get_interface_input(self):
         return self.coupled_solver.x.copy()
