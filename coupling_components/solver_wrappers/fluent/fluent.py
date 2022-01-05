@@ -67,8 +67,8 @@ class SolverWrapperFluent(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
-        self.moving_zone = self.settings['moving_zone'] #name of moving zone todo:default is None
-        self.rigid_body_motion_on = self.settings['rigid_body_motion'] #true or false todo: default is False
+        self.moving_zone = self.settings.get('moving_zone','moving-zone')
+        self.rigid_body_motion_on = self.settings.get('rigid_body_motion',False)
 
         # time
         self.init_time = self.init_time
@@ -317,7 +317,8 @@ class SolverWrapperFluent(Component):
         self.interface_input.set_interface_data(interface_input.get_interface_data())
 
         # write move_zone
-        self.write_move_zone()
+        if self.rigid_body_motion_on:
+            self.write_move_zone()
 
         # write interface data
         self.write_node_positions()
@@ -356,7 +357,7 @@ class SolverWrapperFluent(Component):
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
+            #traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]  #zero traction when commented?
             pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
