@@ -95,6 +95,7 @@ DEFINE_ON_DEMAND(get_thread_ids) {
     host_to_node_int(thread_ids, n_threads);
 }
 
+
   /*----------------------*/
  /* store_coordinates_id */
 /*----------------------*/
@@ -304,9 +305,11 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
     if (myid == 0) {printf("\nFinished UDF store_coordinates_id.\n"); fflush(stdout);}
 }
 
+
   /*-------------------------*/
  /* store_pressure_traction */
 /*-------------------------*/
+
 
 DEFINE_ON_DEMAND(store_pressure_traction) {
     if (myid == 0) {printf("\nStarted UDF store_pressure_traction.\n"); fflush(stdout);}
@@ -464,6 +467,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
 
     if (myid == 0) {printf("\nFinished UDF store_pressure_traction.\n"); fflush(stdout);}
 }
+
 
   /*------------*/
  /* move_nodes */
