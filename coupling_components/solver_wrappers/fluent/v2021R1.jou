@@ -86,7 +86,7 @@ define user-defined execute-on-demand "get_thread_ids::v2021R1"
             (if (not dimension_2D)
                 (begin
                (ti-menu-load-string "define boundary-condition fluid |MOVING_ZONE| no no no no no 0 no 0 no 0 no 0 no 0 no 1
-               yes \"move_zone::v2021R1\" no no no no no\n")
+               yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone::v2021R1\" no no no no no\n")
                 )
             )
         )

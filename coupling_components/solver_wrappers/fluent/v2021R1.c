@@ -583,10 +583,10 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
 
     host_to_node_int_1(timestep);
 #if !RP_NODE
-    sprintf(file_name_zone, "move_zone_update_timestep0.dat"
+    sprintf(file_name_zone, "move_zone_update_timestep%i.dat",timestep
             );
 #else
-    sprintf(file_name_zone, "/tmp/|TMP_DIRECTORY_NAME|/move_zone_update_timestep0.dat"
+    sprintf(file_name_zone, "/tmp/|TMP_DIRECTORY_NAME|/move_zone_update_timestep%i.dat",timestep
             );
     host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
