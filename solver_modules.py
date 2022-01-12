@@ -55,6 +55,10 @@ solver_load_cmd_dict = {
         'abaqus.v614': 'module load intel/2018a && module load ABAQUS/6.14.1-linux-x86_64 && unset SLURM_GTIDS '
                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be'
                        '&& export INTEL_LICENSE_FILE=/apps/gent/licenses/intel/license.lic'
+    },
+    'hortense': {
+        'fluent.v2021R1': 'module load FLUENT/2021R2 && export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
     }
 }
 
