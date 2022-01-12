@@ -40,7 +40,8 @@ class SolverWrapperAbaqus(Component):
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
-        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_abaqus'  # dir in /tmp for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp') # dir for host-node communication
+        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
@@ -98,7 +99,7 @@ class SolverWrapperAbaqus(Component):
                     line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
                         else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
                     line = line.replace('|MP_MODE|', self.mp_mode)
-                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_directory_name))
+                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
@@ -116,8 +117,8 @@ class SolverWrapperAbaqus(Component):
         path_libusr = join(self.dir_csm, 'libusr/')
         shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
         os.mkdir(path_libusr)
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))  # create tmp-directory
+        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
+        os.mkdir(join('/tmp', self.tmp_dir_unique))  # create tmp-directory
 
         # prepare Abaqus USRInit.f
         if self.timestep_start == 0:  # run USRInit only for new calculation
