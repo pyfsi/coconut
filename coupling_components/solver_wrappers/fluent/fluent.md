@@ -21,13 +21,14 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 parameter|type|description
 ---:|:---:|---
 `case_file`|str|Name of the case file. It must be present in the folder specified by `working_directory`. The corresponding data file must also be present but has no key in the JSON file.
-`cores`|int|Number of processor cores to use when running Fluent (tested only on single node so far).
+`cores`|int|Total number of processor cores to use when running Fluent. When its value is negative or bigger than the maximum number of available cores, it will be automatically replaced by the maximum numver of available cores.
 `dimensions`|int|Dimension used in flow solver: `2` for 2D and axisymmetric, `3` for 3D. 
 `delta_t`|float|Fixed time step size in flow solver. This parameter is usually specified in a higher `Component`.
 <nobr>`end_of_timestep_commands`</nobr>|str|Fluent journal command(s) to be executed after every time step, to store drag and lift forces for example.
 `flow_iterations`|int|Number of non-linear iterations in Fluent per coupling iteration.
 `fluent_gui`|bool|Set to `true` to run Fluent with the graphical interface.
 `interface_input`|list|List of dictionaries to describe the input `Interface` (Fluent nodes). Each dictionary defines one `ModelPart` with two keys: `model_part` contains the name of the `ModelPart` and `variables` contains a list of variable names. Each `ModelPart` name must be the concatenation of an entry from `thread_names` and "_nodes". The variable names must be chosen from *`data_structure/variables.py`*. 
+`hostfile`|str|(optional) Filename of the hostfile in case of a multi-node job, this file has to be in the `working_directory` and contain the names of the available machines. Not required for single-node jobs.
 `interface_output`|dict|Analogous to `interface_input`, but for the output `Interface` (Fluent faces). Each `ModelPart` name must be the concatenation of an entry from the file `thread_names` and "_faces".
 `max_nodes_per_face`|int|This value is used to construct unique IDs for faces, based on unique IDs of nodes (provided by Fluent). It should be at least as high as the maximum number of nodes on a face on the interface. Use e.g. 4 for rectangular faces, 3 for triangular faces and 2 in 2D simulations (edges).
 `multiphase`|bool|(optional) Default `false`. `true` for multiphase Fluent case, `false` for singlephase.
@@ -105,8 +106,12 @@ After a restart, the partitioning can be different and hence the mesh deformatio
 
 ### v2020R1 (20.1.0)
 
-Same behavior as v2019R3.
+No changes.
 
 ### v2021R1 (21.1.0)
 
-Same behavior as v2019R3.
+No changes.
+
+### v2021R2 (21.2.0)
+
+No changes.

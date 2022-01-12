@@ -75,14 +75,16 @@ class ModelLS(Component):
                     i -= 1
                 self.vprev[i] = np.delete(self.vprev[i], -1, 1)
                 self.wprev[i] = np.delete(self.wprev[i], -1, 1)
+                tools.print_info(f'Removing column {i}: too many columns', layout='warning')
             v = np.hstack((self.vcurr, np.hstack(self.vprev)))
 
-    def predict(self, dr_in):
+    def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
-        v = np.hstack((self.vcurr, np.hstack(self.vprev)))
-        w = np.hstack((self.wcurr, np.hstack(self.wprev)))
+        v = np.hstack((limit(self.vcurr, modes), np.hstack([limit(v, modes) for v in self.vprev])))
+        w = np.hstack((limit(self.wcurr, modes), np.hstack([limit(w, modes) for w in self.wprev])))
         if not v.shape[1]:
-            raise RuntimeError('No information to predict')
+            tools.print_info('Least-squares model has no information to predict: zero returned', layout='warning')
+            return dr_in * 0
         # approximation for the inverse of the Jacobian from a least-squares model
         qq, rr = np.linalg.qr(v, mode='reduced')
         b = qq.T @ dr
@@ -139,3 +141,12 @@ class ModelLS(Component):
             dr = dr - qq @ (qq.T @ dr)
             dr_out.set_interface_data(dr.flatten())
         return dr_out
+
+
+def limit(matrix, modes):
+    if modes is None:
+        return matrix
+    elif modes == 0:
+        return matrix[:, :0]
+    return matrix[:, -min(matrix.shape[1], modes):]  # return oldest
+    # return matrix[:, :min(matrix.shape[1], modes)]  # return most recent

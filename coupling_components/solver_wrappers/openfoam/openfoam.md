@@ -161,13 +161,8 @@ OpenFOAM-directory:
 - It is probably best to derive a new case from the directory containing FSI simulation with OpenFOAM
   in *`coconut/examples/`* in order to copy its structure.
 - If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the
-  solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers. You
-  should compile the new solver before loading the CoCoNuT-modules as the overwriting of compiler modules can break
-  the  `wmake`-command. Once the new solver is compiled, it works fine even after loading the CoCoNuT-modules.
-- OpenFOAM is known for generating a lot of files, which is not different in CoCoNuT-operation. Make sure you have
-  sufficient storage space on your cluster and that you are able to write large number of files (the latter is
-  specifically important when storing data in your home-directory).
-
+  solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers.
+  
 ## Version specific documentation
 
 ### v41 (OpenFOAM 4.1)

@@ -10,7 +10,6 @@ def create(parameters):
     raise NotImplementedError('this class can only be used as super-class')
 
 
-
 class MapperInterpolator(Component):
     def __init__(self, parameters):
         super().__init__()
@@ -65,13 +64,17 @@ class MapperInterpolator(Component):
 
         # check if n_from is large enough
         if self.n_from < self.n_nearest:
-            raise ValueError(f'Not enough from-points: {self.n_from} < {self.n_nearest}')
+            tools.print_info(f'Model part {model_part_from} has not enough from-points:'
+                             f'{self.n_from} < {self.n_nearest}', layout='warning')
+            self.n_nearest = self.n_from
 
         # check bounding boxes
         tools.check_bounding_box(model_part_from, model_part_to)
 
         # apply scaling to coordinates
         if self.scaling is not None:
+            tools.print_info(f'Scaling {self.scaling} applied for interpolation from {model_part_from.name} '
+                             f'to {model_part_to.name}')
             self.coords_from *= self.scaling
             self.coords_to *= self.scaling
 

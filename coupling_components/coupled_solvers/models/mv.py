@@ -54,8 +54,10 @@ class ModelMV(Component):
             self.v = np.delete(self.v, -1, 1)
             self.w = np.delete(self.w, -1, 1)
 
-    def predict(self, dr_in):
+    def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
+        if modes is not None:
+            tools.print_info(f'Mode limiting not possible for the multi-vector model', layout='warning')
         if self.ncurr is None:
             raise RuntimeError('No information to predict')
         # approximation for the inverse of the Jacobian from a multiple vector model

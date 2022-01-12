@@ -1,6 +1,8 @@
 #include "udf.h"
 #include <math.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* dynamic memory allocation for 1D and 2D arrays */
 #define DECLARE_MEMORY(name, type) type *name = NULL
@@ -494,9 +496,14 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
 #else
-    sprintf(file_name, "/tmp/|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
+    struct stat st = {0};
+
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+    sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
-    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
 
 #if RP_HOST
@@ -548,6 +555,10 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     RELEASE_MEMORY_N(coords, ND_ND);
     RELEASE_MEMORY(ids);
 #endif /* !RP_HOST */
+
+#if RP_NODE
+    remove(file_name);
+#endif /* RP_NODE */
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }

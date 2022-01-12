@@ -41,10 +41,10 @@ class SolverWrapperFluent(Component):
         self.remove_all_messages()
         self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
-        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp') # dir for host-node communication
+        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
         self.cores = self.settings['cores']
-        if self.cores < 1 or self.cores > multiprocessing.cpu_count():
-            self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
+        self.hostfile = self.settings.get('hostfile')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -120,20 +120,30 @@ class SolverWrapperFluent(Component):
 
         # prepare Fluent UDF
         udf = f'v{self.version}.c'
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
-                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_directory_name)
+                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     outfile.write(line)
+
+        # check number of cores
+        if self.hostfile is not None:
+            with open(join(self.dir_cfd, self.hostfile)) as fp:
+                max_cores = len(fp.readlines())
+        else:
+            max_cores = multiprocessing.cpu_count()
+        if self.cores < 1 or self.cores > max_cores:
+            tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
+            self.cores = max_cores
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
 
+        if self.hostfile is not None:
+            cmd1 += f' -cnf={self.hostfile} -ssh '
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
         else:
@@ -400,7 +410,7 @@ class SolverWrapperFluent(Component):
 
     def finalize(self):
         super().finalize()
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
+        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()

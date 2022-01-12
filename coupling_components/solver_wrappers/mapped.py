@@ -38,12 +38,12 @@ class SolverWrapperMapped(Component):
 
         self.solver_wrapper.initialize()
 
-        # create input mapper
+        # initialize input mapper
         self.interface_input_from = interface_input_from.copy()
         self.interface_input_to = self.solver_wrapper.get_interface_input()
         self.mapper_interface_input.initialize(self.interface_input_from, self.interface_input_to)
 
-        # create output mapper
+        # initialize output mapper
         self.interface_output_to = interface_output_to.copy()
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output.initialize(interface_output_from, self.interface_output_to)

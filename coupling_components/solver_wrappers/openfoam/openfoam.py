@@ -4,13 +4,13 @@ from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
-from subprocess import check_call
 import numpy as np
 import os
 import shutil
 import time
 import subprocess
 import re
+from glob import glob
 
 
 def create(parameters):
@@ -38,6 +38,7 @@ class SolverWrapperOpenFOAM(Component):
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
+        self.save_restart = self.settings.get('save_restart', 0)
         self.openfoam_process = None
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in OpenFoam used for coupling
@@ -60,6 +61,8 @@ class SolverWrapperOpenFOAM(Component):
         # residual variables
         self.residual_variables = self.settings.get('residual_variables', None)
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
+        self.mp_in_decompose_seq_dict = {}
+        self.mp_out_reconstruct_seq_dict = {}
 
         if self.residual_variables is not None:
             self.write_residuals_fileheader()
@@ -89,6 +92,10 @@ class SolverWrapperOpenFOAM(Component):
         # self.settings["boundary_names"]
         self.read_modify_controldict()
 
+        if self.save_restart % self.write_interval:
+            raise RuntimeError(
+                f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval (= {self.write_interval}). Modify the controlDict accordingly.')
+
         # creating Model
         self.model = data_structure.Model()
 
@@ -111,12 +118,10 @@ class SolverWrapperOpenFOAM(Component):
                                          node_ids)
 
             x0, y0, z0 = self.read_face_centres(boundary, nfaces)
-            ids = np.arange(0, nfaces)
+            ids = np.arange(start_face, start_face + nfaces)
 
             # create output model part
             mp_output = self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
-            mp_output.start_face = start_face
-            mp_output.nfaces = nfaces
 
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
@@ -135,9 +140,9 @@ class SolverWrapperOpenFOAM(Component):
             shutil.copytree(path_orig, path_new)
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
-        """Note concerning the sequence: The file ./processorX/constant/polyMesh/pointprocAddressing contains a list of 
-        indices referring to the original index in the ./constant/polyMesh/points file, these indices go from 0 to 
-        nPoints -1
+        """Note concerning the sequence: The file ./processorX/constant/polyMesh/faceprocAddressing contains a list of 
+        indices referring to the original index in the ./constant/polyMesh/faces file, these indices go from 0 to 
+        nfaces -1
         However, mesh faces can be shared between processors and it has to be tracked whether these are inverted or not
         This inversion is indicated by negative indices
         However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
@@ -146,30 +151,46 @@ class SolverWrapperOpenFOAM(Component):
 
         if self.settings['parallel']:
             if self.start_time == 0:
-                check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
-                           cwd=self.working_directory,
-                           shell=True, env=self.env)
+                subprocess.check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
+                                      cwd=self.working_directory,
+                                      shell=True, env=self.env)
 
             for boundary in self.boundary_names:
+                mp_out_name = f'{boundary}_output'
                 mp_output = self.model.get_model_part(f'{boundary}_output')
-                mp_output.sequence = []
+                nfaces = mp_output.size
+                start_face = mp_output.id[0]
+                self.mp_out_reconstruct_seq_dict[mp_out_name] = []
                 for p in range(self.cores):
                     path = os.path.join(self.working_directory, f'processor{p}/constant/polyMesh/faceProcAddressing')
                     with open(path, 'r') as f:
                         face_proc_add_string = f.read()
                     face_proc_add = np.abs(of_io.get_scalar_array(input_string=face_proc_add_string, is_int=True))
-                    face_proc_add -= 1
+                    face_proc_add -= 1  # in openfoam face ids are incremented by 1
+                    self.mp_out_reconstruct_seq_dict[mp_out_name] += (face_proc_add[(face_proc_add >= start_face) & (
+                            face_proc_add < start_face + nfaces)] - start_face).tolist()
 
-                    mp_output.sequence += (face_proc_add[(face_proc_add >= mp_output.start_face) & (
-                            face_proc_add < mp_output.start_face + mp_output.nfaces)] - mp_output.start_face).tolist()
-
-                np.savetxt(os.path.join(self.working_directory, f'sequence_{boundary}.txt'),
-                           np.array(mp_output.sequence), fmt='%i')
-
-                if len(mp_output.sequence) != mp_output.nfaces:
+                if len(self.mp_out_reconstruct_seq_dict[mp_out_name]) != nfaces:
                     print(f'sequence: {len(mp_output.sequence)}')
                     print(f'nNodes: {mp_output.size}')
                     raise ValueError('Number of face indices in sequence does not correspond to number of faces')
+
+                mp_in_name = f'{boundary}_input'
+                mp_input = self.model.get_model_part(mp_in_name)
+                self.mp_in_decompose_seq_dict[mp_in_name] = {}
+                # get the point sequence in the boundary for points in different processors
+                for p in range(self.cores):
+                    proc_dir = os.path.join(self.working_directory, f'processor{p}')
+                    point_ids, points = of_io.get_boundary_points(proc_dir, '0', boundary)
+
+                    if point_ids.size:
+                        with open(os.path.join(proc_dir, 'constant/polyMesh/pointProcAddressing'), 'r') as f:
+                            point_proc_add = np.abs(of_io.get_scalar_array(input_string=f.read(), is_int=True))
+                        sorter = np.argsort(mp_input.id)
+                        self.mp_in_decompose_seq_dict[mp_in_name][p] = sorter[
+                            np.searchsorted(mp_input.id, point_proc_add[point_ids], sorter=sorter)]
+                    else:
+                        self.mp_in_decompose_seq_dict[mp_in_name][p] = None
 
         # starting the OpenFOAM infinite loop for coupling!
         if not self.settings['parallel']:
@@ -185,9 +206,6 @@ class SolverWrapperOpenFOAM(Component):
         # for parallel: create a folder with the correct time stamp for decomposition of pointDisplacement_Next
         # for serial: folder will normally be present, except for time 0: make a folder 0.0000 with specified precision
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
-        path = os.path.join(self.working_directory, timestamp)
-        if self.cores > 1 or self.physical_time == 0:
-            os.makedirs(path, exist_ok=True)
 
         # prepare new time step folder and reset the number of iterations
         self.timestep += 1
@@ -201,16 +219,14 @@ class SolverWrapperOpenFOAM(Component):
             new_path = os.path.join(self.working_directory, self.cur_timestamp)
             if os.path.isdir(new_path):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                check_call(f'rm -rf {new_path}', shell=True)
-            check_call(f'mkdir -p {new_path}', shell=True)
+                subprocess.check_call(f'rm -rf {new_path}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
                 if os.path.isdir(new_path):
                     if i == 0:
                         tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                    check_call(f'rm -rf {new_path}', shell=True)
-                check_call(f'mkdir -p {new_path}', shell=True)
+                    subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -229,15 +245,14 @@ class SolverWrapperOpenFOAM(Component):
         if self.debug:
             if self.cores > 1:
                 for i in range(0, self.cores):
-                    path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-                                             'pointDisplacement_Next')
-                    path_to = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-                                           'pointDisplacement_Next_Iter' + str(self.iteration))
+                    path_from = os.path.join(self.working_directory, f'processor{i}/constant/pointDisplacement_Next')
+                    path_to = os.path.join(self.working_directory,
+                                           f'processor{i}/constant/pointDisplacement_Next_{self.timestep}_{self.iteration}')
                     shutil.copy(path_from, path_to)
             else:
-                path_from = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
-                path_to = os.path.join(self.working_directory, self.prev_timestamp,
-                                       'pointDisplacement_Next_Iter' + str(self.iteration))
+                path_from = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
+                path_to = os.path.join(self.working_directory,
+                                       f'constant/pointDisplacement_Next_{self.timestep}_{self.iteration}')
                 shutil.copy(path_from, path_to)
 
         self.delete_prev_iter_output()
@@ -271,21 +286,16 @@ class SolverWrapperOpenFOAM(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-
-        prev_timestep = self.timestep - 1
-        # remove the folder that was used for pointDisplacement_Next if not in writeInterval
-        if self.settings['parallel']:
-            dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-            shutil.rmtree(dir_pointdisp_next)
-
-            if prev_timestep % self.write_interval:
-                for p in range(self.cores):
-                    prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
-                    shutil.rmtree(prev_timestep_dir)
-        else:
-            if prev_timestep % self.write_interval:
-                dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-                shutil.rmtree(dir_pointdisp_next)
+        if not self.debug:
+            for boundary in self.boundary_names:
+                traction_name = 'TRACTION_' + boundary
+                pressure_name = 'PRESSURE_' + boundary
+                trac_time_folder = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
+                                                self.cur_timestamp)
+                pres_time_folder = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
+                                                self.cur_timestamp)
+                shutil.rmtree(trac_time_folder)
+                shutil.rmtree(pres_time_folder)
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
@@ -300,6 +310,17 @@ class SolverWrapperOpenFOAM(Component):
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.openfoam_process.wait()
+        if not self.debug:
+            files_to_delete = glob(os.path.join(self.working_directory, 'constant/pointDisplacement_Next*')) + glob(
+                os.path.join(self.working_directory, 'processor*/constant/pointDisplacement_Next*'))
+            for filepath in files_to_delete:
+                os.remove(filepath)
+
+            for boundary in self.boundary_names:
+                trac_folder = os.path.join(self.working_directory, f'postProcessing/TRACTION_{boundary}')
+                pres_folder = os.path.join(self.working_directory, f'postProcessing/PRESSURE_{boundary}')
+                shutil.rmtree(trac_folder, ignore_errors=True)
+                shutil.rmtree(pres_folder, ignore_errors=True)
 
     def get_interface_input(self):
         return self.interface_input
@@ -311,7 +332,8 @@ class SolverWrapperOpenFOAM(Component):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+            subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                  env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
@@ -371,14 +393,14 @@ class SolverWrapperOpenFOAM(Component):
             pres_tmp = np.loadtxt(pres_filepath, comments='#')[:, 3]
 
             if self.settings['parallel']:
-                pos_list = mp.sequence
+                pos_list = self.mp_out_reconstruct_seq_dict[mp_name]
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
 
             wall_shear_stress = np.empty_like(wss_tmp)
             pressure = np.empty((pres_tmp.size, 1))
 
-            wall_shear_stress[pos_list, ] = wss_tmp[:, ]
+            wall_shear_stress[pos_list,] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
             self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
@@ -398,27 +420,49 @@ class SolverWrapperOpenFOAM(Component):
         the field is subsequently decomposed using the command: decomposePar.
        :return:
        """
+        if not self.settings['parallel']:
+            pointdisp_filename_ref = os.path.join(self.working_directory, '0/pointDisplacement')
+            pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
 
-        pointdisp_filename_ref = os.path.join(self.working_directory, '0', 'pointDisplacement')
+            with open(pointdisp_filename_ref, 'r') as ref_file:
+                pointdisp_string = ref_file.read()
 
-        pointdisp_filename = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
+            for boundary in self.boundary_names:
+                mp_name = f'{boundary}_input'
+                displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
+                pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
-        with open(pointdisp_filename_ref, 'r') as ref_file:
-            pointdisp_string = ref_file.read()
+            with open(pointdisp_filename, 'w') as f:
+                f.write(pointdisp_string)
+        else:
 
-        for boundary in self.boundary_names:
-            mp_name = f'{boundary}_input'
-            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
-            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+            for proc in range(self.cores):
+                pointdisp_filename_ref = os.path.join(self.working_directory, f'processor{proc}', '0/pointDisplacement')
+                pointdisp_filename = os.path.join(self.working_directory, f'processor{proc}',
+                                                  'constant/pointDisplacement_Next')
 
-        with open(pointdisp_filename, 'w') as f:
-            f.write(pointdisp_string)
+                with open(pointdisp_filename_ref, 'r') as ref_file:
+                    pointdisp_string = ref_file.read()
 
-        if self.settings['parallel']:
-            check_call(f'decomposePar -fields -time {self.prev_timestamp} &> log.decomposePar;',
-                       cwd=self.working_directory, shell=True, env=self.env)
+                for boundary in self.boundary_names:
+                    mp_name = f'{boundary}_input'
+                    displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                    seq = self.mp_in_decompose_seq_dict[mp_name][proc]
+                    if seq is not None:
+                        boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                        boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
+                                                                           vector_array=displacement[seq])
+                        pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+
+                with open(pointdisp_filename, 'w') as f:
+                    f.write(pointdisp_string)
+
+    # old way of implementation (with decomposePar)
+    # if self.settings['parallel']:
+    #     subprocess.check_call(f'decomposePar -fields -time '' -constant &> log.decomposePar;',
+    #                cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
     def check_output_file(self, filename, nfaces):
@@ -470,8 +514,9 @@ class SolverWrapperOpenFOAM(Component):
                 os.remove(file)
 
     def check_software(self):
-        if check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
-            raise RuntimeError(f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name" are correct.')
+        if subprocess.check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
+            raise RuntimeError(
+                f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name" are correct.')
 
         # check version
         with open('checkSoftware', 'r') as f:
