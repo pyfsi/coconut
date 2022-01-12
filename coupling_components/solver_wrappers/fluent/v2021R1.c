@@ -597,9 +597,15 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
     sprintf(file_name_zone, "move_zone_update_timestep%i.dat",timestep
             );
 #else
-    sprintf(file_name_zone, "/tmp/|TMP_DIRECTORY_NAME|/move_zone_update_timestep%i.dat",timestep
+    struct stat st = {0};
+
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+
+    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_update_timestep%i.dat",timestep
             );
-    host_to_node_sync_file("/tmp/|TMP_DIRECTORY_NAME|");
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
 
 #if RP_HOST
