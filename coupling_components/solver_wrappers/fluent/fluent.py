@@ -41,7 +41,7 @@ class SolverWrapperFluent(Component):
         self.remove_all_messages()
         self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
-        self.tmp_dir = os.environ.get('TMPDIR', '/tmp') # dir for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
         self.cores = self.settings['cores']
         self.hostfile = self.settings.get('hostfile')
@@ -388,7 +388,7 @@ class SolverWrapperFluent(Component):
 
     def finalize(self):
         super().finalize()
-        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
+        shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
         self.send_message('stop')
         self.wait_message('stop_ready')
         self.fluent_process.wait()
