@@ -130,7 +130,7 @@ class SolverWrapperFluent(Component):
         # check number of cores
         if self.hostfile is not None:
             with open(join(self.dir_cfd, self.hostfile)) as fp:
-                max_cores = len(fp.readlines())
+                max_cores = np.inf #len(fp.readlines())
         else:
             max_cores = multiprocessing.cpu_count()
         if self.cores < 1 or self.cores > max_cores:
