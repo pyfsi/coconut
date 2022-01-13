@@ -57,8 +57,9 @@ solver_load_cmd_dict = {
                        '&& export INTEL_LICENSE_FILE=/apps/gent/licenses/intel/license.lic'
     },
     'hortense': {
-        'fluent.v2021R1': 'module load FLUENT/2021R2 && export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+            'fluent.v2021R2': 'module load FLUENT/2021R2 && module load intel/2020b && module load vsc-mympirun && export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                              '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && scontrol show hostnames | tr \' \' \',\' > fluent.hosts',
+
     }
 }
 
