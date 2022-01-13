@@ -560,9 +560,11 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     RELEASE_MEMORY(ids);
 #endif /* !RP_HOST */
 
+/*
 #if RP_NODE
     remove(file_name);
-#endif /* RP_NODE */
+#endif
+*/
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }
