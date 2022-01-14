@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -1226,7 +1226,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <tr>
 <td align="right"><code>cores</code></td>
 <td align="center">int</td>
-<td>Number of processor cores to use when running Fluent (tested only on single node so far).</td>
+<td>Total number of processor cores to use when running Fluent. When its value is negative or bigger than the maximum number of available cores, it will be automatically replaced by the maximum numver of available cores.</td>
 </tr>
 <tr>
 <td align="right"><code>dimensions</code></td>
@@ -1257,6 +1257,11 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <td align="right"><code>interface_input</code></td>
 <td align="center">list</td>
 <td>List of dictionaries to describe the input <code>Interface</code> (Fluent nodes). Each dictionary defines one <code>ModelPart</code> with two keys: <code>model_part</code> contains the name of the <code>ModelPart</code> and <code>variables</code> contains a list of variable names. Each <code>ModelPart</code> name must be the concatenation of an entry from <code>thread_names</code> and "_nodes". The variable names must be chosen from <em><code>data_structure/variables.py</code></em>.</td>
+</tr>
+<tr>
+<td align="right"><code>hostfile</code></td>
+<td align="center">str</td>
+<td>(optional) Filename of the hostfile in case of a multi-node job, this file has to be in the <code>working_directory</code> and contain the names of the available machines. Not required for single-node jobs.</td>
 </tr>
 <tr>
 <td align="right"><code>interface_output</code></td>
@@ -1421,10 +1426,10 @@ After a restart, the partitioning can be different and hence the mesh deformatio
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
