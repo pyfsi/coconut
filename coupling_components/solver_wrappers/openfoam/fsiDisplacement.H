@@ -39,6 +39,6 @@ void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name, word pre
         vectorField& patchpointDispNext = refCast<vectorField>(pointDispNext.boundaryFieldRef()[patchWallID]);
 
         // Assign the new boundary displacements
-        pointDisp.boundaryFieldRef()[patchWallID] ==  patchpointDispNext;
+        pointDisp.boundaryFieldRef()[patchWallID] == patchpointDispNext;
 
     }

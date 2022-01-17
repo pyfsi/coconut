@@ -97,13 +97,15 @@ int main(int argc, char *argv[])
             #include "CourantNo.H"
             #include "setDeltaT.H"
 
-            prev_runTime = runTime.timeName();
-            runTime++;
-            remove("next.coco");
-            OFstream outfile ("next_ready.coco");
-            outfile << "next.coco" << endl;
-            Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
-            iteration = 0;
+                prev_runTime = runTime.timeName();
+
+                runTime++;
+                iteration = 0;
+
+                remove("next.coco");
+                OFstream outfile ("next_ready.coco");
+                outfile << "next.coco" << endl;
+                Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
         }
 
         if (exists("continue.coco"))
@@ -163,8 +165,6 @@ int main(int argc, char *argv[])
                     turbulence->correct();
                 }
             }
-            remove("continue.coco");
-            // Return the coupling interface output
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
@@ -172,6 +172,9 @@ int main(int argc, char *argv[])
 
             runTime.run();
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
+
+            // Return the coupling interface output
+            remove("continue.coco");
             OFstream outfile ("continue_ready.coco");
         }
 
@@ -184,12 +187,11 @@ int main(int argc, char *argv[])
 
         if (exists("stop.coco"))
         {
-            // remove("stop.coco"); // should not be uncommented
+            // remove("stop.coco"); // should not be uncommented (has to be seen by all processors)
             runTime.stopAt(Time::stopAtControl::noWriteNow);
             OFstream outfile ("stop_ready.coco");
             break;
         }
-
     }
 
     Info<< "End\n" << endl;
