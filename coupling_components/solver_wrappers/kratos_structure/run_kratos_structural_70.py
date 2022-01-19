@@ -20,15 +20,33 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
         super(StructuralMechanicsAnalysis, self).Initialize()
 
         for sub_mp_name in self.interfaces:
-            file_name = f'{sub_mp_name}_nodes.csv'
+            file_name_nodes = f'{sub_mp_name}_nodes.csv'
+            file_name_cond = f'{sub_mp_name}_conditions.csv'
             sub_model_part = self.GetSubModelPart(sub_mp_name)
             init_displacement = self.GetInitialNodalDisplacement(sub_model_part_name=sub_mp_name)
             node_ids = np.array([node.Id for node in sub_model_part.Nodes])
-            node_coords0 = np.array([[node.X0, node.Y0, node.Z0] for node in sub_model_part.Nodes])
-            node_coords0 += init_displacement
-            node_coords0_df = pd.DataFrame(
-                {'node_id': node_ids, 'x0': node_coords0[:, 0], 'y0': node_coords0[:, 1], 'z0': node_coords0[:, 2]})
-            node_coords0_df.to_csv(file_name, index=False)
+            cond_ids = np.array([cond.Id for cond in sub_model_part.Conditions])
+            # deform the submodel part to supply correct initial coordinates of nodes and conditions centre for mapping
+            for i, node in enumerate(sub_model_part.Nodes):
+                node.X = node.X0 + init_displacement[i, 0]
+                node.Y = node.Y0 + init_displacement[i, 1]
+                node.Z = node.Z0 + init_displacement[i, 2]
+            node_coords = np.array([[node.X, node.Y, node.Z] for node in sub_model_part.Nodes])
+            cond_centres = np.array(
+                [[cond.GetGeometry().Center().X, cond.GetGeometry().Center().Y, cond.GetGeometry().Center().Z] for cond
+                 in sub_model_part.Conditions])
+            node_coords_df = pd.DataFrame(
+                {'node_id': node_ids, 'x0': node_coords[:, 0], 'y0': node_coords[:, 1], 'z0': node_coords[:, 2]})
+            node_coords_df.to_csv(file_name_nodes, index=False)
+            cond_coords_df = pd.DataFrame(
+                {'cond_id': cond_ids, 'centre_x0': cond_centres[:, 0], 'centre_y0': cond_centres[:, 1],
+                 'centre_z0': cond_centres[:, 2]})
+            cond_coords_df.to_csv(file_name_cond, index=False)
+            # retract the submodel part
+            for node in sub_model_part.Nodes:
+                node.X = node.X0
+                node.Y = node.Y0
+                node.Z = node.Z0
 
     def InitializeSolutionStep(self):
         self.time = self._GetSolver().AdvanceInTime(self.time)
@@ -71,23 +89,23 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
                 file_name_pr = f'{sub_model_part_name}_pressure.csv'
                 if os.path.isfile(file_name_pr):
                     pressure_data = pd.read_csv(file_name_pr, skipinitialspace=True)
-                    node_ids = pressure_data.node_id
+                    cond_ids = pressure_data.cond_id
                     pressure = pressure_data.pressure
-                    for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KratosMultiphysics.POSITIVE_FACE_PRESSURE, 0,
-                                                                             -1 * pressure[i])
+                    for i, cond_id in enumerate(cond_ids):
+                        sub_model_part.GetCondition(cond_id).SetValue(KratosMultiphysics.POSITIVE_FACE_PRESSURE,
+                                                                      -1 * pressure[i])
 
                 file_name_sl = f'{sub_model_part_name}_surface_load.csv'
                 if os.path.isfile(file_name_sl):
                     surface_load_data = pd.read_csv(file_name_sl, skipinitialspace=True)
-                    node_ids = surface_load_data.node_id
+                    cond_ids = surface_load_data.cond_id
                     surface_load_x = surface_load_data.surface_load_x
                     surface_load_y = surface_load_data.surface_load_y
                     surface_load_z = surface_load_data.surface_load_z
-                    for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(SM.SURFACE_LOAD, 0,
-                                                                             [surface_load_x[i], surface_load_y[i],
-                                                                              surface_load_z[i]])
+                    for i, cond_id in enumerate(cond_ids):
+                        sub_model_part.GetCondition(cond_id).SetValue(SM.SURFACE_LOAD,
+                                                                      [surface_load_x[i], surface_load_y[i],
+                                                                       surface_load_z[i]])
 
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")

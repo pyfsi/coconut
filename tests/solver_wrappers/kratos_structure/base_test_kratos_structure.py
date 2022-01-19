@@ -27,7 +27,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
 
         self.parameters['settings']['working_directory'] = relpath(self.working_dir)
 
-        self.mp_out_name = self.parameters['settings']['interface_output'][0]['model_part']
+        self.mp_in_name = self.parameters['settings']['interface_input'][0]['model_part']
 
     @classmethod
     def tearDownClass(cls):
@@ -36,7 +36,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     # test if the same load results in the same displacement.
     def test_apply_load(self):
         solver = create_instance(self.parameters)
-        self.mp_out = solver.model.get_model_part(self.mp_out_name)
+        self.mp_in = solver.model.get_model_part(self.mp_in_name)
 
         load_interface = solver.get_interface_input()
 
@@ -84,7 +84,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     def test_restart(self):
         self.parameters['settings']['save_restart'] = -2
         solver = create_instance(self.parameters)
-        self.mp_out = solver.model.get_model_part(self.mp_out_name)
+        self.mp_in = solver.model.get_model_part(self.mp_in_name)
         load_interface = solver.get_interface_input()
 
         initial_pressure = 10
@@ -143,19 +143,19 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
 
     def get_uniform_load_data(self, pressure, traction):
         load = []
-        for i in range(0, self.mp_out.size):
+        for i in range(0, self.mp_in.size):
             load.append(pressure)
-        for i in range(0, self.mp_out.size):
+        for i in range(0, self.mp_in.size):
             load += traction.tolist()
 
         return np.array(load)
 
     def get_non_uniform_load(self, pressure, traction):
         l0 = 0.05
-        pressure_data = pressure * np.sin(2 * np.pi / l0 * self.mp_out.x0)
-        traction_x = traction[0] * np.sin(2 * np.pi / l0 * self.mp_out.x0)
-        traction_y = traction[1] * np.sin(2 * np.pi / l0 * self.mp_out.x0)
-        traction_z = traction[2] * np.sin(2 * np.pi / l0 * self.mp_out.x0)
+        pressure_data = pressure * np.sin(2 * np.pi / l0 * self.mp_in.x0)
+        traction_x = traction[0] * np.sin(2 * np.pi / l0 * self.mp_in.x0)
+        traction_y = traction[1] * np.sin(2 * np.pi / l0 * self.mp_in.x0)
+        traction_z = traction[2] * np.sin(2 * np.pi / l0 * self.mp_in.x0)
         traction_data = np.column_stack((traction_x, traction_y, traction_z))
         traction_data = np.ravel(traction_data)
 

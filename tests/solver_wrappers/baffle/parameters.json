@@ -1,0 +1,50 @@
+{
+  "type": "solver_wrappers.baffle",
+  "settings": {
+    "timestep_start": 0,
+    "delta_t": 0.1,
+    "solver_wrapper": [
+      {
+        "type": "dummy_solver",
+        "settings": {
+          "interface_input": [
+            {
+              "model_part": "master_input",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "slave_input",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "master_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "slave_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "master_model_part_inp": "master_input",
+    "master_model_part_out": "master_output",
+    "slave_model_part_inp": "slave_input",
+    "slave_model_part_out": "slave_output"
+  }
+}
+
+

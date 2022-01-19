@@ -47,13 +47,21 @@ class BaseSolverWrapperKratosStructure(Component):
         self.wait_message('start_ready')
 
         for mp_name in self.interface_sub_model_parts_list:
+            file_path = os.path.join(self.working_directory, f'{mp_name}_conditions.csv')
+            cond_data = pd.read_csv(file_path, skipinitialspace=True)
+            cond_ids = np.array(cond_data.cond_id)
+            centre_x0 = np.array(cond_data.centre_x0)
+            centre_y0 = np.array(cond_data.centre_y0)
+            centre_z0 = np.array(cond_data.centre_z0)
+            self.model.create_model_part(f'{mp_name}_input', centre_x0, centre_y0, centre_z0, cond_ids)
+
+        for mp_name in self.interface_sub_model_parts_list:
             file_path = os.path.join(self.working_directory, f'{mp_name}_nodes.csv')
             node_data = pd.read_csv(file_path, skipinitialspace=True)
             node_ids = np.array(node_data.node_id)
             x0 = np.array(node_data.x0)
             y0 = np.array(node_data.y0)
             z0 = np.array(node_data.z0)
-            self.model.create_model_part(f'{mp_name}_input', x0, y0, z0, node_ids)
             self.model.create_model_part(f'{mp_name}_output', x0, y0, z0, node_ids)
 
         # # Interfaces
@@ -121,9 +129,9 @@ class BaseSolverWrapperKratosStructure(Component):
             file_path_sl = os.path.join(self.working_directory, f'{mp_name}_surface_load.csv')
             pressure_array = self.interface_input.get_variable_data(input_mp_name, 'pressure')
             surface_load_array = self.interface_input.get_variable_data(input_mp_name, 'traction')
-            node_ids = np.array([input_mp.id[i] for i in range(input_mp.size)])
-            pressure_df = pd.DataFrame({'node_id': node_ids, 'pressure': pressure_array[:, 0]})
-            surface_load_df = pd.DataFrame({'node_id': node_ids, 'surface_load_x': surface_load_array[:,0], 'surface_load_y': surface_load_array[:,1], 'surface_load_z': surface_load_array[:,2] })
+            cond_ids = np.array([input_mp.id[i] for i in range(input_mp.size)])
+            pressure_df = pd.DataFrame({'cond_id': cond_ids, 'pressure': pressure_array[:, 0]})
+            surface_load_df = pd.DataFrame({'cond_id': cond_ids, 'surface_load_x': surface_load_array[:,0], 'surface_load_y': surface_load_array[:,1], 'surface_load_z': surface_load_array[:,2] })
             pressure_df.to_csv(file_path_pr, index=False)
             surface_load_df.to_csv(file_path_sl, index=False)
 

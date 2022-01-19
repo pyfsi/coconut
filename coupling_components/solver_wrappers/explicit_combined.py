@@ -6,10 +6,10 @@ import numpy as np
 
 
 def create(parameters):
-    return SolverWrapperCombined(parameters)
+    return SolverWrapperExplicitCombined(parameters)
 
 
-class SolverWrapperCombined(Component):
+class SolverWrapperExplicitCombined(Component):
     def __init__(self, parameters):
         super().__init__()
 
@@ -84,6 +84,9 @@ class SolverWrapperCombined(Component):
             if self.iteration < 2:
                  self.other_interface_outputs[i] = sol_wrapper.solve_solution_step(interface_input)
             if self.time_step >= self.explicit_timestep_start:
+                data_master = self.interface_output.get_interface_data()
+                data_other = self.other_interface_outputs[i].get_interface_data()
+                print(f'Master, other: {np.linalg.norm(data_master)/data_master.shape[0]}, {np.linalg.norm(data_other)/data_other.shape[0]}')
                 self.interface_output += mul_factor*self.other_interface_outputs[i]
 
         return self.interface_output
@@ -109,9 +112,9 @@ class SolverWrapperCombined(Component):
 
     def get_interface_output(self):
         self.interface_output = self.master_solver_wrapper.get_interface_output()
-        for mul_factor, sol_wrapper in zip(self.mul_factors,self.mapped_solver_wrapper_list):
-            other_interface_output = sol_wrapper.get_interface_output()
-            self.interface_output += mul_factor*other_interface_output
+        for i, sol_wrapper in enumerate(self.mapped_solver_wrapper_list):
+            mul_factor = self.mul_factors[i]
+            self.interface_output += mul_factor*self.other_interface_outputs[i]
         return self.interface_output
 
     def print_components_info(self, pre):
