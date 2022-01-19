@@ -90,10 +90,9 @@ int main(int argc, char *argv[])
             runTime++;
             iteration = 0;
 
-                remove("next.coco");
-                OFstream outfile ("next_ready.coco");
-                outfile << "next.coco" << endl;
-                Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
+            waitForSync("next");
+
+            Info << "Time = " << runTime.timeName() << nl << endl;
         }
 
         if (exists("continue.coco"))
@@ -160,14 +159,18 @@ int main(int argc, char *argv[])
 
             // Return the coupling interface output
             runTime.run();
+
+            waitForSync("continue");
+
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
         }
 
         if (exists("save.coco"))
         {
-            runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
-            remove("save.coco");
-            OFstream outfile ("save_ready.coco");
+            runTime.write(); // OF-command: loops over all objects and requests writing
+            // writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+
+            waitForSync("save");
         }
 
         if (exists("stop.coco"))

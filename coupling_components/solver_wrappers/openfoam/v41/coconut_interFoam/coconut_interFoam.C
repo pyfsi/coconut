@@ -112,14 +112,12 @@ int main(int argc, char *argv[])
             #include "alphaCourantNo.H"
             #include "setDeltaT.H"
 
-	        prev_runTime = runTime.timeName();
-	        runTime++;
-        	remove("next.coco");
-        	OFstream outfile ("next_ready.coco");
-        	outfile << "next.coco" << endl;
-    		Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
-    	    iteration = 0;
-    	}
+            prev_runTime = runTime.timeName();
+
+            runTime++;
+            iteration = 0;
+
+            waitForSync("next");
 
             Info << "Time = " << runTime.timeName() << nl << endl;
         }
@@ -197,17 +195,20 @@ int main(int argc, char *argv[])
 
             // Return the coupling interface output
             runTime.run();
+
+            waitForSync("continue");
+
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
         }
 
         if (exists("save.coco"))
-    	{
-            runTime.write();
-            remove("save.coco");
-        	OFstream outfile ("save_ready.coco");
-    	}
-        
-        	
+        {
+            runTime.write(); // OF-command: loops over all objects and requests writing
+            // writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+
+            waitForSync("save");
+        }
+
         if (exists("stop.coco"))
         {
             runTime.stopAt(Time::saNoWriteNow);

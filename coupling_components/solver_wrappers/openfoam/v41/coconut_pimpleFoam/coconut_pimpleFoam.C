@@ -86,27 +86,28 @@ int main(int argc, char *argv[])
 
             prev_runTime = runTime.timeName();
             // For adjustable time steps insert a while (controlDict.deltaT > runTime.deltaTValue()):  pimple loop
-    		runTime++;
-    		remove("next.coco");
-    		OFstream outfile ("next_ready.coco");
-    		outfile << "next.coco" << endl;
-			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
-			iteration = 0;
-		}
-    	
-    	if (exists("continue.coco"))
-		{
-		    iteration++;
-		    Info << "Coupling iteration = " << iteration << nl << endl;
-    		//mesh.movePoints(mesh.oldPoints());
-    		// Define movement of the coupling interface
-    	    forAll(boundary_names, s)
-    	    {
-    	            word boundary_name = boundary_names[s];
-    	            ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
-    	    }
-    	   
-    		// Calculate the mesh motion and update the mesh
+
+            runTime++;
+            iteration = 0;
+
+            waitForSync("next");
+
+            Info << "Time = " << runTime.timeName() << nl << endl;
+        }
+
+        if (exists("continue.coco"))
+        {
+            iteration++;
+            Info << "Coupling iteration = " << iteration << nl << endl;
+
+            // Define movement of the coupling interface
+            forAll(boundary_names, s)
+            {
+                word boundary_name = boundary_names[s];
+                ApplyFSIPointDisplacement(mesh, boundary_name);
+            }
+
+            // Calculate the mesh motion and update the mesh
             mesh.update();
 
             // Calculate absolute flux from the mapped surface velocity
@@ -149,6 +150,9 @@ int main(int argc, char *argv[])
 
             // Return the coupling interface output
             runTime.run();
+
+            waitForSync("continue");
+
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
         }
 
@@ -157,10 +161,8 @@ int main(int argc, char *argv[])
             runTime.write(); // OF-command: loops over all objects and requests writing
             // writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
 
-    		runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
-    		remove("save.coco");
-    		OFstream outfile ("save_ready.coco");
-		}
+            waitForSync("save");
+        }
 
         if (exists("stop.coco"))
         {
