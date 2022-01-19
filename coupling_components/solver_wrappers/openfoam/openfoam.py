@@ -32,15 +32,17 @@ class SolverWrapperOpenFOAM(Component):
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
         self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
+
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
-        self.save_restart = self.settings.get('save_restart', 0)
+        self.save_restart = self.settings['save_restart']
         self.openfoam_process = None
         self.write_interval = self.write_precision = None
+
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
         self.cores = None
@@ -94,7 +96,8 @@ class SolverWrapperOpenFOAM(Component):
 
         if self.save_restart % self.write_interval:
             raise RuntimeError(
-                f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval (= {self.write_interval}). Modify the controlDict accordingly.')
+                f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval '
+                f'(= {self.write_interval}). Modify the controlDict accordingly.')
 
         # creating Model
         self.model = data_structure.Model()
@@ -140,20 +143,19 @@ class SolverWrapperOpenFOAM(Component):
             shutil.copytree(path_orig, path_new)
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
-        """Note concerning the sequence: The file ./processorX/constant/polyMesh/faceprocAddressing contains a list of 
-        indices referring to the original index in the ./constant/polyMesh/faces file, these indices go from 0 to 
-        nfaces -1
-        However, mesh faces can be shared between processors and it has to be tracked whether these are inverted or not
-        This inversion is indicated by negative indices
-        However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
-        Therefore to get the correct index one should use |index|-1!!
-        """
+        # Note concerning the sequence: The file ./processorX/constant/polyMesh/faceprocAddressing contains a list of
+        # indices referring to the original index in the ./constant/polyMesh/faces file, these indices go from 0 to
+        # nfaces -1
+        # However, mesh faces can be shared between processors and it has to be tracked whether these are inverted
+        # or not
+        # This inversion is indicated by negative indices
+        # However, as minus 0 is not a thing, the indices are first incremented by 1 before inversion
+        # Therefore to get the correct index one should use |index|-1!!
 
         if self.settings['parallel']:
             if self.start_time == 0:
                 subprocess.check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
-                                      cwd=self.working_directory,
-                                      shell=True, env=self.env)
+                                      cwd=self.working_directory, shell=True, env=self.env)
 
             for boundary in self.boundary_names:
                 mp_out_name = f'{boundary}_output'
@@ -203,8 +205,6 @@ class SolverWrapperOpenFOAM(Component):
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        # for parallel: create a folder with the correct time stamp for decomposition of pointDisplacement_Next
-        # for serial: folder will normally be present, except for time 0: make a folder 0.0000 with specified precision
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
 
         # prepare new time step folder and reset the number of iterations
@@ -245,14 +245,15 @@ class SolverWrapperOpenFOAM(Component):
         if self.debug:
             if self.cores > 1:
                 for i in range(0, self.cores):
-                    path_from = os.path.join(self.working_directory, f'processor{i}/constant/pointDisplacement_Next')
+                    path_from = os.path.join(self.working_directory, f'processor{i}/constant/pointDisplacementTmp')
                     path_to = os.path.join(self.working_directory,
-                                           f'processor{i}/constant/pointDisplacement_Next_{self.timestep}_{self.iteration}')
+                                           f'processor{i}/constant/'
+                                           f'pointDisplacementTmp_{self.timestep}_{self.iteration}')
                     shutil.copy(path_from, path_to)
             else:
-                path_from = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
+                path_from = os.path.join(self.working_directory, 'constant/pointDisplacementTmp')
                 path_to = os.path.join(self.working_directory,
-                                       f'constant/pointDisplacement_Next_{self.timestep}_{self.iteration}')
+                                       f'constant/pointDisplacementTmp_{self.timestep}_{self.iteration}')
                 shutil.copy(path_from, path_to)
 
         self.delete_prev_iter_output()
@@ -300,6 +301,7 @@ class SolverWrapperOpenFOAM(Component):
         if not (self.timestep % self.write_interval):
             self.send_message('save')
             self.wait_message('save_ready')
+            # os.remove(os.path.join(self.working_directory, 'save.coco'))
 
         if self.residual_variables is not None:
             self.write_of_residuals()
@@ -311,8 +313,8 @@ class SolverWrapperOpenFOAM(Component):
         self.wait_message('stop_ready')
         self.openfoam_process.wait()
         if not self.debug:
-            files_to_delete = glob(os.path.join(self.working_directory, 'constant/pointDisplacement_Next*')) + glob(
-                os.path.join(self.working_directory, 'processor*/constant/pointDisplacement_Next*'))
+            files_to_delete = glob(os.path.join(self.working_directory, 'constant/pointDisplacementTmp*')) + glob(
+                os.path.join(self.working_directory, 'processor*/constant/pointDisplacementTmp*'))
             for filepath in files_to_delete:
                 os.remove(filepath)
 
@@ -422,7 +424,7 @@ class SolverWrapperOpenFOAM(Component):
        """
         if not self.settings['parallel']:
             pointdisp_filename_ref = os.path.join(self.working_directory, '0/pointDisplacement')
-            pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacement_Next')
+            pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacementTmp')
 
             with open(pointdisp_filename_ref, 'r') as ref_file:
                 pointdisp_string = ref_file.read()
@@ -437,11 +439,10 @@ class SolverWrapperOpenFOAM(Component):
             with open(pointdisp_filename, 'w') as f:
                 f.write(pointdisp_string)
         else:
-
             for proc in range(self.cores):
                 pointdisp_filename_ref = os.path.join(self.working_directory, f'processor{proc}', '0/pointDisplacement')
                 pointdisp_filename = os.path.join(self.working_directory, f'processor{proc}',
-                                                  'constant/pointDisplacement_Next')
+                                                  'constant/pointDisplacementTmp')
 
                 with open(pointdisp_filename_ref, 'r') as ref_file:
                     pointdisp_string = ref_file.read()
@@ -468,13 +469,16 @@ class SolverWrapperOpenFOAM(Component):
     def check_output_file(self, filename, nfaces):
         counter = 0
         nlines = 0
-        lim = 1000
+        lim = 1000000
+        sleep_time = 0.0001
         while (nlines < nfaces + 2) and counter < lim:
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     nlines = sum(1 for _ in f)
-            time.sleep(0.01)
+            time.sleep(sleep_time)
             counter += 1
+            if not counter % 100000:
+                tools.print_info(f'Waiting {counter * sleep_time} s for {filename}')
         if counter == lim:
             raise RuntimeError(f'Timed out waiting for file: {filename}')
         else:
@@ -571,19 +575,19 @@ class SolverWrapperOpenFOAM(Component):
             tools.print_info(msg, layout='warning')
             control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
+        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'{"application":<16}{self.application}',
                               control_dict)
         control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
-                              f'startTime    {self.start_time}', control_dict)
-        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
+                              f'{"startTime":<16}{self.start_time}', control_dict)
+        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'{"deltaT":<16}{self.delta_t}',
                               control_dict)
         control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
-                              f'timePrecision    {self.time_precision}',
+                              f'{"timePrecision":<16}{self.time_precision}',
                               control_dict)
-        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
+        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
 
         # delete previously defined coconut functions
-        coconut_start_string = '// CoCoNuT function objects'
+        coconut_start_string = '\n// CoCoNuT function objects'
         control_dict = re.sub(coconut_start_string + r'.*', '', control_dict, flags=re.S)
 
         with open(file_name, 'w') as control_dict_file:
@@ -598,19 +602,19 @@ class SolverWrapperOpenFOAM(Component):
             control_dict_file.write('functions\n{\n')
 
             for boundary_name in self.boundary_names:
-                control_dict_file.write(self.pressure_dict(boundary_name))
-                control_dict_file.write(self.wall_shear_stress_dict(boundary_name))
-                control_dict_file.write(self.traction_dict(boundary_name))
+                control_dict_file.write(self.pressure_dict(boundary_name, pre=' ' * 4))
+                control_dict_file.write(self.wall_shear_stress_dict(boundary_name, pre=' ' * 4))
+                control_dict_file.write(self.traction_dict(boundary_name, pre=' ' * 4))
             control_dict_file.write('}')
             self.write_footer(file_name)
 
-    def pressure_dict(self, boundary_name):
+    def pressure_dict(self, boundary_name, pre=''):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
-    def wall_shear_stress_dict(self, boundary_name):
+    def wall_shear_stress_dict(self, boundary_name, pre=''):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
-    def traction_dict(self, boundary_name):
+    def traction_dict(self, boundary_name, pre=''):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def write_residuals_fileheader(self):

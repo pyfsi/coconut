@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    CoCoNuT_interFoam
+    coconut_interFoam
 
 Description
     Solver for 2 incompressible, isothermal immiscible fluids using a VOF
@@ -48,23 +48,11 @@ Description
 #include "CorrectPhi.H"
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
-#include "fixedValuePointPatchField.H"
-#include "IOstream.H"
-#include "Ostream.H"
-#include "fsiDisplacement.H"
 #include "Time.H"
+#include "fsiDisplacement.H"
+#include "waitForSync.H"
 
-
-#include <stdlib.h>
-#include <assert.h>
-#include <set>
-#include <string>
-#include <map>
-#include <sstream>
 #include <unistd.h>
-#include <fstream>
-#include <iostream>
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -104,27 +92,25 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    runTime.run();
     word prev_runTime;
 
     unsigned int iteration;
+    iteration = 0;
 
-    IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
-    wordList boundary_names ( controlDict.lookup("boundary_names"));
+    IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
+    wordList boundary_names (controlDict.lookup("boundary_names"));
 
-    runTime.run(); // Initialize runTime object (also initializes functionObjects in controlDict)
-
-    while (true)
+    while (true) // NOT runTime.run()
     {
         usleep(1000); // Expressed in microseconds
 
         if (exists("next.coco"))
-    	{
-    	    #include "readControls.H"
+        {
+            #include "readControls.H"
 
-	        #include "CourantNo.H"
-	        #include "alphaCourantNo.H"
-	        #include "setDeltaT.H"
+            #include "CourantNo.H"
+            #include "alphaCourantNo.H"
+            #include "setDeltaT.H"
 
 	        prev_runTime = runTime.timeName();
 	        runTime++;
@@ -135,17 +121,20 @@ int main(int argc, char *argv[])
     	    iteration = 0;
     	}
 
+            Info << "Time = " << runTime.timeName() << nl << endl;
+        }
 
         if (exists("continue.coco"))
-    	{
-    	    iteration++;
-    	    Info << "Coupling iteration = " << iteration << nl << endl;
+        {
+            iteration++;
+            Info << "Coupling iteration = " << iteration << nl << endl;
 
-    	    forAll(boundary_names, s)
-    	    {
-    	            word boundary_name = boundary_names[s];
-    	            ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
-    	    }
+            // Define movement of the coupling interface
+            forAll(boundary_names, s)
+            {
+                word boundary_name = boundary_names[s];
+                ApplyFSIPointDisplacement(mesh, boundary_name);
+            }
 
             // --- Pressure-velocity PIMPLE corrector loop
             while (pimple.loop())
@@ -192,8 +181,8 @@ int main(int argc, char *argv[])
 
                 // --- Pressure corrector loop
                 while (pimple.correct())
-				{
-                	#include "pEqn.H"
+                {
+                    #include "pEqn.H"
                 }
 
                 if (pimple.turbCorr())
@@ -202,18 +191,14 @@ int main(int argc, char *argv[])
                 }
             }
 
-            remove("continue.coco");
-            // Return the coupling interface output
-
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
 
+            // Return the coupling interface output
             runTime.run();
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
-            OFstream outfile ("continue_ready.coco");
-
-    	}
+        }
 
         if (exists("save.coco"))
     	{
@@ -224,15 +209,15 @@ int main(int argc, char *argv[])
         
         	
         if (exists("stop.coco"))
-    	{
-            //remove("stop.coco"); // should not be uncommented
-        	runTime.stopAt(Time::saNoWriteNow);
-        	OFstream outfile ("stop_ready.coco"); 
-        	outfile << "stop.coco" << endl;
-        	break;
-    	}
+        {
+            runTime.stopAt(Time::saNoWriteNow);
+            OFstream outfile ("stop_ready.coco");
+            break;
+        }
     }
-    
+
+    Info<< "End\n" << endl;
+
     return 0;
 }
 

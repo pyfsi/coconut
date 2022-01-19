@@ -1,15 +1,12 @@
-#include "fvCFD.H"
 #include "dynamicFvMesh.H"
 #include "fixedValuePointPatchField.H"
-#include "fvOptions.H"
-#include "dimensionedScalar.H"
 
-void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name, word prev_runTime )
+void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name)
     {
 
         label patchWallID = mesh.boundaryMesh().findPatchID(boundary_name);
 
-        // *** Set patch displacement for motion solver.*** //
+        // *** Set patch displacement for motion solver *** //
         // Find the reference to the pointDisplacement field
         pointVectorField& pointDisp = const_cast<pointVectorField&>
         (
@@ -21,11 +18,11 @@ void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name, word pre
 
         Info<< "Reading pointDisplacement\n" << endl;
 
-        pointVectorField pointDispNext_
+        pointVectorField pointDispTmp_
         (
             IOobject
             (
-                "pointDisplacement_Next",
+                "pointDisplacementTmp",
                 mesh.time().constant(),
                 mesh,
                 IOobject::MUST_READ,
@@ -34,11 +31,10 @@ void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name, word pre
             pointMesh::New(mesh)
         );
 
-        pointVectorField& pointDispNext = const_cast<pointVectorField&>(pointDispNext_);
+        pointVectorField& pointDispTmp = const_cast<pointVectorField&>(pointDispTmp_);
 
-        vectorField& patchpointDispNext = refCast<vectorField>(pointDispNext.boundaryFieldRef()[patchWallID]);
+        vectorField& patchpointDispTmp = refCast<vectorField>(pointDispTmp.boundaryFieldRef()[patchWallID]);
 
         // Assign the new boundary displacements
-        pointDisp.boundaryFieldRef()[patchWallID] == patchpointDispNext;
-
+        pointDisp.boundaryFieldRef()[patchWallID] == patchpointDispTmp;
     }

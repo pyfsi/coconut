@@ -153,7 +153,7 @@ OpenFOAM-directory:
 - *`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
 - *`system/decomposeParDict`* with the necessary decomposition of the fluid domain (if `cores`>1)
 - *`0/pointDisplacement`* with all the boundary conditions, including `fixedValue` boundary condition for the FSI
-  boundaries. This is used as a template for the *`pointDisplacement_Next`* to supply displacement boundary conditon (
+  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary conditon (
   from structural solver) for the FSI-interface.
 
 ### Comments

@@ -32,64 +32,61 @@ class SolverWrapperOpenFOAM41(SolverWrapperOpenFOAM):
         filename_y = join(self.working_directory, '0/ccy')
         filename_z = join(self.working_directory, '0/ccz')
 
-        x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces,
-                                      is_scalar=True)
-        y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces,
-                                      is_scalar=True)
-        z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces,
-                                      is_scalar=True)
+        x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces, is_scalar=True)
+        y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces, is_scalar=True)
+        z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces, is_scalar=True)
         return x0, y0, z0
 
-    def pressure_dict(self, boundary_name):
-        dct = (f'PRESSURE_{boundary_name}\n'
-               f'{{\n'
-               f'type  	             surfaceRegion;\n'
-               f'libs 	             ("libfieldFunctionObjects.so");\n'
-               f'executeControl 	 timeStep;\n'
-               f'executeInterval 	 1;\n'
-               f'writeControl 	     timeStep;\n'
-               f'writeInterval 	     1;\n'
-               f'timeFormat 	     fixed;\n'
-               f'timePrecision 	     {self.time_precision};\n'
-               f'operation 	         none;\n'
-               f'writeFields 	     true;\n'
-               f'surfaceFormat 	     raw;\n'
-               f'regionType 	     patch;\n'
-               f'name 	             {boundary_name};\n'
-               f'fields              (p);\n'
-               f'}}\n')
+    def pressure_dict(self, boundary_name, pre=''):
+        dct = (f'{pre}PRESSURE_{boundary_name}\n'
+               f'{pre}{{\n'
+               f'{pre}    type            surfaceRegion;\n'
+               f'{pre}    libs            ("libfieldFunctionObjects.so");\n'
+               f'{pre}    executeControl  timeStep;\n'
+               f'{pre}    executeInterval 1;\n'
+               f'{pre}    writeControl    timeStep;\n'
+               f'{pre}    writeInterval   1;\n'
+               f'{pre}    timeFormat      fixed;\n'
+               f'{pre}    timePrecision   {self.time_precision};\n'
+               f'{pre}    operation       none;\n'
+               f'{pre}    writeFields     true;\n'
+               f'{pre}    surfaceFormat   raw;\n'
+               f'{pre}    regionType      patch;\n'
+               f'{pre}    name            {boundary_name};\n'
+               f'{pre}    fields          (p);\n'
+               f'{pre}}}\n')
         return dct
 
-    def wall_shear_stress_dict(self, boundary_name):
-        dct = (f'wallShearStress\n'
-               f'{{\n'
-               f'type  	             wallShearStress;\n'
-               f'libs 	             ("libfieldFunctionObjects.so");\n'
-               f'executeControl 	 timeStep;\n'
-               f'executeInterval 	 1;\n'
-               f'writeControl 	     none;\n'
-               f'timeFormat          fixed;\n'
-               f'timePrecision 	     {self.time_precision};\n'
-               f'log 	             false;\n'
-               f'}}\n')
+    def wall_shear_stress_dict(self, boundary_name, pre=''):
+        dct = (f'{pre}wallShearStress\n'
+               f'{pre}{{\n'
+               f'{pre}    type            wallShearStress;\n'
+               f'{pre}    libs            ("libfieldFunctionObjects.so");\n'
+               f'{pre}    executeControl  timeStep;\n'
+               f'{pre}    executeInterval 1;\n'
+               f'{pre}    writeControl    none;\n'
+               f'{pre}    timeFormat      fixed;\n'
+               f'{pre}    timePrecision   {self.time_precision};\n'
+               f'{pre}    log             false;\n'
+               f'{pre}}}\n')
         return dct
 
-    def traction_dict(self, boundary_name):
-        dct = (f'TRACTION_{boundary_name}\n'
-               f'{{\n'
-               f'type  	             surfaceRegion;\n'
-               f'libs 	             ("libfieldFunctionObjects.so");\n'
-               f'executeControl      timeStep;\n'
-               f'executeInterval 	 1;\n'
-               f'writeControl 	     timeStep;\n'
-               f'writeInterval 	     1;\n'
-               f'timeFormat 	     fixed;\n'
-               f'timePrecision 	     {self.time_precision};\n'
-               f'operation 	         none;\n'
-               f'writeFields 	     true;\n'
-               f'surfaceFormat       raw;\n'
-               f'regionType 	     patch;\n'
-               f'name 	             {boundary_name};\n'
-               f'fields              (wallShearStress);\n'
-               f'}}\n')
+    def traction_dict(self, boundary_name, pre=''):
+        dct = (f'{pre}TRACTION_{boundary_name}\n'
+               f'{pre}{{\n'
+               f'{pre}    type            surfaceRegion;\n'
+               f'{pre}    libs            ("libfieldFunctionObjects.so");\n'
+               f'{pre}    executeControl  timeStep;\n'
+               f'{pre}    executeInterval 1;\n'
+               f'{pre}    writeControl    timeStep;\n'
+               f'{pre}    writeInterval   1;\n'
+               f'{pre}    timeFormat      fixed;\n'
+               f'{pre}    timePrecision   {self.time_precision};\n'
+               f'{pre}    operation       none;\n'
+               f'{pre}    writeFields     true;\n'
+               f'{pre}    surfaceFormat   raw;\n'
+               f'{pre}    regionType      patch;\n'
+               f'{pre}    name            {boundary_name};\n'
+               f'{pre}    fields          (wallShearStress);\n'
+               f'{pre}}}\n')
         return dct

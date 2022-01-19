@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    pimpleFoam
+    cocount_pimpleFoam
 
 Description
     Transient solver for incompressible, turbulent flow of Newtonian fluids,
@@ -41,22 +41,11 @@ Description
 #include "fvOptions.H"
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
-#include "fixedValuePointPatchField.H"
-#include "IOstream.H"
-#include "Ostream.H"
-#include "forces.H"
-#include "fsiDisplacement.H"
 #include "Time.H"
+#include "fsiDisplacement.H"
+#include "waitForSync.H"
 
-#include <stdlib.h>
-#include <assert.h>
-#include <set>
-#include <string>
-#include <map>
-#include <sstream>
 #include <unistd.h>
-#include <fstream>
-#include <iostream>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -78,18 +67,17 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-	runTime.run();
     word prev_runTime;
 
     unsigned int iteration;
     iteration = 0;
 
-    IOdictionary controlDict(IOobject("controlDict",runTime.system(),mesh,IOobject::MUST_READ,IOobject::NO_WRITE));
+    IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
 
     while (true) // NOT (pimple.run(runTime))
     {
-        usleep(10000); // Expressed in microseconds
+        usleep(1000); // Expressed in microseconds
 
         if (exists("next.coco"))
         {
@@ -97,10 +85,10 @@ int main(int argc, char *argv[])
             #include "CourantNo.H"
             #include "setDeltaT.H"
 
-                prev_runTime = runTime.timeName();
+            prev_runTime = runTime.timeName();
 
-                runTime++;
-                iteration = 0;
+            runTime++;
+            iteration = 0;
 
                 remove("next.coco");
                 OFstream outfile ("next_ready.coco");
@@ -116,8 +104,8 @@ int main(int argc, char *argv[])
             // Define movement of the coupling interface
             forAll(boundary_names, s)
             {
-                    word boundary_name = boundary_names[s];
-                    ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
+                word boundary_name = boundary_names[s];
+                ApplyFSIPointDisplacement(mesh, boundary_name);
             }
 
             // --- Pressure-velocity PIMPLE corrector loop
@@ -170,12 +158,9 @@ int main(int argc, char *argv[])
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
 
+            // Return the coupling interface output
             runTime.run();
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
-
-            // Return the coupling interface output
-            remove("continue.coco");
-            OFstream outfile ("continue_ready.coco");
         }
 
         if (exists("save.coco"))
@@ -187,7 +172,6 @@ int main(int argc, char *argv[])
 
         if (exists("stop.coco"))
         {
-            // remove("stop.coco"); // should not be uncommented (has to be seen by all processors)
             runTime.stopAt(Time::stopAtControl::noWriteNow);
             OFstream outfile ("stop_ready.coco");
             break;
