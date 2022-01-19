@@ -301,7 +301,6 @@ class SolverWrapperOpenFOAM(Component):
         if not (self.timestep % self.write_interval):
             self.send_message('save')
             self.wait_message('save_ready')
-            # os.remove(os.path.join(self.working_directory, 'save.coco'))
 
         if self.residual_variables is not None:
             self.write_of_residuals()
@@ -469,15 +468,15 @@ class SolverWrapperOpenFOAM(Component):
     def check_output_file(self, filename, nfaces):
         counter = 0
         nlines = 0
-        lim = 1000000
-        sleep_time = 0.0001
+        lim = 10000
+        sleep_time = 0.01
         while (nlines < nfaces + 2) and counter < lim:
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     nlines = sum(1 for _ in f)
             time.sleep(sleep_time)
             counter += 1
-            if not counter % 100000:
+            if not counter % 1000:
                 tools.print_info(f'Waiting {counter * sleep_time} s for {filename}')
         if counter == lim:
             raise RuntimeError(f'Timed out waiting for file: {filename}')

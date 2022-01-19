@@ -128,7 +128,6 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             _, node_coords = of_io.get_boundary_points(solver.working_directory,
                                                        f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
-            self.clean_case()
 
     # check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
