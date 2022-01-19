@@ -124,24 +124,25 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
         if self.settings['moving_rigid_body']:
-            moving_rigid_bodies_name = self.settings['moving_rigid_bodies_name']
-            radial_displacement = self.settings['radial_displacement_rigid_body']
-            number_of_timeIncrements = self.settings['number_of_time_increments_rigid_body'] # number of timeIncrements is the value how many times a displacement of the rigid body is done.
+            self.moving_rigid_bodies_name = self.settings['moving_rigid_bodies_name']
+            self.radial_displacement = self.settings['radial_displacement_rigid_body']
+            self.number_of_timeIncrements = self.settings['number_of_time_increments_rigid_body'] # number of timeIncrements is the value how many times a displacement of the rigid body is done.
+            self.start_increment = self.settings['start_increment']
             rigid_body_filename = os.path.join( self.working_directory,'constant/polyMesh/boundary')
 
             with open (rigid_body_filename,'r') as rigidBody_file:
                 rigidBody_string = rigidBody_file.read()
-            rigidBody_dict = of_io.get_dict(input_string=rigidBody_string, keyword=moving_rigid_bodies_name)
+            rigidBody_dict = of_io.get_dict(input_string=rigidBody_string, keyword=self.moving_rigid_bodies_name)
             # get point ids and coordinates for all the faces in the boundary
             node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory, time_folder='0',
-                                                                  boundary_name=moving_rigid_bodies_name)
+                                                                  boundary_name=self.moving_rigid_bodies_name)
 
             rigid_model = data_structure.Model()
             # create input model part
-            rigid_model.create_model_part(f'{moving_rigid_bodies_name}', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
+            rigid_model.create_model_part(f'{self.moving_rigid_bodies_name}', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
                                              node_ids)
 
-            mp_name = f'{moving_rigid_bodies_name}'
+            mp_name = f'{self.moving_rigid_bodies_name}'
             mp = rigid_model.get_model_part(mp_name)
             x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
@@ -149,28 +150,28 @@ class SolverWrapperOpenFOAM(Component):
             y0[0],y0[1] = y0[1],y0[0]
             z0[0],z0[1] = z0[1],z0[0]
 
-            x = np.zeros(x0.size)
-            y = np.zeros(x0.size)
-            z = np.zeros(x0.size)
-            index = int(len(x) / 2)
+            self.x_rigid = np.zeros(x0.size)
+            self.y_rigid = np.zeros(x0.size)
+            self.z_rigid = np.zeros(x0.size)
+            index = int(len(self.x_rigid) / 2)
 
             j = 0
-            for i in range(len(x)):
+            for i in range(len(self.x_rigid)):
                 if z0[i] > 0:
-                    x[j + index] = x0[i]
-                    y[j + index] = y0[i]
-                    z[j + index] = z0[i]
+                    self.x_rigid[j + index] = x0[i]
+                    self.y_rigid[j + index] = y0[i]
+                    self.z_rigid[j + index] = z0[i]
 
                 else:
-                    x[j ] = x0[i]
-                    y[j] = y0[i]
-                    z[j] = z0[i]
+                    self.x_rigid[j ] = x0[i]
+                    self.y_rigid[j] = y0[i]
+                    self.z_rigid[j] = z0[i]
                     j += 1
 
             rigid_data_path = os.path.join(self.working_directory, 'constant/boundaryData')
             if not os.path.exists(rigid_data_path):
                 os.mkdir(rigid_data_path)
-            rigid_path = os.path.join(rigid_data_path, moving_rigid_bodies_name)
+            rigid_path = os.path.join(rigid_data_path, self.moving_rigid_bodies_name)
             shutil.rmtree(rigid_path, ignore_errors=True)
             os.mkdir(rigid_path)
             data_folder = os.path.join(rigid_path, '0')
@@ -178,14 +179,14 @@ class SolverWrapperOpenFOAM(Component):
 
             with open(os.path.join(rigid_path,'points'), 'w') as f:
                 f.write('(\n')
-                for point in range(x.size):
-                    f.write(f'({x[point]} {y[point]} {z[point]})\n')
+                for point in range(self.x_rigid.size):
+                    f.write(f'({self.x_rigid[point]} {self.y_rigid[point]} {self.z_rigid[point]})\n')
                 f.write(')')
 
             with open(os.path.join(data_folder,'pointDisplacement'), 'w') as h:
-                h.write(f'{x.size}\n')
+                h.write(f'{self.x_rigid.size}\n')
                 h.write('(\n')
-                for i in range(x.size):
+                for i in range(self.x_rigid.size):
                     h.write(f'({0} {0} {0} )\n')
                 h.write(')')
 
@@ -248,33 +249,35 @@ class SolverWrapperOpenFOAM(Component):
             shutil.copytree(path_orig, path_new)
             if self.settings['moving_rigid_body']:
                timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
-               path_orig_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', moving_rigid_bodies_name, '0')
-               path_new_rigidData = os.path.join(self.working_directory,'constant/boundaryData', moving_rigid_bodies_name, timestamp )
+               path_orig_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', self.moving_rigid_bodies_name, '0')
+               path_new_rigidData = os.path.join(self.working_directory,'constant/boundaryData', self.moving_rigid_bodies_name, timestamp )
                shutil.rmtree(path_new_rigidData, ignore_errors=True)
                shutil.copytree(path_orig_rigidData, path_new_rigidData)
-               for i in range(number_of_timeIncrements):
-                   time = self.delta_t * (i + 1)
-                   timestamp = '{:.{}f}'.format(time,self.time_precision)
-                   new_path_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', moving_rigid_bodies_name,
-                                                         timestamp)
+               for i in range(self.number_of_timeIncrements):
+                   time = self.delta_t * (i + 1 + self.start_increment)
+                   timestamp = '{:.{}f}'.format(time, self.time_precision)
+                   new_path_rigidData = os.path.join(self.working_directory, 'constant/boundaryData',
+                                                     self.moving_rigid_bodies_name,
+                                                     timestamp)
                    shutil.copytree(path_orig_rigidData, new_path_rigidData)
 
-                   deltaY = np.zeros(len(y))
-                   deltaZ = np.zeros(len(z))
+                   deltaY = np.zeros(len(self.y_rigid))
+                   deltaZ = np.zeros(len(self.z_rigid))
 
-                   for j in range(len(z)):
-                       deltaY[j] = -radial_displacement * (i + 1) * np.cos(2.5 * np.pi / 180)
-                       if z[j] < 0:
-                           deltaZ[j] = radial_displacement * (i +1) * np.sin(2.5 * np.pi / 180)
+                   for j in range(len(self.z_rigid)):
+                       deltaY[j] = -self.radial_displacement * (i + 1) * np.cos(2.5 * np.pi / 180)
+                       if self.z_rigid[j] < 0:
+                           deltaZ[j] = self.radial_displacement * (i +1) * np.sin(2.5 * np.pi / 180)
                        else:
-                           deltaZ[j] = -radial_displacement * (i + 1) * np.sin(2.5 * np.pi / 180)
+                           deltaZ[j] = -self.radial_displacement * (i + 1) * np.sin(2.5 * np.pi / 180)
 
                    with open(os.path.join(new_path_rigidData,'pointDisplacement'), 'w') as h:
-                       h.write(f'{x.size}\n')
+                       h.write(f'{self.x_rigid.size}\n')
                        h.write('(\n')
-                       for k in range(x.size):
+                       for k in range(self.x_rigid.size):
                            h.write(f'({0} {deltaY[k]} {deltaZ[k]})\n')
                        h.write(')')
+
 
             if self.settings['timeVaryingMappedFixedValue']:
                 for boundary in self.boundary_names:
@@ -400,7 +403,20 @@ class SolverWrapperOpenFOAM(Component):
         self.write_node_input()
 
         # copy input data for debugging
-        if self.debug:
+        if True: #self.debug
+            for boundary in self.boundary_names:
+                mp_filepath = os.path.join(self.working_directory, 'postProcessing')
+                if not os.path.exists(mp_filepath):
+                    os.makedirs(mp_filepath)
+
+                node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory,
+                                                                  time_folder='0',
+                                                                  boundary_name=boundary)
+                with open(os.path.join(mp_filepath, 'mp_x0_points'), 'w') as f:
+                    f.write('')
+                    for point in range(node_coords[:,0].size):
+                        f.write(f'{node_coords[point,0]}\n')
+
             if self.cores > 1:
                 for i in range(0, self.cores):
                     path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
@@ -582,27 +598,33 @@ class SolverWrapperOpenFOAM(Component):
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
-            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
             if self.settings['timeVaryingMappedFixedValue']:
+                velocity = displacement[:,0] * 1e13
+
                 data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                            self.cur_timestamp)
-                velocity = self.interface_input.get_variable_data(mp_name, 'velocity')
+                # velocity = self.interface_input.get_variable_data(mp_name, 'velocity')
                 velocity_input = np.zeros((len(velocity), 3))
                 index = int(len(velocity)/ 2)
 
                 j = 0
+                # for i in range(len(velocity)):
+                #     if i%2 == 0:
+                #         velocity_input[j, 0] = velocity[i, 0]
+                #         velocity_input[j, 1] = velocity[i, 1]
+                #         velocity_input[j, 2] = velocity[i, 2]
+                #     else:
+                #         velocity_input[j + index,0] = velocity[i,0]
+                #         velocity_input[j + index,1] = velocity[i,1]
+                #         velocity_input[j + index,2] = velocity[i,2]
+                #         j += 1
+
                 for i in range(len(velocity)):
                     if i%2 == 0:
-                        velocity_input[j, 0] = velocity[i, 0]
-                        velocity_input[j, 1] = velocity[i, 1]
-                        velocity_input[j, 2] = velocity[i, 2]
+                        velocity_input[j, 0] = velocity[i]
                     else:
-                        velocity_input[j + index,0] = velocity[i,0]
-                        velocity_input[j + index,1] = velocity[i,1]
-                        velocity_input[j + index,2] = velocity[i,2]
+                        velocity_input[j + index,0] = velocity[i]
                         j += 1
 
                 with open(os.path.join(data_folder, 'U'), 'w') as f:
@@ -611,6 +633,12 @@ class SolverWrapperOpenFOAM(Component):
                     for i in range(velocity_input.shape[0]):
                         f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
                     f.write(')')
+
+            displacement[:, 0] = 0
+            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
+            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+            # print(pointdisp_string)
 
         with open(pointdisp_filename, 'w') as f:
             f.write(pointdisp_string)

@@ -1,24 +1,22 @@
 from coconut import data_structure
 from coconut.tools import create_instance
 
-import numpy as np
 import unittest
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
 class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
-    gui = False
+    gui = True
 
     def setUp(self):
-        self.parameters = {'type': 'mappers.axisymmetric_2d_to_3d',
+        self.parameters = {'type': 'mappers.3d_wedge_2d_axisymmetric',
                            'settings':
                                {'direction_axial': 'x',
                                 'direction_radial': 'y',
-                                'angle': 5,
-                                'n_tangential': 2}
+                               }
                            }
-        self.forward = True
 
     def test_instantiation(self):
         create_instance(self.parameters)
@@ -30,67 +28,74 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         self.parameters['settings']['direction_radial'] = 2
         self.assertRaises(ValueError, create_instance, self.parameters)
 
-        self.parameters['settings']['direction_radial'] = 2
-        self.parameters['settings']['n_tangential'] = 3
-        self.assertRaises(ValueError, create_instance, self.parameters)
-
     def test_initialize(self):
         mp_name_in = 'wall_in'
         mp_name_out = 'wall_out'
 
-        # create model_part_in
-        n_in = 10
-        x_in = np.linspace(0, 2 * np.pi, n_in)
-        y_in = 1. + 0.2 * np.sin(x_in)
-        z_in = np.zeros(n_in)
+        # create geometry for 3D model_part_in
+
+        n_from = 20
+        n_to = n_from // 2
+        x = np.linspace(0,0.1, n_to)
+        r = 1 + 0.07 * np.sin(x * 600)
+
+        x_in = np.zeros(n_from)
+        y_in = np.zeros(n_from)
+        z_in = np.zeros(n_from)
+
+        i = 0
+        for k in range(n_to):
+            for j in range(2):
+                x_in[i] = x[k]
+                y_in[i] = r[k] * np.cos(np.radians(2.5))
+                z_in[i] = r[k] * ((-1)**j)* np.sin(np.radians(2.5))
+                i += 1
+            k+=1
+
         model = data_structure.Model()
-        model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_in))
+        model.create_model_part(mp_name_in, x_in, y_in, z_in, np.arange(n_from))
+
+        # create reference geometry for 2D model_part_out
+        n_out_ref = n_to
+        x_out_ref = np.zeros(n_out_ref)
+        y_out_ref = np.zeros(n_out_ref)
+        z_out_ref = np.zeros(n_out_ref)
+
+        i_to = 0
+
+        for i_from in range(n_from):
+            r = y_in[i_from]
+            z = z_in[i_from]
+            if z_in[i_from] > 0:
+                x_out_ref[i_to]=x_in[i_from]
+                y_out_ref[i_to] = np.cos(np.radians(2.5)) * r + np.sin(np.radians(2.5)) * z
+                z_out_ref[i_to]=0
+                i_to += 1
+            i_from += 1
 
         # initialize mapper to get model_part_out
         mapper = create_instance(self.parameters)
-        with self.assertRaises(NotImplementedError):
-            mapper.initialize(model, mp_name_in, mp_name_out, forward=not self.forward)
-        mapper = create_instance(self.parameters)
-        mapper.initialize(model, mp_name_in, mp_name_out, forward=self.forward)
+        mapper.initialize(model, mp_name_in, mp_name_out, forward=True)
 
-        # get mapped geometry from 3D model_part_out
+        # get mapped geometry from 2D model_part_out
         mp_out = model.get_model_part(mp_name_out)
+        n_out = mp_out.size
         x_out = mp_out.x0
         y_out = mp_out.y0
         z_out = mp_out.z0
 
-        # check mapped geometry
-        n_t = self.parameters['settings']['n_tangential']
-        total_angle = self.parameters['settings'].get('angle', 360)
-        for x_i in x_in:
-            y = y_out[x_out == x_i]
-            z = z_out[x_out == x_i]
+        # compare mapped and reference geometries
+        self.assertEqual(n_out, n_out_ref)
+        np.testing.assert_array_equal(x_out, x_out_ref)
+        np.testing.assert_array_equal(y_out, y_out_ref)
+        np.testing.assert_array_equal(z_out, z_out_ref)
 
-            # check radius
-            radius_in = np.sqrt(y_in[x_in == x_i] ** 2 + z_in[x_in == x_i] ** 2)
-            radii_in = np.full((n_t,), radius_in)
-            radii_out = np.sqrt(y ** 2 + z ** 2)
-            np.testing.assert_allclose(radii_in, radii_out, rtol=1e-14)
-
-            # check angle between consecutive points
-            angle_in = total_angle / n_t if total_angle == 360 else total_angle / (n_t - 1)
-            angles_in = np.full((n_t - 1,), angle_in)
-            theta = np.arccos(y / radius_in) * np.sign(z) * 180 / np.pi
-            np.sort(theta)
-            angles_out = np.diff(theta)
-            np.testing.assert_allclose(angles_in, angles_out, rtol=1e-14)
-
-            # check total (wedge) angle of new model part
-            total_angle_in = total_angle - angle_in if total_angle == 360 else total_angle
-            total_angle_out = theta[-1] - theta[0]
-            self.assertAlmostEqual(total_angle_out, total_angle_in)
-
-    def test_call(self):
+    # def test_call(self):
         def fun_s(x):
             return 1. + 2.5 * x
 
         def fun_v(x, y, z):
-            theta = np.arctan2(z, y)
+            theta = np.arctan2(z,y)
             v_x = 1. + 2.5 * x
             v_y = v_x * 0.5 * np.cos(theta)
             v_z = v_x * 0.5 * np.sin(theta)
@@ -101,20 +106,34 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         var_s = 'pressure'
         var_v = 'displacement'
 
-        n_from = 10
-        tmp = np.linspace(0, 5, n_from)
-        x_from, y_from, z_from = tmp, 1. + 0.2 * np.sin(2 * np.pi / 5 * tmp), np.zeros_like(tmp)
-        v_s_from = fun_s(x_from).reshape(-1, 1)
-        v_v_from = fun_v(x_from, y_from, z_from)
+
+        n_from = 20
+        n_to = n_from //2
+        tmp = np.linspace(0, 0.1, n_to)
+        r_tmp = 1 + 0.07 * np.sin(x * 600)
+
+        # create model_part_from (3D)
+        x_from = np.zeros(n_from)
+        y_from = np.zeros(n_from)
+        z_from = np.zeros(n_from)
+
+        for i in range(n_from):
+            x_from[i] = x_in[i]
+            y_from[i] = y_in[i]
+            z_from[i] = z_in[i]
 
         model = data_structure.Model()
-        model.create_model_part(mp_name_from, x_from, y_from, y_from, np.arange(n_from))
+        model.create_model_part(mp_name_from, x_from, y_from, z_from, np.arange(n_from))
+
         parameters_from = [{'model_part': mp_name_from, 'variables': [var_s, var_v]}]
         interface_from = data_structure.Interface(parameters_from, model)
+
+        v_s_from = fun_s(x_from).reshape(-1, 1)
+        v_v_from = fun_v(x_from, y_from, z_from)
         interface_from.set_variable_data(mp_name_from, var_s, v_s_from)
         interface_from.set_variable_data(mp_name_from, var_v, v_v_from)
 
-        # initialize mapper
+        # initialize mapper to get model_part_to (2D)
         mapper = create_instance(self.parameters)
         mapper.initialize(model, mp_name_from, mp_name_to, forward=True)
         parameters_to = [{'model_part': mp_name_to, 'variables': [var_s, var_v]}]
@@ -136,7 +155,8 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
         v_v_to = interface_to.get_variable_data(mp_name_to, var_v)
         np.testing.assert_allclose(v_v_to, v_v_to_ref, rtol=1e-14)
 
-        # extra: visualization
+
+         # extra: visualization
         if self.gui:
             v_s_from, v_s_to = v_s_from.flatten(), v_s_to.flatten()
             c_from = cm.jet((v_s_from - v_s_from.min()) / (v_s_from.max() - v_s_from.min()))
@@ -152,9 +172,9 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             ax_v = fig.add_subplot(122, projection='3d')
             ax_v.set_title('check vector mapping')
             ax_v.quiver(x_from, y_from, z_from, v_v_from[:, 0], v_v_from[:, 1], v_v_from[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1, colors='r', linewidth=3)
+                        pivot='tail', arrow_length_ratio=0.2, normalize=False, length=0.01, colors='r', linewidth=3)
             ax_v.quiver(x_to, y_to, z_to, v_v_to[:, 0], v_v_to[:, 1], v_v_to[:, 2],
-                        pivot='tail', arrow_length_ratio=0.1, normalize=False, length=0.1)
+                        pivot='tail', arrow_length_ratio=0.2, normalize=False, length=0.01)
 
             for ax in [ax_s, ax_v]:
                 ax.set_xlabel('x')
@@ -164,11 +184,6 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             plt.get_current_fig_manager().window.showMaximized()
             plt.show()
             plt.close()
-
-    def test_initialize_360(self):
-        self.parameters['settings'].pop('angle')
-        self.test_initialize()
-        self.test_call()
 
 
 if __name__ == '__main__':

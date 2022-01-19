@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 10
+    "number_of_timesteps": 5
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
@@ -32,13 +32,13 @@
           {
             "type": "convergence_criteria.iteration_limit",
             "settings": {
-              "maximum":40
+              "maximum":20
             }
           },
           {
             "type": "convergence_criteria.absolute_norm",
             "settings": {
-              "tolerance": 1e-6,
+              "tolerance": 1e-9,
               "order": 2
             }
           }
@@ -58,8 +58,7 @@
             {
               "model_part": "Wire_input",
               "variables": [
-                "displacement",
-		"velocity"
+                "displacement"
               ]
             }
           ],
@@ -75,6 +74,12 @@
           "time_precision": 5,
           "density": 1,
           "is_incompressible": true,
+          "moving_rigid_body": true,
+          "moving_rigid_bodies_name": "dieWall",
+          "radial_displacement_rigid_body": 1.25e-7,
+          "number_of_time_increments_rigid_body": 32,
+	  "start_increment": 25,
+          "timeVaryingMappedFixedValue": false,
           "parallel": false,
           "residual_variables": [
             "Ux",
@@ -110,8 +115,7 @@
                 {
                   "model_part": "wireTopContact_output",
                   "variables": [
-                    "displacement",
-		    "velocity"
+                    "displacement"
                   ]
                 }
               ]
@@ -135,24 +139,24 @@
             "settings": {
               "type": "mappers.combined",
               "settings": {
-                "mappers":[
-                  {
-                    "type": "mappers.initial_load",
-                    "settings": {
-                      "initial_radius": 0.00074929,
-                      "initial_depth": 3.27145345e-5
-                    }
-                  },
-                   {
-                    "type": "mappers.linear",
-                    "settings": {
-                      "directions": [
-                        "x",
-                        "y",
-                        "z"
-                      ]
-                    }
-                  }
+		"mappers":[
+		  {
+		    "type": "mappers.offset_displacement_velocity",
+		    "settings": {
+			"initial_radius": 0.00074929,
+			"initial_depth": 3.27145345e-5
+			}
+		      },
+		       {
+			"type": "mappers.linear",
+		"settings": {
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+		 ]
+		}
+		}
                 ]
               }
             }

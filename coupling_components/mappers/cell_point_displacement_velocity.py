@@ -3,16 +3,13 @@ from coconut.coupling_components.mappers.transformer import MapperTransformer
 import numpy as np
 
 def create(parameters):
-    return Mapper_initial_load(parameters)
+    return Mapper_offset_displacement_velocity(parameters)
 
 
-class Mapper_initial_load(MapperTransformer):
+class Mapper_offset_displacement_velocity(MapperTransformer):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        self.radius = self.settings['initial_radius']
-        if type(self.radius) != float:
-            raise TypeError('coords_min must be a float')
 
         self.depth = self.settings['initial_depth']
         if type(self.depth) != float:
@@ -48,18 +45,22 @@ class Mapper_initial_load(MapperTransformer):
         for input_from in interface_from.parameters:
             mp_from = interface_from.get_model_part(input_from['model_part'])
 
-        if var == 'displacement':
-            data_to = np.zeros((3,len(mp_from.y0)))
-            data_to[1] = mp_from.y0 - self.radius
-            for i in range((len(mp_from.z0))):
-                if mp_from.z0[i] < 0:
-                    data_to[2,i] = mp_from.z0[i] + self.depth
-                else:
-                    data_to[2,i] = mp_from.z0[i] - self.depth
-            data_to = np.transpose(data_to)
-            interface_to.set_variable_data(mp_name_to, var, data_to)
+        data_to = np.zeros((3,len(mp_from.y0)))
+        data_to[0] = data_from[:,0] * 0.0000000000001
+        data_to[1] = data_from[:,1]
+        for i in range((len(mp_from.z0))):
+            if mp_from.z0[i] < 0:
+                data_to[2,i] = mp_from.z0[i] + self.depth
+            else:
+                data_to[2,i] = mp_from.z0[i] - self.depth
+        # for i in range((len(mp_from.z0))):
+        #     if mp_from.z0[i] < 0:
+        #         data_to[2,i] = -data_from[2,i]
+        #     else:
+        #         data_to[2,i] = data_from[2,i]
+        data_to = np.transpose(data_to)
+        # print("data_aftermapper")
+        # print(data_to)
+        interface_to.set_variable_data(mp_name_to, var, data_to)
 
-        else:
-            data_to = np.zeros((len(mp_from.x0),3))
-            data_to[:,0] = data_from[:,0]
-            interface_to.set_variable_data(mp_name_to, var, data_to)
+

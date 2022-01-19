@@ -13,6 +13,7 @@ import time
 import subprocess
 import re
 import copy
+import matplotlib.pyplot as plt
 
 
 #TODO:wrappper is not adapted to run in parallel
@@ -98,6 +99,10 @@ class SolverWrapperOpenFOAMExtend(Component):
 
         # writeCellcentres writes cellcentres in internal field and face centres in boundaryField
         self.write_cell_centres()
+
+        postProcess_path = os.path.join(self.working_directory, 'postProcessing')
+        if not os.path.exists(postProcess_path):
+            os.mkdir(postProcess_path)
 
         boundary_filename = os.path.join(self.working_directory, 'constant/polyMesh/boundary')
         for boundary in self.boundary_names:
@@ -210,6 +215,30 @@ class SolverWrapperOpenFOAMExtend(Component):
                 for i in range(x.size):
                     h.write(f'({0} {0} {0} )\n')
                 h.write(')')
+
+            point_disp_data_path = os.path.join(self.working_directory)
+            if not os.path.exists(point_disp_data_path):
+                 os.mkdir(point_disp_data_path)
+            # point_path = os.path.join(boundary_data_path, boundary)
+            # shutil.rmtree(boundary_path, ignore_errors = True)
+            # os.mkdir(boundary_path)
+            # data_folder = os.path.join(boundary_path,'0')
+            # os.mkdir(data_folder)
+
+            with open(os.path.join(point_disp_data_path, 'dispPoint'), 'w') as f:
+                 f.write("""
+            FoamFile
+            {
+                 version   2.0;
+                 format    ascii;
+                 class     vectorField;
+                 object    points;
+            }
+            //*************************************************************************//\n""")
+                 f.write('(\n')
+                 for point in range(x.size):
+                      f.write(f'({x[point]} {y[point]} {z[point]})\n')
+                 f.write(')')
 
         # define timestep and physical time
         self.timestep = 0
@@ -353,6 +382,7 @@ class SolverWrapperOpenFOAMExtend(Component):
                                                 self.cur_timestamp, f'traction_{self.iteration}')
                 shutil.copy(path_from_traction, path_to_traction)
 
+
         #     if self.cores > 1:
         #         for i in range(0, self.cores):
         #             path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
@@ -370,16 +400,39 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.send_message('continue')
         self.wait_message('continue_ready')
 
-        # copy output data for debugging
-        if self.debug:
-            for boundary in self.boundary_names:
-                # specify location of displacement
-                disp_filepath = os.path.join(self.working_directory, self.cur.timestamp, 'U')
-                disp_iter_filepath = os.path.join(self.working_directory, self.cur_timestamp, f'U_{self.iteration}')
-                shutil.copy(disp_filepath, disp_iter_filepath)
+
 
         # read data from OpenFOAM
         self.read_node_output()
+
+        # copy output data for debugging
+        if True:  # self.debug:
+            for boundary in self.boundary_names:
+                # specify location of displacement
+                disp_name = 'DISP_' + boundary
+                pointDisp_name = 'POINT_DISP_' + boundary
+                disp_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'U')
+                disp_iter_filepath = os.path.join(self.working_directory, 'postProcessing', disp_name, 'surface',
+                                                  self.cur_timestamp, f'U_{self.iteration}')
+                if not os.path.exists(disp_iter_filepath):
+                    os.makedirs(disp_iter_filepath)
+                shutil.copy(disp_filepath, disp_iter_filepath)
+
+                mp_name = f'{boundary}_output'
+                mp = self.model.get_model_part(mp_name)
+                point_disp_name_path = os.path.join(self.working_directory, 'dispPoint')
+                point_disp_iter = os.path.join(
+                    os.path.join(self.working_directory, 'postProcessing', pointDisp_name, 'surface',
+                                 self.cur_timestamp, f'dispPoint_{self.iteration}'))
+                if not os.path.exists(point_disp_iter):
+                    os.makedirs(point_disp_iter)
+                shutil.copy(point_disp_name_path, point_disp_iter)
+                disp = self.interface_output.get_variable_data(mp_name, 'displacement')
+
+                with open(os.path.join(point_disp_iter, 'dispPoint'), 'w') as f:
+                    f.write('')
+                    for point in range(mp.x0.size):
+                        f.write(f'{mp.x0[point]} {disp[point, 1]} {disp[point, 2]}\n')
 
         # return interface_output object
         return self.interface_output
@@ -456,12 +509,10 @@ class SolverWrapperOpenFOAMExtend(Component):
 
     def read_node_output(self):
         """
-        reads the pointDisplacement from the <case directory>/time step folders for serial and parallel. In
-        case of parallel, it uses mp.sequence (using faceProcAddressing) to map the values to the face centres.
-
+        This wrapper is initial written for a sliding FSI interface. The read node output function consist for now out of 2 variables.
+        1 collomn is velocity in axial direction. colomn 2 and 3 consist of displacement. Modificiactions will be executed in the future.
         :return:
         """
-
         for boundary in self.boundary_names:
             # specify location of displacement
             mp_name = f'{boundary}_output'
@@ -475,6 +526,8 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             disp_field = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary,
                                                      size = nfaces, is_scalar =False)
+            # print("displacement_field")
+            # print(disp_field)
             # velo_field = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
             #                                            size=nfaces, is_scalar=False)
 
@@ -482,6 +535,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             # print("x,y,z")
             # print(x,y,z)
 
+            # e = interpolate.interp1d(x,disp_field[:,0],fill_value="extrapolate")
             f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
             g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
             # h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
@@ -496,31 +550,69 @@ class SolverWrapperOpenFOAMExtend(Component):
             mask = np.logical_and(node_coords[:, 0] > -0.003, node_coords[:, 0] < 0.0005)
             filter_node_ids = node_ids[mask]
             filter_node_coords = node_coords[mask, :]
+            # print(filter_node_coords[:, 2])
 
             displacement = np.zeros((len(filter_node_ids),3))
-            velocity = np.zeros((len(filter_node_ids),3))
+            disp_check = np.zeros((len(node_ids),3))
 
+            # displacement[:,0] = h(filter_node_coords[:,0])
             displacement[:,1] = f(filter_node_coords[:,0])
             displacement[:,2] = g(filter_node_coords[:,0])
             # velocity[:, 0] = h(filter_node_coords[:, 0])
             # velocity[:, 1] = m(filter_node_coords[:, 0])
             # velocity[:, 2] = n(filter_node_coords[:, 0])
+            disp_check[:,1] = f(node_coords[:,0])
+            disp_check[:,2] = g(node_coords[:,0])
+            plt.plot(node_coords[:,0], disp_check[:,1], label = 'origin')
+            plt.plot(filter_node_coords[:,0],displacement[:,1], label = 'trim')
+            plt.legend()
+            # plt.show()
 
+            # print('displacement structural solver ')
+            # print(displacement)
 
             self.model.delete_model_part(mp_name)
 
             self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],
                                                   filter_node_coords[:, 2], filter_node_ids)
-
+            # self.model.create_model_part(mp_name, node_coords[:, 0], node_coords[:, 1],
+            #                              node_coords[:, 2], node_ids)
             if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
                 pos_list = [pos for pos in range(0, nfaces)]
 
+            for i in range((len(filter_node_coords[:, 2]))):
+                if filter_node_coords[i,2] < 0:
+                    displacement[i, 2] = -displacement[i, 1] * np.sin(2.5 * np.pi / 180)
+                else:
+                    displacement[i, 2] = displacement[i, 1] * np.sin(2.5 * np.pi / 180)
+
+            displacement[:, 0] = displacement[:, 0] * 0.0000000000001
+
+            for i in range((len(node_coords[:, 2]))):
+                if node_coords[i, 2] < 0:
+                    disp_check[i, 2] = -disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
+                else:
+                    disp_check[i, 2] = disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
+
+
+
             self.interface_output = Interface(self.settings['interface_output'],self.model)
 
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
-            # self.interface_output.set_variable_data(mp_name, 'velocity', velocity)
+
+            # self.interface_output.set_variable_data(mp_name, 'velocity', velocity*0.00000001)
+
+            # print('displacement structural solver after')
+            # print(displacement)
+
+            # print("mp.y0")
+            # print(mp_from.y0)
+            # print("mp.z0")
+            # print(mp_from.z0)
+            # print("grades")
+            # print(np.sin(2.5*np.pi/180))
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
@@ -622,7 +714,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         return
 
     def wait_message(self, message):
-        wait_time_lim = 100 * 60  # 10 minutes maximum waiting time for a single flow solver iteration
+        wait_time_lim = 10000 * 60  # 10000 minutes maximum waiting time for a single flow solver iteration
         cumul_time = 0
         file = os.path.join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
