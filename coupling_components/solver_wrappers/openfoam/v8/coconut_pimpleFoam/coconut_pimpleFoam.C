@@ -66,9 +66,6 @@ int main(int argc, char *argv[])
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    word prev_runTime;
-
     unsigned int iteration;
     iteration = 0;
 
@@ -84,8 +81,6 @@ int main(int argc, char *argv[])
             #include "readDyMControls.H"
             #include "CourantNo.H"
             #include "setDeltaT.H"
-
-            prev_runTime = runTime.timeName();
 
             runTime++;
             iteration = 0;

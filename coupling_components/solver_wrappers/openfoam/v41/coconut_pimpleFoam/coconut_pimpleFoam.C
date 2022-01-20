@@ -65,9 +65,6 @@ int main(int argc, char *argv[])
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    word prev_runTime;
-
     unsigned int iteration;
     iteration = 0;
 
@@ -83,9 +80,6 @@ int main(int argc, char *argv[])
             #include "readControls.H"
             #include "CourantNo.H"
             #include "setDeltaT.H"
-
-            prev_runTime = runTime.timeName();
-            // For adjustable time steps insert a while (controlDict.deltaT > runTime.deltaTValue()):  pimple loop
 
             runTime++;
             iteration = 0;

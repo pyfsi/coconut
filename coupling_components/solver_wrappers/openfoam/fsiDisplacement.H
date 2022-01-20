@@ -1,4 +1,3 @@
-#include "dynamicFvMesh.H"
 #include "fixedValuePointPatchField.H"
 
 void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name)
