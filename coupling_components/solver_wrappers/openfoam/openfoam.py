@@ -601,19 +601,19 @@ class SolverWrapperOpenFOAM(Component):
             control_dict_file.write('functions\n{\n')
 
             for boundary_name in self.boundary_names:
-                control_dict_file.write(self.pressure_dict(boundary_name, pre=' ' * 4))
-                control_dict_file.write(self.wall_shear_stress_dict(boundary_name, pre=' ' * 4))
-                control_dict_file.write(self.traction_dict(boundary_name, pre=' ' * 4))
+                control_dict_file.write(self.pressure_dict(boundary_name))
+                control_dict_file.write(self.wall_shear_stress_dict(boundary_name))
+                control_dict_file.write(self.traction_dict(boundary_name))
             control_dict_file.write('}')
             self.write_footer(file_name)
 
-    def pressure_dict(self, boundary_name, pre=''):
+    def pressure_dict(self, boundary_name):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
-    def wall_shear_stress_dict(self, boundary_name, pre=''):
+    def wall_shear_stress_dict(self, boundary_name):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
-    def traction_dict(self, boundary_name, pre=''):
+    def traction_dict(self, boundary_name):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def write_residuals_fileheader(self):
