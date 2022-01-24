@@ -240,10 +240,10 @@ parameter|type|description
 [Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
 
 <a id="2">[2]</a> 
-[Degroote J., Bruggeman P., Haelterman R., Vierendeels J., "Stability of a coupling technique for partitioned solvers in FSI applications", Computers & Structures, vol. 86, no. 23–24, pp. 2224–2234, 2008.](http://hdl.handle.net/1854/LU-533350)
+[Degroote J., Bruggeman P., Haelterman R. and Vierendeels J., "Stability of a coupling technique for partitioned solvers in FSI applications", Computers & Structures, vol. 86, no. 23–24, pp. 2224–2234, 2008.](http://hdl.handle.net/1854/LU-533350)
 
 <a id="3">[3]</a> 
-[Vierendeels J., Dumont K., Dick E., Verdonck P., "Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion", American Institute of Aeronautics and Astronautics Journal", vol. 43, no. 12, pp. 2549–2557, 2005.](http://hdl.handle.net/1854/LU-325786)
+[Vierendeels J., Dumont K., Dick E. and Verdonck P., "Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion", American Institute of Aeronautics and Astronautics Journal", vol. 43, no. 12, pp. 2549–2557, 2005.](http://hdl.handle.net/1854/LU-325786)
 
 <a id="4">[4]</a>
-[Delaissé, N., Demeester, T., Fauconnier, D., & Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
