@@ -40,7 +40,7 @@ class SolverWrapperAbaqus(Component):
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
-        self.tmp_dir = os.environ.get('TMPDIR', '/tmp') # dir for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp')
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
