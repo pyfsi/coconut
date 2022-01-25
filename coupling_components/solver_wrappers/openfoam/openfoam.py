@@ -53,6 +53,9 @@ class SolverWrapperOpenFOAM(Component):
         # set on True to save copy of input and output files in every iteration
         self.debug = self.settings.get('debug', False)
 
+        # set on True if you want to clean the adapted application and compile.
+        self.compile_clean = self.settings.get('compile_clean', False)
+
         # remove possible CoCoNuT-message from previous interrupt
         self.remove_all_messages()
 
@@ -261,6 +264,9 @@ class SolverWrapperOpenFOAM(Component):
         self.send_message('continue')
         self.wait_message('continue_ready')
 
+        # read data from OpenFOAM
+        self.read_node_output()
+
         # copy output data for debugging
         if self.debug:
             for boundary in self.boundary_names:
@@ -278,9 +284,6 @@ class SolverWrapperOpenFOAM(Component):
                                                   self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
                 shutil.copy(wss_filepath, wss_iter_filepath)
                 shutil.copy(pres_filepath, pres_iter_filepath)
-
-        # read data from OpenFOAM
-        self.read_node_output()
 
         # return interface_output object
         return self.interface_output
@@ -333,8 +336,13 @@ class SolverWrapperOpenFOAM(Component):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
-            subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
-                                  env=self.env)
+            if self.compile_clean:
+                subprocess.check_call(f'wclean {solver_dir} && wmake {solver_dir} &> log.wmake',
+                                      cwd=self.working_directory, shell=True,
+                                      env=self.env)
+            else:
+                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
