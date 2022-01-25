@@ -1,10 +1,9 @@
 void waitForSync(word message)
 {
-   int dummy;
-   Pstream stream(Pstream::commsTypes::blocking);
-   stream.scatter(dummy);  // sync: wait until all processors reach this point
+   label nProcs = 1;
+   label totNprocs = returnReduce(nProcs, sumOp<label>()); // sync (gather): wait until all processors reach this point
 
-   if (Pstream::master())
+   if (Pstream::master() && (totNprocs == Pstream::nProcs()))
    {
        word extension = ".coco";
        word ready = "_ready";

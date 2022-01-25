@@ -77,6 +77,8 @@ int main(int argc, char *argv[])
 
         if (exists("next.coco"))
         {
+            waitForSync("next"); // Keep the sync at the beginning of the block
+
             #include "readControls.H"
             #include "CourantNo.H"
             #include "setDeltaT.H"
@@ -84,13 +86,13 @@ int main(int argc, char *argv[])
             runTime++;
             iteration = 0;
 
-            waitForSync("next");
-
             Info << "Time = " << runTime.timeName() << nl << endl;
         }
 
         if (exists("continue.coco"))
         {
+            waitForSync("continue");
+
             iteration++;
             Info << "Coupling iteration = " << iteration << nl << endl;
 
@@ -145,24 +147,20 @@ int main(int argc, char *argv[])
             // Return the coupling interface output
             runTime.run();
 
-            waitForSync("continue");
-
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
         }
 
         if (exists("save.coco"))
         {
+            waitForSync("save");
+
             runTime.write(); // OF-command: loops over all objects and requests writing
             // writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
-
-            waitForSync("save");
         }
 
         if (exists("stop.coco"))
         {
-            // remove("stop.coco"); should not be uncommented (has to be seen by all processors)
-            runTime.stopAt(Time::saNoWriteNow);
-            OFstream outfile ("stop_ready.coco");
+            waitForSync("stop");
             break;
         }
     }
