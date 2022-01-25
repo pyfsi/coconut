@@ -143,7 +143,7 @@ class SolverWrapperTubeStructure(Component):
         self.run_time = 0.0
 
         # debug
-        self.debug = False  # set on True to save input and output of each iteration of every time step
+        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize

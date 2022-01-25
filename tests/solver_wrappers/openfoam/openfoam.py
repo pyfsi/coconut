@@ -1,4 +1,4 @@
-from coconut.tools import create_instance, get_solver_env, solver_available, print_box
+from coconut.tools import create_instance, get_solver_env
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
 import unittest
@@ -128,7 +128,6 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             _, node_coords = of_io.get_boundary_points(solver.working_directory,
                                                        f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
-            self.clean_case()
 
     # check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
@@ -266,7 +265,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
                                                 f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}', 'mantle')
         solver.finalize()
 
-        # # get data for solver with restart
+        # get data for solver with restart
         interface_output = solver.get_interface_output()
         pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')

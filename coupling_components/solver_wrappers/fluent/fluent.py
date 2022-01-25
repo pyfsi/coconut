@@ -76,7 +76,7 @@ class SolverWrapperFluent(Component):
         self.run_time = 0.0
 
         # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
+        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):

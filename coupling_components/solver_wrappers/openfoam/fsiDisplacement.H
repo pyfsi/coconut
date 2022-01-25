@@ -1,44 +1,39 @@
-#include "fvCFD.H"
-#include "dynamicFvMesh.H"
 #include "fixedValuePointPatchField.H"
-#include "fvOptions.H"
-#include "dimensionedScalar.H"
 
-void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name, word prev_runTime )
-    {
+void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name)
+{
 
-        label patchWallID = mesh.boundaryMesh().findPatchID(boundary_name);
+    label patchWallID = mesh.boundaryMesh().findPatchID(boundary_name);
 
-        // *** Set patch displacement for motion solver.*** //
-        // Find the reference to the pointDisplacement field
-        pointVectorField& pointDisp = const_cast<pointVectorField&>
+    // *** Set patch displacement for motion solver *** //
+    // Find the reference to the pointDisplacement field
+    pointVectorField& pointDisp = const_cast<pointVectorField&>
+    (
+        mesh.objectRegistry::lookupObject<pointVectorField>
         (
-            mesh.objectRegistry::lookupObject<pointVectorField>
-            (
-            "pointDisplacement"
-            )
-        );
+        "pointDisplacement"
+        )
+    );
 
-        Info<< "Reading pointDisplacement\n" << endl;
+    Info<< "Reading pointDisplacement\n" << endl;
 
-        pointVectorField pointDispNext_
+    pointVectorField pointDispTmp_
+    (
+        IOobject
         (
-            IOobject
-            (
-                "pointDisplacement_Next",
-                mesh.time().constant(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            pointMesh::New(mesh)
-        );
+            "pointDisplacementTmp",
+            mesh.time().constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        pointMesh::New(mesh)
+    );
 
-        pointVectorField& pointDispNext = const_cast<pointVectorField&>(pointDispNext_);
+    pointVectorField& pointDispTmp = const_cast<pointVectorField&>(pointDispTmp_);
 
-        vectorField& patchpointDispNext = refCast<vectorField>(pointDispNext.boundaryFieldRef()[patchWallID]);
+    vectorField& patchpointDispTmp = refCast<vectorField>(pointDispTmp.boundaryFieldRef()[patchWallID]);
 
-        // Assign the new boundary displacements
-        pointDisp.boundaryFieldRef()[patchWallID] == patchpointDispNext;
-
-    }
+    // Assign the new boundary displacements
+    pointDisp.boundaryFieldRef()[patchWallID] == patchpointDispTmp;
+}
