@@ -42,6 +42,7 @@ class SolverWrapperOpenFOAM(Component):
         self.write_interval = self.write_precision = None
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
+        self.clean_compile = self.settings.get('clean_compile', False)
         self.cores = None
         self.model = None
         self.interface_input = None
@@ -327,8 +328,13 @@ class SolverWrapperOpenFOAM(Component):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
-            subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
-                                  env=self.env)
+            if self.clean_compile:
+                subprocess.check_call(f'wclean {solver_dir} && wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
+            else:
+                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
+
         except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')

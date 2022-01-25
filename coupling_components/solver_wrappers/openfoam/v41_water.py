@@ -30,8 +30,12 @@ class SolverWrapperOpenFOAM41Water(SolverWrapperOpenFOAM):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), 'v41', self.application)
         try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
-                                  env=self.env)
+            if self.clean_compile:
+                check_call(f'wclean {solver_dir} && wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
+            else:
+                check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
         except CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
@@ -151,8 +155,14 @@ class SolverWrapperOpenFOAM41Water(SolverWrapperOpenFOAM):
             pressure[pos_list, 0] = pres_tmp
             alpha[pos_list, 0] = alpha_tmp
 
-            self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * alpha)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * alpha)
+            r = self.settings['r']= 10
+            alpha_max = self.settings['alpha_max']
+            alpha_min = self.settings['alpha_min']
+            alpha_mean =  (alpha_max + alpha_min)/2
+            load_factor = 1/(1+np.power(np.e, -2*r/(alpha_max - alpha_min)*(alpha - alpha_mean)))
+
+            self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * load_factor)
+            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * load_factor)
 
         def delete_prev_iter_output(self):
             # pressure and wall shear stress files are removed to avoid openfoam to append data in the new iteration
