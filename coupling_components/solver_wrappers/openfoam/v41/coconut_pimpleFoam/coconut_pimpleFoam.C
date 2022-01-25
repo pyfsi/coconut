@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
     unsigned int iteration;
     iteration = 0;
 
