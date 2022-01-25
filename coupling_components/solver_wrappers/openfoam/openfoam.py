@@ -51,7 +51,7 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_output = None
 
         # set on True to save copy of input and output files in every iteration
-        self.debug = False
+        self.debug = self.settings.get('debug', False)
 
         # remove possible CoCoNuT-message from previous interrupt
         self.remove_all_messages()
