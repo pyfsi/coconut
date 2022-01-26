@@ -185,22 +185,22 @@ No `settings` are required.
 ## References
 
 <a id="1">[1]</a> 
-[Degroote J., Bathe K.-J., Vierendeels J., "Performance of a new partitioned procedure versus a monolithic procedure in fluid-structure interaction", Computers & Structures, vol. 87, no. 11–12, pp. 793-801, 2009.](http://hdl.handle.net/1854/LU-533365)
+[Degroote J., Bathe K.-J. and Vierendeels J., "Performance of a new partitioned procedure versus a monolithic procedure in fluid-structure interaction", Computers & Structures, vol. 87, no. 11–12, pp. 793-801, 2009.](http://hdl.handle.net/1854/LU-533365)
 
 <a id="2">[2]</a> 
-[Vierendeels J., Lanoye L., Degroote J., Verdonck P., "Implicit coupling of partitioned fluid-structure interaction problems with reduced order models", Computers & Structures, vol. 85, no. 11–14, pp. 970–976, 2007.](http://hdl.handle.net/1854/LU-409369)
+[Vierendeels J., Lanoye L., Degroote J. and Verdonck P., "Implicit coupling of partitioned fluid-structure interaction problems with reduced order models", Computers & Structures, vol. 85, no. 11–14, pp. 970–976, 2007.](http://hdl.handle.net/1854/LU-409369)
 
 <a id="3">[3]</a> 
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
 
 <a id="4">[4]</a> 
-[Lindner F., Mehl M., Scheufele K., Uekermann B., "A comparison of various quasi-Newton schemes for partitioned fluid-structure interaction", in: B. Schrefler, E. Oñate, M. Papadrakakis (Eds.), 6th International Conference on Computational 975 Methods for Coupled Problems in Science and Engineering, pp. 477–488, 2015.](https://www.researchgate.net/publication/277077208_A_Comparison_of_various_Quasi-Newton_Schemes_for_Partitioned_Fluid-Structure_Interaction)
+[Lindner F., Mehl M., Scheufele K. and Uekermann B., "A comparison of various quasi-Newton schemes for partitioned fluid-structure interaction", in: B. Schrefler, E. Oñate, M. Papadrakakis (Eds.), 6th International Conference on Computational 975 Methods for Coupled Problems in Science and Engineering, pp. 477–488, 2015.](https://www.researchgate.net/publication/277077208_A_Comparison_of_various_Quasi-Newton_Schemes_for_Partitioned_Fluid-Structure_Interaction)
 
 <a id="5">[5]</a> 
-[Bogaers A., Kok S., Reddy B., Franz T., "Quasi-Newton methods for implicit black-box FSI coupling", ComputerMethods in AppliedMechanics and Engineering, vol. 279, pp. 113–132, 2014.](https://doi.org/10.1016/j.cma.2014.06.033)
+[Bogaers A., Kok S., Reddy B. and Franz T., "Quasi-Newton methods for implicit black-box FSI coupling", ComputerMethods in AppliedMechanics and Engineering, vol. 279, pp. 113–132, 2014.](https://doi.org/10.1016/j.cma.2014.06.033)
 
 <a id="6">[6]</a> 
-[Spenke T., Hosters N., Behr M., "A multi-vector interface quasi-newton method with linear complexity for partitioned fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 361, pp. 112810, 2020.](https://doi.org/10.1016/j.cma.2019.112810)
+[Spenke T., Hosters N. and Behr M., "A multi-vector interface quasi-newton method with linear complexity for partitioned fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 361, pp. 112810, 2020.](https://doi.org/10.1016/j.cma.2019.112810)
 
 <a id="7">[7]</a>
-[Delaissé, N., Demeester, T., Fauconnier, D., & Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

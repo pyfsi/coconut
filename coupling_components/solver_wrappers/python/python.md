@@ -24,6 +24,7 @@ The following parameters, listed in alphabetical order, need to be provided in t
 
 parameter|type|description
 ---:|:---:|---
+`debug`|bool|(optional) Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
 `delta_t`|double|Fixed time step size. This parameter is usually specified in a higher component.
 `input_file`|str|(optional) Name of the input file, which may be present in the folder given in `working_directory`. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.
 `interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `['displacement']` for a flow solver and `['pressure','traction']` for a structure solver.
@@ -240,10 +241,10 @@ parameter|type|description
 [Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
 
 <a id="2">[2]</a> 
-[Degroote J., Bruggeman P., Haelterman R., Vierendeels J., "Stability of a coupling technique for partitioned solvers in FSI applications", Computers & Structures, vol. 86, no. 23–24, pp. 2224–2234, 2008.](http://hdl.handle.net/1854/LU-533350)
+[Degroote J., Bruggeman P., Haelterman R. and Vierendeels J., "Stability of a coupling technique for partitioned solvers in FSI applications", Computers & Structures, vol. 86, no. 23–24, pp. 2224–2234, 2008.](http://hdl.handle.net/1854/LU-533350)
 
 <a id="3">[3]</a> 
-[Vierendeels J., Dumont K., Dick E., Verdonck P., "Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion", American Institute of Aeronautics and Astronautics Journal", vol. 43, no. 12, pp. 2549–2557, 2005.](http://hdl.handle.net/1854/LU-325786)
+[Vierendeels J., Dumont K., Dick E. and Verdonck P., "Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion", American Institute of Aeronautics and Astronautics Journal", vol. 43, no. 12, pp. 2549–2557, 2005.](http://hdl.handle.net/1854/LU-325786)
 
 <a id="4">[4]</a>
-[Delaissé, N., Demeester, T., Fauconnier, D., & Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

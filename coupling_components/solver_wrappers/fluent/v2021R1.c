@@ -499,6 +499,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 #if !RP_NODE
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
+    host_to_node_sync_file(file_name); /* send */
 #else
     struct stat st = {0};
 
@@ -507,12 +508,8 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     }
     sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
-    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive */
 #endif /* !RP_NODE */
-
-#if RP_HOST
-    host_to_node_sync_file(file_name);
-#endif /* RP_HOST */
 
 #if !RP_HOST
     if (NULLP(file = fopen(file_name, "r"))) {
@@ -551,20 +548,18 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                         exit(1);
                     }
                 }
-
             }
         }
     } end_f_loop(face, face_thread);
 
     RELEASE_MEMORY_N(coords, ND_ND);
     RELEASE_MEMORY(ids);
-#endif /* !RP_HOST */
 
-/*
-#if RP_NODE
-    remove(file_name);
-#endif
-*/
+    if (myid == 0) {
+        sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
+                timestep-1, thread_id);
+        remove(file_name);}
+#endif /* !RP_HOST */
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }

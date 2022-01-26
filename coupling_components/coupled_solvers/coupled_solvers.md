@@ -29,6 +29,7 @@ The following parameters need to be included in the `settings` dictionary. Here 
 
 parameter|type|description
 ---:|:---:|---
+`debug`|bool|(optional) Default: `False`. The data `solution_x` and `solution_y` are saved every iteration except of every time step (see [results pickle file](#save-results)). Residual distribution is also saved in additional field `solution_r` for every iteration.
 `delta_t`|float|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
 `case_name`|str|(optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<name>_results.pickle`_) and a restart file (_`<name>_restart_ts<time_step>.pickle`_). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.
 `restart_case`|str|(optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
@@ -384,6 +385,7 @@ The JSON file requirements for the class `CoupledSolverTestSingleSolver` are dif
 
 parameter|type|description
 ---:|:---:|---
+`debug`|bool|(optional) Default: `False`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).
 `delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `case_name`|str|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
 `save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.
@@ -485,4 +487,4 @@ Note that the presence of the restart pickle file on the other hand is required.
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
 
 <a id="2">[2]</a>
-[Delaissé, N., Demeester, T., Fauconnier, D., & Degroote, J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

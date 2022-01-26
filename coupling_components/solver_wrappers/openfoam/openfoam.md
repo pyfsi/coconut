@@ -11,6 +11,8 @@ parameter|type|description
 ---:|:---:|---
 <nobr>`application`</nobr>|str|Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with `coconut_`.
 <nobr>`boundary_names`</nobr>|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
+`compile_clean`|bool|(optional) Default: `False`. If set to True, the adapted application will first clean and then compile.
+`debug`|bool|(optional) Default: `False`. For every iteration, additional files are saved containing information on the input and output data of the solver.
 `delta_t`|double (optional)|Fixed timestep size in flow solver.
 `density`|int|The applied density of the fluid in an incompressible case. The density will be applied if `is_incompressible` is set to `true`.
 <nobr>`interface_input`</nobr>|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `boundary_names` and the string `_input`.
@@ -153,7 +155,7 @@ OpenFOAM-directory:
 - *`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
 - *`system/decomposeParDict`* with the necessary decomposition of the fluid domain (if `cores`>1)
 - *`0/pointDisplacement`* with all the boundary conditions, including `fixedValue` boundary condition for the FSI
-  boundaries. This is used as a template for the *`pointDisplacement_Next`* to supply displacement boundary conditon (
+  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary conditon (
   from structural solver) for the FSI-interface.
 
 ### Comments

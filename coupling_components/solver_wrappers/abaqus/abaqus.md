@@ -30,6 +30,7 @@ parameter|type|description
 ---:|:---:|---
 `arraysize`|int|Size specification for array in FORTRAN part of the code, to reserve sufficient memory. Should be large enough and depends on the number of load points in the structural model.
 `cores`|int|Number of cores to be used by Abaqus.
+`debug`|bool|(optional) Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
 `delta_t`|float|Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` object in which case it is not mandatory.
 `dimensions`|int|Dimensionality of the problem (2 or 3).
 `interface_input`|list|Should contain a dictionary for each input `ModelPart` to be created, having a key `"model_part"` that provides the name of a `ModelPart` for Abaqus load points as value. The name should correspond to the *Surfaces* created in Abaqus concatenated with "_load_points". The second key of the dictionary is `variables`. The list given as value specifies the input variables that should be included, chosen from *`data_structure/variables.py`*. Currently only `"pressure"` and `"traction"` are allowed (case-sensitive). The order of should correspond to the `interface_output` as well as the other solver wrapper's `Interface` definitions to which Abaqus is coupled. An example can be found in [this part of the input file section](#input-related-settings-in-json-file).

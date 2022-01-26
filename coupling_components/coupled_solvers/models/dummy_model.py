@@ -45,7 +45,7 @@ class DummyModel(Component):
         return False
 
     # noinspection PyMethodMayBeStatic
-    def filter_q(self, dr):
+    def filter_q(self, dr, **_):
         return dr
 
     def print_components_info(self, pre):
