@@ -2,6 +2,7 @@
   "type": "solver_wrappers.combined",
   "settings": {
     "timestep_start": 0,
+    "save_restart": 0,
     "delta_t": 0.1,
     "solver_wrappers": [
       {

@@ -7,7 +7,6 @@ import unittest
 import json
 import os
 import shutil
-import time
 from unittest import TestSuite, TestLoader
 from os.path import join
 
@@ -45,8 +44,7 @@ def setUpModule():
 
 
 def tearDownModule():
-    time.sleep(0.1)
-    shutil.rmtree(tmp_path)
+    tools.rm_timed(tmp_path)
 
 
 class EvaluateExamples(unittest.TestCase):
@@ -143,6 +141,11 @@ class TestTubeFluent2DAbaqus2DSteady(EvaluateExamples):
     number_of_timesteps = 1
 
 
+class TestTubeFluent2DAbaqus2DSurrogate(EvaluateExamples):
+    example = 'tube_fluent2d_abaqus2d_surrogate'
+    number_of_timesteps = 2
+
+
 class TestTubeFluent2DTubeStructure(EvaluateExamples):
     example = 'tube_fluent2d_tube_structure'
     number_of_timesteps = 2
@@ -202,6 +205,28 @@ class TestTubeTubeFlowTubeStructure(EvaluateExamples):
     rtol_convergence = 0
 
 
+class TestTubeTubeFlowTubeStructureAnalytical(EvaluateExamples):
+    example = 'tube_tube_flow_tube_structure_analytical'
+    number_of_timesteps = 5
+    atol_solution_x = 1e-12
+    rtol_solution_x = 0
+    atol_solution_y = 1e-5
+    rtol_solution_y = 0
+    atol_convergence = 1e-9
+    rtol_convergence = 0
+
+
+class TestTubeTubeFlowTubeStructureSurrogate(EvaluateExamples):
+    example = 'tube_tube_flow_tube_structure_surrogate'
+    number_of_timesteps = 5
+    atol_solution_x = 1e-12
+    rtol_solution_x = 0
+    atol_solution_y = 1e-5
+    rtol_solution_y = 0
+    atol_convergence = 1e-9
+    rtol_convergence = 0
+
+
 class TestTurekFluent2DAbaqus2D(EvaluateExamples):
     example = 'turek_fluent2d_abaqus2d'
     number_of_timesteps = 2
@@ -218,6 +243,7 @@ test_cases = (
     TestTestSingleSolver,
     TestTubeFluent2DAbaqus2D,
     TestTubeFluent2DAbaqus2DSteady,
+    TestTubeFluent2DAbaqus2DSurrogate,
     TestTubeFluent2DTubeStructure,
     TestTubeFluent3DAbaqus2D,
     TestTubeFluent3DAbaqus3D,
@@ -227,6 +253,8 @@ test_cases = (
     TestTubeTubeFlowAbaqus2D,
     TestTubeTubeFlowTubeRingmodel,
     TestTubeTubeFlowTubeStructure,
+    TestTubeTubeFlowTubeStructureAnalytical,
+    TestTubeTubeFlowTubeStructureSurrogate,
     TestTurekFluent2DAbaqus2D,
     TestTurekFluent2DAbaqus2DSteady,
 )

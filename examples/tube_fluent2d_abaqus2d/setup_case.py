@@ -1,5 +1,7 @@
 import shutil
 import subprocess
+import os
+from os.path import join
 
 from coconut import tools
 

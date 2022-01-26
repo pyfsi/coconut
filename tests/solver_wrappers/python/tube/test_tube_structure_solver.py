@@ -1,4 +1,5 @@
 from coconut.tools import create_instance
+import coconut.coupling_components.solver_wrappers.python.banded as bnd
 
 import unittest
 import os
@@ -75,6 +76,71 @@ class TestSolverWrapperTubeStructureSolver(unittest.TestCase):
         a2 = output2_end.get_interface_data()
 
         np.testing.assert_allclose(a1, a2, atol=1e-15)
+
+    def test_jacobian(self):
+        # create solver and set pressure
+        solver = self.set_up_solver()
+
+        # verify derivative
+        r = np.array(solver.r)
+        dr = 1e-3 * np.ones_like(r)
+        dr[:2] = 0
+        dr[-2:] = 0
+        solver.r = r - dr / 2
+        f1 = solver.get_residual()
+        solver.r = r + dr / 2
+        f2 = solver.get_residual()
+        solver.r = r
+        j = bnd.to_dense(solver.get_jacobian())
+        ju = j[2:-2, 2:-2]
+        f1 = f1[2:-2]
+        f2 = f2[2:-2]
+        dr = dr[2:-2]
+        d1 = f2 - f1
+        d2 = ju @ dr
+        self.assertLess(np.linalg.norm(d1 - d2), 1e-16)
+
+    def test_surrogate_jacobian(self):
+        # test surrogate jacobian
+
+        # create solver and set displacement
+        solver = self.set_up_solver()
+
+        # verify surrogate jacobian
+        input = np.zeros((solver.m, 1))
+        p = np.array(solver.p)
+        dp = 1e5 * np.ones_like(p)
+
+        input[:, 0] = p - dp / 2
+        interface_input = solver.get_interface_input()
+        interface_input.set_variable_data(self.model_part_name, self.variable, input)
+        f1 = solver.solve_solution_step(interface_input).get_variable_data(self.model_part_name, 'displacement')[:, 1]
+
+        input[:, 0] = p + dp / 2
+        interface_input = solver.get_interface_input()
+        interface_input.set_variable_data(self.model_part_name, self.variable, input)
+        f2 = solver.solve_solution_step(interface_input).get_variable_data(self.model_part_name, 'displacement')[:, 1]
+
+        jsurrogate = solver.get_surrogate_jacobian()
+        d1 = f2 - f1
+        d2 = jsurrogate @ dp
+        print(np.linalg.norm(d1 - d2))
+        self.assertLess(np.linalg.norm(d1 - d2), 1e-16)
+
+    def set_up_solver(self):
+        # create solver
+        solver = create_instance(self.parameters)
+        solver.initialize()
+        solver.initialize_solution_step()
+
+        # set pressure
+        interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.model_part_name)
+        data = [[get_dp(model_part.z0[i])]for i in range(model_part.size)]
+        interface_input.set_variable_data(self.model_part_name, self.variable, np.array(data))
+        solver.solve_solution_step(interface_input)
+
+        return solver
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)

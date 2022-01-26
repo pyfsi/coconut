@@ -4,6 +4,7 @@ from coconut import tools
 
 import os
 from os.path import join
+import glob
 import subprocess
 import shutil
 import sys
@@ -39,7 +40,8 @@ class SolverWrapperAbaqus(Component):
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
-        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_abaqus'  # dir in /tmp for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp')
+        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
@@ -79,7 +81,7 @@ class SolverWrapperAbaqus(Component):
         self.run_time = 0.0
 
         # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
+        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -97,7 +99,7 @@ class SolverWrapperAbaqus(Component):
                     line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
                         else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
                     line = line.replace('|MP_MODE|', self.mp_mode)
-                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_directory_name))
+                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
@@ -115,8 +117,8 @@ class SolverWrapperAbaqus(Component):
         path_libusr = join(self.dir_csm, 'libusr/')
         shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
         os.mkdir(path_libusr)
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))  # create tmp-directory
+        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
+        os.mkdir(join('/tmp', self.tmp_dir_unique))  # create tmp-directory
 
         # prepare Abaqus USRInit.f
         if self.timestep_start == 0:  # run USRInit only for new calculation
@@ -419,47 +421,24 @@ class SolverWrapperAbaqus(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
-                                'Surface*Cpu0Input.dat', 'Surface*Output.dat']
-
-        if self.timestep > 0:
-            if self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0:
-                # no files from previous time step needed for restart
-                cmd = ''
-                for suffix in to_be_removed_suffix:
-                    cmd += f'rm CSM_Time{self.timestep - 1}{suffix}; '
-                if (self.save_results == 0) or ((self.timestep - 1) % self.save_results != 0):
-                    # .odb not needed for post-processing
-                    cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
-                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-            if (self.save_restart < 0) and (self.timestep + self.save_restart > 0) and \
-                    (self.timestep % self.save_restart == 0):
-                # if (self.timestep + self.save_restart < 0): don't touch files from previous calculation
-                # files from (self.timestep + self.save_restart) may be removed as new restart files are present at
-                # current timestep
-                cmd = ''
-                for suffix in to_be_removed_suffix:
-                    cmd += f'rm CSM_Time{self.timestep + self.save_restart}{suffix}; '
-                if (self.save_results == 0) or ((self.timestep + self.save_restart) % self.save_results != 0):
-                    cmd += f'rm CSM_Time{self.timestep + self.save_restart}.odb; '
-                subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-            for f in self.dir_vault.iterdir():
-                f.unlink()  # empty vault
+        if self.timestep - 1 > self.timestep_start and \
+                (self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0):
+            # no files from previous time step needed for restart
+            self.remove_files(self.timestep - 1)
+        if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
+                self.timestep % self.save_restart == 0:
+            # if (self.timestep + self.save_restart < self.timestep_start): don't touch files from previous
+            # calculation
+            # files from (self.timestep + self.save_restart) may be removed as new restart files are
+            # present at current timestep
+            self.remove_files(self.timestep + self.save_restart)
+        for f in self.dir_vault.iterdir():
+            f.unlink()  # empty vault
 
     def finalize(self):
         super().finalize()
-
-        to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt',
-                                'Surface*Cpu0Input.dat', 'Surface*Output.dat']
         if self.save_restart == 0 or self.timestep % self.save_restart != 0:  # no files needed for restart
-            cmd = ''
-            for suffix in to_be_removed_suffix:
-                cmd += f'rm CSM_Time{self.timestep}{suffix}; '
-            if (self.save_results == 0) or (self.timestep % self.save_results != 0):
-                # .odb not needed for post-processing
-                cmd += f'rm CSM_Time{self.timestep - 1}.odb; '
-            subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
-
+            self.remove_files(self.timestep)
         self.dir_vault.rmdir()
 
     def get_interface_input(self):
@@ -489,6 +468,19 @@ class SolverWrapperAbaqus(Component):
     def print_log(self, msg):
         with open(os.path.join(self.dir_csm, self.logfile), 'a') as f:
             print(msg, file=f)
+
+    def remove_files(self, timestep):
+        # remove files corresponding to timestep; the odb file is kept if needed for save_results
+        to_be_removed_suffix = ['.com', '.dat', '.mdl', '.msg', '.prt', '.res', '.sim', '.sta', '.stt']
+        to_be_removed_pattern = ['Surface*Cpu0Input.dat', 'Surface*Output.dat']
+        for suffix in to_be_removed_suffix:
+            os.remove(join(self.dir_csm, f'CSM_Time{timestep}{suffix}'))
+        for pattern in to_be_removed_pattern:
+            for path in glob.glob(join(self.dir_csm, f'CSM_Time{timestep}{pattern}')):
+                os.remove(path)
+        if self.save_results == 0 or timestep % self.save_results != 0:
+            # .odb not needed for post-processing
+            os.remove(join(self.dir_csm, f'CSM_Time{timestep}.odb'))
 
     # noinspection PyMethodMayBeStatic
     def make_elements(self, face_file, output_file):

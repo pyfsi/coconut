@@ -33,7 +33,7 @@ solvers
         relTol          0;
     }
 
-    "(U|k|epsilon)"
+    U
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
@@ -41,7 +41,7 @@ solvers
         relTol          1e-9;
     }
 
-    "(U|k|epsilon)Final"
+    UFinal
     {
         $U;
         relTol          0;

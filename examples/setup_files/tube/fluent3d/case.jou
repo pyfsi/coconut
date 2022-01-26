@@ -1,6 +1,6 @@
 file set-batch-options n y n
 (enable-dynamic-mesh-node-ids #t)
-file startt "transcript_setup.txt"
+;file startt "transcript_setup.txt"
 file read-case mesh_tube3d.msh
 
 grid check

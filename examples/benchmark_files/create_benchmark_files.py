@@ -31,6 +31,7 @@ examples = {
     'breaking_dam_fluent2d_abaqus2d': 2,
     'tube_fluent2d_abaqus2d': 2,
     'tube_fluent2d_abaqus2d_steady': 1,
+    'tube_fluent2d_abaqus2d_surrogate': 2,
     'tube_fluent2d_tube_structure': 2,
     'tube_fluent3d_abaqus2d': 2,
     'tube_fluent3d_abaqus3d': 2,
@@ -38,8 +39,10 @@ examples = {
     'tube_openfoam3d_abaqus3d': 2,
     'tube_openfoam3d_kratos_structure3d': 2,
     'tube_tube_flow_abaqus2d': 2,
-    'tube_tube_flow_tube_ringmodel': 100,
-    'tube_tube_flow_tube_structure': 100,
+    'tube_tube_flow_tube_ringmodel': 10,
+    'tube_tube_flow_tube_structure': 10,
+    'tube_tube_flow_tube_structure_analytical': 10,
+    'tube_tube_flow_tube_structure_surrogate': 10,
     'turek_fluent2d_abaqus2d': 2,
     'turek_fluent2d_abaqus2d_steady': 1
 }

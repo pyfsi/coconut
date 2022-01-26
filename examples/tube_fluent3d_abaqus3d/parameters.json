@@ -72,7 +72,7 @@
           "fluent_gui": false,
           "max_nodes_per_face": 4,
           "flow_iterations": 200,
-          "save_iterations": 1
+          "save_results": 1
         }
       },
       {
@@ -86,6 +86,7 @@
               "dimensions": 3,
               "static": false,
               "arraysize": 1e5,
+              "save_results": 1,
               "interface_input": [
                 {
                   "model_part": "WALLOUTSIDE_load_points",

@@ -20,7 +20,7 @@ class MapperLinear(MapperInterpolator):
                 0 = to-point
                 1 = 1st from-point
                 2 = 2nd from-point
-                2 = 3rd from-point
+                3 = 3rd from-point
                 p = to-point projected on line/triangle
                 n = normal unit vector
                 t = tangential unit vector

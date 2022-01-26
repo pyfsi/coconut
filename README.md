@@ -146,7 +146,7 @@ We can now start the FSI simulation in CoCoNuT by running the Python file *`run_
 python3 run_simulation.py
 ```
 
-The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself strats: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
+The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself starts: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
 
 Let us now take a closer look at the two files that are used to run CoCoNuT. 
 The Python file *`run_simulation.py`* typically does not have to be adapted by the user. Its task is to read in the settings file *`parameters.json`* and launch a simulation using those settings. 
@@ -223,4 +223,4 @@ This folder contains the unit tests. These are created for each piece of code th
 [Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
 
 <a id="2">[2]</a> 
-[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

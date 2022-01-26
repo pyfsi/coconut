@@ -58,7 +58,8 @@ class MapperRadialBasis(MapperInterpolator):
         cond = max(cond)
         if cond > 1e13:
             tools.print_info(f'The highest condition number of the interpolation matrices is {cond:.2e} > 1e13\n'
-                        f'Decrease the shape parameter to decrease the condition number', layout='warning')
+                             f'Decrease the shape parameter (current value is {self.shape_parameter})'
+                             f' to decrease the condition number', layout='warning')
 
 
 def get_coeffs(distances, coords_from, shape_parameter):
