@@ -1349,6 +1349,11 @@ Subcycling within the structural solver is possible.</p>
 <td>Number of cores to be used by Abaqus.</td>
 </tr>
 <tr>
+<td align="right"><code>debug</code></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>False</code>. For every iteration, text files are saved with the input and output data of the solver.</td>
+</tr>
+<tr>
 <td align="right"><code>delta_t</code></td>
 <td align="center">float</td>
 <td>Size of the time step in Abaqus. Its value should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> object in which case it is not mandatory.</td>

@@ -1242,6 +1242,16 @@ multiphysics problems.</p>
 <td>List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.</td>
 </tr>
 <tr>
+<td align="right"><code>compile_clean</code></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>False</code>. If set to True, the adapted application will first clean and then compile.</td>
+</tr>
+<tr>
+<td align="right"><code>debug</code></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>False</code>. For every iteration, additional files are saved containing information on the input and output data of the solver.</td>
+</tr>
+<tr>
 <td align="right"><code>delta_t</code></td>
 <td align="center">double (optional)</td>
 <td>Fixed timestep size in flow solver.</td>
@@ -1436,7 +1446,7 @@ OpenFOAM-directory:</p>
 <li><em><code>constant/dynamicMeshDict</code></em>which contains the settings for OpenFOAM's dynamic motion solver</li>
 <li><em><code>system/decomposeParDict</code></em> with the necessary decomposition of the fluid domain (if <code>cores</code>&gt;1)</li>
 <li><em><code>0/pointDisplacement</code></em> with all the boundary conditions, including <code>fixedValue</code> boundary condition for the FSI
-  boundaries. This is used as a template for the <em><code>pointDisplacement_Next</code></em> to supply displacement boundary conditon (
+  boundaries. This is used as a template for the <em><code>pointDisplacementTmp</code></em> to supply displacement boundary conditon (
   from structural solver) for the FSI-interface.</li>
 </ul>
 <h3 id="comments_1">Comments</h3>

@@ -1225,6 +1225,11 @@ A considerable convergence stabilization and acceleration is obtained by modifyi
 </thead>
 <tbody>
 <tr>
+<td align="right"><code>debug</code></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>False</code>. The data <code>solution_x</code> and <code>solution_y</code> are saved every iteration except of every time step (see <a href="#save-results">results pickle file</a>). Residual distribution is also saved in additional field <code>solution_r</code> for every iteration.</td>
+</tr>
+<tr>
 <td align="right"><code>delta_t</code></td>
 <td align="center">float</td>
 <td>Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.</td>
@@ -1641,6 +1646,11 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 </tr>
 </thead>
 <tbody>
+<tr>
+<td align="right"><code>debug</code></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>False</code>. Residual distribution is also saved in additional field <code>solution_r</code> for every iteration (see <a href="#save-results">results pickle file</a>).</td>
+</tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
 <td align="center">float</td>
