@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,32 +22,24 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    coconut_interFoam
+    coconut_cavitatingFoam
 
 Description
-    Solver for 2 incompressible, isothermal immiscible fluids using a VOF
-    (volume of fluid) phase-fraction based interface capturing approach,
-    with optional mesh motion and mesh topology changes including adaptive
-    re-meshing.
-	- Adapted for coupling with the pyKratos/CoCoNuT-framework
-	  Developed at Ghent University by Laurent De Moerloose (2019)
+    Transient cavitation code based on the homogeneous equilibrium model
+    from which the compressibility of the liquid/vapour "mixture" is obtained,
+    with optional mesh motion and mesh topology changes.
+
+    Turbulence modelling is generic, i.e. laminar, RAS or LES may be selected.
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
-#include "CMULES.H"
-#include "EulerDdtScheme.H"
-#include "localEulerDdtScheme.H"
-#include "CrankNicolsonDdtScheme.H"
-#include "subCycle.H"
-#include "immiscibleIncompressibleTwoPhaseMixture.H"
-#include "turbulentTransportModel.H"
-#include "pimpleControl.H"
-#include "fvOptions.H"
+#include "barotropicCompressibilityModel.H"
+#include "incompressibleTwoPhaseMixture.H"
+#include "kinematicMomentumTransportModel.H"
 #include "CorrectPhi.H"
-#include "localEulerDdtScheme.H"
-#include "fvcSmooth.H"
+#include "pimpleControl.H"
 #include "Time.H"
 #include "fsiDisplacement.H"
 #include "waitForSync.H"
@@ -60,33 +52,15 @@ int main(int argc, char *argv[])
 {
     #include "postProcess.H"
 
-    #include "setRootCase.H"
+    #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createDynamicFvMesh.H"
-    #include "initContinuityErrs.H"
-    #include "createControl.H"
-    #include "createTimeControls.H"
-    #include "createDyMControls.H"
-    #include "createRDeltaT.H"
+    #include "createControls.H"
     #include "createFields.H"
-    #include "createFvOptions.H"
-
-    volScalarField rAU
-    (
-        IOobject
-        (
-            "rAU",
-            runTime.timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("rAUf", dimTime/rho.dimensions(), 1.0)
-    );
-
-    #include "CorrectPhi.H"
-    #include "createUf.H"
+    #include "createUfIfPresent.H"
+    #include "createPcorrTypes.H"
+    #include "CourantNo.H"
+    #include "setInitialDeltaT.H"
 
     turbulence->validate();
 
@@ -98,7 +72,7 @@ int main(int argc, char *argv[])
     IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
 
-    while (true) // NOT runTime.run()
+    while (true) // NOT (pimple.run(runTime))
     {
         usleep(1000); // Expressed in microseconds
 
@@ -108,14 +82,15 @@ int main(int argc, char *argv[])
 
             #include "readControls.H"
 
-            #include "CourantNo.H"
-            #include "alphaCourantNo.H"
-            #include "setDeltaT.H"
+            {
+                #include "CourantNo.H"
+                #include "setDeltaT.H"
 
-            runTime++;
-            iteration = 0;
+                runTime++;
+                iteration = 0;
 
-            Info << "Time = " << runTime.timeName() << nl << endl;
+                Info << "Time = " << runTime.timeName() << nl << endl;
+            }
         }
 
         if (exists("continue.coco"))
@@ -132,47 +107,28 @@ int main(int argc, char *argv[])
                 ApplyFSIPointDisplacement(mesh, boundary_name);
             }
 
+            // Do any mesh changes
+            mesh.update();
+
+            if (mesh.changing())
+            {
+                // Calculate absolute flux from the mapped surface velocity
+                phi = mesh.Sf() & Uf();
+
+                if (correctPhi)
+                {
+                    #include "correctPhi.H"
+                }
+
+                // Make the flux relative to the mesh motion
+                fvc::makeRelative(phi, U);
+            }
+
             // --- Pressure-velocity PIMPLE corrector loop
             while (pimple.loop())
             {
-               if (pimple.firstIter() || moveMeshOuterCorrectors)
-                {
-
-                    scalar timeBeforeMeshUpdate = runTime.elapsedCpuTime();
-                    mesh.update();
-
-                    Info<< "Execution time for mesh.update() = "
-                     << runTime.elapsedCpuTime() - timeBeforeMeshUpdate
-                     << " s" << endl;
-
-                    gh = (g & mesh.C()) - ghRef;
-                    ghf = (g & mesh.Cf()) - ghRef;
-
-                    // Calculate absolute flux from the mapped surface velocity
-                    phi = mesh.Sf() & Uf;
-
-                    if (mesh.changing() && correctPhi)
-                    {
-
-                         #include "correctPhi.H"
-                    }
-
-                    // Make the flux relative to the mesh motion
-                    fvc::makeRelative(phi, U);
-
-                    mixture.correct();
-
-                    if (mesh.changing() && checkMeshCourantNo)
-                    {
-                        #include "meshCourantNo.H"
-                    }
-                }
-
-                #include "alphaControls.H"
-                #include "alphaEqnSubCycle.H"
-
-                mixture.correct();
-
+                #include "rhoEqn.H"
+                #include "alphavPsi.H"
                 #include "UEqn.H"
 
                 // --- Pressure corrector loop

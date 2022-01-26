@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    cocount_pimpleFoam
+    coconut_pimpleFoam
 
 Description
     Transient solver for incompressible, turbulent flow of Newtonian fluids,
@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
     turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
     unsigned int iteration;
     iteration = 0;
 
