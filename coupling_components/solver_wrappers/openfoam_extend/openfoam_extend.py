@@ -42,6 +42,10 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
         self.start_time = self.settings['timestep_start'] * self.delta_t
+        self.die_min = self.settings['axial_coordinate_die_min']
+        self.die_max = self.settings['axial_coordinate_die_max']
+        self.die_max_change =self.settings['axial_coordinate_die_max_change']
+        self.timestep_change = self.settings['timestep_die_max_change']
         self.timestep = self.physical_time = self.iteration = self.cur_timestamp = self.prev_timestamp = None
         self.openfoam_extend_process = None
         self.write_interval = self.write_precision = None
@@ -63,7 +67,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.run_time = 0.0
 
         # residual variables
-        self.residual_variables = self.settings.get('residual_variables', None)
+        self.residual_variables = ['res','rel res', 'material res']
         self.res_filepath = os.path.join(self.working_directory, 'residuals.csv')
 
         if self.residual_variables is not None:
@@ -321,6 +325,9 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.iteration = 0
         self.physical_time += self.delta_t
 
+        if self.timestep > self.timestep_change:
+            self.die_max = self.die_max_change
+
         self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
 
@@ -356,6 +363,8 @@ class SolverWrapperOpenFOAMExtend(Component):
 
         self.send_message('next')
         self.wait_message('next_ready')
+
+
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -399,8 +408,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.delete_prev_iter_output()
         self.send_message('continue')
         self.wait_message('continue_ready')
-
-
 
         # read data from OpenFOAM
         self.read_node_output()
@@ -459,8 +466,8 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.send_message('save')
             self.wait_message('save_ready')
 
-        if self.residual_variables is not None:
-            self.write_of_residuals()
+        # if self.residual_variables is not None:
+        #     self.write_of_residuals()
 
     def finalize(self):
         super().finalize()
@@ -547,10 +554,9 @@ class SolverWrapperOpenFOAMExtend(Component):
                                                                                 time_folder = self.cur_timestamp,
                                                           boundary_name = boundary)
 
-            mask = np.logical_and(node_coords[:, 0] > -0.003, node_coords[:, 0] < 0.0005)
+            mask = np.logical_and(node_coords[:, 0] > self.die_min, node_coords[:, 0] < self.die_max)
             filter_node_ids = node_ids[mask]
             filter_node_coords = node_coords[mask, :]
-            # print(filter_node_coords[:, 2])
 
             displacement = np.zeros((len(filter_node_ids),3))
             disp_check = np.zeros((len(node_ids),3))
@@ -590,12 +596,11 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             displacement[:, 0] = displacement[:, 0] * 0.0000000000001
 
-            for i in range((len(node_coords[:, 2]))):
-                if node_coords[i, 2] < 0:
-                    disp_check[i, 2] = -disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
-                else:
-                    disp_check[i, 2] = disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
-
+            # for i in range((len(node_coords[:, 2]))):
+            #     if node_coords[i, 2] < 0:
+            #         disp_check[i, 2] = -disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
+            #     else:
+            #         disp_check[i, 2] = disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
 
 
             self.interface_output = Interface(self.settings['interface_output'],self.model)
@@ -603,16 +608,6 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
 
             # self.interface_output.set_variable_data(mp_name, 'velocity', velocity*0.00000001)
-
-            # print('displacement structural solver after')
-            # print(displacement)
-
-            # print("mp.y0")
-            # print(mp_from.y0)
-            # print("mp.z0")
-            # print(mp_from.z0)
-            # print("grades")
-            # print(np.sin(2.5*np.pi/180))
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
@@ -856,21 +851,24 @@ class SolverWrapperOpenFOAMExtend(Component):
             time_start_string = f'Time = {self.prev_timestamp}'
             time_end_string = f'Time = {self.cur_timestamp}'
             match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
+            # print(log_string)
+            # print("#####################")
+            # input(match)
             if match is not None:
                 time_block = match.group(1)
                 iteration_block_list = re.findall(
                     r'Coupling iteration = \d+(.*?)Coupling iteration \d+ end', time_block, flags=re.S)
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
-                    for i, variable in enumerate(self.residual_variables):
-                        search_string = f'Solving for {variable}, Initial residual = ({of_io.float_pattern})'
+                    for i, residual_variable in enumerate(self.residual_variables):
+                        search_string = f'{residual_variable} = ({of_io.float_pattern}))'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of pimple loop
                             var_residual = float(var_residual_list[-1])
                             residual_array[i] = var_residual
                         else:
-                            raise RuntimeError(f'Variable: {variable} equation is not solved in {self.application}')
+                            raise RuntimeError(f'Variable: {residual_variable} equation is not solved in {self.application}')
 
                     with open(self.res_filepath, 'a') as f:
                         np.savetxt(f, [residual_array], delimiter=', ')

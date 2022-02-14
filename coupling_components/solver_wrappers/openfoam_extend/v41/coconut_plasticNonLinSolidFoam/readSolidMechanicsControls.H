@@ -34,6 +34,8 @@ dictionary& solidControl = mesh.solutionDict().subDict("solidMechanics");
 
 const int nCorr(solidControl.lookupOrDefault<int>("nCorrectors", 1000));
 
+const float nTime(solidControl.lookupOrDefault<float>("nTime", 0.10000));
+
 const int nCorrT(solidControl.lookupOrDefault<int>("nTCorrectors", nCorr));
 
 const scalar convergenceToleranceU

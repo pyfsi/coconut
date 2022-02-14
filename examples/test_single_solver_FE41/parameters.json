@@ -98,6 +98,8 @@
               "working_directory": "CSM",
               "application": "coconut_plasticNonLinSolidFoam",
               "time_precision": 5,
+	      "axial_coordinate_die_min":-0.0031,
+	      "axial_coordinate_die_max":0.0006,
               "parallel": false,
               "boundary_names": [
                                 "wireTopContact"

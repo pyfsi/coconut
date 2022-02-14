@@ -76,7 +76,7 @@ class CoupledSolverGaussSeidel(Component):
             self.residual = []
             self.info = None
 
-        self.debug = False  # save results each iteration including residual interfaces
+        self.debug = True  # save results each iteration including residual interfaces
         if self.debug:
             self.complete_solution_r = None
 

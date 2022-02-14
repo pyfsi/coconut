@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
             iteration = 0;
-            lduSolverPerformance solverPerf;
+//          lduSolverPerformance solverPerf;
             converged = false;
             blockLduMatrix::debug = 0;
             oldPoints_ = mesh.points();
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
                 fvVectorMatrix DUEqn
                 (
                     fvm::d2dt2(rho, DU)
-                  + fvc::d2dt2(rho.oldTime(), U.oldTime()) //fvc::d2dt2(rho_oldFSIiteration, U_oldFSIiteration) //MATHIEU
+                  + fvc::d2dt2(rho.oldTime(), U.oldTime())
                  == fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
                   + fvc::div(cauchyTraction*mag(curS))
                   - fvc::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
@@ -369,6 +369,7 @@ int main(int argc, char *argv[])
             twoMuLambda = 2.0 * mu + lambda;
             twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
             RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
+//            Info<< "mechanical = "<< mechanical <<endl;
 
             remove("continue.coco");
             //Return the coupling interface output

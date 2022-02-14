@@ -27,8 +27,8 @@ Y_name = os.path.join('CFD', '0/Cy')
 Z_name = os.path.join('CFD', '0/Cz')
 
 
-timestamp = '0.00330'
-number_of_iterations = 3
+timestamp = '0.00220'
+number_of_iterations = 5
 
 pointDisplacement = os.path.join('CFD',timestamp, 'cellDisplacement')
 
@@ -113,12 +113,12 @@ print('corr')
 print(corr)
 print("plot_fluid)")
 print(plot_last_struc[:,1])
-num_fault = abs(plot_last_struc[:,1] - corr)
-
-ax1.plot(plot_last_struc[:, 0], num_fault, label = f'final_displacement_fluid')
+num_fault = (plot_last_struc[:,1] - corr)
+print(np.amax(num_fault))
+ax1.plot(plot_last_struc[:, 0], num_fault, label = f'numerical difference wire / soap')
 ax1.legend()
-fig1.suptitle(f'Transfer radial displacement timestamp: {timestamp}', fontsize=20)
-ax1.set_ylabel("radial displacement (m)")
+fig1.suptitle(f'Numerical difference wire /soap: {timestamp}', fontsize=20)
+ax1.set_ylabel("numerical difference (m)")
 ax1.set_xlabel('wire position(m)')
 ax1.tick_params(axis='y')
 plt.grid()

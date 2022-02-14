@@ -18,12 +18,12 @@ if
         Info<< "    Both residuals have converged" << endl;
         converged = true;
     }
-    else if (relativeResidual < 0.1*convergenceTolRelU)
+    else if (relativeResidual < 0.1*convergenceTolRelU && runTime.value() <= nTime)
     {
         Info<< "\tThe relative residual has converged" << endl;
         converged = true;
     }
-    else if (solverPerf.initialResidual() < 0.1*convergenceToleranceU)
+    else if (solverPerf.initialResidual() < 0.1*convergenceToleranceU && runTime.value() <= nTime)
     {
         Info<< "\tThe solver residual has converged" << endl;
         converged = true;

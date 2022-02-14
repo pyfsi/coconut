@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 100
+    "number_of_timesteps": 10
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
@@ -46,6 +46,8 @@
         "settings": {
           "working_directory": "CFD",
           "application": "coconut_pimpleFoam",
+	  "moving_rigid_body": false,
+	  "timeVaryingMappedFixedValue": false,
           "boundary_names": [
             "mantle"
           ],
@@ -69,7 +71,7 @@
           "time_precision": 5,
           "density": 1000,
           "is_incompressible": true,
-          "parallel": true,
+          "parallel": false,
           "residual_variables": [
             "Ux",
             "Uy",
