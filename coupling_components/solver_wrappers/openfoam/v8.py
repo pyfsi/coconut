@@ -38,7 +38,7 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         return x0, y0, z0
 
     def pressure_dict(self, boundary_name):
-        dct = (f'PRESSURE_{boundary_name}\n'
+        dct = (f'    PRESSURE_{boundary_name}\n'
                f'    {{\n'
                f'        type            surfaceFieldValue;\n'
                f'        libs            ("libfieldFunctionObjects.so");\n'
