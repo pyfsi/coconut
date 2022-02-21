@@ -276,7 +276,7 @@ class CoupledSolverGaussSeidel(Component):
                              f' Saving results to new file: {results_file_name}', layout='warning')
             return
         if self.debug != ('solution_r' in results_data.keys()):
-            raise ValueError('Value of debug attribute in CoupledSolverGaussSeidel can not be changed upon restart')
+            raise ValueError(f'Value of debug attribute in {self.__class__.__name__} can not be changed upon restart')
         self.timestep_start_global = results_data['timestep_start']
         self.complete_solution_x = results_data['solution_x'][:, :self.timestep_start_current
                                                               - self.timestep_start_global + 1]
