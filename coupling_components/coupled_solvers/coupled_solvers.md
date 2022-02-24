@@ -289,16 +289,17 @@ parameter|type|description
 This coupled solver is closely related to the IQN-ILSM framework described in [[2](#2)].
 The settings structure for the different surrogate models discussed in this work are:
 
-=== "previous time steps (e.g. 100) (=reuse)"
+=== "previous time steps (e.g. 50) (=reuse)"
 
     ``` json
 	{
 	  "type": "coupled_solvers.iqnism",
 	  "settings": {
+		"omega": 0.01,
 		"model": {
 		  "type": "coupled_solvers.models.mvmf",
 		  "settings": {
-			"q": 100
+			"q": 50
 		  }
 		},
 		"surrogate": {
@@ -343,7 +344,7 @@ The settings structure for the different surrogate models discussed in this work
 		"model": {
 		  "type": "coupled_solvers.models.mvmf",
 		  "settings": {
-			"q": 100
+			"q": 50
 		  }
 		},
 		"surrogate": {
