@@ -906,7 +906,7 @@
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_structure.html" class="md-nav__link">
-        Python TubeFlow - Python TubeStructre
+        Python TubeFlow - Python TubeStructure
       </a>
     </li>
   
@@ -920,7 +920,7 @@
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link">
-        Python TubeFlow - Python TubeStructre - Analytical
+        Python TubeFlow - Python TubeStructure - Analytical
       </a>
     </li>
   
@@ -934,7 +934,7 @@
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_structure_surrogate.html" class="md-nav__link">
-        Python TubeFlow - Python TubeStructre - Surrogate
+        Python TubeFlow - Python TubeStructure - Surrogate
       </a>
     </li>
   
@@ -1563,16 +1563,17 @@ Note that, in this way, the secant Jacobian has preference over the surrogate Ja
 </table>
 <p>This coupled solver is closely related to the IQN-ILSM framework described in [<a href="#2">2</a>].
 The settings structure for the different surrogate models discussed in this work are:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">previous time steps (e.g. 100) (=reuse)</label><label for="__tabbed_1_2">other surrogate model</label><label for="__tabbed_1_3">previous time steps + other surrogate model</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">previous time steps (e.g. 50) (=reuse)</label><label for="__tabbed_1_2">other surrogate model</label><label for="__tabbed_1_3">previous time steps + other surrogate model</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
   <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.iqnism&quot;</span><span class="p">,</span>
   <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;omega&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
     <span class="nt">&quot;model&quot;</span><span class="p">:</span> <span class="p">{</span>
       <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.mvmf&quot;</span><span class="p">,</span>
       <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">100</span>
+        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">50</span>
       <span class="p">}</span>
     <span class="p">},</span>
     <span class="nt">&quot;surrogate&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -1613,7 +1614,7 @@ The settings structure for the different surrogate models discussed in this work
     <span class="nt">&quot;model&quot;</span><span class="p">:</span> <span class="p">{</span>
       <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;coupled_solvers.models.mvmf&quot;</span><span class="p">,</span>
       <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">100</span>
+        <span class="nt">&quot;q&quot;</span><span class="p">:</span> <span class="mi">50</span>
       <span class="p">}</span>
     <span class="p">},</span>
     <span class="nt">&quot;surrogate&quot;</span><span class="p">:</span> <span class="p">{</span>
