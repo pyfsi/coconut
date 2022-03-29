@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
             #include "createNonLinearGeometry.H"
 
             prevRunTime = runTime.timeName();
+            oldPoints_ = mesh.points();
             runTime++;
             remove("next.coco");
             OFstream outfile ("next_ready.coco");
@@ -149,8 +150,6 @@ int main(int argc, char *argv[])
 //          lduSolverPerformance solverPerf;
             converged = false;
             blockLduMatrix::debug = 0;
-            oldPoints_ = mesh.points();
-
 
             // Optional predictor
             if (predictor)
@@ -163,8 +162,41 @@ int main(int argc, char *argv[])
         if (exists("continue.coco"))
         {
 
-        pointField &oldPoints = const_cast<pointField&>(oldPoints_);
-        mesh.movePoints(oldPoints);
+            pointField &oldPoints = const_cast<pointField&>(oldPoints_);
+            mesh.movePoints(oldPoints);
+
+//            Info<< "mesh_points_before" << mesh.points() << nl << endl;
+
+//            curS == curS.oldTime();
+//            DU == DU.oldTime();
+//            cauchyTraction == cauchyTraction.oldTime();
+            mechanical.resetYieldStress();
+
+            gradDU = fvc::grad(DU);
+
+            // Relative deformation gradient
+            relF = I + gradDU.T();
+
+            // Inverse relative deformation gradient
+            relFinv = hinv(relF);
+
+             // Total deformation gradient
+            F = relF & F.oldTime();
+
+            // Relative Jacobian (Jacobian of relative deformation gradient)
+            relJ = det(relF);
+
+            // Relative deformation gradient with volumetric strain removed
+            relFbar = pow(relJ, -1.0/3.0)*relF;
+
+             // Jacobian of deformation gradient
+            J = det(F);
+
+            // Update tau using material model
+            mechanical.correct(tau);
+
+            rho == rho.oldTime();
+            U == U.oldTime();
 
             iteration++;
             Info<< "Coupling iteration = " << iteration << nl << endl;
@@ -176,9 +208,8 @@ int main(int argc, char *argv[])
                 {
                 // Store previous iteration of DU to allow under-relaxation and
                 // calculation of a relative residual
-
                 DU.storePrevIter();
-//
+
                 if (regionCoupled)
                 {
                     // Attach region coupled patches
@@ -186,8 +217,7 @@ int main(int argc, char *argv[])
                 }
 
                 // Update Cauchy traction vectors
-                 #include "calcCauchyTraction.H"
-
+                #include "calcCauchyTraction.H"
 
                 // Discretise the linear momentum equation using an updated
                 // Lagrangian approach
@@ -196,7 +226,7 @@ int main(int argc, char *argv[])
                 (
                     fvm::d2dt2(rho, DU)
                   + fvc::d2dt2(rho.oldTime(), U.oldTime())
-                 == fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
+                  ==fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
                   + fvc::div(cauchyTraction*mag(curS))
                   - fvc::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)")
                   + RhieChowScaleFactor
@@ -239,6 +269,8 @@ int main(int argc, char *argv[])
                 //gradDU = fvc::grad(DU, pointDU);
                 gradDU = fvc::grad(DU);
 
+//                Info << "gradDU_after " << gradDU << nl << endl;
+
                 // Correct gradDU on materialGgi patches
                 #include "correctDispGrad.H"
 
@@ -263,7 +295,7 @@ int main(int argc, char *argv[])
                 relFinv = hinv(relF);
 
                 // Total deformation gradient
-               F = relF & F.oldTime(); //F = relF & F_oldFSIiteration; //MATHIEU
+                F = relF & F.oldTime();
 
                 // Relative Jacobian (Jacobian of relative deformation gradient)
                 if (stabilisePressure)
@@ -357,11 +389,15 @@ int main(int argc, char *argv[])
             // the new faces so we will re-created all surface fields here
             mesh.update();
 
+//            Info<< "mesh_points_after" << mesh.points() << nl << endl;
+
             // Let the mechanicalLaw know that we have reached the end of the
             // time-step so it may increment its accumulated values
             // Note: we call this after mesh.update() in case it writes a field to
             // disk
             mechanical.updateYieldStress();
+
+//            Info<< "updateYieldStress " << mechanical.updateYieldStress() << nl << endl;
 
             // Update surface fields after a topoChange
             mu = mechanical.mu();
@@ -369,7 +405,6 @@ int main(int argc, char *argv[])
             twoMuLambda = 2.0 * mu + lambda;
             twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
             RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
-//            Info<< "mechanical = "<< mechanical <<endl;
 
             remove("continue.coco");
             //Return the coupling interface output
@@ -384,13 +419,13 @@ int main(int argc, char *argv[])
             OFstream outfile ("continue_ready.coco");
 
         }
-        // Print warnings if convergence was not achieved
-        if (maxUIterReached > 0)
-        {
-            Warning
-                << "Max iterations for the momentum equation were reached in "
-                << maxUIterReached << " time-steps" << endl;
-        }
+        // Print warnings if convergence was not achieved ######################################## MATHIEU ###################
+//        if (maxUIterReached > 0)
+//        {
+//            Warning
+//                << "Max iterations for the momentum equation were reached in "
+//                << maxUIterReached << " time-steps" << endl;
+//        }
 
         if (maxTIterReached > 0)
         {

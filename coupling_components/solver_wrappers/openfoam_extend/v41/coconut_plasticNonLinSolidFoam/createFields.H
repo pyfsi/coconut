@@ -1,15 +1,15 @@
-volVectorField DU_oldFSIiteration
+volVectorField DU_oldTime
 (
     IOobject
     (
-        "DU_oldFSIiteration",
+        "DU_oldTime",
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
         IOobject::NO_WRITE
     ),
     mesh,
-    dimensionedVector("DU_oldFSIiteration", dimLength, vector::zero)
+    dimensionedVector("DU_oldTime", dimLength, vector::zero)
 
 );
 

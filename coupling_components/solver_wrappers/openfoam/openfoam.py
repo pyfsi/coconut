@@ -3,6 +3,7 @@ from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
+import matplotlib.pyplot as plt
 
 from subprocess import check_call
 import numpy as np
@@ -127,6 +128,7 @@ class SolverWrapperOpenFOAM(Component):
             self.moving_rigid_bodies_name = self.settings['moving_rigid_bodies_name']
             self.radial_displacement = self.settings['radial_displacement_rigid_body']
             self.number_of_timeIncrements = self.settings['number_of_time_increments_rigid_body'] # number of timeIncrements is the value how many times a displacement of the rigid body is done.
+            self.radius = self.settings['radius_wire'],
             self.start_increment = self.settings['start_increment']
             rigid_body_filename = os.path.join( self.working_directory,'constant/polyMesh/boundary')
 
@@ -163,7 +165,7 @@ class SolverWrapperOpenFOAM(Component):
                     self.z_rigid[j + index] = z0[i]
 
                 else:
-                    self.x_rigid[j ] = x0[i]
+                    self.x_rigid[j] = x0[i]
                     self.y_rigid[j] = y0[i]
                     self.z_rigid[j] = z0[i]
                     j += 1
@@ -190,7 +192,7 @@ class SolverWrapperOpenFOAM(Component):
                     h.write(f'({0} {0} {0} )\n')
                 h.write(')')
 
-        if self.settings['timeVaryingMappedFixedValue']:
+        if self.settings['myTimeVaryingMappedFixedValue']:
             for boundary in self.boundary_names:
                 mp_name = f'{boundary}_input'
                 mp = self.model.get_model_part(mp_name)
@@ -253,7 +255,41 @@ class SolverWrapperOpenFOAM(Component):
                path_new_rigidData = os.path.join(self.working_directory,'constant/boundaryData', self.moving_rigid_bodies_name, timestamp )
                shutil.rmtree(path_new_rigidData, ignore_errors=True)
                shutil.copytree(path_orig_rigidData, path_new_rigidData)
-               for i in range(self.number_of_timeIncrements):
+
+               #Make a cosine function for softer displacement increments during die diameter decrease. The cosine is added after the
+               # linear decreas of the die diameter. Total displacement is represented by the parameter
+               rico = (self.radius[0] - (self.radius[0]-self.radial_displacement))/ (self.delta_t * self.number_of_timeIncrements)
+               x = np.linspace(0,self.delta_t*self.number_of_timeIncrements,self.number_of_timeIncrements)
+               y = -1*rico*x
+               cosine = self.radial_displacement/2 * np.cos(x * (31000/self.number_of_timeIncrements))-self.radial_displacement/2
+               displacement_increment = np.zeros([len(x) + self.number_of_timeIncrements//10])
+               q = self.start_increment*self.delta_t + np.linspace(0, self.delta_t * self.number_of_timeIncrements + (self.number_of_timeIncrements//10) * self.delta_t, len(displacement_increment))
+               p = self.start_increment*self.delta_t + x
+
+
+               for g in range(len(displacement_increment)):
+                   if g < self.number_of_timeIncrements:
+                       displacement_increment[g] = y[g]
+                   else:
+                       displacement_increment[g] = cosine[g - self.number_of_timeIncrements//10]
+
+               #Give cosine the correct position
+               cosine = cosine - (cosine[self.number_of_timeIncrements - 1 - self.number_of_timeIncrements//10] - displacement_increment[len(displacement_increment)-(len(displacement_increment)//10)])
+
+                #new for loop for to obtain the correc curve after the cosine displacement  correction
+               for g in range(len(displacement_increment)):
+                   if g < self.number_of_timeIncrements:
+                       displacement_increment[g] = y[g]
+                   else:
+                       displacement_increment[g] = cosine[g - self.number_of_timeIncrements//10]
+
+
+               plt.plot(q, displacement_increment)
+               plt.plot(p, cosine)
+               plt.show()
+
+
+               for i in range(self.number_of_timeIncrements + self.number_of_timeIncrements//10):
                    time = self.delta_t * (i + 1 + self.start_increment)
                    timestamp = '{:.{}f}'.format(time, self.time_precision)
                    new_path_rigidData = os.path.join(self.working_directory, 'constant/boundaryData',
@@ -264,12 +300,20 @@ class SolverWrapperOpenFOAM(Component):
                    deltaY = np.zeros(len(self.y_rigid))
                    deltaZ = np.zeros(len(self.z_rigid))
 
+
                    for j in range(len(self.z_rigid)):
-                       deltaY[j] = -self.radial_displacement * (i + 1) * np.cos(2.5 * np.pi / 180)
+                       deltaY[j] = displacement_increment[i] * np.cos(2.5 * np.pi / 180)
                        if self.z_rigid[j] < 0:
-                           deltaZ[j] = self.radial_displacement * (i +1) * np.sin(2.5 * np.pi / 180)
+                           deltaZ[j] = displacement_increment[i] * np.sin(2.5 * np.pi / 180)
                        else:
-                           deltaZ[j] = -self.radial_displacement * (i + 1) * np.sin(2.5 * np.pi / 180)
+                           deltaZ[j] = displacement_increment[i] * np.sin(2.5 * np.pi / 180)
+
+                   # for j in range(len(self.z_rigid)):
+                   #     deltaY[j] = -self.radial_displacement * (i + 1) * np.cos(2.5 * np.pi / 180)
+                   #     if self.z_rigid[j] < 0:
+                   #         deltaZ[j] = self.radial_displacement * (i +1) * np.sin(2.5 * np.pi / 180)
+                   #     else:
+                   #         deltaZ[j] = -self.radial_displacement * (i + 1) * np.sin(2.5 * np.pi / 180)
 
                    with open(os.path.join(new_path_rigidData,'pointDisplacement'), 'w') as h:
                        h.write(f'{self.x_rigid.size}\n')
@@ -279,8 +323,9 @@ class SolverWrapperOpenFOAM(Component):
                        h.write(')')
 
 
-            if self.settings['timeVaryingMappedFixedValue']:
+            if self.settings['myTimeVaryingMappedFixedValue']:
                 for boundary in self.boundary_names:
+                    timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
                     path_orig_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0')
                     path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                     shutil.rmtree(path_new_boundaryData, ignore_errors=True)
@@ -347,7 +392,7 @@ class SolverWrapperOpenFOAM(Component):
         if self.cores > 1 or self.physical_time == 0:
             os.makedirs(path, exist_ok=True)
 
-        if self.settings['timeVaryingMappedFixedValue']:
+        if self.settings['myTimeVaryingMappedFixedValue']:
             for boundary in self.boundary_names:
                 path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, timestamp)
                 if self.cores > 1 or self.physical_time == 0:
@@ -368,7 +413,7 @@ class SolverWrapperOpenFOAM(Component):
                 check_call(f'rm -rf {new_path}', shell=True)
             check_call(f'mkdir -p {new_path}', shell=True)
 
-            if self.settings['timeVaryingMappedFixedValue']:
+            if self.settings['myTimeVaryingMappedFixedValue']:
                 for boundary in self.boundary_names:
                     new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                          self.cur_timestamp)
@@ -599,7 +644,7 @@ class SolverWrapperOpenFOAM(Component):
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
 
-            if self.settings['timeVaryingMappedFixedValue']:
+            if self.settings['myTimeVaryingMappedFixedValue']:
                 velocity = displacement[:,0] * 1e13
 
                 data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
@@ -638,7 +683,6 @@ class SolverWrapperOpenFOAM(Component):
             boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
             boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
             pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
-            # print(pointdisp_string)
 
         with open(pointdisp_filename, 'w') as f:
             f.write(pointdisp_string)

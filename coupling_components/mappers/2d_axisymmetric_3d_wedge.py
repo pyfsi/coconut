@@ -55,26 +55,16 @@ class MapperAxisymmetric2DToWedge3D(MapperTransformer):
             for i in range(n_in):
                 if coords[i, 2] > 0:
                     coords_tmp[j, :] = self.coords_in[i, :]
-
-                    # print(coords_tmp)
-                    # print(j)
-
                     j += 1
                     self.nearest[i] = i_from
                     coords[i, 2] = -coords[i, 2]
                     dd, ii = self.tree.query(coords[i], k=1)
                     self.nearest[ii] = i_from
                     i_from += 1
-                    # print(ii)
 
             coords_out[:, 0] = coords_tmp[:, 0]
             coords_out[:, 1] = np.cos(self.angle) * coords_tmp[:, 1] + np.sin(self.angle) * coords_tmp[:, 2]
             coords_out[:, 2] = 0
-            # print('coords_in')
-            # print(coords_out[:,0])
-
-            # print("nearest")
-            # print(self.nearest)
 
             model.create_model_part(model_part_name_out, coords_out[:, 0],
                                     coords_out[:, 1], coords_out[:, 2], ids_out)

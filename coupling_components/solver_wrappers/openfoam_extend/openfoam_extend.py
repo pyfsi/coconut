@@ -44,8 +44,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.die_min = self.settings['axial_coordinate_die_min']
         self.die_max = self.settings['axial_coordinate_die_max']
-        self.die_max_change =self.settings['axial_coordinate_die_max_change']
-        self.timestep_change = self.settings['timestep_die_max_change']
         self.timestep = self.physical_time = self.iteration = self.cur_timestamp = self.prev_timestamp = None
         self.openfoam_extend_process = None
         self.write_interval = self.write_precision = None
@@ -275,7 +273,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         # if self.settings['parallel']:
         #     if self.start_time == 0:
         #         check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
-        #                    cwd=self.working_directory,
+        #                    cwd=self.working_directory,self.cur_timestamp
         #                    shell=True, env=self.env)
         #
         #     for boundary in self.boundary_names:
@@ -324,9 +322,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.timestep += 1
         self.iteration = 0
         self.physical_time += self.delta_t
-
-        if self.timestep > self.timestep_change:
-            self.die_max = self.die_max_change
 
         self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
@@ -441,6 +436,17 @@ class SolverWrapperOpenFOAMExtend(Component):
                     for point in range(mp.x0.size):
                         f.write(f'{mp.x0[point]} {disp[point, 1]} {disp[point, 2]}\n')
 
+                # specify location of yield
+                yield_name = 'YIELD_' + boundary
+                sigmaY_name = 'sigma_Y_' + boundary
+                yield_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'sigmaY')
+                yield_iter_filepath = os.path.join(self.working_directory, 'postProcessing', yield_name,
+                                                  'surface',
+                                                  self.cur_timestamp, f'sigmaY_{self.iteration}')
+                if not os.path.exists(yield_iter_filepath):
+                    os.makedirs(yield_iter_filepath)
+                shutil.copy(yield_filepath, yield_iter_filepath)
+
         # return interface_output object
         return self.interface_output
 
@@ -529,23 +535,19 @@ class SolverWrapperOpenFOAMExtend(Component):
             self.write_cell_centres()
 
             filename_displacement = os.path.join(self.working_directory, self.cur_timestamp, 'U')
-            # filename_velocity = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
+            filename_velocity = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
 
             disp_field = of_io.get_boundary_field(file_name = filename_displacement, boundary_name = boundary,
                                                      size = nfaces, is_scalar =False)
-            # print("displacement_field")
-            # print(disp_field)
-            # velo_field = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
-            #                                            size=nfaces, is_scalar=False)
+            velo_field = of_io.get_boundary_field(file_name=filename_velocity, boundary_name=boundary,
+                                                       size=nfaces, is_scalar=False)
 
             x, y, z = self.read_face_centres(boundary, nfaces)
-            # print("x,y,z")
-            # print(x,y,z)
 
             # e = interpolate.interp1d(x,disp_field[:,0],fill_value="extrapolate")
             f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
             g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
-            # h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
+            h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
             # m = interpolate.interp1d(x, velo_field[:,1],fill_value="extrapolate")
             # n = interpolate.interp1d(x, velo_field[:, 2], fill_value="extrapolate")
 
@@ -557,32 +559,27 @@ class SolverWrapperOpenFOAMExtend(Component):
             mask = np.logical_and(node_coords[:, 0] > self.die_min, node_coords[:, 0] < self.die_max)
             filter_node_ids = node_ids[mask]
             filter_node_coords = node_coords[mask, :]
-
+            # print("filter_node_coords")
+            # print(filter_node_coords)
             displacement = np.zeros((len(filter_node_ids),3))
-            disp_check = np.zeros((len(node_ids),3))
 
-            # displacement[:,0] = h(filter_node_coords[:,0])
+            displacement[:,0] = h(filter_node_coords[:,0])
             displacement[:,1] = f(filter_node_coords[:,0])
+            # if self.iteration == 1:
+            #     plt.plot(x,disp_field[:,1],label = self.iteration)
+            # else:
+            #     plt.plot(x, disp_field[:, 1], linestyle='dashed', label=self.iteration)
             displacement[:,2] = g(filter_node_coords[:,0])
             # velocity[:, 0] = h(filter_node_coords[:, 0])
             # velocity[:, 1] = m(filter_node_coords[:, 0])
             # velocity[:, 2] = n(filter_node_coords[:, 0])
-            disp_check[:,1] = f(node_coords[:,0])
-            disp_check[:,2] = g(node_coords[:,0])
-            plt.plot(node_coords[:,0], disp_check[:,1], label = 'origin')
-            plt.plot(filter_node_coords[:,0],displacement[:,1], label = 'trim')
-            plt.legend()
-            # plt.show()
 
-            # print('displacement structural solver ')
-            # print(displacement)
 
             self.model.delete_model_part(mp_name)
 
             self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],
                                                   filter_node_coords[:, 2], filter_node_ids)
-            # self.model.create_model_part(mp_name, node_coords[:, 0], node_coords[:, 1],
-            #                              node_coords[:, 2], node_ids)
+
             if self.settings['parallel']:
                 pos_list = mp.sequence
             else:
@@ -595,13 +592,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                     displacement[i, 2] = displacement[i, 1] * np.sin(2.5 * np.pi / 180)
 
             displacement[:, 0] = displacement[:, 0] * 0.0000000000001
-
-            # for i in range((len(node_coords[:, 2]))):
-            #     if node_coords[i, 2] < 0:
-            #         disp_check[i, 2] = -disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
-            #     else:
-            #         disp_check[i, 2] = disp_check[i, 1] * np.sin(2.5 * np.pi / 180)
-
 
             self.interface_output = Interface(self.settings['interface_output'],self.model)
 
@@ -851,9 +841,6 @@ class SolverWrapperOpenFOAMExtend(Component):
             time_start_string = f'Time = {self.prev_timestamp}'
             time_end_string = f'Time = {self.cur_timestamp}'
             match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
-            # print(log_string)
-            # print("#####################")
-            # input(match)
             if match is not None:
                 time_block = match.group(1)
                 iteration_block_list = re.findall(
