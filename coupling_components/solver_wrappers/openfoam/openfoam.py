@@ -283,10 +283,9 @@ class SolverWrapperOpenFOAM(Component):
                    else:
                        displacement_increment[g] = cosine[g - self.number_of_timeIncrements//10]
 
-
-               plt.plot(q, displacement_increment)
-               plt.plot(p, cosine)
-               plt.show()
+               # plt.plot(q, displacement_increment)
+               # plt.plot(p, cosine)
+               # plt.show()
 
 
                for i in range(self.number_of_timeIncrements + self.number_of_timeIncrements//10):
