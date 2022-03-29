@@ -1,0 +1,38 @@
+{
+  "type": "solver_wrappers.openfoam_extend.v41",
+  "settings": {
+    "working_directory": "this is changed upon running the test",
+    "application": "coconut_plasticNonLinSolidFoam",
+    "delta_t": 0.0001,
+    "time_precision": 5,
+    "axial_coordinate_die_min": -0.00031,
+    "axial_coordinate_die_max": 0.0005,
+    "axial_coordinate_die_max_change": 0.0005,
+    "timestep_die_max_change": 5,
+    "iterations": 2,
+    "boundary_names": [
+      "wireTopContact"
+    ],
+    "timestep_start": 0,
+    "interface_input": [
+      {
+        "model_part": "wireTopContact_input",
+        "variables": [
+          "pressure",
+          "traction"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "wireTopContact_output",
+        "variables": [
+          "displacement"
+
+        ]
+      }
+    ],
+    "parallel": false
+  }
+}
+

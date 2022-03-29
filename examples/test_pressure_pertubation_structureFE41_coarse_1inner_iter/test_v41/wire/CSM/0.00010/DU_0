@@ -1,0 +1,64 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1-20200408                       |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0.00010";
+    object      DU_0;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 0 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    wireDownstream
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    wireUpstream
+    {
+        type            solidTraction;
+        gradient        uniform (0 0 0);
+        value           uniform (0 0 0);
+        traction        uniform (0 0 0);
+        pressure        uniform 0;
+        value           uniform (0 0 0);
+    }
+    wireTopContact
+    {
+        type            timeVaryingMappedSolidTraction;
+        gradient        uniform (0 0 0);
+        value           uniform (0 0 0);
+        pressureFieldTableName pressure;
+        pressure        uniform 0;
+        tractionFieldTableName traction;
+        traction        uniform (0 0 0);
+        value           uniform (0 0 0);
+    }
+    front
+    {
+        type            solidWedge;
+        patchType       wedge;
+        value           uniform (0 0 0);
+    }
+    back
+    {
+        type            solidWedge;
+        patchType       wedge;
+        value           uniform (0 0 0);
+    }
+}
+
+
+// ************************************************************************* //

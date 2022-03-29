@@ -1,0 +1,50 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1-20200408                       |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0.00010";
+    object      ccx;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 0 0 0 0 0];
+
+internalField   nonuniform List<scalar> 6(-0.00912799 -0.00738243 -0.0055807 -0.00364085 -0.00159705 0.00043743);
+
+boundaryField
+{
+    wireDownstream
+    {
+        type            calculated;
+        value           uniform -0.00999999;
+    }
+    wireUpstream
+    {
+        type            calculated;
+        value           uniform 0.0014373;
+    }
+    wireTopContact
+    {
+        type            calculated;
+        value           nonuniform List<scalar> 6(-0.00912763 -0.00737882 -0.00557317 -0.00363513 -0.00159761 0.000434347);
+    }
+    front
+    {
+        type            wedge;
+    }
+    back
+    {
+        type            wedge;
+    }
+}
+
+
+// ************************************************************************* //

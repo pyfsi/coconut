@@ -1,0 +1,50 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1-20200408                       |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0.00010";
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 0 0 0 0 0];
+
+internalField   nonuniform List<vector> 6((-1.10336e-06 4.9172e-07 1.4212e-13) (-1.04049e-05 -5.84301e-07 1.54486e-12) (1.17979e-05 -1.61894e-05 -2.87626e-12) (0.000209836 -3.60292e-05 -1.27877e-11) (0.000540902 -4.09406e-05 -2.49438e-11) (0.00081525 -3.31097e-05 -3.46507e-11));
+
+boundaryField
+{
+    wireDownstream
+    {
+        type            calculated;
+        value           uniform (0 0 0);
+    }
+    wireUpstream
+    {
+        type            calculated;
+        value           uniform (0.000937312 -2.92941e-05 -3.49557e-11);
+    }
+    wireTopContact
+    {
+        type            calculated;
+        value           nonuniform List<vector> 6((-1.09673e-06 7.37588e-07 2.13224e-13) (-9.22015e-06 -8.55126e-07 2.33456e-12) (1.4101e-05 -2.42288e-05 -4.26068e-12) (0.000211258 -5.43903e-05 -1.93423e-11) (0.000540739 -6.15808e-05 -3.73351e-11) (0.000814351 -4.94089e-05 -5.15843e-11));
+    }
+    front
+    {
+        type            wedge;
+    }
+    back
+    {
+        type            wedge;
+    }
+}
+
+
+// ************************************************************************* //

@@ -89,7 +89,7 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
         self.set_cores(1)
         solver = create_instance(self.parameters)
         solver.initialize()
-        timesteps = 2
+        timesteps = 1
 
         # set number of time steps.
         for i in range(timesteps):
