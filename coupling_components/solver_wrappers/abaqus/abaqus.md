@@ -106,11 +106,13 @@ The base-file has to contain all necessary information about the structural mode
     - Also the element type needs to be defined.
  - Material properties.
  - Boundary conditions.
- - Surfaces where external loads need to be applied.
+ - Surfaces where external loads need to be applied (one surface per `ModelPart`).
     - Here *"Surface"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.
+ - Per surface a pressure load and traction load should be defined (see [below](#setup-for-Abaqus-input-loads)).   
  - Node sets where displacement data will be extracted.
     - Here *"Set"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".
- - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them rather than leaving it to Abaqus to fill in a default) are supported:
+- A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).    
+ - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set based on this documentation them rather than leaving it to Abaqus to fill in a default) are supported:
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
     - Implicit dynamic, application transient fidelity
@@ -137,7 +139,7 @@ my_instance = my_assembly.instances['PART-1-1']
 inputSurfaceA = SurfaceFromNodeSet(my_assembly, my_instance, 'NODESET_NAME_A', 'SURFACE_NAME_A')
 ```
 
-On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. **Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in `GetOutput.cpp`**. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
+On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. **Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in `GetOutput.cpp`**. After creation of the step the loads can be assigned. It is recommended to have copy the `initialConditons=OFF` part. This makes sure that for each time step the accelerations from the previous time step are used. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
 
 ```python
 from step import *
@@ -154,7 +156,7 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
-The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this:
+The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this, it is recommended to have `initial=NO` as well:
 
 ```
 *Step, name=Step-1, nlgeom=YES, inc=1

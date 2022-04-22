@@ -580,6 +580,12 @@ class SolverWrapperAbaqus(Component):
             line = f.readline()
             while line:
                 if '*dynamic' in line.lower() or '*static' in line.lower():
+                    if 'initial=no' not in line.lower():
+                        with warnings.catch_warnings():
+                            warnings.filterwarnings('always', category=UserWarning)
+                            warnings.warn(f'recommended setting "INITIAL=NO" not found in input file, please consult '
+                                          f'the documention on STEP definition',
+                                          category=UserWarning)
                     of.write(line)
                     if '*dynamic' in line.lower() and self.static:
                         raise ValueError(f'keyword "*dynamic" found in input file while keyword "static" is set to True'
