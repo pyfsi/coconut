@@ -130,7 +130,6 @@ class SolverWrapperAbaqus(Component):
                         line = line.replace('|surfaces|', str(len(self.mp_in)))
                         line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                         line = line.replace('|cpus|', str(self.cores))
-                        line = line.replace('|increment|', str(int(self.static)))
 
                         # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                         line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
