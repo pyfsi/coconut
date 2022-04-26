@@ -246,3 +246,6 @@ First version.
 
 ### v2021
 No major changes. 
+
+### v2022
+No major changes. 
