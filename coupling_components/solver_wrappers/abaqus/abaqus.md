@@ -112,7 +112,7 @@ The base-file has to contain all necessary information about the structural mode
  - Node sets where displacement data will be extracted.
     - Here *"Set"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".
 - A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).    
- - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set based on this documentation them rather than leaving it to Abaqus to fill in a default) are supported:
+ - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default) are supported:
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
     - Implicit dynamic, application transient fidelity
