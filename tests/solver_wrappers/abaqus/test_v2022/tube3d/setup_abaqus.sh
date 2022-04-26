@@ -6,9 +6,4 @@
 rm -rf ./CSM
 
 # create new folder
-cp -r setup_abaqus CSM
-cd CSM
-
-source $PWD/../../../../../../coupling_components/solver_wrappers/abaqus/extra/make_host_file.sh
-
-cd ..
+cp -r ../../test_v614/tube3d/setup_abaqus CSM

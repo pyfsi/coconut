@@ -17,7 +17,7 @@ The `solve_solution_step` method is called in each coupling iteration by the cou
 There are currently two solver wrappers for computational fluid dynamics (CFD) packages:
 
 -   [ANSYS Fluent](fluent/fluent.md) (2019R1, 2019R2, 2019R3, 2020R1, 2021R1, 2021R2)
--   [OpenFOAM](openfoam/openfoam.md) (4.1)
+-   [OpenFOAM](openfoam/openfoam.md) (4.1, 8)
 
 There are currently also two solver wrappers for computational structural mechanics (CSM) packages :
 

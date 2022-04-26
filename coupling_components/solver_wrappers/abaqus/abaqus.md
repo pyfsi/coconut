@@ -156,7 +156,7 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 step1 = my_model.StaticStep(name='Step-1', previous='Initial', timePeriod=1.0, initialInc=1, minInc=1e-4, maxNumInc=10, nlgeom=ON, amplitude=RAMP)
 ```
 
-The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this, it is recommended to have `initial=NO` as well:
+The Abaqus wrapper tries to check if the increments comply with the `delta_t` setting and if needed adjusts it accordingly (notifying the user by raising a warning). The lines in the base-file (.inp) can look similar to this:
 
 ```
 *Step, name=Step-1, nlgeom=YES, inc=1
@@ -164,7 +164,7 @@ The Abaqus wrapper tries to check if the increments comply with the `delta_t` se
 0.0001,0.0001,
 ```
 
-The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
+It is recommended to have `initial=NO` as well. This corresponds to the `initialConditons=OFF` setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
 
 #### Input-related settings in JSON file
 The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list, but with "_load_points" appended to it. Remember that the names should not be sub-strings of each other. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.
