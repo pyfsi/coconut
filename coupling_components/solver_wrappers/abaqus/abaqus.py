@@ -52,7 +52,6 @@ class SolverWrapperAbaqus(Component):
         self.input_file = self.settings['input_file']
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
-        self.static = self.settings['static']
         self.timestep = self.timestep_start
         self.iteration = None
         self.model = None
@@ -587,12 +586,6 @@ class SolverWrapperAbaqus(Component):
                                           f'the documention on STEP definition',
                                           category=UserWarning)
                     of.write(line)
-                    if '*dynamic' in line.lower() and self.static:
-                        raise ValueError(f'keyword "*dynamic" found in input file while keyword "static" is set to True'
-                                         f' in parameter file')
-                    if '*static' in line.lower() and not self.static:
-                        raise ValueError(f'keyword "*static" found in input file while keyword "static" is set to False'
-                                         f' in parameter file')
                     if bool_restart:
                         rf.write(line)
                     check_line = f.readline()  # need to skip the next line, but contents are checked
