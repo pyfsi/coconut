@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -763,6 +763,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#v2022" class="md-nav__link">
+    v2022
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1384,11 +1391,6 @@ Subcycling within the structural solver is possible.</p>
 <td>Determines how Abaqus is executed in parallel. It is recommended to use <code>"THREADS"</code>. <code>"MPI"</code> works as well but requires a host-file called <em><code>AbaqusHosts.txt</code></em>. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script <em><code>make_host_file.sh</code></em> which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.</td>
 </tr>
 <tr>
-<td align="right"><code>static</code></td>
-<td align="center">bool</td>
-<td>Indicates which type of analysis is performed: static (<code>True</code>) or dynamic (<code>False</code>).</td>
-</tr>
-<tr>
 <td align="right"><code>timestep_start</code></td>
 <td align="center">int</td>
 <td>Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> in which case it is not mandatory to specify.</td>
@@ -1472,15 +1474,17 @@ The base-file has to contain all necessary information about the structural mode
 </li>
 <li>Material properties.</li>
 <li>Boundary conditions.</li>
-<li>Surfaces where external loads need to be applied.<ul>
+<li>Surfaces where external loads need to be applied (one surface per <code>ModelPart</code>).<ul>
 <li>Here <em>"Surface"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.</li>
 </ul>
 </li>
+<li>Per surface a pressure load and traction load should be defined (see <a href="#setup-for-Abaqus-input-loads">below</a>).   </li>
 <li>Node sets where displacement data will be extracted.<ul>
 <li>Here <em>"Set"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".</li>
 </ul>
 </li>
-<li>A <em>Step</em> definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them rather than leaving it to Abaqus to fill in a default) are supported:<ul>
+<li>A Field Output Request requesting output at the node sets (see <a href="#setup-for-abaqus-output-displacements">below</a>).    </li>
+<li>A <em>Step</em> definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default) are supported:<ul>
 <li>Implicit dynamic, application quasi-static</li>
 <li>Implicit dynamic, application moderate dissipation</li>
 <li>Implicit dynamic, application transient fidelity</li>
@@ -1505,7 +1509,7 @@ The base-file has to contain all necessary information about the structural mode
 <span class="n">my_instance</span> <span class="o">=</span> <span class="n">my_assembly</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="s1">&#39;PART-1-1&#39;</span><span class="p">]</span>
 <span class="n">inputSurfaceA</span> <span class="o">=</span> <span class="n">SurfaceFromNodeSet</span><span class="p">(</span><span class="n">my_assembly</span><span class="p">,</span> <span class="n">my_instance</span><span class="p">,</span> <span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">,</span> <span class="s1">&#39;SURFACE_NAME_A&#39;</span><span class="p">)</span>
 </code></pre></div></p>
-<p>On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. <strong>Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in <code>GetOutput.cpp</code></strong>. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:</p>
+<p>On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. <strong>Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in <code>GetOutput.cpp</code></strong>. After creation of the step the loads can be assigned. It is required to have the <code>initialConditons=OFF</code> part when using <code>application=TRANSIENT FIDELITY</code> (beware that when application is not specified, transient fidelity is the default). This makes sure that for each time step the accelerations from the previous time step are used. This can be done via the GUI or using Python commands available in Abaqus similar to the following:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">step</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">step1</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">ImplicitDynamicsStep</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Step-1&#39;</span><span class="p">,</span> <span class="n">previous</span><span class="o">=</span><span class="s1">&#39;Initial&#39;</span><span class="p">,</span> <span class="n">timePeriod</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nlgeom</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">maxNumInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">haftol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initialInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">minInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxInc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">RAMP</span><span class="p">,</span> <span class="n">noStop</span><span class="o">=</span><span class="n">OFF</span><span class="p">,</span> <span class="n">nohaf</span><span class="o">=</span><span class="n">ON</span><span class="p">,</span> <span class="n">initialConditions</span><span class="o">=</span><span class="n">OFF</span><span class="p">,</span> <span class="n">timeIncrementationMethod</span><span class="o">=</span><span class="n">FIXED</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">QUASI_STATIC</span><span class="p">)</span>
 <span class="n">step1</span><span class="o">.</span><span class="n">Restart</span><span class="p">(</span><span class="n">frequency</span> <span class="o">=</span> <span class="mi">99999</span><span class="p">,</span> <span class="n">overlay</span> <span class="o">=</span> <span class="n">ON</span><span class="p">)</span>
@@ -1521,22 +1525,22 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 *Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO
 0.0001,0.0001,
 </code></pre></div>
-<p>The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm">this Abaqus documentation page</a>, for static cases in <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm">this page</a>.</p>
+<p>It is required to have <code>initial=NO</code> when using the application transient fidelity (default when no application specified). This corresponds to the <code>initialConditons=OFF</code> setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm">this Abaqus documentation page</a>, for static cases in <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm">this page</a>.</p>
 <h4 id="input-related-settings-in-json-file">Input-related settings in JSON file</h4>
 <p>The name of the surface has to be put as value for the <code>"model_part"</code> key in the <code>interface_input</code> list, but with "_load_points" appended to it. Remember that the names should not be sub-strings of each other. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;interface_input&quot;</span><span class="p">:</span> 
-  <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFACE_NAME_A_load_points&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;traction&quot;</span><span class="p">]</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFACE_NAME_B_load_points&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;traction&quot;</span><span class="p">]</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;interface_input&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">  </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SURFACE_NAME_A_load_points&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;traction&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SURFACE_NAME_B_load_points&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;traction&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h3 id="setup-for-abaqus-output-displacements">Setup for Abaqus output (displacements)</h3>
 <p>After creation of the step, Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. To do so one must create node sets in the assembly (if this had not been done before) containing all structural nodes of the surfaces, then create a Field Output Request for at least the coordinates and the displacements. This Field Output Request can in the GUI be found as part of the model tree, but below also an example for the Python interface is given. A Field Output Request requests field output (as the name says) to be written to the output database file (.odb).</p>
@@ -1552,19 +1556,19 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 </code></pre></div>
 <h4 id="output-related-settings-in-json-file">Output-related settings in JSON file</h4>
 <p>The values of the <code>interface_output["model_part"]</code> keys should match the names of the node sets defined in Abaqus, appended with "_nodes". These values are internally used in CoCoNuT to distinguish the different <code>ModelParts</code>. The order defined in the <code>interface_output</code> list should be the same as the <code>interface_input</code> list and match the flow solver wrapper counterpart. </p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;interface_output&quot;</span><span class="p">:</span> 
-  <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_A_nodes&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_B_nodes&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;interface_output&quot;</span><span class="p">:</span><span class="w"> </span>
+<span class="w">  </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NODESET_NAME_A_nodes&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NODESET_NAME_B_nodes&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h3 id="note-about-choosing-modelparts">Note about choosing <code>ModelParts</code></h3>
 <p>The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to <code>ModelParts</code> in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different <code>ModelPart</code>. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different <code>ModelParts</code> at each side of the corner. Another reason to do this is because the code cannot handle elements with two or more faces being part of the same <code>ModelPart</code>. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same <code>ModelPart</code>: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or load point on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.</p>
@@ -1581,6 +1585,8 @@ Since Abaqus only uses the <em><code>CSM_Restart.inp</code></em> (which does not
 <h3 id="v614">v6.14</h3>
 <p>First version.</p>
 <h3 id="v2021">v2021</h3>
+<p>No major changes. </p>
+<h3 id="v2022">v2022</h3>
 <p>No major changes. </p>
 
               
@@ -1652,10 +1658,10 @@ Since Abaqus only uses the <em><code>CSM_Restart.inp</code></em> (which does not
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
