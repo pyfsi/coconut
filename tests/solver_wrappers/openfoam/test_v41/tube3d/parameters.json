@@ -27,8 +27,6 @@
         ]
       }
     ],
-    "kinematic_pressure": true,
-    "kinematic_traction": true,
     "density": 1000,
     "parallel": true
   }
