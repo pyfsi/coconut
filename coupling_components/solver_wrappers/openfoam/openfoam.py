@@ -112,8 +112,8 @@ class SolverWrapperOpenFOAM(Component):
                 'wall_shear_stress_function_object_library': 'coconut_libfieldFunctionObjects.so'
             },
             'coconut_pimpleFoam': {
-                'density_for_pressure': self.settings['density'],
-                'density_for_traction': self.settings['density']
+                'density_for_pressure': 'look up',
+                'density_for_traction': 'look up',
             }
         }
         if self.application not in kinematic_conversion_dict:
@@ -126,8 +126,10 @@ class SolverWrapperOpenFOAM(Component):
                              f'or use one of the existing solvers:{available_applications}')
         else:
             kinematic_conversion = kinematic_conversion_dict[self.application]
-            self.density_for_pressure = kinematic_conversion.get('density_for_pressure', 1.0)  # default density is 1
-            self.density_for_traction = kinematic_conversion.get('density_for_traction', 1.0)  # default density is 1
+            self.density_for_pressure = 1.0 if 'density_for_pressure' not in kinematic_conversion \
+                else self.settings['density']  # default density is 1
+            self.density_for_traction = 1.0 if 'density_for_traction' not in kinematic_conversion \
+                else self.settings['density']  # default density is 1
             self.wall_shear_stress_variable = kinematic_conversion.get(
                 'wall_shear_stress_variable', 'wallShearStress')  # default shear stress variable is wallShearStress
             self.wall_shear_stress_function_object_library = \
