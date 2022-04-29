@@ -41,7 +41,7 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         dct = (f'    {self.wall_shear_stress_variable}\n'
                f'    {{\n'
                f'        type            {self.wall_shear_stress_variable};\n'
-               f'        libs            ("{self.wall_shear_stress_function_object_library}");\n'
+               f'        libs            ("libfieldFunctionObjects.so");\n'
                f'        executeControl  timeStep;\n'
                f'        executeInterval 1;\n'
                f'        writeControl    none;\n'

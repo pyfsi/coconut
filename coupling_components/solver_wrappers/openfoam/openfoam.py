@@ -104,12 +104,10 @@ class SolverWrapperOpenFOAM(Component):
         #            compressible solver, pressure and wallShearStress are not kinematic -> do nothing
         kinematic_conversion_dict = {
             'coconut_cavitatingFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress',
-                'wall_shear_stress_function_object_library': 'coconut_libfieldFunctionObjects.so'
+                'wall_shear_stress_variable': 'rhoWallShearStress'
             },
             'coconut_interFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress',
-                'wall_shear_stress_function_object_library': 'coconut_libfieldFunctionObjects.so'
+                'wall_shear_stress_variable': 'rhoWallShearStress'
             },
             'coconut_pimpleFoam': {
                 'density_for_pressure': 'look up',
@@ -132,8 +130,6 @@ class SolverWrapperOpenFOAM(Component):
                 else self.settings['density']  # default density is 1
             self.wall_shear_stress_variable = kinematic_conversion.get(
                 'wall_shear_stress_variable', 'wallShearStress')  # default shear stress variable is wallShearStress
-            self.wall_shear_stress_function_object_library = \
-                kinematic_conversion.get('wall_shear_stress_function_object_library', 'libfieldFunctionObjects.so')
 
         # modify controlDict file to add pressure and wall shear stress functionObjects for all the boundaries in
         # self.settings["boundary_names"]

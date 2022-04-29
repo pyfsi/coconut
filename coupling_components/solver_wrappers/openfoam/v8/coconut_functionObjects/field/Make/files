@@ -1,3 +1,0 @@
-rhoWallShearStress/rhoWallShearStress.C
-
-LIB = $(FOAM_USER_LIBBIN)/libcoconut_fieldFunctionObjects
