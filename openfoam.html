@@ -678,6 +678,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#treatment-of-kinmatic-pressure-and-traction" class="md-nav__link">
+    Treatment of kinmatic pressure and traction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#setting-up-a-new-case" class="md-nav__link">
     Setting up a new case
   </a>
@@ -1253,13 +1260,13 @@ multiphysics problems.</p>
 </tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
-<td align="center">double (optional)</td>
+<td align="center">double</td>
 <td>Fixed timestep size in flow solver.</td>
 </tr>
 <tr>
 <td align="right"><code>density</code></td>
-<td align="center">int</td>
-<td>The applied density of the fluid in an incompressible case. The density will be applied if <code>is_incompressible</code> is set to <code>true</code>.</td>
+<td align="center">double</td>
+<td>(optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>interface_input</code></nobr></td>
@@ -1270,11 +1277,6 @@ multiphysics problems.</p>
 <td align="right"><nobr><code>interface_output</code></nobr></td>
 <td align="center">dict</td>
 <td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>boundary_names</code> and the string <code>_output</code>. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>is_incompressible</code></nobr></td>
-<td align="center">bool</td>
-<td>Set it to <code>True</code> if the solver solves incompressible Navier-Stokes equation.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>parallel</code></nobr></td>
@@ -1349,8 +1351,8 @@ save-option is done in OpenFOAM.</p>
   or <code>pkill</code> in the Linux-terminal, e.g. <code>pkill coconut_*</code>).</li>
 <li>The interface displacement is stored in a <code>pointDisplacement</code> field, which is read in by OpenFOAM in every iteration (
   this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.</li>
-<li>The interface loads are stored in the directory <em><code>postProcessing</code></em>, under the names <em><code>PRESSURE_&lt;boundary_name&gt;</code></em>
-  and <em><code>TRACTION_&lt;boundary_name&gt;</code></em>. These are constructed from the file <em><code>controlDict</code></em>, defined in the <code>_init_</code> method
+<li>The interface loads are stored in the directory <em><code>postProcessing</code></em>, under the names <em><code>coconut_&lt;boundary_name&gt;</code></em>.
+  These are constructed from the file <em><code>controlDict</code></em>, defined in the <code>_init_</code> method
   of the solver wrapper in python.</li>
 </ul>
 <h2 id="overview-of-an-openfoam-solver-used-in-coconut">Overview of an OpenFOAM-solver used in CoCoNuT</h2>
@@ -1390,6 +1392,23 @@ undertaken:</p>
   delete the original <em><code>stop.coco</code></em> file, which is advised to do just before creating the <em><code>stop_ready.coco</code></em>, so near
   the end of the <code>if</code>-clause.</li>
 </ul>
+<h2 id="treatment-of-kinmatic-pressure-and-traction">Treatment of kinmatic pressure and traction</h2>
+<p>If the OpenFOAM application is intended for incompressible flows, e.g. pimpleFoam, it solves the incompressible Navier-Stokes equations.
+As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
+In order to couple these solvers to a structure solver, the pressure and traction are required to be expressed in Pa (kg/ms²).</p>
+<p>For these solvers, the <code>density</code> parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
+In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.</p>
+<p>There is a thrid possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
+but the used momentumTransportModel is incompressible.
+It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or acutal traction.
+In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
+Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
+and returns the actual traction, even if the momentumTransportModel is incompressible.
+Note that is this new functionObject is version specific, but common for all applications of one version.
+Upon compilation of the coconut application this functionObject is included in the binary.
+This is the case for, for example, coconut_interFoam and coconut_cavitatingFoam.</p>
+<p>The behaviour of CoCoNuT for these different applications is implemented in the solver wrapper itself, namely in the <code>kinematic_conversion_dict</code>.
+This means that when a new application is added, the behaviour for this new application should be specified in that location.</p>
 <h2 id="setting-up-a-new-case">Setting up a new case</h2>
 <p>Following items should be present in the OpenFOAM-directory prior to launching CoCoNuT:</p>
 <ul>

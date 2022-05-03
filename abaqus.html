@@ -1312,7 +1312,7 @@
 
 <h1 id="abaqus">Abaqus</h1>
 <p>This is the documentation for all Abaqus solver wrappers. Abaqus is a structural solver implementing the finite element method.
-Currently this wrapper only supports FSI simulations, no other multi-physics problems. 
+Currently, this wrapper only supports FSI simulations, no other multi-physics problems. 
 Subcycling within the structural solver is possible.</p>
 <h2 id="fluid-structure-interaction-with-abaqus">Fluid-structure interaction with Abaqus</h2>
 <p>Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a <em>surfaces</em> in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node <em>sets</em>, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points (Gauss points, quadrature points), the displacements are exported in the elements' nodes. The input loads are collected in one or more <code>ModelParts</code> in the <em>input</em> <code>Interface</code>, the output nodes are collected in one or more <code>ModelParts</code> of the <em>output</em> <code>Interface</code>. Each <code>ModelPart</code> on the input <code>Interface</code> has a counterpart on the output <code>Interface</code>. More information about <code>ModelParts</code> and <code>Interface</code> can be found in the <a href="https://pyfsi.github.io/coconut/data_structure">data structure documentation</a>.</p>
@@ -1478,13 +1478,13 @@ The base-file has to contain all necessary information about the structural mode
 <li>Here <em>"Surface"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.</li>
 </ul>
 </li>
-<li>Per surface a pressure load and traction load should be defined (see <a href="#setup-for-Abaqus-input-loads">below</a>).   </li>
+<li>Per surface a pressure load and traction load should be defined (see <a href="#setup-for-abaqus-input-loads">below</a>).</li>
 <li>Node sets where displacement data will be extracted.<ul>
 <li>Here <em>"Set"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".</li>
 </ul>
 </li>
-<li>A Field Output Request requesting output at the node sets (see <a href="#setup-for-abaqus-output-displacements">below</a>).    </li>
-<li>A <em>Step</em> definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default) are supported:<ul>
+<li>A Field Output Request requesting output at the node sets (see <a href="#setup-for-abaqus-output-displacements">below</a>).</li>
+<li>A <em>Step</em> definition, which contains solver settings. Currently, the following type of analyses are supported (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default):<ul>
 <li>Implicit dynamic, application quasi-static</li>
 <li>Implicit dynamic, application moderate dissipation</li>
 <li>Implicit dynamic, application transient fidelity</li>
