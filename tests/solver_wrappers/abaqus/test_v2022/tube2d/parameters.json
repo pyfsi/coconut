@@ -1,7 +1,7 @@
 {
-  "type": "solver_wrappers.abaqus.v614",
+  "type": "solver_wrappers.abaqus.v2022",
   "settings": {
-    "working_directory": "solver_wrappers/abaqus/test_v614/tube2d/CSM",
+    "working_directory": "solver_wrappers/abaqus/test_v2022/tube2d/CSM",
     "cores": 1,
     "dimensions": 2,
     "arraysize": 1e5,

@@ -84,7 +84,6 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "static": false,
               "arraysize": 1e5,
               "save_results": 1,
               "interface_input": [
