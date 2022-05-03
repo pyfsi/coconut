@@ -1,7 +1,7 @@
 # Abaqus
 
 This is the documentation for all Abaqus solver wrappers. Abaqus is a structural solver implementing the finite element method.
-Currently this wrapper only supports FSI simulations, no other multi-physics problems. 
+Currently, this wrapper only supports FSI simulations, no other multi-physics problems. 
 Subcycling within the structural solver is possible.
 
 ## Fluid-structure interaction with Abaqus
@@ -89,7 +89,7 @@ In the file conventions *`A`* is the index of the corresponding element in the `
  - Output text file *`CSM_TimeBSurfaceAOutput.dat`* containing displacements written by GetOutput and read by the solver wrapper.
  - Input text file *`CSM_TimeBSurfaceACpu0Input.dat`* containing the loads written by the solver wrapper and read by the USR.
  
- The parameter `save_restart` (defined at the level of the [`coupled_solver`](../../coupled_solvers/coupled_solvers.md#settings)) determines at which timesteps these files are saved.
+ The parameter `save_restart` (defined at the level of the [`coupled_solver`](../../coupled_solvers/coupled_solvers.md)) determines at which time steps these files are saved.
  Additionally, the `save_results` parameter defines the rate at which the output database files (*`.odb`*) are kept.
 
 ## Setting up a case: Abaqus input file (.inp)
@@ -107,11 +107,11 @@ The base-file has to contain all necessary information about the structural mode
  - Boundary conditions.
  - Surfaces where external loads need to be applied (one surface per `ModelPart`).
     - Here *"Surface"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.
- - Per surface a pressure load and traction load should be defined (see [below](#setup-for-Abaqus-input-loads)).   
+ - Per surface a pressure load and traction load should be defined (see [below](#setup-for-abaqus-input-loads)).
  - Node sets where displacement data will be extracted.
     - Here *"Set"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".
-- A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).    
- - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default) are supported:
+- A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).
+ - A *Step* definition, which contains solver settings. Currently, the following type of analyses are supported (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default):
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
     - Implicit dynamic, application transient fidelity
@@ -231,8 +231,8 @@ A general event log of the procedure can be found in the working directory, in a
 
 ## Restarting a calculation
 
-For a restart of a calculation, say at timestep `B`, it is necessary that all the Abaqus [simulation files](#files-written-in-the-working-directory-during-solve_solution_step) of the previous calculation at timestep `B` are still present.
-This is in accordance with the `save_restart` parameter defined in a higher [component](../../coupled_solvers/coupled_solvers.md#settings). 
+For a restart of a calculation, say at time step `B`, it is necessary that all the Abaqus [simulation files](#files-written-in-the-working-directory-during-solve_solution_step) of the previous calculation at time step `B` are still present.
+This is in accordance with the `save_restart` parameter defined in a higher [component](../../coupled_solvers/coupled_solvers.md). 
 Particulary for the Abaqus solver wrapper, it is important that the files *`CSM_Time0Cpu0SurfaceAFaces.dat`*, *`CSM_Time0SurfaceAElements.dat`* and *`CSM_Time0SurfaceANodes.dat`* are still present from previous calculation.
 The files *`CSM_Time0.inp`* and *`CSM_Restart.inp`* will be generated during initialization of the restarted calculation. 
 This allows the user to alter some parameters in the input file before restart, e.g. altering output requests, boundary conditions or applying additional loads. 
