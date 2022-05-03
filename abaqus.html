@@ -1459,7 +1459,7 @@ Subcycling within the structural solver is possible.</p>
 <li>Output text file <em><code>CSM_TimeBSurfaceAOutput.dat</code></em> containing displacements written by GetOutput and read by the solver wrapper.</li>
 <li>Input text file <em><code>CSM_TimeBSurfaceACpu0Input.dat</code></em> containing the loads written by the solver wrapper and read by the USR.</li>
 </ul>
-<p>The parameter <code>save_restart</code> (defined at the level of the <a href="https://pyfsi.github.io/coconut/coupled_solvers#settings"><code>coupled_solver</code></a>) determines at which timesteps these files are saved.
+<p>The parameter <code>save_restart</code> (defined at the level of the <a href="https://pyfsi.github.io/coconut/coupled_solvers"><code>coupled_solver</code></a>) determines at which time steps these files are saved.
  Additionally, the <code>save_results</code> parameter defines the rate at which the output database files (<em><code>.odb</code></em>) are kept.</p>
 <h2 id="setting-up-a-case-abaqus-input-file-inp">Setting up a case: Abaqus input file (.inp)</h2>
 <p>The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter <code>input_file</code>. For the remainder of this section this file will be referred to as "base-file".</p>
@@ -1575,7 +1575,7 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 <h2 id="log-files">Log files</h2>
 <p>A general event log of the procedure can be found in the working directory, in a file named <em><code>abaqus.log</code></em>. For more detailed information on a certain time step, the .msg file written by Abaqus can be consulted. In CoCoNuT these are structured as follows: <em><code>CSM_TimeA.msg</code></em>, <em><code>A</code></em> being the time step. Typically multiple coupling iterations are done within each time step, so these .msg-files get overwritten by each new coupling iteration in the same time step.</p>
 <h2 id="restarting-a-calculation">Restarting a calculation</h2>
-<p>For a restart of a calculation, say at timestep <code>B</code>, it is necessary that all the Abaqus <a href="#files-written-in-the-working-directory-during-solve_solution_step">simulation files</a> of the previous calculation at timestep <code>B</code> are still present.
+<p>For a restart of a calculation, say at time step <code>B</code>, it is necessary that all the Abaqus <a href="#files-written-in-the-working-directory-during-solve_solution_step">simulation files</a> of the previous calculation at time step <code>B</code> are still present.
 This is in accordance with the <code>save_restart</code> parameter defined in a higher <a href="https://pyfsi.github.io/coconut/coupled_solvers#settings">component</a>. 
 Particulary for the Abaqus solver wrapper, it is important that the files <em><code>CSM_Time0Cpu0SurfaceAFaces.dat</code></em>, <em><code>CSM_Time0SurfaceAElements.dat</code></em> and <em><code>CSM_Time0SurfaceANodes.dat</code></em> are still present from previous calculation.
 The files <em><code>CSM_Time0.inp</code></em> and <em><code>CSM_Restart.inp</code></em> will be generated during initialization of the restarted calculation. 
