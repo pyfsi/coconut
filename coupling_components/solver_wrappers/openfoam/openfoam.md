@@ -126,7 +126,7 @@ undertaken:
   delete the original *`stop.coco`* file, which is advised to do just before creating the *`stop_ready.coco`*, so near
   the end of the `if`-clause.
 
-## Treatment of kinmatic pressure and traction
+## Treatment of kinematic pressure and traction
 If the OpenFOAM application is intended for incompressible flows, e.g. pimpleFoam, it solves the incompressible Navier-Stokes equations.
 As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
 In order to couple these solvers to a structure solver, the pressure and traction are required to be expressed in Pa (kg/ms²).
@@ -134,9 +134,9 @@ In order to couple these solvers to a structure solver, the pressure and tractio
 For these solvers, the `density` parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
 In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.
 
-There is a thrid possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
+There is a third possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
 but the used momentumTransportModel is incompressible.
-It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or acutal traction.
+It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or actual traction.
 In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
 Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
 and returns the actual traction, even if the momentumTransportModel is incompressible.
@@ -175,7 +175,7 @@ OpenFOAM-directory:
 - *`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
 - *`system/decomposeParDict`* with the necessary decomposition of the fluid domain (if `cores`>1)
 - *`0/pointDisplacement`* with all the boundary conditions, including `fixedValue` boundary condition for the FSI
-  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary conditon (
+  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary condition (
   from structural solver) for the FSI-interface.
 
 ### Comments
