@@ -165,7 +165,7 @@ class SolverWrapperOpenFOAM(Component):
             ids = np.arange(start_face, start_face + nfaces)
 
             # create output model part
-            mp_output = self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
+            self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
 
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
@@ -174,14 +174,6 @@ class SolverWrapperOpenFOAM(Component):
         # define timestep and physical time
         self.timestep = 0
         self.physical_time = self.start_time
-
-        # copy zero folder to folder with correctly named timeformat
-        if self.start_time == 0:
-            timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
-            path_orig = os.path.join(self.working_directory, '0')
-            path_new = os.path.join(self.working_directory, timestamp)
-            shutil.rmtree(path_new, ignore_errors=True)
-            shutil.copytree(path_orig, path_new)
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
         # Note concerning the sequence: The file ./processorX/constant/polyMesh/faceprocAddressing contains a list of

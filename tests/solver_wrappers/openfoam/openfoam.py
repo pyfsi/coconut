@@ -278,7 +278,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         # ==>  check if deformed coordinates are equal
         np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
-        # # check if pressure and traction are equal
+        # check if pressure and traction are equal
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-9)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-9)
 
