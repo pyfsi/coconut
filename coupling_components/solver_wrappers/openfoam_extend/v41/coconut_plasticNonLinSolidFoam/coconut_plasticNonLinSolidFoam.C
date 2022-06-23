@@ -136,12 +136,23 @@ int main(int argc, char *argv[])
 
         if (exists("next.coco"))
         {
+            mesh.update();
+            mechanical.updateYieldStress();
+
+            // Update surface fields after a topoChange
+            mu = mechanical.mu();
+            lambda = mechanical.lambda();
+            twoMuLambda = 2.0 * mu + lambda;
+            twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
+            RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
+
             #include "setDeltaT.H"
             #include "createNonLinearGeometry.H"
 
             prevRunTime = runTime.timeName();
             oldPoints_ = mesh.points();
             runTime++;
+            //runtime.write();//Navaneeth
             remove("next.coco");
             OFstream outfile ("next_ready.coco");
             outfile << "next.coco" << endl;
@@ -382,29 +393,23 @@ int main(int argc, char *argv[])
                 #include "TEqn.H"
             }
 
-//            Info<<"mesh before update"
-//            <<mesh.allPoints()<<endl;
             // Mesh update
             // Note: after remeshing, geometric surface field may be incorrect on
             // the new faces so we will re-created all surface fields here
-            mesh.update();
-
-//            Info<< "mesh_points_after" << mesh.points() << nl << endl;
+            //mesh.update();
 
             // Let the mechanicalLaw know that we have reached the end of the
             // time-step so it may increment its accumulated values
             // Note: we call this after mesh.update() in case it writes a field to
             // disk
-            mechanical.updateYieldStress();
-
-//            Info<< "updateYieldStress " << mechanical.updateYieldStress() << nl << endl;
-
-            // Update surface fields after a topoChange
-            mu = mechanical.mu();
-            lambda = mechanical.lambda();
-            twoMuLambda = 2.0 * mu + lambda;
-            twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
-            RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
+//            mechanical.updateYieldStress();
+//
+//            // Update surface fields after a topoChange
+//            mu = mechanical.mu();
+//            lambda = mechanical.lambda();
+//            twoMuLambda = 2.0 * mu + lambda;
+//            twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
+//            RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
 
             remove("continue.coco");
             //Return the coupling interface output
@@ -419,13 +424,6 @@ int main(int argc, char *argv[])
             OFstream outfile ("continue_ready.coco");
 
         }
-        // Print warnings if convergence was not achieved ######################################## MATHIEU ###################
-//        if (maxUIterReached > 0)
-//        {
-//            Warning
-//                << "Max iterations for the momentum equation were reached in "
-//                << maxUIterReached << " time-steps" << endl;
-//        }
 
         if (maxTIterReached > 0)
         {

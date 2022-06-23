@@ -206,7 +206,7 @@ class SolverWrapperOpenFOAMExtend(Component):
                 h.write("""
             FoamFile
             {
-                 version   2.0;c
+                 version   2.0;
                  format    ascii;
                  class     vectorField;
                  object    traction;
@@ -258,6 +258,12 @@ class SolverWrapperOpenFOAMExtend(Component):
                 path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                 shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                 shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
+                for i in range(710):
+                    timestamp_i = self.delta_t *(i +1)
+                    format_i = format(timestamp_i, ".5f")
+                    str_i = str(format_i)
+                    path_new_boundaryData_i = os.path.join(self.working_directory,'constant/boundaryData', boundary, str_i)
+                    shutil.copytree(path_new_boundaryData, path_new_boundaryData_i)
 
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
@@ -360,7 +366,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.wait_message('next_ready')
 
 
-
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         self.iteration += 1
@@ -372,7 +377,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.write_node_input()
 
         # copy input data for debugging
-        if self.debug:
+        if True: #self.debug:
             for boundary in self.boundary_names:
                 path_from_pressure = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                   self.cur_timestamp, 'pressure')
@@ -544,58 +549,154 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             x, y, z = self.read_face_centres(boundary, nfaces)
 
+            arr_test = np.array([x,y,velo_field[:,0],disp_field[:,1]])
+            sorted = arr_test[:, arr_test[0].argsort()]
+            sorted = np.transpose(sorted)
+            x_bis = sorted[:,0]
+            y_bis = sorted[:,1]
+            z_bis = sorted[:,1] * np.sin(np.radians(2.5))
+            velo_axial = sorted[:,2]
+            disp_rad = sorted[:,3]
+            disp_z = sorted[:,3]* np.sin(np.radians(2.5))
+            mp_out = np.zeros((len(x_bis) * 2, 3))
+            displacement = np.zeros((len(x_bis) * 2, 3))
+
+            #creating new mp for output
+            j =0
+            for i in range(len(x_bis)):
+                for k in range(2):
+                    if k == 0:
+                        mp_out[j, 0] = x_bis[i]
+                        mp_out[j, 1] = y_bis[i]
+                        mp_out[j, 2] = - z_bis[i]
+                        j+=1
+                    else:
+                        mp_out[j, 0] = x_bis[i]
+                        mp_out[j, 1] = y_bis[i]
+                        mp_out[j, 2] = z_bis[i]
+                        j+=1
+
+            ids_out = np.arange(len(x_bis) * 2)
+
+            #creating modified velocity-displacement field to transfer towards fluid domain
+            l = 0
+            for m in range(len(x_bis)):
+                for n in range(2):
+                    if n == 0:
+                        displacement[l, 0] = velo_axial[m]
+                        displacement[l, 1] = disp_rad[m]
+                        displacement[l, 2] = - disp_z[m]
+                        l += 1
+                    else:
+                        displacement[l, 0] = velo_axial[m]
+                        displacement[l, 1] = disp_rad[m]
+                        displacement[l, 2] = disp_z[m]
+                        l += 1
+
+            # print(displacement)
             # e = interpolate.interp1d(x,disp_field[:,0],fill_value="extrapolate")
-            f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
-            g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
-            h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
+            # f = interpolate.interp1d(x,disp_field[:,1],fill_value="extrapolate")
+            # g = interpolate.interp1d(x, disp_field[:,2],fill_value="extrapolate")
+            # h = interpolate.interp1d(x, velo_field[:,0],fill_value="extrapolate")
+
             # m = interpolate.interp1d(x, velo_field[:,1],fill_value="extrapolate")
             # n = interpolate.interp1d(x, velo_field[:, 2], fill_value="extrapolate")
 
+            # node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
+            #                                                                     time_folder = self.cur_timestamp,
+            #                                               boundary_name = boundary)
 
-            node_ids, node_coords = of_io.get_boundary_points(case_directory = self.working_directory,
-                                                                                time_folder = self.cur_timestamp,
-                                                          boundary_name = boundary)
+            # mask = np.logical_and(node_coords[:, 0] > self.die_min, node_coords[:, 0] < self.die_max)
+            # filter_node_ids = node_ids[mask]
+            # filter_node_coords = node_coords[mask, :]
+            mask = np.logical_and(mp_out[:, 0] > self.die_min, mp_out[:, 0] < self.die_max)
+            filter_node_ids = ids_out[mask]
+            filter_node_coords = mp_out[mask, :]
+            displacement_mask = displacement[mask, :]
 
-            mask = np.logical_and(node_coords[:, 0] > self.die_min, node_coords[:, 0] < self.die_max)
-            filter_node_ids = node_ids[mask]
-            filter_node_coords = node_coords[mask, :]
-            # print("filter_node_coords")
             # print(filter_node_coords)
-            displacement = np.zeros((len(filter_node_ids),3))
+            # print(displacement_mask)
 
-            displacement[:,0] = h(filter_node_coords[:,0])
-            displacement[:,1] = f(filter_node_coords[:,0])
+            displacement = np.zeros((len(filter_node_ids),3))
+            # displacement[:,0] = h(filter_node_coords[:,0])
+            # displacement[:,1] = f(filter_node_coords[:,0])
+            # displacement[:, 2] = g(filter_node_coords[:, 0])
+
+            # plt.plot(filter_node_coords[:,0], displacement[:,1])
             # if self.iteration == 1:
             #     plt.plot(x,disp_field[:,1],label = self.iteration)
             # else:
             #     plt.plot(x, disp_field[:, 1], linestyle='dashed', label=self.iteration)
-            displacement[:,2] = g(filter_node_coords[:,0])
+
             # velocity[:, 0] = h(filter_node_coords[:, 0])
             # velocity[:, 1] = m(filter_node_coords[:, 0])
             # velocity[:, 2] = n(filter_node_coords[:, 0])
 
+            # if self.settings['parallel']:
+            #     pos_list = mp.sequence
+            # else:
+            #     pos_list = [pos for pos in range(0, nfaces)]
 
+            # print('displacement')
+            # print(displacement)
+            displacement_mask[:, 0] = displacement_mask[:, 0] * 0.0000000000001
+
+            # sorted_order = filter_node_coords[:,0].argsort()//Navaneeth
+            # displacement = displacement[sorted_order]
+
+
+            # arr_general = np.array(
+            #     [filter_node_coords[:, 0], filter_node_coords[:, 1], filter_node_coords[:, 2], displacement[:, 0],displacement[:, 1], displacement[:, 2]])
+            # sortedArr_gen = arr_general[:, arr_general[0].argsort()]
+            # print(sortedArr_gen[1].size)
+            # for i in range(sortedArr_gen[0].size):
+            #     if i % 2 == 0:
+            #         sortedArr_gen[2, i] = -np.abs(sortedArr_gen[2, i])
+            #
+            #     else:
+            #         sortedArr_gen[2, i] = np.abs(sortedArr_gen[2, i])
+
+            # for i in range(displacement.shape[0])://Navaneeth
+            #     if i % 2 == 0:
+            #         displacement[2, i] = -np.abs(displacement[2, i])
+            #
+            #     else:
+            #         displacement[2, i] = np.abs(displacement[2, i])
+
+            # print(sortedArr_gen[2])
+
+            # for i in range(sortedArr_gen[0].size):
+            #     if sortedArr_gen[2,i] < 0:
+            #         sortedArr_gen[5,i] = -sortedArr_gen[4,i] * np.sin(2.5 * np.pi / 180)
+            #     else:
+            #         sortedArr_gen[5,i] = sortedArr_gen[4,i] * np.sin(2.5 * np.pi / 180)
+            # print("matrix_general")
+            # print(sortedArr_gen)
             self.model.delete_model_part(mp_name)
 
             self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],
                                                   filter_node_coords[:, 2], filter_node_ids)
 
-            if self.settings['parallel']:
-                pos_list = mp.sequence
-            else:
-                pos_list = [pos for pos in range(0, nfaces)]
+            # self.model.create_model_part(mp_name, sortedArr_gen[0], sortedArr_gen[1],
+            #                                       sortedArr_gen[2], filter_node_ids)
 
-            for i in range((len(filter_node_coords[:, 2]))):
-                if filter_node_coords[i,2] < 0:
-                    displacement[i, 2] = -displacement[i, 1] * np.sin(2.5 * np.pi / 180)
-                else:
-                    displacement[i, 2] = displacement[i, 1] * np.sin(2.5 * np.pi / 180)
 
-            displacement[:, 0] = displacement[:, 0] * 0.0000000000001
 
             self.interface_output = Interface(self.settings['interface_output'],self.model)
 
-            self.interface_output.set_variable_data(mp_name, 'displacement', displacement)
+            # displacement[:,0] = sortedArr_gen[3]
+            # displacement[:, 1] = sortedArr_gen[4]
+            # displacement[:, 2] = sortedArr_gen[5]
+            # print('displacement_2')
+            # print(displacement)
+
+            self.interface_output.set_variable_data(mp_name, 'displacement', displacement_mask)
+            # if self.cur_timestamp >='0.00120':
+            #     plt.plot(filter_node_coords[:, 0], displacement[:, 1])
+            #     plt.plot(filter_sorted_points[:, 0], displacement2[:, 1], color ='g')
+            #     plt.plot(sortedArr_gen[0], displacement[:,1], color ='r', linestyle = 'dashed')
+            #     plt.scatter(arr_test[0],arr_test[1], color='k')
+            #     plt.show()
 
             # self.interface_output.set_variable_data(mp_name, 'velocity', velocity*0.00000001)
 

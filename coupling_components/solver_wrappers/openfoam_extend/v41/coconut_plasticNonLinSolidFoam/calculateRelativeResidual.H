@@ -20,9 +20,9 @@
               //   U.internalField()
               // - U.prevIter().internalField()
             )/(gMax(mag(DU.internalField())) + SMALL)
+
            // /magDU
         );
-
     // Info<< "Writing relResField" << endl;
     // relResField = (DU - DU.prevIter())/gMax(magDU);
     // relResField.write();

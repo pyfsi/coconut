@@ -2,7 +2,6 @@ from coconut.tools import create_instance, pass_on_parameters
 import json
 
 
-
 class Analysis:
     def __init__(self, parameters):
         self.parameters = parameters
