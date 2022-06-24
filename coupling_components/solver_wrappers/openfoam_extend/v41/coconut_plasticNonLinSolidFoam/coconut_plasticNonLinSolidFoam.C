@@ -280,8 +280,6 @@ int main(int argc, char *argv[])
                 //gradDU = fvc::grad(DU, pointDU);
                 gradDU = fvc::grad(DU);
 
-//                Info << "gradDU_after " << gradDU << nl << endl;
-
                 // Correct gradDU on materialGgi patches
                 #include "correctDispGrad.H"
 
