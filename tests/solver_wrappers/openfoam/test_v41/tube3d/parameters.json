@@ -1,0 +1,35 @@
+{
+  "type": "solver_wrappers.openfoam.v41",
+  "settings": {
+    "working_directory": "this is changed upon running the test",
+    "application": "coconut_pimpleFoam",
+    "delta_t": 0.0001,
+    "save_restart": 0,
+    "time_precision": 4,
+    "boundary_names": [
+      "mantle"
+    ],
+    "timestep_start": 0,
+    "interface_input": [
+      {
+        "model_part": "mantle_input",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "mantle_output",
+        "variables": [
+          "pressure",
+          "traction"
+        ]
+      }
+    ],
+    "density": 1000,
+    "is_incompressible": true,
+    "parallel": true
+  }
+}
+

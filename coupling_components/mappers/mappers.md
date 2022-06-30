@@ -15,9 +15,7 @@ The terms *from* and *to* will be used to denote respectively the side that prov
 CoCoNuT interacts with the mappers through an instance of the `SolverWrapperMapped` class. This special solver wrapper appears and behaves exactly the same as real solver wrappers.
 It contains 3 `Components`: a mapper for the input, a real solver wrapper and a mapper for the output.
 
-> TODO: add links to Interfaces and ModelParts documentation sections when the terms are first mentioned here (that documentation doesn't exist yet...)
-
-The two mappers in the `SolverWrapperMapped` are of a special type: they work on the level of the [`Interfaces`](../../data_structure/data_structure.md), while the actual mapping will be done on a lower level: the `ModelPart` level. The `Interface` mapper effectively acts as a *wrapper* around the actual `ModelPart` mappers. Currently only one mapper is available on the `Interface` level, aptly called `MapperInterface`.
+The two mappers in the `SolverWrapperMapped` are of a special type: they work on the level of the [`Interfaces`](../../data_structure/data_structure.md#interface), while the actual mapping will be done on a lower level: the [`ModelPart`](../../data_structure/data_structure.md#modelpart) level. The `Interface` mapper effectively acts as a *wrapper* around the actual `ModelPart` mappers. Currently only one mapper is available on the `Interface` level, aptly called `MapperInterface`.
 
 At the lowest level, mappers interpolate variable data (stored in `Interfaces`) between two `ModelParts`, based on their coordinates. Interpolation is always done from the *from* `ModelPart` to the *to*-`ModelPart`.
 Multiple `ModelPart` mappers can be chained together in a `MapperCombined` object, to add additional functionality, for example swapping the coordinate axes with the [permutation mapper](mappers.md#mapperpermutation).
@@ -45,7 +43,7 @@ Class that maps on the level of `Interface` objects.
 It takes two `Interfaces`, and maps the `ModelParts` to each other in the order in which the `Interfaces` are defined in the JSON file.
 The same type of `ModelPart` mapper is used for each pair of `ModelParts`: this can either be an interpolator or a combined mapper. To use a different `ModelPart` mapper for the different `ModelParts` in the `Interface`, or even for different variables, a new `Interface` mapper would have to be written. 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 `type`|str|`ModelPart` mapper to be used.
 <nobr>`settings`</nobr>|dict|All the settings for the `ModelPart` mapper specified in `type`.
@@ -55,7 +53,7 @@ JSON setting|type|description
 
 Superclass for all [interpolators](mappers.md#interpolators). 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 `directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
 `scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
@@ -83,7 +81,7 @@ The `initialization` of transformers is very different from that of interpolator
 
 ### `MapperCombined`
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`mappers`</nobr>|list|An ordered list of all the `ModelPart` mappers to be used.
 
@@ -131,7 +129,7 @@ When the `__call__` method  of the combined mapper is used, the following happen
 Permutates the coordinates and the vector variables according to the given `permutation`. 
 This transformer can be initialized in both directions. 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`permutation`</nobr>|list|A permutation of the list [0, 1, 2].
 
@@ -140,7 +138,7 @@ JSON setting|type|description
 
 Transforms a 2D axisymmetric geometry to a 3D geometry. This transformer can only be initialized in the _forward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _upstream_ of the interpolator in the combined mapper.
 
-The 3D `ModelPart` is returned by the initialization. `n_tangential` specifies the number of points in the tangential (circumferential) direction, so that for each point in the 2D `ModelPart`, `n_tangential` points are created in the 3D `ModelPart`. It is important to make the value of `n_tangential` large enough, ideally close to the number of points in the tangential direction in the 3D solver. The code knows which directions are axial, radial and tangential thanks to the input parameters `direction_axial` and `direction_radial`. 
+The 3D `ModelPart` is returned by the initialization.`angle` defines the 3D geometry and is based on the geometry of the 3D solver, e.g. the geometry of an axisymmtric simulation with an OpenFoam solver is defined with an angle of 5°.  `n_tangential` specifies the number of points in the tangential (circumferential) direction, so that for each point in the 2D `ModelPart`, `n_tangential` points are created in the 3D `ModelPart`. It is important to make the value of `n_tangential` large enough, ideally close to the number of points in the tangential direction in the 3D solver. The code knows which directions are axial, radial and tangential thanks to the input parameters `direction_axial` and `direction_radial`. 
 
 It is not possible to change the axial direction between 2D and 3D: a separate `MapperPermutation` should be added to the combined mapper for that purpose. 
 
@@ -149,11 +147,12 @@ Scalar data is simply copied from the 2D point to all corresponding 3D points. F
 Points that lie on the symmetry axis can not be handled by the current transformer.
 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
-`direction_axial`|string|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
-<nobr>`direction_radial`</nobr>|string|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
-`n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. Must be $\geq 6$.
+`direction_axial`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+<nobr>`direction_radial`</nobr>|str|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
+`n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle.
+`angle`|int|(optional) Default: `360`. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.  
 
 
 ### `MapperAxisymmetric3DTo2D`
@@ -164,6 +163,29 @@ For scalar data, the circumferential average is taken for each 2D point. For vec
 
 More information and JSON settings can be found under [`MapperAxisymmetric2DTo3D`](mappers.md#mapperaxisymmetric2dto3d).
 
+
+### `MapperDepth2DTo3D`
+
+Transforms a 2D geometry to a 3D geometry, by extruding in a _depth_ direction. This transformer can only be initialized in the _forward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _upstream_ of the interpolator in the combined mapper.
+
+The 3D `ModelPart` is returned by the initialization. The depth direction in which the 2D `ModelPart` is extended, is specified by `direction_depth`. This direction has to be along one of the principal axes: x, y and z. The number of nodes in the depth direction and their location are given by the list `coordinates_depth`.
+
+Scalar data is simply copied from the 2D point to all corresponding 3D points. For vector data, all components other than the depth component are simply copied. The depth component is set to zero.
+
+
+parameter|type|description
+------:|:----:|-----------
+<nobr>`coordinates_depth`</nobr>|list|Contains the depth coordinates to which the nodes of the orignal 2D plane are copied.
+`direction_depth`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
+
+
+### `MapperDepth3DTo2D`
+
+Transforms a 3D geometry to a 2D axisymmetric geometry, by collapsing in a _depth_ direction. This transformer can only be initialized in the _backward_ direction, i.e. based on the 2D axisymmetric `ModelPart`. Therefore, it should be _downstream_ of the interpolator in the combined mapper.
+
+For scalar data, the average is taken for each 2D point. For vector data too, again removing the depth component.
+
+More information and JSON settings can be found under [`MapperAxisymmetric2DTo3D`](mappers.md#mapperaxisymmetric2dto3d).
 
 
 ## Interpolators
@@ -179,7 +201,7 @@ Does not require additional settings compared to the `MapperInterpolator`. Does 
 
 Additional settings:
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
 
@@ -196,7 +218,7 @@ The kind of linear mapping depends on the number of coordinate directions, as gi
 
 Additional settings:
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
 <nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.

@@ -86,8 +86,7 @@ for filename in filenames:
             if len(matches) > 0:
                 for match in matches[::-1]:
                     tmp = match[0][1:-1].split('/')[-1]
-                    tmp = tmp.replace('#', '/#')
-                    tmp = tmp.replace('README.md/', '')
+                    tmp = tmp.replace('README.md', '')
                     tmp = tmp.replace('.md', '')
                     url = '(https://pyfsi.github.io/coconut/' + tmp + ')'
                     line = line[:match.start()] + url + line[match.end():]
@@ -128,7 +127,7 @@ if len(argv) > 1:
             if argv[2] == 'README':
                 cmd = 'firefox ' + os.path.join(cwd, 'site', 'index.html &')
             else:
-                cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2], 'index.html &')
+                cmd = 'firefox ' + os.path.join(cwd, 'site', argv[2] + '.html &')
         os.system(cmd)
     elif argv[1] == '--deploy':
         os.system('mkdocs gh-deploy')

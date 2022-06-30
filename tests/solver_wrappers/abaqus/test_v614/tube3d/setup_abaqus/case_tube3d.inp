@@ -452,10 +452,10 @@
  47, 48, 49, 50, 51, 52, 53, 54, 55
 *Nset, nset=WALLOUTSIDE, instance=PART-1-1, generate
    1,  304,    1
-*Elset, elset=_MOVINGSURFACE0_SNEG, internal, instance=PART-1-1, generate
+*Elset, elset=_WALLOUTSIDE_SNEG, internal, instance=PART-1-1, generate
   1,  96,   1
-*Surface, type=ELEMENT, name=MOVINGSURFACE0
-_MOVINGSURFACE0_SNEG, SNEG
+*Surface, type=ELEMENT, name=WALLOUTSIDE
+_WALLOUTSIDE_SNEG, SNEG
 *End Assembly
 ** 
 ** MATERIALS
@@ -484,16 +484,16 @@ RIGHTFIXED, 3, 3
 ** 
 *Step, name=Step-1, nlgeom=YES, inc=1
 *Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO
-0.0001,0.0001,
+0.001,0.001,
 ** 
 ** LOADS
 ** 
 ** Name: Load-1   Type: Pressure
 *Dsload, op=NEW
-MOVINGSURFACE0, PNU, 1.
+WALLOUTSIDE, PNU, 1.
 ** Name: Load-2   Type: Surface traction
 *Dsload, op=NEW
-MOVINGSURFACE0, TRVECNU, 1., 1., 0., 0.
+WALLOUTSIDE, TRVECNU, 1., 1., 0., 0.
 ** 
 ** OUTPUT REQUESTS
 ** 

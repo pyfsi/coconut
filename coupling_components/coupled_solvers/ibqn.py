@@ -1,4 +1,4 @@
-from coconut.tools import create_instance
+from coconut.tools import create_instance, pass_on_parameters
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 from scipy.sparse.linalg import gmres, LinearOperator
@@ -11,6 +11,9 @@ def create(parameters):
 class CoupledSolverIBQN(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
+
+        for model in ('model_f', 'model_s'):
+            pass_on_parameters(self.settings, self.settings[model]['settings'], ('timestep_start', 'delta_t'))
 
         self.model_f = create_instance(self.parameters['settings']['model_f'])
         self.model_s = create_instance(self.parameters['settings']['model_s'])
@@ -104,10 +107,13 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
             r = xt - self.x
             self.finalize_iteration(r)
 
-    def add_restart_check(self, restart_data):
+    def check_restart_data(self, restart_data):
         for model in ['model_f', 'model_s']:
-            if self.parameters['settings'][model] != restart_data['parameters']['settings'][model]:
-                raise ValueError(f'Restart not possible because {model} changed')
+            model_original = self.parameters['settings'][model]['type']
+            model_new = restart_data['parameters']['settings'][model]['type']
+            if model_original != model_new:
+                raise ValueError(f'Restart not possible because {model} type changed:'
+                                 f'\n\toriginal: {model_original}\n\tnew: {model_new}')
 
     def add_restart_data(self, restart_data):
         return restart_data.update({'models': [self.model_f, self.model_s]})

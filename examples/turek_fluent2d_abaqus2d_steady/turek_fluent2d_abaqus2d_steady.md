@@ -4,9 +4,10 @@ This example calculates the well-known Turek benchmark, which consist laminar in
 The material parameters and boundary conditions correspond to the FSI1 setup, as detailed by Turek and Hron [[1](#1)].
 This is a steady simulation.
 The used solvers are Fluent and Abaqus.
+A script _`evaluate_benchmark.py`_ is provided to compare the results with the benchmark results in [[1](#1)].
 
 The figure below shows the resulting velocity contour plot (with Fluent).
-![FSI1](../images/turek_steady.png "Velocity contour plot of FSI1 setup produced with Fluent")
+![FSI1](images/turek_fsi1_velocity.png "Velocity contour plot of FSI1 setup produced with Fluent")
 
 In the FSI1 setup a parabolic velocity profile is subscribed at the inlet with an average velocity of 0.2 m/s.
 The flow is intialized with a velocity in the x-direction equal to 0.2 m/s.  
@@ -46,7 +47,7 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 Fluent is used as flow solver.
-The mesh is provided. It is triangular and rather coarse to reduce the calculation time.
+The provided mesh is triangular.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
 
 The structure solver is Abaqus.
@@ -57,10 +58,6 @@ The Abaqus element type used is CPE8R.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
 In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
-When the case is run, a bounding box warning for the right most face of the flag appears.
-This is normal.
-The reason is that the distance between the load points in Abaqus and the face centers in Fluent is large compared to the overall dimension of this face, 
-due to the coarse resolution: only 3 cells in the flow mesh and 3 elements in structure mesh.
 
 ## References
 <a id="1">[1]</a> 

@@ -22,10 +22,8 @@ A predictor is still required, but not used as only one time step is calculated.
 ## Solvers
 
 Of course the supplied case files in both Fluent and Abaqus also need to be steady. 
-In Abaqus this can be done using a *Static* step, typically with subcycling enabled and and a linearly ramped load.
-The parameters `subcycling` and `ramp` are set to `True` in the json-file.
-As such Abaqus performs subiterations in each coupling iterations in which the load is increased linearly over the step.
-The parameters `min_inc`, `initial_inc`, `max_num_inc` and `max_inc` are used to determine its behaviour.
+In Abaqus this can be done using a *Static* step, typically with automatic time incrementation (subcycling) and a linearly ramped load.
+The parameter `ramp` is set to `true` in the json-file. As such Abaqus performs subiterations in each coupling iterations in which the load is increased linearly over the step.
 The ramping does not occur in Abaqus itself as, amplitude references are ignored for nonuniform loads given by user subroutine DLOAD in an Abaqus/Standard analysis.
 Instead, the ramping is implemented in the DLOAD subroutine itself.
 For the first iteration of the first time step an initial load is required which is set to zero in the Abaqus wrapper.

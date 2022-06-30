@@ -87,10 +87,8 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "arraysize": 10e5,
-              "surfaceIDs": [
-                "WALLOUTSIDE"
-              ],
+              "static": false,
+              "arraysize": 1e5,
               "interface_input": [
                 {
                   "model_part": "WALLOUTSIDE_load_points",

@@ -1,24 +1,46 @@
 site_name: CoCoNuT
+repo_name: pyfsi/coconut
 repo_url: https://github.com/pyfsi/coconut
 edit_uri: ''
+site_url: ''
 site_description: site_description
+use_directory_urls: false
 theme:
-    name: 'material'
-    logo: 'images/logo.png'
-    feature:
-        tabs: true
-    favicon: 'assets/images/favicon.ico'
-    palette:
-        primary: 'green'
-        accent: 'green'
+  name: 'material'
+  logo: 'images/logo.png'
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.expand
+    - navigation.tracking
+    - toc.integrate
+  favicon: 'assets/images/favicon.ico'
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: 'green'
+      accent: 'light green'
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: slate
+      primary: 'green'
+      accent: 'light green'
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
 markdown_extensions:
-    - codehilite
-    - pymdownx.arithmatex
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - codehilite
+  - pymdownx.arithmatex
 extra_javascript:
-    - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
 nav:
-  - Introduction:
-      - CoCoNuT: README.md
+  - Introduction: README.md
   - Coupling components:
       - General: coupling_components.md
       - convergence_criteria.md
@@ -34,19 +56,22 @@ nav:
           - kratos.md
           - openfoam.md
           - python.md
-  - Data structure:
-      - data_structure.md
-  - Documentation:
-      - docs.md
+  - Data structure: data_structure.md
+  - Documentation: docs.md
   - Examples:
       - General: examples.md
+      - Breaking dam:
+          - Fluent 2D - Abaqus 2D: breaking_dam_fluent2d_abaqus2d.md
       - Tube:
-          - Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
           - Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md
+          - Python TubeFlow - Python TubeStructre: tube_tube_flow_tube_structure.md
+          - Python TubeFlow - Python TubeStructre - Analytical: tube_tube_flow_tube_structure_analytical.md
+          - Python TubeFlow - Python TubeStructre - Surrogate: tube_tube_flow_tube_structure_surrogate.md
           - Python TubeFlow - Abaqus 2D: tube_tube_flow_abaqus2d.md
           - Fluent 2D - Python TubeStructure: tube_fluent2d_tube_structure.md
           - Fluent 2D - Abaqus 2D: tube_fluent2d_abaqus2d.md
           - Fluent 2D - Abaqus 2D - Steady: tube_fluent2d_abaqus2d_steady.md
+          - Fluent 2D - Abaqus 2D - Surrogate: tube_fluent2d_abaqus2d_surrogate.md
           - Fluent 3D - Abaqus 2D: tube_fluent3d_abaqus2d.md
           - Fluent 3D - Abaqus 3D: tube_fluent3d_abaqus3d.md
           - Fluent 3D - Kratos Structure 3D: tube_fluent3d_kratos_structure3d.md
@@ -56,5 +81,4 @@ nav:
           - Fluent 2D - Abaqus 2D: turek_fluent2d_abaqus2d.md
           - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
       - Test single solver: test_single_solver.md
-  - Tests:
-      - tests.md
+  - Tests: tests.md

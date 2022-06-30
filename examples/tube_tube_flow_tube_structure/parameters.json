@@ -11,10 +11,9 @@
       "save_results": 100,
       "save_restart": 0,
       "model": {
-        "type": "coupled_solvers.models.ls",
+        "type": "coupled_solvers.models.mvmf",
         "settings": {
-          "min_significant": 1e-12,
-          "q": 10
+          "q": 100
         }
       }
     },

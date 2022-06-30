@@ -32,7 +32,7 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 -   `python>=3.6` 
 -   `numpy>=1.16.4`
 -   `scipy>=1.3.0`
--   `pandas>=0.24.2` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos_structure))
+-   `pandas>=0.24.2` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos.md))
 -   `matplotlib=3.1.0` (recommended)
 
 We recommend Anaconda 2019.07 or newer.
@@ -131,10 +131,10 @@ cd $COCO/coconut/examples/tube_tube_flow_tube_structure/
 ```
 This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file *`parameters.json`* will be used to run the actual FSI simulation, but we will come back to that later. 
 First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
-In this case we provide a script *`setup.py`* that sets up both solvers using the files in the folder *`../setup_files`*. When the script is run with
+In this case we provide a script *`setup_case.py`* that sets up both solvers using the files in the folder *`../setup_files`*. When the script is run with
 
 ```bash
-python3 setup.py
+python3 setup_case.py
 ```
 
 new folders *`CFD`* and *`CSM`* appear, as well as the file *`run_simulation.py`*. The *`CFD`* folder contains all files required to start a simulation of the flow in the tube. 
@@ -146,7 +146,7 @@ We can now start the FSI simulation in CoCoNuT by running the Python file *`run_
 python3 run_simulation.py
 ```
 
-The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself strats: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
+The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself starts: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
 
 Let us now take a closer look at the two files that are used to run CoCoNuT. 
 The Python file *`run_simulation.py`* typically does not have to be adapted by the user. Its task is to read in the settings file *`parameters.json`* and launch a simulation using those settings. 
@@ -223,4 +223,4 @@ This folder contains the unit tests. These are created for each piece of code th
 [Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
 
 <a id="2">[2]</a> 
-[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

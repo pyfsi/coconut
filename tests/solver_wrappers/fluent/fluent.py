@@ -1,4 +1,4 @@
-from coconut.tools import create_instance, get_solver_env
+from coconut.tools import create_instance, get_solver_env, rm_timed
 
 import unittest
 import numpy as np
@@ -11,7 +11,7 @@ import shutil
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
-    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     setup_case = True
 
     @classmethod
@@ -22,6 +22,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
         # setup
         if cls.setup_case:
+            shutil.rmtree(cls.working_dir, ignore_errors=True)
             dir_tmp = join(dir_name, f'test_v{cls.version}/tube2d')
             fluent_solver_module = f'fluent.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
@@ -38,7 +39,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
-            shutil.rmtree(cls.working_dir)
+            rm_timed(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy(self, x):
@@ -212,7 +213,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
 
 class TestSolverWrapperFluentTube3D(unittest.TestCase):
-    version = 'xxxRx'
+    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     setup_case = True
 
     @classmethod
@@ -223,6 +224,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
         # setup
         if cls.setup_case:
+            shutil.rmtree(cls.working_dir, ignore_errors=True)
             dir_tmp = join(dir_name, f'test_v{cls.version}/tube3d')
             fluent_solver_module = f'fluent.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
@@ -239,7 +241,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
-            shutil.rmtree(cls.working_dir)
+            rm_timed(cls.working_dir)
 
     # noinspection PyMethodMayBeStatic
     def get_dy_dz(self, x, y, z):

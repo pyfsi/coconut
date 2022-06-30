@@ -1,12 +1,13 @@
 {
   "type": "solver_wrappers.fluent.v2020R1",
   "settings": {
-    "working_directory": "solver_wrappers/fluent/test_v2020R1/tube2d/CFD",
+    "working_directory": "this is changed upon running the test",
     "case_file": "case_tube2d.cas.h5",
     "dimensions": 2,
     "unsteady": true,
     "delta_t": 0.0001,
     "timestep_start": 0,
+    "save_restart": 1,
     "thread_names": [
       "beamoutside"
     ],
@@ -29,8 +30,8 @@
     ],
     "cores": 4,
     "fluent_gui": false,
-    "max_nodes_per_face": 4,
+    "max_nodes_per_face": 2,
     "flow_iterations": 200,
-    "save_iterations": 1
+    "save_results": 1
   }
 }

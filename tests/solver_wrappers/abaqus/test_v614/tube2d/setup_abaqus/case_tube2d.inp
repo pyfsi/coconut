@@ -1185,10 +1185,10 @@
    1,  250,    1
 *Nset, nset=NALL, instance=PART-1-1, generate
    1,  861,    1
-*Elset, elset=_MOVINGSURFACE0_S1, internal, instance=PART-1-1, generate
+*Elset, elset=_BEAMINSIDEMOVING_S1, internal, instance=PART-1-1, generate
   1,  50,   1
-*Surface, type=ELEMENT, name=MOVINGSURFACE0
-_MOVINGSURFACE0_S1, S1
+*Surface, type=ELEMENT, name=BEAMINSIDEMOVING
+_BEAMINSIDEMOVING_S1, S1
 *End Assembly
 ** 
 ** MATERIALS
@@ -1204,7 +1204,7 @@ _MOVINGSURFACE0_S1, S1
 ** 
 *Step, name=Step-1, nlgeom=YES, inc=1
 *Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO
-0.0001,0.0001,
+0.001,0.001,
 ** 
 ** BOUNDARY CONDITIONS
 ** 
@@ -1217,10 +1217,10 @@ BEAMINSIDEFIXED, 2, 2
 ** 
 ** Name: DistributedPressure   Type: Pressure
 *Dsload, op=NEW
-MOVINGSURFACE0, PNU, 1.
+BEAMINSIDEMOVING, PNU, 1.
 ** Name: DistributedShear   Type: Surface traction
 *Dsload, op=NEW
-MOVINGSURFACE0, TRVECNU, 1., 1., 0., 0.
+BEAMINSIDEMOVING, TRVECNU, 1., 1., 0., 0.
 ** 
 ** OUTPUT REQUESTS
 ** 

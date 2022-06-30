@@ -19,25 +19,25 @@ The unit tests in CoCoNuT uses the unittest module available in Python.
 To run the default collection of tests which evaluates in a matter of seconds, navigate to the _`coconut/tests/`_ directory 
 and type following command in the terminal:
 ````
-python run_test.py
+python run_tests.py
 ````
 This command will run all tests excluding the solver wrapper tests that are not pure Python.
 These tests are excluded because they each take several minutes to complete.
 The above command is equivalent to 
 ````
-python run_test.py -fast
+python run_tests.py -fast
 ````
 It is equally possible to run all test by using the keyword `-all` as follows
 ````
-python run_test.py -all
+python run_tests.py -all
 ````
 Besides these two predefined keywords, it is also possible to use (a set of) arbitrary keywords.
 For example
 ````
-python run_test.py fluent abaqus
+python run_tests.py fluent abaqus
 ````
 will run all tests that have the `fluent` or `abaqus` in its path: e.g.
-`coconut.tests.solver_wrappers.test_v2019R1.test_move_nodes`.
+`coconut.tests.solver_wrappers.fluent.test_v2019R1.test_move_nodes`.
 
 Besides the method of running tests explained above, it is also possible to use commands of the form
 ````

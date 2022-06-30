@@ -70,7 +70,7 @@ class TestModelPart(unittest.TestCase):
         z0_2 = self.z0.copy()
         z0_2[np.random.randint(self.correct_size)] = np.random.rand()
         ids_2 = self.ids.copy()
-        ids_2[np.random.randint(self.correct_size)] = np.random.randint(100)
+        ids_2[np.random.randint(self.correct_size)] = np.max(self.ids) + np.random.randint(1, 100)
 
         args = (self.name, self.x0, self.y0, self.z0, self.ids)
         mp2 = ModelPart(*args)
@@ -82,6 +82,7 @@ class TestModelPart(unittest.TestCase):
             args_2[i] = changed_arguments[i]
             mp2 = ModelPart(*tuple(args_2))
             self.assertNotEqual(mp, mp2)
+
 
 if __name__ == '__main__':
     unittest.main()

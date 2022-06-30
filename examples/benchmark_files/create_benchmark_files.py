@@ -4,6 +4,7 @@ from coconut import tools
 import json
 import os
 import shutil
+import time
 from shutil import copytree, copy
 from os.path import join
 
@@ -27,8 +28,10 @@ benchmark = join(examples_path, 'benchmark_files')
 # example and tuple with number of time steps and optional additional files
 # comment out examples that you do not want to make benchmark files for
 examples = {
+    'breaking_dam_fluent2d_abaqus2d': 2,
     'tube_fluent2d_abaqus2d': 2,
     'tube_fluent2d_abaqus2d_steady': 1,
+    'tube_fluent2d_abaqus2d_surrogate': 2,
     'tube_fluent2d_tube_structure': 2,
     'tube_fluent3d_abaqus2d': 2,
     'tube_fluent3d_abaqus3d': 2,
@@ -36,8 +39,10 @@ examples = {
     'tube_openfoam3d_abaqus3d': 2,
     'tube_openfoam3d_kratos_structure3d': 2,
     'tube_tube_flow_abaqus2d': 2,
-    'tube_tube_flow_tube_ringmodel': 100,
-    'tube_tube_flow_tube_structure': 100,
+    'tube_tube_flow_tube_ringmodel': 10,
+    'tube_tube_flow_tube_structure': 10,
+    'tube_tube_flow_tube_structure_analytical': 10,
+    'tube_tube_flow_tube_structure_surrogate': 10,
     'turek_fluent2d_abaqus2d': 2,
     'turek_fluent2d_abaqus2d_steady': 1
 }
@@ -51,6 +56,7 @@ def set_up():
 
 
 def clean_up():
+    time.sleep(0.1)
     shutil.rmtree(tmp_path)
 
 
@@ -60,14 +66,14 @@ def create_benchmark(example, number_of_timesteps):
 
     # copy example folder to tmp
     os.mkdir(tmp_example_path)
-    for file in ('parameters.json', 'setup.py'):
+    for file in ('parameters.json', 'setup_case.py'):
         copy(join(examples_path, example, file), tmp_example_path)
 
     # go to this example directory
     os.chdir(tmp_example_path)
 
     # perform set up
-    tools.import_module('setup', join(tmp_example_path, 'setup.py'))
+    tools.import_module('setup_case', join(tmp_example_path, 'setup_case.py'))
 
     # read parameters and limit number of time steps
     parameter_file_name = "parameters.json"

@@ -1,20 +1,16 @@
 {
-    "setting1":
-    {
-    "type" : "coupled_solvers.models.ls",
-        "settings" :
-        {
-            "min_significant" : 1,
-            "q" : 2
-        }
-    },
-    "setting2":
-    {
-    "type" : "coupled_solvers.models.ls",
-        "settings" :
-        {
-            "min_significant" : 1,
-            "q" : 0
-        }
+  "setting1": {
+    "type": "coupled_solvers.models.ls",
+    "settings": {
+      "min_significant": 1,
+      "q": 2
     }
+  },
+  "setting2": {
+    "type": "coupled_solvers.models.ls",
+    "settings": {
+      "min_significant": 1,
+      "q": 0
+    }
+  }
 }

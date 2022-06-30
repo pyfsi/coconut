@@ -40,6 +40,6 @@ for case in legend_entries:
     tools.print_info(f'Average norm of the difference per time step between {case_reference} and {case} is {norm_average}.')
 for case, result in results.items():
     iterations = np.array(result['iterations']).mean()
-    time = result['time']
+    time = result['run_time']
     tools.print_info(f'{case}: average # iterations = {iterations:0.2f} and elapsed time = {time:0.3f}s')
     tools.print_info('\t', result['iterations'])
