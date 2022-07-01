@@ -6,6 +6,7 @@ import os
 import time
 import json
 import pandas as pd
+import numpy as np
 
 
 class StructuralMechanicsWrapper:
@@ -28,15 +29,13 @@ class StructuralMechanicsWrapper:
         self.structural_analysis.Initialize()
 
         for sub_model_part_name in self.interfaces:
-
             sub_model_part = self.model[f'Structure.{sub_model_part_name}']
-            file_name = f'{sub_model_part_name}_nodes.csv'
-            with open(file_name, 'w') as f:
-                f.write('node_id, x0, y0, z0\n')
-
-            for node in sub_model_part.Nodes:
-                with open(file_name, 'a') as f:
-                    f.write(f'{node.Id}, {node.X0}, {node.Y0}, {node.Z0}\n')
+            file_name_nodes = f'{sub_model_part_name}_nodes.csv'
+            node_ids = np.array([node.Id for node in sub_model_part.Nodes])
+            node_coords0 = np.array([[node.X0, node.Y0, node.Z0] for node in sub_model_part.Nodes])
+            node_coords0_df = pd.DataFrame(
+                {'node_id': node_ids, 'x0': node_coords0[:, 0], 'y0': node_coords0[:, 1], 'z0': node_coords0[:, 2]})
+            node_coords0_df.to_csv(file_name_nodes, index=False)
 
     def InitializeSolutionStep(self):
         self.structural_analysis.time = self.structural_analysis.solver.AdvanceInTime(self.structural_analysis.time)
@@ -63,19 +62,18 @@ class StructuralMechanicsWrapper:
         self.structural_analysis.Finalize()
 
     def OutputData(self):
-
         for sub_model_part_name in self.interfaces:
             full_sub_model_part_name = "Structure." + sub_model_part_name
             if self.model["Structure"].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
                 file_name = f'{sub_model_part_name}_displacement.csv'
-                with open(file_name, 'w') as f:
-                    f.write('node_id, displacement_x, displacement_y, displacement_z\n')
-
-                for node in sub_model_part.Nodes:
-                    with open(file_name, 'a') as f:
-                        disp = node.GetSolutionStepValue(KM.DISPLACEMENT)
-                        f.write(str(node.Id) + ', ' + str(disp[0]) + ', ' + str(disp[1]) + ', ' + str(disp[2]) + '\n')
+                node_ids = np.array([node.Id for node in sub_model_part.Nodes])
+                displacement = np.array(
+                    [list(node.GetSolutionStepValue(KM.DISPLACEMENT)) for node in sub_model_part.Nodes])
+                disp_df = pd.DataFrame(
+                    {'node_id': node_ids, 'displacement_x': displacement[:, 0], 'displacement_y': displacement[:, 1],
+                     'displacement_z': displacement[:, 2]})
+                disp_df.to_csv(file_name, index=False)
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
@@ -104,7 +102,6 @@ class StructuralMechanicsWrapper:
                         sub_model_part.GetNode(node_id).SetSolutionStepValue(SM.SURFACE_LOAD, 0,
                                                                              [surface_load_x[i], surface_load_y[i],
                                                                               surface_load_z[i]])
-
             else:
                 raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
 
