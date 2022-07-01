@@ -30,6 +30,10 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
         self.surrogate_modes = self.settings.get('surrogate_modes')  # number of surrogates modes to use
         self.surrogate_synchronize = self.settings.get('surrogate_synchronize', True)  # synchronize surrogate
 
+        if ((self.surrogate_modes == 0 or self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
+                and 'omega' not in self.settings):
+            raise ValueError('A relaxation factor (omega) is required when no surrogate Jacobian is used')
+
     def initialize(self):
         super().initialize()
 
@@ -158,7 +162,7 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
                f' ({surrogate_run_time_perc:0.1f}%)\t\n'
         if self.surrogate.__class__.__name__ == 'ModelMapped':
             out += f'{pre}\t└─{self.surrogate.surrogate.__class__.__name__}: {self.surrogate.surrogate.run_time:.0f}s' \
-                f' ({self.surrogate.surrogate.run_time / self.run_time * 100:0.1f}%)\n'
+                   f' ({self.surrogate.surrogate.run_time / self.run_time * 100:0.1f}%)\n'
         if self.solver_level == 0:
             coupling_time = self.run_time - sum([s.run_time for s in self.solver_wrappers]) \
                             - self.surrogate.run_time

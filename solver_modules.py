@@ -26,6 +26,7 @@ solver_load_cmd_dict = {
         'fluent.v2021R2': 'ml ANSYS_CFD/2021R2',
         'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'abaqus.v2021': 'ml intel/2020a && ml ABAQUS/2021 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
+        'abaqus.v2022': 'ml intel/2020a && ml ABAQUS/2022 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'kratos_structure.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
         'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=$HOME/Software/KratosHydrostatic:'
                                 '$PYTHONPATH && export LD_LIBRARY_PATH=$HOME/Software/KratosHydrostatic/libs:'

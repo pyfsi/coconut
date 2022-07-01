@@ -25,7 +25,7 @@ parameter|type|description
 `debug`|bool|(optional) Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
 `delta_t`|float|Fixed time step size in flow solver. This parameter is usually specified in a higher `Component`.
 `dimensions`|int|Dimension used in flow solver: `2` for 2D and axisymmetric, `3` for 3D.
-<nobr>`end_of_timestep_commands`</nobr>|str|Fluent journal command(s) to be executed after every time step, to store drag and lift forces for example.
+<nobr>`end_of_timestep_commands`</nobr>|str|(optional) Fluent journal command(s) to be executed after every time step, to store drag and lift forces for example.
 `flow_iterations`|int|Number of non-linear iterations in Fluent per coupling iteration.
 `fluent_gui`|bool|Set to `true` to run Fluent with the graphical interface.
 `interface_input`|list|List of dictionaries to describe the input `Interface` (Fluent nodes). Each dictionary defines one `ModelPart` with two keys: `model_part` contains the name of the `ModelPart` and `variables` contains a list of variable names. Each `ModelPart` name must be the concatenation of an entry from `thread_names` and "_nodes". The variable names must be chosen from *`data_structure/variables.py`*. 

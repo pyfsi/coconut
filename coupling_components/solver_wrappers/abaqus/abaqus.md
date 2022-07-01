@@ -37,7 +37,6 @@ parameter|type|description
 `interface_output`|list|Similar to `interface_input` but contains the output `ModelParts` for Abaqus geometrical nodes. The name has to correspond to the *Node Sets* created in Abaqus, concatenated with "_nodes". In this case the `"variables"` key specifies the output variable, chosen from *`data_structure/variables.py`*.  Currently only `"displacement"` is allowed (case-sensitive). The order of should correspond to the `interface_input` as well as the other solver wrapper's `Interface` definitions to which Abaqus is coupled. An example can be found in [this part of the input file section](#output-related-settings-in-json-file).
 `input_file`|str|Name of the Abaqus input file (.inp) provided by the user. <br> <br> **Example:** `"case.inp"`
 `mp_mode`|str|Determines how Abaqus is executed in parallel. It is recommended to use `"THREADS"`. `"MPI"` works as well but requires a host-file called *`AbaqusHosts.txt`*. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script *`make_host_file.sh`* which can be used to generate a host file (Ghent University system). Note that multi-node computations are currently not supported.
-`static`|bool|Indicates which type of analysis is performed: static (`True`) or dynamic (`False`).
 `timestep_start`|int|Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher `Component` in which case it is not mandatory to specify. 
 <nobr>`working_directory`</nobr>|str|Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file *`AbaqusHosts.txt`*, see the [environment section](#environment).
 
@@ -106,11 +105,13 @@ The base-file has to contain all necessary information about the structural mode
     - Also the element type needs to be defined.
  - Material properties.
  - Boundary conditions.
- - Surfaces where external loads need to be applied.
+ - Surfaces where external loads need to be applied (one surface per `ModelPart`).
     - Here *"Surface"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.
+ - Per surface a pressure load and traction load should be defined (see [below](#setup-for-Abaqus-input-loads)).   
  - Node sets where displacement data will be extracted.
     - Here *"Set"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".
- - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them rather than leaving it to Abaqus to fill in a default) are supported:
+- A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).    
+ - A *Step* definition, which contains solver settings. Currently the following type of analyses (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default) are supported:
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
     - Implicit dynamic, application transient fidelity
@@ -137,7 +138,7 @@ my_instance = my_assembly.instances['PART-1-1']
 inputSurfaceA = SurfaceFromNodeSet(my_assembly, my_instance, 'NODESET_NAME_A', 'SURFACE_NAME_A')
 ```
 
-On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. **Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in `GetOutput.cpp`**. After creation of the step the loads can be assigned. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
+On these surfaces a "pressure load" and a "surface traction load" need to be specified with a "user-defined" distribution. Loads are assigned to a "step". A step is a part of the simulation to which an analysis type, algorithm settings and incrementation settings are assigned that do not change for the duration of the step. In a typical CoCoNuT case only a single step is defined. **Note that the name of the step used for the FSI has to be "Step-1" as this name is hardcoded in `GetOutput.cpp`**. After creation of the step the loads can be assigned. It is required to have the `initialConditons=OFF` part when using `application=TRANSIENT FIDELITY` (beware that when application is not specified, transient fidelity is the default). This makes sure that for each time step the accelerations from the previous time step are used. This can be done via the GUI or using Python commands available in Abaqus similar to the following:
 
 ```python
 from step import *
@@ -162,7 +163,7 @@ The Abaqus wrapper tries to check if the increments comply with the `delta_t` se
 0.0001,0.0001,
 ```
 
-The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
+It is required to have `initial=NO` when using the application transient fidelity (default when no application specified). This corresponds to the `initialConditons=OFF` setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
 
 #### Input-related settings in JSON file
 The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list, but with "_load_points" appended to it. Remember that the names should not be sub-strings of each other. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.
@@ -243,4 +244,7 @@ Since Abaqus only uses the *`CSM_Restart.inp`* (which does not contain any mesh 
 First version.
 
 ### v2021
+No major changes. 
+
+### v2022
 No major changes. 

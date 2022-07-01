@@ -236,7 +236,6 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
-              "static": false,
               "arraysize": 1e5,
               "interface_input": [
                 {
