@@ -38,6 +38,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.working_directory = self.settings['working_directory']
         self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
         # adapted application from openfoam ('coconut_<application name>')
+        self.number_of_timesteps = self.settings['number_of_timesteps']
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
@@ -143,6 +144,12 @@ class SolverWrapperOpenFOAMExtend(Component):
             mp_name = f'{boundary}_input'
             mp = self.model.get_model_part(mp_name)
             x0, y0, z0 = mp.x0, mp.y0, mp.z0
+
+
+            x0_ma_arr = np.less_equal(x0,self.die_max)
+            x0 = x0[x0_ma_arr,]
+            y0 = y0[x0_ma_arr,]
+
 
             x = np.zeros( 2 * x0.size)
             y = np.zeros( 2 * x0.size)
@@ -258,7 +265,7 @@ class SolverWrapperOpenFOAMExtend(Component):
                 path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                 shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                 shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
-                for i in range(1010):
+                for i in range(self.number_of_timesteps):
                     timestamp_i = self.delta_t *(i +1)
                     format_i = format(timestamp_i, ".5f")
                     str_i = str(format_i)
