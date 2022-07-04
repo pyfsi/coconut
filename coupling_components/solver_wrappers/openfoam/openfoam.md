@@ -11,6 +11,8 @@ parameter|type|description
 ---:|:---:|---
 <nobr>`application`</nobr>|str|Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with `coconut_`.
 <nobr>`boundary_names`</nobr>|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
+`compile_clean`|bool|(optional) Default: `False`. If set to True, the adapted application will first clean and then compile.
+`debug`|bool|(optional) Default: `False`. For every iteration, additional files are saved containing information on the input and output data of the solver.
 `delta_t`|double (optional)|Fixed timestep size in flow solver.
 `density`|int|The applied density of the fluid in an incompressible case. The density will be applied if `is_incompressible` is set to `true`.
 <nobr>`interface_input`</nobr>|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `boundary_names` and the string `_input`.
@@ -153,7 +155,7 @@ OpenFOAM-directory:
 - *`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
 - *`system/decomposeParDict`* with the necessary decomposition of the fluid domain (if `cores`>1)
 - *`0/pointDisplacement`* with all the boundary conditions, including `fixedValue` boundary condition for the FSI
-  boundaries. This is used as a template for the *`pointDisplacement_Next`* to supply displacement boundary conditon (
+  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary conditon (
   from structural solver) for the FSI-interface.
 
 ### Comments
@@ -161,13 +163,8 @@ OpenFOAM-directory:
 - It is probably best to derive a new case from the directory containing FSI simulation with OpenFOAM
   in *`coconut/examples/`* in order to copy its structure.
 - If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the
-  solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers. You
-  should compile the new solver before loading the CoCoNuT-modules as the overwriting of compiler modules can break
-  the  `wmake`-command. Once the new solver is compiled, it works fine even after loading the CoCoNuT-modules.
-- OpenFOAM is known for generating a lot of files, which is not different in CoCoNuT-operation. Make sure you have
-  sufficient storage space on your cluster and that you are able to write large number of files (the latter is
-  specifically important when storing data in your home-directory).
-
+  solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers.
+  
 ## Version specific documentation
 
 ### v41 (OpenFOAM 4.1)

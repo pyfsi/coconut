@@ -6,32 +6,30 @@ All coupled solvers inherit from the class `CoupledSolverGaussSeidel`.
 
 In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`, but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing 2 dictionaries: one for each solver wrapper. More information on these last three can be found in the [predictors](../predictors/predictors.md), [convergence criteria](../convergence_criteria/convergence_criteria.md) and the [solver wrappers](../solver_wrappers/solver_wrappers.md) documentation, respectively.
 
-In the following subsections, explanatory schematics will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$. Typically, these solvers are a flow and structure solver, respectively.
+In the following subsections, explanatory schematics will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\widetilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\widetilde{x}$. Typically, these solvers are a flow and structure solver, respectively.
 Note that the column vectors such as $x$ and $y$ typically contain different components of the same variables or even different variables.
-Often, the vectors $x$ and $\tilde{x}$ contain the three components of displacement, whereas the vectors $y$ and $\tilde{y}$ contain the pressure and the three components of traction. However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
+Often, the vectors $x$ and $\widetilde{x}$ contain the three components of displacement, whereas the vectors $y$ and $\widetilde{y}$ contain the pressure and the three components of traction. However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
 Further, the superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.
-Finally, the difference between the output $\tilde{x}^k$ and input $x^k$ in the same iteration is defined as the residual $r^k=\tilde{x}^k-x^k$, which is used to monitor the convergence of the calculation.
+Finally, the difference between the output $\widetilde{x}^k$ and input $x^k$ in the same iteration is defined as the residual $r^k=\widetilde{x}^k-x^k$, which is used to monitor the convergence of the calculation.
 
 ## Gauss-Seidel
 
 The `type` for this coupled solver is `coupled_solvers.gauss_seidel`.
 
-### Algorithm
-
 Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solvers: the output of one solver is given to the other one without adjustment.
 
 The following figure shows the basic methodology.
+
 ![gauss_seidel](images/iteration_gauss_seidel.png "Gauss-Seidel iterations")
 
 Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
 A considerable convergence stabilization and acceleration is obtained by modifying the input to one or both of the solvers using derivative information, as will be shown further.
 
-### Settings
-
 The following parameters need to be included in the `settings` dictionary. Here they are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
+`debug`|bool|(optional) Default: `False`. The data `solution_x` and `solution_y` are saved every iteration except of every time step (see [results pickle file](#save-results)). Residual distribution is also saved in additional field `solution_r` for every iteration.
 `delta_t`|float|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
 `case_name`|str|(optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<name>_results.pickle`_) and a restart file (_`<name>_restart_ts<time_step>.pickle`_). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.
 `restart_case`|str|(optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
@@ -49,27 +47,24 @@ If they are defined both here and in the solver wrapper, then the former value i
 This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.relaxation`.
 
-### Algorithm
-
 Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added-mass.
 A simple approach to mitigate this is applying relaxation, also called simple mixing. In this coupling method the output of first solver is still given to the other one without adjustment, but the output of the second solver is relaxed as follows:
 $$
-x^{k+1}=(1-\omega)x^k+\omega\tilde{x}^k=x^k+\omega r^k
+x^{k+1}=(1-\omega)x^k+\omega\widetilde{x}^k=x^k+\omega r^k
 $$
-with $x^k$ and $\tilde{x}^k$, respectively the input for the first solver and the output of the second solver in iteration $k$.
-The difference between both is called the residual $r^k=\tilde{x}^k-x^k$.
+with $x^k$ and $\widetilde{x}^k$, respectively the input for the first solver and the output of the second solver in iteration $k$.
+The difference between both is called the residual $r^k=\widetilde{x}^k-x^k$.
 The mixing or relaxation factor is $\omega$.
 
 A symbolic schematic is given in the following figure.
+
 ![relaxation](images/iteration_relaxation.png "Relaxed Gauss-Seidel iterations")
 
 This method is again quite simple, but able to stabilize some cases that fail with Gauss-Seidel iterations.
 One can see that a lower $\omega$ corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
 For more challenging problems, with incompressible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.
 
-### Settings
-
-Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameter needs to be included in the `settings` dictionary.
 
 parameter|type|description
 ---:|:---:|---
@@ -80,19 +75,18 @@ parameter|type|description
 This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.aitken`.
 
-### Algorithm
-
 Gauss-Seidel iterations are very simple, but are unstable for many cases.
 An approach to mitigate this is applying relaxation. However, the choice of a relaxation factor can be difficult: a high factor leads to a higher degree of stability, but a lower convergence speed. In more challenging cases there will be no acceptable value for $\omega$.
 In this coupling method a dynamic relaxation factor is used. The output of the first solver is still given to the other one without adjustment, but the output of the second solver is relaxed as follows:
 $$
-x^{k+1}=(1-\omega^k)x^k+\omega^k\tilde{x}^k=x^k+\omega^k r^k
+x^{k+1}=(1-\omega^k)x^k+\omega^k\widetilde{x}^k=x^k+\omega^k r^k
 $$
-with $x^k$ and $\tilde{x}^k$, respectively the input for the first solver and the output of the second solver in iteration $k$.
-The difference between both is called the residual $r^k=\tilde{x}^k-x^k$.
+with $x^k$ and $\widetilde{x}^k$, respectively the input for the first solver and the output of the second solver in iteration $k$.
+The difference between both is called the residual $r^k=\widetilde{x}^k-x^k$.
 The mixing or relaxation factor is $\omega^k$ is dynamic in the sense that its value changes between iterations.
 
 A symbolic schematic is given in the following figure.
+
 ![aitken](images/iteration_aitken.png "Aitken iterations")
 
 The value of $\omega^k$ is determined by applying the secant method for scalars directly to vectors and projecting it on $r^k-r^{k-1}$
@@ -109,9 +103,7 @@ The relaxation factor in the first time step is equal to $\omega^{max}$.
 
 This method improves convergence speed drastically compared to Gauss-Seidel iterations, but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for different Fourier modes of the output of the second solver.
 
-### Settings
-
-Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameter needs to be included in the `settings` dictionary.
 
 parameter|type|description
 ---:|:---:|---
@@ -122,10 +114,8 @@ parameter|type|description
 This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.iqni`.
 
-### Algorithm
-
 The abbreviation IQNI refers to _interface quasi-Newton with inverse Jacobian_. In this type of coupling algorithm, the combination of the two solvers is seen as one system.
-The input of the first solver $\mathcal{F}$ in iteration $k$ is denoted by $x^k$. The output of this solver is transferred unchanged to the second solver. The output of the second solver is denoted $\tilde{x}^k$. The difference between input and output is called the residual $r^k=\tilde{x}^k-x^k$.
+The input of the first solver $\mathcal{F}$ in iteration $k$ is denoted by $x^k$. The output of this solver is transferred unchanged to the second solver. The output of the second solver is denoted $\widetilde{x}^k$. The difference between output and input is called the residual $r^k=\widetilde{x}^k-x^k$.
 
 A residual operator $\mathcal{R}(x)$ is defined, which returns the residual $r^k$ as a function of $x^k$. The goal is to find $x$ for which $\mathcal{R}(x)=0$, i.e. the root. This system of non-linear equations is solved using Newton-Raphson iterations as follows
 $$
@@ -141,39 +131,38 @@ $$
 However, this Jacobian is not accessible and therefore has to be approximated. Instead of approximating $\mathcal{R}'$, solving the linear system can be avoided by approximating its inverse directly.
 
 The approximation procedure typically results in a low-rank Jacobian.
-Whereas, a full rank Jacobian is required for the Newton-Raphson update to function properly. Therefore, the inverse Jacobian of an altered residual operator $\tilde{\mathcal{R}}$ is approximated.
+Whereas, a full rank Jacobian is required for the Newton-Raphson update to function properly. Therefore, the inverse Jacobian of an altered residual operator $\widetilde{\mathcal{R}}$ is approximated.
 This altered residual operator is defined as follows
 $$
-r^{k+1}=\tilde{\mathcal{R}}(\tilde{x}^{k+1})=\mathcal{R}(\tilde{x}^{k+1}-r^{k+1}).
+r^{k+1}=\widetilde{\mathcal{R}}(\widetilde{x}^{k+1})=\mathcal{R}(\widetilde{x}^{k+1}-r^{k+1}).
 $$
 The inverse of both Jacobians are linked by
 $$
-\tilde{\mathcal{R}}'^{-1}=\mathcal{R}'^{-1}+I,
+\widetilde{\mathcal{R}}'^{-1}=\mathcal{R}'^{-1}+I,
 $$
-where $\tilde{\mathcal{R}}'$ is the Jacobian of $\tilde{\mathcal{R}}$ with respect to $\tilde{x}$ and $I$ is the identity matrix.
+where $\widetilde{\mathcal{R}}'$ is the Jacobian of $\widetilde{\mathcal{R}}$ with respect to $\widetilde{x}$ and $I$ is the identity matrix.
 For this Jacobian the following is valid
 $$
-\Delta \tilde{x}^k=\tilde{\mathcal{R}}'^{-1}(x^k)\Delta r^k,
+\Delta \widetilde{x}^k=\widetilde{\mathcal{R}}'^{-1}(x^k)\Delta r^k,
 $$
-where $\Delta\tilde{x}^k=\tilde{x}^{k+1}-\tilde{x}^k$ is the difference between the the output of two subsequent iterations.
-This Jacobian is also not known, but is approximated using a `model` and denoted by $\tilde{N}^k$. The type of `model` and its settings are specified in the `settings` dictionary. This model returns an estimation of $\Delta\tilde{x}^k$ given a value $\Delta r^k=-r^k$
+where $\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k$ is the difference between the the output of two subsequent iterations.
+This Jacobian is also not known, but is approximated using a `model` and denoted by $\widetilde{N}^k$. The type of `model` and its settings are specified in the `settings` dictionary. This model returns an estimation of $\Delta\widetilde{x}^k$ given a value $\Delta r^k=-r^k$
 $$
-\Delta\tilde{x}^k=\tilde{N}^k \Delta r^k.
+\Delta\widetilde{x}^k=\widetilde{N}^k \Delta r^k.
 $$
 Finally resulting in the update formula
 $$
-x^{k+1}=x^k+(\tilde{N}^k-I)\Delta r^k=x^k-\tilde{N}^k r^k+r^k.
+x^{k+1}=x^k+(\widetilde{N}^k-I)\Delta r^k=x^k-\widetilde{N}^k r^k+r^k.
 $$
 
 A symbolic schematic is given in the following figure.
+
 ![iqni](images/iteration_iqni.png "Residual operator iterations")
 
 For more information with respect to the approximation of the Jacobian, refer to the [models documentation](models/models.md).
 More information about residual operator methods can be found in [[1](#1)].
 
-### Settings
-
-Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
@@ -185,8 +174,6 @@ parameter|type|description
 This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.ibqn`.
 
-### Algorithm
-
 The abbreviation IBQN refers to _interface block quasi-Newton_.
 In type of coupling iteration, the system 
 $$
@@ -197,7 +184,7 @@ $$
 \end{cases}
 $$
 is solved in block form.
-Again, $\mathcal{F}$ is the first solver with input $x$ and output $\tilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\tilde{x}$. In this iteration scheme, the output of each solver is altered before being transferred to the other one.
+Again, $\mathcal{F}$ is the first solver with input $x$ and output $\widetilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\widetilde{x}$. In this iteration scheme, the output of each solver is altered before being transferred to the other one.
 Solving the system in block Newton-Raphson iterations results in
 $$
 	\begin{bmatrix}
@@ -218,34 +205,33 @@ $$
 	\end{bmatrix},
 $$
 where $\mathcal{F}'$ and $\mathcal{S}'$ denote the Jacobians of the first and second solver, respectively.
-These Jacobians are, however, not accessible and are approximated using a `model` as specified in the `settings` dictionary. To the first and second solver correspond `model_f`, denoted here by $M_f$, and `model_s`, denoted bye $M_s$, respectively. For example, `model_f` returns an estimation of $\Delta\tilde{y}^k=\tilde{y}^{k+1}-\tilde{y}^k$ given $\Delta x^k=x^{k+1}-x^k$
+These Jacobians are, however, not accessible and are approximated using a `model` as specified in the `settings` dictionary. To the first and second solver correspond `model_f`, denoted here by $M_f$, and `model_s`, denoted bye $M_s$, respectively. For example, `model_f` returns an estimation of $\Delta\widetilde{y}^k=\widetilde{y}^{k+1}-\widetilde{y}^k$ given $\Delta x^k=x^{k+1}-x^k$
 $$
-\Delta\tilde{y}^k=M_f^k \Delta x^k.
+\Delta\widetilde{y}^k=M_f^k \Delta x^k.
 $$
 
 Solving for $x^{k+1}=x^k+\Delta x^k$ requires solving the system
 $$
 \left(I-M_s^k M_f^k\right)\Delta x^k
-=\tilde{x}^k-x^k+M_s^k(\tilde{y}^k-y^k)
+=\widetilde{x}^k-x^k+M_s^k(\widetilde{y}^k-y^k)
 $$
 for $\Delta x^k$.
 This is done matrix-free using the Generalized minimal residual method (GMRES).
 Analogously, the input $y^{k+1}=y^k+\Delta y^k$ for the structural solver by solving 
 $$
 \left(I-M_f^{k+1}M_s^k\right)\Delta y^k
-=\tilde{y}^{k+1}-y^k+M_f^{k+1}(\tilde{x}^k-x^{k+1})
+=\widetilde{y}^{k+1}-y^k+M_f^{k+1}(\widetilde{x}^k-x^{k+1})
 $$
 for $\Delta y^k$.
 
 A symbolic schematic is given in the following figure.
+
 ![ibqn](images/iteration_ibqn.png "Block iterations")
 
 The actual approximation of the Jacobian occurs with the same [models](models/models.md) as before.
 More information about block methods can be found in [[1](#1)].
 
-### Settings
-
-Besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 parameter|type|description
 ---:|:---:|---
@@ -254,6 +240,124 @@ parameter|type|description
 `model_s`|dict|Model component corresponding to the second solver wrapper.
 `omega`|float|Relaxation factor.
 <nobr>`relative_tolerance_gmres`</nobr>|float|Relative tolerance used in the GMRES method.
+
+## IQNISM
+
+This coupled solver inherits from the class `CoupledSolverIQNISM`.
+The `type` for this coupled solver is `coupled_solvers.iqnism`.
+This coupled solver is linked to the IQN-ILSM framework [[2](#2)].
+
+The abbreviation IQNISM refers to _interface quasi-Newton with inverse Jacobian from surrogate model_.
+This coupled solver belongs in the same category as the IQNI coupled solver: the combination of the two solvers is seen as one system, where the input of the first solver is transferred unchanged to the second solver.
+The difference between output and input of this system is called the residual $r^k=\widetilde{x}^k-x^k$.
+
+Just like for IQNI, a residual operator $\mathcal{R}(x)$ is defined and the root of this system of non-linear equations is solved using Newton-Raphson iterations, as follows
+$$
+x^{k+1}=x^k-\widetilde{N}^k r^k+r^k,
+$$
+where $\widetilde{N}^k$ is an approximation of the inverse Jacobian of $\mathcal{R}$ with respect to $\widetilde{x}$.
+
+As in IQNI, this approximation is obtained using the `model` components.
+Only here, two of them ar used: a `surrogate` model is used, in addition to a secant model.
+The type of the models and their settings are specified in the `settings` dictionary:
+The key of the surrogate model is `surrogate`, the key of the secant model is simply `model`.
+Both of them are required. However, a dummy model can be used to disable one of them.
+It is not recommended to disable the secant model (key `model`), as this model provides a Jacobian which is based on the actual problem.
+
+The `surrogate` model solves a surrogate coupling problem at the start of every time step. The solution of this surrogate problem can be used as prediction (see [surrogate predictor](../../predictors/predictors.md#surrogate)) and its Jacobian can be used here.
+More information with respect to this type of model can be found in the [models documentation](models/models.md).
+If only the solution is to be used, the parameter `surrogate_modes` has to be set to `0`. This parameters denotes the number of modes from the surrogate Jacobian that should be used (starting from the first determined mode(s)).
+Whether the surrogate solution is used for prediction, is determined by the `predictor` settings of the coupled solver. If the surrogate model does not provide a surrogate solution (only a surrogate Jacobian), surogate prediction is not possible.
+
+The two models are combined as follows.
+The secant model is used as before, but, as the secant Jacobian is defective (not full-rank), part of the residual is not _treated_ by this Jacobian.
+For the modes corresponding to the part of the residual, not covered by the secant Jacobian, the surrogate Jacobian is used.
+Note that, in this way, the secant Jacobian has preference over the surrogate Jacobian.
+
+If the coupled solver in the surrogate model uses IQNISM as well, a nested surrogate construction is created, where for the part of residual not treated by the first surrogate Jacobian the second surrogate is used.
+
+Next to the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+
+parameter|type|description
+---:|:---:|---
+`model`|dict|Model component.
+`omega`|float|(optional) Default: `1`. Relaxation factor for when the modes not covered by the surrogate model, when the secant model is not yet active.
+`surrogate` |dict|Surrogate component.
+`surrogate_modes`|int|(optional) Default: all modes. The number of modes from the surrogate Jacobian that should be used in the Jacobian approximation (starting from the first determined surrogate mode(s)).
+<nobr>`surrogate_synchronize`</nobr>|bool|(optional) Default: `True`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).
+
+This coupled solver is closely related to the IQN-ILSM framework described in [[2](#2)].
+The settings structure for the different surrogate models discussed in this work are:
+
+=== "previous time steps (e.g. 50) (=reuse)"
+
+    ``` json
+	{
+	  "type": "coupled_solvers.iqnism",
+	  "settings": {
+		"omega": 0.01,
+		"model": {
+		  "type": "coupled_solvers.models.mvmf",
+		  "settings": {
+			"q": 50
+		  }
+		},
+		"surrogate": {
+		  "type": "coupled_solvers.models.dummy_model"
+		},
+		...
+	  },
+	  ...
+	}
+    ```
+
+=== "other surrogate model"
+
+    ``` json
+	{
+	  "type": "coupled_solvers.iqnism",
+	  "settings": {
+		"model": {
+		  "type": "coupled_solvers.models.mvmf",
+		  "settings": {
+			"q": 0
+		  }
+		},
+		"surrogate": {
+		  "type": "coupled_solvers.models.surrogate",
+		  "settings": {
+			...
+		  }
+		},
+		...
+	  },
+	  ...
+	}
+    ```
+
+=== "previous time steps + other surrogate model"
+
+	``` json
+	{
+	  "type": "coupled_solvers.iqnism",
+	  "settings": {
+		"model": {
+		  "type": "coupled_solvers.models.mvmf",
+		  "settings": {
+			"q": 50
+		  }
+		},
+		"surrogate": {
+		  "type": "coupled_solvers.models.surrogate",
+		  "settings": {
+			...
+		  }
+		},
+		...
+	  },
+	  ...
+	}
+	```
 
 ## Test single solver
 
@@ -265,12 +369,11 @@ To test only one solver, a dummy solver must be used. Such a dummy solver is imp
 The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being a variable required by the tested solver, e.g. `displacement`, `pressure` or `traction`. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
 Some examples are given in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md). The test class name is provided in the JSON settings as a string. If no test class is provided or the value `None` is used, zero input will be used.
 
-### Settings
-
 The JSON file requirements for the class `CoupledSolverTestSingleSolver` are different from the other coupled solvers in the sense that they only require the `type`, which is `coupled_solvers.test_single_solver`, the dictionary `test_settings` and the list `solver_wrappers` containing at least one solver wrapper. The keys for the `test_settings` dictionary are listed in alphabetical order below.
 
 parameter|type|description
 ---:|:---:|---
+`debug`|bool|(optional) Default: `False`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).
 `delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `case_name`|str|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
 `save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.
@@ -335,7 +438,7 @@ Therefore, it is the responsibility of the solver wrappers, to setup the solvers
 Moreover, its vital that they reconstruct the exact same model parts as in the initial calculation.
 In other words, the undeformed coordinates must be the same.
 Conversely, they are not required to initialize the interfaces with the correct data from time step $n$, as this taken care of by the predictor in the coupled solver.
-Only when both solver wrappers allow restart, is is possible to restart a calculation!
+Only when both solver wrappers allow restart, is it possible to restart a calculation!
 
 ### Saving restart files
 During a calculation it is possible to save restart pickle files.
@@ -370,3 +473,6 @@ Note that the presence of the restart pickle file on the other hand is required.
 
 <a id="1">[1]</a> 
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
+
+<a id="2">[2]</a>
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

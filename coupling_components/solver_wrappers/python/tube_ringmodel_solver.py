@@ -3,7 +3,7 @@ from coconut import tools
 from coconut.data_structure import Model, Interface
 
 import numpy as np
-import os.path as path
+from os.path import join
 import json
 
 
@@ -20,10 +20,15 @@ class SolverWrapperTubeRingmodel(Component):
         self.parameters = parameters
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        input_file = self.settings['input_file']
-        case_file_name = path.join(self.working_directory, input_file)
-        with open(case_file_name, 'r') as case_file:
-            self.settings.update(json.load(case_file))
+        input_file = self.settings.get('input_file')
+        if input_file is not None:
+            case_file_name = join(self.working_directory, input_file)
+            with open(case_file_name, 'r') as case_file:
+                case_file_settings = json.load(case_file)
+            case_file_settings.update(self.settings)
+            with open(case_file_name, 'w') as case_file:
+                json.dump(case_file_settings, case_file, indent=2)
+            self.settings.update(case_file_settings)
 
         # settings
         l = self.settings['l']  # length
@@ -76,7 +81,7 @@ class SolverWrapperTubeRingmodel(Component):
         self.run_time = 0.0
 
         # debug
-        self.debug = False  # set on True to save input and output of each iteration of every time step
+        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize

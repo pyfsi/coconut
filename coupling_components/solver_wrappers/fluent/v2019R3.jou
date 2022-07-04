@@ -81,7 +81,7 @@ define user-defined execute-on-demand "get_thread_ids::v2019R3"
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
-                user-defined \"move_nodes::v2019R3\" n n 2 constant 0 n n n" (list-ref face_threads k)))
+                user-defined \"move_nodes::v2019R3\"" (list-ref face_threads k)))
         )
         (if unsteady
             (begin

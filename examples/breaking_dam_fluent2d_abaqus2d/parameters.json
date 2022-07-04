@@ -102,7 +102,7 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 500,
-          "save_iterations": 1
+          "save_results": 1
         }
       },
       {
@@ -161,7 +161,7 @@
               ],
               "mp_mode": "THREADS",
               "input_file": "case_breaking_dam.inp",
-              "save_interval": 1
+              "save_results": 1
             }
           },
           "mapper_interface_input": {

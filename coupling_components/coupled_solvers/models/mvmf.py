@@ -56,8 +56,13 @@ class ModelMVMF(Component):
             self.v = np.delete(self.v, -1, 1)
             self.w = np.delete(self.w, -1, 1)
 
-    def predict(self, dr_in):
+    def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
+        if modes == 0:
+            tools.print_info("Jacobian of model MVMF disabled: zero returned", layout='warning')
+            return dr_in * 0
+        elif modes is not None:
+            tools.print_info(f'Mode limiting not possible for MVMF model', layout='warning')
         if self.v.shape[1] + len(self.wprev) == 0:
             raise RuntimeError('No information to predict')
         # approximation for the inverse of the Jacobian from a multiple vector model
@@ -104,7 +109,7 @@ class ModelMVMF(Component):
         self.xtref = xt
 
     def is_ready(self):
-        return self.v.shape[1] + len(self.wprev)
+        return bool(self.v.shape[1] + len(self.wprev))
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -128,12 +133,17 @@ class ModelMVMF(Component):
             self.rrprev.pop()
             self.qqprev.pop()
 
-    def filter_q(self, dr_in):
+    def filter_q(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
         dr_out = dr_in.copy()
-        qq, _ = np.linalg.qr(self.v, mode='reduced')
-        dr = dr - qq @ (qq.T @ dr)
-        for qq in self.qqprev:
+        if modes == 0:
+            pass  # return copy of dr_in
+        elif modes is None:
+            qq, _ = np.linalg.qr(self.v, mode='reduced')
             dr = dr - qq @ (qq.T @ dr)
+            for qq in self.qqprev:
+                dr = dr - qq @ (qq.T @ dr)
+        else:
+            tools.print_info(f'Mode limiting not possible for MVMF model', layout='warning')
         dr_out.set_interface_data(dr.flatten())
         return dr_out

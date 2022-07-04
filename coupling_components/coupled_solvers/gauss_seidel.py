@@ -24,6 +24,7 @@ class CoupledSolverGaussSeidel(Component):
 
         # read parameters
         self.case_name = self.settings.get('case_name', 'case')  # case name
+        self.settings['case_name'] = self.case_name  # make sure a case name is present
         self.timestep_start_global = self.settings['timestep_start']  # time step for global calculation (restart)
         self.timestep_start_current = self.settings['timestep_start']  # time step start for this calculation (restart)
         self.restart = self.timestep_start_current != 0  # true if restart
@@ -40,7 +41,7 @@ class CoupledSolverGaussSeidel(Component):
         self.index_other = None
         for index in range(2):
             parameters = self.parameters['solver_wrappers'][index]
-            # add timestep_start and delta_t to solver_wrapper settings
+            # add timestep_start, delta_t and save_restart to solver_wrapper settings
             tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t',
                                                                              'save_restart','number_of_timesteps'])
             self.solver_wrappers.append(create_instance(parameters))
@@ -76,7 +77,7 @@ class CoupledSolverGaussSeidel(Component):
             self.residual = []
             self.info = None
 
-        self.debug = True  # save results each iteration including residual interfaces
+        self.debug = self.settings.get('debug', False)  # save results each iteration including residual interfaces
         if self.debug:
             self.complete_solution_r = None
 
@@ -100,8 +101,9 @@ class CoupledSolverGaussSeidel(Component):
         self.start_run_time = time.time()  # start of calculation
         self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
-        title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
-        tools.print_info(title)
+        if self.solver_level == 0:
+            title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
+            tools.print_info(title)
 
         # restart
         if self.restart:
@@ -151,7 +153,7 @@ class CoupledSolverGaussSeidel(Component):
         # first coupling iteration
         y = self.solver_wrappers[0].solve_solution_step(self.x.copy())
         self.y = y.copy()
-        xt = self.solver_wrappers[1].solve_solucomplete_solution_xtion_step(y)
+        xt = self.solver_wrappers[1].solve_solution_step(y)
         r = xt - self.x
         self.finalize_iteration(r)
         # coupling iteration loop
@@ -194,7 +196,7 @@ class CoupledSolverGaussSeidel(Component):
             self.add_restart_data(output)
             with open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb') as file:
                 pickle.dump(output, file)
-            if self.save_restart < 0:
+            if self.save_restart < 0 and self.time_step + self.save_restart > self.timestep_start_current:
                 try:
                     os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
                 except OSError:
@@ -236,10 +238,10 @@ class CoupledSolverGaussSeidel(Component):
             out = '╔' + 79 * '═' + '\n║\tSummary\n╠' + 79 * '═'
             tools.print_info(out)
 
-        self.print_summary()
-
         for component in self.components:
             component.finalize()
+
+        self.print_summary()
 
     def load_restart_data(self):
         restart_file_name = self.restart_case + f'_restart_ts{self.timestep_start_current}.pickle'
@@ -252,13 +254,13 @@ class CoupledSolverGaussSeidel(Component):
             for key in ('predictor', 'type'):
                 if self.parameters[key] != restart_data['parameters'][key]:
                     raise ValueError(f'Restart not possible because {key} changed in coupled solver')
-            self.add_restart_check(restart_data)
+            self.check_restart_data(restart_data)
             if self.delta_t != restart_data['delta_t']:
                 raise ValueError(f"Time step size has changed upon restart:\n\told: {restart_data['delta_t']}s"
                                  f"\n\tnew: {self.delta_t}s")
         return restart_data
 
-    def add_restart_check(self, restart_data):
+    def check_restart_data(self, restart_data):
         pass
 
     def add_restart_data(self, restart_data):
@@ -273,8 +275,8 @@ class CoupledSolverGaussSeidel(Component):
             tools.print_info(f'Not able to append results to {results_file_name} because file not found\n'
                              f' Saving results to new file: {results_file_name}', layout='warning')
             return
-        if self.debug != 'solution_r' in results_data.keys():
-            raise ValueError('Value of debug attribute in CoupledSolverGaussSeidel can not be changed upon restart')
+        if self.debug != ('solution_r' in results_data.keys()):
+            raise ValueError(f'Value of debug attribute in {self.__class__.__name__} can not be changed upon restart')
         self.timestep_start_global = results_data['timestep_start']
         self.complete_solution_x = results_data['solution_x'][:, :self.timestep_start_current
                                                               - self.timestep_start_global + 1]

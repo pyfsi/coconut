@@ -38,7 +38,7 @@ def get_string(input_string, keyword):
 def get_dict(input_string, keyword):
     result = re.search(keyword + delimter + r'\{.*?\}', input_string, flags=re.S)
     if result is None:
-        RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
     else:
         return result.group()
 
@@ -87,7 +87,7 @@ def get_vector_array_from_dict(dict_string, size=None, is_int=False):
 def update_vector_array_dict(dict_string, vector_array):
     keyword = 'value'
     result_non_uniform = re.search(
-        keyword + delimter + 'nonuniform List<vector>' + delimter + r'(\d*' + delimter + r'\(.*\))', dict_string, re.S)
+        keyword + delimter + 'nonuniform List<vector>' + delimter + r'(\d*' + r'\(.*\))', dict_string, re.S)
     result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'(\(.*\))', dict_string)
     size = vector_array.shape[0]
     replace_string = '\n' + str(size) + '\n' + np.array2string(vector_array, separator=' ', threshold=1e15,

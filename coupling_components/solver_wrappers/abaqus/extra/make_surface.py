@@ -56,7 +56,7 @@ def GetDimension(element):
     elif elementTypeText.find('C3D20') > -1:
         dimension = 3
     else:
-        raise Exception('Unknown element type ', elementType)
+        raise Exception('Unknown element type ', elementTypeText)
     return dimension
 
 
@@ -75,5 +75,5 @@ def GetNodesPerFace(element):
     elif elementTypeText.find('C3D20') > -1:
         nodesPerFace = 8
     else:
-        raise Exception('Unknown element type ', elementType)
+        raise Exception('Unknown element type ', elementTypeText)
     return nodesPerFace

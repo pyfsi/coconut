@@ -87,6 +87,9 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.case_name = self.settings.get('case_name', 'case')  # case name
             self.case_name += '_' + cur_wd
 
+        if self.settings.get('debug', False):
+            tools.print_info(f'{self.__class__.__name__} has no debug mode: '
+                             f'debug setting set to False', layout='warning')
         self.debug = False
 
     def initialize(self):

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    pimpleDyMFoam.C
+    coconut_pimpleFoam
 
 Description
     Transient solver for incompressible, turbulent flow of Newtonian fluids
@@ -39,28 +39,17 @@ Description
 #include "pimpleControl.H"
 #include "CorrectPhi.H"
 #include "fvOptions.H"
-#include "fixedValuePointPatchField.H"
-#include "IOstream.H"
-#include "Ostream.H"
-#include "forces.H"
-#include "fsiDisplacement.H"
 #include "Time.H"
+#include "fsiDisplacement.H"
+#include "waitForSync.H"
 
-#include <stdlib.h>
-#include <assert.h>
-#include <set>
-#include <string>
-#include <map>
-#include <sstream>
 #include <unistd.h>
-#include <fstream>
-#include <iostream>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
-	#include "postProcess.H"
+    #include "postProcess.H"
 
     #include "setRootCase.H"
     #include "createTime.H"
@@ -70,58 +59,52 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "createUf.H"
     #include "createFvOptions.H"
-	#include "CourantNo.H"
-	#include "setInitialDeltaT.H"
-	
-    
-	turbulence->validate();
+    #include "CourantNo.H"
+    #include "setInitialDeltaT.H"
+
+    turbulence->validate();
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
-	runTime.run();
-    word prev_runTime;
 
     unsigned int iteration;
     iteration = 0;
 
-    IOdictionary controlDict(IOobject("controlDict", runTime.system(),mesh,IOobject::MUST_READ,IOobject ::NO_WRITE));
+    IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
-        
+
     while (true) // NOT runTime.run()
     {
-        usleep(1000); // Expressed in microseconds 
+        usleep(1000); // Expressed in microseconds
 
+        if (exists("next.coco"))
+        {
+            waitForSync("next"); // Keep the sync at the beginning of the block
 
-    	if (exists("next.coco"))
-		{
-    		
-			#include "readControls.H"
-			#include "CourantNo.H"
-			#include "setDeltaT.H"
+            #include "readControls.H"
+            #include "CourantNo.H"
+            #include "setDeltaT.H"
 
-    		prev_runTime = runTime.timeName();
-            // For adjustable time steps insert a while (controlDict.deltaT > runTime.deltaTValue()):  pimple loop
-    		runTime++;
-    		remove("next.coco");
-    		OFstream outfile ("next_ready.coco");
-    		outfile << "next.coco" << endl;
-			Info << "Time = " << runTime.timeName() << nl << endl; // Might be deleted when linked to CoCoNuT (which already outputs current time step)
-			iteration = 0;
-		}
-    	
-    	if (exists("continue.coco"))
-		{
-		    iteration++;
-		    Info << "Coupling iteration = " << iteration << nl << endl;
-    		//mesh.movePoints(mesh.oldPoints());
-    		// Define movement of the coupling interface
-    	    forAll(boundary_names, s)
-    	    {
-    	            word boundary_name = boundary_names[s];
-    	            ApplyFSIPointDisplacement(mesh, boundary_name, prev_runTime);
-    	    }
-    	   
-    		// Calculate the mesh motion and update the mesh
+            runTime++;
+            iteration = 0;
+
+            Info << "Time = " << runTime.timeName() << nl << endl;
+        }
+
+        if (exists("continue.coco"))
+        {
+            waitForSync("continue");
+
+            iteration++;
+            Info << "Coupling iteration = " << iteration << nl << endl;
+
+            // Define movement of the coupling interface
+            forAll(boundary_names, s)
+            {
+                word boundary_name = boundary_names[s];
+                ApplyFSIPointDisplacement(mesh, boundary_name);
+            }
+
+            // Calculate the mesh motion and update the mesh
             mesh.update();
 
             // Calculate absolute flux from the mapped surface velocity
@@ -150,45 +133,43 @@ int main(int argc, char *argv[])
                 {
                     #include "pEqn.H"
                 }
-                
+
                 if (pimple.turbCorr())
                 {
                     laminarTransport.correct();
                     turbulence->correct();
                 }
             }
-            remove("continue.coco");
-            // Return the coupling interface output
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
                 << nl << endl;
 
+            // Return the coupling interface output
             runTime.run();
+
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
-            OFstream outfile ("continue_ready.coco");
+        }
 
-		}
+        if (exists("save.coco"))
+        {
+            waitForSync("save");
 
-    	if (exists("save.coco"))
-		{
+            runTime.write(); // OF-command: loops over all objects and requests writing
+            // writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
+        }
 
-    		runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
-    		remove("save.coco");
-    		OFstream outfile ("save_ready.coco");
-		}
-
-		if (exists("stop.coco"))
-		{
-		    //remove("stop.coco"); // should not be uncommented
-            runTime.stopAt(Time::saNoWriteNow);
-            OFstream outfile ("stop_ready.coco");
+        if (exists("stop.coco"))
+        {
+            waitForSync("stop");
             break;
-		}
-
+        }
     }
+
+    Info<< "End\n" << endl;
 
     return 0;
 }
+
 
 // ************************************************************************* //

@@ -43,7 +43,7 @@ Class that maps on the level of `Interface` objects.
 It takes two `Interfaces`, and maps the `ModelParts` to each other in the order in which the `Interfaces` are defined in the JSON file.
 The same type of `ModelPart` mapper is used for each pair of `ModelParts`: this can either be an interpolator or a combined mapper. To use a different `ModelPart` mapper for the different `ModelParts` in the `Interface`, or even for different variables, a new `Interface` mapper would have to be written. 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 `type`|str|`ModelPart` mapper to be used.
 <nobr>`settings`</nobr>|dict|All the settings for the `ModelPart` mapper specified in `type`.
@@ -53,7 +53,7 @@ JSON setting|type|description
 
 Superclass for all [interpolators](mappers.md#interpolators). 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 `directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
 `scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
@@ -81,7 +81,7 @@ The `initialization` of transformers is very different from that of interpolator
 
 ### `MapperCombined`
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`mappers`</nobr>|list|An ordered list of all the `ModelPart` mappers to be used.
 
@@ -129,7 +129,7 @@ When the `__call__` method  of the combined mapper is used, the following happen
 Permutates the coordinates and the vector variables according to the given `permutation`. 
 This transformer can be initialized in both directions. 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`permutation`</nobr>|list|A permutation of the list [0, 1, 2].
 
@@ -147,7 +147,7 @@ Scalar data is simply copied from the 2D point to all corresponding 3D points. F
 Points that lie on the symmetry axis can not be handled by the current transformer.
 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 `direction_axial`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
 <nobr>`direction_radial`</nobr>|str|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
@@ -173,7 +173,7 @@ The 3D `ModelPart` is returned by the initialization. The depth direction in whi
 Scalar data is simply copied from the 2D point to all corresponding 3D points. For vector data, all components other than the depth component are simply copied. The depth component is set to zero.
 
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`coordinates_depth`</nobr>|list|Contains the depth coordinates to which the nodes of the orignal 2D plane are copied.
 `direction_depth`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
@@ -201,7 +201,7 @@ Does not require additional settings compared to the `MapperInterpolator`. Does 
 
 Additional settings:
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
 
@@ -218,7 +218,7 @@ The kind of linear mapping depends on the number of coordinate directions, as gi
 
 Additional settings:
 
-JSON setting|type|description
+parameter|type|description
 ------:|:----:|-----------
 <nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
 <nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.
