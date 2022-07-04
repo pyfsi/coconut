@@ -511,6 +511,9 @@ class SolverWrapperOpenFOAM(Component):
         self.send_message('continue')
         self.wait_message('continue_ready')
 
+        # read data from OpenFOAM
+        self.read_node_output()
+
         # copy output data for debugging
         if True: #self.debug:
             for boundary in self.boundary_names:
@@ -528,9 +531,6 @@ class SolverWrapperOpenFOAM(Component):
                                                   self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
                 shutil.copy(wss_filepath, wss_iter_filepath)
                 shutil.copy(pres_filepath, pres_iter_filepath)
-
-        # read data from OpenFOAM
-        self.read_node_output()
 
         # return interface_output object
         return self.interface_output
