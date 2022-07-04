@@ -12,11 +12,11 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
 
     def __init__(self, model, project_parameters):
         self.interfaces = [elem.GetString() for elem in project_parameters["interface_sub_model_parts_list"]]
-        super(StructuralMechanicsAnalysis, self).__init__(model, project_parameters)
+        super(StructuralMechanicsWrapper, self).__init__(model, project_parameters)
         self.coupling_iteration = None
 
     def Initialize(self):
-        super(StructuralMechanicsAnalysis, self).Initialize()
+        super(StructuralMechanicsWrapper, self).Initialize()
 
         for sub_mp_name in self.interfaces:
             file_name_nodes = f'{sub_mp_name}_nodes.csv'
@@ -29,7 +29,7 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
 
     def InitializeSolutionStep(self):
         self.time = self._GetSolver().AdvanceInTime(self.time)
-        super(StructuralMechanicsAnalysis, self).InitializeSolutionStep()
+        super(StructuralMechanicsWrapper, self).InitializeSolutionStep()
         self._GetSolver().Predict()
         self.coupling_iteration = 0
 
@@ -42,7 +42,6 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
         self.OutputData()
 
     def OutputData(self):
-
         for sub_model_part_name in self.interfaces:
             full_sub_model_part_name = "Structure." + sub_model_part_name
             if self.model["Structure"].HasSubModelPart(sub_model_part_name):

@@ -1,8 +1,8 @@
 from coconut.coupling_components.solver_wrappers.kratos_structure.base_solver_wrapper import BaseSolverWrapperKratosStructure
 from coconut import tools
 
-import os
 import json
+import os
 import numpy as np
 import re
 

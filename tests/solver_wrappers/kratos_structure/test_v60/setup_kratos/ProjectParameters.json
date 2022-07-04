@@ -85,34 +85,7 @@
       }
     }
   ],
-  "loads_process_list": [
-    {
-      "python_module": "assign_scalar_variable_process",
-      "kratos_module": "KratosMultiphysics",
-      "process_name": "AssignScalarVariableProcess",
-      "Parameters": {
-        "mesh_id": 0,
-        "model_part_name": "SurfaceLoad3D_tube",
-        "variable_name": "POSITIVE_FACE_PRESSURE",
-        "value": 0.0
-      }
-    },
-    {
-      "python_module": "assign_vector_variable_process",
-      "kratos_module": "KratosMultiphysics",
-      "process_name": "AssignVectorVariableProcess",
-      "Parameters": {
-        "mesh_id": 0,
-        "model_part_name": "SurfaceLoad3D_tube",
-        "variable_name": "SURFACE_LOAD",
-        "value": [
-          0.0,
-          0.0,
-          0.0
-        ]
-      }
-    }
-  ],
+  "loads_process_list": [],
   "output_configuration": {
     "result_file_configuration": {
       "gidpost_flags": {

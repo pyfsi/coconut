@@ -1,7 +1,7 @@
 # KratosStructure
 
 KratosMultiphysics is an open source framework for finite element simulations. More information on Kratos and the source code can be found on the [Kratos Github page](https://github.com/KratosMultiphysics). 
-The `StructuralMechanicsApplication` in Kratos has been implemented in CoCoNuT and the basics of the solver wrapper and the setup of a case are explained below.
+The solver wrapper of `StructuralMechanicsApplication` from Kratos has been implemented in CoCoNuT. This a documentation of this solver wrapper. 
 
 ## Parameters
 
@@ -15,12 +15,11 @@ parameter|type|description
 `interface_input`|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_input`.
 `interface_output`|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
 `kratos_interface_sub_model_parts_list`|str| Names of sub-model parts used for input and output in Kratos.
-`solver_load_cmd`|str| Bash commands for loading required modules and environmental variables to run Kratos.
 `timestep_start`|int (optional)|Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.  
 <nobr>`working_directory`</nobr>|str|Path to the working directory (i.e. where the `input_file` for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).
 
 
-`timestep_start` and `delta_t` are usually defined already in the parameters of the `coupled_solver`. However, they can also be given directly as a parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.
+`timestep_start` and `delta_t` are usually defined in the parameters of the `coupled_solver`. However, they can also be given directly as a parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.
 
 If different parameters are used with different Kratos versions, this should be specified both in this section and in the version specific documentation section.
 
@@ -63,14 +62,23 @@ Following items are taken care of by CoCoNuT, and must therefore will be automat
 -   the time step (`delta_t`),
 -   initialization of the solution field.
 
+###Tip
+````
+ When starting a simulation from t=0, always clean the directory or delete the case folder and copy the required files 
+ from a "set up" folder. 
+````
 
 ## Version specific documentation
 
 ### v60 (6.0)
 
-First version.
+First version. 
+
+Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other available `elements` in Kratos.
 
 ### v70 (7.0)
 
 The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/7.0) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
+
+Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other available `elements` in Kratos.
 
