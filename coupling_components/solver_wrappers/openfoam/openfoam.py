@@ -465,12 +465,12 @@ class SolverWrapperOpenFOAM(Component):
                                                          self.cur_timestamp)
                 if os.path.isdir(new_path):
                     tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                    check_call(f'rm -rf {new_path}', shell=True)
+                    subprocess.check_call(f'rm -rf {new_path}', shell=True)
                 if os.path.isdir(new_path_boundaryData):
                     tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
-                    check_call(f'rm -rf {new_path_boundaryData}', shell=True)
-                check_call(f'mkdir -p {new_path}', shell=True)
-                check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+                    subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+                subprocess.check_call(f'mkdir -p {new_path}', shell=True)
+                subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
