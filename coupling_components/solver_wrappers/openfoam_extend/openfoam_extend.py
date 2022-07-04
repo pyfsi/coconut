@@ -145,11 +145,10 @@ class SolverWrapperOpenFOAMExtend(Component):
             mp = self.model.get_model_part(mp_name)
             x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
-
-            x0_ma_arr = np.less_equal(x0,self.die_max)
-            x0 = x0[x0_ma_arr,]
-            y0 = y0[x0_ma_arr,]
-
+            #To obtain a better distribution of the pressure, when the wire leavesthe die
+            # x0_ma_arr = np.less_equal(x0,self.die_max)
+            # x0 = x0[x0_ma_arr,]
+            # y0 = y0[x0_ma_arr,]
 
             x = np.zeros( 2 * x0.size)
             y = np.zeros( 2 * x0.size)
