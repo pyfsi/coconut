@@ -74,11 +74,30 @@ Following items are taken care of by CoCoNuT, and must therefore will be automat
 
 First version. 
 
-Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other available `elements` in Kratos.
+Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other `elements` in Kratos.
 
 ### v70 (7.0)
 
-The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/7.0) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
+The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/releases/tag/7.0) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
 
-Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other available `elements` in Kratos.
+Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
 
+
+### v91 (9.1)
+
+The *`ProjectParameters.json`* required by Kratos is slightly different in the version 9.1. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/v9.1) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v91/setup_kratos`* as a reference.
+
+Based on testing, restart works with the `MembraneElement`, `ShellThickElement` and `ShellThickElementCorotational`. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
+
+#### Kratos installation
+
+This version supports installation using `pip`. To install only StructuralMechanicsApplication of Kratos, use the following command:
+````
+pip install KratosMultiphysics KratosStructuralMechanicsApplication KratosLinearSolversApplication
+````
+Note: The linear solvers in `KratosLinearSolversApplication` is sometimes used by the `StructuralMechanicsApplication`, therefore it is installed along with it.
+
+To install all the available applications in Kratos, use the following command:
+````
+pip install KratosMultiphysics-all
+````

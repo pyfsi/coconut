@@ -31,6 +31,7 @@ solver_load_cmd_dict = {
         'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=$HOME/Software/KratosHydrostatic:'
                                 '$PYTHONPATH && export LD_LIBRARY_PATH=$HOME/Software/KratosHydrostatic/libs:'
                                 '$LD_LIBRARY_PATH',
+        'kratos_structure.v91': 'export PYTHONPATH=$HOME/Software/python_packages/kratos_v91:$PYTHONPATH',
         'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },

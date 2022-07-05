@@ -80,9 +80,9 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         np.testing.assert_allclose(a1, a3, rtol=0, atol=1e-10)
         self.assertRaises(AssertionError, np.testing.assert_allclose, a1, a2, rtol=0, atol=1e-10)
 
-    # restart only works for memmabrane elements among planar elements (for kratos 6.0)
+    # restart only works for membrane elements among planar elements (v60, v70)
     def test_restart(self):
-        self.parameters['settings']['save_restart'] = -2
+        self.parameters['settings']['save_restart'] = 2
         solver = create_instance(self.parameters)
         self.mp_out = solver.model.get_model_part(self.mp_out_name)
         load_interface = solver.get_interface_input()

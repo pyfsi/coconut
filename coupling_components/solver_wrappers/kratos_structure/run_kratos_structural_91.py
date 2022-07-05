@@ -1,6 +1,6 @@
 import KratosMultiphysics as KM
 from KratosMultiphysics import StructuralMechanicsApplication as SM
-from structural_mechanics_analysis import StructuralMechanicsAnalysis
+from KratosMultiphysics.StructuralMechanicsApplication.structural_mechanics_analysis import StructuralMechanicsAnalysis
 
 import os
 import time
@@ -8,16 +8,15 @@ import pandas as pd
 import numpy as np
 
 
-class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
+class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
 
     def __init__(self, model, project_parameters):
-        self.interfaces = [project_parameters["interface_sub_model_parts_list"][i].GetString() for i in
-                           range(project_parameters["interface_sub_model_parts_list"].size())]
-        super(StructuralMechanicsWrapper60, self).__init__(model, project_parameters)
+        self.interfaces = [elem.GetString() for elem in project_parameters["interface_sub_model_parts_list"]]
+        super(StructuralMechanicsWrapper91, self).__init__(model, project_parameters)
         self.coupling_iteration = None
 
     def Initialize(self):
-        super(StructuralMechanicsWrapper60, self).Initialize()
+        super(StructuralMechanicsWrapper91, self).Initialize()
 
         for sub_mp_name in self.interfaces:
             file_name_nodes = f'{sub_mp_name}_nodes.csv'
@@ -29,16 +28,16 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
             node_coords_df.to_csv(file_name_nodes, index=False)
 
     def InitializeSolutionStep(self):
-        self.time = self.solver.AdvanceInTime(self.time)
-        super(StructuralMechanicsWrapper60, self).InitializeSolutionStep()
-        self.solver.Predict()
+        self.time = self._GetSolver().AdvanceInTime(self.time)
+        super(StructuralMechanicsWrapper91, self).InitializeSolutionStep()
+        self._GetSolver().Predict()
         self.coupling_iteration = 0
 
     def SolveSolutionStep(self):
         self.coupling_iteration += 1
         KM.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
         self.InputData()
-        self.solver.SolveSolutionStep()
+        self._GetSolver().SolveSolutionStep()
         KM.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
@@ -69,8 +68,7 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
                     node_ids = pressure_data.node_id
                     pressure = pressure_data.pressure
                     for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.POSITIVE_FACE_PRESSURE,
-                                                                             0,
+                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.POSITIVE_FACE_PRESSURE, 0,
                                                                              -1 * pressure[i])
 
                 file_name_sl = f'{sub_model_part_name}_surface_load.csv'
@@ -109,7 +107,7 @@ if __name__ == '__main__':
     with open(parameter_file_name, 'r') as parameter_file:
         kratos_parameters = KM.Parameters(parameter_file.read())
 
-    str_wrapper = StructuralMechanicsWrapper60(model, kratos_parameters)
+    str_wrapper = StructuralMechanicsWrapper91(model, kratos_parameters)
     str_wrapper.Initialize()
     open('start_ready.coco', 'w').close()
 

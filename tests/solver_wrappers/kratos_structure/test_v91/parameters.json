@@ -1,5 +1,5 @@
 {
-  "type": "solver_wrappers.kratos_structure.v60",
+  "type": "solver_wrappers.kratos_structure.v91",
   "settings": {
     "working_directory": "This is set from the test script",
     "cores": 1,
@@ -26,8 +26,6 @@
           "displacement"
         ]
       }
-    ],
-    "residual_variables": ["RESIDUAL", "DISPLACEMENT"]
+    ]
   }
 }
-

@@ -1,5 +1,5 @@
-import KratosMultiphysics
-import KratosMultiphysics.StructuralMechanicsApplication as SM
+import KratosMultiphysics as KM
+from KratosMultiphysics import StructuralMechanicsApplication as SM
 from KratosMultiphysics.StructuralMechanicsApplication.structural_mechanics_analysis import StructuralMechanicsAnalysis
 
 import os
@@ -8,15 +8,15 @@ import pandas as pd
 import numpy as np
 
 
-class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
+class StructuralMechanicsWrapper70(StructuralMechanicsAnalysis):
 
     def __init__(self, model, project_parameters):
         self.interfaces = [elem.GetString() for elem in project_parameters["interface_sub_model_parts_list"]]
-        super(StructuralMechanicsWrapper, self).__init__(model, project_parameters)
+        super(StructuralMechanicsWrapper70, self).__init__(model, project_parameters)
         self.coupling_iteration = None
 
     def Initialize(self):
-        super(StructuralMechanicsWrapper, self).Initialize()
+        super(StructuralMechanicsWrapper70, self).Initialize()
 
         for sub_mp_name in self.interfaces:
             file_name_nodes = f'{sub_mp_name}_nodes.csv'
@@ -29,16 +29,16 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
 
     def InitializeSolutionStep(self):
         self.time = self._GetSolver().AdvanceInTime(self.time)
-        super(StructuralMechanicsWrapper, self).InitializeSolutionStep()
+        super(StructuralMechanicsWrapper70, self).InitializeSolutionStep()
         self._GetSolver().Predict()
         self.coupling_iteration = 0
 
     def SolveSolutionStep(self):
         self.coupling_iteration += 1
-        KratosMultiphysics.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
+        KM.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
         self.InputData()
         self._GetSolver().SolveSolutionStep()
-        KratosMultiphysics.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
+        KM.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
     def OutputData(self):
@@ -49,7 +49,7 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
                 file_name = f'{sub_model_part_name}_displacement.csv'
                 node_ids = np.array([node.Id for node in sub_model_part.Nodes])
                 displacement = np.array(
-                    [list(node.GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT)) for node in sub_model_part.Nodes])
+                    [list(node.GetSolutionStepValue(KM.DISPLACEMENT)) for node in sub_model_part.Nodes])
                 disp_df = pd.DataFrame(
                     {'node_id': node_ids, 'displacement_x': displacement[:, 0], 'displacement_y': displacement[:, 1],
                      'displacement_z': displacement[:, 2]})
@@ -68,7 +68,7 @@ class StructuralMechanicsWrapper(StructuralMechanicsAnalysis):
                     node_ids = pressure_data.node_id
                     pressure = pressure_data.pressure
                     for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KratosMultiphysics.POSITIVE_FACE_PRESSURE, 0,
+                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.POSITIVE_FACE_PRESSURE, 0,
                                                                              -1 * pressure[i])
 
                 file_name_sl = f'{sub_model_part_name}_surface_load.csv'
@@ -103,11 +103,11 @@ if __name__ == '__main__':
 
     # Import data structure
     parameter_file_name = argv[1]
-    model = KratosMultiphysics.Model()
+    model = KM.Model()
     with open(parameter_file_name, 'r') as parameter_file:
-        kratos_parameters = KratosMultiphysics.Parameters(parameter_file.read())
+        kratos_parameters = KM.Parameters(parameter_file.read())
 
-    str_wrapper = StructuralMechanicsWrapper(model, kratos_parameters)
+    str_wrapper = StructuralMechanicsWrapper70(model, kratos_parameters)
     str_wrapper.Initialize()
     open('start_ready.coco', 'w').close()
 
