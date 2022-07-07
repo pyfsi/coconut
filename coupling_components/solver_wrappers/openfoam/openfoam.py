@@ -643,11 +643,13 @@ class SolverWrapperOpenFOAM(Component):
         """
 
         # default value is 1.0 for compressible case
-        # when the solver is incompressible, the pressure and shear stress are kinematic; therefore multiply with
-        # the fluid density
-        density = 1.0
-        if self.settings['is_incompressible']:
-            density = self.settings['density']
+        # when the solver is incompressible, pressure is kinematic -> multiply with fluid density
+        # when the transportModel is incompressible, wallShearStress is kinematic -> multiply with fluid density
+        density_for_pressure = density_for_traction = 1.0
+        if self.settings['kinematic_pressure']:
+            density_for_pressure = self.settings['density']
+        if self.settings['kinematic_traction']:
+            density_for_traction = self.settings['density']
 
         for boundary in self.boundary_names:
             # specify location of pressure and traction
@@ -678,8 +680,8 @@ class SolverWrapperOpenFOAM(Component):
             wall_shear_stress[pos_list,] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
-            self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * density)
+            self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density_for_traction)
+            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * density_for_pressure)
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
