@@ -9,6 +9,7 @@
       "delta_t": 0.0001,
       "omega": 0.01,
       "save_results": 1,
+      "save_restart": 0,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -107,6 +108,10 @@
                     "displacement"
                   ]
                 }
+              ],
+              "residual_variables": [
+                "RESIDUAL DISPLACEMENT",
+                "DISPLACEMENT"
               ]
             }
           },

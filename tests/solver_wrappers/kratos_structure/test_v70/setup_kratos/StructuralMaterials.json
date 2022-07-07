@@ -13,7 +13,11 @@
           "DENSITY": 1200,
           "POISSON_RATIO": 0.3,
           "THICKNESS": 0.001,
-          "PRESTRESS_VECTOR":  [0.0, 0.0, 0.0]
+          "PRESTRESS_VECTOR": [
+            0.0,
+            0.0,
+            0.0
+          ]
         },
         "Tables": {}
       }

@@ -11,13 +11,13 @@ import numpy as np
 class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
 
     def __init__(self, model, project_parameters):
-        self.interfaces = [project_parameters["interface_sub_model_parts_list"][i].GetString() for i in
-                           range(project_parameters["interface_sub_model_parts_list"].size())]
-        super(StructuralMechanicsWrapper60, self).__init__(model, project_parameters)
+        self.interfaces = [project_parameters['interface_sub_model_parts_list'][i].GetString() for i in
+                           range(project_parameters['interface_sub_model_parts_list'].size())]
+        super().__init__(model, project_parameters)
         self.coupling_iteration = None
 
     def Initialize(self):
-        super(StructuralMechanicsWrapper60, self).Initialize()
+        super().Initialize()
 
         for sub_mp_name in self.interfaces:
             file_name_nodes = f'{sub_mp_name}_nodes.csv'
@@ -30,7 +30,7 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
 
     def InitializeSolutionStep(self):
         self.time = self.solver.AdvanceInTime(self.time)
-        super(StructuralMechanicsWrapper60, self).InitializeSolutionStep()
+        super().InitializeSolutionStep()
         self.solver.Predict()
         self.coupling_iteration = 0
 
@@ -44,8 +44,8 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
 
     def OutputData(self):
         for sub_model_part_name in self.interfaces:
-            full_sub_model_part_name = "Structure." + sub_model_part_name
-            if self.model["Structure"].HasSubModelPart(sub_model_part_name):
+            full_sub_model_part_name = 'Structure.' + sub_model_part_name
+            if self.model['Structure'].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
                 file_name = f'{sub_model_part_name}_displacement.csv'
                 node_ids = np.array([node.Id for node in sub_model_part.Nodes])
@@ -56,12 +56,12 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
                      'displacement_z': displacement[:, 2]})
                 disp_df.to_csv(file_name, index=False)
             else:
-                raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
+                raise Exception(f'{sub_model_part_name} not present in the Kratos model.')
 
     def InputData(self):
         for sub_model_part_name in self.interfaces:
-            full_sub_model_part_name = "Structure." + sub_model_part_name
-            if self.model["Structure"].HasSubModelPart(sub_model_part_name):
+            full_sub_model_part_name = 'Structure.' + sub_model_part_name
+            if self.model['Structure'].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
                 file_name_pr = f'{sub_model_part_name}_pressure.csv'
                 if os.path.isfile(file_name_pr):
@@ -69,8 +69,7 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
                     node_ids = pressure_data.node_id
                     pressure = pressure_data.pressure
                     for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.POSITIVE_FACE_PRESSURE,
-                                                                             0,
+                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.POSITIVE_FACE_PRESSURE, 0,
                                                                              -1 * pressure[i])
 
                 file_name_sl = f'{sub_model_part_name}_surface_load.csv'
@@ -86,10 +85,10 @@ class StructuralMechanicsWrapper60(StructuralMechanicsAnalysis):
                                                                               surface_load_z[i]])
 
             else:
-                raise Exception(f"{sub_model_part_name} not present in the Kratos model.")
+                raise Exception(f'{sub_model_part_name} not present in the Kratos model.')
 
     def GetSubModelPart(self, sub_model_part_name):
-        full_sub_model_part_name = "Structure." + sub_model_part_name
+        full_sub_model_part_name = 'Structure.' + sub_model_part_name
         return self.model[full_sub_model_part_name]
 
 

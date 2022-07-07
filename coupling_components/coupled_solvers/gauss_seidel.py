@@ -28,7 +28,7 @@ class CoupledSolverGaussSeidel(Component):
         self.timestep_start_global = self.settings['timestep_start']  # time step for global calculation (restart)
         self.timestep_start_current = self.settings['timestep_start']  # time step start for this calculation (restart)
         self.restart = self.timestep_start_current != 0  # true if restart
-        self.save_restart = self.settings.get('save_restart', 0)  # time step interval to save restart data
+        self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         self.settings['save_restart'] = self.save_restart  # in order to pass on default value
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
         self.time_step = self.timestep_start_current  # time step

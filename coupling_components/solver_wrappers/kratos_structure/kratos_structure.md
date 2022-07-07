@@ -10,12 +10,13 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 parameter|type|description
 ---:|:---:|---
 `cores`|int|Number of processor cores to use when running Kratos (works with 1 core, multi-processing is work in progress).
-`delta_t`|double (optional)|Fixed time step size in structural solver.
+`delta_t`|double|(optional) Fixed time step size in structural solver.
 `input_file`|str| Project parameters file used by Kratos in JSON format. In the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md), this is typically called *`ProjectParameters.json`*.
 `interface_input`|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_input`.
 `interface_output`|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
 `kratos_interface_sub_model_parts_list`|str| Names of sub-model parts used for input and output in Kratos.
-`timestep_start`|int (optional)|Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.  
+`residual_variables`|list|(optional) A list containing variables as reported in the log file (e.g. DISPLACEMENT, RESIDUAL or RESIDUAL DISPLACEMENT) whose residuals you need to output. If provided, this will output the last residual for each FSI-coupling iteration in *`<case_directory>/residuals.csv`*. For different element types, the names might be different and/or changes might be required to parse the log file. For the correct names see the Kratos log file.
+`timestep_start`|int|(optional) Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.  
 <nobr>`working_directory`</nobr>|str|Path to the working directory (i.e. where the `input_file` for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).
 
 
@@ -44,7 +45,7 @@ Finally, the interfaces are created.
 -   The interface sub-model parts nodes are saved as *`<sub_model_part_name>_nodes.csv`*.
 -   The displacement from Kratos is written in a file named *`<sub_model_part_name>_displacement.csv`*.
 -   Pressure and tractions are passed from python to Kratos with files of the form *`<sub_model_part_name>_pressure.csv`* and *`<sub_model_part_name>_surface_load.csv`*, respectively.
--   Files with extension *`.coco`* are used to pass messages between Python and Kratos. 
+-   Files with extension *`.coco`* are used to pass messages between Python and Kratos.
 
 
 
@@ -52,40 +53,59 @@ Finally, the interfaces are created.
 
 Following items should be set up and saved in the `working_directory` (this list may be non-exhaustive):
 
--   *`ProjectParameters.json`* with all the required parameters (see the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md)),
--   Mesh file with extension *`.mdpa`*,
--   *`StructuralMaterials.json`* with the material properties.
+-   *`ProjectParameters.json`* with all the required parameters (see the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md))
+-   Mesh file with extension *`.mdpa`*
+-   *`StructuralMaterials.json`* with the material properties
 
 Following items are taken care of by CoCoNuT, and must therefore will be automatically changed at the begining of the simulation:
 
--   the start time (`timestep_start`),
--   the time step (`delta_t`),
--   initialization of the solution field.
+-   The start time (`timestep_start`)
+-   The time step (`delta_t`)
+-   Initialization of the solution field
 
-###Tip
+### Tip
 ````
- When starting a simulation from t=0, always clean the directory or delete the case folder and copy the required files 
- from a "set up" folder. 
+ When starting a simulation from time=0 after having restarted in the same folder, clean the directory or delete the case folder and copy the required files 
+ from a "set up" folder.
 ````
+The reason for this is that the `ProjectParameters.json` file is modified when performing restart in such a way that it can no longer be used to start from time=0.
+
+## Post-processing
+
+Kratos `StructuralMechanicsApplication` v70 and v91 allow for saving VTK files. The number of files saved is set in `ProjectParameters.json` and is not modified by CoCoNuT.
+Note that the zeroth instance corresponds to the first time step.
 
 ## Version specific documentation
 
 ### v60 (6.0)
 
-First version. 
+First version.
+
+Negative numbers for `save_restart` are not supported in Kratos 6.0, therefore the absolute value is used.
 
 Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other `elements` in Kratos.
 
+The error is expressed, by the calculation which remains frozen after the first time step, when attempting to store restart files.
+
 ### v70 (7.0)
 
-The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/releases/tag/7.0) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
+The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/releases/tag/7.0) for the changes.
+Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
+
+Negative numbers for `save_restart` are not supported in Kratos 7.0, therefore the absolute value is used.
 
 Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
 
+The error is expressed, by the calculation which remains frozen after the first time step, when attempting to store restart files.
 
 ### v91 (9.1)
 
-The *`ProjectParameters.json`* required by Kratos is slightly different in the version 9.1. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/v9.1) for the changes. Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v91/setup_kratos`* as a reference.
+The *`ProjectParameters.json`* required by Kratos is slightly different in the version 9.1. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/v9.1) for the changes.
+Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v91/setup_kratos`* as a reference.
+The most important changes with respect to version 7.0 include:
+
+- The adaptation of model part names to include parents, e.g. from `Parts_tube` to `Structure.Parts_tube`
+- The removal of the keys `problem_domain_sub_model_part_list` and `processes_sub_model_part_list` in `solver_settings`
 
 Based on testing, restart works with the `MembraneElement`, `ShellThickElement` and `ShellThickElementCorotational`. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
 
@@ -95,7 +115,7 @@ This version supports installation using `pip`. To install only StructuralMechan
 ````
 pip install KratosMultiphysics KratosStructuralMechanicsApplication KratosLinearSolversApplication
 ````
-Note: The linear solvers in `KratosLinearSolversApplication` is sometimes used by the `StructuralMechanicsApplication`, therefore it is installed along with it.
+Note, the linear solvers in `KratosLinearSolversApplication` is sometimes used by the `StructuralMechanicsApplication`, therefore it is installed along with it.
 
 To install all the available applications in Kratos, use the following command:
 ````

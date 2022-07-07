@@ -10,6 +10,7 @@ from subprocess import Popen
 import pandas as pd
 import numpy as np
 
+
 def create(parameters):
     return BaseSolverWrapperKratosStructure(parameters)
 
@@ -56,7 +57,7 @@ class BaseSolverWrapperKratosStructure(Component):
             self.model.create_model_part(f'{mp_name}_input', x0, y0, z0, node_ids)
             self.model.create_model_part(f'{mp_name}_output', x0, y0, z0, node_ids)
 
-        # # Interfaces
+        # interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
@@ -123,7 +124,9 @@ class BaseSolverWrapperKratosStructure(Component):
             surface_load_array = self.interface_input.get_variable_data(input_mp_name, 'traction')
             node_ids = np.array([input_mp.id[i] for i in range(input_mp.size)])
             pressure_df = pd.DataFrame({'node_id': node_ids, 'pressure': pressure_array[:, 0]})
-            surface_load_df = pd.DataFrame({'node_id': node_ids, 'surface_load_x': surface_load_array[:,0], 'surface_load_y': surface_load_array[:,1], 'surface_load_z': surface_load_array[:,2] })
+            surface_load_df = pd.DataFrame({'node_id': node_ids, 'surface_load_x': surface_load_array[:, 0],
+                                            'surface_load_y': surface_load_array[:, 1],
+                                            'surface_load_z': surface_load_array[:, 2]})
             pressure_df.to_csv(file_path_pr, index=False)
             surface_load_df.to_csv(file_path_sl, index=False)
 

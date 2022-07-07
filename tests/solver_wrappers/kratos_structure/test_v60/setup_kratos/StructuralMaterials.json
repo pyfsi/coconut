@@ -13,7 +13,13 @@
           "DENSITY": 1200,
           "POISSON_RATIO": 0.3,
           "THICKNESS": 0.001,
-          "MEMBRANE_PRESTRESS":  [[0.0, 0.0, 0]]
+          "MEMBRANE_PRESTRESS": [
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ]
         },
         "Tables": {}
       }

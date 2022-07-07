@@ -27,6 +27,9 @@
         ]
       }
     ],
-    "residual_variables": ["RESIDUAL", "DISPLACEMENT"]
+    "residual_variables": [
+      "RESIDUAL",
+      "DISPLACEMENT"
+    ]
   }
 }

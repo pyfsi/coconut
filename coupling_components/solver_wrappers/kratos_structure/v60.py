@@ -1,4 +1,5 @@
-from coconut.coupling_components.solver_wrappers.kratos_structure.base_solver_wrapper import BaseSolverWrapperKratosStructure
+from coconut.coupling_components.solver_wrappers.kratos_structure.base_solver_wrapper import \
+    BaseSolverWrapperKratosStructure
 from coconut import tools
 
 import json
@@ -48,7 +49,7 @@ class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
         kratos_parameters['interface_sub_model_parts_list'] = self.interface_sub_model_parts_list
 
         with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
-            json.dump(kratos_parameters, f, indent=4)
+            json.dump(kratos_parameters, f, indent=2)
 
     def write_residuals(self):
         float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
@@ -59,14 +60,14 @@ class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
             time_start_string = r'STEP:\s+' + str(self.timestep - 1)
             time_end_string = r'STEP:\s+' + str(self.timestep)
             match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
-            if not match is None:
+            if match is not None:
                 time_block = match.group(1)
                 iteration_block_list = re.findall(
-                    r'Coupling iteration: \d+' + r'(.*?)' + r'Coupling iteration \d+ end', time_block, flags=re.S)
+                    r'Coupling iteration: \d(.*?)Coupling iteration \d+ end', time_block, flags=re.S)
                 for iteration_block in iteration_block_list:
                     residual_array = np.empty(len(self.residual_variables))
                     for i, variable in enumerate(self.residual_variables):
-                        search_string = r'\n' + variable + r' CRITERION.*[Nn]orm = ' + r'(' + float_pattern + r')'
+                        search_string = r'\n' + variable + r' CRITERION.*[nN]orm = ' + r'(' + float_pattern + r')'
                         var_residual_list = re.findall(search_string, iteration_block)
                         if var_residual_list:
                             # last initial residual of the non-linear iteration

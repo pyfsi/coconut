@@ -436,7 +436,7 @@ Begin Elements PreStressMembraneElement3D4N
 190 0 198 35 34 199
 191 0 199 34 33 200
 192 0 200 33 2 25
-End Elements // ShellThickElementCorotational3D4N
+End Elements // PreStressMembraneElement3D4N
 
 Begin Conditions LineLoadCondition2D2N
 1 0 1 26

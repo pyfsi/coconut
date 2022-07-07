@@ -26,6 +26,10 @@
           "displacement"
         ]
       }
+    ],
+    "residual_variables": [
+      "RESIDUAL DISPLACEMENT",
+      "DISPLACEMENT"
     ]
   }
 }

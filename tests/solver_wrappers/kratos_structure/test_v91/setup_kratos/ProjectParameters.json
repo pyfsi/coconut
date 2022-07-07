@@ -12,7 +12,7 @@
     "domain_size": 3,
     "model_part_name": "Structure",
     "time_stepping": {
-      "time_step": 1.1
+      "time_step": 0.0
     },
     "analysis_type": "non_linear",
     "model_import_settings": {
@@ -49,7 +49,8 @@
             0.0
           ]
         }
-      },{
+      },
+      {
         "python_module": "assign_vector_variable_process",
         "kratos_module": "KratosMultiphysics",
         "Parameters": {
@@ -107,11 +108,11 @@
           "output_control_type": "step",
           "output_frequency": 1.0,
           "output_sub_model_parts": false,
-          "nodal_solution_step_data_variables": [],
-          "nodal_data_value_variables": [
+          "nodal_solution_step_data_variables": [
             "DISPLACEMENT",
             "REACTION"
           ],
+          "nodal_data_value_variables": [],
           "element_data_value_variables": [],
           "condition_data_value_variables": []
         }
