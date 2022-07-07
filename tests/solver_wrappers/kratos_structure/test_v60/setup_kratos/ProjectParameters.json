@@ -6,7 +6,7 @@
     "parallel_type": "OpenMP",
     "time_step": 0.0,
     "start_time": 0.0,
-    "end_time": 1e9,
+    "end_time": 1.0,
     "echo_level": 1
   },
   "solver_settings": {
@@ -22,11 +22,11 @@
     },
     "line_search": false,
     "convergence_criterion": "and_criterion",
-    "displacement_relative_tolerance": 1e-9,
-    "displacement_absolute_tolerance": 1e-9,
-    "residual_relative_tolerance": 1e-9,
-    "residual_absolute_tolerance": 1e-9,
-    "max_iteration": 100,
+    "displacement_relative_tolerance": 1e-12,
+    "displacement_absolute_tolerance": 1e-12,
+    "residual_relative_tolerance": 1e-12,
+    "residual_absolute_tolerance": 1e-12,
+    "max_iteration": 500,
     "move_mesh_flag": true,
     "linear_solver_settings": {
       "solver_type": "Super_LU",
@@ -39,11 +39,9 @@
     "processes_sub_model_part_list": [
       "DISPLACEMENT_inlet",
       "DISPLACEMENT_outlet",
-      "ROTATION_inlet",
-      "ROTATION_outlet",
       "SurfaceLoad3D_tube"
     ],
-    "rotation_dofs": true,
+    "rotation_dofs": false,
     "time_integration_method": "implicit",
     "scheme_type": "bossak"
   },
@@ -85,75 +83,9 @@
           0.0
         ]
       }
-    },
-    {
-      "python_module": "assign_vector_variable_process",
-      "kratos_module": "KratosMultiphysics",
-      "Parameters": {
-        "mesh_id": 0,
-        "model_part_name": "ROTATION_inlet",
-        "variable_name": "ROTATION",
-        "constrained": [
-          true,
-          true,
-          true
-        ],
-        "value": [
-          0.0,
-          0.0,
-          0.0
-        ]
-      }
-    },
-    {
-      "python_module": "assign_vector_variable_process",
-      "kratos_module": "KratosMultiphysics",
-      "process_name": "AssignVectorVariableProcess",
-      "Parameters": {
-        "mesh_id": 0,
-        "model_part_name": "ROTATION_outlet",
-        "variable_name": "ROTATION",
-        "constrained": [
-          true,
-          true,
-          true
-        ],
-        "value": [
-          0.0,
-          0.0,
-          0.0
-        ]
-      }
     }
   ],
-  "loads_process_list": [
-    {
-      "python_module": "assign_scalar_variable_process",
-      "kratos_module": "KratosMultiphysics",
-      "process_name": "AssignScalarVariableProcess",
-      "Parameters": {
-        "mesh_id": 0,
-        "model_part_name": "SurfaceLoad3D_tube",
-        "variable_name": "POSITIVE_FACE_PRESSURE",
-        "value": 0.0
-      }
-    },
-    {
-      "python_module": "assign_vector_variable_process",
-      "kratos_module": "KratosMultiphysics",
-      "process_name": "AssignVectorVariableProcess",
-      "Parameters": {
-        "mesh_id": 0,
-        "model_part_name": "SurfaceLoad3D_tube",
-        "variable_name": "SURFACE_LOAD",
-        "value": [
-          0.0,
-          0.0,
-          0.0
-        ]
-      }
-    }
-  ],
+  "loads_process_list": [],
   "output_configuration": {
     "result_file_configuration": {
       "gidpost_flags": {

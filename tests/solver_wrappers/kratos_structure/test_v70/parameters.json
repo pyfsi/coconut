@@ -1,0 +1,35 @@
+{
+  "type": "solver_wrappers.kratos_structure.v70",
+  "settings": {
+    "working_directory": "This is set from the test script",
+    "cores": 1,
+    "dimensions": 3,
+    "delta_t": 0.1,
+    "timestep_start": 0,
+    "input_file": "ProjectParameters.json",
+    "kratos_interface_sub_model_parts_list": [
+      "SurfaceLoad3D_tube"
+    ],
+    "interface_input": [
+      {
+        "model_part": "SurfaceLoad3D_tube_input",
+        "variables": [
+          "pressure",
+          "traction"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "SurfaceLoad3D_tube_output",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "residual_variables": [
+      "RESIDUAL",
+      "DISPLACEMENT"
+    ]
+  }
+}

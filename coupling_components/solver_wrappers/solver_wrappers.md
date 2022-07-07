@@ -22,7 +22,7 @@ There are currently two solver wrappers for computational fluid dynamics (CFD) p
 There are currently also two solver wrappers for computational structural mechanics (CSM) packages :
 
 -   [Abaqus](abaqus/abaqus.md) (6.14, 2021, 2022)
--   [Kratos Multiphysics](kratos/kratos.md) (6.0)
+-   [Kratos Multiphysics](kratos_structure/kratos_structure.md) (6.0, 7.0)
 
 CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms and implementations. These are:
 

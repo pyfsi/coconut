@@ -9,6 +9,7 @@
       "delta_t": 0.0001,
       "omega": 0.01,
       "save_results": 1,
+      "save_restart": 0,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -82,7 +83,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.kratos.structural_mechanics_application.v60",
+            "type": "solver_wrappers.kratos_structure.v60",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,
@@ -107,6 +108,10 @@
                     "displacement"
                   ]
                 }
+              ],
+              "residual_variables": [
+                "RESIDUAL DISPLACEMENT",
+                "DISPLACEMENT"
               ]
             }
           },

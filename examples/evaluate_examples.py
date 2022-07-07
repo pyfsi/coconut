@@ -10,7 +10,6 @@ import shutil
 from unittest import TestSuite, TestLoader
 from os.path import join
 
-
 """
 This file runs the example cases and compares the results and convergence history, with previously save benchmark
 pickle files.
@@ -29,7 +28,6 @@ simulation besides 'setup_case.py' and 'parameters.json', and 'compare_data' is 
 comparison with a benchmark pickle file should be made.
 Once this class is made, you may need to create a benchmark file for this new example using the corresponding script.
 """
-
 
 # set paths
 execute_path = os.path.realpath(os.path.dirname(__file__))
