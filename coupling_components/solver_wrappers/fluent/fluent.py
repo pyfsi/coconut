@@ -477,7 +477,7 @@ class SolverWrapperFluent(Component):
 
     def write_move_zone(self):
         omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_component(self.timestep*self.delta_t,self.delta_t)
+            self.rigid_body_motion.move_zone_component(self.timestep*self.delta_t)
         data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
         fmt = '%27.17e'
         tmp = f'move_zone_update_timestep{self.timestep}.dat'
