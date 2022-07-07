@@ -35,32 +35,16 @@ dimensionedScalar rhoMin
     thermodynamicProperties
 );
 
-// added
-
-dimensionedScalar CpLiquid
+dimensionedScalar Cpv
 (
-    "CpLiquid",
+    "Cpv",
     dimSpecificHeatCapacity,
     thermodynamicProperties
 );
 
-dimensionedScalar CpGas
+dimensionedScalar kappav
 (
-    "CpGas",
-    dimSpecificHeatCapacity,
-    thermodynamicProperties
-);
-
-dimensionedScalar KLiquid
-(
-    "KLiquid",
-    dimPower/dimLength/dimTemperature,
-    thermodynamicProperties
-);
-
-dimensionedScalar KGas
-(
-    "KGas",
+    "kappav",
     dimPower/dimLength/dimTemperature,
     thermodynamicProperties
 );
@@ -77,15 +61,9 @@ dimensionedScalar hEvap(
     thermodynamicProperties
 );
 
-dimensionedScalar hL0(
-    "hL0",
+dimensionedScalar hl0(
+    "hl0",
     dimEnergy/dimMass,
-    thermodynamicProperties
-);
-
-dimensionedScalar pConst(
-    "pConst",
-    dimPressure,
     thermodynamicProperties
 );
 
@@ -102,6 +80,3 @@ IOdictionary fluidThermalProperties
 );
 
 Switch thermalSimulation(fluidThermalProperties.lookupOrDefault<Switch>("thermalSimulation", true));
-Switch pEqnBarotropicBase(fluidThermalProperties.lookupOrDefault<Switch>("pEqnBarotropicBase", true));
-Switch UEqnNewVersion;(fluidThermalProperties.lookupOrDefault<Switch>("UEqnNewVersion;", true));
-// end Peyman

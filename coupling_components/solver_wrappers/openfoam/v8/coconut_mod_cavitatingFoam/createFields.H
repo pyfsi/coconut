@@ -98,6 +98,7 @@ volScalarField& alphav(mixture.alpha1());
 alphav.oldTime();
 
 volScalarField& alphal(mixture.alpha2());
+alphal.oldTime(); // required?
 
 Info<< "Creating compressibilityModel\n" << endl;
 
@@ -115,6 +116,16 @@ Info<< "psi max-min : " << max(psi).value()
     << " " << min(psi).value() << endl;
 
 rho == max(alphav*psiv*p + alphal*rhol, rhoMin);
+Info<< "rho max-min : " << max(rho).value()
+    << " " << min(rho).value() << endl;
+
+volScalarField rhov = psiv*p;
+rhov.oldTime(); // required?
+
+Info<< "max-min rhov.oldTime(): " << max(rhov.oldTime()).value()
+    << " " << min(rhov.oldTime()).value() << endl;
+Info<< "max-min rhov: " << max(rhov).value()
+    << " " << min(rhov).value() << endl;
 
 mesh.setFluxRequired(p.name());
 mesh.setFluxRequired(rho.name());
@@ -176,20 +187,5 @@ volScalarField Cp
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    alphal*Cpl + alphav*Cpv
-);
-
-volScalarField h
-(
-    IOobject
-    (
-        "h",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    (hL0 + hEvap + Cpv*(T - T0))*alphav + (hL0 + Cpl*(T - T0) /*+ EOSModel->IntRhoInv()*/)*alphal,
-    // CpE * (T - T0),
-    T.boundaryField().types()
+    (alphal*rhol*Cpl + alphav*psiv*p*Cpv)/rho
 );

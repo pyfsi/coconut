@@ -149,9 +149,12 @@ int main(int argc, char *argv[])
                     turbulence->correct();
                 }
 
-                #include "TEqn.H"
+                if (thermalSimulation)
+                {
+                    #include "TEqn.H"
 
-                mixture.correct();
+                    mixture.correct();
+                }
             }
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
