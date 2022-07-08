@@ -118,27 +118,22 @@ C==============================================================================
          R = 1
       END IF
 
-      IF (KINC == |increment|) THEN
-         IF (NOEL >= NOEL_PREV(R)) THEN
-            WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
-     &         '|PWD|',
-     &         '/|CSM_dir|/CSM_Time',
-     &         (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
-            OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
-            WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
-            CLOSE(UNIT_FACES(R))
-            NOEL_PREV(R) = NOEL
-         ELSE IF (NOEL < NOEL_PREV(R)) THEN
-            PRINT *, 'USR-abort: end of faces file reached. Normal term
+      IF (NOEL >= NOEL_PREV(R)) THEN
+         WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
+     &      '|PWD|',
+     &      '/|CSM_dir|/CSM_Time',
+     &      (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
+         OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
+         WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
+         CLOSE(UNIT_FACES(R))
+         NOEL_PREV(R) = NOEL
+      ELSE IF (NOEL < NOEL_PREV(R)) THEN
+         PRINT *, 'USR-abort: end of faces file reached. Normal term
      &ination'
-            CALL FLUSH(6)
-            CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
-         END IF
-      ELSE IF (KINC > |increment|) THEN
-         PRINT *, 'USR-abort: end of increment. Normal termination.'
-         CALL STDB_ABQERR(-3,'USR-abort: end of increment.')
+         CALL FLUSH(6)
+         CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
       END IF
-          
+
       F = 0
       
       RETURN

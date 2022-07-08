@@ -69,8 +69,6 @@
             }
           ],
           "time_precision": 5,
-          "kinematic_pressure": true,
-          "kinematic_traction": true,
           "density": 1000,
           "parallel": false,
           "residual_variables": [
@@ -90,7 +88,6 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "static": false,
               "arraysize": 1e5,
               "interface_input": [
                 {

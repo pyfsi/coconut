@@ -52,7 +52,6 @@ class SolverWrapperAbaqus(Component):
         self.input_file = self.settings['input_file']
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
-        self.static = self.settings['static']
         self.timestep = self.timestep_start
         self.iteration = None
         self.model = None
@@ -130,7 +129,6 @@ class SolverWrapperAbaqus(Component):
                         line = line.replace('|surfaces|', str(len(self.mp_in)))
                         line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                         line = line.replace('|cpus|', str(self.cores))
-                        line = line.replace('|increment|', str(int(self.static)))
 
                         # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                         line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
@@ -581,13 +579,13 @@ class SolverWrapperAbaqus(Component):
             line = f.readline()
             while line:
                 if '*dynamic' in line.lower() or '*static' in line.lower():
+                    if 'initial=no' not in line.lower():
+                        with warnings.catch_warnings():
+                            warnings.filterwarnings('always', category=UserWarning)
+                            warnings.warn(f'recommended setting "INITIAL=NO" not found in input file, please consult '
+                                          f'the documention on STEP definition',
+                                          category=UserWarning)
                     of.write(line)
-                    if '*dynamic' in line.lower() and self.static:
-                        raise ValueError(f'keyword "*dynamic" found in input file while keyword "static" is set to True'
-                                         f' in parameter file')
-                    if '*static' in line.lower() and not self.static:
-                        raise ValueError(f'keyword "*static" found in input file while keyword "static" is set to False'
-                                         f' in parameter file')
                     if bool_restart:
                         rf.write(line)
                     check_line = f.readline()  # need to skip the next line, but contents are checked

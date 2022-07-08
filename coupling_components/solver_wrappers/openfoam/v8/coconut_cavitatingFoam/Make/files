@@ -1,3 +1,4 @@
 coconut_cavitatingFoam.C
+../coconut_functionObjects/field/rhoWallShearStress/rhoWallShearStress.C
 
 EXE = $(FOAM_USER_APPBIN)/coconut_cavitatingFoam
