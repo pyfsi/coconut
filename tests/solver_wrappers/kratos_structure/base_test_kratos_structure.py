@@ -37,6 +37,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     # test if the same load results in the same displacement.
     def test_apply_load(self):
         solver = create_instance(self.parameters)
+        solver.initialize()
         self.mp_out = solver.model.get_model_part(self.mp_out_name)
 
         load_interface = solver.get_interface_input()
@@ -50,8 +51,6 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         traction = np.array([traction_x, traction_y, traction_z])
         load_data_1 = self.get_uniform_load_data(pressure, traction)
         load_interface.set_interface_data(load_data_1)
-
-        solver.initialize()
 
         solver.initialize_solution_step()
         output_1 = solver.solve_solution_step(load_interface).copy()
@@ -85,6 +84,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     def test_restart(self):
         self.parameters['settings']['save_restart'] = 2
         solver = create_instance(self.parameters)
+        solver.initialize()
         self.mp_out = solver.model.get_model_part(self.mp_out_name)
         load_interface = solver.get_interface_input()
 
@@ -95,8 +95,6 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         traction_y = 0.0
         traction_z = 0.0
         traction = np.array([traction_x, traction_y, traction_z])
-
-        solver.initialize()
 
         # run solver for 4 timesteps
         for i in range(4):
@@ -166,12 +164,12 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         working_directory = self.parameters['settings']['working_directory']
         input_mp_name = self.parameters['settings']['kratos_interface_sub_model_parts_list'][0]
         pr_fname = join(working_directory, f'{input_mp_name}_pressure.csv')
-        sl_fname = join(working_directory, f'{input_mp_name}_surface_load.csv')
+        tr_fname = join(working_directory, f'{input_mp_name}_traction.csv')
         df_pr = pd.read_csv(pr_fname, skipinitialspace=True)
-        df_sl = pd.read_csv(sl_fname, skipinitialspace=True)
+        df_tr = pd.read_csv(tr_fname, skipinitialspace=True)
         pressure = np.array(df_pr['pressure'])
-        traction_x = np.array(df_sl['surface_load_x'])
-        traction_y = np.array(df_sl['surface_load_y'])
-        traction_z = np.array(df_sl['surface_load_z'])
+        traction_x = np.array(df_tr['traction_x'])
+        traction_y = np.array(df_tr['traction_y'])
+        traction_z = np.array(df_tr['traction_z'])
         traction = np.ravel(np.column_stack((traction_x, traction_y, traction_z)))
         return np.concatenate((pressure, traction))

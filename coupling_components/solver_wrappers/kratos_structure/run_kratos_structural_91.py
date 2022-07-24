@@ -13,7 +13,9 @@ class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
     def __init__(self, model, project_parameters):
         self.interfaces = [elem.GetString() for elem in project_parameters['interface_sub_model_parts_list']]
         super().__init__(model, project_parameters)
+        self.dimensions = project_parameters['solver_settings']['domain_size'].GetInt()
         self.coupling_iteration = None
+        self.pressure_directions = [direc.GetInt() for direc in project_parameters['pressure_directions']]
 
     def Initialize(self):
         super().Initialize()
@@ -58,7 +60,7 @@ class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
                 raise Exception(f'{sub_model_part_name} not present in the Kratos model.')
 
     def InputData(self):
-        for sub_model_part_name in self.interfaces:
+        for sub_model_part_name, pressure_direction in zip(self.interfaces, self.pressure_directions):
             full_sub_model_part_name = 'Structure.' + sub_model_part_name
             if self.model['Structure'].HasSubModelPart(sub_model_part_name):
                 sub_model_part = self.model[full_sub_model_part_name]
@@ -68,21 +70,21 @@ class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
                     node_ids = pressure_data.node_id
                     pressure = pressure_data.pressure
                     for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.POSITIVE_FACE_PRESSURE, 0,
-                                                                             -1 * pressure[i])
+                        sub_model_part.GetNode(node_id).SetSolutionStepValue(KM.NEGATIVE_FACE_PRESSURE, 0,
+                                                                             pressure_direction * pressure[i])
 
-                file_name_sl = f'{sub_model_part_name}_surface_load.csv'
-                if os.path.isfile(file_name_sl):
-                    surface_load_data = pd.read_csv(file_name_sl, skipinitialspace=True)
-                    node_ids = surface_load_data.node_id
-                    surface_load_x = surface_load_data.surface_load_x
-                    surface_load_y = surface_load_data.surface_load_y
-                    surface_load_z = surface_load_data.surface_load_z
+                file_name_tr = f'{sub_model_part_name}_traction.csv'
+                if os.path.isfile(file_name_tr):
+                    traction_data = pd.read_csv(file_name_tr, skipinitialspace=True)
+                    node_ids = traction_data.node_id
+                    traction_x = traction_data.traction_x
+                    traction_y = traction_data.traction_y
+                    traction_z = traction_data.traction_z
+                    kratos_variable = SM.SURFACE_LOAD if self.dimensions == 3 else SM.LINE_LOAD
                     for i, node_id in enumerate(node_ids):
-                        sub_model_part.GetNode(node_id).SetSolutionStepValue(SM.SURFACE_LOAD, 0,
-                                                                             [surface_load_x[i], surface_load_y[i],
-                                                                              surface_load_z[i]])
-
+                        sub_model_part.GetNode(node_id).SetSolutionStepValue(kratos_variable, 0,
+                                                                             [traction_x[i], traction_y[i],
+                                                                              traction_z[i]])
             else:
                 raise Exception(f'{sub_model_part_name} not present in the Kratos model.')
 
