@@ -7,14 +7,11 @@ from os.path import join
 import glob
 import subprocess
 import multiprocessing
-import time
 import numpy as np
 import sys
 import hashlib
 from getpass import getuser
 import shutil
-
-# TODO: issue: id and hash shadow built-in names
 
 
 def create(parameters):
@@ -38,7 +35,8 @@ class SolverWrapperFluent(Component):
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
-        self.remove_all_messages()
+        self.coco_messages = tools.CocoMessages(self.dir_cfd)
+        self.coco_messages.remove_all_messages()
         self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
@@ -142,7 +140,7 @@ class SolverWrapperFluent(Component):
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from  fluent.log and report.sum
-        self.wait_message('case_info_exported')
+        self.coco_messages.wait_message('case_info_exported')
 
         with open(log, 'r') as file:
             for line in file:
@@ -173,7 +171,7 @@ class SolverWrapperFluent(Component):
                         if not self.multiphase:
                             raise ValueError('Singlephase in JSON does not match multiphase Fluent')
                         break
-                    elif'Numerics' in line:
+                    elif 'Numerics' in line:
                         if self.multiphase:
                             raise ValueError('Multiphase in JSON does not match singlephase Fluent')
                         break
@@ -187,10 +185,10 @@ class SolverWrapperFluent(Component):
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
-                    name, id, _ = line.strip().split()
+                    name, thread_id, _ = line.strip().split()
                     if name in self.thread_ids:
-                        info.append(' '.join((name, id)))
-                        self.thread_ids[name] = id
+                        info.append(' '.join((name, thread_id)))
+                        self.thread_ids[name] = thread_id
 
                 if check == 3 and not line.islower():
                     break
@@ -204,11 +202,11 @@ class SolverWrapperFluent(Component):
             file.write(str(len(info)) + '\n')
             for line in info:
                 file.write(line + '\n')
-        self.send_message('thread_ids_written_to_file')
+        self.coco_messages.send_message('thread_ids_written_to_file')
 
         # import node and face information if no restart
         if self.timestep_start == 0:
-            self.wait_message('nodes_and_faces_stored')
+            self.coco_messages.wait_message('nodes_and_faces_stored')
 
         # create Model
         self.model = data_structure.Model()
@@ -290,8 +288,8 @@ class SolverWrapperFluent(Component):
         self.iteration = 0
         self.timestep += 1
 
-        self.send_message('next')
-        self.wait_message('next_ready')
+        self.coco_messages.send_message('next')
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -314,8 +312,8 @@ class SolverWrapperFluent(Component):
                 os.system(cmd)
 
         # let Fluent run, wait for data
-        self.send_message('continue')
-        self.wait_message('continue_ready')
+        self.coco_messages.send_message('continue')
+        self.coco_messages.wait_message('continue_ready')
 
         # read data from Fluent
         for dct in self.interface_output.parameters:
@@ -330,8 +328,8 @@ class SolverWrapperFluent(Component):
                 raise ValueError('Given dimension does not match coordinates')
 
             # copy output data for debugging
-            if self.debug:  # TODO: Iter --> iter everywhere?
-                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+            if self.debug:
+                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
                 cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
@@ -366,8 +364,8 @@ class SolverWrapperFluent(Component):
         # save if required
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
-            self.send_message('save')
-            self.wait_message('save_ready')
+            self.coco_messages.send_message('save')
+            self.coco_messages.wait_message('save_ready')
 
         # remove unnecessary files
         if self.timestep - 1 > self.timestep_start:
@@ -389,8 +387,8 @@ class SolverWrapperFluent(Component):
     def finalize(self):
         super().finalize()
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
-        self.send_message('stop')
-        self.wait_message('stop_ready')
+        self.coco_messages.send_message('stop')
+        self.coco_messages.wait_message('stop_ready')
         self.fluent_process.wait()
 
         # remove unnecessary files
@@ -448,8 +446,8 @@ class SolverWrapperFluent(Component):
             if tmp[0] == -1:
                 tmp = tmp[1:]
             unique_string = '-'.join(tuple(tmp.astype(str)))
-            hash = hashlib.sha1(str.encode(unique_string))
-            ids[i] = int(hash.hexdigest(), 16) % (10 ** 16)
+            hash_id = hashlib.sha1(str.encode(unique_string))
+            ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
         return ids
 
     def write_node_positions(self):
@@ -483,8 +481,8 @@ class SolverWrapperFluent(Component):
         """
 
         # make Fluent store coordinates and ids
-        self.send_message('store_grid')
-        self.wait_message('store_grid_ready')
+        self.coco_messages.send_message('store_grid')
+        self.coco_messages.wait_message('store_grid_ready')
 
         coord_data = {}
 
@@ -533,31 +531,6 @@ class SolverWrapperFluent(Component):
             coord_data[mp_name]['coords'] = coords_tmp[args, :]
 
         return coord_data
-
-    def send_message(self, message):
-        file = join(self.dir_cfd, message + '.coco')
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        file = join(self.dir_cfd, message + '.coco')
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = join(self.dir_cfd, message + '.coco')
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.dir_cfd):
-            if file_name.endswith('.coco'):
-                file = join(self.dir_cfd, file_name)
-                os.remove(file)
 
     def backup_fluent_log(self):
         file = join(self.dir_cfd, 'fluent.log')

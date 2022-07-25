@@ -28,3 +28,8 @@ class Model:
             repr += (f'\n\t"{self.__model_parts[model_part_name].name}" ' +
                      f'of size {self.__model_parts[model_part_name].size}')
         return repr
+
+    def __eq__(self, other):
+        if type(other) is Model:
+            return self.__model_parts == other.__model_parts
+        return NotImplemented

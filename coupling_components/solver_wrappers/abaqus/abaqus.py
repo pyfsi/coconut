@@ -317,7 +317,7 @@ class SolverWrapperAbaqus(Component):
             for mp_id in range(len(self.mp_in)):
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                                  f'_Iter{self.iteration}.dat')
+                                  f'_it{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
@@ -398,7 +398,7 @@ class SolverWrapperAbaqus(Component):
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat')
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_it{self.iteration}.dat')
                 shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:

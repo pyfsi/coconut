@@ -19,14 +19,14 @@ class MapperRadialBasis(MapperInterpolator):
         self.coeffs = None
 
         # check and store settings
-        self.parallel = self.settings['parallel'] if 'parallel' in self.settings else False
-        self.shape_parameter = (self.settings['shape_parameter'] if
-                                'shape_parameter' in self.settings else 200)
+        self.parallel = self.settings.get('parallel', False)
+        self.shape_parameter = self.settings.get('shape_parameter', 200)
         if self.shape_parameter < 2:
             tools.print_info(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
 
         # determine number of nearest neighbours
-        self.n_nearest = 81 if len(self.directions) == 3 else 9
+        n_nearest = 81 if len(self.directions) == 3 else 9
+        self.n_nearest = self.settings.get('n_nearest', n_nearest)
 
     def initialize(self, model_part_from, model_part_to):
         super().initialize(model_part_from, model_part_to)

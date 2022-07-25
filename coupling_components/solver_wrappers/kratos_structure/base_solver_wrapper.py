@@ -45,7 +45,9 @@ class BaseSolverWrapperKratosStructure(Component):
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
                                     shell=True, cwd=self.working_directory, env=self.env)
 
-        self.wait_message('start_ready')
+        self.coco_messages = tools.CocoMessages(self.working_directory)
+        self.coco_messages.remove_all_messages()
+        self.coco_messages.wait_message('start_ready')
 
         for mp_name in self.interface_sub_model_parts_list:
             file_path = os.path.join(self.working_directory, f'{mp_name}_nodes.csv')
@@ -79,31 +81,31 @@ class BaseSolverWrapperKratosStructure(Component):
         super().initialize_solution_step()
         self.timestep += 1
 
-        self.send_message('next')
-        self.wait_message('next_ready')
+        self.coco_messages.send_message('next')
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
 
         self.interface_input.set_interface_data(interface_input.get_interface_data())
         self.write_input_data()
-        self.send_message('continue')
-        self.wait_message('continue_ready')
+        self.coco_messages.send_message('continue')
+        self.coco_messages.wait_message('continue_ready')
         self.update_interface_output()
         return self.get_interface_output()
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        self.send_message('save')
-        self.wait_message('save_ready')
+        self.coco_messages.send_message('save')
+        self.coco_messages.wait_message('save_ready')
         if not self.residual_variables is None:
             self.write_residuals()
 
     def finalize(self):
         super().finalize()
-        self.send_message('stop')
-        self.wait_message('stop_ready')
-        self.remove_all_messages()
+        self.coco_messages.send_message('stop')
+        self.coco_messages.wait_message('stop_ready')
+        self.coco_messages.remove_all_messages()
         self.kratos_process.wait()
 
     def get_interface_input(self):
@@ -173,31 +175,6 @@ class BaseSolverWrapperKratosStructure(Component):
                     f'{self.settings["interface_output"]}.\n. <sub_mp_name> in the '
                     f'"kratos_interface_sub_model_parts_list" in json file should have corresponding '
                     f'<sub_mp_name>_output in "interface_output" list.')
-
-    def send_message(self, message):
-        file = join(self.working_directory, message + '.coco')
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        file = join(self.working_directory, message + '.coco')
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = join(self.working_directory, message + '.coco')
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.working_directory):
-            if file_name.endswith('.coco'):
-                file = join(self.working_directory, file_name)
-                os.remove(file)
 
     def write_residuals_fileheader(self):
         header = ''

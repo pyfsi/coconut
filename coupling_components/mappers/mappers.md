@@ -55,9 +55,10 @@ Superclass for all [interpolators](mappers.md#interpolators).
 
 parameter|type|description
 ------:|:----:|-----------
+`balanced_tree`|bool|(optional) Default: `False`. If set to `True` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `True` in the rare case that the tree gives problems.
+<nobr>`check_bounding_box`</nobr>|bool|(optional) Default: `True`. If `True` it is checked if the bounding boxes of the *from*- and *to*-`ModelParts` overlap.
 `directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
-`scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
-<nobr>`balanced_tree`</nobr>|bool|Optional, default `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.
+`scaling`|list|(optional) Default: no scaling. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
 
 The `initialize` method must be defined in all child classes. It takes as arguments the *from*-`ModelPart` and the *to*-`ModelPart`. It does the following:
 
@@ -99,7 +100,7 @@ These concepts are clarified further using an excerpt from the JSON file of the 
         "settings": {"permutation": [1, 0, 2]}},
         {"type": "mappers.radial_basis",
         "settings": {"directions": ["x", "y", "z"]}},
-        {"type": "mappers.axisymmetric_3d*to*2d",
+        {"type": "mappers.axisymmetric_3d_to_2d",
         "settings": {"direction_axial": "y", "direction_radial": "x", "n_tangential": 8}}
         ]
     }
@@ -185,7 +186,7 @@ Transforms a 3D geometry to a 2D axisymmetric geometry, by collapsing in a _dept
 
 For scalar data, the average is taken for each 2D point. For vector data too, again removing the depth component.
 
-More information and JSON settings can be found under [`MapperAxisymmetric2DTo3D`](mappers.md#mapperaxisymmetric2dto3d).
+More information and JSON settings can be found under [`MapperDepth2DTo3D`](mappers.md#mapperdepth2dto3d).
 
 
 ## Interpolators
@@ -203,7 +204,7 @@ Additional settings:
 
 parameter|type|description
 ------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
+<nobr>`parallel`</nobr>|bool|(optional) Default: `False`. If `True` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
 
 The kind of linear mapping depends on the number of coordinate directions, as given in the `directions` setting.
 
@@ -220,8 +221,9 @@ Additional settings:
 
 parameter|type|description
 ------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
-<nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.
+`n_nearest`|int|(optional) Default: `81`, if mapping in 3 `directions`, else `9`. Number of nearest neighbours used to perform mapping.
+<nobr>`parallel`</nobr>|bool|(optional) Default: `False`. If `True` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
+<nobr>`shape_parameter`</nobr>|int|(optional) Default: `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.
 
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 
 
