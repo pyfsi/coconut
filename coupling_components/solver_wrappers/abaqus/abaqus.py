@@ -447,14 +447,11 @@ class SolverWrapperAbaqus(Component):
 
     def check_software(self):
         """Check whether the software requirements for this wrapper are fulfilled."""
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required')
-
         # Abaqus version
         result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE, env=self.env)
         if self.version not in str(result.stdout):
-            raise RuntimeError(f'Abaqus version {self.version} is required')
+            raise RuntimeError(f'Abaqus version {self.version} is required. Check if the solver load commands for'
+                               f' the "machine_name" are correct in solver_modules.py.')
 
         # compilers
         try:

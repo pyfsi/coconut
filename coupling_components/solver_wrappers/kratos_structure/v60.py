@@ -20,6 +20,8 @@ class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
 
     def set_solver_env(self):
         self.env = tools.get_solver_env(__name__, self.working_directory)
+        self.version = self.version_label
+        self.check_software()
 
     def update_kratos_parameter_file(self, input_file_name):
 

@@ -4,9 +4,8 @@ from coconut.data_structure.interface import Interface
 from coconut import tools
 
 import os
-import time
 from os.path import join
-from subprocess import Popen
+from subprocess import Popen, run
 import pandas as pd
 import numpy as np
 
@@ -154,6 +153,24 @@ class BaseSolverWrapperKratosStructure(Component):
 
     def set_solver_env(self):
         raise NotImplementedError('Base class method is called, should be implemented in sub-class')
+
+    def check_software(self):
+        with open('check_software.py', 'w') as f:
+            f.write('import KratosMultiphysics\nfrom KratosMultiphysics import StructuralMechanicsApplication')
+        process = run('python3 check_software.py', capture_output=True, encoding='utf-8', shell=True, env=self.env)
+        if process.returncode != 0:
+            raise RuntimeError(f'KratosMultiphysics not loaded properly. Check if the solver load commands for '
+                               f'the "machine_name" are correct in solver_modules.py.')
+        os.remove('check_software.py')
+
+        # check version
+        line = process.stdout.splitlines()[4]   # fifth line contains 'Multi-Physics X.X' with XX the version number
+        stripped_version = line.split('Multi-Physics ')[1]
+        version = stripped_version[0:3:2]
+        if version != self.version:
+            raise RuntimeError(f'Kratos {self.version[0]}.{self.version[1]} should be loaded!'
+                               f' Currently, Kratos {stripped_version} is loaded. Check if the solver load commands'
+                               f' for the "machine_name" are correct in solver_modules.py.')
 
     def check_interface(self):
 

@@ -1,5 +1,6 @@
 from coconut.tools import create_instance
 import json
+import sys
 
 
 class Analysis:
@@ -8,6 +9,10 @@ class Analysis:
         self.settings = parameters["settings"]
 
         self.number_of_timesteps = self.settings["number_of_timesteps"]
+
+        # Python version: 3.6 or higher
+        if sys.version_info < (3, 6):
+            raise RuntimeError('Python version 3.6 or higher required.')
 
         self.coupled_solver = create_instance(self.parameters["coupled_solver"])
 

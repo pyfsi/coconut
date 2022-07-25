@@ -500,7 +500,8 @@ class SolverWrapperOpenFOAM(Component):
     def check_software(self):
         if subprocess.check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
             raise RuntimeError(
-                f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name" are correct.')
+                f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name"'
+                f' are correct in solver_modules.py.')
 
         # check version
         with open('checkSoftware', 'r') as f:
@@ -509,7 +510,8 @@ class SolverWrapperOpenFOAM(Component):
         version_nr = last_line.split(' ')[-1]
         if version_nr[:-1] != self.version:
             raise RuntimeError(
-                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded')
+                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded.'
+                f' Check if the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
     def check_interfaces(self):
         """

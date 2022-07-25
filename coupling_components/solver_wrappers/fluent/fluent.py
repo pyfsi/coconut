@@ -414,14 +414,11 @@ class SolverWrapperFluent(Component):
         return self.interface_output
 
     def check_software(self):
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required.')
-
         # Fluent version: see set_fluent_version
         result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
-            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required')
+            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required. Check if '
+                               f'the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
     # noinspection PyMethodMayBeStatic
     def get_unique_face_ids(self, data):
