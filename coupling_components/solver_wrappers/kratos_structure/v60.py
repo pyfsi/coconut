@@ -1,5 +1,4 @@
-from coconut.coupling_components.solver_wrappers.kratos_structure.base_solver_wrapper import \
-    BaseSolverWrapperKratosStructure
+from coconut.coupling_components.solver_wrappers.kratos_structure.kratos_structure import SolverWrapperKratosStructure
 from coconut import tools
 
 import json
@@ -12,7 +11,7 @@ def create(parameters):
     return SolverWrapperKratosStructure60(parameters)
 
 
-class SolverWrapperKratosStructure60(BaseSolverWrapperKratosStructure):
+class SolverWrapperKratosStructure60(SolverWrapperKratosStructure):
     version = '60'
 
     def __init__(self, parameters):

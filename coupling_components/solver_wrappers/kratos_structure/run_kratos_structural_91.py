@@ -7,6 +7,9 @@ import time
 import pandas as pd
 import numpy as np
 
+# The solution of the tube case with shell elements (ShellThickElement3D4N) displayed additional oscillation in space
+# for v91 compared to v60 and v70
+
 
 class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
 

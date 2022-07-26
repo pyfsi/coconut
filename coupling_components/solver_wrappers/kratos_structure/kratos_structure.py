@@ -13,11 +13,10 @@ from coconut.data_structure.interface import Interface
 
 
 def create(parameters):
-    return BaseSolverWrapperKratosStructure(parameters)
+    return SolverWrapperKratosStructure(parameters)
 
 
-class BaseSolverWrapperKratosStructure(Component):
-    # version specific parameters
+class SolverWrapperKratosStructure(Component):
     version = None  # KratosMultiphysics version, set in sub-class, for version 9.1 f. ex.: '91'
 
     @tools.time_initialize
@@ -198,10 +197,8 @@ class BaseSolverWrapperKratosStructure(Component):
                     f'<sub_mp_name>_output in "interface_output" list.')
 
     def check_pressure_directions(self):
-        pressure_directions = self.settings.get('pressure_directions')
+        pressure_directions = self.settings['pressure_directions']
 
-        if pressure_directions is None:
-            return [1] * len(self.interface_sub_model_parts_list)  # default pressure in direction of normal
         if len(pressure_directions) != len(self.interface_sub_model_parts_list):
             raise ValueError(f'Error in json file: "pressure_directions" {pressure_directions} should have length '
                              f'{len(self.interface_sub_model_parts_list)}')

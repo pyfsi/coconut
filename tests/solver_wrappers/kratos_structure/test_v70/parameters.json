@@ -8,6 +8,9 @@
     "kratos_interface_sub_model_parts_list": [
       "SurfaceLoad3D_tube"
     ],
+    "pressure_directions": [
+      1
+    ],
     "interface_input": [
       {
         "model_part": "SurfaceLoad3D_tube_input",
