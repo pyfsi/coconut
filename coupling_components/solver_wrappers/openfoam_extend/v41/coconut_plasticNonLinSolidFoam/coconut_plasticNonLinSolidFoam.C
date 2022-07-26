@@ -384,6 +384,8 @@ int main(int argc, char *argv[])
             // Total displacement at cell-centres
             gradU = fvc::grad(U.oldTime() + DU);
             U = U.oldTime() + DU;
+//            U.component(2)*= 0.0;
+//            Info << 'Z_direction' << U << endl;
 
             V = DU/runTime.deltaT();
             if (thermalStress && runTime.value() > thermalStressStartTime)

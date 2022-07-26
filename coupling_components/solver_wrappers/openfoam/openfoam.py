@@ -108,6 +108,9 @@ class SolverWrapperOpenFOAM(Component):
             'coconut_cavitatingFoam': {
                 'wall_shear_stress_variable': 'rhoWallShearStress'
             },
+            'coconut_mod_cavitatingFoam': {
+                'wall_shear_stress_variable': 'rhoWallShearStress'
+            },
             'coconut_interFoam': {
                 'wall_shear_stress_variable': 'rhoWallShearStress'
             },
@@ -284,7 +287,7 @@ class SolverWrapperOpenFOAM(Component):
                     h.write(f'{x.size}\n')
                     h.write('(\n')
                     for i in range(x.size):
-                        h.write(f'({0} {0} {0} )\n')
+                        h.write(f'({1} {0} {0} )\n')
                     h.write(')')
 
         # define timestep and physical time
@@ -379,7 +382,7 @@ class SolverWrapperOpenFOAM(Component):
                    for j in range(len(self.z_rigid)):
                        deltaY[j] = displacement_increment[i] * np.cos(2.5 * np.pi / 180)
                        if self.z_rigid[j] < 0:
-                           deltaZ[j] = displacement_increment[i] * np.sin(2.5 * np.pi / 180)
+                           deltaZ[j] = -displacement_increment[i] * np.sin(2.5 * np.pi / 180)
                        else:
                            deltaZ[j] = displacement_increment[i] * np.sin(2.5 * np.pi / 180)
 
@@ -717,12 +720,15 @@ class SolverWrapperOpenFOAM(Component):
                 mp_name = f'{boundary}_input'
                 displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
 
-                if self.settings['timeVaryingMappedFixedValue']:
-                    velocity = displacement[:, 0] * 1e13
 
+                if self.settings['timeVaryingMappedFixedValue']:
+                    if self.timestep <=10:
+                        displacement[:,0] = 1
+                        velocity = displacement[:,0]
+                    else:
+                        velocity = displacement[:, 0] * 1e13
                     data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                self.cur_timestamp)
-                    # velocity = self.interface_input.get_variable_data(mp_name, 'velocity')
                     velocity_input = np.zeros((len(velocity), 3))
                     index = int(len(velocity) / 2)
 
