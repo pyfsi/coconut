@@ -45,9 +45,9 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         initial_pressure = 100
 
         pressure = initial_pressure
-        traction_x = 0.0
-        traction_y = 0.0
-        traction_z = 0.0
+        traction_x = 0.3
+        traction_y = 0.2
+        traction_z = 0.1
         traction = np.array([traction_x, traction_y, traction_z])
         load_data_1 = self.get_uniform_load_data(pressure, traction)
         load_interface.set_interface_data(load_data_1)
