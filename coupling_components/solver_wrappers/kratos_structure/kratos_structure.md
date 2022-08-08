@@ -44,7 +44,7 @@ Finally, the interfaces are created.
 
 -   The interface sub-model parts nodes are saved as *`<sub_model_part_name>_nodes.csv`*.
 -   The displacement from Kratos is written in a file named *`<sub_model_part_name>_displacement.csv`*.
--   Pressure and tractions are passed from python to Kratos with files of the form *`<sub_model_part_name>_pressure.csv`* and *`<sub_model_part_name>_surface_load.csv`*, respectively.
+-   Pressure and tractions are passed from Python to Kratos with files of the form *`<sub_model_part_name>_pressure.csv`* and *`<sub_model_part_name>_surface_load.csv`*, respectively.
 -   Files with extension *`.coco`* are used to pass messages between Python and Kratos.
 
 

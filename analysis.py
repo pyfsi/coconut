@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # if len(argv) != 2:
     #     err_msg = 'Wrong number of input arguments!\n'
     #     err_msg += 'Use this script in the following way:\n'
-    #     err_msg += '    "python analysis.py <parameter>.json"\n'
+    #     err_msg += '    "python3 analysis.py <parameter>.json"\n'
     #     raise Exception(err_msg)
 
     # Import data structure

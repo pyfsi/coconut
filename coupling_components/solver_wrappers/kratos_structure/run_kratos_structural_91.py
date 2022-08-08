@@ -98,7 +98,7 @@ if __name__ == '__main__':
     if len(argv) != 2:
         err_msg = 'Wrong number of input arguments!\n'
         err_msg += 'Use this script in the following way:\n'
-        err_msg += '    "python run_simulation.py <cosim-parameter-file>.json"\n'
+        err_msg += '    "python3 run_simulation.py <cosim-parameter-file>.json"\n'
         raise Exception(err_msg)
 
     # Import data structure
