@@ -115,13 +115,13 @@ The complete process to create the documentation website is automated by `run_mk
 You can run `run_mkdocs.py` with an extra command line argument: 
 
 ```bash
-python run_mkdocs.py --preview example
+python3 run_mkdocs.py --preview example
 ```
 opens a preview of the website in Firefox, showing the webpage corresponding to the file `example.md`. This can be used to check MD and LaTeX syntax. 
 
 
 ```bash
-python run_mkdocs.py --deploy
+python3 run_mkdocs.py --deploy
 ```
 deploys the website on GitHub Pages using `mkdocs gh-deploy`. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  
 

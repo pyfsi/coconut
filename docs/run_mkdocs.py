@@ -26,7 +26,7 @@ Optional arguments:
                     if X is not supplied, README.md is shown
                     
 Example:
-    python run_mkdocs.py --preview mappers
+    python3 run_mkdocs.py --preview mappers
 """
 
 # check directory

@@ -106,11 +106,15 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 
 -   Ensure that *`coconut`* is included in your Python path.
 -   Move to the *`coconut/tests`* directory. 
--   Run the unit tests by executing the following line:
-
+-   Run the _fast_ unit tests (exclusing the non-Pythonic solvers) by executing the following line:
 ```bash
-python -m unittest -b
+python3 run_tests.py
 ```
+-   Or choose to include the solver wrapper tests by using the keyword `-all` as follows
+```bash
+python3 run_tests.py -all
+```
+More information on running tests can be found [here](tests/tests.md).
 
 
 ## Getting started
@@ -176,7 +180,7 @@ Now try to change some of the settings in the JSON file, such as the mappers, th
 After a simulation is finished, it can be useful to visualize the output quantities (i.e. displacement, pressure and in general also shear). For the FSI-simulation we have just performed, post-processing has already been implemented in the file *`$COCO/coconut/examples/post_processing/`*. It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on `true`, which is for all examples done by default. As an example, we will generate an animation by running the *`animate_example.py`* file:
 
 ```bash
-python $COCO/coconut/examples/post_processing/animate_example.py
+python3 $COCO/coconut/examples/post_processing/animate_example.py
 ```
 
 Animations of the displacement and pressure will be shown.
