@@ -30,7 +30,7 @@ warning is printed.
 
 ## Overview of the OpenFOAM-wrapper
 
-The solver wrapper can be found in *`solver_wrappers/openfoam`* and consists of a python-file named *`vX.py`*, with `X`
+The solver wrapper can be found in *`solver_wrappers/openfoam`* and consists of a Python-file named *`vX.py`*, with `X`
 the identifier of the OpenFOAM-version (e.g. *`v41.py`* for OpenFOAM 4.1). Finally, using an OpenFOAM-solver in CoCoNuT
 requires the adaptation of the solver to accommodate communications with the `coupled_solvers` during the
 FSI-simulation. Currently, only `pimpleFoam` and `interFoam` have been adapted; the solvers called by the solver wrapper
@@ -40,7 +40,7 @@ OpenFOAM-module and using `wmake` in the directory *`solver_wrapper/coconut_<sol
 
 ### The `__init__` method
 
-During initialization, the case settings as defined in the JSON-file are read into the corresponding python-variables.
+During initialization, the case settings as defined in the JSON-file are read into the corresponding Python-variables.
 Afterwards, the required OpenFOAM-files are modified, and some checks are in place to verify whether the correct modules
 are loaded. Next, the model-parts for the `interface_input/output` are created. Finally, the variables on each interface
 are stored in the data-structure of CoCoNuT.
@@ -73,8 +73,8 @@ The OpenFOAM-subprocess, which was launched in the `Initialize` method, is kille
 
 ## Comments
 
-- Files with extension `.coco` are used to pass messages between python-script and OpenFOAM. After sending a message
-  from python to OpenFOAM, the python-script is paused until it receives the corresponding message from OpenFOAM. The
+- Files with extension `.coco` are used to pass messages between Python-script and OpenFOAM. After sending a message
+  from Python to OpenFOAM, the Python-script is paused until it receives the corresponding message from OpenFOAM. The
   OpenFOAM-solver is operating in an infinite `while`-loop until it receives a message from Python. Upon receipt of this
   message, OpenFOAM executes the corresponding action after which it sends a response to Python and reverts into its
   infinite loop (waiting mode).
@@ -86,7 +86,7 @@ The OpenFOAM-subprocess, which was launched in the `Initialize` method, is kille
   this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.
 - The interface loads are stored in the directory *`postProcessing`*, under the names *`coconut_<boundary_name>`*.
   These are constructed from the file *`controlDict`*, defined in the `_init_` method
-  of the solver wrapper in python.
+  of the solver wrapper in Python.
 
 ## Overview of an OpenFOAM-solver used in CoCoNuT
 
@@ -105,7 +105,7 @@ undertaken:
   proper CoCoNuT-operation, OpenFOAM is killed when the solver wrapper reaches the final time step.
 - Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional
   statements.
-- The while-loop contains several conditional statements, each of which check whether the python-code in CoCoNuT has
+- The while-loop contains several conditional statements, each of which check whether the Python-code in CoCoNuT has
   sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the
   OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: *`next.coco`*
   , *`continue.coco`*, *`save.coco`*, *`stop.coco`*.
@@ -122,7 +122,7 @@ undertaken:
   forget to delete the original *`save.coco`* file, which is advised to do just before creating the *`save_ready.coco`*,
   so near the end of the `if`-clause.
 - If the file *`stop.coco`* exists, a `break`-statement should end the infinite loop (the subprocess is also killed in
-  the python-code). OpenFOAM should create a file *`stop_ready.coco`* before breaking the `while`-loop. Do not forget to
+  the Python-code). OpenFOAM should create a file *`stop_ready.coco`* before breaking the `while`-loop. Do not forget to
   delete the original *`stop.coco`* file, which is advised to do just before creating the *`stop_ready.coco`*, so near
   the end of the `if`-clause.
 
@@ -194,7 +194,7 @@ First version.
 ### v8 (OpenFOAM 8)
 
 In this OpenFOAM version, the name of some commands and classes are different. The required changes are visible in the
-version specific solver wrapper python file _`v8.py`_.
+version specific solver wrapper Python file _`v8.py`_.
 
 Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:
 

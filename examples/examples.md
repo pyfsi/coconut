@@ -19,7 +19,7 @@ The *`examples`* folder contains following subfolders:
 The main directory of each example case contains following files: 
 
 - *`parameters.json`*: parameter file in JSON format.
-- *`setup_case.py`*: python script, which needs to be run to set up the case.
+- *`setup_case.py`*: Python script, which needs to be run to set up the case.
 - *`tube_<flow solver>_<structural solver>.md`*: description of the specific example.
 
 When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
@@ -43,9 +43,10 @@ Then, the calculation is started by running *`run_simulation.py`*. Make sure to 
 
 In practice, you would run the following commands:
 
-    python setup_case.py
-    python run_simulation.py
-
+```bash
+python3 setup_case.py
+python3 run_simulation.py
+```
 
 ## Setting up your own case
 
