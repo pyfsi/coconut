@@ -13,15 +13,14 @@ parameter|type|description
 <nobr>`boundary_names`</nobr>|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
 `compile_clean`|bool|(optional) Default: `False`. If set to True, the adapted application will first clean and then compile.
 `debug`|bool|(optional) Default: `False`. For every iteration, additional files are saved containing information on the input and output data of the solver.
-`delta_t`|double|(optional) Fixed timestep size in flow solver.
-`density`|int|The applied density of the fluid in an incompressible case. The density will be applied if `is_incompressible` is set to `true`.
-<nobr>`interface_input`</nobr>|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `boundary_names` and the string `_input`.
-<nobr>`interface_output`</nobr>|dict| Analogous to `interface_input`, but here the name must be the concatenation of an entry from `boundary_names` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
-<nobr>`is_incompressible`</nobr>|bool| Set it to `True` if the solver solves incompressible Navier-Stokes equation.
-<nobr>`parallel`</nobr>|bool| Set it to `True` if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the *`<case_directory>/system/decomposeParDict`* file.
+`delta_t`|double|Fixed timestep size in flow solver.
+`density`|double|(optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam.
+<nobr>`interface_input`</nobr>|dict|List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `boundary_names` and the string `_input`.
+<nobr>`interface_output`</nobr>|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `boundary_names` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
+<nobr>`parallel`</nobr>|bool|Set it to `True` if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the *`<case_directory>/system/decomposeParDict`* file.
 <nobr>`residual_variables`|list|(optional) A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in *`<case_directory>/residuals.csv`*.
 <nobr>`time_precision`</nobr>|int|Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.
-`timestep_start`|int|(optional) Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.
+`timestep_start`|int|Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.
 <nobr>`working_directory`</nobr>|str|Directory where the OpenFOAM-case is defined (and which contains the JSON-file).
 
 `timestep_start` and `delta_t` are necessary parameters, but are usually defined already in the parameters of the
@@ -85,8 +84,8 @@ The OpenFOAM-subprocess, which was launched in the `Initialize` method, is kille
   or `pkill` in the Linux-terminal, e.g. `pkill coconut_*`).
 - The interface displacement is stored in a `pointDisplacement` field, which is read in by OpenFOAM in every iteration (
   this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.
-- The interface loads are stored in the directory *`postProcessing`*, under the names *`PRESSURE_<boundary_name>`*
-  and *`TRACTION_<boundary_name>`*. These are constructed from the file *`controlDict`*, defined in the `_init_` method
+- The interface loads are stored in the directory *`postProcessing`*, under the names *`coconut_<boundary_name>`*.
+  These are constructed from the file *`controlDict`*, defined in the `_init_` method
   of the solver wrapper in Python.
 
 ## Overview of an OpenFOAM-solver used in CoCoNuT
@@ -127,6 +126,27 @@ undertaken:
   delete the original *`stop.coco`* file, which is advised to do just before creating the *`stop_ready.coco`*, so near
   the end of the `if`-clause.
 
+## Treatment of kinematic pressure and traction
+If the OpenFOAM application is intended for incompressible flows, e.g. pimpleFoam, it solves the incompressible Navier-Stokes equations.
+As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
+In order to couple these solvers to a structure solver, the pressure and traction are required to be expressed in Pa (kg/ms²).
+
+For these solvers, the `density` parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
+In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.
+
+There is a third possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
+but the used momentumTransportModel is incompressible.
+It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or actual traction.
+In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
+Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
+and returns the actual traction, even if the momentumTransportModel is incompressible.
+Note that is this new functionObject is version specific, but common for all applications of one version.
+Upon compilation of the coconut application this functionObject is included in the binary.
+This is the case for, for example, coconut_interFoam and coconut_cavitatingFoam.
+
+The behaviour of CoCoNuT for these different applications is implemented in the solver wrapper itself, namely in the `kinematic_conversion_dict`.
+This means that when a new application is added, the behaviour for this new application should be specified in that location.
+
 ## Setting up a new case
 
 Following items should be present in the OpenFOAM-directory prior to launching CoCoNuT:
@@ -155,7 +175,7 @@ OpenFOAM-directory:
 - *`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
 - *`system/decomposeParDict`* with the necessary decomposition of the fluid domain (if `cores`>1)
 - *`0/pointDisplacement`* with all the boundary conditions, including `fixedValue` boundary condition for the FSI
-  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary conditon (
+  boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary condition (
   from structural solver) for the FSI-interface.
 
 ### Comments
