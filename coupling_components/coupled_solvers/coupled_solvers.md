@@ -29,7 +29,7 @@ The following parameters need to be included in the `settings` dictionary. Here 
 
 parameter|type|description
 ---:|:---:|---
-`debug`|bool|(optional) Default: `False`. The data `solution_x` and `solution_y` are saved every iteration except of every time step (see [results pickle file](#save-results)). Residual distribution is also saved in additional field `solution_r` for every iteration.
+`debug`|bool|(optional) Default: `false`. The data `solution_x` and `solution_y` are saved every iteration except of every time step (see [results pickle file](#save-results)). Residual distribution is also saved in additional field `solution_r` for every iteration.
 `delta_t`|float|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
 `case_name`|str|(optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<case_name>_results.pickle`_) and a restart file (_`<case_name>_restart_ts<time_step>.pickle`_). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.
 `restart_case`|str|(optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
@@ -284,7 +284,7 @@ parameter|type|description
 `omega`|float|(optional) Default: `1`. Relaxation factor for when the modes not covered by the surrogate model, when the secant model is not yet active.
 `surrogate` |dict|Surrogate component.
 `surrogate_modes`|int|(optional) Default: all modes. The number of modes from the surrogate Jacobian that should be used in the Jacobian approximation (starting from the first determined surrogate mode(s)).
-<nobr>`surrogate_synchronize`</nobr>|bool|(optional) Default: `True`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).
+<nobr>`surrogate_synchronize`</nobr>|bool|(optional) Default: `true`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).
 
 This coupled solver is closely related to the IQN-ILSM framework described in [[2](#2)].
 The settings structure for the different surrogate models discussed in this work are:
@@ -373,7 +373,7 @@ The JSON file requirements for the class `CoupledSolverTestSingleSolver` are dif
 
 parameter|type|description
 ---:|:---:|---
-`debug`|bool|(optional) Default: `False`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).
+`debug`|bool|(optional) Default: `false`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).
 `delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
 `case_name`|str|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<case_name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
 `save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.
@@ -414,7 +414,7 @@ key|value type|description
 
 In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.
 
-Finally, there is also a debug option, which can be activated by setting the boolean `self.debug` on `True` in the code file itself. Then, the above information is stored every iteration. Additionally, the residual vector is saved as well using the key `solution_r`, analogously to `solution_x` and `solution_y`. Note, however, that the pickle file can be become very large in that case.
+Finally, there is also a debug option, which can be activated by setting the boolean `self.debug` on `true` in the code file itself. Then, the above information is stored every iteration. Additionally, the residual vector is saved as well using the key `solution_r`, analogously to `solution_x` and `solution_y`. Note, however, that the pickle file can be become very large in that case.
 This option is only meant for debugging a new coupling algorithm. It should not be used in combination with restart.
 
 ## Restart

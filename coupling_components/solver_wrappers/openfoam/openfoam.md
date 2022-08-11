@@ -11,13 +11,13 @@ parameter|type|description
 ---:|:---:|---
 <nobr>`application`</nobr>|str|Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with `coconut_`.
 <nobr>`boundary_names`</nobr>|list| List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.
-`compile_clean`|bool|(optional) Default: `False`. If set to True, the adapted application will first clean and then compile.
-`debug`|bool|(optional) Default: `False`. For every iteration, additional files are saved containing information on the input and output data of the solver.
+`compile_clean`|bool|(optional) Default: `false`. If set to true, the adapted application will first clean and then compile.
+`debug`|bool|(optional) Default: `false`. For every iteration, additional files are saved containing information on the input and output data of the solver.
 `delta_t`|double|Fixed timestep size in flow solver.
 `density`|double|(optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam.
 <nobr>`interface_input`</nobr>|dict|List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `boundary_names` and the string `_input`.
 <nobr>`interface_output`</nobr>|dict|Analogous to `interface_input`, but here the name must be the concatenation of an entry from `boundary_names` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.
-<nobr>`parallel`</nobr>|bool|Set it to `True` if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the *`<case_directory>/system/decomposeParDict`* file.
+<nobr>`parallel`</nobr>|bool|Set it to `true` if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the *`<case_directory>/system/decomposeParDict`* file.
 <nobr>`residual_variables`|list|(optional) A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in *`<case_directory>/residuals.csv`*.
 <nobr>`time_precision`</nobr>|int|Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.
 `timestep_start`|int|Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.

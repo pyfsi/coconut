@@ -55,8 +55,8 @@ Superclass for all [interpolators](mappers.md#interpolators).
 
 parameter|type|description
 ------:|:----:|-----------
-`balanced_tree`|bool|(optional) Default: `False`. If set to `True` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `True` in the rare case that the tree gives problems.
-<nobr>`check_bounding_box`</nobr>|bool|(optional) Default: `True`. If `True` it is checked if the bounding boxes of the *from*- and *to*-`ModelParts` overlap.
+`balanced_tree`|bool|(optional) Default: `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.
+<nobr>`check_bounding_box`</nobr>|bool|(optional) Default: `true`. If `true` it is checked if the bounding boxes of the *from*- and *to*-`ModelParts` overlap.
 `directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
 `scaling`|list|(optional) Default: no scaling. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
 
@@ -204,7 +204,7 @@ Additional settings:
 
 parameter|type|description
 ------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|(optional) Default: `False`. If `True` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
+<nobr>`parallel`</nobr>|bool|(optional) Default: `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
 
 The kind of linear mapping depends on the number of coordinate directions, as given in the `directions` setting.
 
@@ -222,7 +222,7 @@ Additional settings:
 parameter|type|description
 ------:|:----:|-----------
 `n_nearest`|int|(optional) Default: `81`, if mapping in 3 `directions`, else `9`. Number of nearest neighbours used to perform mapping.
-<nobr>`parallel`</nobr>|bool|(optional) Default: `False`. If `True` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
+<nobr>`parallel`</nobr>|bool|(optional) Default: `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
 <nobr>`shape_parameter`</nobr>|int|(optional) Default: `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.
 
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 

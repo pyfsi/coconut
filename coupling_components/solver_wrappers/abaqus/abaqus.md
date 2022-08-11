@@ -44,7 +44,7 @@ parameter|type|description
 ### Optional
 parameter|type|description
 ---:|:---:|---
-`debug`|bool|Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
+`debug`|bool|Default: `false`. For every iteration, text files are saved with the input and output data of the solver.
 `ramp`|bool|Default: `false`. Only used when automatic time incrementation (subcycling) is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
 <nobr>`save_results`</nobr>|int|Default: `1`. Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
 
