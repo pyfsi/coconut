@@ -53,7 +53,7 @@ nav:
           - General: solver_wrappers.md
           - abaqus.md
           - fluent.md
-          - kratos.md
+          - kratos_structure.md
           - openfoam.md
           - python.md
   - Data structure: data_structure.md
