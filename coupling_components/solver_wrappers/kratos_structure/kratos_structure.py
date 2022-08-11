@@ -5,7 +5,7 @@ from coconut import tools
 import shutil
 import os
 from os.path import join
-from subprocess import Popen, run
+from subprocess import Popen, run, PIPE
 import pandas as pd
 import numpy as np
 
@@ -179,11 +179,11 @@ class SolverWrapperKratosStructure(Component):
     def check_software(self):
         with open('check_software.py', 'w') as f:
             f.write('import KratosMultiphysics\nfrom KratosMultiphysics import StructuralMechanicsApplication')
-        process = run('python3 check_software.py', capture_output=True, encoding='utf-8', shell=True, env=self.env)
+        process = run('python3 check_software.py', stdout=PIPE, stderr=PIPE, encoding='utf-8', shell=True, env=self.env)
+        os.remove('check_software.py')
         if process.returncode != 0:
             raise RuntimeError(f'KratosMultiphysics not loaded properly. Check if the solver load commands for '
                                f'the "machine_name" are correct in solver_modules.py.')
-        os.remove('check_software.py')
 
         # check version
         line = process.stdout.splitlines()[4]   # fifth line contains 'Multi-Physics X.X' with XX the version number
