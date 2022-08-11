@@ -69,7 +69,6 @@
           ],
           "time_precision": 5,
           "density": 1000,
-          "is_incompressible": true,
           "parallel": true,
           "residual_variables": [
             "Ux",
@@ -86,11 +85,12 @@
             "type": "solver_wrappers.kratos_structure.v60",
             "settings": {
               "working_directory": "CSM",
-              "cores": 1,
-              "dimensions": 3,
               "input_file": "ProjectParameters.json",
               "kratos_interface_sub_model_parts_list": [
                 "SurfaceLoad3D_tube"
+              ],
+              "pressure_directions": [
+                1
               ],
               "interface_input": [
                 {

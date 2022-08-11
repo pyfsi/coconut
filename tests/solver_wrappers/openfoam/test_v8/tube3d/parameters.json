@@ -28,7 +28,6 @@
       }
     ],
     "density": 1000,
-    "is_incompressible": true,
     "parallel": true
   }
 }

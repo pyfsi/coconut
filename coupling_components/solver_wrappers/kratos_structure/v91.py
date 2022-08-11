@@ -1,5 +1,4 @@
-from coconut.coupling_components.solver_wrappers.kratos_structure.base_solver_wrapper import \
-    BaseSolverWrapperKratosStructure
+from coconut.coupling_components.solver_wrappers.kratos_structure.kratos_structure import SolverWrapperKratosStructure
 from coconut import tools
 
 import json
@@ -12,13 +11,11 @@ def create(parameters):
     return SolverWrapperKratosStructure91(parameters)
 
 
-class SolverWrapperKratosStructure91(BaseSolverWrapperKratosStructure):
+class SolverWrapperKratosStructure91(SolverWrapperKratosStructure):
+    version = '91'
 
-    @property
-    def version_label(self):
-        return '91'
-
-    def set_solver_env(self):
+    def __init__(self, parameters):
+        super().__init__(parameters)
         self.env = tools.get_solver_env(__name__, self.working_directory)
         self.version = self.version_label
         self.check_software()
@@ -30,6 +27,11 @@ class SolverWrapperKratosStructure91(BaseSolverWrapperKratosStructure):
 
         kratos_parameters['problem_data']['start_time'] = 0.0
         kratos_parameters['solver_settings']['time_stepping']['time_step'] = self.delta_t
+        kratos_parameters['problem_data']['end_time'] = 1e15
+        if 'structure_iterations' in self.settings:
+            kratos_parameters['solver_settings']['max_iteration'] = self.settings['structure_iterations']
+        kratos_parameters['interface_sub_model_parts_list'] = self.interface_sub_model_parts_list
+        kratos_parameters['pressure_directions'] = self.check_pressure_directions()
 
         if self.save_restart:
             restart_save_dict = {'restart_processes': [{'python_module': 'save_restart_process',
@@ -48,13 +50,6 @@ class SolverWrapperKratosStructure91(BaseSolverWrapperKratosStructure):
                                  'input_type': 'rest',
                                  'input_filename': 'Structure'}
             kratos_parameters['solver_settings']['model_import_settings'].update(restart_load_dict)
-
-        kratos_parameters['solver_settings']['domain_size'] = self.dimensions
-        kratos_parameters['problem_data']['end_time'] = 1e15
-
-        self.interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
-
-        kratos_parameters['interface_sub_model_parts_list'] = self.interface_sub_model_parts_list
 
         with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
             json.dump(kratos_parameters, f, indent=2)

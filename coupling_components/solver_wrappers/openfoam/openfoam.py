@@ -61,6 +61,12 @@ class SolverWrapperOpenFOAM(Component):
                                                 timed_out_action=self.timed_out)
         self.coco_messages.remove_all_messages()
 
+        # variables for kinematic pressure and traction conversion
+        self.density_for_pressure = None
+        self.density_for_traction = None
+        self.wall_shear_stress_variable = None
+        self.wall_shear_stress_function_object_library = None
+
         # time
         self.init_time = self.init_time
         self.run_time = 0.0
@@ -93,6 +99,38 @@ class SolverWrapperOpenFOAM(Component):
                 with open(file_name, 'r') as file:
                     decomposedict_string = file.read()
                 self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
+
+        # based on solver application, set conversion settings from kinematic to static pressure/shear stress
+        # typically: incompressible solver, pressure and wallShearStress are kinematic -> multiply with fluid density
+        #            compressible solver, pressure and wallShearStress are not kinematic -> do nothing
+        kinematic_conversion_dict = {
+            'coconut_cavitatingFoam': {
+                'wall_shear_stress_variable': 'rhoWallShearStress'
+            },
+            'coconut_interFoam': {
+                'wall_shear_stress_variable': 'rhoWallShearStress'
+            },
+            'coconut_pimpleFoam': {
+                'density_for_pressure': 'look up',
+                'density_for_traction': 'look up',
+            }
+        }
+        if self.application not in kinematic_conversion_dict:
+            available_applications = ''
+            for key in kinematic_conversion_dict:
+                available_applications += f'\n\t{key}'
+            raise ValueError(f'{self.application} is not included in the kinematic_conversion_dict '
+                             f'used for treatment of (kinematic) pressure and traction\n'
+                             f'Add the solver to this dictionary '
+                             f'or use one of the existing solvers:{available_applications}')
+        else:
+            kinematic_conversion = kinematic_conversion_dict[self.application]
+            self.density_for_pressure = 1.0 if 'density_for_pressure' not in kinematic_conversion \
+                else self.settings['density']  # default density is 1
+            self.density_for_traction = 1.0 if 'density_for_traction' not in kinematic_conversion \
+                else self.settings['density']  # default density is 1
+            self.wall_shear_stress_variable = kinematic_conversion.get(
+                'wall_shear_stress_variable', 'wallShearStress')  # default shear stress variable is wallShearStress
 
         # modify controlDict file to add pressure and wall shear stress functionObjects for all the boundaries in
         # self.settings["boundary_names"]
@@ -128,7 +166,7 @@ class SolverWrapperOpenFOAM(Component):
             ids = np.arange(start_face, start_face + nfaces)
 
             # create output model part
-            mp_output = self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
+            self.model.create_model_part(f'{boundary}_output', x0, y0, z0, ids)
 
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
@@ -137,14 +175,6 @@ class SolverWrapperOpenFOAM(Component):
         # define timestep and physical time
         self.timestep = 0
         self.physical_time = self.start_time
-
-        # copy zero folder to folder with correctly named timeformat
-        if self.start_time == 0:
-            timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
-            path_orig = os.path.join(self.working_directory, '0')
-            path_new = os.path.join(self.working_directory, timestamp)
-            shutil.rmtree(path_new, ignore_errors=True)
-            shutil.copytree(path_orig, path_new)
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
         # Note concerning the sequence: The file ./processorX/constant/polyMesh/faceprocAddressing contains a list of
@@ -271,20 +301,13 @@ class SolverWrapperOpenFOAM(Component):
         # copy output data for debugging
         if self.debug:
             for boundary in self.boundary_names:
-                # specify location of pressure and traction
-                traction_name = 'TRACTION_' + boundary
-                pressure_name = 'PRESSURE_' + boundary
-                wss_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                            self.cur_timestamp, f'wallShearStress_patch_{boundary}.raw')
-                pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                             self.cur_timestamp, f'p_patch_{boundary}.raw')
-                wss_iter_filepath = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                                 self.cur_timestamp,
-                                                 f'wallShearStress_patch_{boundary}_{self.iteration}.raw')
-                pres_iter_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                                  self.cur_timestamp, f'p_patch_{boundary}_{self.iteration}.raw')
-                shutil.copy(wss_filepath, wss_iter_filepath)
-                shutil.copy(pres_filepath, pres_iter_filepath)
+                post_process_time_folder = os.path.join(self.working_directory,
+                                                        f'postProcessing/coconut_{boundary}/surface',
+                                                        self.cur_timestamp)
+                for file in (f'{self.wall_shear_stress_variable}_patch_{boundary}.raw', f'p_patch_{boundary}.raw'):
+                    path = os.path.join(post_process_time_folder, file)
+                    iter_path = os.path.join(post_process_time_folder, f'{file[:-4]}_{self.iteration}.raw')
+                    shutil.copy(path, iter_path)
 
         # return interface_output object
         return self.interface_output
@@ -293,14 +316,10 @@ class SolverWrapperOpenFOAM(Component):
         super().finalize_solution_step()
         if not self.debug:
             for boundary in self.boundary_names:
-                traction_name = 'TRACTION_' + boundary
-                pressure_name = 'PRESSURE_' + boundary
-                trac_time_folder = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                                self.cur_timestamp)
-                pres_time_folder = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                                self.cur_timestamp)
-                shutil.rmtree(trac_time_folder)
-                shutil.rmtree(pres_time_folder)
+                post_process_time_folder = os.path.join(self.working_directory,
+                                                        f'postProcessing/coconut_{boundary}/surface',
+                                                        self.cur_timestamp)
+                shutil.rmtree(post_process_time_folder)
 
         if not (self.timestep % self.write_interval):
             self.coco_messages.send_message('save')
@@ -322,10 +341,8 @@ class SolverWrapperOpenFOAM(Component):
                 os.remove(filepath)
 
             for boundary in self.boundary_names:
-                trac_folder = os.path.join(self.working_directory, f'postProcessing/TRACTION_{boundary}')
-                pres_folder = os.path.join(self.working_directory, f'postProcessing/PRESSURE_{boundary}')
-                shutil.rmtree(trac_folder, ignore_errors=True)
-                shutil.rmtree(pres_folder, ignore_errors=True)
+                post_process_folder = os.path.join(self.working_directory, f'postProcessing/coconut_{boundary}')
+                shutil.rmtree(post_process_folder, ignore_errors=True)
 
     def get_interface_input(self):
         return self.interface_input
@@ -358,16 +375,12 @@ class SolverWrapperOpenFOAM(Component):
         # pressure and wall shear stress files are removed to avoid openfoam to append data in the new iteration
         for boundary in self.boundary_names:
             # specify location of pressure and traction
-            traction_name = 'TRACTION_' + boundary
-            pressure_name = 'PRESSURE_' + boundary
-            wss_file = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                    self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
-            pres_file = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                     self.cur_timestamp, 'p_patch_' + boundary + '.raw')
-            if os.path.isfile(wss_file):
-                os.remove(wss_file)
-            if os.path.isfile(pres_file):
-                os.remove(pres_file)
+            post_process_time_folder = os.path.join(self.working_directory,
+                                                    f'postProcessing/coconut_{boundary}/surface', self.cur_timestamp)
+            for file in (f'{self.wall_shear_stress_variable}_patch_{boundary}.raw', f'p_patch_{boundary}.raw'):
+                path = os.path.join(post_process_time_folder, file)
+                if os.path.isfile(path):
+                    os.remove(path)
 
     def read_node_output(self):
         """
@@ -376,25 +389,15 @@ class SolverWrapperOpenFOAM(Component):
 
         :return:
         """
-
-        # default value is 1.0 for compressible case
-        # when the solver is incompressible, the pressure and shear stress are kinematic; therefore multiply with
-        # the fluid density
-        density = 1.0
-        if self.settings['is_incompressible']:
-            density = self.settings['density']
-
         for boundary in self.boundary_names:
             # specify location of pressure and traction
-            traction_name = 'TRACTION_' + boundary
-            pressure_name = 'PRESSURE_' + boundary
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
             nfaces = mp.size
-            wss_filename = os.path.join(self.working_directory, 'postProcessing', traction_name, 'surface',
-                                        self.cur_timestamp, 'wallShearStress_patch_' + boundary + '.raw')
-            pres_filepath = os.path.join(self.working_directory, 'postProcessing', pressure_name, 'surface',
-                                         self.cur_timestamp, 'p_patch_' + boundary + '.raw')
+            post_process_time_folder = os.path.join(self.working_directory,
+                                                    f'postProcessing/coconut_{boundary}/surface', self.cur_timestamp)
+            wss_filename = os.path.join(post_process_time_folder, f'{self.wall_shear_stress_variable}_patch_{boundary}.raw')
+            pres_filepath = os.path.join(post_process_time_folder, f'p_patch_{boundary}.raw')
 
             # check if the pressure and wall shear stress files completed by openfoam and read data
             self.check_output_file(wss_filename, nfaces)
@@ -413,8 +416,8 @@ class SolverWrapperOpenFOAM(Component):
             wall_shear_stress[pos_list,] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
-            self.interface_output.set_variable_data(mp_name, 'traction', wall_shear_stress * -1 * density)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * density)
+            self.interface_output.set_variable_data(mp_name, 'traction', -wall_shear_stress * self.density_for_traction)
+            self.interface_output.set_variable_data(mp_name, 'pressure', pressure * self.density_for_pressure)
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
@@ -583,20 +586,16 @@ class SolverWrapperOpenFOAM(Component):
             control_dict_file.write(');\n\n')
             control_dict_file.write('functions\n{\n')
 
+            control_dict_file.write(self.wall_shear_stress_dict())
             for boundary_name in self.boundary_names:
-                control_dict_file.write(self.pressure_dict(boundary_name))
-                control_dict_file.write(self.wall_shear_stress_dict(boundary_name))
-                control_dict_file.write(self.traction_dict(boundary_name))
+                control_dict_file.write(self.pressure_and_traction_dict(boundary_name))
             control_dict_file.write('}')
             self.write_footer(file_name)
 
-    def pressure_dict(self, boundary_name):
+    def wall_shear_stress_dict(self):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
-    def wall_shear_stress_dict(self, boundary_name):
-        raise NotImplementedError('Base class method is called, should be implemented in derived class')
-
-    def traction_dict(self, boundary_name):
+    def pressure_and_traction_dict(self, boundary_name):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def write_residuals_fileheader(self):
