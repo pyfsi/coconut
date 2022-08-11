@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import numpy as np
 import warnings
 import os
+from os.path import join
 import subprocess
 import pickle
 import importlib.util
@@ -16,6 +17,45 @@ def create_instance(settings):
     object_type = settings['type']
     object_module = __import__('coconut.coupling_components.' + object_type, fromlist=[object_type])
     return object_module.create(settings)
+
+
+class CocoMessages:
+
+    def __init__(self, working_directory, max_wait_time=9e4, timed_out_action=None):
+        self.working_directory = working_directory
+        self.max_wait_time = max_wait_time  # in seconds
+        self.timed_out_action = timed_out_action  # receives message as argument
+
+    def send_message(self, message):
+        file = join(self.working_directory, message + '.coco')
+        open(file, 'w').close()
+        return
+
+    def wait_message(self, message):
+        cumul_time = 0
+        file = join(self.working_directory, message + '.coco')
+        while not os.path.isfile(file):
+            time.sleep(0.01)
+            cumul_time += 0.01
+            if cumul_time > self.max_wait_time:
+                if self.timed_out_action is not None:
+                    self.timed_out_action(message)
+                raise RuntimeError(f'CoCoNuT timed out, waiting for message: {message}.coco')
+        os.remove(file)
+        return
+
+    def check_message(self, message):
+        file = join(self.working_directory, message + '.coco')
+        if os.path.isfile(file):
+            os.remove(file)
+            return True
+        return False
+
+    def remove_all_messages(self):
+        for file_name in os.listdir(self.working_directory):
+            if file_name.endswith('.coco'):
+                file = join(self.working_directory, file_name)
+                os.remove(file)
 
 
 class LayoutStyles:
@@ -38,13 +78,15 @@ class LayoutStyles:
               }
 
     def get(self, layout):
+        if layout is None:
+            return self.styles['plain']
         self.check(layout)
         return self.styles[layout]
 
     def check(self, layout):
         if layout not in self.styles:
-            raise ValueError("Layout style is not implemented, correct layout styles are:"
-                             "header, blue, green, red, warning, fail, bold, underline and plain.")
+            raise ValueError(f'Layout style "{layout}" is not implemented, correct layout styles are: '
+                             'header, blue, green, red, warning, fail, bold, underline and plain.')
 
 
 layout_style = LayoutStyles()
@@ -101,17 +143,27 @@ def print_components_info(pre, component_list):
 
 
 # print box
-def print_box(text):
+def print_box(*args, layout=None, box_layout=None, **kwargs):
     """
     This functions prints adds a box around the string text
-    :param text: str
+    :param args: str   The arguments to be printed
+    :param layout:     The text layout to be used: plain, bold, underline, inverse, negative, warning, fail, grey, red,
+                       green, yellow, flue, magenta, cyan, white, black
+    :param box_layout: The box layout to be used: plain, bold, underline, inverse, negative, warning, fail, grey, red,
+                       green, yellow, flue, magenta, cyan, white, black
+    :param **kwargs:   The kwargs of print_info
     :return: str
     """
+    text = "".join(map(str, args))
     n = len(text)
-    top = '\n┌─' + n * '─' + '─┐'
+    box_l = layout_style.get(box_layout)
+    text_l = layout_style.get(layout)
+    plain = layout_style.get('plain')
+    text = text_l + text + box_l
+    top = '\n' + box_l + '┌─' + n * '─' + '─┐'
     mid = '\n│ ' + text + ' │'
-    bottom = '\n└─' + n * '─' + '─┘'
-    print(top + mid + bottom)
+    bottom = '\n└─' + n * '─' + '─┘' + plain
+    print_info(top + mid + bottom, **kwargs)
 
 
 # timer-function
@@ -157,6 +209,7 @@ def time_initialize(initialize):
         start_time = time.time()
         initialize(*args)
         self.init_time += time.time() - start_time
+
     return wrapper
 
 
@@ -170,6 +223,7 @@ def time_solve_solution_step(solve_solution_step):
         interface_output = solve_solution_step(*args)
         self.run_time += time.time() - start_time
         return interface_output
+
     return wrapper
 
 
@@ -304,7 +358,7 @@ def get_solver_env(solver_module_name, working_dir):
         raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed.')
 
     # load the environment variables and return as python-dict
-    env_filepath = os.path.join(working_dir, env_filename)
+    env_filepath = join(working_dir, env_filename)
     with open(env_filepath, 'rb') as f:
         env = pickle.load(f)
     os.remove(env_filepath)
@@ -336,6 +390,7 @@ def solver_available(solver_module_name):
 
 class cd:
     """Context manager for changing the current working directory"""
+
     def __init__(self, new_path):
         self.new_path = os.path.expanduser(new_path)
 

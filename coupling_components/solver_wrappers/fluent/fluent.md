@@ -22,7 +22,7 @@ parameter|type|description
 ---:|:---:|---
 `case_file`|str|Name of the case file. It must be present in the folder specified by `working_directory`. The corresponding data file must also be present but has no key in the JSON file.
 `cores`|int|Total number of processor cores to use when running Fluent. When its value is negative or bigger than the maximum number of available cores, it will be automatically replaced by the maximum numver of available cores.
-`debug`|bool|(optional) Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
+`debug`|bool|(optional) Default: `false`. For every iteration, text files are saved with the input and output data of the solver.
 `delta_t`|float|Fixed time step size in flow solver. This parameter is usually specified in a higher `Component`.
 `dimensions`|int|Dimension used in flow solver: `2` for 2D and axisymmetric, `3` for 3D.
 <nobr>`end_of_timestep_commands`</nobr>|str|(optional) Fluent journal command(s) to be executed after every time step, to store drag and lift forces for example.

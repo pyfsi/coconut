@@ -17,6 +17,7 @@ class SolverWrapperKratosStructure91(SolverWrapperKratosStructure):
     def __init__(self, parameters):
         super().__init__(parameters)
         self.env = tools.get_solver_env(__name__, self.working_directory)
+        self.check_software()
 
     def update_kratos_parameter_file(self, input_file_name):
 

@@ -57,7 +57,9 @@ class SolverWrapperOpenFOAM(Component):
         self.compile_clean = self.settings.get('compile_clean', False)
 
         # remove possible CoCoNuT-message from previous interrupt
-        self.remove_all_messages()
+        self.coco_messages = tools.CocoMessages(self.working_directory, max_wait_time=600,
+                                                timed_out_action=self.timed_out)
+        self.coco_messages.remove_all_messages()
 
         # variables for kinematic pressure and traction conversion
         self.density_for_pressure = None
@@ -92,8 +94,7 @@ class SolverWrapperOpenFOAM(Component):
             file_name = os.path.join(self.working_directory, 'system/decomposeParDict')
             if not os.path.isfile(file_name):
                 raise RuntimeError(
-                    f'In the parameters:\n{self.settings}\n key "parallel" is set to {True} but {file_name} '
-                    f'does not exist')
+                    f'In the JSON parameters "parallel" is set to {True} but {file_name} does not exist')
             else:
                 with open(file_name, 'r') as file:
                     decomposedict_string = file.read()
@@ -261,8 +262,8 @@ class SolverWrapperOpenFOAM(Component):
                         tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                     subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
-        self.send_message('next')
-        self.wait_message('next_ready')
+        self.coco_messages.send_message('next')
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -291,8 +292,8 @@ class SolverWrapperOpenFOAM(Component):
 
         self.delete_prev_iter_output()
 
-        self.send_message('continue')
-        self.wait_message('continue_ready')
+        self.coco_messages.send_message('continue')
+        self.coco_messages.wait_message('continue_ready')
 
         # read data from OpenFOAM
         self.read_node_output()
@@ -321,8 +322,8 @@ class SolverWrapperOpenFOAM(Component):
                 shutil.rmtree(post_process_time_folder)
 
         if not (self.timestep % self.write_interval):
-            self.send_message('save')
-            self.wait_message('save_ready')
+            self.coco_messages.send_message('save')
+            self.coco_messages.wait_message('save_ready')
 
         if self.residual_variables is not None:
             self.write_of_residuals()
@@ -330,8 +331,8 @@ class SolverWrapperOpenFOAM(Component):
     def finalize(self):
         super().finalize()
 
-        self.send_message('stop')
-        self.wait_message('stop_ready')
+        self.coco_messages.send_message('stop')
+        self.coco_messages.wait_message('stop_ready')
         self.openfoam_process.wait()
         if not self.debug:
             files_to_delete = glob(os.path.join(self.working_directory, 'constant/pointDisplacementTmp*')) + glob(
@@ -494,43 +495,16 @@ class SolverWrapperOpenFOAM(Component):
         else:
             return True
 
-    def send_message(self, message):
-        file = os.path.join(self.working_directory, message + '.coco')
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        wait_time_lim = 10 * 60  # 10 minutes maximum waiting time for a single flow solver iteration
-        cumul_time = 0
-        file = os.path.join(self.working_directory, message + '.coco')
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-            cumul_time += 0.01
-            if cumul_time > wait_time_lim:
-                self.openfoam_process.kill()
-                self.openfoam_process.wait()
-                raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: '
-                                   f'{message}.coco')
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = os.path.join(self.working_directory, message + '.coco')
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.working_directory):
-            if file_name.endswith('.coco'):
-                file = os.path.join(self.working_directory, file_name)
-                os.remove(file)
+    def timed_out(self, message):
+        self.openfoam_process.kill()
+        self.openfoam_process.wait()
+        raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: {message}.coco')
 
     def check_software(self):
         if subprocess.check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
             raise RuntimeError(
-                f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name" are correct.')
+                f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name"'
+                f' are correct in solver_modules.py.')
 
         # check version
         with open('checkSoftware', 'r') as f:
@@ -539,7 +513,8 @@ class SolverWrapperOpenFOAM(Component):
         version_nr = last_line.split(' ')[-1]
         if version_nr[:-1] != self.version:
             raise RuntimeError(
-                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded')
+                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded.'
+                f' Check if the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
     def check_interfaces(self):
         """

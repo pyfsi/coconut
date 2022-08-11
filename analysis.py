@@ -1,5 +1,6 @@
 from coconut.tools import create_instance
 import json
+import sys
 
 
 class Analysis:
@@ -8,6 +9,10 @@ class Analysis:
         self.settings = parameters["settings"]
 
         self.number_of_timesteps = self.settings["number_of_timesteps"]
+
+        # Python version: 3.6 or higher
+        if sys.version_info < (3, 6):
+            raise RuntimeError('Python version 3.6 or higher required.')
 
         self.coupled_solver = create_instance(self.parameters["coupled_solver"])
 
@@ -38,17 +43,7 @@ if __name__ == '__main__':
     parser.add_argument('parameter_file_name', help='Name of the parameter file containing coupling information',
                         type=str, nargs=1)
 
-    # # Check number of command line arguments
-    # if len(argv) != 2:
-    #     err_msg = 'Wrong number of input arguments!\n'
-    #     err_msg += 'Use this script in the following way:\n'
-    #     err_msg += '    "python3 analysis.py <parameter>.json"\n'
-    #     raise Exception(err_msg)
-
-    # Import data structure
-    #parameter_file_name = argv[1]
-
-    # Import parameters using the data structure
+    # import parameters using the data structure
     with open(parser.parse_args().parameter_file_name, 'r') as parameter_file:
         parameters = json.load(parameter_file)
 

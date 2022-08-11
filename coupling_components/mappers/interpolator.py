@@ -17,6 +17,7 @@ class MapperInterpolator(Component):
         # store settings
         self.settings = parameters['settings']
         self.balanced_tree = self.settings.get('balanced_tree', False)
+        self.check_bounding_box = self.settings.get('check_bounding_box', True)
         self.n_nearest = 0  # must be set in sub-class!
 
         # initialization
@@ -69,7 +70,8 @@ class MapperInterpolator(Component):
             self.n_nearest = self.n_from
 
         # check bounding boxes
-        tools.check_bounding_box(model_part_from, model_part_to)
+        if self.check_bounding_box:
+            tools.check_bounding_box(model_part_from, model_part_to)
 
         # apply scaling to coordinates
         if self.scaling is not None:

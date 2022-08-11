@@ -9,7 +9,7 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 
 parameter|type|description
 ---:|:---:|---
-`debug`|bool|(optional) Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
+`debug`|bool|(optional) Default: `false`. For every iteration, text files are saved with the input and output data of the solver.
 `delta_t`|double|(optional) Fixed time step size in structural solver.
 `input_file`|str| Project parameters file used by Kratos in JSON format. In the [example cases](../../../examples/tube_fluent3d_kratos_structure3d.md), this is typically called *`ProjectParameters.json`*.
 `interface_input`|dict| List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the Kratos solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `kratos_interface_sub_model_parts_list` and the string `_input`.

@@ -24,7 +24,7 @@ The following parameters, listed in alphabetical order, need to be provided in t
 
 parameter|type|description
 ---:|:---:|---
-`debug`|bool|(optional) Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
+`debug`|bool|(optional) Default: `false`. For every iteration, text files are saved with the input and output data of the solver.
 `delta_t`|double|Fixed time step size. This parameter is usually specified in a higher component.
 `input_file`|str|(optional) Name of the input file, which may be present in the folder given in `working_directory`. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.
 `interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `['displacement']` for a flow solver and `['pressure','traction']` for a structure solver.

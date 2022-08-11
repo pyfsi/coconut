@@ -317,7 +317,7 @@ class SolverWrapperAbaqus(Component):
             for mp_id in range(len(self.mp_in)):
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                                  f'_Iter{self.iteration}.dat')
+                                  f'_it{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
@@ -398,7 +398,7 @@ class SolverWrapperAbaqus(Component):
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat')
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_it{self.iteration}.dat')
                 shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
@@ -447,14 +447,11 @@ class SolverWrapperAbaqus(Component):
 
     def check_software(self):
         """Check whether the software requirements for this wrapper are fulfilled."""
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required')
-
         # Abaqus version
         result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE, env=self.env)
         if self.version not in str(result.stdout):
-            raise RuntimeError(f'Abaqus version {self.version} is required')
+            raise RuntimeError(f'Abaqus version {self.version} is required. Check if the solver load commands for'
+                               f' the "machine_name" are correct in solver_modules.py.')
 
         # compilers
         try:

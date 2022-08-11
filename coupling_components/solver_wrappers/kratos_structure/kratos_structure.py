@@ -1,15 +1,13 @@
-import os
-import shutil
-import time
-from os.path import join
-from subprocess import Popen
-
-import numpy as np
-import pandas as pd
-from coconut import data_structure
-from coconut import tools
 from coconut.coupling_components.component import Component
-from coconut.data_structure.interface import Interface
+from coconut.data_structure.interface import Interface, Model
+from coconut import tools
+
+import shutil
+import os
+from os.path import join
+from subprocess import Popen, run, PIPE
+import pandas as pd
+import numpy as np
 
 
 def create(parameters):
@@ -30,6 +28,8 @@ class SolverWrapperKratosStructure(Component):
         self.settings = parameters['settings']
         self.working_directory = join(os.getcwd(), self.settings['working_directory'])
         self.env = None
+        self.coco_messages = tools.CocoMessages(self.working_directory)
+        self.coco_messages.remove_all_messages()
 
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -70,14 +70,14 @@ class SolverWrapperKratosStructure(Component):
         input_file_name = join(self.working_directory, self.settings['input_file'])
         self.update_kratos_parameter_file(input_file_name)
 
-        self.model = data_structure.Model()
+        self.model = Model()
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         run_script_file = os.path.join(dir_path, f'run_kratos_structural_{self.version}.py')
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
                                     shell=True, cwd=self.working_directory, env=self.env)
-        self.wait_message('start_ready')
+        self.coco_messages.wait_message('start_ready')
 
         for mp_name in self.interface_sub_model_parts_list:
             file_path = os.path.join(self.working_directory, f'{mp_name}_nodes.csv')
@@ -99,8 +99,8 @@ class SolverWrapperKratosStructure(Component):
         self.iteration = 0
         self.timestep += 1
 
-        self.send_message('next')
-        self.wait_message('next_ready')
+        self.coco_messages.send_message('next')
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -108,23 +108,23 @@ class SolverWrapperKratosStructure(Component):
 
         self.interface_input.set_interface_data(interface_input.get_interface_data())
         self.write_input_data()
-        self.send_message('continue')
-        self.wait_message('continue_ready')
+        self.coco_messages.send_message('continue')
+        self.coco_messages.wait_message('continue_ready')
         self.update_interface_output()
         return self.get_interface_output()
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        self.send_message('save')
-        self.wait_message('save_ready')
+        self.coco_messages.send_message('save')
+        self.coco_messages.wait_message('save_ready')
         if self.residual_variables is not None:
             self.write_residuals()
 
     def finalize(self):
         super().finalize()
-        self.send_message('stop')
-        self.wait_message('stop_ready')
-        self.remove_all_messages()
+        self.coco_messages.send_message('stop')
+        self.coco_messages.wait_message('stop_ready')
+        self.coco_messages.remove_all_messages()
         self.kratos_process.wait()
 
     def get_interface_input(self):
@@ -176,6 +176,24 @@ class SolverWrapperKratosStructure(Component):
     def update_kratos_parameter_file(self, input_file_name):
         raise NotImplementedError('Base class method is called, should be implemented in sub-class')
 
+    def check_software(self):
+        with open('check_software.py', 'w') as f:
+            f.write('import KratosMultiphysics\nfrom KratosMultiphysics import StructuralMechanicsApplication')
+        process = run('python3 check_software.py', stdout=PIPE, stderr=PIPE, encoding='utf-8', shell=True, env=self.env)
+        os.remove('check_software.py')
+        if process.returncode != 0:
+            raise RuntimeError(f'KratosMultiphysics not loaded properly. Check if the solver load commands for '
+                               f'the "machine_name" are correct in solver_modules.py.')
+
+        # check version
+        line = process.stdout.splitlines()[4]   # fifth line contains 'Multi-Physics X.X' with XX the version number
+        stripped_version = line.split('Multi-Physics ')[1]
+        version = stripped_version[0:3:2]
+        if version != self.version:
+            raise RuntimeError(f'Kratos {self.version[0]}.{self.version[1]} should be loaded!'
+                               f' Currently, Kratos {stripped_version} is loaded. Check if the solver load commands'
+                               f' for the "machine_name" are correct in solver_modules.py.')
+
     def check_interface(self):
         input_interface_model_parts = [param['model_part'] for param in self.settings['interface_input']]
         output_interface_model_parts = [param['model_part'] for param in self.settings['interface_output']]
@@ -206,31 +224,6 @@ class SolverWrapperKratosStructure(Component):
             raise ValueError(
                 f'Error in json file: "pressure_directions" {pressure_directions} must only contain 1 or -1')
         return pressure_directions
-
-    def send_message(self, message):
-        file = join(self.working_directory, message + '.coco')
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        file = join(self.working_directory, message + '.coco')
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = join(self.working_directory, message + '.coco')
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.working_directory):
-            if file_name.endswith('.coco'):
-                file = join(self.working_directory, file_name)
-                os.remove(file)
 
     def write_residuals_fileheader(self):
         header = ''

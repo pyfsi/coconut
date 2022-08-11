@@ -44,7 +44,7 @@ parameter|type|description
 ### Optional
 parameter|type|description
 ---:|:---:|---
-`debug`|bool|Default: `False`. For every iteration, text files are saved with the input and output data of the solver.
+`debug`|bool|Default: `false`. For every iteration, text files are saved with the input and output data of the solver.
 `ramp`|bool|Default: `false`. Only used when automatic time incrementation (subcycling) is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. 
 <nobr>`save_results`</nobr>|int|Default: `1`. Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.
 
@@ -163,7 +163,7 @@ The Abaqus wrapper tries to check if the increments comply with the `delta_t` se
 0.0001,0.0001,
 ```
 
-It is required to have `initial=NO` when using the application transient fidelity (default when no application specified). This corresponds to the `initialConditons=OFF` setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found in [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases in [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
+It is required to have `initial=NO` when using the application transient fidelity (default when no application specified). This corresponds to the `initialConditons=OFF` setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found on [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases on [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
 
 #### Input-related settings in JSON file
 The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list, but with "_load_points" appended to it. Remember that the names should not be sub-strings of each other. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.

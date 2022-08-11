@@ -209,7 +209,7 @@ class SolverWrapperTubeFlow(Component):
                 Exception('Newton failed to converge')
 
         if self.debug:
-            file_name = self.working_directory + f'/Input_Displacement_TS{self.n}_IT{self.k}.txt'
+            file_name = join(self.working_directory, f'input_displacement_ts{self.n}_it{self.k}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'x-displacement':<22}\t{'y-displacement':<22}"
                            f"\t{'z-displacement':<22}\n")
@@ -218,7 +218,7 @@ class SolverWrapperTubeFlow(Component):
                                f'\t{self.disp[i, 2]:<22}\n')
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = self.working_directory + f'/Output_Pressure_Velocity_TS{self.n}_IT{self.k}.txt'
+            file_name = join(self.working_directory, f'output_pressure_velocity_ts{self.n}_it{self.k}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
@@ -249,7 +249,7 @@ class SolverWrapperTubeFlow(Component):
         if self.debug:
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = join(self.working_directory + f'/Pressure_Velocity_TS{self.n}.txt')
+            file_name = join(self.working_directory, f'pressure_velocity_ts{self.n}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):

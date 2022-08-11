@@ -32,11 +32,12 @@ solver_load_cmd_dict = {
         'abaqus.v2021': 'ml intel/2020a && ml ABAQUS/2021 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'abaqus.v2022': 'ml intel/2020a && ml ABAQUS/2022 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'kratos_structure.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4',
-        'kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && export PYTHONPATH=path/of/the/installation/directory:'
-                                '$PYTHONPATH && export LD_LIBRARY_PATH=path/of/the/installation/directory/libs:'
-                                '$LD_LIBRARY_PATH',
-        'kratos_structure.v91': 'ml Anaconda3-python/2022.05 && export PYTHONPATH=path/of/the/installation/directory:'
-                                '$PYTHONPATH',
+        'example_kratos_structure.v70': 'ml Python/3.6.4-foss-2018a && '
+                                        'export PYTHONPATH=path/of/the/installation/directory:$PYTHONPATH && '
+                                        'export LD_LIBRARY_PATH=path/of/the/installation/directory/libs:'
+                                        '$LD_LIBRARY_PATH',
+        'example_kratos_structure.v91': 'ml Anaconda3-python/2022.05 && '
+                                        'export PYTHONPATH=path/of/the/installation/directory:$PYTHONPATH',
         'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },

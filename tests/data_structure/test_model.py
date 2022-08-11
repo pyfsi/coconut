@@ -57,6 +57,27 @@ class TestModel(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.model.model_parts
 
+    def test_eq(self):
+        model2 = Model()
+        model2.create_model_part(self.name, self.x0.copy(), self.y0.copy(), self.z0.copy(), self.ids.copy())
+
+        self.assertIsNot(self.model, model2)
+        self.assertEqual(self.model, model2)
+
+        model3 = Model()
+        model3.create_model_part('mp2', self.x0, self.y0, self.z0, self.ids)
+
+        self.assertIsNot(self.model, model3)
+        self.assertNotEqual(self.model, model3)
+
+        model4 = Model()
+        x0 = self.x0.copy()
+        x0[0] *= 0.95
+        model4.create_model_part(self.name, x0, self.y0, self.z0, self.ids)
+
+        self.assertIsNot(self.model, model4)
+        self.assertNotEqual(self.model, model4)
+
 
 if __name__ == '__main__':
     unittest.main()

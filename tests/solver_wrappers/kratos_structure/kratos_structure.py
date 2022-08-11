@@ -45,7 +45,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         initial_pressure = 100
 
         pressure = initial_pressure
-        traction_x = 0.3
+        traction_x = 0.3  # set traction values to zero for faster testing
         traction_y = 0.2
         traction_z = 0.1
         traction = np.array([traction_x, traction_y, traction_z])
