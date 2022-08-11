@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -550,8 +550,8 @@
   
   
     <li class="md-nav__item">
-      <a href="kratos.html" class="md-nav__link">
-        Kratos
+      <a href="kratos_structure.html" class="md-nav__link">
+        KratosStructure
       </a>
     </li>
   
@@ -1146,24 +1146,24 @@ aspect of the wrapper without having to test all aspects together, which can be 
 <p>The unit tests in CoCoNuT uses the unittest module available in Python. 
 To run the default collection of tests which evaluates in a matter of seconds, navigate to the <em><code>coconut/tests/</code></em> directory 
 and type following command in the terminal:
-<div class="highlight"><pre><span></span><code>python run_tests.py
+<div class="highlight"><pre><span></span><code>python3 run_tests.py
 </code></pre></div>
 This command will run all tests excluding the solver wrapper tests that are not pure Python.
 These tests are excluded because they each take several minutes to complete.
 The above command is equivalent to 
-<div class="highlight"><pre><span></span><code>python run_tests.py -fast
+<div class="highlight"><pre><span></span><code>python3 run_tests.py -fast
 </code></pre></div>
 It is equally possible to run all test by using the keyword <code>-all</code> as follows
-<div class="highlight"><pre><span></span><code>python run_tests.py -all
+<div class="highlight"><pre><span></span><code>python3 run_tests.py -all
 </code></pre></div>
 Besides these two predefined keywords, it is also possible to use (a set of) arbitrary keywords.
 For example
-<div class="highlight"><pre><span></span><code>python run_tests.py fluent abaqus
+<div class="highlight"><pre><span></span><code>python3 run_tests.py fluent abaqus
 </code></pre></div>
 will run all tests that have the <code>fluent</code> or <code>abaqus</code> in its path: e.g.
 <code>coconut.tests.solver_wrappers.fluent.test_v2019R1.test_move_nodes</code>.</p>
 <p>Besides the method of running tests explained above, it is also possible to use commands of the form
-<div class="highlight"><pre><span></span><code>python -m unittest -bv
+<div class="highlight"><pre><span></span><code>python3 -m unittest -bv
 </code></pre></div>
 Here, the keyword <code>discover</code> is assumed silently and all unit tests in modules named <code>test*.py</code><em> will be looked for.
 It will recursively find all the test files with this pattern for all the folders containing an </em><code>__init__.py</code>_ file. 
@@ -1181,17 +1181,17 @@ there are two test classes: <code>TestSolverWrapperAbaqus614Tube2D</code> and <c
 Within these test classes, four test methods are run: <code>test_repeat_iteration</code>, <code>test_restart</code>, <code>test_partitioning</code> and 
 <code>test_shear</code>. The other two methods, <code>setUpClass</code> and <code>setUp</code>, are run just before each test class and test method, respectively.</p>
 <p>If one wants to test this entire file, type following command in the terminal:</p>
-<div class="highlight"><pre><span></span><code>python -m unittest -bv solver_wrappers/abaqus/test_v614.py
+<div class="highlight"><pre><span></span><code>python3 -m unittest -bv solver_wrappers/abaqus/test_v614.py
 </code></pre></div>
 <p>This will run both test classes and all four test methods for each test class. The <code>-b</code> and <code>-v</code> keywords have the same meaning 
  as above. If one wants to test for example only the 2D test class, type the following command in the terminal:</p>
-<div class="highlight"><pre><span></span><code>python -m unittest -bv solver_wrappers.abaqus.test_v614.TestSolverWrapperAbaqus614Tube2D
+<div class="highlight"><pre><span></span><code>python3 -m unittest -bv solver_wrappers.abaqus.test_v614.TestSolverWrapperAbaqus614Tube2D
 </code></pre></div>
 <p>Note the <code>.</code> instead of the <code>/</code> to separate the folders since now classes are considered rather than files. This command 
 will cause Python to run all four test methods from the 2D test class. Finally, it is also possible to run a single 
 test method as well. Consider one wants to test only the correct partitioning of the Abaqus solver over multiple cores 
 in the 3D test class, type following command in the terminal:</p>
-<div class="highlight"><pre><span></span><code>python -m unittest -bv solver_wrappers.abaqus.test_v614.TestSolverWrapperAbaqus614Tube3D.test_partitioning
+<div class="highlight"><pre><span></span><code>python3 -m unittest -bv solver_wrappers.abaqus.test_v614.TestSolverWrapperAbaqus614Tube3D.test_partitioning
 </code></pre></div>
 <p>Here, only the test method <code>test_partitioning</code> is run in the <code>TestSolverWrapperAbaqus614Tube3D</code> class.</p>
 <h3 id="what-if-solver-software-is-not-available">What if solver software is not available</h3>
@@ -1253,10 +1253,10 @@ The availability of software is checked using the <em><code>solver_modules.py</c
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

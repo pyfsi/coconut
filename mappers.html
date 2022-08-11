@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -736,8 +736,8 @@
   
   
     <li class="md-nav__item">
-      <a href="kratos.html" class="md-nav__link">
-        Kratos
+      <a href="kratos_structure.html" class="md-nav__link">
+        KratosStructure
       </a>
     </li>
   
@@ -1298,6 +1298,16 @@ The same type of <code>ModelPart</code> mapper is used for each pair of <code>Mo
 </thead>
 <tbody>
 <tr>
+<td align="right"><code>balanced_tree</code></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>false</code>. If set to <code>true</code> a balanced <code>cKDTree</code> is created, which is more stable, but takes longer to build. Set to <code>true</code> in the rare case that the tree gives problems.</td>
+</tr>
+<tr>
+<td align="right"><nobr><code>check_bounding_box</code></nobr></td>
+<td align="center">bool</td>
+<td>(optional) Default: <code>true</code>. If <code>true</code> it is checked if the bounding boxes of the <em>from</em>- and <em>to</em>-<code>ModelParts</code> overlap.</td>
+</tr>
+<tr>
 <td align="right"><code>directions</code></td>
 <td align="center">list</td>
 <td>List of coordinate directions, maximum three entries, may contain <code>"x"</code>, <code>"y"</code>, <code>"z"</code>.</td>
@@ -1305,12 +1315,7 @@ The same type of <code>ModelPart</code> mapper is used for each pair of <code>Mo
 <tr>
 <td align="right"><code>scaling</code></td>
 <td align="center">list</td>
-<td>Optional. List of scaling factors, must be same length as <code>directions</code>. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes.</td>
-</tr>
-<tr>
-<td align="right"><nobr><code>balanced_tree</code></nobr></td>
-<td align="center">bool</td>
-<td>Optional, default <code>false</code>. If set to <code>true</code> a balanced <code>cKDTree</code> is created, which is more stable, but takes longer to build. Set to <code>true</code> in the rare case that the tree gives problems.</td>
+<td>(optional) Default: no scaling. List of scaling factors, must be same length as <code>directions</code>. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes.</td>
 </tr>
 </tbody>
 </table>
@@ -1346,19 +1351,19 @@ The same type of <code>ModelPart</code> mapper is used for each pair of <code>Mo
 <p>The <code>MapperCombined</code> is used to chain together multiple mappers. It always contains a single interpolator and zero or more transformers, which can be on either side of the interpolator. If transformers are present, <em>intermediate</em> <code>ModelParts</code> are created during initialization. This is done by working <em>inwards</em> towards the interpolator. This means that transformers upstream of the interpolator, are initialized based on the <em>from</em>-<code>ModelPart</code> (input), while downstream transformers are initialized based on the <em>to</em>-<code>ModelPart</code> (output). 
 Some transformers can only be initialized in one direction, e.g. for <code>MapperAxisymmetric3DTo2D</code>, the 2D <em>to</em>-<code>ModelPart</code> must be supplied, therefore this transformer must be downstream of the interpolator. </p>
 <p>These concepts are clarified further using an excerpt from the JSON file of the <em>Fluent 3D - Abaqus 2D</em> tube example: </p>
-<p><div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mappers.combined&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;mappers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mappers.permutation&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;permutation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]}},</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mappers.radial_basis&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;directions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;z&quot;</span><span class="p">]}},</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mappers.axisymmetric_3d*to*2d&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;direction_axial&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;direction_radial&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;n_tangential&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">}}</span><span class="w"></span>
-<span class="w">        </span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<p><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mappers.combined&quot;</span><span class="p">,</span>
+<span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;mappers&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mappers.permutation&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;permutation&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]}},</span>
+        <span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mappers.radial_basis&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;directions&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]}},</span>
+        <span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mappers.axisymmetric_3d_to_2d&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;direction_axial&quot;</span><span class="p">:</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="nt">&quot;direction_radial&quot;</span><span class="p">:</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="nt">&quot;n_tangential&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">}}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 This combined mapper contains 3 <code>ModelPart</code> mappers. In the <code>initialize</code> method, the following happens (in this order):</p>
 <ul>
@@ -1461,7 +1466,7 @@ This transformer can be initialized in both directions. </p>
 <h3 id="mapperdepth3dto2d"><code>MapperDepth3DTo2D</code></h3>
 <p>Transforms a 3D geometry to a 2D axisymmetric geometry, by collapsing in a <em>depth</em> direction. This transformer can only be initialized in the <em>backward</em> direction, i.e. based on the 2D axisymmetric <code>ModelPart</code>. Therefore, it should be <em>downstream</em> of the interpolator in the combined mapper.</p>
 <p>For scalar data, the average is taken for each 2D point. For vector data too, again removing the depth component.</p>
-<p>More information and JSON settings can be found under <a href="https://pyfsi.github.io/coconut/mappers#mapperaxisymmetric2dto3d"><code>MapperAxisymmetric2DTo3D</code></a>.</p>
+<p>More information and JSON settings can be found under <a href="https://pyfsi.github.io/coconut/mappers#mapperdepth2dto3d"><code>MapperDepth2DTo3D</code></a>.</p>
 <h2 id="interpolators">Interpolators</h2>
 <h3 id="mappernearest"><code>MapperNearest</code></h3>
 <p>Does not require additional settings compared to the <code>MapperInterpolator</code>. Does simple nearest-neighbour mapping.</p>
@@ -1479,7 +1484,7 @@ This transformer can be initialized in both directions. </p>
 <tr>
 <td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
-<td>Optional, default <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of degrees of freedom.</td>
+<td>(optional) Default: <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of degrees of freedom.</td>
 </tr>
 </tbody>
 </table>
@@ -1499,14 +1504,19 @@ This transformer can be initialized in both directions. </p>
 </thead>
 <tbody>
 <tr>
+<td align="right"><code>n_nearest</code></td>
+<td align="center">int</td>
+<td>(optional) Default: <code>81</code>, if mapping in 3 <code>directions</code>, else <code>9</code>. Number of nearest neighbours used to perform mapping.</td>
+</tr>
+<tr>
 <td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
-<td>Optional, default <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of degrees of freedom.</td>
+<td>(optional) Default: <code>false</code>. If <code>true</code> the package <code>multiprocessing</code> is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for <code>ModelParts</code> with a very high number of degrees of freedom.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>shape_parameter</code></nobr></td>
 <td align="center">int</td>
-<td>Optional, default <code>200</code>. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.</td>
+<td>(optional) Default: <code>200</code>. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.</td>
 </tr>
 </tbody>
 </table>
@@ -1659,10 +1669,10 @@ A warning is printed when the condition number of an interpolation matrix become
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

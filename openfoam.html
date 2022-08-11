@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -554,8 +554,8 @@
   
   
     <li class="md-nav__item">
-      <a href="kratos.html" class="md-nav__link">
-        Kratos
+      <a href="kratos_structure.html" class="md-nav__link">
+        KratosStructure
       </a>
     </li>
   
@@ -678,8 +678,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#treatment-of-kinmatic-pressure-and-traction" class="md-nav__link">
-    Treatment of kinmatic pressure and traction
+  <a href="#treatment-of-kinematic-pressure-and-traction" class="md-nav__link">
+    Treatment of kinematic pressure and traction
   </a>
   
 </li>
@@ -1251,12 +1251,12 @@ multiphysics problems.</p>
 <tr>
 <td align="right"><code>compile_clean</code></td>
 <td align="center">bool</td>
-<td>(optional) Default: <code>False</code>. If set to True, the adapted application will first clean and then compile.</td>
+<td>(optional) Default: <code>false</code>. If set to true, the adapted application will first clean and then compile.</td>
 </tr>
 <tr>
 <td align="right"><code>debug</code></td>
 <td align="center">bool</td>
-<td>(optional) Default: <code>False</code>. For every iteration, additional files are saved containing information on the input and output data of the solver.</td>
+<td>(optional) Default: <code>false</code>. For every iteration, additional files are saved containing information on the input and output data of the solver.</td>
 </tr>
 <tr>
 <td align="right"><code>delta_t</code></td>
@@ -1281,12 +1281,12 @@ multiphysics problems.</p>
 <tr>
 <td align="right"><nobr><code>parallel</code></nobr></td>
 <td align="center">bool</td>
-<td>Set it to <code>True</code> if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the <em><code>&lt;case_directory&gt;/system/decomposeParDict</code></em> file.</td>
+<td>Set it to <code>true</code> if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the <em><code>&lt;case_directory&gt;/system/decomposeParDict</code></em> file.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>residual_variables</code></td>
-<td align="center">list (optional)</td>
-<td>A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in <em><code>&lt;case_directory&gt;/residuals.csv</code></em>.</td>
+<td align="center">list</td>
+<td>(optional) A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in <em><code>&lt;case_directory&gt;/residuals.csv</code></em>.</td>
 </tr>
 <tr>
 <td align="right"><nobr><code>time_precision</code></nobr></td>
@@ -1295,7 +1295,7 @@ multiphysics problems.</p>
 </tr>
 <tr>
 <td align="right"><code>timestep_start</code></td>
-<td align="center">int (optional)</td>
+<td align="center">int</td>
 <td>Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.</td>
 </tr>
 <tr>
@@ -1310,7 +1310,7 @@ coupled solver. However, they can also be given directly as parameter of the sol
 testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used, and a
 warning is printed.</p>
 <h2 id="overview-of-the-openfoam-wrapper">Overview of the OpenFOAM-wrapper</h2>
-<p>The solver wrapper can be found in <em><code>solver_wrappers/openfoam</code></em> and consists of a python-file named <em><code>vX.py</code></em>, with <code>X</code>
+<p>The solver wrapper can be found in <em><code>solver_wrappers/openfoam</code></em> and consists of a Python-file named <em><code>vX.py</code></em>, with <code>X</code>
 the identifier of the OpenFOAM-version (e.g. <em><code>v41.py</code></em> for OpenFOAM 4.1). Finally, using an OpenFOAM-solver in CoCoNuT
 requires the adaptation of the solver to accommodate communications with the <code>coupled_solvers</code> during the
 FSI-simulation. Currently, only <code>pimpleFoam</code> and <code>interFoam</code> have been adapted; the solvers called by the solver wrapper
@@ -1318,7 +1318,7 @@ have the same name as the original OpenFOAM-solver but with the prefix <code>coc
 solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the
 OpenFOAM-module and using <code>wmake</code> in the directory <em><code>solver_wrapper/coconut_&lt;solver_name&gt;</code></em>).</p>
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
-<p>During initialization, the case settings as defined in the JSON-file are read into the corresponding python-variables.
+<p>During initialization, the case settings as defined in the JSON-file are read into the corresponding Python-variables.
 Afterwards, the required OpenFOAM-files are modified, and some checks are in place to verify whether the correct modules
 are loaded. Next, the model-parts for the <code>interface_input/output</code> are created. Finally, the variables on each interface
 are stored in the data-structure of CoCoNuT.</p>
@@ -1340,8 +1340,8 @@ save-option is done in OpenFOAM.</p>
 <p>The OpenFOAM-subprocess, which was launched in the <code>Initialize</code> method, is killed.</p>
 <h2 id="comments">Comments</h2>
 <ul>
-<li>Files with extension <code>.coco</code> are used to pass messages between python-script and OpenFOAM. After sending a message
-  from python to OpenFOAM, the python-script is paused until it receives the corresponding message from OpenFOAM. The
+<li>Files with extension <code>.coco</code> are used to pass messages between Python-script and OpenFOAM. After sending a message
+  from Python to OpenFOAM, the Python-script is paused until it receives the corresponding message from OpenFOAM. The
   OpenFOAM-solver is operating in an infinite <code>while</code>-loop until it receives a message from Python. Upon receipt of this
   message, OpenFOAM executes the corresponding action after which it sends a response to Python and reverts into its
   infinite loop (waiting mode).</li>
@@ -1353,7 +1353,7 @@ save-option is done in OpenFOAM.</p>
   this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.</li>
 <li>The interface loads are stored in the directory <em><code>postProcessing</code></em>, under the names <em><code>coconut_&lt;boundary_name&gt;</code></em>.
   These are constructed from the file <em><code>controlDict</code></em>, defined in the <code>_init_</code> method
-  of the solver wrapper in python.</li>
+  of the solver wrapper in Python.</li>
 </ul>
 <h2 id="overview-of-an-openfoam-solver-used-in-coconut">Overview of an OpenFOAM-solver used in CoCoNuT</h2>
 <p>Default OpenFOAM-solvers cannot be used in the CoCoNuT-framework, but need to be modified. The adapted solvers are
@@ -1371,7 +1371,7 @@ undertaken:</p>
   proper CoCoNuT-operation, OpenFOAM is killed when the solver wrapper reaches the final time step.</li>
 <li>Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional
   statements.</li>
-<li>The while-loop contains several conditional statements, each of which check whether the python-code in CoCoNuT has
+<li>The while-loop contains several conditional statements, each of which check whether the Python-code in CoCoNuT has
   sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the
   OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: <em><code>next.coco</code></em>
   , <em><code>continue.coco</code></em>, <em><code>save.coco</code></em>, <em><code>stop.coco</code></em>.</li>
@@ -1388,19 +1388,19 @@ undertaken:</p>
   forget to delete the original <em><code>save.coco</code></em> file, which is advised to do just before creating the <em><code>save_ready.coco</code></em>,
   so near the end of the <code>if</code>-clause.</li>
 <li>If the file <em><code>stop.coco</code></em> exists, a <code>break</code>-statement should end the infinite loop (the subprocess is also killed in
-  the python-code). OpenFOAM should create a file <em><code>stop_ready.coco</code></em> before breaking the <code>while</code>-loop. Do not forget to
+  the Python-code). OpenFOAM should create a file <em><code>stop_ready.coco</code></em> before breaking the <code>while</code>-loop. Do not forget to
   delete the original <em><code>stop.coco</code></em> file, which is advised to do just before creating the <em><code>stop_ready.coco</code></em>, so near
   the end of the <code>if</code>-clause.</li>
 </ul>
-<h2 id="treatment-of-kinmatic-pressure-and-traction">Treatment of kinmatic pressure and traction</h2>
+<h2 id="treatment-of-kinematic-pressure-and-traction">Treatment of kinematic pressure and traction</h2>
 <p>If the OpenFOAM application is intended for incompressible flows, e.g. pimpleFoam, it solves the incompressible Navier-Stokes equations.
 As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
 In order to couple these solvers to a structure solver, the pressure and traction are required to be expressed in Pa (kg/ms²).</p>
 <p>For these solvers, the <code>density</code> parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
 In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.</p>
-<p>There is a thrid possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
+<p>There is a third possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
 but the used momentumTransportModel is incompressible.
-It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or acutal traction.
+It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or actual traction.
 In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
 Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
 and returns the actual traction, even if the momentumTransportModel is incompressible.
@@ -1465,7 +1465,7 @@ OpenFOAM-directory:</p>
 <li><em><code>constant/dynamicMeshDict</code></em>which contains the settings for OpenFOAM's dynamic motion solver</li>
 <li><em><code>system/decomposeParDict</code></em> with the necessary decomposition of the fluid domain (if <code>cores</code>&gt;1)</li>
 <li><em><code>0/pointDisplacement</code></em> with all the boundary conditions, including <code>fixedValue</code> boundary condition for the FSI
-  boundaries. This is used as a template for the <em><code>pointDisplacementTmp</code></em> to supply displacement boundary conditon (
+  boundaries. This is used as a template for the <em><code>pointDisplacementTmp</code></em> to supply displacement boundary condition (
   from structural solver) for the FSI-interface.</li>
 </ul>
 <h3 id="comments_1">Comments</h3>
@@ -1480,7 +1480,7 @@ OpenFOAM-directory:</p>
 <p>First version.</p>
 <h3 id="v8-openfoam-8">v8 (OpenFOAM 8)</h3>
 <p>In this OpenFOAM version, the name of some commands and classes are different. The required changes are visible in the
-version specific solver wrapper python file <em><code>v8.py</code></em>.</p>
+version specific solver wrapper Python file <em><code>v8.py</code></em>.</p>
 <p>Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:</p>
 <ul>
 <li>The interpolation point for <code>arc</code> definitions using <code>blockMesh</code> has to be on the arc and not just on its 'elongation'</li>
@@ -1510,7 +1510,7 @@ version specific solver wrapper python file <em><code>v8.py</code></em>.</p>
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="kratos.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Kratos" rel="prev">
+        <a href="kratos_structure.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: KratosStructure" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1519,7 +1519,7 @@ version specific solver wrapper python file <em><code>v8.py</code></em>.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Kratos
+              KratosStructure
             </div>
           </div>
         </a>
@@ -1562,10 +1562,10 @@ version specific solver wrapper python file <em><code>v8.py</code></em>.</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
