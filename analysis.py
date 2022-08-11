@@ -43,16 +43,6 @@ if __name__ == '__main__':
     parser.add_argument('parameter_file_name', help='Name of the parameter file containing coupling information',
                         type=str, nargs=1)
 
-    # # check number of command line arguments
-    # if len(argv) != 2:
-    #     err_msg = 'Wrong number of input arguments!\n'
-    #     err_msg += 'Use this script in the following way:\n'
-    #     err_msg += '    "python3 analysis.py <parameter>.json"\n'
-    #     raise Exception(err_msg)
-
-    # # import data structure
-    # parameter_file_name = argv[1]
-
     # import parameters using the data structure
     with open(parser.parse_args().parameter_file_name, 'r') as parameter_file:
         parameters = json.load(parameter_file)
