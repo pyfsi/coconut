@@ -8,7 +8,6 @@ import glob
 import subprocess
 import multiprocessing
 import numpy as np
-import sys
 import hashlib
 from getpass import getuser
 import shutil

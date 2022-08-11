@@ -1,5 +1,5 @@
 from coconut.coupling_components.component import Component
-from coconut.data_structure.interface import Interface
+from coconut.data_structure.interface import Interface, Model
 from coconut import tools
 
 import shutil
@@ -28,6 +28,8 @@ class SolverWrapperKratosStructure(Component):
         self.settings = parameters['settings']
         self.working_directory = join(os.getcwd(), self.settings['working_directory'])
         self.env = None
+        self.coco_messages = tools.CocoMessages(self.working_directory)
+        self.coco_messages.remove_all_messages()
 
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -68,16 +70,13 @@ class SolverWrapperKratosStructure(Component):
         input_file_name = join(self.working_directory, self.settings['input_file'])
         self.update_kratos_parameter_file(input_file_name)
 
-        self.model = data_structure.Model()
+        self.model = Model()
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         run_script_file = os.path.join(dir_path, f'run_kratos_structural_{self.version}.py')
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
                                     shell=True, cwd=self.working_directory, env=self.env)
-
-        self.coco_messages = tools.CocoMessages(self.working_directory)
-        self.coco_messages.remove_all_messages()
         self.coco_messages.wait_message('start_ready')
 
         for mp_name in self.interface_sub_model_parts_list:
