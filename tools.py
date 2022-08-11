@@ -346,6 +346,8 @@ def get_solver_env(solver_module_name, working_dir):
 
     # get the module load command for the solver
     solver_load_cmd = solver_modules.get_solver_cmd(solver_name)
+    if not solver_load_cmd:
+        solver_load_cmd = 'echo'
 
     # run the module load command and store the environment
     try:

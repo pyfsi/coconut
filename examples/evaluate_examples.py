@@ -15,8 +15,8 @@ This file runs the example cases and compares the results and convergence histor
 pickle files.
 
 Run this file with the unittest framework (see unittest documentation for command-line flags):
-    python evaluate_examples.py
-Or just as a python file.
+    python3 evaluate_examples.py
+Or just as a Python file.
 In order to exclude some examples from running, comment out the corresponding class in the tuple 'test_cases'.
 
 To include another example, create a new class analogous to the existing classes and add the class name to the tuple

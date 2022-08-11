@@ -2,13 +2,13 @@
 
 This example is identical to the example Fluent2D and Abaqus2D, except for the use of a surrogate model.
 This is reflected in a different coupled solver and corresponding models, and the type of predictor.
-The used surrogate model is the combination of the 1D python solvers TubeFlow and TubeStructure.
+The used surrogate model is the combination of the 1D Python solvers TubeFlow and TubeStructure.
 
 ## Coupling algorithm
 
 The coupled solver used is `coupled_solvers.iqnism`, which has a `model` and `surrogate` setting, both of which are a type of model component.
 The secant model used is `coupled_solvers.models.mvmf` where 100 time steps are reused: the previous time steps are used as surrogate model.
-In addition, a `surrogate` model is defined, which uses the 1D python solvers TubeFlow and TubeStructure.
+In addition, a `surrogate` model is defined, which uses the 1D Python solvers TubeFlow and TubeStructure.
 Because of this different discretization, mapping is required. This is achieved using the `mapped` model.
 The `surrogate` model has its own coupled solver with its own predictor, convergence criterion, solver wrappers and models.
 The model is once more `coupled_solvers.models.mvmf` that reuses 100 time steps as surrogate model.
