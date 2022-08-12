@@ -69,12 +69,11 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        yt = self.solver_wrappers[0].solve_solution_step(self.x)
-        self.model_f.add(self.x, yt)
-        self.y = yt.copy()
-        xt = self.solver_wrappers[1].solve_solution_step(self.y)
-        self.model_s.add(self.y, xt)
+        self.y = yt = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        self.model_f.add(self.x.copy(), yt.copy())
+        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
+        self.model_s.add(self.y.copy(), xt)
         self.finalize_iteration(r)
         # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
@@ -90,8 +89,8 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                     RuntimeError('GMRES failed')
                 dx.set_interface_data(dx_sol)
             self.x += dx
-            yt = self.solver_wrappers[0].solve_solution_step(self.x)
-            self.model_f.add(self.x, yt)
+            yt = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+            self.model_f.add(self.x.copy(), yt.copy())
             if not self.model_s.is_ready() or not self.model_f.is_ready:
                 dy = yt - self.y
             else:
@@ -102,9 +101,9 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                     RuntimeError('GMRES failed')
                 dy.set_interface_data(dy_sol)
             self.y += dy
-            xt = self.solver_wrappers[1].solve_solution_step(self.y)
-            self.model_s.add(self.y, xt)
+            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
+            self.model_s.add(self.y.copy(), xt)
             self.finalize_iteration(r)
 
     def check_restart_data(self, restart_data):

@@ -149,10 +149,10 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         # store data in self.x and self.y
         if self.solver_index == 1:
             self.y = interface_input
-            self.x = self.solver_wrapper.solve_solution_step(interface_input)
+            self.x = self.solver_wrapper.solve_solution_step(interface_input.copy()).copy()
         else:
             self.x = interface_input
-            self.y = self.solver_wrapper.solve_solution_step(interface_input)
+            self.y = self.solver_wrapper.solve_solution_step(interface_input.copy()).copy()
         self.finalize_iteration(self.x * 0)
 
     def print_header(self):

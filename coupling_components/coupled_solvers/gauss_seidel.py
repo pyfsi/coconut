@@ -151,23 +151,21 @@ class CoupledSolverGaussSeidel(Component):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        y = self.solver_wrappers[0].solve_solution_step(self.x.copy())
-        self.y = y.copy()
-        xt = self.solver_wrappers[1].solve_solution_step(y)
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        xt = self.solver_wrappers[1].solve_solution_step(self.y).copy()
         r = xt - self.x
         self.finalize_iteration(r)
         # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += r
-            y = self.solver_wrappers[0].solve_solution_step(self.x)
-            self.y = y.copy()
-            xt = self.solver_wrappers[1].solve_solution_step(y)
+            self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
             self.finalize_iteration(r)
 
     def finalize_iteration(self, r):
         self.iteration += 1  # increment iteration
-        self.convergence_criterion.update(r)  # update convergence criterion
+        self.convergence_criterion.update(r.copy())  # update convergence criterion
         self.print_iteration_info(r)  # print iteration information
 
         # update save results
