@@ -126,7 +126,7 @@ class SolverWrapperTubeRingmodel(Component):
         # output
         self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.rreference
         self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
-        return self.interface_output  # TODO: make copy?
+        return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
@@ -142,8 +142,8 @@ class SolverWrapperTubeRingmodel(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-    def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input
+    def get_interface_input(self):
+        return self.interface_input.copy()
 
-    def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output
+    def get_interface_output(self):
+        return self.interface_output.copy()

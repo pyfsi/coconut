@@ -128,10 +128,10 @@ class SolverWrapperKratosStructure(Component):
         self.kratos_process.wait()
 
     def get_interface_input(self):
-        return self.interface_input
+        return self.interface_input.copy()
 
     def get_interface_output(self):
-        return self.interface_output
+        return self.interface_output.copy()
 
     def write_input_data(self):
         interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']

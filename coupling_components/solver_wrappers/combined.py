@@ -93,7 +93,7 @@ class SolverWrapperCombined(Component):
         for sol_wrapper in self.mapped_solver_wrapper_list:
             other_interface_output = sol_wrapper.get_interface_output()
             self.interface_output += other_interface_output
-        return self.interface_output
+        return self.interface_output.copy()
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' combines the following solver wrappers:')

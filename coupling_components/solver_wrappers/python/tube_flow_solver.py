@@ -228,7 +228,7 @@ class SolverWrapperTubeFlow(Component):
         self.pres = self.p[1:self.m + 1] * self.rhof
         self.interface_output.set_variable_data(self.output_model_part_name, 'pressure', self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data(self.output_model_part_name, 'traction', self.trac)
-        return self.interface_output  # TODO: make copy?
+        return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
@@ -255,11 +255,11 @@ class SolverWrapperTubeFlow(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
 
-    def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input
+    def get_interface_input(self):
+        return self.interface_input.copy()
 
-    def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output
+    def get_interface_output(self):
+        return self.interface_output.copy()
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:
