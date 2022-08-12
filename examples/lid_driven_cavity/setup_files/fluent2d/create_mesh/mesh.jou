@@ -1,0 +1,41 @@
+/LID DRIVEN CAVITY
+    /PARAMETERS
+$L = 1
+$H = 1
+$HC = 0.875
+$cavitybottomintervals = 32
+$cavitysideintervals = 28
+$airsideintervalsintervals = 4
+    /CODE
+save name "mesh_lid_driven_cavity.dbs"
+solver select "FLUENT 5/6"
+vertex create "CavityLeftBottom" coordinates 0 0 0
+vertex create "CavityLeftTop" coordinates 0 $HC 0
+vertex create "AirLeftTop" coordinates 0 1 0
+vertex create "CavityRightBottom" coordinates 1 0 0
+vertex create "CavityRightTop" coordinates 1 $HC 0
+vertex create "AirRightTop" coordinates 1 1 0
+edge create "CavityBottom" straight "CavityLeftBottom" "CavityRightBottom"
+edge create "CavityLeft" straight "CavityLeftTop" "CavityLeftBottom"
+edge create "CavityRight" straight "CavityRightTop" "CavityRightBottom"
+edge create "AirLeft" straight "CavityLeftTop" "AirLeftTop"
+edge create "AirRight" straight "CavityRightTop" "AirRightTop"
+edge create "AirTop" straight "AirLeftTop" "AirRightTop"
+face create "FluidInternal" wireframe "AirTop" "AirRight" "CavityRight" "CavityBottom" "CavityLeft" "AirLeft"
+edge link "CavityBottom" "AirTop" directions 0 0
+edge link "AirLeft" "AirRight" directions 0 0
+edge link "CavityLeft" "CavityRight" directions 0 0
+edge mesh "CavityBottom" intervals $cavitybottomintervals
+edge mesh "AirLeft" intervals $airsideintervalsintervals
+edge mesh "CavityLeft" intervals $cavitysideintervals
+face mesh "FluidInternal" submap
+physics create "In" btype "VELOCITY_INLET" edge "AirLeft"
+physics create "TopInflow" btype "VELOCITY_INLET" edge "AirTop"
+physics create "Out" btype "PRESSURE_OUTLET" edge "AirRight"
+physics create "CavityLeft" btype "WALL" edge "CavityLeft"
+physics create "CavityRight" btype "WALL" edge "CavityRight"
+physics create "CavityBottom" btype "WALL" edge "CavityBottom"
+physics create "Fluid" ctype "FLUID" face "FluidInternal"
+export fluent5 "mesh_lid_driven_cavity.msh" nozval
+save
+end

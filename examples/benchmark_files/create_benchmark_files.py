@@ -6,7 +6,7 @@ import os
 import shutil
 import time
 from shutil import copytree, copy
-from os.path import join
+from os.path import join, isdir
 
 """
 This file creates benchmark pickle files used by the script 'evaluate_examples.py'.
@@ -28,23 +28,25 @@ benchmark = join(examples_path, 'benchmark_files')
 # example and tuple with number of time steps and optional additional files
 # comment out examples that you do not want to make benchmark files for
 examples = {
-    'breaking_dam_fluent2d_abaqus2d': 2,
-    'tube_fluent2d_abaqus2d': 2,
-    'tube_fluent2d_abaqus2d_steady': 1,
-    'tube_fluent2d_abaqus2d_surrogate': 2,
-    'tube_fluent2d_tube_structure': 2,
-    'tube_fluent3d_abaqus2d': 2,
-    'tube_fluent3d_abaqus3d': 2,
-    'tube_fluent3d_kratos_structure3d': 2,
-    'tube_openfoam3d_abaqus3d': 2,
-    'tube_openfoam3d_kratos_structure3d': 2,
-    'tube_tube_flow_abaqus2d': 2,
-    'tube_tube_flow_tube_ringmodel': 10,
-    'tube_tube_flow_tube_structure': 10,
-    'tube_tube_flow_tube_structure_analytical': 10,
-    'tube_tube_flow_tube_structure_surrogate': 10,
-    'turek_fluent2d_abaqus2d': 2,
-    'turek_fluent2d_abaqus2d_steady': 1
+    'breaking_dam/fluent2d_abaqus2d': 2,
+    'lid_driven_cavity/fluent2d_kratos_structure2d': 2,
+    'lid_driven_cavity/openfoam2d_kratos_structure2d': 2,
+    'tube/fluent2d_abaqus2d': 2,
+    'tube/fluent2d_abaqus2d_steady': 1,
+    'tube/fluent2d_abaqus2d_surrogate': 2,
+    'tube/fluent2d_tube_structure': 2,
+    'tube/fluent3d_abaqus2d': 2,
+    'tube/fluent3d_abaqus3d': 2,
+    'tube/fluent3d_kratos_structure3d': 2,
+    'tube/openfoam3d_abaqus3d': 2,
+    'tube/openfoam3d_kratos_structure3d': 2,
+    'tube/tube_flow_abaqus2d': 2,
+    'tube/tube_flow_tube_ringmodel': 10,
+    'tube/tube_flow_tube_structure': 10,
+    'tube/tube_flow_tube_structure_analytical': 10,
+    'tube/tube_flow_tube_structure_surrogate': 10,
+    'turek/fluent2d_abaqus2d': 2,
+    'turek/fluent2d_abaqus2d_steady': 1
 }
 
 
@@ -52,7 +54,7 @@ def set_up():
     if os.path.exists(tmp_path):
         shutil.rmtree(tmp_path)
     os.mkdir(tmp_path)
-    copytree(join(examples_path, "setup_files"), join(tmp_path, "setup_files"))
+    shutil.copy(join(examples_path, 'run_simulation.py'), tmp_path)
 
 
 def clean_up():
@@ -64,8 +66,13 @@ def create_benchmark(example, number_of_timesteps):
     # set paths
     tmp_example_path = join(tmp_path, example)
 
+    # copy setup_files folder to tmp
+    case = example.split('/')[0]
+    if not isdir(join(tmp_path, case)):
+        copytree(join(examples_path, case, "setup_files"), join(tmp_path, case, "setup_files"))
+
     # copy example folder to tmp
-    os.mkdir(tmp_example_path)
+    os.makedirs(tmp_example_path)
     for file in ('parameters.json', 'setup_case.py'):
         copy(join(examples_path, example, file), tmp_example_path)
 
@@ -91,6 +98,8 @@ def create_benchmark(example, number_of_timesteps):
     os.chdir(execute_path)
 
     # move and rename results data
+    if not isdir(join(benchmark, case)):
+        os.mkdir(join(benchmark, case))
     shutil.move(join(tmp_example_path, 'case_results.pickle'), join(benchmark, f'{example}.pickle'))
 
 

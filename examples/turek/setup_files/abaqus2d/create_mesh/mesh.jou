@@ -1,0 +1,48 @@
+/TUREK 2D
+    /PARAMETERS
+$beamtopinsideintervals = 120
+/30 60 120
+$beamrightinsideintervals = 12
+/3 6 12
+    /CODE
+save name "mesh_turek.dbs"
+solver select "Generic"
+vertex create "CircleCenter" coordinates 0.2 0.2 0
+vertex create "CircleLeft" coordinates 0.15 0.2 0
+vertex create "CircleTop" coordinates 0.2 0.25 0
+vertex create "BeamRightBottom" coordinates 0.6 0.19 0
+vertex create "BeamRightTop" coordinates 0.6 0.21 0
+vertex create "BeamLeftTop" coordinates 0.2 0.21 0
+vertex create "BeamLeftBottom" coordinates 0.2 0.19 0
+edge create "BeamTop" straight "BeamLeftTop" "BeamRightTop"
+edge create "BeamBottom" straight "BeamLeftBottom" "BeamRightBottom"
+edge create "BeamRight" straight "BeamRightTop" "BeamRightBottom"
+edge create "Circle" center2points "CircleCenter" "CircleLeft" "CircleTop" circle
+edge split "BeamTop" tolerance 1e-06 edge "Circle" bientity connected
+edge delete "BeamTop"
+edge modify "Circle" label "CircleTop"
+edge modify "edge.5" label "BeamTop"
+edge modify "edge.6" label "CircleBottom"
+edge split "BeamBottom" tolerance 1e-06 edge "CircleBottom" bientity connected
+edge delete "BeamBottom"
+edge modify "CircleBottom" label "BeamLeftInside"
+edge modify "edge.7" label "BeamBottom"
+edge modify "edge.8" label "CircleBottom"
+edge delete "CircleBottom" "CircleTop"
+edge modify "BeamTop" label "BeamTopInside"
+edge modify "BeamRight" label "BeamRightInside"
+edge modify "BeamBottom" label "BeamBottomInside"
+face create "BeamInternal" wireframe "BeamTopInside" "BeamRightInside" "BeamBottomInside" "BeamLeftInside"
+edge link "BeamTopInside" "BeamBottomInside" directions 0 0
+default set "MESH.NODES.QUAD" numeric 8
+edge mesh "BeamTopInside" intervals $beamtopinsideintervals
+edge mesh "BeamRightInside" intervals $beamrightinsideintervals
+face mesh "BeamInternal" submap
+physics create "BeamInsideMoving2" btype "NODE" edge "BeamTopInside"
+physics create "BeamInsideMoving1" btype "NODE" edge "BeamRightInside"
+physics create "BeamInsideMoving0" btype "NODE" edge "BeamBottomInside"
+physics create "BeamInsideFixed" btype "NODE" edge "BeamLeftInside"
+physics create "Beam" ctype "SOLID" face "BeamInternal"
+export gambit "mesh_turek.neu"
+save
+end

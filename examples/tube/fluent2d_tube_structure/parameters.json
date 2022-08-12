@@ -1,0 +1,167 @@
+{
+  "settings": {
+    "number_of_timesteps": 100
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.0001,
+      "omega": 0.05,
+      "save_results": 1,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-10,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 15
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-5,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.fluent.v2019R3",
+        "settings": {
+          "working_directory": "CFD",
+          "case_file": "case_tube2d.cas",
+          "dimensions": 2,
+          "unsteady": true,
+          "thread_names": [
+            "beamoutside"
+          ],
+          "interface_input": [
+            {
+              "model_part": "beamoutside_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "beamoutside_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "cores": 4,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 200,
+          "save_results": 1
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.python.tube_structure_solver",
+            "settings": {
+              "working_directory": "CSM",
+              "input_file": "solver_parameters.json",
+              "interface_input": [
+                {
+                  "model_part": "wall",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "wall",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.combined",
+              "settings": {
+                "mappers": [
+                  {
+                    "type": "mappers.permutation",
+                    "settings": {
+                      "permutation": [
+                        2,
+                        1,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type": "mappers.linear",
+                    "settings": {
+                      "directions": [
+                        "y",
+                        "z"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.combined",
+              "settings": {
+                "mappers": [
+                  {
+                    "type": "mappers.linear",
+                    "settings": {
+                      "directions": [
+                        "y",
+                        "z"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "mappers.permutation",
+                    "settings": {
+                      "permutation": [
+                        2,
+                        1,
+                        0
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

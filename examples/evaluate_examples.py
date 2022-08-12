@@ -8,7 +8,7 @@ import json
 import os
 import shutil
 from unittest import TestSuite, TestLoader
-from os.path import join
+from os.path import join, isdir
 
 """
 This file runs the example cases and compares the results and convergence history, with previously save benchmark
@@ -40,7 +40,7 @@ def setUpModule():
     if os.path.exists(tmp_path):
         shutil.rmtree(tmp_path)
     os.mkdir(tmp_path)
-    shutil.copytree(join(examples_path, "setup_files"), join(tmp_path, "setup_files"))
+    shutil.copy(join(examples_path, 'run_simulation.py'), tmp_path)
 
 
 def tearDownModule():
@@ -64,8 +64,15 @@ class EvaluateExamples(unittest.TestCase):
         # set paths
         tmp_example_path = join(tmp_path, cls.example)
 
+        # copy setup_files folder to tmp
+        case = cls.example.split('/')[0]
+        if case == 'test_single_solver':
+            case = 'tube'
+        if not isdir(join(tmp_path, case)):
+            shutil.copytree(join(examples_path, case, "setup_files"), join(tmp_path, case, "setup_files"))
+
         # copy example folder to tmp
-        os.mkdir(tmp_example_path)
+        os.makedirs(tmp_example_path)
         for file in ['parameters.json', 'setup_case.py'] + cls.additional_files:
             shutil.copy(join(examples_path, cls.example, file), tmp_example_path)
 
@@ -120,7 +127,17 @@ class EvaluateExamples(unittest.TestCase):
 
 
 class TestBreakingDamFluent2DAbaqus2D(EvaluateExamples):
-    example = 'breaking_dam_fluent2d_abaqus2d'
+    example = 'breaking_dam/fluent2d_abaqus2d'
+    number_of_timesteps = 2
+
+
+class TestLidDrivenCavityFluent2DKratosStructure2D(EvaluateExamples):
+    example = 'lid_driven_cavity/fluent2d_kratos_structure2d'
+    number_of_timesteps = 2
+
+
+class TestLidDrivenCavityOpenFOAM2DKratosStructure2D(EvaluateExamples):
+    example = 'lid_driven_cavity/openfoam2d_kratos_structure2d'
     number_of_timesteps = 2
 
 
@@ -132,59 +149,59 @@ class TestTestSingleSolver(EvaluateExamples):
 
 
 class TestTubeFluent2DAbaqus2D(EvaluateExamples):
-    example = 'tube_fluent2d_abaqus2d'
+    example = 'tube/fluent2d_abaqus2d'
     number_of_timesteps = 2
 
 
 class TestTubeFluent2DAbaqus2DSteady(EvaluateExamples):
-    example = 'tube_fluent2d_abaqus2d_steady'
+    example = 'tube/fluent2d_abaqus2d_steady'
     number_of_timesteps = 1
 
 
 class TestTubeFluent2DAbaqus2DSurrogate(EvaluateExamples):
-    example = 'tube_fluent2d_abaqus2d_surrogate'
+    example = 'tube/fluent2d_abaqus2d_surrogate'
     number_of_timesteps = 2
 
 
 class TestTubeFluent2DTubeStructure(EvaluateExamples):
-    example = 'tube_fluent2d_tube_structure'
+    example = 'tube/fluent2d_tube_structure'
     number_of_timesteps = 2
 
 
 class TestTubeFluent3DAbaqus2D(EvaluateExamples):
-    example = 'tube_fluent3d_abaqus2d'
+    example = 'tube/fluent3d_abaqus2d'
     number_of_timesteps = 2
     atol_solution_y = 1e-6
 
 
 class TestTubeFluent3DAbaqus3D(EvaluateExamples):
-    example = 'tube_fluent3d_abaqus3d'
+    example = 'tube/fluent3d_abaqus3d'
     number_of_timesteps = 2
 
 
 class TestTubeFluent3DKratosStructure3D(EvaluateExamples):
-    example = 'tube_fluent3d_kratos_structure3d'
+    example = 'tube/fluent3d_kratos_structure3d'
     number_of_timesteps = 2
 
 
 class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
-    example = 'tube_openfoam3d_abaqus3d'
+    example = 'tube/openfoam3d_abaqus3d'
     number_of_timesteps = 2
     atol_solution_y = 1e-4
 
 
 class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
-    example = 'tube_openfoam3d_kratos_structure3d'
+    example = 'tube/openfoam3d_kratos_structure3d'
     number_of_timesteps = 2
 
 
 class TestTubeTubeFlowAbaqus2D(EvaluateExamples):
-    example = 'tube_tube_flow_abaqus2d'
+    example = 'tube/tube_flow_abaqus2d'
     number_of_timesteps = 2
 
 
 class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
-    example = 'tube_tube_flow_tube_ringmodel'
+    example = 'tube/tube_flow_tube_ringmodel'
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
@@ -195,7 +212,7 @@ class TestTubeTubeFlowTubeRingmodel(EvaluateExamples):
 
 
 class TestTubeTubeFlowTubeStructure(EvaluateExamples):
-    example = 'tube_tube_flow_tube_structure'
+    example = 'tube/tube_flow_tube_structure'
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
@@ -206,7 +223,7 @@ class TestTubeTubeFlowTubeStructure(EvaluateExamples):
 
 
 class TestTubeTubeFlowTubeStructureAnalytical(EvaluateExamples):
-    example = 'tube_tube_flow_tube_structure_analytical'
+    example = 'tube/tube_flow_tube_structure_analytical'
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
@@ -217,7 +234,7 @@ class TestTubeTubeFlowTubeStructureAnalytical(EvaluateExamples):
 
 
 class TestTubeTubeFlowTubeStructureSurrogate(EvaluateExamples):
-    example = 'tube_tube_flow_tube_structure_surrogate'
+    example = 'tube/tube_flow_tube_structure_surrogate'
     number_of_timesteps = 5
     atol_solution_x = 1e-12
     rtol_solution_x = 0
@@ -228,18 +245,20 @@ class TestTubeTubeFlowTubeStructureSurrogate(EvaluateExamples):
 
 
 class TestTurekFluent2DAbaqus2D(EvaluateExamples):
-    example = 'turek_fluent2d_abaqus2d'
+    example = 'turek/fluent2d_abaqus2d'
     number_of_timesteps = 2
 
 
 class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
-    example = 'turek_fluent2d_abaqus2d_steady'
+    example = 'turek/fluent2d_abaqus2d_steady'
     number_of_timesteps = 1
 
 
 # comment out examples that you do not want to evaluate
 test_cases = (
     TestBreakingDamFluent2DAbaqus2D,
+    TestLidDrivenCavityFluent2DKratosStructure2D,
+    TestLidDrivenCavityOpenFOAM2DKratosStructure2D,
     TestTestSingleSolver,
     TestTubeFluent2DAbaqus2D,
     TestTubeFluent2DAbaqus2DSteady,
