@@ -440,10 +440,10 @@ class SolverWrapperAbaqus(Component):
         self.dir_vault.rmdir()
 
     def get_interface_input(self):
-        return self.interface_input
+        return self.interface_input.copy()
 
     def get_interface_output(self):
-        return self.interface_output
+        return self.interface_output.copy()
 
     def check_software(self):
         """Check whether the software requirements for this wrapper are fulfilled."""

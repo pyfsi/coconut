@@ -82,12 +82,12 @@ class SolverWrapperMapped(Component):
 
     def get_interface_input(self):
         # does not contain most recent data
-        return self.interface_input_from
+        return self.interface_input_from.copy()
 
     def get_interface_output(self):
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
-        return self.interface_output_to
+        return self.interface_output_to.copy()
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' maps the following solver wrapper:')

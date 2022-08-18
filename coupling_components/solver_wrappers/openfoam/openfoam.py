@@ -345,10 +345,10 @@ class SolverWrapperOpenFOAM(Component):
                 shutil.rmtree(post_process_folder, ignore_errors=True)
 
     def get_interface_input(self):
-        return self.interface_input
+        return self.interface_input.copy()
 
     def get_interface_output(self):
-        return self.interface_output
+        return self.interface_output.copy()
 
     def compile_adapted_openfoam_solver(self):
         # compile openfoam adapted solver

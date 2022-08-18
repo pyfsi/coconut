@@ -50,7 +50,7 @@ class SolverWrapperCombined(Component):
         super().initialize()
         self.master_solver_wrapper.initialize()
         interface_input_from = self.master_solver_wrapper.get_interface_input()
-        interface_output_to = self.master_solver_wrapper.get_interface_output().copy()
+        interface_output_to = self.master_solver_wrapper.get_interface_output()
 
         for sol_wrapper in self.mapped_solver_wrapper_list:
             sol_wrapper.initialize(interface_input_from, interface_output_to)
@@ -62,9 +62,9 @@ class SolverWrapperCombined(Component):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
-        self.interface_output = self.master_solver_wrapper.solve_solution_step(interface_input)
+        self.interface_output = self.master_solver_wrapper.solve_solution_step(interface_input.copy()).copy()
         for sol_wrapper in self.mapped_solver_wrapper_list:
-            other_interface_output = sol_wrapper.solve_solution_step(interface_input)
+            other_interface_output = sol_wrapper.solve_solution_step(interface_input.copy()).copy()
             self.interface_output += other_interface_output
 
         return self.interface_output
@@ -93,7 +93,7 @@ class SolverWrapperCombined(Component):
         for sol_wrapper in self.mapped_solver_wrapper_list:
             other_interface_output = sol_wrapper.get_interface_output()
             self.interface_output += other_interface_output
-        return self.interface_output
+        return self.interface_output.copy()
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' combines the following solver wrappers:')

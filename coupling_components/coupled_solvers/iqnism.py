@@ -73,11 +73,11 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        self.y = self.solver_wrappers[0].solve_solution_step(self.x)
-        xt = self.solver_wrappers[1].solve_solution_step(self.y)
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
-        self.model.add(r, xt)
-        self.surrogate.add(r, xt)  # only used when derivative information of surrogate is updated every iteration
+        self.model.add(r.copy(), xt.copy())
+        self.surrogate.add(r.copy(), xt)  # only used when derivative info of surrogate is updated every iteration
         self.finalize_iteration(r)
         # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
@@ -86,25 +86,25 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
                 if not self.surrogate.is_ready():
                     dx = -self.omega * dr
                 else:
-                    dx = self.surrogate.predict(dr, modes=self.surrogate_modes) - dr
+                    dx = self.surrogate.predict(dr.copy(), modes=self.surrogate_modes) - dr
                     # relax other modes
-                    dx -= (self.omega - 1.0) * self.surrogate.filter_q(dr, modes=self.surrogate_modes)
+                    dx -= (self.omega - 1.0) * self.surrogate.filter_q(dr.copy(), modes=self.surrogate_modes)
             else:
                 if not self.surrogate.is_ready():
-                    dx = self.model.predict(dr) - dr
+                    dx = self.model.predict(dr.copy()) - dr
                 else:
-                    dx = self.model.predict(dr) + self.surrogate.predict(self.model.filter_q(dr),
-                                                                         modes=self.surrogate_modes) - dr
+                    dx = self.model.predict(dr.copy()) + self.surrogate.predict(self.model.filter_q(dr.copy()),
+                                                                                modes=self.surrogate_modes) - dr
             self.x += dx
-            self.y = self.solver_wrappers[0].solve_solution_step(self.x)
-            xt = self.solver_wrappers[1].solve_solution_step(self.y)
+            self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
-            self.model.add(r, xt)
-            self.surrogate.add(r, xt)  # only used when derivative information of surrogate is function of x
+            self.model.add(r.copy(), xt.copy())
+            self.surrogate.add(r.copy(), xt)  # only used when derivative information of surrogate is function of x
             self.finalize_iteration(r)
         # synchronize
         if self.surrogate_synchronize and self.surrogate.provides_set_solution:
-            self.surrogate.set_solution(self.x)
+            self.surrogate.set_solution(self.x.copy())
 
     def check_restart_data(self, restart_data):
         for model in ['model', 'surrogate']:
