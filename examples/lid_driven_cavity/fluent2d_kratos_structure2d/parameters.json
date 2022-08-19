@@ -1,0 +1,139 @@
+{
+  "settings": {
+    "number_of_timesteps": 700
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.1,
+      "omega": 0.05,
+      "save_results": 10,
+      "save_restart": -50,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-9,
+          "q": 0
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 15
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+              "tolerance": 1e-9,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.fluent.v2021R2",
+        "settings": {
+          "working_directory": "CFD",
+          "case_file": "case_lid_driven_cavity.cas.h5",
+          "dimensions": 2,
+          "unsteady": true,
+          "thread_names": [
+            "cavitybottom"
+          ],
+          "interface_input": [
+            {
+              "model_part": "cavitybottom_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "cavitybottom_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "cores": 1,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 200,
+          "save_results": 1
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.kratos_structure.v91",
+            "settings": {
+              "working_directory": "CSM",
+              "input_file": "ProjectParameters.json",
+              "structure_iterations": 10,
+              "kratos_interface_sub_model_parts_list": [
+                "StructureInterface2D_StructureInterface"
+              ],
+              "pressure_directions": [
+                -1
+              ],
+              "interface_input": [
+                {
+                  "model_part": "StructureInterface2D_StructureInterface_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "StructureInterface2D_StructureInterface_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

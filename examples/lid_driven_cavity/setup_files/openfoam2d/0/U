@@ -1,0 +1,93 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.1                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    fixedWalls
+    {
+        type            noSlip;
+    }
+
+    bottom
+    {
+        type            movingWallVelocity;
+        value           uniform (0 0 0);
+    }
+
+    inlet
+    {
+        type            codedFixedValue;
+        value           uniform (0 0 0);
+        name            timeSpaceVarying;
+        codeOptions
+        #{
+
+            -I$(FOAM_CASE)/0/include
+        #};
+        code
+        #{
+            #include "inlet_parameters"
+            const scalar t =  this->db().time().value();
+            scalar ramp_factor = (t < t_ramp) ? t/t_ramp : 1.0;
+            scalar u_t = ramp_factor*(1.0-unsteady_flag*cos(0.4*M_PI*t));
+            vectorField& field = *this;
+            forAll(this->patch().Cf(), face_i)
+            {
+                const scalar y = this->patch().Cf()[face_i].y();
+                field[face_i] = vector(u_t*(y-0.875)/0.125, 0.0, 0.0);
+            }
+        #};
+    }
+
+    topInlet
+    {
+        type            codedFixedValue;
+        value           uniform (0 0 0);
+        name            timeVarying;
+        codeOptions
+        #{
+
+            -I$(FOAM_CASE)/0/include
+        #};
+        code            
+        #{ 
+            #include "inlet_parameters"
+            const scalar t =  this->db().time().value();
+            scalar ramp_factor = (t < t_ramp) ? t/t_ramp : 1.0;
+            scalar u_t = ramp_factor*(1.0-unsteady_flag*cos(0.4*M_PI*t));
+            vector v(u_t, 0.0, 0.0);
+            operator==(v); 
+        #};
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+
+// ************************************************************************* //

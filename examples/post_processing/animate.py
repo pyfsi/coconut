@@ -200,6 +200,7 @@ class AnimationFigure:
         self.number = self.figure.number
         self.text = None
         self.print_time = self.print_time_default
+        self.time_position = (0.1, 0.1)
         self.min = None
         self.max = None
 
@@ -278,7 +279,8 @@ class AnimationFigure:
             lines += animation.case_animate(ts // dt_ratio)
         if self.text is None:
             plt.figure(self.number)  # make figure active
-            self.text = plt.text(0.1, 0.1, self.print_time(0), transform=self.figure.axes[0].transAxes,
+            self.text = plt.text(self.time_position[0], self.time_position[1], self.print_time(0),
+                                 transform=self.figure.axes[0].transAxes,
                                  bbox=dict(facecolor='lightgray', edgecolor='black', pad=5.0, alpha=0.5))
         self.text.set_text(self.print_time(ts * self.base_dt))
         return lines

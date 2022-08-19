@@ -36,8 +36,7 @@ solver_load_cmd_dict = {
                                         'export PYTHONPATH=path/of/the/installation/directory:$PYTHONPATH && '
                                         'export LD_LIBRARY_PATH=path/of/the/installation/directory/libs:'
                                         '$LD_LIBRARY_PATH',
-        'example_kratos_structure.v91': 'ml Anaconda3-python/2022.05 && '
-                                        'export PYTHONPATH=path/of/the/installation/directory:$PYTHONPATH',
+        'kratos_structure.v91': 'ml Anaconda3-python/2020.11',
         'openfoam.v41': 'ml OpenFOAM/4.1-foss-2016b && source $FOAM_BASH',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },
