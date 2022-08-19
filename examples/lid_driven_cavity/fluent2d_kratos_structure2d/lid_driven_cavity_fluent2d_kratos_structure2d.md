@@ -15,7 +15,7 @@ with t the time.
 On the corresponding region on the left side, zero pressure is applied.
 The deformable bottom is fixed at the corners.
 
-The fluid paramters are:
+The fluid parameters are:
 
 -   density: 1 kg/m³
 -   dynamic viscosity: 0.01 Pa$\cdot$s

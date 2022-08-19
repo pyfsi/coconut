@@ -14,7 +14,7 @@ define materials change-create air fluid y constant 1000.0 n n y constant 0.003 
 define models unsteady-1st-order y
 define models viscous laminar y
 define models solver pressure-based y
-define boundary-conditions pressure-outlet in y y y "udf" "pressure_inlet::udf_inlet" n y y n n n
+define boundary-conditions pressure-outlet in y y y "udf" "pressure_inlet::udf_inlet" n y n y n n n
 define boundary-conditions pressure-outlet out y n 0 n y y n n n
 define boundary-conditions wall wall y motion-bc-stationary y shear-bc-noslip
 define operating-conditions operating-pressure 0
