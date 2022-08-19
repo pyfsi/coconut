@@ -539,6 +539,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                     if (NODE_DM_ID(node) == ids[i]) {
                         for (d = 0; d < ND_ND; d++) {
                             NODE_COORD(node)[d] = coords[d][i];
+                            print(NODE_COORD_REF(node)[d])
                         }
                         NODE_POS_UPDATED(node);
                         break;

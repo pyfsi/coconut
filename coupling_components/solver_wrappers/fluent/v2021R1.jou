@@ -164,6 +164,7 @@ define user-defined execute-on-demand "get_thread_ids::v2021R1"
                     )
                 )
                 (begin
+                    (ti-menu-load-string "define dynamic-mesh controls smoothing-parameters smooth-from-reference-position? n")
                     (ti-menu-load-string "solve mesh-motion y")
                     (ti-menu-load-string "solve iterate flow_iterations")
                 )
