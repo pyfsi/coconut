@@ -113,11 +113,12 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             y = y0 + dy
             z = z0 + dz
             node_coords_ref = np.column_stack((x, y, z))
-            solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+            interface_disp = solver.get_interface_input()
+            interface_disp.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
             # update position by iterating once in solver
             solver.initialize_solution_step()
-            solver.solve_solution_step(solver.get_interface_input())
+            solver.solve_solution_step(interface_disp)
             solver.finalize_solution_step()
             solver.finalize()
 
