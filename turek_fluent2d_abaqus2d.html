@@ -735,12 +735,73 @@
       
       
         <label class="md-nav__link" for="__nav_5_3">
+          Lid-driven cavity
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Lid-driven cavity" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Lid-driven cavity
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_fluent2d_kratos_structure2d.html" class="md-nav__link">
+        Fluent2D - KratosStructure 2D
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+        OpenFOAM2D - KratosStructure 2D
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" data-md-state="indeterminate" type="checkbox" id="__nav_5_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_4">
           Tube
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Tube" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_3">
+        <label class="md-nav__title" for="__nav_5_4">
           <span class="md-nav__icon md-icon"></span>
           Tube
         </label>
@@ -907,7 +968,7 @@
   
     <li class="md-nav__item">
       <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
-        Fluent 3D - Kratos Structure 3D
+        Fluent 3D - KratosStructure 3D
       </a>
     </li>
   
@@ -935,7 +996,7 @@
   
     <li class="md-nav__item">
       <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
-        OpenFOAM 3D - Kratos Structure 3D
+        OpenFOAM 3D - KratosStructure 3D
       </a>
     </li>
   
@@ -960,18 +1021,18 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" type="checkbox" id="__nav_5_4" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_5" type="checkbox" id="__nav_5_5" checked>
       
       
       
       
-        <label class="md-nav__link" for="__nav_5_4">
+        <label class="md-nav__link" for="__nav_5_5">
           Turek benchmark
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_4">
+        <label class="md-nav__title" for="__nav_5_5">
           <span class="md-nav__icon md-icon"></span>
           Turek benchmark
         </label>
@@ -1130,7 +1191,7 @@
                 
 
 <h1 id="turek-benchmark-with-fluent2d-and-abaqus2d">Turek benchmark with Fluent2D and Abaqus2D</h1>
-<p>This example calculates the well-known Turek benchmark, which consist laminar incompressible flow around a flexible flag attached to a rigid cylinder in a 2D channel.
+<p>This example calculates the well-known Turek benchmark, which consist of laminar incompressible flow around a flexible flag attached to a rigid cylinder in a 2D channel.
 The material parameters and boundary conditions correspond to the FSI2 setup, as detailed by Turek and Hron [<a href="#1">1</a>].
 The challenging aspect of this benchmark lies in the large self-indcuced oscillation of the flag.
 The used solvers are Fluent and Abaqus.
@@ -1161,7 +1222,7 @@ The reuse parameter <code>q</code> is set to 10, which means that data from the 
 <p>Two convergence criteria have been specified:</p>
 <ul>
 <li>The number of iterations in every time step is larger than 15.</li>
-<li>The residual norm on the displacement is a factor <span class="arithmatex"><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</li>
+<li>The residual norm of the displacement is a factor <span class="arithmatex"><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</li>
 </ul>
 <p>When either criterion is satisfied the simulation stops.</p>
 <h2 id="solvers">Solvers</h2>
@@ -1196,7 +1257,7 @@ In the structure solver wrapper, a linear interpolation mapper is used to interp
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="tube_openfoam3d_kratos_structure3d.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: OpenFOAM 3D - Kratos Structure 3D" rel="prev">
+        <a href="tube_openfoam3d_kratos_structure3d.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: OpenFOAM 3D - KratosStructure 3D" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1205,7 +1266,7 @@ In the structure solver wrapper, a linear interpolation mapper is used to interp
               <span class="md-footer__direction">
                 Previous
               </span>
-              OpenFOAM 3D - Kratos Structure 3D
+              OpenFOAM 3D - KratosStructure 3D
             </div>
           </div>
         </a>
