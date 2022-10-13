@@ -60,10 +60,10 @@
     rho == max(alphav*psiv*p + alphal*rhol, rhoMin);
     // rho == max(alphav*psiv*p + alphal*(rholRef + psil*(p-pRef)), rhoMin);
 
-    Info<< "max-min rhol: " << max(rhol).value()
-        << " " << min(rhol).value() << endl;
-    Info<< "max-min rho: " << max(rho).value()
-        << " " << min(rho).value() << endl;
+    //Info<< "max-min rhol: " << max(rhol).value()
+    //    << " " << min(rhol).value() << endl;
+    //Info<< "max-min rho: " << max(rho).value()
+    //    << " " << min(rho).value() << endl;
 
     #include "alphavPsi.H"
 

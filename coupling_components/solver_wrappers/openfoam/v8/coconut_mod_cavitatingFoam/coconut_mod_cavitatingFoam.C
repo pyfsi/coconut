@@ -36,6 +36,7 @@ Description
 #include "fvCFD.H"
 #include "dynamicFvMesh.H"
 #include "mixtureCompressibilityModel.H"
+//#include "shearThinningModel.H"
 
 #include "EOSModel.H"
 #include "heatCapacityModel.H"

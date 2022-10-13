@@ -152,13 +152,11 @@ int main(int argc, char *argv[])
             prevRunTime = runTime.timeName();
             oldPoints_ = mesh.points();
             runTime++;
-            //runtime.write();//Navaneeth
             remove("next.coco");
             OFstream outfile ("next_ready.coco");
             outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
             iteration = 0;
-//          lduSolverPerformance solverPerf;
             converged = false;
             blockLduMatrix::debug = 0;
 
@@ -167,7 +165,6 @@ int main(int argc, char *argv[])
                 {
                     solve(fvm::laplacian(twoMuLambdaf, DU, "laplacian(DDU,DU)"));
                 }
-
         }
 
         if (exists("continue.coco"))
@@ -262,6 +259,16 @@ int main(int argc, char *argv[])
 
                 // Under-relax the DU field
                 DU.relax();
+
+                if (nWedgePatches > 0)
+                {
+                    vectorField& DUI = DU.internalField();
+                    forAll(DUI, cellI)
+                    {
+                        DUI[cellI][vector::Z] = 0.0;
+                    }
+                    DU.correctBoundaryConditions();
+                }
 
                 // Detach region coupled patches
                 if (regionCoupled)
@@ -384,8 +391,6 @@ int main(int argc, char *argv[])
             // Total displacement at cell-centres
             gradU = fvc::grad(U.oldTime() + DU);
             U = U.oldTime() + DU;
-//            U.component(2)*= 0.0;
-//            Info << 'Z_direction' << U << endl;
 
             V = DU/runTime.deltaT();
             if (thermalStress && runTime.value() > thermalStressStartTime)

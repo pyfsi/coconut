@@ -1,5 +1,6 @@
 #include "readThermodynamicProperties.H"
 
+
 Info<< "Reading field p\n" << endl;
 volScalarField p
 (
@@ -189,3 +190,12 @@ volScalarField Cp
     ),
     (alphal*rhol*Cpl + alphav*psiv*p*Cpv)/rho
 );
+
+//autoPtr<shearThinningModel> shearThinningModel = shearThinningModel::New
+//    (
+//        "shearThinningModel",
+//        transportProperties,
+//        U,
+//        phi,
+//        mu
+//    );

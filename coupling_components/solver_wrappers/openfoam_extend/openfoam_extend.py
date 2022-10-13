@@ -42,6 +42,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
+        # self.save_restart = self.settings['save_restart']
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.die_min = self.settings['axial_coordinate_die_min']
         self.die_max = self.settings['axial_coordinate_die_max']
@@ -56,7 +57,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.interface_output = None
         # print(self.working_directory)
         # set on True to save copy of input and output files in every iteration
-        self.debug = False
+        self.debug = self.settings.get('debug', False)
 
         # remove possible CoCoNuT-message from previous interrupt
         self.remove_all_messages()
@@ -96,6 +97,11 @@ class SolverWrapperOpenFOAMExtend(Component):
         # modify controlDict file to add displacement functionObjects for all the boundaries in
         # self.settings["boundary_names"]
         self.read_modify_controldict()
+
+        # if self.save_restart % self.write_interval:
+        #     raise RuntimeError(
+        #         f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval '
+        #         f'(= {self.write_interval}). Modify the controlDict accordingly.')
 
         # creating Model
         self.model = data_structure.Model()
@@ -145,10 +151,10 @@ class SolverWrapperOpenFOAMExtend(Component):
             mp = self.model.get_model_part(mp_name)
             x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
-            #To obtain a better distribution of the pressure, when the wire leavesthe die
-            # x0_ma_arr = np.less_equal(x0,self.die_max)
-            # x0 = x0[x0_ma_arr,]
-            # y0 = y0[x0_ma_arr,]
+            #To obtain a better distribution of the pressure, when the wire leaves the die
+            x0_ma_arr = np.less_equal(x0, 0.0007)
+            x0 = x0[x0_ma_arr,]
+            y0 = y0[x0_ma_arr,]
 
             x = np.zeros( 2 * x0.size)
             y = np.zeros( 2 * x0.size)
@@ -266,7 +272,7 @@ class SolverWrapperOpenFOAMExtend(Component):
                 shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
                 for i in range(self.number_of_timesteps):
                     timestamp_i = self.delta_t *(i +1)
-                    format_i = format(timestamp_i, ".5f")
+                    format_i = '{:.{}f}'.format(timestamp_i, self.time_precision)
                     str_i = str(format_i)
                     path_new_boundaryData_i = os.path.join(self.working_directory,'constant/boundaryData', boundary, str_i)
                     shutil.copytree(path_new_boundaryData, path_new_boundaryData_i)
@@ -419,7 +425,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.read_node_output()
 
         # copy output data for debugging
-        if True:  # self.debug:
+        if True: #self.debug:
             for boundary in self.boundary_names:
                 # specify location of displacement
                 disp_name = 'DISP_' + boundary
@@ -457,6 +463,15 @@ class SolverWrapperOpenFOAMExtend(Component):
                 if not os.path.exists(yield_iter_filepath):
                     os.makedirs(yield_iter_filepath)
                 shutil.copy(yield_filepath, yield_iter_filepath)
+
+                velocity_name = 'VELOCITY_' + boundary
+                velocity_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
+                velocity_iter_filepath = os.path.join(self.working_directory, 'postProcessing', velocity_name,
+                                                   'surface',
+                                                   self.cur_timestamp, f'Velocity_{self.iteration}')
+                if not os.path.exists(velocity_iter_filepath):
+                    os.makedirs(velocity_iter_filepath)
+                shutil.copy(velocity_filepath, velocity_iter_filepath)
 
         # return interface_output object
         return self.interface_output
@@ -797,18 +812,18 @@ class SolverWrapperOpenFOAMExtend(Component):
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
             tools.print_info(msg, layout='warning')
-            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
+            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat fixed',
                                   control_dict)
-        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'application    {self.application}',
+        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'{"application":<16}{self.application}',
                               control_dict)
         control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
-                              f'startTime    {self.start_time}', control_dict)
-        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'deltaT    {self.delta_t}',
+                              f'{"startTime":<16}{self.start_time}', control_dict)
+        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'{"deltaT":<16}{self.delta_t}',
                               control_dict)
         control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
-                              f'timePrecision    {self.time_precision}',
+                              f'{"timePrecision":<16}{self.time_precision}',
                               control_dict)
-        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'endTime    1e15', control_dict)
+        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
 
         # delete previously defined coconut functions
         coconut_start_string = '// CoCoNuT function objects'
@@ -823,15 +838,15 @@ class SolverWrapperOpenFOAMExtend(Component):
                 control_dict_file.write(boundary_name + ' ')
 
             control_dict_file.write(');\n\n')
-            # control_dict_file.write('functions\n{\n')
+            control_dict_file.write('functions\n{\n')
 
             # for boundary_name in self.boundary_names:
             #     control_dict_file.write(self.displacement_dict(boundary_name))
-            # control_dict_file.write('}')
+            control_dict_file.write('}')
             self.write_footer(file_name)
 
-    # def displacement_dict(self, boundary_name):
-    #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
+    def displacement_dict(self, boundary_name):
+        raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def write_residuals_fileheader(self):
         header = ''

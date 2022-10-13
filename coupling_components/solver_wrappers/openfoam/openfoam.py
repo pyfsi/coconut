@@ -161,6 +161,7 @@ class SolverWrapperOpenFOAM(Component):
                                                               boundary_name=boundary)
             nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
             start_face = of_io.get_int(input_string=boundary_dict, keyword='startFace')
+            self.update_axial_velocity = np.ones(2*nfaces +2)
 
             # create input model part
             self.model.create_model_part(f'{boundary}_input', node_coords[:, 0], node_coords[:, 1], node_coords[:, 2],
@@ -313,60 +314,20 @@ class SolverWrapperOpenFOAM(Component):
                rico = (self.radius[0] - (self.radius[0]-self.radial_displacement))/ (self.delta_t * self.number_of_timeIncrements)
                x = np.linspace(0,self.delta_t*self.number_of_timeIncrements,self.number_of_timeIncrements)
                y = -1*rico*x
-               cosine = self.radial_displacement/2 * np.cos(x * (31000/self.number_of_timeIncrements))-self.radial_displacement/2
                displacement_increment = np.zeros([len(x) + self.number_of_timeIncrements//10])
                q = self.start_increment*self.delta_t + np.linspace(0, self.delta_t * self.number_of_timeIncrements + (self.number_of_timeIncrements//10) * self.delta_t, len(displacement_increment))
                p = self.start_increment*self.delta_t + x
 
-
+               delta_displacement = self.radial_displacement / self.number_of_timeIncrements
+               total_delta = self.radial_displacement
                for g in range(len(displacement_increment)):
-                   if g < self.number_of_timeIncrements:# if self.settings['timeVaryingMappedFixedValue']:
-            #     velocity = displacement[:,0] * 1e13
-            #
-            #     data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-            #                                self.cur_timestamp)
-            #     # velocity = self.interface_input.get_variable_data(mp_name, 'velocity')
-            #     velocity_input = np.zeros((len(velocity), 3))
-            #     index = int(len(velocity)/ 2)
-            #
-            #     j = 0
-            #     # for i in range(len(velocity)):
-            #     #     if i%2 == 0:
-            #     #         velocity_input[j, 0] = velocity[i, 0]
-            #     #         velocity_input[j, 1] = velocity[i, 1]
-            #     #         velocity_input[j, 2] = velocity[i, 2]
-            #     #     else:
-            #     #         velocity_input[j + index,0] = velocity[i,0]
-            #     #         velocity_input[j + index,1] = velocity[i,1]
-            #     #         velocity_input[j + index,2] = velocity[i,2]
-            #     #         j += 1
-            #
-            #     for i in range(len(velocity)):
-            #         if i%2 == 0:
-            #             velocity_input[j, 0] = velocity[i]
-            #         else:
-            #             velocity_input[j + index,0] = velocity[i]
-            #             j += 1
-            #
-            #     with open(os.path.join(data_folder, 'U'), 'w') as f:
-            #         f.write(f'{velocity_input.shape[0]}\n')
-            #         f.write('(\n')
-            #         for i in range(velocity_input.shape[0]):
-            #             f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
-            #         f.write(')')
-                       displacement_increment[g] = y[g]
-                   else:
-                       displacement_increment[g] = cosine[g - self.number_of_timeIncrements//10]
-
-               #Give cosine the correct position
-               cosine = cosine - (cosine[self.number_of_timeIncrements - 1 - self.number_of_timeIncrements//10] - displacement_increment[len(displacement_increment)-(len(displacement_increment)//10)])
-
-                #new for loop for to obtain the correct curve after the cosine displacement  correction
-               for g in range(len(displacement_increment)):
-                   if g < self.number_of_timeIncrements:
-                       displacement_increment[g] = y[g]
-                   else:
-                       displacement_increment[g] = cosine[g - self.number_of_timeIncrements//10]
+                    if g < self.number_of_timeIncrements:
+                        displacement_increment[g] = y[g]
+                    else:
+                        new_delta = delta_displacement/1.09
+                        delta_displacement = new_delta
+                        total_delta +=new_delta
+                        displacement_increment[g] = -total_delta
 
                for i in range(self.number_of_timeIncrements + self.number_of_timeIncrements//10):
                    time = self.delta_t * (i + 1 + self.start_increment)
@@ -386,13 +347,6 @@ class SolverWrapperOpenFOAM(Component):
                        else:
                            deltaZ[j] = displacement_increment[i] * np.sin(2.5 * np.pi / 180)
 
-                   # for j in range(len(self.z_rigid)):
-                   #     deltaY[j] = -self.radial_displacement * (i + 1) * np.cos(2.5 * np.pi / 180)
-                   #     if self.z_rigid[j] < 0:
-                   #         deltaZ[j] = self.radial_displacement * (i +1) * np.sin(2.5 * np.pi / 180)
-                   #     else:
-                   #         deltaZ[j] = -self.radial_displacement * (i + 1) * np.sin(2.5 * np.pi / 180)
-
                    with open(os.path.join(new_path_rigidData,'pointDisplacement'), 'w') as h:
                        h.write(f'{self.x_rigid.size}\n')
                        h.write('(\n')
@@ -400,6 +354,8 @@ class SolverWrapperOpenFOAM(Component):
                            h.write(f'({0} {deltaY[k]} {deltaZ[k]})\n')
                        h.write(')')
 
+            # plt.plot(q, displacement_increment)
+            # plt.show()
 
             if self.settings['timeVaryingMappedFixedValue']:
                 for boundary in self.boundary_names:
@@ -534,16 +490,18 @@ class SolverWrapperOpenFOAM(Component):
         self.write_node_input()
 
         # copy input data for debugging
-        if True: #self.debug
+        if self.debug:
             for boundary in self.boundary_names:
                 mp_filepath = os.path.join(self.working_directory, 'postProcessing')
                 if not os.path.exists(mp_filepath):
                     os.makedirs(mp_filepath)
+                path_from_Velocity = os.path.join(self.working_directory, 'constant/boundaryData', boundary,self.cur_timestamp, 'U')
+                path_to_Velocity = os.path.join(self.working_directory,'constant/boundaryData', boundary,self.cur_timestamp, f'U_{self.iteration}')
+                shutil.copy(path_from_Velocity, path_to_Velocity)
 
                 node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory,
                                                                   time_folder='0',
                                                                   boundary_name=boundary)
-                # print(node_coords[:,0])
                 with open(os.path.join(mp_filepath, 'mp_x0_points'), 'w') as f:
                     f.write('')
                     for point in range(node_coords[:,0].size):
@@ -575,7 +533,7 @@ class SolverWrapperOpenFOAM(Component):
         self.read_node_output()
 
         # copy output data for debugging
-        if True: #self.debug:
+        if self.debug:
             for boundary in self.boundary_names:
                 post_process_time_folder = os.path.join(self.working_directory,
                                                         f'postProcessing/coconut_{boundary}/surface',
@@ -726,24 +684,14 @@ class SolverWrapperOpenFOAM(Component):
                         displacement[:,0] = 1
                         velocity = displacement[:,0]
                     else:
-                        velocity = displacement[:, 0] * 1e13
+                        velocity = displacement[:,0] * 1e13
+
                     data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                self.cur_timestamp)
                     velocity_input = np.zeros((len(velocity), 3))
                     index = int(len(velocity) / 2)
 
                     j = 0
-                    # for i in range(len(velocity)):
-                    #     if i%2 == 0:
-                    #         velocity_input[j, 0] = velocity[i, 0]
-                    #         velocity_input[j, 1] = velocity[i, 1]
-                    #         velocity_input[j, 2] = velocity[i, 2]
-                    #     else:
-                    #         velocity_input[j + index,0] = velocity[i,0]
-                    #         velocity_input[j + index,1] = velocity[i,1]
-                    #         velocity_input[j + index,2] = velocity[i,2]
-                    #         j += 1
-
                     for i in range(len(velocity)):
                         if i % 2 == 0:
                             velocity_input[j, 0] = velocity[i]
@@ -796,7 +744,7 @@ class SolverWrapperOpenFOAM(Component):
     def check_output_file(self, filename, nfaces):
         counter = 0
         nlines = 0
-        lim = 10000
+        lim = 1000000
         sleep_time = 0.01
         while (nlines < nfaces + 2) and counter < lim:
             if os.path.isfile(filename):
