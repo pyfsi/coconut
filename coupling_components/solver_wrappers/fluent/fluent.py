@@ -97,7 +97,7 @@ class SolverWrapperFluent(Component):
             multiphase = '#t'
         rigid_body_motion_on = '#f'
         if self.rigid_body_motion_on:
-            rigid_body_motion_on = '#t'
+            rigid_body_motion_on = '#f' # '#t' --> move-zone is now off
         dimension_2D = '#f'
         if self.dimensions == 2:
             dimension_2D = '#t'
@@ -359,7 +359,7 @@ class SolverWrapperFluent(Component):
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            #traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]  #zero traction when commented?
+            #traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]  #zero traction when commented
             pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 

@@ -256,8 +256,8 @@ class CoupledSolverGaussSeidel(Component):
                     raise ValueError(f'Restart not possible because {key} changed in coupled solver')
             self.check_restart_data(restart_data)
             if self.delta_t != restart_data['delta_t']:
-                raise ValueError(f"Time step size has changed upon restart:\n\told: {restart_data['delta_t']}s"
-                                 f"\n\tnew: {self.delta_t}s")
+                Warning(f"Time step size has changed upon restart:\n\told: {restart_data['delta_t']}s"
+                                 f"\n\tnew: {self.delta_t}s")  #error --> warning
         return restart_data
 
     def check_restart_data(self, restart_data):
