@@ -3,12 +3,12 @@ import numpy as np
 from coconut.tools import print_info
 
 def create(parameters):
-    return CoupledSolverExplicit(parameters)
+    return CoupledSolverOneway(parameters)
 
-class CoupledSolverExplicit(CoupledSolverGaussSeidel):
+class CoupledSolverOneway(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
-        print_info('Explicit solver is chosen; convergence criterion is not used.',layout= 'warning')
+        print_info('One-way solver is chosen; convergence criterion is not used.',layout= 'warning')
 
     def solve_solution_step(self):
         # initial value
@@ -19,4 +19,5 @@ class CoupledSolverExplicit(CoupledSolverGaussSeidel):
         xt = self.solver_wrappers[1].solve_solution_step(y)
         r = xt - self.x
         self.finalize_iteration(r)
-        self.x = xt
+
+

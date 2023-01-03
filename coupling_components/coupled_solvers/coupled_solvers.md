@@ -263,7 +263,27 @@ The `type` for this coupled solver is `coupled_solvers.explicit`.
 
 ### Algorithm
 
-In contrast to the coupled solvers presented above (strongly coupled or implicit techniques), the explicit solver will not iterate between the solvers whitin a timestep. Instead, the solvers are only evaluated once per time step. Therefore, equilibrium between fluid and structure is not exactly satisfied. This technique is suitable for problems with low added mass, such as aeroelastic simulations. However, it will cause stability issues for problems with high added mass.
+In contrast to the coupled solvers presented above (strongly coupled or implicit 
+techniques), the explicit solver does not iterate between the solvers whitin a 
+timestep. Instead, the solvers are only evaluated once per time step. 
+Therefore, equilibrium between fluid and structure is not exactly satisfied. 
+This technique is suitable for problems with low added mass, such as aeroelastic
+problems. However, it can cause stability issues for problems 
+with high added mass.
+
+### Settings
+
+No additional parameters are required besides the parameters required in the [class `CoupledSolverGaussSeidel`](#settings). Parameters from `convergence_criteria` are ignored.
+
+## One-way solver
+
+This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
+The `type` for this coupled solver is `coupled_solvers.oneway`.
+
+### Algorithm
+
+In the one-way solver the fluid forces are coupled to the structural model without feedback of the
+structural deformation to the fluid solver. This solver can be used when structural deformation does not affect the fluid forces.
 
 ### Settings
 
