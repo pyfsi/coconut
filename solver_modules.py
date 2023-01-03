@@ -41,11 +41,13 @@ solver_load_cmd_dict = {
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },
     'ugent_hpc': {
-        'fluent.v2019R3': 'ml FLUENT/2019R3',
-        'fluent.v2021R2': 'ml FLUENT/2021R2',
-        'fluent.v2022R1': 'ml FLUENT/2022R1',
-        'abaqus.v614': 'ml intel/2018a && ml ABAQUS/6.14.1-linux-x86_64 && unset SLURM_GTIDS && export LM_LICENSE_FILE='
-                       '@ir03lic1.ugent.be:@bump.ugent.be',
+        'fluent.v2021R2': 'ml FLUENT/2021R2 && ml intel/2021a && unset SLURM_GTIDS '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'fluent.v2022R1': 'ml FLUENT/2022R1 && ml intel/2021a && unset SLURM_GTIDS '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'abaqus.v2022': 'ml intel/2020a && ml ABAQUS/2022 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'kratos_structure.v60': 'ml Kratos/6.0-foss-2018a-Python-3.6.4'
     },
     'breniac': {
