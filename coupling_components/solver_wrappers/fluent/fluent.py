@@ -180,14 +180,19 @@ class SolverWrapperFluent(Component):
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
+        name_prev = ''
         info = []
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
-                    name, thread_id, _ = line.strip().split()
-                    if name in self.thread_ids:
+                    try:
+                        name, thread_id, _ = line.strip().split()
+                    except:
+                        name,phase,thread_id, _ = line.strip().split()
+                    if name in self.thread_ids and name != name_prev:
                         info.append(' '.join((name, thread_id)))
                         self.thread_ids[name] = thread_id
+                        name_prev = name
 
                 if check == 3 and not line.islower():
                     break
