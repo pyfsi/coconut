@@ -1,11 +1,9 @@
-from coconut import data_structure
-from coconut.data_structure.interface import Interface
 from coconut.tools import create_instance, cd
 from coconut.tests.coupled_solvers import coupled_solver
 
 import unittest
 import numpy as np
-from coconut.tools import print_info
+
 
 class TestCoupledSolverOneway(coupled_solver.TestCoupledSolver):
     parameter_file_name = 'test_oneway.json'
@@ -18,7 +16,7 @@ class TestCoupledSolverOneway(coupled_solver.TestCoupledSolver):
             coupled_solver.initialize_solution_step()
             coupled_solver.solve_solution_step()
 
-            sol_x = [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            sol_x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
             # TODO: The reference solution has to be modified. Future work: mock solver
 
@@ -28,6 +26,7 @@ class TestCoupledSolverOneway(coupled_solver.TestCoupledSolver):
             coupled_solver.output_solution_step()
 
             coupled_solver.finalize()
+
 
 if __name__ == '__main__':
     unittest.main()

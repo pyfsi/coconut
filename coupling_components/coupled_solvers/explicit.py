@@ -1,14 +1,15 @@
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
-import numpy as np
 from coconut.tools import print_info
+
 
 def create(parameters):
     return CoupledSolverExplicit(parameters)
 
+
 class CoupledSolverExplicit(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
-        print_info('Explicit solver is chosen; convergence criterion is not used.',layout= 'warning')
+        print_info('Explicit solver is chosen; convergence criterion is not used.', layout='warning')
 
     def solve_solution_step(self):
         # initial value

@@ -264,7 +264,7 @@ The `type` for this coupled solver is `coupled_solvers.explicit`.
 ### Algorithm
 
 In contrast to the coupled solvers presented above (strongly coupled or implicit 
-techniques), the explicit solver does not iterate between the solvers whitin a 
+techniques), the explicit solver does not iterate between the solvers within a
 timestep. Instead, the solvers are only evaluated once per time step. 
 Therefore, equilibrium between fluid and structure is not exactly satisfied. 
 This technique is suitable for problems with low added mass, such as aeroelastic
