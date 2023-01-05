@@ -47,8 +47,6 @@ solver_load_cmd_dict = {
         'fluent.v2022R1': 'ml FLUENT/2022R1 && ml intel/2021a && unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
-        'abaqus.v2021': 'ml intel/2020a && ml ABAQUS/2021-hotfix-2132 '
-                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'abaqus.v2022': 'ml intel/2020a && ml ABAQUS/2022 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be'
     },
     'breniac': {
