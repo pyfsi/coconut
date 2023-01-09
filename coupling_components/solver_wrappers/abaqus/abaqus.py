@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 import os
@@ -7,7 +7,6 @@ from os.path import join
 import glob
 import subprocess
 import shutil
-import sys
 import time
 import numpy as np
 import textwrap
@@ -20,12 +19,12 @@ def create(parameters):
     return SolverWrapperAbaqus(parameters)
 
 
-class SolverWrapperAbaqus(Component):
+class SolverWrapperAbaqus(SolverWrapper):
     version = None
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None:
             raise NotImplementedError(
@@ -67,20 +66,11 @@ class SolverWrapperAbaqus(Component):
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
             self.mp_out.append(item['model_part'][:idx].upper())
-        self.interface_input = None
-        self.interface_output = None
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
         self.link_sl = None
         self.link_exe = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -438,12 +428,6 @@ class SolverWrapperAbaqus(Component):
         if self.save_restart == 0 or self.timestep % self.save_restart != 0:  # no files needed for restart
             self.remove_files(self.timestep)
         self.dir_vault.rmdir()
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def check_software(self):
         """Check whether the software requirements for this wrapper are fulfilled."""

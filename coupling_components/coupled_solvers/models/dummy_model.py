@@ -17,7 +17,7 @@ class DummyModel(Component):
         self.solver_level = None
 
         # time
-        self.init_time = 0.0
+        self.init_time = self.init_time
         self.run_time = 0.0
 
     @tools.time_solve_solution_step
@@ -48,5 +48,5 @@ class DummyModel(Component):
     def filter_q(self, dr, **_):
         return dr
 
-    def print_components_info(self, pre):
-        tools.print_info(pre, 'The component ', self.__class__.__name__)
+    def get_time_allocation(self):
+        return {'init_time': self.init_time, 'run_time': self.run_time}

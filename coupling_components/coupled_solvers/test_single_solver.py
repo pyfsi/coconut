@@ -77,6 +77,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
+        self.time_allocation = {'previous_calculations': []}
         self.iterations = []
 
         # save results variables

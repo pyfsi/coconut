@@ -35,7 +35,7 @@ class ModelMapped(Component):
         self.solver_level = None
 
         # time
-        self.init_time = 0.0
+        self.init_time = self.init_time
         self.run_time = 0.0
 
     @tools.time_initialize
@@ -125,6 +125,15 @@ class ModelMapped(Component):
         interface_output_from = self.surrogate.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time'):
+            total_time = self.__getattribute__(time_type)
+            surrogate_time = self.surrogate.get_time_allocation()[time_type]
+            mapper_time = total_time - (surrogate_time['total'] if isinstance(surrogate_time, dict) else surrogate_time)
+            time_allocation[time_type] = {'total': total_time, 'mapper': mapper_time, 'surrogate': surrogate_time}
+        return time_allocation
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' maps the following surrogate model:')

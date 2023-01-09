@@ -27,7 +27,7 @@ class Surrogate(Component):
         self.solver_level = None
 
         # time
-        self.init_time = 0.0
+        self.init_time = self.init_time
         self.run_time = 0.0
 
     @tools.time_initialize
@@ -108,6 +108,19 @@ class Surrogate(Component):
         super().output_solution_step()
 
         self.coupled_solver.output_solution_step()
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time'):
+            total_time = self.__getattribute__(time_type)
+            coupled_solver_time = self.coupled_solver.get_time_allocation()[time_type]
+            solution_time = coupled_solver_time.pop('total') - coupled_solver_time.pop(
+                'other')  # time for solver, surrogates etc
+            other_time = total_time - solution_time
+            time_allocation[time_type] = {'total': total_time}
+            time_allocation[time_type].update(coupled_solver_time)
+            time_allocation[time_type].update({'other': other_time})
+        return time_allocation
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' with the following CoupledSolver:')

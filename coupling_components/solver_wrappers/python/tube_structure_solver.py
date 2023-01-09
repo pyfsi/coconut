@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
 import coconut.coupling_components.solver_wrappers.python.banded as bnd
@@ -15,13 +15,13 @@ def create(parameters):
     return SolverWrapperTubeStructure(parameters)
 
 
-class SolverWrapperTubeStructure(Component):
+class SolverWrapperTubeStructure(SolverWrapper):
     al = 2  # Number of terms below diagonal in matrix
     au = 2  # Number of terms above diagonal in matrix
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
@@ -138,12 +138,6 @@ class SolverWrapperTubeStructure(Component):
             j = bnd.to_dense(self.get_jacobian())
             self.ji = np.linalg.inv(j)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
@@ -223,12 +217,6 @@ class SolverWrapperTubeStructure(Component):
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def get_residual(self):
         f = np.zeros(self.m + 4)

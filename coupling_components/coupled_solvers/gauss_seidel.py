@@ -64,6 +64,7 @@ class CoupledSolverGaussSeidel(Component):
         self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
+        self.time_allocation = {'previous_calculations': []}
         self.iterations = []
 
         # restart
@@ -78,6 +79,7 @@ class CoupledSolverGaussSeidel(Component):
             self.residual = []
             self.info = None
 
+        # debug
         self.debug = self.settings.get('debug', False)  # save results each iteration including residual interfaces
         if self.debug:
             self.complete_solution_r = None
@@ -99,8 +101,6 @@ class CoupledSolverGaussSeidel(Component):
         self.y = self.solver_wrappers[0].get_interface_output().copy()
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
-        self.start_run_time = time.time()  # start of calculation
-        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
         if self.solver_level == 0:
             title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
@@ -121,7 +121,7 @@ class CoupledSolverGaussSeidel(Component):
                 results_data = self.load_results_data()
             if results_data is None:  # no results file to append to
                 self.info = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} : ' \
-                    f'start calculation of time step {self.timestep_start_current} on {socket.gethostname()}\n'
+                            f'start calculation of time step {self.timestep_start_current} on {socket.gethostname()}\n'
                 if self.debug:
                     self.complete_solution_x = np.empty((self.x.get_interface_data().shape[0], 0))
                     self.complete_solution_y = np.empty((self.y.get_interface_data().shape[0], 0))
@@ -129,6 +129,9 @@ class CoupledSolverGaussSeidel(Component):
                 else:
                     self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
                     self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
+
+        self.start_run_time = time.time()  # start of calculation
+        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -213,14 +216,14 @@ class CoupledSolverGaussSeidel(Component):
     def output_solution_step(self):
         super().output_solution_step()
 
-        self.run_time = time.time() - self.start_run_time  # duration of calculation
+        self.time_allocation.update(self.get_time_allocation())
         if self.save_results != 0 and (self.time_step % self.save_results == 0 or
                                        (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
-                      'run_time': self.run_time + self.run_time_previous, 'residual': self.residual,
-                      'delta_t': self.delta_t, 'timestep_start': self.timestep_start_global,
-                      'case_name': self.case_name}
+                      'residual': self.residual, 'run_time': self.run_time + self.run_time_previous,
+                      'time_allocation': self.time_allocation, 'delta_t': self.delta_t,
+                      'timestep_start': self.timestep_start_global, 'case_name': self.case_name}
             if not self.anonymous:
                 output['info'] = self.info
             if self.debug:
@@ -288,6 +291,8 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = results_data['iterations'][:self.timestep_start_current - self.timestep_start_global]
         self.run_time_previous = results_data['run_time']
         self.residual = results_data['residual'][:self.timestep_start_current - self.timestep_start_global]
+        self.time_allocation['previous_calculations'] = results_data['time_allocation'].pop('previous_calculations')
+        self.time_allocation['previous_calculations'].append(results_data['time_allocation'])
         self.info = results_data.get('info', '') + '' + f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} :' \
             f' restart calculation from time step {self.timestep_start_current} on {socket.gethostname()}\n'
         if self.debug:
@@ -334,6 +339,18 @@ class CoupledSolverGaussSeidel(Component):
         if self.solver_level == 0:
             out += '\n╚' + 79 * '═'
         tools.print_info(out)
+
+    def get_time_allocation(self):
+        self.run_time = time.time() - self.start_run_time  # duration of calculation
+        time_allocation = {'total': self.run_time + self.init_time}
+        for time_type in ('init_time', 'run_time'):
+            time_allocation_sub = time_allocation[time_type] = {}
+            time_allocation_sub['total'] = self.__getattribute__(time_type)
+            for i, solver_wrapper in enumerate(self.solver_wrappers):
+                time_allocation_sub[f'solver_wrapper_{i}'] = solver_wrapper.get_time_allocation()[time_type]
+            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum(
+                [s.__getattribute__(time_type) for s in self.solver_wrappers])
+        return time_allocation
 
     def print_header(self):
         header = (80 * '═' + f'\n\tTime step {self.time_step}\n' +
