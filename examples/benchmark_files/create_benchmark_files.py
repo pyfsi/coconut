@@ -89,6 +89,7 @@ def create_benchmark(example, number_of_timesteps):
     parameters['settings']['number_of_timesteps'] = number_of_timesteps
     parameters['coupled_solver']['settings']['save_results'] = True
     parameters['coupled_solver']['settings']['case_name'] = 'case'
+    parameters['coupled_solver']['settings']['anonymous'] = True
 
     # perform simulation
     simulation = coconut.Analysis(parameters)

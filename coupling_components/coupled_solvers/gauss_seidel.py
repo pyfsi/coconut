@@ -31,6 +31,7 @@ class CoupledSolverGaussSeidel(Component):
         self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         self.settings['save_restart'] = self.save_restart  # in order to pass on default value
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
 
@@ -219,7 +220,9 @@ class CoupledSolverGaussSeidel(Component):
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
                       'run_time': self.run_time + self.run_time_previous, 'residual': self.residual,
                       'delta_t': self.delta_t, 'timestep_start': self.timestep_start_global,
-                      'case_name': self.case_name, 'info': self.info}
+                      'case_name': self.case_name}
+            if not self.anonymous:
+                output['info'] = self.info
             if self.debug:
                 output.update({'solution_r': self.complete_solution_r})
             with open(self.case_name + '_results.pickle', 'wb') as file:
