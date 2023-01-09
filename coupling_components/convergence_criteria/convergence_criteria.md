@@ -12,9 +12,9 @@ The `type` `convergence_criterion.iteration_limit` is satisfied if the number of
 
 The `settings` dictionary contains one entry:
 
-parameter|type|description
----:|:---:|---
-`maximum`|int|Maximum number of iterations.
+| parameter | type | description                   |
+|----------:|:----:|-------------------------------|
+| `maximum` | int  | Maximum number of iterations. |
 
 ### Absolute norm
 
@@ -31,10 +31,10 @@ where $r_i$ is the $i$-th component of the residual.
 
 The `settings` are as follows:
 
-parameter|type|description
----:|:---:|---
-`order`|int|Order $p$ of the norm.
-`tolerance`|double|Limit value for convergence.
+|   parameter |  type  | description                  |
+|------------:|:------:|------------------------------|
+|     `order` |  int   | Order $p$ of the norm.       |
+| `tolerance` | double | Limit value for convergence. |
 
 ### Relative norm
 

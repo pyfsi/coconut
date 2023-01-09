@@ -65,11 +65,11 @@ This method is again quite simple, but able to stabilize some cases that fail wi
 One can see that a lower $\omega$ corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
 For more challenging problems, with incompressible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameter needs to be included in the `settings` dictionary.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameter needs to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-`omega`|float|Relaxation factor.
+| parameter | type  | description        |
+|----------:|:-----:|--------------------|
+|   `omega` | float | Relaxation factor. |
 
 ## Aitken
 
@@ -104,11 +104,11 @@ The relaxation factor in the first time step is equal to $\omega^{max}$.
 
 This method improves convergence speed drastically compared to Gauss-Seidel iterations, but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for different Fourier modes of the output of the second solver.
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameter needs to be included in the `settings` dictionary.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameter needs to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-`omega_max`|float|Maximal relaxation factor.
+|   parameter | type  | description                |
+|------------:|:-----:|----------------------------|
+| `omega_max` | float | Maximal relaxation factor. |
 
 ## IQNI
 
@@ -163,12 +163,12 @@ A symbolic schematic is given in the following figure.
 For more information with respect to the approximation of the Jacobian, refer to the [models documentation](models/models.md).
 More information about residual operator methods can be found in [[1](#1)].
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`model`|dict|Model component.
-`omega`|float|Relaxation factor.
+| parameter | type  | description        |
+|----------:|:-----:|--------------------|
+|   `model` | dict  | Model component.   |
+|   `omega` | float | Relaxation factor. |
 
 ## IBQN
 
@@ -232,15 +232,15 @@ A symbolic schematic is given in the following figure.
 The actual approximation of the Jacobian occurs with the same [models](models/models.md) as before.
 More information about block methods can be found in [[1](#1)].
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`absolute_tolerance_gmres`|float|Absolute tolerance used in the GMRES method.
-`model_f`|dict|Model component corresponding to the first solver wrapper.
-`model_s`|dict|Model component corresponding to the second solver wrapper.
-`omega`|float|Relaxation factor.
-<nobr>`relative_tolerance_gmres`</nobr>|float|Relative tolerance used in the GMRES method.
+|                               parameter | type  | description                                                 |
+|----------------------------------------:|:-----:|-------------------------------------------------------------|
+|              `absolute_tolerance_gmres` | float | Absolute tolerance used in the GMRES method.                |
+|                               `model_f` | dict  | Model component corresponding to the first solver wrapper.  |
+|                               `model_s` | dict  | Model component corresponding to the second solver wrapper. |
+|                                 `omega` | float | Relaxation factor.                                          |
+| <nobr>`relative_tolerance_gmres`</nobr> | float | Relative tolerance used in the GMRES method.                |
 
 ## IQNISM
 
@@ -277,15 +277,15 @@ Note that, in this way, the secant Jacobian has preference over the surrogate Ja
 
 If the coupled solver in the surrogate model uses IQNISM as well, a nested surrogate construction is created, where for the part of residual not treated by the first surrogate Jacobian the second surrogate is used.
 
-Next to the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Next to the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`model`|dict|Model component.
-`omega`|float|(optional) Default: `1`. Relaxation factor for when the modes not covered by the surrogate model, when the secant model is not yet active.
-`surrogate` |dict|Surrogate component.
-`surrogate_modes`|int|(optional) Default: all modes. The number of modes from the surrogate Jacobian that should be used in the Jacobian approximation (starting from the first determined surrogate mode(s)).
-<nobr>`surrogate_synchronize`</nobr>|bool|(optional) Default: `true`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).
+|                            parameter | type  | description                                                                                                                                                                              |
+|-------------------------------------:|:-----:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                              `model` | dict  | Model component.                                                                                                                                                                         |
+|                              `omega` | float | (optional) Default: `1`. Relaxation factor for when the modes not covered by the surrogate model, when the secant model is not yet active.                                               |
+|                          `surrogate` | dict  | Surrogate component.                                                                                                                                                                     |
+|                    `surrogate_modes` |  int  | (optional) Default: all modes. The number of modes from the surrogate Jacobian that should be used in the Jacobian approximation (starting from the first determined surrogate mode(s)). |
+| <nobr>`surrogate_synchronize`</nobr> | bool  | (optional) Default: `true`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).                               |
 
 This coupled solver is closely related to the IQN-ILSM framework described in [[2](#2)].
 The settings structure for the different surrogate models discussed in this work are:
@@ -372,18 +372,18 @@ Some examples are given in the example [test_single_solver](../../examples/test_
 
 The JSON file requirements for the class `CoupledSolverTestSingleSolver` are different from the other coupled solvers in the sense that they only require the `type`, which is `coupled_solvers.test_single_solver`, the dictionary `test_settings` and the list `solver_wrappers` containing at least one solver wrapper. The keys for the `test_settings` dictionary are listed in alphabetical order below.
 
-parameter|type|description
----:|:---:|---
-`debug`|bool|(optional) Default: `false`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).
-`delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
-`case_name`|str|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<case_name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
-`save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.
-`solver_index`|int|Has a value `0` or `1` and indicates the solver that one wants to test. `0` indicates the first solver wrapper that appears in the JSON-file, `1` the second one.
-`test_class`|str|(optional) Refers to the class to use in the *`dummy_solver.py`*. If not provided or `None`, zero input will be used.
-<nobr>`timestep_start`</nobr>|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
+|                     parameter | type  | description                                                                                                                                                                                                                                                                                                             |
+|------------------------------:|:-----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                       `debug` | bool  | (optional) Default: `false`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).                                                                                                                                                       |
+|                     `delta_t` | float | (optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.                                                                                        |
+|                   `case_name` |  str  | (optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<case_name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`. |
+|                `save_results` |  int  | (optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.  |
+|                `solver_index` |  int  | Has a value `0` or `1` and indicates the solver that one wants to test. `0` indicates the first solver wrapper that appears in the JSON-file, `1` the second one.                                                                                                                                                       |
+|                  `test_class` |  str  | (optional) Refers to the class to use in the *`dummy_solver.py`*. If not provided or `None`, zero input will be used.                                                                                                                                                                                                   |
+| <nobr>`timestep_start`</nobr> |  int  | (optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.                                                                                                                                                  |
 
 Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the `settings` dictionary.
-The [`settings` dictionary](#settings) is used to look up `delta_t`, `timestep_start`, `save_results` and `case_name` if not provided in `test_settings`. Note that `test_settings` has priority over the parameters defined in `settings`. This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
+The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `case_name` if not provided in `test_settings`. Note that `test_settings` has priority over the parameters defined in `settings`. This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
 An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 
 The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0. As such, previous test solver working directories are not overwritten.
@@ -429,11 +429,11 @@ The model(s) are saved such that the behavior of the coupling algorithm is the s
 This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse (q>0).
 The following table gives an overview of the coupled solvers which save one or more additional components or values.
 
-type|additional components saved for restart
----:|---
-`coupled_solvers.aitken`|`omega`
-`coupled_solvers.iqni`|`model`
-`coupled_solvers.ibqn`|`model_f` and `model_s`
+|                     type | additional components saved for restart |
+|-------------------------:|-----------------------------------------|
+| `coupled_solvers.aitken` | `omega`                                 |
+|   `coupled_solvers.iqni` | `model`                                 |
+|   `coupled_solvers.ibqn` | `model_f` and `model_s`                 |
 
 However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
 Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step $n$.
