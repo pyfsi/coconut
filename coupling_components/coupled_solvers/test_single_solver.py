@@ -36,6 +36,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.settings['save_restart'] = 0  # in order to pass on default value
         self.save_restart = 0  # no restart files are saved
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.delta_t = self.settings['delta_t']
         tools.print_info(f'Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}')
 
