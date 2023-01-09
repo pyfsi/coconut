@@ -37,7 +37,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
-        self.start_time = self.settings['timestep_start'] * self.delta_t
+        self.timestep_start = self.settings['timestep_start']
+        self.start_time = self.timestep_start * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
         self.save_restart = self.settings['save_restart']
         self.openfoam_process = None
@@ -164,7 +165,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
         # define timestep and physical time
-        self.timestep = 0
+        self.timestep = self.timestep_start
         self.physical_time = self.start_time
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
