@@ -74,6 +74,6 @@ There are two options available:
 
 The following parameters need to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-<nobr>`predict_change`</nobr>|dict|(optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly.
+|                     parameter | type | description                                                                                                                                                 |
+|------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`predict_change`</nobr> | dict | (optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly. |

@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut.data_structure.interface import Interface, Model
 from coconut import tools
 
@@ -14,12 +14,12 @@ def create(parameters):
     return SolverWrapperKratosStructure(parameters)
 
 
-class SolverWrapperKratosStructure(Component):
+class SolverWrapperKratosStructure(SolverWrapper):
     version = None  # KratosMultiphysics version, set in sub-class, for version 9.1 f. ex.: '91'
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None:
             raise NotImplementedError(
@@ -40,8 +40,6 @@ class SolverWrapperKratosStructure(Component):
         self.interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
 
         self.model = None
-        self.interface_input = None
-        self.interface_output = None
         self.kratos_process = None
 
         self.check_interface()
@@ -55,13 +53,6 @@ class SolverWrapperKratosStructure(Component):
 
         # coupling convergence
         self.coupling_convergence = False
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -126,12 +117,6 @@ class SolverWrapperKratosStructure(Component):
         self.coco_messages.wait_message('stop_ready')
         self.coco_messages.remove_all_messages()
         self.kratos_process.wait()
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def write_input_data(self):
         interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']

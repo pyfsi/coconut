@@ -112,6 +112,7 @@ class Analytical1D(Component):
         if self.update_every_iteration:
             self.jit = self.get_inverse_jacobian()
 
+    # noinspection PyMethodMayBeStatic
     def is_ready(self):
         return True
 
@@ -120,7 +121,6 @@ class Analytical1D(Component):
 
         # calculate yt
         self.solver_models[0].solve_solution_step(self.x)
-        self.run_time = self.solver_models[0].run_time
 
         # calculation of Jacobian
         return self.solver_models[0].get_surrogate_jacobian()
@@ -161,3 +161,13 @@ class Analytical1D(Component):
         r_full[1::3] = dr.flatten()
         dr_out.set_interface_data(r_full)
         return dr_out
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time'):
+            time_allocation_sub = time_allocation[time_type]
+            for i, solver_model in enumerate(self.solver_models):
+                time_allocation_sub[f'solver_wrapper_{i}'] = solver_model.get_time_allocation()
+            total_time = sum([s.__getattribute__(time_type) for s in self.solver_models])
+            time_allocation_sub['total'] = total_time
+        return time_allocation

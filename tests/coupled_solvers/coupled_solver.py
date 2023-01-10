@@ -125,7 +125,7 @@ class TestCoupledSolver(unittest.TestCase):
 
         # remove non equal items
         for results in (results_no_restart, results_restart):
-            for key in ['info', 'run_time', 'case_name']:
+            for key in ['info', 'run_time', 'case_name', 'time_allocation']:
                 results.pop(key)
 
         # check equality

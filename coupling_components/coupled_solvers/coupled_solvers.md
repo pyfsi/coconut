@@ -27,15 +27,16 @@ A considerable convergence stabilization and acceleration is obtained by modifyi
 
 The following parameters need to be included in the `settings` dictionary. Here they are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`debug`|bool|(optional) Default: `false`. The data `solution_x` and `solution_y` are saved every iteration except of every time step (see [results pickle file](#save-results)). Residual distribution is also saved in additional field `solution_r` for every iteration.
-`delta_t`|float|Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.
-`case_name`|str|(optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<case_name>_results.pickle`_) and a restart file (_`<case_name>_restart_ts<time_step>.pickle`_). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.
-`restart_case`|str|(optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.
-`save_restart`|int|(optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers a [results save](#save-results), if `save_results` is non-zero.
-`save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written.
-<nobr>`time_step_start`</nobr>|int|Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.
+|                      parameter | type  | description                                                                                                                                                                                                                                                                                                                                                                                         |
+|-------------------------------:|:-----:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                    `anonymous` | bool  | (optional) Default: `false`. If `true`, the data field `info`, which contains the hostname of the machine, is not saved, see [results pickle file](#save-results).                                                                                                                                                                                                                                  |
+|                        `debug` | bool  | (optional) Default: `false`. The data `solution_x` and `solution_y` are saved every iteration except of every time step (see [results pickle file](#save-results)). Residual distribution is also saved in additional field `solution_r` for every iteration.                                                                                                                                       |
+|                      `delta_t` | float | Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.                                                                                                                                                                                                                                                                                                 |
+|                    `case_name` |  str  | (optional) Default: `"case"`. Name of the case. This name is used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results (_`<case_name>_results.pickle`_) and a restart file (_`<case_name>_restart_ts<time_step>.pickle`_). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended. |
+|                 `restart_case` |  str  | (optional) Default: `case_name`. Only used when restart is performed (`timestep_start` > 0). Refers to the case which has to be restarted. The following pickle file will be used: _`<restart_case>_restart_ts<timestep_start>.pickle`_. This file path starts in the folder from where the simulation is performed.                                                                                |
+|                 `save_restart` |  int  | (optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers a [results save](#save-results), if `save_results` is non-zero.                                                                                                     |
+|                 `save_results` |  int  | (optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written.                                                                                                                                                                       |
+| <nobr>`time_step_start`</nobr> |  int  | Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.                                |
 
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
@@ -64,11 +65,11 @@ This method is again quite simple, but able to stabilize some cases that fail wi
 One can see that a lower $\omega$ corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
 For more challenging problems, with incompressible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameter needs to be included in the `settings` dictionary.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameter needs to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-`omega`|float|Relaxation factor.
+| parameter | type  | description        |
+|----------:|:-----:|--------------------|
+|   `omega` | float | Relaxation factor. |
 
 ## Aitken
 
@@ -103,11 +104,11 @@ The relaxation factor in the first time step is equal to $\omega^{max}$.
 
 This method improves convergence speed drastically compared to Gauss-Seidel iterations, but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for different Fourier modes of the output of the second solver.
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameter needs to be included in the `settings` dictionary.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameter needs to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-`omega_max`|float|Maximal relaxation factor.
+|   parameter | type  | description                |
+|------------:|:-----:|----------------------------|
+| `omega_max` | float | Maximal relaxation factor. |
 
 ## IQNI
 
@@ -162,12 +163,12 @@ A symbolic schematic is given in the following figure.
 For more information with respect to the approximation of the Jacobian, refer to the [models documentation](models/models.md).
 More information about residual operator methods can be found in [[1](#1)].
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`model`|dict|Model component.
-`omega`|float|Relaxation factor.
+| parameter | type  | description        |
+|----------:|:-----:|--------------------|
+|   `model` | dict  | Model component.   |
+|   `omega` | float | Relaxation factor. |
 
 ## IBQN
 
@@ -231,15 +232,15 @@ A symbolic schematic is given in the following figure.
 The actual approximation of the Jacobian occurs with the same [models](models/models.md) as before.
 More information about block methods can be found in [[1](#1)].
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`absolute_tolerance_gmres`|float|Absolute tolerance used in the GMRES method.
-`model_f`|dict|Model component corresponding to the first solver wrapper.
-`model_s`|dict|Model component corresponding to the second solver wrapper.
-`omega`|float|Relaxation factor.
-<nobr>`relative_tolerance_gmres`</nobr>|float|Relative tolerance used in the GMRES method.
+|                               parameter | type  | description                                                 |
+|----------------------------------------:|:-----:|-------------------------------------------------------------|
+|              `absolute_tolerance_gmres` | float | Absolute tolerance used in the GMRES method.                |
+|                               `model_f` | dict  | Model component corresponding to the first solver wrapper.  |
+|                               `model_s` | dict  | Model component corresponding to the second solver wrapper. |
+|                                 `omega` | float | Relaxation factor.                                          |
+| <nobr>`relative_tolerance_gmres`</nobr> | float | Relative tolerance used in the GMRES method.                |
 
 ## IQNISM
 
@@ -276,15 +277,15 @@ Note that, in this way, the secant Jacobian has preference over the surrogate Ja
 
 If the coupled solver in the surrogate model uses IQNISM as well, a nested surrogate construction is created, where for the part of residual not treated by the first surrogate Jacobian the second surrogate is used.
 
-Next to the parameters required in the [class `CoupledSolverGaussSeidel`](#settings), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Next to the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`model`|dict|Model component.
-`omega`|float|(optional) Default: `1`. Relaxation factor for when the modes not covered by the surrogate model, when the secant model is not yet active.
-`surrogate` |dict|Surrogate component.
-`surrogate_modes`|int|(optional) Default: all modes. The number of modes from the surrogate Jacobian that should be used in the Jacobian approximation (starting from the first determined surrogate mode(s)).
-<nobr>`surrogate_synchronize`</nobr>|bool|(optional) Default: `true`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).
+|                            parameter | type  | description                                                                                                                                                                              |
+|-------------------------------------:|:-----:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                              `model` | dict  | Model component.                                                                                                                                                                         |
+|                              `omega` | float | (optional) Default: `1`. Relaxation factor for when the modes not covered by the surrogate model, when the secant model is not yet active.                                               |
+|                          `surrogate` | dict  | Surrogate component.                                                                                                                                                                     |
+|                    `surrogate_modes` |  int  | (optional) Default: all modes. The number of modes from the surrogate Jacobian that should be used in the Jacobian approximation (starting from the first determined surrogate mode(s)). |
+| <nobr>`surrogate_synchronize`</nobr> | bool  | (optional) Default: `true`. Whether or not the surrogate model is synchronized at the end of the time step (only if the surrogate offers this capability).                               |
 
 This coupled solver is closely related to the IQN-ILSM framework described in [[2](#2)].
 The settings structure for the different surrogate models discussed in this work are:
@@ -371,18 +372,18 @@ Some examples are given in the example [test_single_solver](../../examples/test_
 
 The JSON file requirements for the class `CoupledSolverTestSingleSolver` are different from the other coupled solvers in the sense that they only require the `type`, which is `coupled_solvers.test_single_solver`, the dictionary `test_settings` and the list `solver_wrappers` containing at least one solver wrapper. The keys for the `test_settings` dictionary are listed in alphabetical order below.
 
-parameter|type|description
----:|:---:|---
-`debug`|bool|(optional) Default: `false`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).
-`delta_t`|float|(optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.
-`case_name`|str|(optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<case_name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`.
-`save_results`|int|(optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.
-`solver_index`|int|Has a value `0` or `1` and indicates the solver that one wants to test. `0` indicates the first solver wrapper that appears in the JSON-file, `1` the second one.
-`test_class`|str|(optional) Refers to the class to use in the *`dummy_solver.py`*. If not provided or `None`, zero input will be used.
-<nobr>`timestep_start`</nobr>|int|(optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.
+|                     parameter | type  | description                                                                                                                                                                                                                                                                                                             |
+|------------------------------:|:-----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                       `debug` | bool  | (optional) Default: `false`. Residual distribution is also saved in additional field `solution_r` for every iteration (see [results pickle file](#save-results)).                                                                                                                                                       |
+|                     `delta_t` | float | (optional) Time step size to be used in the test. Is optional as long as this value is defined in the `settings` dictionary. If a different value is defined in both dictionaries, the one defined in `test_settings` is chosen.                                                                                        |
+|                   `case_name` |  str  | (optional) Name of the case used to store a [pickle](https://docs.python.org/3/library/pickle.html) file with results. The pickle file will have the name _`<case_name>_<test_solver_working_directory>_results.pickle`_. If not provided, the value from `settings` is used or if `settings` is not present: `"case"`. |
+|                `save_results` |  int  | (optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written. If not provided, the value from `settings` is used or if `settings` is not present: `0`.  |
+|                `solver_index` |  int  | Has a value `0` or `1` and indicates the solver that one wants to test. `0` indicates the first solver wrapper that appears in the JSON-file, `1` the second one.                                                                                                                                                       |
+|                  `test_class` |  str  | (optional) Refers to the class to use in the *`dummy_solver.py`*. If not provided or `None`, zero input will be used.                                                                                                                                                                                                   |
+| <nobr>`timestep_start`</nobr> |  int  | (optional) Time step to start from. If not provided the value defined in the `settings` dictionary is used. If the `settings` dictionary is not present, zero is used.                                                                                                                                                  |
 
 Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the `settings` dictionary.
-The [`settings` dictionary](#settings) is used to look up `delta_t`, `timestep_start`, `save_results` and `case_name` if not provided in `test_settings`. Note that `test_settings` has priority over the parameters defined in `settings`. This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
+The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `case_name` if not provided in `test_settings`. Note that `test_settings` has priority over the parameters defined in `settings`. This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
 An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 
 The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0. As such, previous test solver working directories are not overwritten.
@@ -398,19 +399,20 @@ In other words, if the parameter is non-zero, it only controls the writing frequ
 For a non-zero value of `save_restart`, a save for [restart purposes](#saving-restart-files) also triggers the saving of the results file.
 The pickle file may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:
 
-key|value type|description
----:|:---:|---
-`solution_x`|numpy array|Contains the values of the vector $x$ (typically displacement) for every time step as columns of a 2 dimensional np-array. The initial value is included as well, such that the number of column will be one higher than the number of calculated time steps. The vector $x$ refers to the input of the first solver wrapper.
-`solution_y`|numpy array|Contains the values of the vector $y$ (typically pressure and traction) for every time step as columns of a 2 dimensional np-array, similar to `solution_x`. The vector $y$ refers to the input of the second solver wrapper.
-`interface_x`|interface|Interface object used as input for the first solver wrapper.
-`interface_y`|interface|Interface object used as input for the second solver wrapper.
-`iterations`|list|Contains the performed number of coupling iterations for every time step.
-`run_time`|float|Equals the total computation time, i.e. the time between initialization and finalization (excluding initialization).
-`residual`|list|Nested list, which contains for each time step a list, on its turn containing residuals, one for every iteration of that time step.
-`delta_t`|float|Equals the used time step size.
-<nobr>`timestep_start`</nobr>|int|Equals the used start time step.
-`case_name`|str|Name of the case.
-`info`|str|Additional info, such as date, restart history and hostname of machine on which simulation is run.
+|                           key | value type  | description                                                                                                                                                                                                                                                                                                                   |
+|------------------------------:|:-----------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                  `solution_x` | numpy array | Contains the values of the vector $x$ (typically displacement) for every time step as columns of a 2 dimensional np-array. The initial value is included as well, such that the number of column will be one higher than the number of calculated time steps. The vector $x$ refers to the input of the first solver wrapper. |
+|                  `solution_y` | numpy array | Contains the values of the vector $y$ (typically pressure and traction) for every time step as columns of a 2 dimensional np-array, similar to `solution_x`. The vector $y$ refers to the input of the second solver wrapper.                                                                                                 |
+|                 `interface_x` |  interface  | Interface object used as input for the first solver wrapper.                                                                                                                                                                                                                                                                  |
+|                 `interface_y` |  interface  | Interface object used as input for the second solver wrapper.                                                                                                                                                                                                                                                                 |
+|                  `iterations` |    list     | Contains the performed number of coupling iterations for every time step.                                                                                                                                                                                                                                                     |
+|                    `residual` |    list     | Nested list, which contains for each time step a list, on its turn containing residuals, one for every iteration of that time step.                                                                                                                                                                                           |
+|                    `run_time` |    float    | Equals the total computation time, i.e. the time between initialization and finalization (excluding initialization).                                                                                                                                                                                                          |
+|             `time_allocation` |    dict     | Dictionary containing a detailed overview of the time spent in the different components for the current simulation. Upon restart, the time allocation of previous runs are stored in sequence under the key `restart`.                                                                                                        |                                                                                                                                                                                                       
+|                     `delta_t` |    float    | Equals the used time step size.                                                                                                                                                                                                                                                                                               |
+| <nobr>`timestep_start`</nobr> |     int     | Equals the used start time step.                                                                                                                                                                                                                                                                                              |
+|                   `case_name` |     str     | Name of the case.                                                                                                                                                                                                                                                                                                             |
+|                        `info` |     str     | Additional info, such as date, restart history and hostname of machine on which simulation is run. Can be disabled using the optional parameter `anonymous`.                                                                                                                                                                  |
 
 In simulations with a large number of points on the interface and a very large number of time steps, this file might take up a larger amount of storage.
 
@@ -427,11 +429,11 @@ The model(s) are saved such that the behavior of the coupling algorithm is the s
 This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse (q>0).
 The following table gives an overview of the coupled solvers which save one or more additional components or values.
 
-type|additional components saved for restart
----:|---
-`coupled_solvers.aitken`|`omega`
-`coupled_solvers.iqni`|`model`
-`coupled_solvers.ibqn`|`model_f` and `model_s`
+|                     type | additional components saved for restart |
+|-------------------------:|-----------------------------------------|
+| `coupled_solvers.aitken` | `omega`                                 |
+|   `coupled_solvers.iqni` | `model`                                 |
+|   `coupled_solvers.ibqn` | `model_f` and `model_s`                 |
 
 However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
 Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step $n$.

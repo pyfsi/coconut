@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 import os
@@ -17,14 +17,14 @@ def create(parameters):
     return SolverWrapperFluent(parameters)
 
 
-class SolverWrapperFluent(Component):
+class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None or self.version_bis is None:
             raise NotImplementedError(
@@ -65,15 +65,6 @@ class SolverWrapperFluent(Component):
             self.thread_ids[thread_name] = None
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.model = None
-        self.interface_input = None
-        self.interface_output = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -410,12 +401,6 @@ class SolverWrapperFluent(Component):
                     os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
                 except OSError:
                     pass
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def check_software(self):
         # Fluent version: see set_fluent_version

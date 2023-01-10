@@ -69,10 +69,10 @@ As mentioned before, the combination of this model wiht the coupled solver `Coup
 
 The following parameters need to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-<nobr>`min_significant`</nobr>|double|Absolute tolerance for filtering. To disable filtering, set to `0`.
-`q`|int|Number of previous time steps that are reused. In a steady simulation, there are no previous time steps, so then the value is irrelevant.
+|                      parameter |  type  | description                                                                                                                               |
+|-------------------------------:|:------:|-------------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`min_significant`</nobr> | double | Absolute tolerance for filtering. To disable filtering, set to `0`.                                                                       |
+|                            `q` |  int   | Number of previous time steps that are reused. In a steady simulation, there are no previous time steps, so then the value is irrelevant. |
 
 ### Multi-vector
 
@@ -88,9 +88,9 @@ The combination of this model with the coupled solver `CoupledSolverIQNI` corres
 
 The following parameter needs to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-<nobr>`min_significant`</nobr>|double|(optional) Default: `0` (disabled). Absolute tolerance for filtering.
+|                      parameter |  type  | description                                                           |
+|-------------------------------:|:------:|-----------------------------------------------------------------------|
+| <nobr>`min_significant`</nobr> | double | (optional) Default: `0` (disabled). Absolute tolerance for filtering. |
 
 ### Multi-vector matrix-free
 
@@ -104,10 +104,10 @@ Filtering can be applied similar to the above described models, but this is typi
 
 The following parameters need to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-<nobr>`min_significant`</nobr>|double|(optional) Default: `0` (disabled). Absolute tolerance for filtering.
-`q`|int|Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be 0.
+|                      parameter |  type  | description                                                                                                                     |
+|-------------------------------:|:------:|---------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`min_significant`</nobr> | double | (optional) Default: `0` (disabled). Absolute tolerance for filtering.                                                           |
+|                            `q` |  int   | Number of previous time steps that are reused. In a steady simulation there are no previous time steps, so then it should be 0. |
 
 ## Jacobian approximation from surrogate model
 
@@ -133,9 +133,9 @@ Similarly, 2D surrogate solver wrappers can approximate a 3D calculation, for an
 
 The following parameter needs to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-<nobr>`coupled_solver`</nobr>|dict|Dictionary of the coupled solver used for the surrogate coupled calculation. The following parameter are not required in the `settings` of `coupled_solver`, as they are inherited from a higher component: `delta_t`, `save_restart`, `timestep_start`. The `case_name` parameter is set by default to `<case_name>_surrogate`, where `<case_name>` is the value of the `coupled_solver`, where this `surrogate` model is part of.
+|                     parameter | type | description                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`coupled_solver`</nobr> | dict | Dictionary of the coupled solver used for the surrogate coupled calculation. The following parameter are not required in the `settings` of `coupled_solver`, as they are inherited from a higher component: `delta_t`, `save_restart`, `timestep_start`. The `case_name` parameter is set by default to `<case_name>_surrogate`, where `<case_name>` is the value of the `coupled_solver`, where this `surrogate` model is part of. |
 
 ### Mapped
 
@@ -145,11 +145,11 @@ As a `surrogate` model usually won't have the same discretization as the actual 
 This special model acts analogously, to the [`mapped` solver wrapper](../../mappers.md).
 It contains 3 `Components`: a mapper for the input, a real model and a mapper for the output.
 
-parameter|type|description
----:|:---:|---
-`mapper_interface_input`|dict|Interface input mapper.
-<nobr>`mapper_interface_output`</nobr>|dict|Interface output mapper.
-`surrogate`|dict|Dictionary of a model, e.g. `surrogate`.
+|                              parameter | type | description                              |
+|---------------------------------------:|:----:|------------------------------------------|
+|               `mapper_interface_input` | dict | Interface input mapper.                  |
+| <nobr>`mapper_interface_output`</nobr> | dict | Interface output mapper.                 |
+|                            `surrogate` | dict | Dictionary of a model, e.g. `surrogate`. |
 
 ## Analytically determined Jacobian
 
@@ -168,10 +168,10 @@ Typically, however, this is not advised because the Jacobian doesn't change that
 
 The following parameters need to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-`solver_models`|list| List of `solver_wrappers` to be used by the `model`: `tube flow solver` and `tube structure solver`. Normally these are equal to the ones used by the `coupled_solver`.
-<nobr>`update_every_iteration`</nobr>|bool|(optional) Default: `false`. Whether or not the Jacobian has to be recalculated every iteration (using the solution of the previous iteration).
+|                             parameter | type | description                                                                                                                                                             |
+|--------------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                       `solver_models` | list | List of `solver_wrappers` to be used by the `model`: `tube flow solver` and `tube structure solver`. Normally these are equal to the ones used by the `coupled_solver`. |
+| <nobr>`update_every_iteration`</nobr> | bool | (optional) Default: `false`. Whether or not the Jacobian has to be recalculated every iteration (using the solution of the previous iteration).                         |
 
 ## Dummy model
 

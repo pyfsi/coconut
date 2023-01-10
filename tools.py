@@ -130,10 +130,10 @@ def update_pre(pre):
 #  @param compent_list  List of Components from which the info is printed
 def print_components_info(pre, component_list):
     """
-    This function accepts a list of Components and print their info in a structured tree-like format as such:
-    ├─Component0.PrintInfo
+    This function accepts a list of Components and print their info in a structured tree-like format as follows:
+    ├─Component0.print_components_info
     │ XXX
-    └─Component1.PrintInfo
+    └─Component1.print_components_info
       XXX
     """
     pre = update_pre(pre)

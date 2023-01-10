@@ -14,13 +14,13 @@ The gap beneath the gate is exagerated for clarity.
  
 The corresponding parameters are:
 
-parameter|value|description
----:|:---:|---
-`A`|0.1 m|Width of the liquid tank.
-`G`|0.0025 m|Clearance of the elastic gate.
-`H`|0.14 m|Initial height of the liquid column.
-`L`|0.079 m|Height of the elastic gate.
-`S`|0.005 m|Thickness of the elastic gate.
+| parameter |  value   | description                          |
+|----------:|:--------:|--------------------------------------|
+|       `A` |  0.1 m   | Width of the liquid tank.            |
+|       `G` | 0.0025 m | Clearance of the elastic gate.       |
+|       `H` |  0.14 m  | Initial height of the liquid column. |
+|       `L` | 0.079 m  | Height of the elastic gate.          |
+|       `S` | 0.005 m  | Thickness of the elastic gate.       |
 
 The elastic gate is made of rubber and has the following parameters:
 
