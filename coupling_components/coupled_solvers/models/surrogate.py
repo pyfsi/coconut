@@ -27,7 +27,8 @@ class Surrogate(Component):
         self.solver_level = None
 
         # time
-        self.init_time = self.init_time
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
 
     @tools.time_initialize

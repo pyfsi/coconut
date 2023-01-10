@@ -9,7 +9,8 @@ class SolverWrapper(Component):
         self.interface_output = None
 
         # time
-        self.init_time = self.init_time
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
 
         # debug
