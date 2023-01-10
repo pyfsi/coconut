@@ -233,7 +233,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             prev_lp = 0
             ids = np.arange(n_lp)
             coords_tmp = np.zeros((n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
-            for i in range(0, n_lp):
+            for i in range(n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
@@ -564,7 +564,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                         with warnings.catch_warnings():
                             warnings.filterwarnings('always', category=UserWarning)
                             warnings.warn(f'recommended setting "INITIAL=NO" not found in input file, please consult '
-                                          f'the documention on STEP definition',
+                                          f'the documentation on STEP definition',
                                           category=UserWarning)
                     of.write(line)
                     if bool_restart:
