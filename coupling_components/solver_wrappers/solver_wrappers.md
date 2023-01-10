@@ -10,7 +10,7 @@ needed adapt) the file *`coconut/solver_modules.py`* after installing or updatin
 in [the front documentation page](../../README.md#checking-the-solver-modules).
 
 As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from
-the `SovlerWrapper` class, which inherits from the `Component` class, and must all implement the following
+the `SolverWrapper` class, which inherits from the `Component` class, and must all implement the following
 methods: `initialize`, `initialize_solution_step`, `solve_solution_step`, `finalize_solution_step`, `finalize`.
 
 Upon instantiation of the solver wrapper object, the solver wrapper has to create a `Model` containing one or
