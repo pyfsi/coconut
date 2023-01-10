@@ -127,13 +127,14 @@ class SolverWrapperFluent(Component):
         log = join(self.dir_cfd, 'fluent.log')
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
+        cmd3 = f' >> {log} 2>&1'
 
         if self.hostfile is not None:
             cmd1 += f' -cnf={self.hostfile} -ssh '
         if self.settings['fluent_gui']:
-            cmd = cmd1 + cmd2
+            cmd = cmd1 + cmd2 + cmd3
         else:
-            cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'
+            cmd = cmd1 + '-gu ' + cmd2 + cmd3
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 

@@ -558,18 +558,18 @@ class SolverWrapperOpenFOAM(Component):
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
             tools.print_info(msg, layout='warning')
-            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
+            control_dict = re.sub(r'timeFormat' + of_io.delimiter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'{"application":<16}{self.application}',
+        control_dict = re.sub(r'application' + of_io.delimiter + r'\w+', f'{"application":<16}{self.application}',
                               control_dict)
-        control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
+        control_dict = re.sub(r'startTime' + of_io.delimiter + of_io.float_pattern,
                               f'{"startTime":<16}{self.start_time}', control_dict)
-        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'{"deltaT":<16}{self.delta_t}',
+        control_dict = re.sub(r'deltaT' + of_io.delimiter + of_io.float_pattern, f'{"deltaT":<16}{self.delta_t}',
                               control_dict)
-        control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
+        control_dict = re.sub(r'timePrecision' + of_io.delimiter + of_io.int_pattern,
                               f'{"timePrecision":<16}{self.time_precision}',
                               control_dict)
-        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
+        control_dict = re.sub(r'endTime' + of_io.delimiter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
 
         # delete previously defined coconut functions
         coconut_start_string = '\n// CoCoNuT function objects'
