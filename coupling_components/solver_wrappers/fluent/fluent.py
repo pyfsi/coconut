@@ -180,20 +180,15 @@ class SolverWrapperFluent(Component):
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
-        names_found = []
+        info = []
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
-                    line_list = line.strip().split()
-                    if len(line_list) == 3:
-                        name, thread_id, _ = line_list
-                    elif len(line_list) == 4:
-                        name, _, thread_id, _ = line_list
-                    else:
-                        raise ValueError(f'Format of {report} not recognized')
-                    if name in self.thread_ids and name not in names_found:
+                    name, thread_id, _ = line.strip().split()
+                    if name in self.thread_ids:
+                        info.append(' '.join((name, thread_id)))
                         self.thread_ids[name] = thread_id
-                        names_found.append(name)
+
                 if check == 3 and not line.islower():
                     break
                 if check == 2:  # skip 1 line
@@ -203,9 +198,9 @@ class SolverWrapperFluent(Component):
                 if 'Boundary Conditions' in line:
                     check = 1
         with open(join(self.dir_cfd, 'bcs.txt'), 'w') as file:
-            file.write(f'{len(names_found)}\n')
-            for name, id in self.thread_ids.items():
-                file.write(f'{name} {id}\n')
+            file.write(str(len(info)) + '\n')
+            for line in info:
+                file.write(line + '\n')
         self.coco_messages.send_message('thread_ids_written_to_file')
 
         # import node and face information if no restart
