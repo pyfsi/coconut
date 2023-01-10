@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
 
@@ -11,10 +11,10 @@ def create(parameters):
     return SolverWrapperTubeRingmodel(parameters)
 
 
-class SolverWrapperTubeRingmodel(Component):
+class SolverWrapperTubeRingmodel(SolverWrapper):
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
@@ -76,12 +76,6 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
         self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
@@ -141,9 +135,3 @@ class SolverWrapperTubeRingmodel(Component):
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()

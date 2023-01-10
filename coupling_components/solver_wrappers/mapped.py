@@ -12,6 +12,7 @@ class SolverWrapperMapped(Component):
     def __init__(self, parameters):
         super().__init__()
 
+        # read parameters
         self.parameters = parameters
         self.settings = parameters['settings']
 
@@ -29,7 +30,8 @@ class SolverWrapperMapped(Component):
         self.interface_output_to = None
 
         # time
-        self.init_time = 0.0
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
 
     @tools.time_initialize
@@ -88,6 +90,17 @@ class SolverWrapperMapped(Component):
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time'):
+            total_time = self.__getattribute__(time_type)
+            solver_wrapper_time = self.solver_wrapper.get_time_allocation()[time_type]
+            mapper_time = total_time - (
+                solver_wrapper_time['total'] if isinstance(solver_wrapper_time, dict) else solver_wrapper_time)
+            time_allocation[time_type] = {'total': total_time, 'mapper': mapper_time,
+                                          'solver_wrapper': solver_wrapper_time}
+        return time_allocation
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' maps the following solver wrapper:')

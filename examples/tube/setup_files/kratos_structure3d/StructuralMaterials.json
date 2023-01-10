@@ -1,7 +1,7 @@
 {
   "properties": [
     {
-      "model_part_name": "Parts_tube",
+      "model_part_name": "Structure.Parts_tube",
       "properties_id": 1,
       "Material": {
         "name": "Material",

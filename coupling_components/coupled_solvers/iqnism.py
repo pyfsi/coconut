@@ -173,3 +173,13 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
         if self.solver_level == 0:
             out += '\n╚' + 79 * '═'
         tools.print_info(out)
+
+    def get_time_allocation(self):
+        time_allocation = super().get_time_allocation()
+        for time_type in ('init_time', 'run_time'):
+            time_allocation_sub = time_allocation[time_type]
+            time_allocation_sub.update({f'surrogate': self.surrogate.get_time_allocation()[time_type]})
+            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum([
+                s.__getattribute__(time_type) for s in self.solver_wrappers]) - self.surrogate.__getattribute__(
+                time_type)
+        return time_allocation

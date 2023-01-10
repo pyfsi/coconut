@@ -5,14 +5,14 @@ Here, the bottom wall is deformable and an oscillatory velocity is applied at th
 
 ![geometry](images/lid_driven_cavity_geometry.svg "Geometry and boundary conditions of the lid-driven cavity case")
 
-The oscillatory x-component of the velocity is applied not only at the top, but also in a region at the upper right side wall.
+The oscillatory x-component of the velocity is applied not only at the top, but also in a region at the upper left side wall.
 As shown in the figure above, the velocity increases linearly with the height. The y-component of the velocity is zero.
 The oscillating velocity $\bar{v}$ is given by
 $$
 \bar{v}=1-\cos\left(\frac{2\pi t}{5}\right),
 $$
 with t the time.
-On the corresponding region on the left side, zero pressure is applied.
+On the corresponding region on the right side, zero pressure is applied.
 The deformable bottom is fixed at the corners.
 
 The fluid parameters are:

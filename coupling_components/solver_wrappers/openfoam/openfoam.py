@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
@@ -17,12 +17,12 @@ def create(parameters):
     return SolverWrapperOpenFOAM(parameters)
 
 
-class SolverWrapperOpenFOAM(Component):
+class SolverWrapperOpenFOAM(SolverWrapper):
     version = None  # OpenFOAM version with dot, e.g. 4.1 , set in sub-class
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None:
             raise NotImplementedError(
@@ -37,7 +37,8 @@ class SolverWrapperOpenFOAM(Component):
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
-        self.start_time = self.settings['timestep_start'] * self.delta_t
+        self.timestep_start = self.settings['timestep_start']
+        self.start_time = self.timestep_start * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
         self.save_restart = self.settings['save_restart']
         self.openfoam_process = None
@@ -47,11 +48,6 @@ class SolverWrapperOpenFOAM(Component):
         self.boundary_names = self.settings['boundary_names']
         self.cores = None
         self.model = None
-        self.interface_input = None
-        self.interface_output = None
-
-        # set on True to save copy of input and output files in every iteration
-        self.debug = self.settings.get('debug', False)
 
         # set on True if you want to clean the adapted application and compile.
         self.compile_clean = self.settings.get('compile_clean', False)
@@ -66,10 +62,6 @@ class SolverWrapperOpenFOAM(Component):
         self.density_for_traction = None
         self.wall_shear_stress_variable = None
         self.wall_shear_stress_function_object_library = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
 
         # residual variables
         self.residual_variables = self.settings.get('residual_variables', None)
@@ -173,7 +165,7 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
         # define timestep and physical time
-        self.timestep = 0
+        self.timestep = self.timestep_start
         self.physical_time = self.start_time
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
@@ -343,12 +335,6 @@ class SolverWrapperOpenFOAM(Component):
             for boundary in self.boundary_names:
                 post_process_folder = os.path.join(self.working_directory, f'postProcessing/coconut_{boundary}')
                 shutil.rmtree(post_process_folder, ignore_errors=True)
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def compile_adapted_openfoam_solver(self):
         # compile openfoam adapted solver
