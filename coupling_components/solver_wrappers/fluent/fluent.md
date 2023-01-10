@@ -111,13 +111,15 @@ No changes.
 
 ### v2021R1 (21.1.0)
 
-This version does not allow multiphase problems. The reason for this is the following. Cell residuals are solved for postprocessing with the following command when setting up the case: `solve set expert y y n y`, which results in the following error:
+This version fails for the tested multiphase problems.
+The saving of "cell residuals" for postprocessing with the following command `solve set expert y y n y` results in the following error:
 `Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3`.
 This issue is solved in v2022R1.
 
 ### v2021R2 (21.2.0)
 
-This version does not allow multiphase problems. The reason for this is the following. Cell residuals are solved for postprocessing with the following command when setting up the case: `solve set expert y y n y`, which results in the following error:
+This version fails for the tested multiphase problems.
+The saving of "cell residuals" for postprocessing with the following command `solve set expert y y n y` results in the following error:
 `Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3`.
 This issue is solved in v2022R1.
 

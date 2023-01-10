@@ -133,8 +133,7 @@ class SolverWrapperFluent(Component):
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2
         else:
-            cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'  # TODO: does log work well?
-            # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'  # TODO: specify what this option does?
+            cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
@@ -180,20 +179,20 @@ class SolverWrapperFluent(Component):
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
-        name_prev = ''
-        info = []
+        names_found = []
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
-                    try:
-                        name, thread_id, _ = line.strip().split()
-                    except:
-                        name,phase,thread_id, _ = line.strip().split()
-                    if name in self.thread_ids and name != name_prev:
-                        info.append(' '.join((name, thread_id)))
+                    line_list = line.strip().split()
+                    if len(line_list) == 3:
+                        name, thread_id, _ = line_list
+                    elif len(line_list) == 4:
+                        name, _, thread_id, _ = line_list
+                    else:
+                        raise ValueError(f'Format of {report} not recognized')
+                    if name in self.thread_ids and name not in names_found:
                         self.thread_ids[name] = thread_id
-                        name_prev = name
-
+                        names_found.append(name)
                 if check == 3 and not line.islower():
                     break
                 if check == 2:  # skip 1 line
@@ -203,9 +202,9 @@ class SolverWrapperFluent(Component):
                 if 'Boundary Conditions' in line:
                     check = 1
         with open(join(self.dir_cfd, 'bcs.txt'), 'w') as file:
-            file.write(str(len(info)) + '\n')
-            for line in info:
-                file.write(line + '\n')
+            file.write(f'{len(names_found)}\n')
+            for name, id in self.thread_ids.items():
+                file.write(f'{name} {id}\n')
         self.coco_messages.send_message('thread_ids_written_to_file')
 
         # import node and face information if no restart
