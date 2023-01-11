@@ -94,7 +94,7 @@ class SolverWrapperFluent(Component):
             multiphase = '#t'
         rigid_body_motion_on = '#f'
         if self.rigid_body_motion_on:
-            rigid_body_motion_on = '#f' # '#t' --> move-zone is now off
+            rigid_body_motion_on = '#t' # '#t' --> move-zone is now off
         dimension_2D = '#f'
         if self.dimensions == 2:
             dimension_2D = '#t'
@@ -321,7 +321,7 @@ class SolverWrapperFluent(Component):
             self.write_move_zone()
 
         # write interface data
-        self.write_node_positions()
+        #self.write_node_positions()  #Commented om enkel move_zone te testen
 
         # copy input data for debugging
         if self.debug:
@@ -472,7 +472,7 @@ class SolverWrapperFluent(Component):
 
     def write_move_zone(self):
         omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_component(self.timestep*self.delta_t)
+            self.rigid_body_motion.move_zone_component(self.timestep)
         data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
         fmt = '%27.17e'
         tmp = f'move_zone_update_timestep{self.timestep}.dat'
