@@ -1,6 +1,7 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
+import coconut.coupling_components.solver_wrappers.python.banded as bnd
 
 import numpy as np
 import os
@@ -14,25 +15,33 @@ def create(parameters):
     return SolverWrapperTubeStructure(parameters)
 
 
-class SolverWrapperTubeStructure(Component):
+class SolverWrapperTubeStructure(SolverWrapper):
     al = 2  # Number of terms below diagonal in matrix
     au = 2  # Number of terms above diagonal in matrix
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        input_file = self.settings['input_file']
-        case_file_name = join(self.working_directory, input_file)
-        with open(case_file_name, 'r') as case_file:
-            self.settings.update(json.load(case_file))
+        input_file = self.settings.get('input_file')
+        if input_file is not None:
+            case_file_name = join(self.working_directory, input_file)
+            with open(case_file_name, 'r') as case_file:
+                case_file_settings = json.load(case_file)
+            case_file_settings.update(self.settings)
+            with open(case_file_name, 'w') as case_file:
+                json.dump(case_file_settings, case_file, indent=2)
+            self.settings.update(case_file_settings)
 
         # settings
         self.unsteady = self.settings.get('unsteady', True)
+        self.solver = self.settings.get('solver', 'solve_banded')  # method for solving the linear system
+        if self.solver not in ('solve_banded', 'direct'):
+            raise ValueError('The value of key "solver" must be "direct" or "solve_banded"')
         self.timestep_start = self.settings.get('timestep_start', 0)
         self.save_restart = self.settings.get('save_restart', 0)  # eg to restart
 
@@ -124,12 +133,11 @@ class SolverWrapperTubeStructure(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
         self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
+        # calculate inverse Jacobian if direct solver
+        if self.solver == 'direct':
+            j = bnd.to_dense(self.get_jacobian())
+            self.ji = np.linalg.inv(j)
 
-        # debug
-        self.debug = False  # set on True to save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
@@ -153,24 +161,24 @@ class SolverWrapperTubeStructure(Component):
         self.p = interface_input.get_variable_data(self.input_model_part_name, 'pressure').flatten()
 
         # solve system
-        f = self.get_residual()
-        residual0 = np.linalg.norm(f)
-        if residual0:
+        if self.solver == 'solve_banded':
             j = self.get_jacobian()
-            b = -f
-            x = solve_banded((self.al, self.au), j, b)
-            self.r += x
+            b = self.get_b()
+            self.r = solve_banded((self.al, self.au), j, b)
+        elif self.solver == 'direct':
+            b = self.get_b()
+            self.r = self.ji @ b
 
         self.k += 1
         if self.debug:
-            file_name = self.working_directory + f'/Input_Pressure_Traction_TS{self.n}_IT{self.k}.txt'
+            file_name = join(self.working_directory, f'input_pressure_traction_ts{self.n}_it{self.k}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'x-traction':<22}"
                            f"\t{'y-traction':<22}\t{'z-traction':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.p[i]:<22}\t{self.trac[i, 0]:<22}'
                                f'\t{self.trac[i, 1]:<22}\t{self.trac[i, 2]:<22}\n')
-            file_name = self.working_directory + f'/output_Area_TS{self.n}_IT{self.k}.txt'
+            file_name = join(self.working_directory, f'output_area_ts{self.n}_it{self.k}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
@@ -204,22 +212,16 @@ class SolverWrapperTubeStructure(Component):
                 except OSError:
                     pass
         if self.debug:
-            file_name = self.working_directory + f'/Area_TS{self.n}.txt'
+            file_name = join(self.working_directory, f'area_ts{self.n}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-    def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input
-
-    def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output
-
     def get_residual(self):
         f = np.zeros(self.m + 4)
-        f[0] = (self.r[0] - self.rreference) * self.conditioning
-        f[1] = (self.r[1] - self.rreference) * self.conditioning
+        f[0] = (self.r[0] - self.rreference)
+        f[1] = (self.r[1] - self.rreference)
         f[2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.r[2: self.m + 2] * self.unsteady
                            + self.b1 / self.dz ** 4 * (self.r[4:self.m + 4] - 4.0 * self.r[3:self.m + 3]
                                                        + 6.0 * self.r[2:self.m + 2] - 4.0 * self.r[1:self.m + 1]
@@ -231,22 +233,54 @@ class SolverWrapperTubeStructure(Component):
                            - self.rhos * self.h * (self.rn[2:self.m + 2] / (self.beta * self.dt ** 2)
                                                    + self.rndot / (self.beta * self.dt)
                                                    + self.rnddot * (1.0 / (2.0 * self.beta) - 1.0) * self.nm)
-                           * self.unsteady)
-        f[self.m + 2] = (self.r[self.m + 2] - self.rreference) * self.conditioning
-        f[self.m + 3] = (self.r[self.m + 3] - self.rreference) * self.conditioning
+                           * self.unsteady) / self.conditioning
+        f[self.m + 2] = (self.r[self.m + 2] - self.rreference)
+        f[self.m + 3] = (self.r[self.m + 3] - self.rreference)
+        return f
+
+    def get_b(self):
+        f = np.zeros(self.m + 4)
+        f[0] = self.rreference
+        f[1] = self.rreference
+        f[2:self.m + 2] = (self.b3 * self.rreference
+                           + (self.p - self.preference)
+                           + self.rhos * self.h * (self.rn[2:self.m + 2] / (self.beta * self.dt ** 2)
+                                                   + self.rndot / (self.beta * self.dt)
+                                                   + self.rnddot * (1.0 / (2.0 * self.beta) - 1.0) * self.nm)
+                           * self.unsteady) / self.conditioning
+        f[self.m + 2] = self.rreference
+        f[self.m + 3] = self.rreference
         return f
 
     def get_jacobian(self):
         j = np.zeros((self.al + self.au + 1, self.m + 4))
-        j[self.au + 0 - 0, 0] = 1.0 * self.conditioning  # [0, 0]
-        j[self.au + 1 - 1, 1] = 1.0 * self.conditioning  # [1, 1]
-        j[self.au + 2, 0:self.m] = self.b1 / self.dz ** 4  # [i, (i - 2)]
-        j[self.au + 1, 1:self.m + 1] = - 4.0 * self.b1 / self.dz ** 4 - self.b2 / self.dz ** 2  # [i, (i - 1)]
+        j[self.au + 0 - 0, 0] = 1.0  # [0, 0]
+        j[self.au + 1 - 1, 1] = 1.0  # [1, 1]
+        j[self.au + 2, 0:self.m] = self.b1 / self.dz ** 4 / self.conditioning  # [i, (i - 2)]
+        j[self.au + 1, 1:self.m + 1] = (-4.0 * self.b1 / self.dz ** 4
+                                        - self.b2 / self.dz ** 2) / self.conditioning  # [i, (i - 1)]
         j[self.au + 0, 2:self.m + 2] = ((self.rhos * self.h) / (self.beta * self.dt ** 2) * self.unsteady
                                         + 6.0 * self.b1 / self.dz ** 4 + 2.0 * self.b2 / self.dz ** 2
-                                        + self.b3)  # [i, i]
-        j[self.au - 1, 3:self.m + 3] = - 4.0 * self.b1 / self.dz ** 4 - self.b2 / self.dz ** 2  # [i, (i + 1)]
-        j[self.au - 2, 4:self.m + 4] = self.b1 / self.dz ** 4  # [i, (i + 2)]
-        j[self.au + (self.m + 2) - (self.m + 2), self.m + 2] = 1.0 * self.conditioning  # [m + 2, m + 2]
-        j[self.au + (self.m + 3) - (self.m + 3), self.m + 3] = 1.0 * self.conditioning  # [m + 3, m + 3]
+                                        + self.b3) / self.conditioning  # [i, i]
+        j[self.au - 1, 3:self.m + 3] = (-4.0 * self.b1 / self.dz ** 4
+                                        - self.b2 / self.dz ** 2) / self.conditioning  # [i, (i + 1)]
+        j[self.au - 2, 4:self.m + 4] = self.b1 / self.dz ** 4 / self.conditioning  # [i, (i + 2)]
+        j[self.au + (self.m + 2) - (self.m + 2), self.m + 2] = 1.0  # [m + 2, m + 2]
+        j[self.au + (self.m + 3) - (self.m + 3), self.m + 3] = 1.0  # [m + 3, m + 3]
         return j
+
+    def get_surrogate_jacobian(self):
+        # df/dr
+        js = self.get_jacobian()
+        js = bnd.remove_boundaries(js, 2) * self.conditioning
+        js = bnd.to_dense(js)
+
+        # dr/df
+        jis = np.linalg.inv(js)
+
+        # df/dp
+        jp = -1
+
+        # dr/dp
+        jsurrogate = jis * -jp
+        return jsurrogate

@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 import os
@@ -7,7 +7,6 @@ from os.path import join
 import glob
 import subprocess
 import shutil
-import sys
 import time
 import numpy as np
 import textwrap
@@ -20,12 +19,12 @@ def create(parameters):
     return SolverWrapperAbaqus(parameters)
 
 
-class SolverWrapperAbaqus(Component):
+class SolverWrapperAbaqus(SolverWrapper):
     version = None
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None:
             raise NotImplementedError(
@@ -40,7 +39,8 @@ class SolverWrapperAbaqus(Component):
         self.vault_suffixes = ['023', 'com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'stt']
         self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.logfile = 'abaqus.log'
-        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_abaqus'  # dir in /tmp for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp')
+        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
 
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
@@ -51,7 +51,6 @@ class SolverWrapperAbaqus(Component):
         self.input_file = self.settings['input_file']
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
-        self.static = self.settings['static']
         self.timestep = self.timestep_start
         self.iteration = None
         self.model = None
@@ -67,20 +66,11 @@ class SolverWrapperAbaqus(Component):
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
             self.mp_out.append(item['model_part'][:idx].upper())
-        self.interface_input = None
-        self.interface_output = None
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
         self.link_sl = None
         self.link_exe = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -98,7 +88,7 @@ class SolverWrapperAbaqus(Component):
                     line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
                         else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
                     line = line.replace('|MP_MODE|', self.mp_mode)
-                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_directory_name))
+                    line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
@@ -116,8 +106,8 @@ class SolverWrapperAbaqus(Component):
         path_libusr = join(self.dir_csm, 'libusr/')
         shutil.rmtree(path_libusr, ignore_errors=True)  # needed if restart
         os.mkdir(path_libusr)
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))  # create tmp-directory
+        shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
+        os.mkdir(join('/tmp', self.tmp_dir_unique))  # create tmp-directory
 
         # prepare Abaqus USRInit.f
         if self.timestep_start == 0:  # run USRInit only for new calculation
@@ -129,7 +119,6 @@ class SolverWrapperAbaqus(Component):
                         line = line.replace('|surfaces|', str(len(self.mp_in)))
                         line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                         line = line.replace('|cpus|', str(self.cores))
-                        line = line.replace('|increment|', str(int(self.static)))
 
                         # if PWD is too long then FORTRAN code can not compile so this needs special treatment
                         line = self.replace_fortran(line, '|PWD|', os.path.abspath(os.getcwd()))
@@ -244,7 +233,7 @@ class SolverWrapperAbaqus(Component):
             prev_lp = 0
             ids = np.arange(n_lp)
             coords_tmp = np.zeros((n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
-            for i in range(0, n_lp):
+            for i in range(n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
@@ -318,7 +307,7 @@ class SolverWrapperAbaqus(Component):
             for mp_id in range(len(self.mp_in)):
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                                  f'_Iter{self.iteration}.dat')
+                                  f'_it{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
@@ -399,7 +388,7 @@ class SolverWrapperAbaqus(Component):
 
             # copy output data for debugging
             if self.debug:
-                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_Iter{self.iteration}.dat')
+                file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Output_it{self.iteration}.dat')
                 shutil.copy(file_name, file_name2)
 
             if data.shape[1] != self.dimensions:
@@ -440,22 +429,13 @@ class SolverWrapperAbaqus(Component):
             self.remove_files(self.timestep)
         self.dir_vault.rmdir()
 
-    def get_interface_input(self):
-        return self.interface_input
-
-    def get_interface_output(self):
-        return self.interface_output
-
     def check_software(self):
         """Check whether the software requirements for this wrapper are fulfilled."""
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required')
-
         # Abaqus version
         result = subprocess.run(['abaqus', 'information=release'], stdout=subprocess.PIPE, env=self.env)
         if self.version not in str(result.stdout):
-            raise RuntimeError(f'Abaqus version {self.version} is required')
+            raise RuntimeError(f'Abaqus version {self.version} is required. Check if the solver load commands for'
+                               f' the "machine_name" are correct in solver_modules.py.')
 
         # compilers
         try:
@@ -580,13 +560,13 @@ class SolverWrapperAbaqus(Component):
             line = f.readline()
             while line:
                 if '*dynamic' in line.lower() or '*static' in line.lower():
+                    if 'initial=no' not in line.lower():
+                        with warnings.catch_warnings():
+                            warnings.filterwarnings('always', category=UserWarning)
+                            warnings.warn(f'recommended setting "INITIAL=NO" not found in input file, please consult '
+                                          f'the documentation on STEP definition',
+                                          category=UserWarning)
                     of.write(line)
-                    if '*dynamic' in line.lower() and self.static:
-                        raise ValueError(f'keyword "*dynamic" found in input file while keyword "static" is set to True'
-                                         f' in parameter file')
-                    if '*static' in line.lower() and not self.static:
-                        raise ValueError(f'keyword "*static" found in input file while keyword "static" is set to False'
-                                         f' in parameter file')
                     if bool_restart:
                         rf.write(line)
                     check_line = f.readline()  # need to skip the next line, but contents are checked

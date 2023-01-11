@@ -49,12 +49,13 @@ class TestSolverWrapperCombined(unittest.TestCase):
         x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
         displacement = self.get_displacement(x0, y0, z0)
 
-        comb_solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+        interface_input = comb_solver.get_interface_input()
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
         # update position by iterating once in solver
         comb_solver.initialize()
         comb_solver.initialize_solution_step()
-        comb_solver.solve_solution_step(comb_solver.get_interface_input())
+        comb_solver.solve_solution_step(interface_input)
         comb_solver.finalize_solution_step()
         comb_solver.finalize()
 
@@ -62,11 +63,10 @@ class TestSolverWrapperCombined(unittest.TestCase):
         out_disp = interface_input.get_interface_data()
         np.testing.assert_allclose(out_disp, displacement.ravel(), rtol=1e-12)
 
-        for index, mapped_sol_wrapper in enumerate(comb_solver.solver_wrapper_list):
-            if not index == comb_solver.master_sol_index:
-                interface_input = mapped_sol_wrapper.solver_wrapper.get_interface_input()
-                out_disp = interface_input.get_interface_data()
-                np.testing.assert_allclose(out_disp, displacement.ravel(), rtol=1e-12)
+        for index, mapped_sol_wrapper in enumerate(comb_solver.mapped_solver_wrappers):
+            interface_input = mapped_sol_wrapper.solver_wrapper.get_interface_input()
+            out_disp = interface_input.get_interface_data()
+            np.testing.assert_allclose(out_disp, displacement.ravel(), rtol=1e-12)
 
     @mock.patch('coconut.tools.create_instance', side_effect=mock_create_instance)
     def test_output(self, create_instance):
@@ -76,12 +76,13 @@ class TestSolverWrapperCombined(unittest.TestCase):
         x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
         displacement = self.get_displacement(x0, y0, z0)
 
-        comb_solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+        interface_input = comb_solver.get_interface_input()
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
         # update position by iterating once in solver
         comb_solver.initialize()
         comb_solver.initialize_solution_step()
-        output_interface = comb_solver.solve_solution_step(comb_solver.get_interface_input())
+        output_interface = comb_solver.solve_solution_step(interface_input)
         comb_solver.finalize_solution_step()
         comb_solver.finalize()
 
@@ -90,18 +91,20 @@ class TestSolverWrapperCombined(unittest.TestCase):
         pres_ref, trac_ref = comb_solver.master_solver_wrapper.calculate_output(displacement.ravel(),
                                                                                 comb_solver.get_interface_output(),
                                                                                 self.mp_name_out)
-        for index, mapped_sol_wrapper in enumerate(comb_solver.solver_wrapper_list):
-            if not index == comb_solver.master_sol_index:
-                pres_other, trac_other = mapped_sol_wrapper.solver_wrapper.calculate_output(displacement.ravel(),
-                                                                                            comb_solver.get_interface_output(),
-                                                                                            self.mp_name_out)
-                pres_ref += pres_other
-                trac_ref += trac_other
+        for index, mapped_sol_wrapper in enumerate(comb_solver.mapped_solver_wrappers):
+            pres_other, trac_other = mapped_sol_wrapper.solver_wrapper.calculate_output(displacement.ravel(),
+                                                                                        comb_solver.get_interface_output(),
+                                                                                        self.mp_name_out)
+            pres_ref += pres_other
+            trac_ref += trac_other
 
         np.testing.assert_allclose(pressure, pres_ref, rtol=1e-12)
         np.testing.assert_allclose(traction, trac_ref, rtol=1e-12)
+
         print('\n')
         comb_solver.print_components_info('├─')
+        print('\n')
+        print(comb_solver.get_time_allocation())
 
 
 if __name__ == '__main__':

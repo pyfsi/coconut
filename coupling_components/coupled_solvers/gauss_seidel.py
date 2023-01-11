@@ -24,12 +24,14 @@ class CoupledSolverGaussSeidel(Component):
 
         # read parameters
         self.case_name = self.settings.get('case_name', 'case')  # case name
+        self.settings['case_name'] = self.case_name  # make sure a case name is present
         self.timestep_start_global = self.settings['timestep_start']  # time step for global calculation (restart)
         self.timestep_start_current = self.settings['timestep_start']  # time step start for this calculation (restart)
         self.restart = self.timestep_start_current != 0  # true if restart
         self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         self.settings['save_restart'] = self.save_restart  # in order to pass on default value
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
 
@@ -40,7 +42,7 @@ class CoupledSolverGaussSeidel(Component):
         self.index_other = None
         for index in range(2):
             parameters = self.parameters['solver_wrappers'][index]
-            # add timestep_start and delta_t to solver_wrapper settings
+            # add timestep_start, delta_t and save_restart to solver_wrapper settings
             tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t',
                                                                              'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
@@ -62,6 +64,7 @@ class CoupledSolverGaussSeidel(Component):
         self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
+        self.time_allocation = {'previous_calculations': []}
         self.iterations = []
 
         # restart
@@ -76,7 +79,8 @@ class CoupledSolverGaussSeidel(Component):
             self.residual = []
             self.info = None
 
-        self.debug = False  # save results each iteration including residual interfaces
+        # debug
+        self.debug = self.settings.get('debug', False)  # save results each iteration including residual interfaces
         if self.debug:
             self.complete_solution_r = None
 
@@ -97,11 +101,10 @@ class CoupledSolverGaussSeidel(Component):
         self.y = self.solver_wrappers[0].get_interface_output().copy()
         self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
-        self.start_run_time = time.time()  # start of calculation
-        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
-        title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
-        tools.print_info(title)
+        if self.solver_level == 0:
+            title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
+            tools.print_info(title)
 
         # restart
         if self.restart:
@@ -118,7 +121,7 @@ class CoupledSolverGaussSeidel(Component):
                 results_data = self.load_results_data()
             if results_data is None:  # no results file to append to
                 self.info = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} : ' \
-                    f'start calculation of time step {self.timestep_start_current} on {socket.gethostname()}\n'
+                            f'start calculation of time step {self.timestep_start_current} on {socket.gethostname()}\n'
                 if self.debug:
                     self.complete_solution_x = np.empty((self.x.get_interface_data().shape[0], 0))
                     self.complete_solution_y = np.empty((self.y.get_interface_data().shape[0], 0))
@@ -126,6 +129,9 @@ class CoupledSolverGaussSeidel(Component):
                 else:
                     self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
                     self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
+
+        self.start_run_time = time.time()  # start of calculation
+        self.init_time = self.start_run_time - self.start_init_time  # duration of initialization
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -149,23 +155,21 @@ class CoupledSolverGaussSeidel(Component):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        y = self.solver_wrappers[0].solve_solution_step(self.x.copy())
-        self.y = y.copy()
-        xt = self.solver_wrappers[1].solve_solution_step(y)
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
         self.finalize_iteration(r)
         # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
             self.x += r
-            y = self.solver_wrappers[0].solve_solution_step(self.x)
-            self.y = y.copy()
-            xt = self.solver_wrappers[1].solve_solution_step(y)
+            self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
             self.finalize_iteration(r)
 
     def finalize_iteration(self, r):
         self.iteration += 1  # increment iteration
-        self.convergence_criterion.update(r)  # update convergence criterion
+        self.convergence_criterion.update(r.copy())  # update convergence criterion
         self.print_iteration_info(r)  # print iteration information
 
         # update save results
@@ -212,14 +216,16 @@ class CoupledSolverGaussSeidel(Component):
     def output_solution_step(self):
         super().output_solution_step()
 
-        self.run_time = time.time() - self.start_run_time  # duration of calculation
+        self.time_allocation.update(self.get_time_allocation())
         if self.save_results != 0 and (self.time_step % self.save_results == 0 or
                                        (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
-                      'run_time': self.run_time + self.run_time_previous, 'residual': self.residual,
-                      'delta_t': self.delta_t, 'timestep_start': self.timestep_start_global,
-                      'case_name': self.case_name, 'info': self.info}
+                      'residual': self.residual, 'run_time': self.run_time + self.run_time_previous,
+                      'time_allocation': self.time_allocation, 'delta_t': self.delta_t,
+                      'timestep_start': self.timestep_start_global, 'case_name': self.case_name}
+            if not self.anonymous:
+                output['info'] = self.info
             if self.debug:
                 output.update({'solution_r': self.complete_solution_r})
             with open(self.case_name + '_results.pickle', 'wb') as file:
@@ -236,10 +242,10 @@ class CoupledSolverGaussSeidel(Component):
             out = '╔' + 79 * '═' + '\n║\tSummary\n╠' + 79 * '═'
             tools.print_info(out)
 
-        self.print_summary()
-
         for component in self.components:
             component.finalize()
+
+        self.print_summary()
 
     def load_restart_data(self):
         restart_file_name = self.restart_case + f'_restart_ts{self.timestep_start_current}.pickle'
@@ -252,13 +258,13 @@ class CoupledSolverGaussSeidel(Component):
             for key in ('predictor', 'type'):
                 if self.parameters[key] != restart_data['parameters'][key]:
                     raise ValueError(f'Restart not possible because {key} changed in coupled solver')
-            self.add_restart_check(restart_data)
+            self.check_restart_data(restart_data)
             if self.delta_t != restart_data['delta_t']:
                 raise ValueError(f"Time step size has changed upon restart:\n\told: {restart_data['delta_t']}s"
                                  f"\n\tnew: {self.delta_t}s")
         return restart_data
 
-    def add_restart_check(self, restart_data):
+    def check_restart_data(self, restart_data):
         pass
 
     def add_restart_data(self, restart_data):
@@ -273,8 +279,8 @@ class CoupledSolverGaussSeidel(Component):
             tools.print_info(f'Not able to append results to {results_file_name} because file not found\n'
                              f' Saving results to new file: {results_file_name}', layout='warning')
             return
-        if self.debug != 'solution_r' in results_data.keys():
-            raise ValueError('Value of debug attribute in CoupledSolverGaussSeidel can not be changed upon restart')
+        if self.debug != ('solution_r' in results_data.keys()):
+            raise ValueError(f'Value of debug attribute in {self.__class__.__name__} can not be changed upon restart')
         self.timestep_start_global = results_data['timestep_start']
         self.complete_solution_x = results_data['solution_x'][:, :self.timestep_start_current
                                                               - self.timestep_start_global + 1]
@@ -285,6 +291,8 @@ class CoupledSolverGaussSeidel(Component):
         self.iterations = results_data['iterations'][:self.timestep_start_current - self.timestep_start_global]
         self.run_time_previous = results_data['run_time']
         self.residual = results_data['residual'][:self.timestep_start_current - self.timestep_start_global]
+        self.time_allocation['previous_calculations'] = results_data['time_allocation'].pop('previous_calculations')
+        self.time_allocation['previous_calculations'].append(results_data['time_allocation'])
         self.info = results_data.get('info', '') + '' + f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} :' \
             f' restart calculation from time step {self.timestep_start_current} on {socket.gethostname()}\n'
         if self.debug:
@@ -331,6 +339,18 @@ class CoupledSolverGaussSeidel(Component):
         if self.solver_level == 0:
             out += '\n╚' + 79 * '═'
         tools.print_info(out)
+
+    def get_time_allocation(self):
+        self.run_time = time.time() - self.start_run_time  # duration of calculation
+        time_allocation = {'total': self.run_time + self.init_time}
+        for time_type in ('init_time', 'run_time'):
+            time_allocation_sub = time_allocation[time_type] = {}
+            time_allocation_sub['total'] = self.__getattribute__(time_type)
+            for i, solver_wrapper in enumerate(self.solver_wrappers):
+                time_allocation_sub[f'solver_wrapper_{i}'] = solver_wrapper.get_time_allocation()[time_type]
+            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum(
+                [s.__getattribute__(time_type) for s in self.solver_wrappers])
+        return time_allocation
 
     def print_header(self):
         header = (80 * '═' + f'\n\tTime step {self.time_step}\n' +

@@ -1,4 +1,4 @@
-from coconut.tools import create_instance, get_solver_env, solver_available, print_box
+from coconut.tools import create_instance, get_solver_env
 import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
 
 import unittest
@@ -22,8 +22,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         cls.working_dir = join(dir_name, f'test_v{cls.version}/tube3d/CFD')
 
         # setup
-        shutil.rmtree(os.path.join(dir_name, cls.working_dir), ignore_errors=True)
-        shutil.copytree(os.path.join(dir_name, f'test_v{cls.version}/tube3d/setup_openfoam'), cls.working_dir)
+        shutil.rmtree(cls.working_dir, ignore_errors=True)
+        shutil.copytree(join(dir_name, f'test_v{cls.version}/tube3d/setup_openfoam'), cls.working_dir)
 
     def setUp(self):
         with open(self.file_name, 'r') as parameter_file:
@@ -113,11 +113,12 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             y = y0 + dy
             z = z0 + dz
             node_coords_ref = np.column_stack((x, y, z))
-            solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+            interface_disp = solver.get_interface_input()
+            interface_disp.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
             # update position by iterating once in solver
             solver.initialize_solution_step()
-            solver.solve_solution_step(solver.get_interface_input())
+            solver.solve_solution_step(interface_disp)
             solver.finalize_solution_step()
             solver.finalize()
 
@@ -128,7 +129,6 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             _, node_coords = of_io.get_boundary_points(solver.working_directory,
                                                        f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
-            self.clean_case()
 
     # check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
@@ -210,6 +210,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         cores = 4
         self.set_cores(cores)
         self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['save_restart'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
@@ -265,7 +266,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
                                                 f'{nr_time_steps * self.delta_t:.{solver.time_precision}f}', 'mantle')
         solver.finalize()
 
-        # # get data for solver with restart
+        # get data for solver with restart
         interface_output = solver.get_interface_output()
         pressure_2 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_2 = interface_output.get_variable_data(self.mp_name_out, 'traction')
@@ -278,7 +279,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         # ==>  check if deformed coordinates are equal
         np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
-        # # check if pressure and traction are equal
+        # check if pressure and traction are equal
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-9)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-9)
 

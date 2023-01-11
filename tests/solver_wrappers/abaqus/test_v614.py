@@ -12,6 +12,7 @@ class TestSolverWrapperAbaqus614Tube2D(abaqus.TestSolverWrapperAbaqusTube2D):
     setup_case = True
 
 
+@unittest.skipUnless(solver_available(f'abaqus.v{version}'), f'abaqus.v{version} not available')
 class TestSolverWrapperAbaqus614Tube3D(abaqus.TestSolverWrapperAbaqusTube3D):
     version = version
     setup_case = True

@@ -10,7 +10,7 @@ This section describes the different folders and files that are provided.
 
 The *`examples`* folder contains following subfolders:
 
-- *`debug_files`*: Python scripts that are useful for debugging of the cases. These files might need some adjustments to work. In order to use them, the debug boolean `self.debug` has to be set to `True` in the settings of the corresponding solver wrappers.
+- *`debug_files`*: Python scripts that are useful for debugging of the cases. These files might need some adjustments to work. In order to use them, the debug boolean `self.debug` has to be set to `true` in the settings of the corresponding solver wrappers.
 - *`post_processing`*: contains scripts to visualize your results. In particular, the *`animate_example.py`* script provides the means to animate the variables stored in the interface (pressure, traction, displacement), given that your results are stored in a pickle file, see the [documentation on save results](../coupling_components/coupled_solvers/coupled_solvers.md#save-results).
 - *`setup_files`*: contains the necessary files to set up the case for each solver and the *`run_simulation.py`* script necessary to start the actual simulation.
 - *`test_single_solver`*: example to check the correct set up of your solver specific cases.
@@ -19,7 +19,7 @@ The *`examples`* folder contains following subfolders:
 The main directory of each example case contains following files: 
 
 - *`parameters.json`*: parameter file in JSON format.
-- *`setup_case.py`*: python script, which needs to be run to set up the case.
+- *`setup_case.py`*: Python script, which needs to be run to set up the case.
 - *`tube_<flow solver>_<structural solver>.md`*: description of the specific example.
 
 When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
@@ -43,9 +43,10 @@ Then, the calculation is started by running *`run_simulation.py`*. Make sure to 
 
 In practice, you would run the following commands:
 
-    python setup_case.py
-    python run_simulation.py
-
+```bash
+python3 setup_case.py
+python3 run_simulation.py
+```
 
 ## Setting up your own case
 

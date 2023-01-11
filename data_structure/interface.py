@@ -136,7 +136,7 @@ class Interface:
     def __eq__(self, other):
         if type(other) is Interface:
             return self.model_part_variable_pairs == other.model_part_variable_pairs and \
-                   all(self.get_interface_data() == other.get_interface_data())
+                   all(self.get_interface_data() == other.get_interface_data()) and self.has_same_model_parts(other)
         return NotImplemented
 
     def __add__(self, other):

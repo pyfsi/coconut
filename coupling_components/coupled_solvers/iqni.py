@@ -1,4 +1,4 @@
-from coconut.tools import create_instance
+from coconut.tools import create_instance, pass_on_parameters
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 
@@ -9,6 +9,8 @@ def create(parameters):
 class CoupledSolverIQNI(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
+
+        pass_on_parameters(self.settings, self.settings['model']['settings'], ('timestep_start', 'delta_t'))
 
         self.model = create_instance(self.parameters['settings']['model'])
         self.omega = self.settings['omega']
@@ -28,10 +30,10 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        self.y = self.solver_wrappers[0].solve_solution_step(self.x)
-        xt = self.solver_wrappers[1].solve_solution_step(self.y)
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
-        self.model.add(r, xt)
+        self.model.add(r.copy(), xt)
         self.finalize_iteration(r)
         # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
@@ -39,17 +41,20 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
                 dx = self.omega * r
             else:
                 dr = -1 * r
-                dx = self.model.predict(dr) - dr
+                dx = self.model.predict(dr.copy()) - dr
             self.x += dx
-            self.y = self.solver_wrappers[0].solve_solution_step(self.x)
-            xt = self.solver_wrappers[1].solve_solution_step(self.y)
+            self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
-            self.model.add(r, xt)
+            self.model.add(r.copy(), xt)
             self.finalize_iteration(r)
 
-    def add_restart_check(self, restart_data):
-        if self.parameters['settings']['model'] != restart_data['parameters']['settings']['model']:
-            raise ValueError('Restart not possible because model changed')
+    def check_restart_data(self, restart_data):
+        model_original = self.parameters['settings']['model']['type']
+        model_new = restart_data['parameters']['settings']['model']['type']
+        if model_original != model_new:
+            raise ValueError(f'Restart not possible because model type changed:'
+                             f'\n\toriginal: {model_original}\n\tnew: {model_new}')
 
     def add_restart_data(self, restart_data):
         return restart_data.update({'model': self.model})

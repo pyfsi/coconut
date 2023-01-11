@@ -273,7 +273,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
         # update position by iterating once in solver
         solver.initialize_solution_step()
-        solver.solve_solution_step(solver.get_interface_input())
+        solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
         coord_data = solver.get_coordinates()
         solver.finalize()

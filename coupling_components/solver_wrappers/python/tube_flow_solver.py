@@ -1,6 +1,7 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
+import coconut.coupling_components.solver_wrappers.python.banded as bnd
 
 import numpy as np
 import os
@@ -14,22 +15,27 @@ def create(parameters):
     return SolverWrapperTubeFlow(parameters)
 
 
-class SolverWrapperTubeFlow(Component):
+class SolverWrapperTubeFlow(SolverWrapper):
     al = 4  # number of terms below diagonal in matrix
     au = 4  # number of terms above diagonal in matrix
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        input_file = self.settings['input_file']
-        case_file_name = join(self.working_directory, input_file)
-        with open(case_file_name, 'r') as case_file:
-            self.settings.update(json.load(case_file))
+        input_file = self.settings.get('input_file')
+        if input_file is not None:
+            case_file_name = join(self.working_directory, input_file)
+            with open(case_file_name, 'r') as case_file:
+                case_file_settings = json.load(case_file)
+            case_file_settings.update(self.settings)
+            with open(case_file_name, 'w') as case_file:
+                json.dump(case_file_settings, case_file, indent=2)
+            self.settings.update(case_file_settings)
 
         # settings
         self.unsteady = self.settings.get('unsteady', True)
@@ -141,12 +147,6 @@ class SolverWrapperTubeFlow(Component):
         self.interface_output.set_variable_data(self.output_model_part_name, 'pressure', self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data(self.output_model_part_name, 'traction', self.trac)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = False  # set on True to save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
@@ -203,7 +203,7 @@ class SolverWrapperTubeFlow(Component):
                 Exception('Newton failed to converge')
 
         if self.debug:
-            file_name = self.working_directory + f'/Input_Displacement_TS{self.n}_IT{self.k}.txt'
+            file_name = join(self.working_directory, f'input_displacement_ts{self.n}_it{self.k}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'x-displacement':<22}\t{'y-displacement':<22}"
                            f"\t{'z-displacement':<22}\n")
@@ -212,7 +212,7 @@ class SolverWrapperTubeFlow(Component):
                                f'\t{self.disp[i, 2]:<22}\n')
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = self.working_directory + f'/Output_Pressure_Velocity_TS{self.n}_IT{self.k}.txt'
+            file_name = join(self.working_directory, f'output_pressure_velocity_ts{self.n}_it{self.k}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
@@ -222,7 +222,7 @@ class SolverWrapperTubeFlow(Component):
         self.pres = self.p[1:self.m + 1] * self.rhof
         self.interface_output.set_variable_data(self.output_model_part_name, 'pressure', self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data(self.output_model_part_name, 'traction', self.trac)
-        return self.interface_output  # TODO: make copy?
+        return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
@@ -243,17 +243,11 @@ class SolverWrapperTubeFlow(Component):
         if self.debug:
             p = self.p[1:self.m + 1] * self.rhof
             u = self.u[1:self.m + 1]
-            file_name = join(self.working_directory + f'/Pressure_Velocity_TS{self.n}.txt')
+            file_name = join(self.working_directory, f'pressure_velocity_ts{self.n}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
-
-    def get_interface_input(self):  # TODO: need to have latest data?
-        return self.interface_input
-
-    def get_interface_output(self):  # TODO: need to have latest data?
-        return self.interface_output
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:
@@ -292,20 +286,21 @@ class SolverWrapperTubeFlow(Component):
                                  * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0
                                  - self.alpha * (self.p[2:self.m + 2] - 2.0 * self.p[1:self.m + 1] + self.p[0:self.m]))
         f[3:2 * self.m + 3:2] = (self.dz / self.dt * (self.u[1:self.m + 1] * self.a[1:self.m + 1]
-                                 - self.un[1:self.m + 1] * self.an[1:self.m + 1]) * self.unsteady
+                                                      - self.un[1:self.m + 1] * self.an[1:self.m + 1]) * self.unsteady
                                  + ur * (self.u[1:self.m + 1] + self.u[2:self.m + 2])
                                  * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
                                  - ul * (self.u[1:self.m + 1] + self.u[0:self.m])
                                  * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0
                                  + ((self.p[2:self.m + 2] - self.p[1:self.m + 1])
-                                 * (self.a[1:self.m + 1] + self.a[2:self.m + 2])
-                                 + (self.p[1:self.m + 1] - self.p[0:self.m])
-                                 * (self.a[1:self.m + 1] + self.a[0:self.m])) / 4.0)
+                                    * (self.a[1:self.m + 1] + self.a[2:self.m + 2])
+                                    + (self.p[1:self.m + 1] - self.p[0:self.m])
+                                    * (self.a[1:self.m + 1] + self.a[0:self.m])) / 4.0)
         f[2 * self.m + 2] = (self.u[self.m + 1] - (2.0 * self.u[self.m] - self.u[self.m - 1])) * self.conditioning
         if self.outlet_type == 1:
-            f[2 * self.m + 3] = (self.p[self.m + 1] - (2.0 * (self.cmk2 - (np.sqrt(self.cmk2
-                                                                                   - self.pn[self.m + 1] / 2.0)
-                                                              - (self.u[self.m + 1] - self.un[self.m + 1]) / 4.0) ** 2))
+            f[2 * self.m + 3] = (self.p[self.m + 1] - (2.0 *
+                                                       (self.cmk2 -
+                                                        (np.sqrt(self.cmk2 - self.pn[self.m + 1] / 2.0)
+                                                         - (self.u[self.m + 1] - self.un[self.m + 1]) / 4.0) ** 2))
                                  ) * self.conditioning
         else:
             f[2 * self.m + 3] = (self.p[self.m + 1] - self.outlet_amplitude) * self.conditioning
@@ -369,4 +364,46 @@ class SolverWrapperTubeFlow(Component):
                                    - (self.u[self.m + 1] - self.un[self.m + 1]) / 4.0)) \
                                 * self.conditioning  # [2*m+3, 2*m+2]
         j[self.au + (2 * self.m + 3) - (2 * self.m + 3), 2 * self.m + 3] = 1.0 * self.conditioning  # [2*m+3, 2*m+3]
+        return j
+
+    def get_surrogate_jacobian(self):
+        # df/d(u,p')
+        jf = self.get_jacobian()
+        jf = bnd.remove_boundaries(jf, 2)
+        jf = jf[1:-1, :]
+        jf = bnd.to_dense(jf)
+
+        # dp/df
+        jif = np.linalg.inv(jf)
+        jif = self.rhof * jif[1::2, :]
+
+        # df/da
+        ja = self.get_jacobian_area()
+
+        # da/dr
+        jr = 2 * np.sqrt(np.pi * self.a[1: self.m + 1])
+
+        # dp/dr
+        jsurrogate = jif @ -ja * jr
+        return jsurrogate
+
+    def get_jacobian_area(self):
+        usign = self.u[1:self.m + 1] > 0
+        ur = self.u[1:self.m + 1] * usign + self.u[2:self.m + 2] * (1.0 - usign)
+        ul = self.u[0:self.m] * usign + self.u[1:self.m + 1] * (1.0 - usign)
+        j = np.zeros((2 * self.m, self.m))
+        for i in range(self.m):
+            if i > 0:
+                j[2 * i, i - 1] = - (self.u[i] + self.u[i + 1]) / 4  # [2*i, i-1]
+                j[2 * i + 1, i - 1] = (- ul[i] * (self.u[i] + self.u[i + 1]) / 4
+                                       + (self.p[i + 1] - self.p[i]) / 4)  # [2*i+1, i-1]
+            j[2 * i, i] = (self.dz / self.dt * self.unsteady + (self.u[i + 1] + self.u[i + 2]) / 4
+                           - (self.u[i] + self.u[i + 1]) / 4)  # [2*i, i]
+            j[2 * i + 1, i] = (self.dz / self.dt * self.u[i + 1] * self.unsteady
+                               + ur[i] * (self.u[i + 1] + self.u[i + 2]) / 4 - ul[i] * (self.u[i] + self.u[i + 1]) / 4
+                               + (self.p[i + 2] - self.p[i + 1]) / 4 + (self.p[i + 1] - self.p[i]) / 4)  # [2*i+1, i]
+            if i < self.m - 1:
+                j[2 * i, i + 1] = (self.u[i + 1] + self.u[i + 2]) / 4  # [2*i, i+1]
+                j[2 * i + 1, i + 1] = (ur[i] * (self.u[i + 1] + self.u[i + 2]) / 4
+                                       + (self.p[i + 2] - self.p[i + 1]) / 4)  # [2*i+1, i+1]
         return j

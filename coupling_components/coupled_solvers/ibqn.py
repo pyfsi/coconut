@@ -1,4 +1,4 @@
-from coconut.tools import create_instance
+from coconut.tools import create_instance, pass_on_parameters
 from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
 
 from scipy.sparse.linalg import gmres, LinearOperator
@@ -11,6 +11,9 @@ def create(parameters):
 class CoupledSolverIBQN(CoupledSolverGaussSeidel):
     def __init__(self, parameters):
         super().__init__(parameters)
+
+        for model in ('model_f', 'model_s'):
+            pass_on_parameters(self.settings, self.settings[model]['settings'], ('timestep_start', 'delta_t'))
 
         self.model_f = create_instance(self.parameters['settings']['model_f'])
         self.model_s = create_instance(self.parameters['settings']['model_s'])
@@ -66,12 +69,11 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        yt = self.solver_wrappers[0].solve_solution_step(self.x)
-        self.model_f.add(self.x, yt)
-        self.y = yt.copy()
-        xt = self.solver_wrappers[1].solve_solution_step(self.y)
-        self.model_s.add(self.y, xt)
+        self.y = yt = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        self.model_f.add(self.x.copy(), yt.copy())
+        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
+        self.model_s.add(self.y.copy(), xt)
         self.finalize_iteration(r)
         # coupling iteration loop
         while not self.convergence_criterion.is_satisfied():
@@ -87,8 +89,8 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                     RuntimeError('GMRES failed')
                 dx.set_interface_data(dx_sol)
             self.x += dx
-            yt = self.solver_wrappers[0].solve_solution_step(self.x)
-            self.model_f.add(self.x, yt)
+            yt = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+            self.model_f.add(self.x.copy(), yt.copy())
             if not self.model_s.is_ready() or not self.model_f.is_ready:
                 dy = yt - self.y
             else:
@@ -99,15 +101,18 @@ class CoupledSolverIBQN(CoupledSolverGaussSeidel):
                     RuntimeError('GMRES failed')
                 dy.set_interface_data(dy_sol)
             self.y += dy
-            xt = self.solver_wrappers[1].solve_solution_step(self.y)
-            self.model_s.add(self.y, xt)
+            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
+            self.model_s.add(self.y.copy(), xt)
             self.finalize_iteration(r)
 
-    def add_restart_check(self, restart_data):
+    def check_restart_data(self, restart_data):
         for model in ['model_f', 'model_s']:
-            if self.parameters['settings'][model] != restart_data['parameters']['settings'][model]:
-                raise ValueError(f'Restart not possible because {model} changed')
+            model_original = self.parameters['settings'][model]['type']
+            model_new = restart_data['parameters']['settings'][model]['type']
+            if model_original != model_new:
+                raise ValueError(f'Restart not possible because {model} type changed:'
+                                 f'\n\toriginal: {model_original}\n\tnew: {model_new}')
 
     def add_restart_data(self, restart_data):
         return restart_data.update({'models': [self.model_f, self.model_s]})

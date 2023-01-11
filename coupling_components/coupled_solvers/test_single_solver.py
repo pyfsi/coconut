@@ -36,6 +36,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.settings['save_restart'] = 0  # in order to pass on default value
         self.save_restart = 0  # no restart files are saved
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.delta_t = self.settings['delta_t']
         tools.print_info(f'Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}')
 
@@ -76,6 +77,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
+        self.time_allocation = {'previous_calculations': []}
         self.iterations = []
 
         # save results variables
@@ -87,6 +89,9 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.case_name = self.settings.get('case_name', 'case')  # case name
             self.case_name += '_' + cur_wd
 
+        if self.settings.get('debug', False):
+            tools.print_info(f'{self.__class__.__name__} has no debug mode: '
+                             f'debug setting set to False', layout='warning')
         self.debug = False
 
     def initialize(self):
@@ -146,10 +151,10 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         # store data in self.x and self.y
         if self.solver_index == 1:
             self.y = interface_input
-            self.x = self.solver_wrapper.solve_solution_step(interface_input)
+            self.x = self.solver_wrapper.solve_solution_step(interface_input.copy()).copy()
         else:
             self.x = interface_input
-            self.y = self.solver_wrapper.solve_solution_step(interface_input)
+            self.y = self.solver_wrapper.solve_solution_step(interface_input.copy()).copy()
         self.finalize_iteration(self.x * 0)
 
     def print_header(self):

@@ -1,4 +1,5 @@
 from coconut.tools import create_instance
+import coconut.coupling_components.solver_wrappers.python.banded as bnd
 
 import unittest
 import os
@@ -46,21 +47,21 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         # change solver_1 to end position and solve
         interface_input = solver_1.get_interface_input()
         model_part = interface_input.get_model_part(self.model_part_name)
-        data = [[0, get_dy(model_part.y0[i]), 0] for i in range(model_part.size)]
+        data = [[0, get_dy(model_part.z0[i]), 0] for i in range(model_part.size)]
         interface_input.set_variable_data(self.model_part_name, self.variable, np.array(data))
         output1_end = solver_1.solve_solution_step(interface_input).copy()
 
         # change solver_2 to intermediate position and solve
         interface_input = solver_2.get_interface_input()
         model_part = interface_input.get_model_part(self.model_part_name)
-        data = [[0, -get_dy(model_part.y0[i]), 0] for i in range(model_part.size)]
+        data = [[0, -get_dy(model_part.z0[i]), 0] for i in range(model_part.size)]
         interface_input.set_variable_data(self.model_part_name, self.variable, np.array(data))
         solver_2.solve_solution_step(interface_input).copy()
 
         # change solver_2 to end position and solve
         interface_input = solver_2.get_interface_input()
         model_part = interface_input.get_model_part(self.model_part_name)
-        data = [[0, get_dy(model_part.y0[i]), 0] for i in range(model_part.size)]
+        data = [[0, get_dy(model_part.z0[i]), 0] for i in range(model_part.size)]
         interface_input.set_variable_data(self.model_part_name, self.variable, np.array(data))
         output2_end = solver_2.solve_solution_step(interface_input).copy()
 
@@ -85,9 +86,9 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         interface_input = solver.get_interface_input()
 
         # set displacement
-        x0 = interface_input.get_model_part(self.model_part_name).x0
+        z0 = interface_input.get_model_part(self.model_part_name).z0
         displacement = interface_input.get_variable_data(self.model_part_name, 'displacement')
-        displacement[:, 1] = get_dy(x0)
+        displacement[:, 1] = get_dy(z0)
 
         # run solver for 4 timesteps
         for i in range(4):
@@ -134,6 +135,122 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         # check if pressure and traction are equal
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
+
+    def test_area_jacobian(self):
+        # test area derivative
+
+        # create solver and set displacement
+        solver = self.set_up_solver()
+
+        # verify derivative
+        a = np.array(solver.a)
+        da = 1e-8 * np.ones_like(a)
+        da[0] = 0
+        da[-1] = 0
+        solver.a = a - da / 2
+        f1 = solver.get_residual()
+        solver.a = a + da / 2
+        f2 = solver.get_residual()
+        solver.a = a
+        ja = solver.get_jacobian_area()
+        f1 = f1[2:-2]
+        f2 = f2[2:-2]
+        da = da[1:-1]
+        d1 = f2 - f1
+        d2 = ja @ da
+        self.assertLess(np.linalg.norm(d1 - d2), 1e-15)
+
+    def test_pressure_jacobian(self):
+        # test pressure derivative
+
+        # create solver and set displacement
+        solver = self.set_up_solver()
+
+        # verify derivative
+        p = np.array(solver.p)
+        dp = 1e-5 * np.ones_like(p)
+        dp[0] = 0
+        dp[-1] = 0
+        solver.p = p - dp / 2
+        f1 = solver.get_residual()
+        solver.p = p + dp / 2
+        f2 = solver.get_residual()
+        solver.p = p
+        j = bnd.to_dense(solver.get_jacobian())
+        jp = j[2:-2, 3:-2:2]
+        f1 = f1[2:-2]
+        f2 = f2[2:-2]
+        dp = dp[1:-1]
+        d1 = f2 - f1
+        d2 = jp @ dp
+        self.assertLess(np.linalg.norm(d1 - d2), 1e-15)
+
+    def test_velocity_jacobian(self):
+        # test velocity derivative
+
+        # create solver and set displacement
+        solver = self.set_up_solver()
+
+        # verify derivative
+        u = np.array(solver.u)
+        du = 1e-5 * np.ones_like(u)
+        du[0] = 0
+        du[-1] = 0
+        solver.u = u - du / 2
+        f1 = solver.get_residual()
+        solver.u = u + du / 2
+        f2 = solver.get_residual()
+        solver.u = u
+        j = bnd.to_dense(solver.get_jacobian())
+        ju = j[2:-2, 2:-2:2]
+        f1 = f1[2:-2]
+        f2 = f2[2:-2]
+        du = du[1:-1]
+        d1 = f2 - f1
+        d2 = ju @ du
+        self.assertLess(np.linalg.norm(d1 - d2), 1e-15)
+
+    def test_surrogate_jacobian(self):
+        # test surrogate jacobian
+
+        # create solver and set displacement
+        solver = self.set_up_solver()
+
+        # verify surrogate jacobian
+        input = np.zeros((solver.m, 3))
+        a = np.array(solver.a[1:-1])
+        r = np.sqrt(a / np.pi)  # local radius
+        dr = 1e-18 * np.ones_like(r)
+
+        input[:, 1] = r - dr / 2 - solver.d / 2
+        interface_input = solver.get_interface_input()
+        interface_input.set_variable_data(self.model_part_name, self.variable, input)
+        f1 = solver.solve_solution_step(interface_input).get_variable_data(self.model_part_name, 'pressure').flatten()
+
+        input[:, 1] = r + dr / 2 - solver.d / 2
+        interface_input = solver.get_interface_input()
+        interface_input.set_variable_data(self.model_part_name, self.variable, input)
+        f2 = solver.solve_solution_step(interface_input).get_variable_data(self.model_part_name, 'pressure').flatten()
+
+        jsurrogate = solver.get_surrogate_jacobian()
+        d1 = f2 - f1
+        d2 = jsurrogate @ dr
+        self.assertLess(np.linalg.norm(d1 - d2), 5e-7)
+
+    def set_up_solver(self):
+        # create solver
+        solver = create_instance(self.parameters)
+        solver.initialize()
+        solver.initialize_solution_step()
+
+        # set displacement
+        interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.model_part_name)
+        data = [[0, get_dy(model_part.z0[i]), 0] for i in range(model_part.size)]
+        interface_input.set_variable_data(self.model_part_name, self.variable, np.array(data))
+        solver.solve_solution_step(interface_input)
+
+        return solver
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)

@@ -10,13 +10,11 @@ assemble a set of convergence criteria.
 
 The `type` `convergence_criterion.iteration_limit` is satisfied if the number of coupling iterations equals or is larger than a predefined maximum.
 
-#### Settings
-
 The `settings` dictionary contains one entry:
 
-parameter|type|description
----:|:---:|---
-`maximum`|int|Maximum number of iterations.
+| parameter | type | description                   |
+|----------:|:----:|-------------------------------|
+| `maximum` | int  | Maximum number of iterations. |
 
 ### Absolute norm
 
@@ -31,14 +29,12 @@ $$
 
 where $r_i$ is the $i$-th component of the residual.
 
-#### Settings
-
 The `settings` are as follows:
 
-parameter|type|description
----:|:---:|---
-`order`|int|Order $p$ of the norm.
-`tolerance`|double|Limit value for convergence.
+|   parameter |  type  | description                  |
+|------------:|:------:|------------------------------|
+|     `order` |  int   | Order $p$ of the norm.       |
+| `tolerance` | double | Limit value for convergence. |
 
 ### Relative norm
 
@@ -48,8 +44,6 @@ norm of the residual of the first coupling iteration is compared to a `tolerance
 comparing the norm of the residual of the first coupling iteration to the machine limit for floating points, i.e. the smallest number
 different from zero. In case this initial norm is too small, an exception will be raised. Should this happen, it is advised to opt
 for the absolute norm criterion instead of relative norm.
-
-#### Settings
 
 These are the same as for `convergence_criterion.absolute_norm`.
 

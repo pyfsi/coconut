@@ -43,21 +43,21 @@ Class that maps on the level of `Interface` objects.
 It takes two `Interfaces`, and maps the `ModelParts` to each other in the order in which the `Interfaces` are defined in the JSON file.
 The same type of `ModelPart` mapper is used for each pair of `ModelParts`: this can either be an interpolator or a combined mapper. To use a different `ModelPart` mapper for the different `ModelParts` in the `Interface`, or even for different variables, a new `Interface` mapper would have to be written. 
 
-JSON setting|type|description
-------:|:----:|-----------
-`type`|str|`ModelPart` mapper to be used.
-<nobr>`settings`</nobr>|dict|All the settings for the `ModelPart` mapper specified in `type`.
-
+|               parameter | type | description                                                      |
+|------------------------:|:----:|------------------------------------------------------------------|
+|                  `type` | str  | `ModelPart` mapper to be used.                                   |
+| <nobr>`settings`</nobr> | dict | All the settings for the `ModelPart` mapper specified in `type`. |
 
 ### `MapperInterpolator`
 
 Superclass for all [interpolators](mappers.md#interpolators). 
 
-JSON setting|type|description
-------:|:----:|-----------
-`directions`|list|List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.
-`scaling`|list|Optional. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. 
-<nobr>`balanced_tree`</nobr>|bool|Optional, default `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.
+|                         parameter | type | description                                                                                                                                                                                                                                       |
+|----------------------------------:|:----:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                   `balanced_tree` | bool | (optional) Default: `false`. If set to `true` a balanced `cKDTree` is created, which is more stable, but takes longer to build. Set to `true` in the rare case that the tree gives problems.                                                      |
+| <nobr>`check_bounding_box`</nobr> | bool | (optional) Default: `true`. If `true` it is checked if the bounding boxes of the *from*- and *to*-`ModelParts` overlap.                                                                                                                           |
+|                      `directions` | list | List of coordinate directions, maximum three entries, may contain `"x"`, `"y"`, `"z"`.                                                                                                                                                            |
+|                         `scaling` | list | (optional) Default: no scaling. List of scaling factors, must be same length as `directions`. Coordinates are scaled with these factors, this may improve interpolation e.g. when cells have a high aspect ratio with respect to one of the axes. |
 
 The `initialize` method must be defined in all child classes. It takes as arguments the *from*-`ModelPart` and the *to*-`ModelPart`. It does the following:
 
@@ -81,9 +81,9 @@ The `initialization` of transformers is very different from that of interpolator
 
 ### `MapperCombined`
 
-JSON setting|type|description
-------:|:----:|-----------
-<nobr>`mappers`</nobr>|list|An ordered list of all the `ModelPart` mappers to be used.
+|              parameter | type | description                                                |
+|-----------------------:|:----:|------------------------------------------------------------|
+| <nobr>`mappers`</nobr> | list | An ordered list of all the `ModelPart` mappers to be used. |
 
 The `MapperCombined` is used to chain together multiple mappers. It always contains a single interpolator and zero or more transformers, which can be on either side of the interpolator. If transformers are present, _intermediate_ `ModelParts` are created during initialization. This is done by working _inwards_ towards the interpolator. This means that transformers upstream of the interpolator, are initialized based on the *from*-`ModelPart` (input), while downstream transformers are initialized based on the *to*-`ModelPart` (output). 
 Some transformers can only be initialized in one direction, e.g. for `MapperAxisymmetric3DTo2D`, the 2D *to*-`ModelPart` must be supplied, therefore this transformer must be downstream of the interpolator. 
@@ -99,7 +99,7 @@ These concepts are clarified further using an excerpt from the JSON file of the 
         "settings": {"permutation": [1, 0, 2]}},
         {"type": "mappers.radial_basis",
         "settings": {"directions": ["x", "y", "z"]}},
-        {"type": "mappers.axisymmetric_3d*to*2d",
+        {"type": "mappers.axisymmetric_3d_to_2d",
         "settings": {"direction_axial": "y", "direction_radial": "x", "n_tangential": 8}}
         ]
     }
@@ -129,10 +129,9 @@ When the `__call__` method  of the combined mapper is used, the following happen
 Permutates the coordinates and the vector variables according to the given `permutation`. 
 This transformer can be initialized in both directions. 
 
-JSON setting|type|description
-------:|:----:|-----------
-<nobr>`permutation`</nobr>|list|A permutation of the list [0, 1, 2].
-
+|                  parameter | type | description                          |
+|---------------------------:|:----:|--------------------------------------|
+| <nobr>`permutation`</nobr> | list | A permutation of the list [0, 1, 2]. |
 
 ### `MapperAxisymmetric2DTo3D`
 
@@ -147,13 +146,12 @@ Scalar data is simply copied from the 2D point to all corresponding 3D points. F
 Points that lie on the symmetry axis can not be handled by the current transformer.
 
 
-JSON setting|type|description
-------:|:----:|-----------
-`direction_axial`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
-<nobr>`direction_radial`</nobr>|str|Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.
-`n_tangential`|int|Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle.
-`angle`|int|(optional) Default: `360`. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.  
-
+|                       parameter | type | description                                                                                                                                                                                              |
+|--------------------------------:|:----:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|               `direction_axial` | str  | Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.                                                                                                                                              |
+| <nobr>`direction_radial`</nobr> | str  | Must be `"x"`, `"y"` or `"z"`, specifies the second (radial) axis in 2D.                                                                                                                                 |
+|                  `n_tangential` | int  | Degrees of freedom in tangential (circumferential) direction of 3D `ModelPart` that is created during initialization. The minimum setting of n_tangential points depends of the definition of the angle. |
+|                         `angle` | int  | (optional) Default: `360`. Angle of the (partial) 3D cylinder constructed from the 2D geometry, centred around the radial direction.                                                                     |
 
 ### `MapperAxisymmetric3DTo2D`
 
@@ -173,11 +171,10 @@ The 3D `ModelPart` is returned by the initialization. The depth direction in whi
 Scalar data is simply copied from the 2D point to all corresponding 3D points. For vector data, all components other than the depth component are simply copied. The depth component is set to zero.
 
 
-JSON setting|type|description
-------:|:----:|-----------
-<nobr>`coordinates_depth`</nobr>|list|Contains the depth coordinates to which the nodes of the orignal 2D plane are copied.
-`direction_depth`|str|Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.
-
+|                        parameter | type | description                                                                           |
+|---------------------------------:|:----:|---------------------------------------------------------------------------------------|
+| <nobr>`coordinates_depth`</nobr> | list | Contains the depth coordinates to which the nodes of the orignal 2D plane are copied. |
+|                `direction_depth` | str  | Must be `"x"`, `"y"` or `"z"`, specifies the symmetry axis.                           |
 
 ### `MapperDepth3DTo2D`
 
@@ -185,7 +182,7 @@ Transforms a 3D geometry to a 2D axisymmetric geometry, by collapsing in a _dept
 
 For scalar data, the average is taken for each 2D point. For vector data too, again removing the depth component.
 
-More information and JSON settings can be found under [`MapperAxisymmetric2DTo3D`](mappers.md#mapperaxisymmetric2dto3d).
+More information and JSON settings can be found under [`MapperDepth2DTo3D`](mappers.md#mapperdepth2dto3d).
 
 
 ## Interpolators
@@ -201,9 +198,9 @@ Does not require additional settings compared to the `MapperInterpolator`. Does 
 
 Additional settings:
 
-JSON setting|type|description
-------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. 
+|               parameter | type | description                                                                                                                                                                                                                                   |
+|------------------------:|:----:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`parallel`</nobr> | bool | (optional) Default: `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. |
 
 The kind of linear mapping depends on the number of coordinate directions, as given in the `directions` setting.
 
@@ -218,10 +215,11 @@ The kind of linear mapping depends on the number of coordinate directions, as gi
 
 Additional settings:
 
-JSON setting|type|description
-------:|:----:|-----------
-<nobr>`parallel`</nobr>|bool|Optional, default `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom.
-<nobr>`shape_parameter`</nobr>|int|Optional, default `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.
+|                      parameter | type | description                                                                                                                                                                                                                                   |
+|-------------------------------:|:----:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                    `n_nearest` | int  | (optional) Default: `81`, if mapping in 3 `directions`, else `9`. Number of nearest neighbours used to perform mapping.                                                                                                                       |
+|        <nobr>`parallel`</nobr> | bool | (optional) Default: `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. |
+| <nobr>`shape_parameter`</nobr> | int  | (optional) Default: `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.                                                                                                                  |
 
 Radial basis function interpolation is relatively straightforward: implementation for 1D, 2D and 3D is exactly the same and can be written in a condensed way using `scipy.spatial.distance`. 
 

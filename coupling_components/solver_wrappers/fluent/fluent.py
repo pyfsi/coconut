@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 import os
@@ -7,28 +7,24 @@ from os.path import join
 import glob
 import subprocess
 import multiprocessing
-import time
 import numpy as np
-import sys
 import hashlib
 from getpass import getuser
 import shutil
-
-# TODO: issue: id and hash shadow built-in names
 
 
 def create(parameters):
     return SolverWrapperFluent(parameters)
 
 
-class SolverWrapperFluent(Component):
+class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None or self.version_bis is None:
             raise NotImplementedError(
@@ -38,13 +34,14 @@ class SolverWrapperFluent(Component):
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
         self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
-        self.remove_all_messages()
+        self.coco_messages = tools.CocoMessages(self.dir_cfd)
+        self.coco_messages.remove_all_messages()
         self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
-        self.tmp_directory_name = f'coconut_{getuser()}_{os.getpid()}_fluent'  # dir in /tmp for host-node communication
+        self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
+        self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
         self.cores = self.settings['cores']
-        if self.cores < 1 or self.cores > multiprocessing.cpu_count():
-            self.cores = multiprocessing.cpu_count()  # TODO: add this behavior to documentation
+        self.hostfile = self.settings.get('hostfile')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -68,15 +65,6 @@ class SolverWrapperFluent(Component):
             self.thread_ids[thread_name] = None
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.model = None
-        self.interface_input = None
-        self.interface_output = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = False  # set on True to save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -109,30 +97,40 @@ class SolverWrapperFluent(Component):
 
         # prepare Fluent UDF
         udf = f'v{self.version}.c'
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        os.mkdir(join('/tmp', self.tmp_directory_name))
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
-                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_directory_name)
+                    line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     outfile.write(line)
+
+        # check number of cores
+        if self.hostfile is not None:
+            with open(join(self.dir_cfd, self.hostfile)) as fp:
+                max_cores = len(fp.readlines())
+        else:
+            max_cores = multiprocessing.cpu_count()
+        if self.cores < 1 or self.cores > max_cores:
+            tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
+            self.cores = max_cores
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
         cmd1 = f'fluent -r{self.version_bis} {self.dimensions}ddp '
         cmd2 = f'-t{self.cores} -i {journal}'
+        cmd3 = f' >> {log} 2>&1'
 
+        if self.hostfile is not None:
+            cmd1 += f' -cnf={self.hostfile} -ssh '
         if self.settings['fluent_gui']:
-            cmd = cmd1 + cmd2
+            cmd = cmd1 + cmd2 + cmd3
         else:
-            cmd = cmd1 + '-gu ' + cmd2 + f' >> {log} 2>&1'  # TODO: does log work well?
-            # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'  # TODO: specify what this option does?
+            cmd = cmd1 + '-gu ' + cmd2 + cmd3
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from  fluent.log and report.sum
-        self.wait_message('case_info_exported')
+        self.coco_messages.wait_message('case_info_exported')
 
         with open(log, 'r') as file:
             for line in file:
@@ -163,7 +161,7 @@ class SolverWrapperFluent(Component):
                         if not self.multiphase:
                             raise ValueError('Singlephase in JSON does not match multiphase Fluent')
                         break
-                    elif'Numerics' in line:
+                    elif 'Numerics' in line:
                         if self.multiphase:
                             raise ValueError('Multiphase in JSON does not match singlephase Fluent')
                         break
@@ -173,15 +171,20 @@ class SolverWrapperFluent(Component):
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
-        info = []
+        names_found = []
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
-                    name, id, _ = line.strip().split()
-                    if name in self.thread_ids:
-                        info.append(' '.join((name, id)))
-                        self.thread_ids[name] = id
-
+                    line_list = line.strip().split()
+                    if len(line_list) == 3:
+                        name, thread_id, _ = line_list
+                    elif len(line_list) == 4:
+                        name, _, thread_id, _ = line_list
+                    else:
+                        raise ValueError(f'Format of {report} not recognized')
+                    if name in self.thread_ids and name not in names_found:
+                        self.thread_ids[name] = thread_id
+                        names_found.append(name)
                 if check == 3 and not line.islower():
                     break
                 if check == 2:  # skip 1 line
@@ -191,14 +194,14 @@ class SolverWrapperFluent(Component):
                 if 'Boundary Conditions' in line:
                     check = 1
         with open(join(self.dir_cfd, 'bcs.txt'), 'w') as file:
-            file.write(str(len(info)) + '\n')
-            for line in info:
-                file.write(line + '\n')
-        self.send_message('thread_ids_written_to_file')
+            file.write(f'{len(names_found)}\n')
+            for name, id in self.thread_ids.items():
+                file.write(f'{name} {id}\n')
+        self.coco_messages.send_message('thread_ids_written_to_file')
 
         # import node and face information if no restart
         if self.timestep_start == 0:
-            self.wait_message('nodes_and_faces_stored')
+            self.coco_messages.wait_message('nodes_and_faces_stored')
 
         # create Model
         self.model = data_structure.Model()
@@ -280,8 +283,8 @@ class SolverWrapperFluent(Component):
         self.iteration = 0
         self.timestep += 1
 
-        self.send_message('next')
-        self.wait_message('next_ready')
+        self.coco_messages.send_message('next')
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -304,8 +307,8 @@ class SolverWrapperFluent(Component):
                 os.system(cmd)
 
         # let Fluent run, wait for data
-        self.send_message('continue')
-        self.wait_message('continue_ready')
+        self.coco_messages.send_message('continue')
+        self.coco_messages.wait_message('continue_ready')
 
         # read data from Fluent
         for dct in self.interface_output.parameters:
@@ -320,8 +323,8 @@ class SolverWrapperFluent(Component):
                 raise ValueError('Given dimension does not match coordinates')
 
             # copy output data for debugging
-            if self.debug:  # TODO: Iter --> iter everywhere?
-                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+            if self.debug:
+                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
                 cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
@@ -356,8 +359,8 @@ class SolverWrapperFluent(Component):
         # save if required
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
-            self.send_message('save')
-            self.wait_message('save_ready')
+            self.coco_messages.send_message('save')
+            self.coco_messages.wait_message('save_ready')
 
         # remove unnecessary files
         if self.timestep - 1 > self.timestep_start:
@@ -378,9 +381,9 @@ class SolverWrapperFluent(Component):
 
     def finalize(self):
         super().finalize()
-        shutil.rmtree(join('/tmp', self.tmp_directory_name), ignore_errors=True)
-        self.send_message('stop')
-        self.wait_message('stop_ready')
+        shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
+        self.coco_messages.send_message('stop')
+        self.coco_messages.wait_message('stop_ready')
         self.fluent_process.wait()
 
         # remove unnecessary files
@@ -399,21 +402,12 @@ class SolverWrapperFluent(Component):
                 except OSError:
                     pass
 
-    def get_interface_input(self):
-        return self.interface_input
-
-    def get_interface_output(self):
-        return self.interface_output
-
     def check_software(self):
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required.')
-
         # Fluent version: see set_fluent_version
         result = subprocess.run(['fluent', '-r'], stdout=subprocess.PIPE, env=self.env)
         if self.version_bis not in str(result.stdout):
-            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required')
+            raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required. Check if '
+                               f'the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
     # noinspection PyMethodMayBeStatic
     def get_unique_face_ids(self, data):
@@ -438,8 +432,8 @@ class SolverWrapperFluent(Component):
             if tmp[0] == -1:
                 tmp = tmp[1:]
             unique_string = '-'.join(tuple(tmp.astype(str)))
-            hash = hashlib.sha1(str.encode(unique_string))
-            ids[i] = int(hash.hexdigest(), 16) % (10 ** 16)
+            hash_id = hashlib.sha1(str.encode(unique_string))
+            ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
         return ids
 
     def write_node_positions(self):
@@ -473,8 +467,8 @@ class SolverWrapperFluent(Component):
         """
 
         # make Fluent store coordinates and ids
-        self.send_message('store_grid')
-        self.wait_message('store_grid_ready')
+        self.coco_messages.send_message('store_grid')
+        self.coco_messages.wait_message('store_grid_ready')
 
         coord_data = {}
 
@@ -523,31 +517,6 @@ class SolverWrapperFluent(Component):
             coord_data[mp_name]['coords'] = coords_tmp[args, :]
 
         return coord_data
-
-    def send_message(self, message):
-        file = join(self.dir_cfd, message + '.coco')
-        open(file, 'w').close()
-        return
-
-    def wait_message(self, message):
-        file = join(self.dir_cfd, message + '.coco')
-        while not os.path.isfile(file):
-            time.sleep(0.01)
-        os.remove(file)
-        return
-
-    def check_message(self, message):
-        file = join(self.dir_cfd, message + '.coco')
-        if os.path.isfile(file):
-            os.remove(file)
-            return True
-        return False
-
-    def remove_all_messages(self):
-        for file_name in os.listdir(self.dir_cfd):
-            if file_name.endswith('.coco'):
-                file = join(self.dir_cfd, file_name)
-                os.remove(file)
 
     def backup_fluent_log(self):
         file = join(self.dir_cfd, 'fluent.log')

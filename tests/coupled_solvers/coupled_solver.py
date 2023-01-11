@@ -39,7 +39,7 @@ class TestCoupledSolver(unittest.TestCase):
         os.mkdir(working_dir_cfd)
         os.mkdir(working_dir_csm)
         shutil.copy(os.path.join(dir_name, 'setup_tube_flow/solver_parameters.json'), working_dir_cfd)
-        shutil.copy(os.path.join(dir_name, 'setup_tube_structure/solver_parameters.json'), working_dir_csm)
+        shutil.copy(os.path.join(dir_name, 'setup_tube_ringmodel/solver_parameters.json'), working_dir_csm)
 
     def test_coupled_solver(self):
         with cd(self.working_dir):
@@ -89,10 +89,8 @@ class TestCoupledSolver(unittest.TestCase):
             # adapt parameters, create coupled solver for restart
             self.parameters['settings']['save_restart'] = 2
             self.parameters['settings']['case_name'] = 'restart'
-            for solver_wrapper_parameters in self.parameters['solver_wrappers']:
-                for key in ('timestep_start', 'delta_t', 'save_restart'):
-                    # remove keys to avoid warnings
-                    solver_wrapper_parameters['settings'].pop(key)
+            self.remove_keys(('timestep_start', 'delta_t', 'save_restart',
+                              'case_name'))  # remove keys to avoid warnings
             coupled_solver = create_instance(self.parameters)
             coupled_solver.initialize()
 
@@ -108,10 +106,8 @@ class TestCoupledSolver(unittest.TestCase):
             self.parameters['settings']['timestep_start'] = 2
             self.parameters['settings']['save_results'] = 2
             self.parameters['settings']['case_name'] = 'restart'
-            for solver_wrapper_parameters in self.parameters['solver_wrappers']:
-                for key in ('timestep_start', 'delta_t', 'save_restart'):
-                    # remove keys to avoid warnings
-                    solver_wrapper_parameters['settings'].pop(key)
+            self.remove_keys(('timestep_start', 'delta_t', 'save_restart',
+                              'case_name'))  # remove keys to avoid warnings
             coupled_solver = create_instance(self.parameters)
             coupled_solver.initialize()
 
@@ -129,7 +125,7 @@ class TestCoupledSolver(unittest.TestCase):
 
         # remove non equal items
         for results in (results_no_restart, results_restart):
-            for key in ['info', 'run_time', 'case_name']:
+            for key in ['info', 'run_time', 'case_name', 'time_allocation']:
                 results.pop(key)
 
         # check equality
@@ -139,6 +135,12 @@ class TestCoupledSolver(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)
+
+    def remove_keys(self, keys):
+        # remove keys to avoid warnings
+        for key in keys:
+            for solver_wrapper_parameters in self.parameters['solver_wrappers']:
+                solver_wrapper_parameters['settings'].pop(key, None)
 
 
 if __name__ == '__main__':

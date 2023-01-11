@@ -2,15 +2,15 @@
 
 This documentation describes the available predictors.
 A predictor is used to determine the initial guess in each time step by extrapolating the solution from previous time steps.
-The predictors differ in the number of previous time steps they take into account 
-and the polynomial degree that is used.
+The predictors differ in the number of previous time steps they take into account and the polynomial degree that is used.
+Additionally, there is one special type that uses a surrogate model.
 The formulas in this document, use the index $n$ to refer to the time step, where $n+1$ is the current time step, i.e. the time step for which the initial guess is made.
 The vector $x$ is the input for the first solver, conform the [coupled solvers documentation](../coupled_solvers/coupled_solvers.md).
 
 A predictor is intialized in the coupled solver using an initial solution as determined by the coupled solver.
 As such, there is at least one previous solution available.
 
-In the JSON file, the `predictor` dictionary only requires a `type` (e.g. `predictors.linear`), no `settings` dictionary has to be provided.
+For the polynomial predictors, the `predictor` dictionary only requires a `type` (e.g. `predictors.linear`) in the JSON file, no `settings` dictionary has to be provided.
 
 Specification of a predictor is mandatory, also for a steady simulation. In that case, however, it does not matter which
 predictor is chosen as only one "time step" is performed.
@@ -58,3 +58,22 @@ $$
 x^{n+1}=4x^{n}-6x^{n-1}+4x^{n-2}-1x^{n-3}.
 $$
 If no four previous solutions are available, the predictor `PredictorQuadratic` is used.
+
+## Surrogate
+The `type` for this predictor is `predictors.surrogate`.
+
+The following parameters may be included in the `settings` dictionary.
+
+This predictor requires that a `surrogate` model is used in the coupled solver [`CoupledSolverIQNISM`](../coupled_solvers.md#iqnism) (defined in the settings of the coupled solver).
+Moreover, this `surrogate` model must provide a surrogate solution, which is used to update the values in this predictor.
+
+There are two options available:
+
+- The surrogate solution can be used directly: $$ x^{n+1}=x_s^{n+1}, $$ where $x_s^{n+1}$ is the surrogate solution of the current time step.
+- Or the change in surrogate solution can be used: $$ x^{n+1}=x^{n} + (x_s^{n+1} - x_s^{n}), $$ where $x_s$ is the surrogate solution, and the superscript $n+1$ and $n$ indicate the current and previous time steps, respectively.
+
+The following parameters need to be included in the `settings` dictionary.
+
+|                     parameter | type | description                                                                                                                                                 |
+|------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`predict_change`</nobr> | dict | (optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly. |

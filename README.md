@@ -106,11 +106,15 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 
 -   Ensure that *`coconut`* is included in your Python path.
 -   Move to the *`coconut/tests`* directory. 
--   Run the unit tests by executing the following line:
-
+-   Run the _fast_ unit tests (exclusing the non-Pythonic solvers) by executing the following line:
 ```bash
-python -m unittest -b
+python3 run_tests.py
 ```
+-   Or choose to include the solver wrapper tests by using the keyword `-all` as follows
+```bash
+python3 run_tests.py -all
+```
+More information on running tests can be found [here](tests/tests.md).
 
 
 ## Getting started
@@ -146,7 +150,7 @@ We can now start the FSI simulation in CoCoNuT by running the Python file *`run_
 python3 run_simulation.py
 ```
 
-The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself strats: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
+The simulation should start, first printing the CoCoNuT ASCII-banner and some information about the settings of the FSI simulation. Then the simulation itself starts: in each time step, the residual is given for every coupling iteration. When the simulation has finished, a summary about the computational effort is printed.
 
 Let us now take a closer look at the two files that are used to run CoCoNuT. 
 The Python file *`run_simulation.py`* typically does not have to be adapted by the user. Its task is to read in the settings file *`parameters.json`* and launch a simulation using those settings. 
@@ -176,7 +180,7 @@ Now try to change some of the settings in the JSON file, such as the mappers, th
 After a simulation is finished, it can be useful to visualize the output quantities (i.e. displacement, pressure and in general also shear). For the FSI-simulation we have just performed, post-processing has already been implemented in the file *`$COCO/coconut/examples/post_processing/`*. It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on `true`, which is for all examples done by default. As an example, we will generate an animation by running the *`animate_example.py`* file:
 
 ```bash
-python $COCO/coconut/examples/post_processing/animate_example.py
+python3 $COCO/coconut/examples/post_processing/animate_example.py
 ```
 
 Animations of the displacement and pressure will be shown.
@@ -223,4 +227,4 @@ This folder contains the unit tests. These are created for each piece of code th
 [Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
 
 <a id="2">[2]</a> 
-[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.](http://hdl.handle.net/1854/LU-8685199)
+[Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
