@@ -15,9 +15,8 @@ class CoupledSolverExplicit(CoupledSolverGaussSeidel):
         # initial value
         self.x = self.predictor.predict(self.x)
         # first coupling iteration
-        y = self.solver_wrappers[0].solve_solution_step(self.x.copy())
-        self.y = y.copy()
-        xt = self.solver_wrappers[1].solve_solution_step(y)
+        self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
+        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
         self.finalize_iteration(r)
         self.x = xt
