@@ -549,6 +549,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                         exit(1);
                     }
                 }
+
             }
         }
     } end_f_loop(face, face_thread);
