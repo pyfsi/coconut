@@ -1,5 +1,5 @@
 from coconut import tools
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 import numpy as np
 import time
@@ -9,7 +9,7 @@ def create(parameters):
     return CoupledSolverIQNISM(parameters)
 
 
-class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
+class CoupledSolverIQNISM(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 

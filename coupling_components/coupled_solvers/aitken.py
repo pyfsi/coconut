@@ -1,4 +1,4 @@
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 import numpy as np
 
@@ -7,7 +7,7 @@ def create(parameters):
     return CoupledSolverAITKEN(parameters)
 
 
-class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
+class CoupledSolverAITKEN(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 

@@ -10,11 +10,7 @@ from datetime import datetime
 import socket
 
 
-def create(parameters):
-    return CoupledSolverGaussSeidel(parameters)
-
-
-class CoupledSolverGaussSeidel(Component):
+class CoupledSolver(Component):
     def __init__(self, parameters):
         super().__init__()
 
@@ -152,20 +148,7 @@ class CoupledSolverGaussSeidel(Component):
             self.residual.append([])
 
     def solve_solution_step(self):
-        # initial value
-        self.x = self.predictor.predict(self.x)
-        # first coupling iteration
-        self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
-        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
-        r = xt - self.x
-        self.finalize_iteration(r)
-        # coupling iteration loop
-        while not self.convergence_criterion.is_satisfied():
-            self.x += r
-            self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
-            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
-            r = xt - self.x
-            self.finalize_iteration(r)
+        pass
 
     def finalize_iteration(self, r):
         self.iteration += 1  # increment iteration

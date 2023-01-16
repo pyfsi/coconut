@@ -1,5 +1,6 @@
 from coconut.tools import create_instance, pass_on_parameters
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
+
 
 from scipy.sparse.linalg import gmres, LinearOperator
 
@@ -8,7 +9,7 @@ def create(parameters):
     return CoupledSolverIBQN(parameters)
 
 
-class CoupledSolverIBQN(CoupledSolverGaussSeidel):
+class CoupledSolverIBQN(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 

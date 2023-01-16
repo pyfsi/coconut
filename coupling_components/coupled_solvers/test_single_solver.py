@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut import tools
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 import time
 import os
@@ -12,7 +12,7 @@ def create(parameters):
     return CoupledSolverTestSingleSolver(parameters)
 
 
-class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
+class CoupledSolverTestSingleSolver(CoupledSolver):
 
     def __init__(self, parameters):
         """Should only initialize the solver that is to be tested"""
