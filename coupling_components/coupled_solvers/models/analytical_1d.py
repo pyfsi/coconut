@@ -23,7 +23,7 @@ class Analytical1D(Component):
         # add timestep_start and delta_t to solver_models settings
         for solver_model_parameters in self.settings['solver_models']:
             tools.pass_on_parameters(self.settings, solver_model_parameters['settings'],
-                                     ['timestep_start', 'delta_t'])
+                                     ['timestep_start', 'delta_t', 'save_restart'])
 
         # initialization
         self.solver_models = []
@@ -161,6 +161,15 @@ class Analytical1D(Component):
         r_full[1::3] = dr.flatten()
         dr_out.set_interface_data(r_full)
         return dr_out
+
+    def restart(self, restart_data):
+        pass
+
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        pass
 
     def get_time_allocation(self):
         time_allocation = {}

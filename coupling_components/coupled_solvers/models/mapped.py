@@ -126,6 +126,15 @@ class ModelMapped(Component):
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
 
+    def restart(self, restart_data):
+        self.surrogate.restart(restart_data)
+
+    def check_restart_data(self, restart_data):
+        self.surrogate.check_restart_data(restart_data)
+
+    def save_restart_data(self):
+        self.surrogate.save_restart_data()
+
     def get_time_allocation(self):
         time_allocation = {}
         for time_type in ('init_time', 'run_time'):

@@ -55,6 +55,17 @@ class TestModelMVMF(model.TestModel):
 
         v = self.model.v
         w = self.model.w
+        self.assertEqual(v.shape, (self.m, 3))
+        np.testing.assert_array_equal(v.T.flatten(), np.hstack((self.r5 - self.r4, self.r4 - self.r2,
+                                                                self.r2 - self.r1)))
+        self.assertEqual(w.shape, (self.m, 3))
+        np.testing.assert_array_equal(w.T.flatten(), np.hstack((self.xt5 - self.xt4, self.xt4 - self.xt2,
+                                                                self.xt2 - self.xt1)))
+
+        self.model.filter()
+
+        v = self.model.v
+        w = self.model.w
         self.assertEqual(v.shape, (self.m, 2))
         np.testing.assert_array_equal(v.T.flatten(), np.hstack((self.r5 - self.r4, self.r4 - self.r2)))
         self.assertEqual(w.shape, (self.m, 2))
@@ -69,6 +80,7 @@ class TestModelMVMF(model.TestModel):
         r.set_interface_data(self.r8)
         xt.set_interface_data(self.xt8)
         self.model.add(r, xt)
+        self.model.filter()
 
         v = self.model.v
         w = self.model.w
@@ -82,9 +94,11 @@ class TestModelMVMF(model.TestModel):
         r.set_interface_data(self.r9)
         xt.set_interface_data(self.xt9)
         self.model.add(r, xt)
+        self.model.filter()  # adding two modes: filtering at the end is not necessarily the same as filtering each time
         r.set_interface_data(self.r10)
         xt.set_interface_data(self.xt10)
         self.model.add(r, xt)
+        self.model.filter()
 
         v = self.model.v
         w = self.model.w
@@ -99,6 +113,7 @@ class TestModelMVMF(model.TestModel):
         r.set_interface_data(self.r13)
         xt.set_interface_data(self.xt13)
         self.model.add(r, xt)
+        self.model.filter()
 
         v = self.model.v
         w = self.model.w
@@ -163,18 +178,20 @@ class TestModelMVMF(model.TestModel):
         q2, r2 = np.linalg.qr(v2, mode='reduced')
         w2 = self.model.w
 
-        # new solution step
         self.model.finalize_solution_step()
+
+        # new solution step
+        self.model.initialize_solution_step()
         np.testing.assert_array_equal(self.model.wprev[1], w1)
         np.testing.assert_array_equal(self.model.rrprev[1], r1)
         np.testing.assert_array_equal(self.model.qqprev[1], q1)
         np.testing.assert_array_equal(self.model.wprev[0], w2)
         np.testing.assert_array_equal(self.model.rrprev[0], r2)
         np.testing.assert_array_equal(self.model.qqprev[0], q2)
-        self.model.initialize_solution_step()
+        self.model.finalize_solution_step()
 
         # new solution step
-        self.model.finalize_solution_step()
+        self.model.initialize_solution_step()
         self.assertEqual(len(self.model.wprev), self.q)
         self.assertEqual(len(self.model.rrprev), self.q)
         self.assertEqual(len(self.model.qqprev), self.q)
@@ -184,7 +201,7 @@ class TestModelMVMF(model.TestModel):
         np.testing.assert_array_equal(self.model.wprev[0], np.empty((self.m, 0)))
         np.testing.assert_array_equal(self.model.rrprev[0], np.empty((0, 0)))
         np.testing.assert_array_equal(self.model.qqprev[0], np.empty((self.m, 0)))
-        self.model.initialize_solution_step()
+        self.model.finalize_solution_step()
 
 
 if __name__ == '__main__':

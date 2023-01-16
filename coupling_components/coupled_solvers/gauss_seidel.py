@@ -71,6 +71,7 @@ class CoupledSolverGaussSeidel(Component):
         if self.restart:
             self.restart_case = self.settings.get('restart_case', self.case_name)  # case to restart from
             self.restart_data = self.load_restart_data()
+            self.restart_predictor = None  # indicates if predictor has to be restarted
 
         # save results variables
         if self.save_results:
@@ -103,16 +104,19 @@ class CoupledSolverGaussSeidel(Component):
         self.predictor.initialize(self.x)
 
         if self.solver_level == 0:
-            title = '╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
+            title = '\n╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
             tools.print_info(title)
+
+        self.print_components_info(' ')
 
         # restart
         if self.restart:
             if not (self.x.has_same_model_parts(self.restart_data['interface_x']) and
                     self.y.has_same_model_parts(self.restart_data['interface_y'])):
                 raise ValueError('Restart not possible because model parts changed')
-            self.predictor = self.restart_data['predictor']
-            self.components[0] = self.predictor
+            self.check_restart_data(self.restart_data)
+            if self.restart_predictor:
+                self.predictor.restart(self.restart_data['predictor'])
 
         # update save results
         if self.save_results:
@@ -192,12 +196,9 @@ class CoupledSolverGaussSeidel(Component):
 
         # save data for restart
         if self.save_restart != 0 and self.time_step % self.save_restart == 0:
-            output = {'predictor': self.predictor, 'interface_x': self.x, 'interface_y': self.y,
-                      'parameters': {key: self.parameters[key] for key in ('type', 'settings', 'predictor')},
-                      'delta_t': self.delta_t, 'time_step': self.time_step}
-            self.add_restart_data(output)
+            restart_data = self.save_restart_data()
             with open(self.case_name + f'_restart_ts{self.time_step}.pickle', 'wb') as file:
-                pickle.dump(output, file)
+                pickle.dump(restart_data, file)
             if self.save_restart < 0 and self.time_step + self.save_restart > self.timestep_start_current:
                 try:
                     os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
@@ -255,17 +256,47 @@ class CoupledSolverGaussSeidel(Component):
         else:
             with open(restart_file_name, 'rb') as restart_file:
                 restart_data = pickle.load(restart_file)
-            for key in ('predictor', 'type'):
-                if self.parameters[key] != restart_data['parameters'][key]:
-                    raise ValueError(f'Restart not possible because {key} changed in coupled solver')
-            self.check_restart_data(restart_data)
-            if self.delta_t != restart_data['delta_t']:
-                raise ValueError(f"Time step size has changed upon restart:\n\told: {restart_data['delta_t']}s"
-                                 f"\n\tnew: {self.delta_t}s")
         return restart_data
 
-    def check_restart_data(self, restart_data):
-        pass
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        # predictor type
+        new_value = self.parameters['predictor']['type']
+        old_value = restart_data['parameters']['predictor']['type']
+        if new_value != old_value:
+            tools.print_info(f'Predictor type changed from "{old_value}" to "{new_value}"', layout='blue')
+        extrapolators = ('predictors.constant', 'predictors.linear', 'predictors.quadratic', 'predictors.cubic',
+                         'predictors.legacy')
+        if new_value in extrapolators and old_value in extrapolators:
+            self.restart_predictor = True
+            self.predictor.check_restart_data(restart_data['parameters']['predictor'])  # check settings
+        # coupled solver type
+        new_value = self.parameters['type']
+        old_value = restart_data['parameters']['type']
+        if new_value != old_value:
+            tools.print_info(f'CoupledSolver type changed from "{old_value}" to "{new_value}"', layout='blue')
+            continue_check = False
+        else:
+            continue_check = True
+            if coupled_solver_settings is not None:
+                coupled_solver_type = new_value
+                for key in coupled_solver_settings:
+                    new_value = self.parameters['settings'].get(key)  # None if not present
+                    old_value = restart_data['parameters']['settings'].get(key)  # None if not present
+                    if new_value != old_value:
+                        tools.print_info(f'"{coupled_solver_type}" parameter "{key}" changed from {old_value} to '
+                                         f'{new_value}', layout='blue')
+        # delta_t
+        if self.delta_t != restart_data['delta_t']:
+            raise ValueError(f"Time step size has changed upon restart:\n\told: {restart_data['delta_t']}s"
+                             f"\n\tnew: {self.delta_t}s")
+        return continue_check
+
+    def save_restart_data(self):
+        restart_data = {'predictor': self.predictor.save_restart_data(), 'interface_x': self.x, 'interface_y': self.y,
+                        'parameters': {key: self.parameters[key] for key in ('type', 'settings', 'predictor')},
+                        'delta_t': self.delta_t, 'time_step': self.time_step}
+        self.add_restart_data(restart_data)
+        return restart_data
 
     def add_restart_data(self, restart_data):
         pass

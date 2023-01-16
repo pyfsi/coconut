@@ -95,3 +95,12 @@ class Predictor(Component):
             self.updated = True
         else:
             raise Exception('Already updated')
+
+    def restart(self, restart_data):
+        self.dataprev = restart_data['dataprev']
+
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        return {'dataprev': self.dataprev}

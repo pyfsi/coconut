@@ -108,6 +108,7 @@ class TestModel(unittest.TestCase):
         r.set_interface_data(self.r5)
         xt.set_interface_data(self.xt5)
         self.model.add(r, xt)
+        self.model.filter()
 
         # test filter_q
         r.set_interface_data(self.r3)
@@ -145,6 +146,7 @@ class TestModel(unittest.TestCase):
         r.set_interface_data(self.r9)
         xt.set_interface_data(self.xt9)
         self.model.add(r, xt)
+        self.model.filter()
         r.set_interface_data(self.r10)
         xt.set_interface_data(self.xt10)
         self.model.add(r, xt)

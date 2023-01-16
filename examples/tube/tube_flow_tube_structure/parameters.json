@@ -1,19 +1,237 @@
 {
   "settings": {
-    "number_of_timesteps": 100
+    "number_of_timesteps": 5
   },
   "coupled_solver": {
-    "type": "coupled_solvers.iqni",
+    "type": "coupled_solvers.iqnism",
     "settings": {
-      "timestep_start": 0,
+      "timestep_start": 50,
       "delta_t": 0.0001,
-      "omega": 0.05,
+      "omega": 0.06,
+      "omega_max": 0.6,
       "save_results": 100,
-      "save_restart": 0,
+      "save_restart": 5,
+      "surrogate": {
+        "type": "coupled_solvers.models.mapped",
+        "settings": {
+          "surrogate": {
+            "type": "coupled_solvers.models.surrogate",
+            "coupled_solver": {
+              "type": "coupled_solvers.iqni",
+              "settings": {
+                "save_results": 100,
+                "omega": 0.05,
+                "model": {
+                  "type": "coupled_solvers.models.mvmf",
+                  "settings": {
+                    "q": 100
+                  }
+                }
+              },
+              "predictor": {
+                "type": "predictors.linear"
+              },
+              "convergence_criterion": {
+                "type": "convergence_criteria.or",
+                "settings": {
+                  "criteria_list": [
+                    {
+                      "type": "convergence_criteria.iteration_limit",
+                      "settings": {
+                        "maximum": 15
+                      }
+                    },
+                    {
+                      "type": "convergence_criteria.relative_norm",
+                      "settings": {
+                        "tolerance": 1e-6,
+                        "order": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              "solver_wrappers": [
+                {
+                  "type": "solver_wrappers.python.tube_flow_solver",
+                  "settings": {
+                    "working_directory": "CFD_surrogate",
+                    "input_file": "solver_parameters_pressure.json",
+                    "m": 50,
+                    "interface_input": [
+                      {
+                        "model_part": "wall",
+                        "variables": [
+                          "displacement"
+                        ]
+                      }
+                    ],
+                    "interface_output": [
+                      {
+                        "model_part": "wall",
+                        "variables": [
+                          "pressure",
+                          "traction"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "solver_wrappers.mapped",
+                  "settings": {
+                    "solver_wrapper": {
+                      "type": "solver_wrappers.python.tube_structure_solver",
+                      "settings": {
+                        "working_directory": "CSM_surrogate",
+                        "input_file": "solver_parameters.json",
+                        "m": 50,
+                        "interface_input": [
+                          {
+                            "model_part": "wall",
+                            "variables": [
+                              "pressure",
+                              "traction"
+                            ]
+                          }
+                        ],
+                        "interface_output": [
+                          {
+                            "model_part": "wall",
+                            "variables": [
+                              "displacement"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "mapper_interface_input": {
+                      "type": "mappers.interface",
+                      "settings": {
+                        "type": "mappers.linear",
+                        "settings": {
+                          "directions": [
+                            "z"
+                          ]
+                        }
+                      }
+                    },
+                    "mapper_interface_output": {
+                      "type": "mappers.interface",
+                      "settings": {
+                        "type": "mappers.linear",
+                        "settings": {
+                          "directions": [
+                            "z"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "z"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "z"
+                ]
+              }
+            }
+          }
+        }
+      },
       "model": {
+        "type": "coupled_solvers.models.analytical_1d",
+        "settings": {
+          "solver_models": [
+            {
+              "type": "solver_wrappers.python.tube_flow_solver",
+              "settings": {
+                "working_directory": "CFD",
+                "input_file": "solver_parameters_pressure.json",
+                "interface_input": [
+                  {
+                    "model_part": "wall",
+                    "variables": [
+                      "displacement"
+                    ]
+                  }
+                ],
+                "interface_output": [
+                  {
+                    "model_part": "wall",
+                    "variables": [
+                      "pressure",
+                      "traction"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "solver_wrappers.python.tube_structure_solver",
+              "settings": {
+                "working_directory": "CSM",
+                "input_file": "solver_parameters.json",
+                "interface_input": [
+                  {
+                    "model_part": "wall",
+                    "variables": [
+                      "pressure",
+                      "traction"
+                    ]
+                  }
+                ],
+                "interface_output": [
+                  {
+                    "model_part": "wall",
+                    "variables": [
+                      "displacement"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "model1": {
         "type": "coupled_solvers.models.mvmf",
         "settings": {
-          "q": 100
+          "q": 9,
+          "min_significant": 1e-11
+        }
+      },
+      "relative_tolerance_gmres": 1e-11,
+      "absolute_tolerance_gmres": 1e-18,
+      "model_f": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-18,
+          "q": 10
+        }
+      },
+      "model_s": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-9,
+          "q": 10
         }
       }
     },
@@ -27,13 +245,13 @@
           {
             "type": "convergence_criteria.iteration_limit",
             "settings": {
-              "maximum": 15
+              "maximum": 20
             }
           },
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-6,
+              "tolerance": 1e-3,
               "order": 2
             }
           }

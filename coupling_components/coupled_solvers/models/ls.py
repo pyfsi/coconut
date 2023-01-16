@@ -17,9 +17,9 @@ class ModelLS(Component):
         self.min_significant = self.settings['min_significant']
         self.q = self.settings['q']
 
-        self.size_in = None
-        self.size_out = None
-        self.out = None  # interface of output
+        self.size_in = None  # set by coupled solver
+        self.size_out = None  # set by coupled solver
+        self.out = None  # interface of output, set by coupled solver
         self.added = False
         self.rref = None
         self.xtref = None
@@ -31,8 +31,6 @@ class ModelLS(Component):
     def initialize(self):
         super().initialize()
 
-        self.vcurr = np.empty((self.size_in, 0))
-        self.wcurr = np.empty((self.size_out, 0))
         self.vprev = [np.empty((self.size_in, 0))]
         self.wprev = [np.empty((self.size_out, 0))]
 
@@ -80,6 +78,7 @@ class ModelLS(Component):
 
     def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
+        self.filter()
         v = np.hstack((limit(self.vcurr, modes), np.hstack([limit(v, modes) for v in self.vprev])))
         w = np.hstack((limit(self.wcurr, modes), np.hstack([limit(w, modes) for w in self.wprev])))
         if not v.shape[1]:
@@ -103,7 +102,6 @@ class ModelLS(Component):
             # Update V and W matrices
             self.vcurr = np.hstack((dr, self.vcurr))
             self.wcurr = np.hstack((dxt, self.wcurr))
-            self.filter()
         else:
             self.added = True
         self.rref = r
@@ -122,15 +120,16 @@ class ModelLS(Component):
         self.wcurr = np.empty((self.size_out, 0))
         self.added = False
 
+        while len(self.vprev) > max(self.q, 1):  # for q = 0, there is one item: an empty array
+            self.vprev.pop()
+            self.wprev.pop()
+
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
         if self.q > 0:
             self.vprev = [self.vcurr] + self.vprev
             self.wprev = [self.wcurr] + self.wprev
-            if len(self.vprev) > self.q:
-                self.vprev.pop()
-                self.wprev.pop()
 
     def filter_q(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
@@ -141,6 +140,23 @@ class ModelLS(Component):
             dr = dr - qq @ (qq.T @ dr)
             dr_out.set_interface_data(dr.flatten())
         return dr_out
+
+    def restart(self, restart_data):
+        if self.q != 0:
+            self.vprev = restart_data['vprev']
+            self.wprev = restart_data['wprev']
+
+    def check_restart_data(self, restart_data):
+        model_type = restart_data['type']
+        for key in ['min_significant', 'q']:
+            new_value = self.settings.get(key)
+            old_value = restart_data['settings'].get(key)
+            if new_value != old_value:
+                tools.print_info(f'"{model_type}" parameter "{key}" changed from {old_value} to {new_value}',
+                                 layout='blue')
+
+    def save_restart_data(self):
+        return {'settings': self.settings, 'vprev': self.vprev, 'wprev': self.wprev}
 
 
 def limit(matrix, modes):
