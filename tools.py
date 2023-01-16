@@ -12,9 +12,13 @@ import importlib.util
 import shutil
 
 
-def create_instance(settings):
-    # create instance of given class based on settings dict
-    object_type = settings['type']
+def create_instance(settings, if_not_defined=None):
+    if 'type' not in settings and if_not_defined is not None:
+        # create dummy object denoted by if_not_defined
+        object_type = if_not_defined
+    else:
+        # create instance of given class based on settings dict
+        object_type = settings['type']
     object_module = __import__('coconut.coupling_components.' + object_type, fromlist=[object_type])
     return object_module.create(settings)
 
@@ -64,6 +68,7 @@ class LayoutStyles:
               'underline': '\033[4m',
               'inverse': '\033[7m',
               'negative': '\033[97m',
+              'info': '\033[94m',
               'warning': '\033[91m',
               'fail': '\033[41m',
               'grey': '\033[90m',
@@ -86,7 +91,8 @@ class LayoutStyles:
     def check(self, layout):
         if layout not in self.styles:
             raise ValueError(f'Layout style "{layout}" is not implemented, correct layout styles are: '
-                             'header, blue, green, red, warning, fail, bold, underline and plain.')
+                             'plain, bold, underline, inverse, negative, info, warning, fail, grey, red, green, yellow,'
+                             'blue, magenta, cyan, white and black.')
 
 
 layout_style = LayoutStyles()
@@ -94,8 +100,8 @@ layout_style = LayoutStyles()
 
 # print_info: printing with color
 #  @param args          The arguments to be printed
-#  @param layout        The layout to be used: plain, bold, underline, inverse, negative, warning, fail, grey, red,
-#                       green, yellow, flue, magenta, cyan, white, black
+#  @param layout        The layout to be used: plain, bold, underline, inverse, negative, info, warning, fail, grey,
+#                       red, green, yellow, blue, magenta, cyan, white, black
 def print_info(*args, layout=None, **kwargs):
     if layout is None:
         print("".join(map(str, args)), **kwargs)
