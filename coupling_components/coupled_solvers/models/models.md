@@ -180,7 +180,7 @@ The `type` for this model is `coupled_solvers.models.dummy_model`.
 This special dummy model can be used in a coupled solver that requires a secant or surrogate model, without the model actually performing any secant or surrogate calculation. (e.g. in [CoupledSolverIQNISM](../coupled_solvers.md#iqnism))
 This model will not provide any (surrogate) Jacobian approximation nor surrogate solution if used as surrogate model.
 
-No `settings` are required.
+If the use of a dummy model is allowed, the `type` (`coupled_solvers.models.dummy_model`) can be written explicitly or omitted. No `settings` are required.
 
 ## References
 

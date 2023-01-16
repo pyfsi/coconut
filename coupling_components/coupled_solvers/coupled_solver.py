@@ -31,8 +31,9 @@ class CoupledSolver(Component):
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
 
-        self.predictor = create_instance(self.parameters['predictor'])
-        self.convergence_criterion = create_instance(self.parameters['convergence_criterion'])
+        self.predictor = create_instance(self.parameters['predictor'], 'predictors.dummy_predictor')
+        self.convergence_criterion = create_instance(self.parameters['convergence_criterion'],
+                                                     'convergence_criteria.dummy_convergence_criterion')
         self.solver_wrappers = []
         self.index_mapped = None
         self.index_other = None

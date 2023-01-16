@@ -77,3 +77,10 @@ The following parameters need to be included in the `settings` dictionary.
 |                     parameter | type | description                                                                                                                                                 |
 |------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | <nobr>`predict_change`</nobr> | dict | (optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly. |
+
+## Dummy predictor
+
+This dummy predictor can be used in the [one-way](../coupled_solvers#one-way) coupled solvers, which doesn't require a predictor.
+
+If the use of a dummy predictor is allowed, the `type` (`convergence_criteria.dummy_convergence_criterion`) can be written explicitly or omitted. No `settings` are required.
+Note that the key `predictor` is still required.
