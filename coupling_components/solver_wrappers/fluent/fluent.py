@@ -321,7 +321,7 @@ class SolverWrapperFluent(Component):
             self.write_move_zone()
 
         # write interface data
-        #self.write_node_positions()  #Commented om enkel move_zone te testen
+        self.write_node_positions()  #Commented om enkel move_zone te testen
 
         # copy input data for debugging
         if self.debug:
@@ -487,7 +487,7 @@ class SolverWrapperFluent(Component):
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
 
             if self.rigid_body_motion_on:
-                x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep*self.delta_t)
+                x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep)
             else:
                 x = model_part.x0 + displacement[:, 0]
                 y = model_part.y0 + displacement[:, 1]
