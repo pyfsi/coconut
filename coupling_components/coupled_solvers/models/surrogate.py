@@ -3,10 +3,10 @@ from coconut import tools
 
 
 def create(parameters):
-    return Surrogate(parameters)
+    return ModelSurrogate(parameters)
 
 
-class Surrogate(Component):
+class ModelSurrogate(Component):
     provides_get_solution = provides_set_solution = True
 
     @tools.time_initialize

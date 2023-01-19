@@ -3,10 +3,10 @@ from coconut import tools
 
 
 def create(parameters):
-    return DummyModel(parameters)
+    return ModelDummy(parameters)
 
 
-class DummyModel(Component):
+class ModelDummy(Component):
     provides_get_solution = True
     provides_set_solution = False
 

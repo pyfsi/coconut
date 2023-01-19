@@ -80,3 +80,10 @@ Moreover, the `or` and `and` statements can be combined multiple times, if neede
   }
 }
 ```
+
+## Dummy convergence criterion
+
+This dummy convergence criterion can be used in the [explicit](../coupled_solvers#explicit) or [one-way](../coupled_solvers#one-way) coupled solvers, which don't require a convergence criterion.
+
+If the use of a dummy convergence criterion is allowed, the `type` (`convergence_criteria.dummy_convergence_criterion`) can be written explicitly or omitted. No `settings` are required.
+Note that the key `convergence_criterion` is still required.

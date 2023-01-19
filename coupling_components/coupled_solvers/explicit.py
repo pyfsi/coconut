@@ -1,15 +1,15 @@
 from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
+from coconut.tools import print_info
 
 
 def create(parameters):
-    return CoupledSolverRelaxation(parameters)
+    return CoupledSolverExplicit(parameters)
 
 
-class CoupledSolverRelaxation(CoupledSolver):
+class CoupledSolverExplicit(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
-
-        self.omega = self.settings['omega']
+        print_info(f'CoupledSolverExplicit is chosen: the convergence criterion is not used', layout='info')
 
     def solve_solution_step(self):
         # initial value
@@ -19,10 +19,4 @@ class CoupledSolverRelaxation(CoupledSolver):
         xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
         r = xt - self.x
         self.finalize_iteration(r)
-        # coupling iteration loop
-        while not self.convergence_criterion.is_satisfied():
-            self.x += self.omega * r
-            self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
-            xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
-            r = xt - self.x
-            self.finalize_iteration(r)
+        self.x = xt

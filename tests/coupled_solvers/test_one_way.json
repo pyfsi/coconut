@@ -1,0 +1,5 @@
+{
+  "type": "coupled_solvers.one_way",
+  "settings": {
+  }
+}

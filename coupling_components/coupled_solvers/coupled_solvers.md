@@ -2,9 +2,9 @@
 
 This documentation describes the different types of coupled solvers which are available. A coupled solver refers to a coupling algorithm used to couple two solvers, typically a flow and a structure solver.
 Some of these coupled solvers make use of one or more [models](models/models.md). An odd one out is `test_single_solver` which allows to test only one solver by coupling it to a dummy solver. 
-All coupled solvers inherit from the class `CoupledSolverGaussSeidel`.
+All coupled solvers inherit from the class `CoupledSolver`.
 
-In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`, but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing 2 dictionaries: one for each solver wrapper. More information on these last three can be found in the [predictors](../predictors/predictors.md), [convergence criteria](../convergence_criteria/convergence_criteria.md) and the [solver wrappers](../solver_wrappers/solver_wrappers.md) documentation, respectively.
+In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`, but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing dictionaries (one for each solver wrapper, typically two). More information on these last three can be found in the [predictors](../predictors/predictors.md), [convergence criteria](../convergence_criteria/convergence_criteria.md) and the [solver wrappers](../solver_wrappers/solver_wrappers.md) documentation, respectively.
 
 In the following subsections, explanatory schematics will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\widetilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\widetilde{x}$. Typically, these solvers are a flow and structure solver, respectively.
 Note that the column vectors such as $x$ and $y$ typically contain different components of the same variables or even different variables.
@@ -12,19 +12,9 @@ Often, the vectors $x$ and $\widetilde{x}$ contain the three components of displ
 Further, the superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.
 Finally, the difference between the output $\widetilde{x}^k$ and input $x^k$ in the same iteration is defined as the residual $r^k=\widetilde{x}^k-x^k$, which is used to monitor the convergence of the calculation.
 
-## Gauss-Seidel
+## The class CoupledSolver
 
-The `type` for this coupled solver is `coupled_solvers.gauss_seidel`.
-
-Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solvers: the output of one solver is given to the other one without adjustment.
-
-The following figure shows the basic methodology.
-
-![gauss_seidel](images/iteration_gauss_seidel.png "Gauss-Seidel iterations")
-
-Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
-A considerable convergence stabilization and acceleration is obtained by modifying the input to one or both of the solvers using derivative information, as will be shown further.
-
+This class is the base class for all coupled solvers.
 The following parameters need to be included in the `settings` dictionary. Here they are listed in alphabetical order.
 
 |                      parameter | type  | description                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -41,11 +31,25 @@ The following parameters need to be included in the `settings` dictionary. Here 
 `timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
 
-**These parameters should also be specified for the coupled solvers inheriting from `CoupledSolverGaussSeidel`.**
+**These parameters should also be specified for the coupled solvers inheriting from `CoupledSolver`.**
+
+## Gauss-Seidel
+
+The `type` for this coupled solver is `coupled_solvers.gauss_seidel`.
+
+Gauss-Seidel or fixed-point iterations are the simplest way of coupling two solvers: the output of one solver is given to the other one without adjustment.
+
+The following figure shows the basic methodology.
+
+![gauss_seidel](images/iteration_gauss_seidel.png "Gauss-Seidel iterations")
+
+Gauss-Seidel iterations are very simple, but unstable for cases with incompressible flow and high added-mass.
+A considerable convergence stabilization and acceleration is obtained by modifying the input to one or both of the solvers using derivative information, as will be shown further.
+
+No additional settings are required, besides those for the [class `CoupledSolver`](#the-class-coupledsolver).
 
 ## Relaxation
 
-This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.relaxation`.
 
 Gauss-Seidel iterations are very simple, but are unstable for cases with incompressible flow and high added-mass.
@@ -65,7 +69,7 @@ This method is again quite simple, but able to stabilize some cases that fail wi
 One can see that a lower $\omega$ corresponds to a larger portion of the previous solution to be used. This increases stability, but decreases convergence speed.
 For more challenging problems, with incompressible flow and high added-mass, this approach will result in a very slow convergence, if it converges at all.
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameter needs to be included in the `settings` dictionary.
+Beside the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver), the following parameter needs to be included in the `settings` dictionary.
 
 | parameter | type  | description        |
 |----------:|:-----:|--------------------|
@@ -73,7 +77,6 @@ Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-
 
 ## Aitken
 
-This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.aitken`.
 
 Gauss-Seidel iterations are very simple, but are unstable for many cases.
@@ -104,7 +107,7 @@ The relaxation factor in the first time step is equal to $\omega^{max}$.
 
 This method improves convergence speed drastically compared to Gauss-Seidel iterations, but even faster convergence can be obtained using quasi-Newton methods, which can be interpreted as using different relaxation factors for different Fourier modes of the output of the second solver.
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameter needs to be included in the `settings` dictionary.
+Beside the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver), the following parameter needs to be included in the `settings` dictionary.
 
 |   parameter | type  | description                |
 |------------:|:-----:|----------------------------|
@@ -112,7 +115,6 @@ Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-
 
 ## IQNI
 
-This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.iqni`.
 
 The abbreviation IQNI refers to _interface quasi-Newton with inverse Jacobian_. In this type of coupling algorithm, the combination of the two solvers is seen as one system.
@@ -163,7 +165,7 @@ A symbolic schematic is given in the following figure.
 For more information with respect to the approximation of the Jacobian, refer to the [models documentation](models/models.md).
 More information about residual operator methods can be found in [[1](#1)].
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 | parameter | type  | description        |
 |----------:|:-----:|--------------------|
@@ -172,7 +174,6 @@ Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-
 
 ## IBQN
 
-This coupled solver inherits from the class `CoupledSolverGaussSeidel`.
 The `type` for this coupled solver is `coupled_solvers.ibqn`.
 
 The abbreviation IBQN refers to _interface block quasi-Newton_.
@@ -232,7 +233,7 @@ A symbolic schematic is given in the following figure.
 The actual approximation of the Jacobian occurs with the same [models](models/models.md) as before.
 More information about block methods can be found in [[1](#1)].
 
-Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Beside the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 |                               parameter | type  | description                                                 |
 |----------------------------------------:|:-----:|-------------------------------------------------------------|
@@ -244,7 +245,6 @@ Beside the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-
 
 ## IQNISM
 
-This coupled solver inherits from the class `CoupledSolverIQNISM`.
 The `type` for this coupled solver is `coupled_solvers.iqnism`.
 This coupled solver is linked to the IQN-ILSM framework [[2](#2)].
 
@@ -277,7 +277,7 @@ Note that, in this way, the secant Jacobian has preference over the surrogate Ja
 
 If the coupled solver in the surrogate model uses IQNISM as well, a nested surrogate construction is created, where for the part of residual not treated by the first surrogate Jacobian the second surrogate is used.
 
-Next to the parameters required in the [class `CoupledSolverGaussSeidel`](#gauss-seidel), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
+Next to the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
 |                            parameter | type  | description                                                                                                                                                                              |
 |-------------------------------------:|:-----:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -360,9 +360,36 @@ The settings structure for the different surrogate models discussed in this work
 	}
 	```
 
+
+## Explicit
+
+The `type` for this coupled solver is `coupled_solvers.explicit`.
+
+In contrast to the coupled solvers presented above, which implement strongly coupled or implicit techniques,
+the explicit coupled solver does not iterate between the solvers within a time step.
+Instead, the solvers are only evaluated once per time step.
+Therefore, equilibrium between fluid and structure is not exactly satisfied. 
+This technique is suitable for problems with low added mass, such as aeroelastic problems.
+For problems with high added mass, they will fail due to stability issues.
+
+No additional parameters are required besides the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver).
+For this coupled solver, the `convergence_criteria` are ignored.
+The key `convergence_criteria` is still required, but it may remain empty.
+
+## One-way
+
+The `type` for this coupled solver is `coupled_solvers.one_way`.
+
+In the one-way coupled solver the fluid forces are coupled to the structural model without feedback of the structural deformation to the fluid solver.
+This coupled solver can be used when the structural deformation due to the fluid forces may be neglected.
+
+No additional parameters are required besides the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver).
+For this coupled solver, the `convergence_criteria` and `preditors` are ignored.
+The keys `convergence_criteria` and `predictors` are still required, but they may remain empty.
+
 ## Test single solver
 
-The solver `test_single_solver` can be used to test new cases and solver settings. The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy. This test environment inherits from the class `CoupledSolverGaussSeidel`. The `type` for this coupled solver is `coupled_solvers.test_single_solver`.
+The solver `test_single_solver` can be used to test new cases and solver settings. The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy. This test environment inherits from the class `CoupledSolver`. The `type` for this coupled solver is `coupled_solvers.test_single_solver`.
 
 ### Dummy solver
 
@@ -394,6 +421,7 @@ During run time, the norm of $x$ and $y$ are printed. A residual does not exist 
 The test environment `test_single_solver` tests only the `solver_wrapper` itself, no mapping is included.
 
 ## Save results
+
 In each coupled solver, a positive non-zero value can be assigned to the `save_results` parameter, in order to save some results into a [pickle](https://docs.python.org/3/library/pickle.html) file. The key `case_name` dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by `save_results`, but contains information for all time steps.
 In other words, if the parameter is non-zero, it only controls the writing frequency and not the content of the file. If `save_results` is zero, no result are kept and no file is written.
 For a non-zero value of `save_restart`, a save for [restart purposes](#saving-restart-files) also triggers the saving of the results file.
@@ -408,7 +436,7 @@ The pickle file may be used by the postprocessing files included with the exampl
 |                  `iterations` |    list     | Contains the performed number of coupling iterations for every time step.                                                                                                                                                                                                                                                     |
 |                    `residual` |    list     | Nested list, which contains for each time step a list, on its turn containing residuals, one for every iteration of that time step.                                                                                                                                                                                           |
 |                    `run_time` |    float    | Equals the total computation time, i.e. the time between initialization and finalization (excluding initialization).                                                                                                                                                                                                          |
-|             `time_allocation` |    dict     | Dictionary containing a detailed overview of the time spent in the different components for the current simulation. Upon restart, the time allocation of previous runs are stored in sequence under the key `restart`.                                                                                                        |                                                                                                                                                                                                       
+|             `time_allocation` |    dict     | Dictionary containing a detailed overview of the time spent in the different components for the current simulation. Upon restart, the time allocation of previous runs are stored in sequence under the key `previous_calculations`.                                                                                          |                                                                                                                                                                                                       
 |                     `delta_t` |    float    | Equals the used time step size.                                                                                                                                                                                                                                                                                               |
 | <nobr>`timestep_start`</nobr> |     int     | Equals the used start time step.                                                                                                                                                                                                                                                                                              |
 |                   `case_name` |     str     | Name of the case.                                                                                                                                                                                                                                                                                                             |
@@ -420,6 +448,7 @@ Finally, there is also a debug option, which can be activated by setting the boo
 This option is only meant for debugging a new coupling algorithm. It should not be used in combination with restart.
 
 ## Restart
+
 The restart functionality is very useful to continue a calculation which has been stopped, either intentionally or unintentionally.
 The goal is to continue as if the code had never been interrupted.
 
@@ -443,6 +472,7 @@ Conversely, they are not required to initialize the interfaces with the correct 
 Only when both solver wrappers allow restart, is it possible to restart a calculation!
 
 ### Saving restart files
+
 During a calculation it is possible to save restart pickle files.
 As described above the pickle file for restart has a name (_`<case_name>_restart_ts<time_step>.pickle`_), based on the setting `case_name`.
 
@@ -453,6 +483,7 @@ Therefore, the `save_restart` parameter is transferred automatically to the solv
 If `save_results` is non-zero, a save of restart information also triggers the saving of the [results pickle file](#save-results), to avoid discontinuity of this file.
 
 ### Performing restart
+
 To restart a case, `timestep_start` has to be a positive integer above zero.
 The first time step that will be calculated is `timestep_start` plus one.
 The methodology described above does not allow to change any settings of the predictor or model(s), nor the type of coupled solver.

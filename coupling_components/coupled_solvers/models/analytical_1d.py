@@ -5,10 +5,10 @@ import numpy as np
 
 
 def create(parameters):
-    return Analytical1D(parameters)
+    return ModelAnalytical1D(parameters)
 
 
-class Analytical1D(Component):
+class ModelAnalytical1D(Component):
     provides_get_solution = provides_set_solution = False
 
     def __init__(self, parameters):
