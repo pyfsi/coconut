@@ -545,6 +545,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#dummy-predictor" class="md-nav__link">
+    Dummy predictor
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1273,6 +1280,10 @@ Moreover, this <code>surrogate</code> model must provide a surrogate solution, w
 </tr>
 </tbody>
 </table>
+<h2 id="dummy-predictor">Dummy predictor</h2>
+<p>This dummy predictor can be used in the <a href="../coupled_solvers#one-way">one-way</a> coupled solvers, which doesn't require a predictor.</p>
+<p>If the use of a dummy predictor is allowed, the <code>type</code> (<code>convergence_criteria.dummy_convergence_criterion</code>) can be written explicitly or omitted. No <code>settings</code> are required.
+Note that the key <code>predictor</code> is still required.</p>
 
               
             </article>

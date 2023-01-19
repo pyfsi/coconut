@@ -1485,7 +1485,7 @@ Typically, however, this is not advised because the Jacobian doesn't change that
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.dummy_model</code>.</p>
 <p>This special dummy model can be used in a coupled solver that requires a secant or surrogate model, without the model actually performing any secant or surrogate calculation. (e.g. in <a href="https://pyfsi.github.io/coconut/coupled_solvers#iqnism">CoupledSolverIQNISM</a>)
 This model will not provide any (surrogate) Jacobian approximation nor surrogate solution if used as surrogate model.</p>
-<p>No <code>settings</code> are required.</p>
+<p>If the use of a dummy model is allowed, the <code>type</code> (<code>coupled_solvers.models.dummy_model</code>) can be written explicitly or omitted. No <code>settings</code> are required.</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
 <a href="http://hdl.handle.net/1854/LU-533365">Degroote J., Bathe K.-J. and Vierendeels J., "Performance of a new partitioned procedure versus a monolithic procedure in fluid-structure interaction", Computers &amp; Structures, vol. 87, no. 11–12, pp. 793-801, 2009.</a></p>

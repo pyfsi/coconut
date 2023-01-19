@@ -1294,7 +1294,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <tr>
 <td align="right"><code>cores</code></td>
 <td align="center">int</td>
-<td>Total number of processor cores to use when running Fluent. When its value is negative or bigger than the maximum number of available cores, it will be automatically replaced by the maximum numver of available cores.</td>
+<td>Total number of processor cores to use when running Fluent. When its value is negative or bigger than the maximum number of available cores, it will be automatically replaced by the maximum number of available cores.</td>
 </tr>
 <tr>
 <td align="right"><code>debug</code></td>
@@ -1426,9 +1426,15 @@ After a restart, the partitioning can be different and hence the mesh deformatio
 <h3 id="v2020r1-2010">v2020R1 (20.1.0)</h3>
 <p>No changes.</p>
 <h3 id="v2021r1-2110">v2021R1 (21.1.0)</h3>
-<p>No changes.</p>
+<p>This version fails for the tested multiphase problems.
+The saving of "cell residuals" for postprocessing with the following command <code>solve set expert y y n y</code> results in the following error:
+<code>Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3</code>.
+This issue is solved in v2022R1.</p>
 <h3 id="v2021r2-2120">v2021R2 (21.2.0)</h3>
-<p>No changes.</p>
+<p>This version fails for the tested multiphase problems.
+The saving of "cell residuals" for postprocessing with the following command <code>solve set expert y y n y</code> results in the following error:
+<code>Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3</code>.
+This issue is solved in v2022R1.</p>
 <h3 id="v2022r1-2210">v2022R1 (22.1.0)</h3>
 <p>No changes.</p>
 

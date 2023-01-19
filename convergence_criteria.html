@@ -455,6 +455,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#dummy-convergence-criterion" class="md-nav__link">
+    Dummy convergence criterion
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1291,6 +1298,10 @@ Moreover, the <code>or</code> and <code>and</code> statements can be combined mu
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<h2 id="dummy-convergence-criterion">Dummy convergence criterion</h2>
+<p>This dummy convergence criterion can be used in the <a href="../coupled_solvers#explicit">explicit</a> or <a href="../coupled_solvers#one-way">one-way</a> coupled solvers, which don't require a convergence criterion.</p>
+<p>If the use of a dummy convergence criterion is allowed, the <code>type</code> (<code>convergence_criteria.dummy_convergence_criterion</code>) can be written explicitly or omitted. No <code>settings</code> are required.
+Note that the key <code>convergence_criterion</code> is still required.</p>
 
               
             </article>

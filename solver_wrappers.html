@@ -1163,23 +1163,37 @@
                 
 
 <h1 id="solver-wrappers">Solver wrappers</h1>
-<p>The goal of solver wrappers is to provide communication with the solvers. This  means that a solver wrapper must implement a way to communicate input to the solver (at the fluid-structure interface), run the solver with the provided input and obtain the solution from the solver (at the fluid-structure interface).</p>
-<p><strong>Important</strong>: To avoid conflicts, each solver is run in its own environment. These environments are established on runtime, but the actions required to do so can differ between systems. Therefore it is necessary to first check (and if needed adapt) the file <em><code>coconut/solver_modules.py</code></em> after installing or updating CoCoNuT, as described in <a href="https://pyfsi.github.io/coconut/#checking-the-solver-modules">the front documentation page</a>.</p>
-<p>As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from the <code>Component</code> class and must all implement the following methods: <code>initialize</code>, <code>initialize_solution_step</code>, <code>solve_solution_step</code>, <code>finalize_solution_step</code>, <code>finalize</code>, <code>get_interface_input</code> and <code>get_interface_output</code>.</p>
-<p>Upon instantiation of the solver wrapper object, the solver wrapper has to create a <code>Model</code> containing one or more <code>ModelParts</code> which correspond to (a part of) the fluid-structure interface. The interface coordinates at time step 0 should be stored in the <code>ModelPart</code>, even for a simulation that is restarted from a later time step, in order to have consistent <a href="https://pyfsi.github.io/coconut/mappers">mapping</a> over restarts.</p>
-<p>The <code>solve_solution_step</code> method is called in each coupling iteration by the coupled solver, which provides input data stored in an <code>Interface</code> object. The solver wrapper extracts the data and supplies it to the actual solver, starts the calculation and reads the output data when the solver has finished. The solver wrapper then returns this data to the coupled solver as an <code>Interface</code> object.</p>
+<p>The goal of solver wrappers is to provide communication with the solvers. This means that a solver wrapper must
+implement a way to communicate input to the solver (at the fluid-structure interface), run the solver with the provided
+input and obtain the solution from the solver (at the fluid-structure interface).</p>
+<p><strong>Important</strong>: To avoid conflicts, each solver is run in its own environment. These environments are established on
+runtime, but the actions required to do so can differ between systems. Therefore it is necessary to first check (and if
+needed adapt) the file <em><code>coconut/solver_modules.py</code></em> after installing or updating CoCoNuT, as described
+in <a href="https://pyfsi.github.io/coconut/#checking-the-solver-modules">the front documentation page</a>.</p>
+<p>As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from
+the <code>SolverWrapper</code> class, which inherits from the <code>Component</code> class, and must all implement the following
+methods: <code>initialize</code>, <code>initialize_solution_step</code>, <code>solve_solution_step</code>, <code>finalize_solution_step</code>, <code>finalize</code>.</p>
+<p>Upon instantiation of the solver wrapper object, the solver wrapper has to create a <code>Model</code> containing one or
+more <code>ModelParts</code> which correspond to (a part of) the fluid-structure interface. The interface coordinates at time step
+0 should be stored in the <code>ModelPart</code>, even for a simulation that is restarted from a later time step, in order to have
+consistent <a href="https://pyfsi.github.io/coconut/mappers">mapping</a> over restarts.</p>
+<p>The <code>solve_solution_step</code> method is called in each coupling iteration by the coupled solver, which provides input data
+stored in an <code>Interface</code> object. The solver wrapper extracts the data and supplies it to the actual solver, starts the
+calculation and reads the output data when the solver has finished. The solver wrapper then returns this data to the
+coupled solver as an <code>Interface</code> object.</p>
 <h2 id="available-solver-wrappers">Available solver wrappers</h2>
 <p>There are currently two solver wrappers for computational fluid dynamics (CFD) packages:</p>
 <ul>
-<li><a href="https://pyfsi.github.io/coconut/fluent">ANSYS Fluent</a> (2019R1, 2019R2, 2019R3, 2020R1, 2021R1, 2021R2)</li>
+<li><a href="https://pyfsi.github.io/coconut/fluent">ANSYS Fluent</a> (2019R1, 2019R2, 2019R3, 2020R1, 2021R1, 2021R2, 2022R1)</li>
 <li><a href="https://pyfsi.github.io/coconut/openfoam">OpenFOAM</a> (4.1, 8)</li>
 </ul>
 <p>There are currently also two solver wrappers for computational structural mechanics (CSM) packages :</p>
 <ul>
 <li><a href="https://pyfsi.github.io/coconut/abaqus">Abaqus</a> (6.14, 2021, 2022)</li>
-<li><a href="https://pyfsi.github.io/coconut/kratos_structure">Kratos Multiphysics</a> (6.0, 7.0)</li>
+<li><a href="https://pyfsi.github.io/coconut/kratos_structure">Kratos Multiphysics</a> (6.0, 7.0, 9.1)</li>
 </ul>
-<p>CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms and implementations. These are:</p>
+<p>CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms
+and implementations. These are:</p>
 <ul>
 <li><a href="https://pyfsi.github.io/coconut/python#tube-flow-solver">Tube flow solver</a></li>
 <li><a href="https://pyfsi.github.io/coconut/python#tube-structure-solver">Tube structure solver</a></li>
