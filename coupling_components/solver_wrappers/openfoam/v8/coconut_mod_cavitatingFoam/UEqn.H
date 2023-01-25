@@ -12,4 +12,4 @@
         solve(UEqn == -fvc::grad(p));
     }
 
-    //Info<< "max(U) " << max(mag(U)).value() << endl;
+    Info<< "max(U) " << max(mag(U)).value() << endl;

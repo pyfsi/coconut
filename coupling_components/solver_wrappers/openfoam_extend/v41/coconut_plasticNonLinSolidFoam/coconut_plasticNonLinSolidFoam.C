@@ -173,8 +173,6 @@ int main(int argc, char *argv[])
             pointField &oldPoints = const_cast<pointField&>(oldPoints_);
             mesh.movePoints(oldPoints);
 
-//            Info<< "mesh_points_before" << mesh.points() << nl << endl;
-
 //            curS == curS.oldTime();
 //            DU == DU.oldTime();
 //            cauchyTraction == cauchyTraction.oldTime();
@@ -397,24 +395,6 @@ int main(int argc, char *argv[])
             {
                 #include "TEqn.H"
             }
-
-            // Mesh update
-            // Note: after remeshing, geometric surface field may be incorrect on
-            // the new faces so we will re-created all surface fields here
-            //mesh.update();
-
-            // Let the mechanicalLaw know that we have reached the end of the
-            // time-step so it may increment its accumulated values
-            // Note: we call this after mesh.update() in case it writes a field to
-            // disk
-//            mechanical.updateYieldStress();
-//
-//            // Update surface fields after a topoChange
-//            mu = mechanical.mu();
-//            lambda = mechanical.lambda();
-//            twoMuLambda = 2.0 * mu + lambda;
-//            twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
-//            RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
 
             remove("continue.coco");
             //Return the coupling interface output

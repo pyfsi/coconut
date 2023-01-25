@@ -191,11 +191,16 @@ volScalarField Cp
     (alphal*rhol*Cpl + alphav*psiv*p*Cpv)/rho
 );
 
-//autoPtr<shearThinningModel> shearThinningModel = shearThinningModel::New
-//    (
-//        "shearThinningModel",
-//        transportProperties,
-//        U,
-//        phi,
-//        mu
-//    );
+volScalarField strainRate
+(
+    IOobject
+    (
+        "strainRate",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    sqrt(2.0f)*mag(symm(fvc::grad(U)))
+
+);

@@ -491,25 +491,25 @@ class SolverWrapperOpenFOAM(Component):
 
         # copy input data for debugging
         if self.debug:
-            for boundary in self.boundary_names:
-                mp_filepath = os.path.join(self.working_directory, 'postProcessing')
-                if not os.path.exists(mp_filepath):
-                    os.makedirs(mp_filepath)
-                path_from_Velocity = os.path.join(self.working_directory, 'constant/boundaryData', boundary,self.cur_timestamp, 'U')
-                path_to_Velocity = os.path.join(self.working_directory,'constant/boundaryData', boundary,self.cur_timestamp, f'U_{self.iteration}')
-                shutil.copy(path_from_Velocity, path_to_Velocity)
-
-                node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory,
-                                                                  time_folder='0',
-                                                                  boundary_name=boundary)
-                with open(os.path.join(mp_filepath, 'mp_x0_points'), 'w') as f:
-                    f.write('')
-                    for point in range(node_coords[:,0].size):
-                        f.write(f'{node_coords[point,0]}\n')
-
-
-                mp_name = f'{boundary}_input'
-                displacement_debug = self.interface_input.get_variable_data(mp_name, 'displacement')
+            # for boundary in self.boundary_names:
+            #     mp_filepath = os.path.join(self.working_directory, 'postProcessing')
+            #     if not os.path.exists(mp_filepath):
+            #         os.makedirs(mp_filepath)
+            #     path_from_Velocity = os.path.join(self.working_directory, 'constant/boundaryData', boundary,self.cur_timestamp, 'U')
+            #     path_to_Velocity = os.path.join(self.working_directory,'constant/boundaryData', boundary,self.cur_timestamp, f'U_{self.iteration}')
+            #     shutil.copy(path_from_Velocity, path_to_Velocity)
+            #
+            #     node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory,
+            #                                                       time_folder='0',
+            #                                                       boundary_name=boundary)
+            #     with open(os.path.join(mp_filepath, 'mp_x0_points'), 'w') as f:
+            #         f.write('')
+            #         for point in range(node_coords[:,0].size):
+            #             f.write(f'{node_coords[point,0]}\n')
+            #
+            #
+            #     mp_name = f'{boundary}_input'
+            #     displacement_debug = self.interface_input.get_variable_data(mp_name, 'displacement')
 
             if self.cores > 1:
                 for i in range(0, self.cores):
@@ -627,6 +627,7 @@ class SolverWrapperOpenFOAM(Component):
             # specify location of pressure and traction
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
+            x0, y0, z0 = mp.x0, mp.y0, mp.z0
             nfaces = mp.size
             post_process_time_folder = os.path.join(self.working_directory,
                                                     f'postProcessing/coconut_{boundary}/surface', self.cur_timestamp)
@@ -652,6 +653,8 @@ class SolverWrapperOpenFOAM(Component):
 
             self.interface_output.set_variable_data(mp_name, 'traction', -wall_shear_stress * self.density_for_traction)
             self.interface_output.set_variable_data(mp_name, 'pressure', pressure * self.density_for_pressure)
+            # plt.plot(x0,pressure)
+            # plt.show()
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
@@ -677,7 +680,9 @@ class SolverWrapperOpenFOAM(Component):
             for boundary in self.boundary_names:
                 mp_name = f'{boundary}_input'
                 displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-
+                mp = self.model.get_model_part(mp_name)
+                x0, y0, z0 = mp.x0, mp.y0, mp.z0
+                nfaces = mp.size
 
                 if self.settings['timeVaryingMappedFixedValue']:
                     if self.timestep <=10:
@@ -710,6 +715,9 @@ class SolverWrapperOpenFOAM(Component):
                 boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
                 boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
                 pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+
+                # plt.plot(x0,displacement[:,1])
+                # plt.show()
 
             with open(pointdisp_filename, 'w') as f:
                 f.write(pointdisp_string)

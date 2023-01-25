@@ -3,6 +3,7 @@ from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
+from scipy.interpolate import interp1d
 from scipy import interpolate
 
 from subprocess import check_call
@@ -151,26 +152,24 @@ class SolverWrapperOpenFOAMExtend(Component):
             mp = self.model.get_model_part(mp_name)
             x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
-            #To obtain a better distribution of the pressure, when the wire leaves the die
-            x0_ma_arr = np.less_equal(x0, 0.0007)
-            x0 = x0[x0_ma_arr,]
-            y0 = y0[x0_ma_arr,]
+            self.x0 = x0
+            self.size_BC = self.x0.size
 
-            x = np.zeros( 2 * x0.size)
-            y = np.zeros( 2 * x0.size)
-            z = np.zeros( 2 * x0.size)
+            x = np.zeros( 2 * self.x0.size)
+            y = np.zeros( 2 * self.x0.size)
+            z = np.zeros( 2 * self.x0.size)
 
             j = 0
 
             for i in range(len(x)):
-                if i < x0.size:
-                    x[j] = x0[i]
+                if i < self.x0.size:
+                    x[j] = self.x0[i]
                     y[j] = y0[i]*np.cos(1.25*np.pi/180)
                     z[j] = y0[i] * - np.sin(1.25 * np.pi / 180)
                 else:
-                    x[j]= x0[i -x0.size]
-                    y[j] = y0[i - x0.size] * np.cos(1.25 * np.pi / 180)
-                    z[j] = y0[i - x0.size] * np.sin(1.25 * np.pi / 180)
+                    x[j]= self.x0[i -self.x0.size]
+                    y[j] = y0[i - self.x0.size] * np.cos(1.25 * np.pi / 180)
+                    z[j] = y0[i - self.x0.size] * np.sin(1.25 * np.pi / 180)
                 j+=1
 
             boundary_data_path = os.path.join(self.working_directory,'constant/boundaryData')
@@ -291,7 +290,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         # if self.settings['parallel']:
         #     if self.start_time == 0:
         #         check_call(f'decomposePar -force -time {self.start_time} &> log.decomposePar',
-        #                    cwd=self.working_directory,self.cur_timestamp
+        #                    cwd=self.working_directory,self.cur_timestamp,
         #                    shell=True, env=self.env)
         #
         #     for boundary in self.boundary_names:
@@ -645,28 +644,54 @@ class SolverWrapperOpenFOAMExtend(Component):
        """
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
+
+            mp = self.model.get_model_part(mp_name)
+            x0, y0, z0 = mp.x0, mp.y0, mp.z0
+
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
+
+            pressure = list(np.array(pressure).reshape(-1,))
+            x = np.linspace(1,len(pressure),len(pressure))
+            # print(x)
+            f =interp1d(x,pressure)
+            # plt.scatter(x,pressure)
+
+            xnew = np.linspace(1,len(pressure),self.size_BC)
+            pressure = f(xnew)
+            # plt.plot(self.x0,pressure)
+            # plt.show()
+            # print("pressure")
+            # print(pressure)
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
+            g = interp1d(x,traction[:,0])
+            h = interp1d(x,traction[:,1])
+            k = interp1d(x,traction[:,2])
+            traction_new = np.zeros([self.size_BC,3])
+            traction_new[:,0] = g(xnew)
+            traction_new[:,1] = h(xnew)
+            traction_new[:,2] = k(xnew)
+
             data_folder = os.path.join(self.working_directory,'constant/boundaryData', boundary, self.cur_timestamp)
             os.makedirs(data_folder, exist_ok = True)
 
             pressure_in = np.zeros((2 * pressure.size))
-            traction_in = np.zeros((2 * traction.shape[0],3))
-
+            traction_in = np.zeros((2 * traction_new.shape[0],3))
+            # print("pressure_in")
             k = 0
             for i in range(len(pressure_in)):
                 if i < pressure.size:
                     pressure_in[k] = pressure[i]
+                    # print(pressure[i])
                 else:
                     pressure_in[k] = pressure[i - pressure.size]
                 k += 1
 
             l = 0
             for i in range(traction_in.shape[0]):
-                if i < traction.shape[0]:
-                    traction_in[l] = traction[i]
+                if i < traction_new.shape[0]:
+                    traction_in[l] = traction_new[i]
                 else:
-                    traction_in[l] = traction[i - traction.shape[0]]
+                    traction_in[l] = traction_new[i - traction_new.shape[0]]
                 l += 1
 
             with open(os.path.join(data_folder,'pressure'),'w') as f:
