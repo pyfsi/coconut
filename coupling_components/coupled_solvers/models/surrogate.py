@@ -3,10 +3,10 @@ from coconut import tools
 
 
 def create(parameters):
-    return Surrogate(parameters)
+    return ModelSurrogate(parameters)
 
 
-class Surrogate(Component):
+class ModelSurrogate(Component):
     provides_get_solution = provides_set_solution = True
 
     @tools.time_initialize
@@ -27,7 +27,8 @@ class Surrogate(Component):
         self.solver_level = None
 
         # time
-        self.init_time = self.init_time
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
 
     @tools.time_initialize

@@ -1,11 +1,11 @@
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 
 def create(parameters):
     return CoupledSolverRelaxation(parameters)
 
 
-class CoupledSolverRelaxation(CoupledSolverGaussSeidel):
+class CoupledSolverRelaxation(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 

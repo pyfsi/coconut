@@ -3,10 +3,10 @@ from coconut import tools
 
 
 def create(parameters):
-    return DummyModel(parameters)
+    return ModelDummy(parameters)
 
 
-class DummyModel(Component):
+class ModelDummy(Component):
     provides_get_solution = True
     provides_set_solution = False
 
@@ -17,7 +17,8 @@ class DummyModel(Component):
         self.solver_level = None
 
         # time
-        self.init_time = self.init_time
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
 
     @tools.time_solve_solution_step

@@ -1,5 +1,5 @@
 from coconut import tools
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 import numpy as np
 import time
@@ -9,12 +9,9 @@ def create(parameters):
     return CoupledSolverIQNISM(parameters)
 
 
-class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
+class CoupledSolverIQNISM(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
-
-        if not self.settings['surrogate']:  # empty dict
-            self.settings['surrogate']['type'] = 'coupled_solvers.models.dummy_model'
 
         # add timestep_start, delta_t, save_restart and case_name to surrogate settings
         if 'settings' not in self.settings['surrogate']:
@@ -28,7 +25,7 @@ class CoupledSolverIQNISM(CoupledSolverGaussSeidel):
         self.model = tools.create_instance(self.settings['model'])
         self.surrogate_mapped = (self.settings['surrogate']['type'] == 'coupled_solvers.models.mapped')
         self.surrogate_dummy = (self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
-        self.surrogate = tools.create_instance(self.settings['surrogate'])
+        self.surrogate = tools.create_instance(self.settings['surrogate'], 'models.dummy_model')
         self.omega = self.settings.get('omega', 1)  # relaxation factor
         self.surrogate_modes = self.settings.get('surrogate_modes')  # number of surrogates modes to use
         self.surrogate_synchronize = self.settings.get('surrogate_synchronize', True)  # synchronize surrogate
