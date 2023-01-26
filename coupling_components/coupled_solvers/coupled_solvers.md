@@ -265,7 +265,7 @@ The key of the surrogate model is `surrogate`, the key of the secant model is si
 Both of them are required. However, a dummy model can be used to disable one of them.
 It is not recommended to disable the secant model (key `model`), as this model provides a Jacobian which is based on the actual problem.
 
-The `surrogate` model solves a surrogate coupling problem at the start of every time step. The solution of this surrogate problem can be used as prediction (see [surrogate predictor](../../predictors/predictors.md#surrogate)) and its Jacobian can be used here.
+The `surrogate` model solves a surrogate coupling problem at the start of every time step. The solution of this surrogate problem can be used as prediction (see [surrogate predictor](../predictors/predictors.md#surrogate)) and its Jacobian can be used here.
 More information with respect to this type of model can be found in the [models documentation](models/models.md).
 If only the solution is to be used, the parameter `surrogate_modes` has to be set to `0`. This parameters denotes the number of modes from the surrogate Jacobian that should be used (starting from the first determined mode(s)).
 Whether the surrogate solution is used for prediction, is determined by the `predictor` settings of the coupled solver. If the surrogate model does not provide a surrogate solution (only a surrogate Jacobian), surogate prediction is not possible.
@@ -452,10 +452,18 @@ This option is only meant for debugging a new coupling algorithm. It should not 
 The restart functionality is very useful to continue a calculation which has been stopped, either intentionally or unintentionally.
 The goal is to continue as if the code had never been interrupted.
 
-In order to restart from time step $n$, the coupled solver saves the predictor and possibly one or more models in the state at the end of time step $n$ in a pickle file.
+In order to restart from time step $n$, the coupled solver instructs the predictor and possibly one or more models to save the necessary data in the state at the end of time step $n$ in a pickle file.
 By saving the predictor, the initial guess at the start of the first time step(s) will be the same, as the predictor typically extrapolates the solution from the previous time step(s) in some way.
 The model(s) are saved such that the behavior of the coupling algorithm is the same.
-This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse (q>0).
+This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse ($q>0$).
+
+Besides restarting the exact same simulation, it could be useful to change the settings form the coupled solver or occasional model(s) when restarting.
+This is possible, refer to the [models](models/models.md#restart) documentation for more details.
+Changing the type of coupled solver or occasional model is also possible, but no information will be transferred between the different types, meaning that for example all information from previous time steps is lost.
+
+For the predictors the same is true, with the exception of the extrapolators for which there is information transfer.
+See the documentation of the [predictors](../predictors/predictors.md#restart) for more details.
+
 The following table gives an overview of the coupled solvers which save one or more additional components or values.
 
 |                     type | additional components saved for restart |
@@ -463,6 +471,7 @@ The following table gives an overview of the coupled solvers which save one or m
 | `coupled_solvers.aitken` | `omega`                                 |
 |   `coupled_solvers.iqni` | `model`                                 |
 |   `coupled_solvers.ibqn` | `model_f` and `model_s`                 |
+| `coupled_solvers.iqnism` | `model` and `surrogate`                 |
 
 However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
 Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step $n$.

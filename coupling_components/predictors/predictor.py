@@ -98,6 +98,8 @@ class Predictor(Component):
 
     def restart(self, restart_data):
         self.dataprev = restart_data['dataprev']
+        while len(self.dataprev) > self.order + 1:
+            self.dataprev.pop()
 
     def check_restart_data(self, restart_data):
         pass

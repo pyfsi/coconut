@@ -4,6 +4,7 @@ from coconut.tools import create_instance
 
 import unittest
 import numpy as np
+import copy
 
 
 class TestModel(unittest.TestCase):
@@ -31,16 +32,9 @@ class TestModel(unittest.TestCase):
         cls.interface = Interface(interface_settings, model)
         cls.interface.set_variable_data(model_part_name, variable, x_array)
 
-        # parameters
-        cls.parameters = {'type': 'coupled_solvers.models.xx',
-                          'settings': {
-                              'min_significant': 1,
-                          }}
-        cls.settings = cls.parameters['settings']
+        cls.parameters = {}
 
     def setUp(self):
-        self.min_significant = self.parameters['settings']['min_significant']
-
         self.model = create_instance(self.parameters)
         self.model.size_in = self.model.size_out = self.m
         self.model.out = self.interface.copy()
@@ -52,6 +46,7 @@ class TestModel(unittest.TestCase):
         self.r2 = np.array([8, 5, 5, 5, 8])
         self.xt2 = np.array([1, 4, 8, 5, 5])
         self.r3 = np.array([7, 5, 6, 4, 3])
+        self.xt3 = np.array([5, 4, 2, 5, 1])  # not used everywhere
         self.r4 = np.array([1, 1, 7, 4, 0])
         self.xt4 = np.array([9, 7, 5, 8, 4])
         self.r5 = np.array([9, 5, 10, 6, 4])
@@ -174,6 +169,76 @@ class TestModel(unittest.TestCase):
         dr_in = -self.r3[:np.newaxis]
         dr_sol = dr_in - qq @ (qq.T @ dr_in)
         np.testing.assert_allclose(dr.get_interface_data(), dr_sol, atol=1e-14)
+
+    def test_change_settings_on_restart(self):
+        # test if changing settings upon restart works correctly
+
+        r = self.interface.copy()
+        xt = self.interface.copy()
+
+        def do_coupling_iteration(r_array, xt_array):
+            r.set_interface_data(r_array)
+            xt.set_interface_data(xt_array)
+            self.model.add(r, xt)
+            if self.model.is_ready():
+                self.model.predict(r)
+
+        # run for 2 time steps
+        for r_array, xt_array in zip((self.r2, self.r3, self.r4, self.r5),
+                                     (self.xt2, self.xt3, self.xt4, self.xt5)):
+            do_coupling_iteration(r_array, xt_array)
+
+        self.model.finalize_solution_step()
+        self.model.initialize_solution_step()
+
+        for r_array, xt_array in zip((self.r6, self.r7, self.r8),
+                                     (self.xt6, self.xt7, self.xt8)):
+            do_coupling_iteration(r_array, xt_array)
+
+        self.model.finalize_solution_step()
+        self.store_old_values()
+        self.restart_data = copy.deepcopy(self.model.save_restart_data())
+        self.parameters_old = self.parameters.copy()
+        self.model.finalize()
+
+        # create restarted model
+        self.set_new_values()
+        self.model = create_instance(self.parameters)
+        self.model.check_restart_data(self.parameters_old)
+        self.model.size_in = self.model.size_out = self.m
+        self.model.out = self.interface.copy()
+        self.model.initialize()
+        self.model.restart(self.restart_data)
+        self.model.initialize_solution_step()
+
+        self.check_new_values()
+
+        # run for 2 time steps
+        r = self.interface.copy()
+        xt = self.interface.copy()
+
+        for r_array, xt_array in zip((self.r9, self.r10, self.r11),
+                                     (self.xt9, self.xt10, self.xt11)):
+            do_coupling_iteration(r_array, xt_array)
+
+        self.model.finalize_solution_step()
+        self.model.initialize_solution_step()
+
+        for r_array, xt_array in zip((self.r12, self.r13),
+                                     (self.xt12, self.xt13)):
+            do_coupling_iteration(r_array, xt_array)
+
+        self.model.finalize_solution_step()
+        self.model.finalize()
+
+    def store_old_values(self):
+        pass
+
+    def set_new_values(self):
+        pass
+
+    def check_new_values(self):
+        pass
 
 
 if __name__ == '__main__':

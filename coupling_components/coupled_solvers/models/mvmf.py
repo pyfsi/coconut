@@ -47,7 +47,7 @@ class ModelMVMF(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print_info(f'Removing column {i}: {m} < minsignificant', layout='warning')
+                tools.print_info(f'Removing column {i}: {m} < minsignificant', layout='info')
                 self.v = np.delete(self.v, i, 1)
                 self.w = np.delete(self.w, i, 1)
             else:

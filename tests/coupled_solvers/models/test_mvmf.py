@@ -7,12 +7,19 @@ import numpy as np
 class TestModelMVMF(model.TestModel):
 
     def setUp(self):
-        self.parameters['type'] = 'coupled_solvers.models.mvmf'
         self.q = 2
-        self.settings['q'] = self.q
+        self.min_significant = 1.0
+
+        self.parameters = {'type': 'coupled_solvers.models.mvmf',
+                           'settings': {
+                               'min_significant': self.min_significant,
+                               'q': self.q
+                           }}
+        self.settings = self.parameters['settings']
+
         super().setUp()
 
-    def test_mvmf(self):
+    def test_model(self):
         r = self.interface.copy()
         xt = self.interface.copy()
 
@@ -202,6 +209,24 @@ class TestModelMVMF(model.TestModel):
         np.testing.assert_array_equal(self.model.rrprev[0], np.empty((0, 0)))
         np.testing.assert_array_equal(self.model.qqprev[0], np.empty((self.m, 0)))
         self.model.finalize_solution_step()
+
+    def store_old_values(self):
+        self.rrprev = self.model.rrprev.copy()
+        self.qqprev = self.model.qqprev.copy()
+        self.wprev = self.model.wprev.copy()
+
+    def set_new_values(self):
+        self.min_significant_new = 0.5
+        self.q_new = 1
+        self.settings['min_significant'] = self.min_significant_new
+        self.settings['q'] = self.q_new
+
+    def check_new_values(self):
+        self.assertEqual(self.model.min_significant, self.min_significant_new)
+        self.assertEqual(self.model.q, self.q_new)
+        np.testing.assert_allclose(np.hstack(self.model.rrprev), np.hstack([self.rrprev[0]]))
+        np.testing.assert_allclose(np.hstack(self.model.qqprev), np.hstack([self.qqprev[0]]))
+        np.testing.assert_allclose(np.hstack(self.model.wprev), np.hstack([self.wprev[0]]))
 
 
 if __name__ == '__main__':
