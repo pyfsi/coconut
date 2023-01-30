@@ -23,6 +23,8 @@ class CoupledSolverIQNISM(CoupledSolver):
                                  ('timestep_start', 'delta_t', 'save_restart'))
 
         self.model = tools.create_instance(self.settings['model'])
+        self.settings['surrogate']['type'] = self.settings['surrogate'].get('type',
+                                                                            'coupled_solvers.models.dummy_model')
         self.surrogate_mapped = (self.settings['surrogate']['type'] == 'coupled_solvers.models.mapped')
         self.surrogate_dummy = (self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
         self.surrogate = tools.create_instance(self.settings['surrogate'], 'models.dummy_model')
