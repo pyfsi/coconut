@@ -23,6 +23,7 @@ class TestCoupledSolver(unittest.TestCase):
             coupled_solver_parameters = json.load(parameter_file)
         self.parameters['type'] = coupled_solver_parameters['type']
         self.parameters['settings'].update(coupled_solver_parameters['settings'])
+        self.settings = self.parameters['settings']
 
         # set working directories
         self.working_dir = os.path.join(dir_name, 'coupled_solver_tmp')
@@ -132,6 +133,56 @@ class TestCoupledSolver(unittest.TestCase):
         np.testing.assert_array_equal(results_no_restart.pop('solution_x'), results_restart.pop('solution_x'))
         np.testing.assert_array_equal(results_no_restart.pop('solution_y'), results_restart.pop('solution_y'))
         self.assertEqual(results_no_restart, results_restart)
+
+    def test_change_settings_on_restart(self):
+        # test if changing settings upon restart works correctly
+
+        with cd(self.working_dir):
+            # adapt parameters, create coupled solver without restart
+            self.parameters['settings']['save_restart'] = 2
+            self.parameters['settings']['case_name'] = 'restart'
+            coupled_solver = create_instance(self.parameters)
+            coupled_solver.initialize()
+
+            # run solver for 2 time steps
+            for i in range(2):
+                coupled_solver.initialize_solution_step()
+                coupled_solver.solve_solution_step()
+                coupled_solver.finalize_solution_step()
+                coupled_solver.output_solution_step()
+            self.store_old_values(coupled_solver)
+            coupled_solver.finalize()
+
+            # adapt parameters, create coupled solver which restarts
+            omega_max_new = 0.6
+            self.parameters['settings']['timestep_start'] = 2
+            self.parameters['settings']['save_results'] = 2
+            self.parameters['settings']['case_name'] = 'restart'
+            self.remove_keys(('timestep_start', 'delta_t', 'save_restart',
+                              'case_name'))  # remove keys to avoid warnings
+            self.set_new_values()
+            self.parameters['settings']['omega_max'] = omega_max_new
+            coupled_solver = create_instance(self.parameters)
+            coupled_solver.initialize()
+
+            self.check_new_values(coupled_solver)
+
+            # run solver for 2 more time steps
+            for i in range(2):
+                coupled_solver.initialize_solution_step()
+                coupled_solver.solve_solution_step()
+                coupled_solver.finalize_solution_step()
+                coupled_solver.output_solution_step()
+            coupled_solver.finalize()
+
+    def store_old_values(self, coupled_solver):
+        pass
+
+    def set_new_values(self):
+        pass
+
+    def check_new_values(self, coupled_solver):
+        pass
 
     def tearDown(self):
         shutil.rmtree(self.working_dir)

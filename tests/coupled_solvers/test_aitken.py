@@ -123,6 +123,17 @@ class TestCoupledSolverAitken(coupled_solver.TestCoupledSolver):
         omega = coupled_solver.omega
         self.assertAlmostEqual(omega, -5 / 6 * omega_max, 10)
 
+    def store_old_values(self, coupled_solver):
+        self.omega = coupled_solver.omega
+
+    def set_new_values(self):
+        self.omega_max_new = 0.6
+        self.settings['omega_max'] = self.omega_max_new
+
+    def check_new_values(self, coupled_solver):
+        self.assertEqual(coupled_solver.omega, self.omega)
+        self.assertEqual(coupled_solver.omega_max, self.omega_max_new)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -78,9 +78,18 @@ The following parameters need to be included in the `settings` dictionary.
 |------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | <nobr>`predict_change`</nobr> | dict | (optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly. |
 
+## Restart
+
+Upon restart, the predictor may be changed.
+When changing an extrapolator (Constant, Linear, Quadratic, Legacy and Cubic) to a higher order, the first extrapolation will still be of the original order, but the order will increase with each time step until the new order is reached,
+just like at the start of a simulation.
+Changing to a lower order has direct effect.
+
+No information is transferred when switching from or to a [surrogate predictor](#surrogate).
+
 ## Dummy predictor
 
-This dummy predictor can be used in the [one-way](../coupled_solvers#one-way) coupled solvers, which doesn't require a predictor.
+This dummy predictor can be used in the [one-way](../coupled_solvers.md#one-way) coupled solvers, which doesn't require a predictor.
 
 If the use of a dummy predictor is allowed, the `type` (`convergence_criteria.dummy_convergence_criterion`) can be written explicitly or omitted. No `settings` are required.
 Note that the key `predictor` is still required.

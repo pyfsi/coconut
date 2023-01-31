@@ -1,6 +1,5 @@
-from coconut.tools import create_instance, pass_on_parameters
+from coconut import tools
 from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
-
 
 from scipy.sparse.linalg import gmres, LinearOperator
 
@@ -14,10 +13,12 @@ class CoupledSolverIBQN(CoupledSolver):
         super().__init__(parameters)
 
         for model in ('model_f', 'model_s'):
-            pass_on_parameters(self.settings, self.settings[model]['settings'], ('timestep_start', 'delta_t'))
+            tools.pass_on_parameters(self.settings, self.settings[model]['settings'],
+                                     ('timestep_start', 'delta_t', 'save_restart'))
 
-        self.model_f = create_instance(self.parameters['settings']['model_f'])
-        self.model_s = create_instance(self.parameters['settings']['model_s'])
+        self.model_f = tools.create_instance(self.parameters['settings']['model_f'])
+        self.model_s = tools.create_instance(self.parameters['settings']['model_s'])
+        self.models = [self.model_f, self.model_s]
         self.omega = self.settings['omega']
         self.atol = self.settings['absolute_tolerance_gmres']
         self.rtol = self.settings['relative_tolerance_gmres']
@@ -27,6 +28,8 @@ class CoupledSolverIBQN(CoupledSolver):
         self.u = self.w = None
         self.ready = None
 
+        self.restart_models = [False, False]  # indicates if model_f and/or model_s have to be restarted
+
     def initialize(self):
         super().initialize()
 
@@ -35,17 +38,15 @@ class CoupledSolverIBQN(CoupledSolver):
         self.u = self.x.size
         self.w = self.y.size
         self.ready = False
-        if not self.restart:  # no restart
-            self.model_f.size_in = self.model_s.size_out = self.u
-            self.model_f.size_out = self.model_s.size_in = self.w
-            self.model_f.out = self.y.copy()
-            self.model_s.out = self.x.copy()
-            for model in [self.model_f, self.model_s]:
-                model.initialize()
-        else:  # restart
-            self.model_f = self.restart_data['models'][0]
-            self.model_s = self.restart_data['models'][1]
-        for model in [self.model_f, self.model_s]:
+        self.model_f.size_in = self.model_s.size_out = self.u
+        self.model_f.size_out = self.model_s.size_in = self.w
+        self.model_f.out = self.y.copy()
+        self.model_s.out = self.x.copy()
+        for i, model_name in enumerate(['model_f', 'model_s']):
+            model = self.models[i]
+            model.initialize()
+            if self.restart_models[i]:  # restart with the same model type
+                model.restart(self.restart_data[model_name])
             self.components += [model]
 
     def lop_f(self, dx):
@@ -56,6 +57,7 @@ class CoupledSolverIBQN(CoupledSolver):
         self.dytemp.set_interface_data(dy.flatten())
         return self.model_s.predict(self.dytemp).get_interface_data()
 
+    # noinspection PyMethodMayBeStatic
     def identity_matvec(self, v):
         return v
 
@@ -107,13 +109,18 @@ class CoupledSolverIBQN(CoupledSolver):
             self.model_s.add(self.y.copy(), xt)
             self.finalize_iteration(r)
 
-    def check_restart_data(self, restart_data):
-        for model in ['model_f', 'model_s']:
-            model_original = self.parameters['settings'][model]['type']
-            model_new = restart_data['parameters']['settings'][model]['type']
-            if model_original != model_new:
-                raise ValueError(f'Restart not possible because {model} type changed:'
-                                 f'\n\toriginal: {model_original}\n\tnew: {model_new}')
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        continue_check = super().check_restart_data(restart_data, ['omega', 'absolute_tolerance_gmres',
+                                                                   'relative_tolerance_gmres'])
+        if continue_check:
+            for i, model_name in enumerate(['model_f', 'model_s']):
+                old_model_type = restart_data['parameters']['settings'][model_name]['type']
+                new_model_type = self.parameters['settings'][model_name]['type']
+                if new_model_type != old_model_type:
+                    tools.print_info(f'Model type changed from "{old_model_type}" to "{new_model_type}"', layout='blue')
+                else:
+                    self.restart_models[i] = True
+                    self.models[i].check_restart_data(restart_data['parameters']['settings'][model_name])
 
     def add_restart_data(self, restart_data):
-        return restart_data.update({'models': [self.model_f, self.model_s]})
+        restart_data.update({'model_f': self.model_f.save_restart_data(), 'model_s': self.model_s.save_restart_data()})

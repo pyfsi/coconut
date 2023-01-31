@@ -26,3 +26,6 @@ class CoupledSolverRelaxation(CoupledSolver):
             xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
             self.finalize_iteration(r)
+
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        super().check_restart_data(restart_data, ['omega'])

@@ -173,6 +173,12 @@ The following parameters need to be included in the `settings` dictionary.
 |                       `solver_models` | list | List of `solver_wrappers` to be used by the `model`: `tube flow solver` and `tube structure solver`. Normally these are equal to the ones used by the `coupled_solver`. |
 | <nobr>`update_every_iteration`</nobr> | bool | (optional) Default: `false`. Whether or not the Jacobian has to be recalculated every iteration (using the solution of the previous iteration).                         |
 
+## Restart
+
+The settings of a model may be changed upon restart.
+When increasing the reuse parameter `q`, the number of time steps stored will build up gradually until the final number is reached.
+Decreasing `q` occurs instantly.
+
 ## Dummy model
 
 The `type` for this model is `coupled_solvers.models.dummy_model`.

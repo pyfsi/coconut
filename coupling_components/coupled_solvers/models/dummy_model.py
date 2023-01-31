@@ -49,5 +49,14 @@ class ModelDummy(Component):
     def filter_q(self, dr, **_):
         return dr
 
+    def restart(self, restart_data):
+        pass
+
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        pass
+
     def get_time_allocation(self):
         return {'init_time': self.init_time, 'run_time': self.run_time}

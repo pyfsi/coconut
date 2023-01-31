@@ -110,6 +110,15 @@ class ModelSurrogate(Component):
 
         self.coupled_solver.output_solution_step()
 
+    def restart(self, restart_data):
+        pass
+
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        pass
+
     def get_time_allocation(self):
         time_allocation = {}
         for time_type in ('init_time', 'run_time'):

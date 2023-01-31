@@ -18,8 +18,13 @@ class CoupledSolverIQNISM(CoupledSolver):
             self.settings['surrogate']['settings'] = {}
         tools.pass_on_parameters(self.settings, self.settings['surrogate']['settings'], ['timestep_start', 'delta_t',
                                                                                          'save_restart', 'case_name'])
+        # add timestep_start, delta_t, save_restart to model settings
+        tools.pass_on_parameters(self.settings, self.settings['model']['settings'],
+                                 ('timestep_start', 'delta_t', 'save_restart'))
 
         self.model = tools.create_instance(self.settings['model'])
+        self.settings['surrogate']['type'] = self.settings['surrogate'].get('type',
+                                                                            'coupled_solvers.models.dummy_model')
         self.surrogate_mapped = (self.settings['surrogate']['type'] == 'coupled_solvers.models.mapped')
         self.surrogate_dummy = (self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
         self.surrogate = tools.create_instance(self.settings['surrogate'], 'models.dummy_model')
@@ -30,6 +35,8 @@ class CoupledSolverIQNISM(CoupledSolver):
         if ((self.surrogate_modes == 0 or self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
                 and 'omega' not in self.settings):
             raise ValueError('A relaxation factor (omega) is required when no surrogate Jacobian is used')
+
+        self.restart_model_surrogate = [False, False]  # indicates if model has to be restarted
 
     def initialize(self):
         super().initialize()
@@ -44,12 +51,15 @@ class CoupledSolverIQNISM(CoupledSolver):
         else:
             self.surrogate.initialize()
 
-        if not self.restart:  # no restart
-            self.model.size_in = self.model.size_out = self.x.size
-            self.model.out = self.x.copy()
-            self.model.initialize()
-        else:  # restart
-            self.model = self.restart_data['model']
+        self.model.size_in = self.model.size_out = self.x.size
+        self.model.out = self.x.copy()
+        self.model.initialize()
+
+        restart_model, restart_surrogate = self.restart_model_surrogate
+        if restart_model:  # restart with the same model type
+            self.model.restart(self.restart_data['model'])
+        if restart_surrogate:  # restart with the same surrogate type
+            self.surrogate.restart(self.restart_data['surrogate'])
 
         self.components += [self.model, self.surrogate]
 
@@ -103,16 +113,21 @@ class CoupledSolverIQNISM(CoupledSolver):
         if self.surrogate_synchronize and self.surrogate.provides_set_solution:
             self.surrogate.set_solution(self.x.copy())
 
-    def check_restart_data(self, restart_data):
-        for model in ['model', 'surrogate']:
-            model_original = self.parameters['settings'][model]['type']
-            model_new = restart_data['parameters']['settings'][model]['type']
-            if model_original != model_new:
-                raise ValueError(f'Restart not possible because {model} type changed:'
-                                 f'\n\toriginal: {model_original}\n\tnew: {model_new}')
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        continue_check = super().check_restart_data(restart_data, ['omega', 'surrogate_modes', 'surrogate_synchronize'])
+        if continue_check:
+            for i, model_name in enumerate(['model', 'surrogate']):
+                old_model_type = restart_data['parameters']['settings'][model_name]['type']
+                new_model_type = self.parameters['settings'][model_name]['type']
+                if new_model_type != old_model_type:
+                    tools.print_info(f'Model type changed from "{old_model_type}" to "{new_model_type}"', layout='blue')
+                else:
+                    self.restart_model_surrogate[i] = True
+            if self.restart_model_surrogate[0]:
+                self.model.check_restart_data(restart_data['parameters']['settings']['model'])
 
     def add_restart_data(self, restart_data):
-        return restart_data.update({'model': self.model})
+        restart_data.update({'model': self.model.save_restart_data(), 'surrogate': self.surrogate.save_restart_data()})
 
     def print_summary(self):
         solver_init_time_percs = []
