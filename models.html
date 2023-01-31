@@ -559,6 +559,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#restart" class="md-nav__link">
+    Restart
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dummy-model" class="md-nav__link">
     Dummy model
   </a>
@@ -1481,6 +1488,10 @@ Typically, however, this is not advised because the Jacobian doesn't change that
 </tr>
 </tbody>
 </table>
+<h2 id="restart">Restart</h2>
+<p>The settings of a model may be changed upon restart.
+When increasing the reuse parameter <code>q</code>, the number of time steps stored will build up gradually until the final number is reached.
+Decreasing <code>q</code> occurs instantly.</p>
 <h2 id="dummy-model">Dummy model</h2>
 <p>The <code>type</code> for this model is <code>coupled_solvers.models.dummy_model</code>.</p>
 <p>This special dummy model can be used in a coupled solver that requires a secant or surrogate model, without the model actually performing any secant or surrogate calculation. (e.g. in <a href="https://pyfsi.github.io/coconut/coupled_solvers#iqnism">CoupledSolverIQNISM</a>)
