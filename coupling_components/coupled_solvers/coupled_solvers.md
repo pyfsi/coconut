@@ -457,7 +457,7 @@ By saving the predictor, the initial guess at the start of the first time step(s
 The model(s) are saved such that the behavior of the coupling algorithm is the same.
 This is only important if the model behavior depends on data from previous time steps, e.g. models with reuse ($q>0$).
 
-Besides restarting the exact same simulation, it could be useful to change the settings form the coupled solver or occasional model(s) when restarting.
+Besides restarting the exact same simulation, it could be useful to change the settings from the coupled solver or occasional model(s) when restarting.
 This is possible, refer to the [models](models/models.md#restart) documentation for more details.
 Changing the type of coupled solver or occasional model is also possible, but no information will be transferred between the different types, meaning that for example all information from previous time steps is lost.
 

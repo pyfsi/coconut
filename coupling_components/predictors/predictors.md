@@ -85,7 +85,7 @@ When changing an extrapolator (Constant, Linear, Quadratic, Legacy and Cubic) to
 just like at the start of a simulation.
 Changing to a lower order has direct effect.
 
-No information is transferred when switching form or to a [surrogate predictor](#surrogate).
+No information is transferred when switching from or to a [surrogate predictor](#surrogate).
 
 ## Dummy predictor
 
