@@ -565,18 +565,21 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         with open(file_name, 'w') as control_dict_file:
             control_dict_file.write(control_dict)
             control_dict_file.write(coconut_start_string + '\n')
-            control_dict_file.write('boundary_names (')
 
-            for boundary_name in self.boundary_names:
-                control_dict_file.write(boundary_name + ' ')
+            control_dict_file.write('boundaryNames (' + ' '.join(self.boundary_names) + ');\n\n')
 
-            control_dict_file.write(');\n\n')
             control_dict_file.write('functions\n{\n')
-
-            control_dict_file.write(self.wall_shear_stress_dict())
+            dct, name = self.wall_shear_stress_dict()
+            control_dict_file.write(dct)
+            function_object_names = [name]
             for boundary_name in self.boundary_names:
-                control_dict_file.write(self.pressure_and_traction_dict(boundary_name))
-            control_dict_file.write('}')
+                dct, name = self.pressure_and_traction_dict(boundary_name)
+                control_dict_file.write(dct)
+                function_object_names.append(name)
+            control_dict_file.write('}\n\n')
+
+            control_dict_file.write('coconutFunctionObjects \n(\n\t' + '\n\t'.join(function_object_names)+'\n);\n')
+
             self.write_footer(file_name)
 
     def wall_shear_stress_dict(self):
