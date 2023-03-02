@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
     IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
 
+    runTime.functionObjects().start();
+
     while (true) // NOT (pimple.run(runTime))
     {
         usleep(1000); // Expressed in microseconds

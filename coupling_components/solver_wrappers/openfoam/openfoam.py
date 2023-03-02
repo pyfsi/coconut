@@ -313,9 +313,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                                                         self.cur_timestamp)
                 shutil.rmtree(post_process_time_folder)
 
-        if not (self.timestep % self.write_interval):
-            self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready')
+        self.coco_messages.send_message('save')
+        self.coco_messages.wait_message('save_ready')
 
         if self.residual_variables is not None:
             self.write_of_residuals()
