@@ -57,7 +57,7 @@ solve set discretization-scheme mom 1
 solve set discretization-scheme pressure 12
 solve set p-v-coupling 24
 solve set gradient-scheme y
-solve set reporting-interval 1
+solve set reporting-interval 10
 solve set flow-warnings n
 
 solve initialize set-defaults pressure 0

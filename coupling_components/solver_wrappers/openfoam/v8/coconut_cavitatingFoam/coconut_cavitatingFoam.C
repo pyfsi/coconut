@@ -72,6 +72,8 @@ int main(int argc, char *argv[])
     IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
 
+    runTime.functionObjects().start();
+
     while (true) // NOT (pimple.run(runTime))
     {
         usleep(1000); // Expressed in microseconds
@@ -110,15 +112,12 @@ int main(int argc, char *argv[])
             // Do any mesh changes
             mesh.update();
 
-            if (mesh.changing())
+            if (mesh.changing() && correctPhi)
             {
                 // Calculate absolute flux from the mapped surface velocity
                 phi = mesh.Sf() & Uf();
 
-                if (correctPhi)
-                {
-                    #include "correctPhi.H"
-                }
+                #include "correctPhi.H"
 
                 // Make the flux relative to the mesh motion
                 fvc::makeRelative(phi, U);

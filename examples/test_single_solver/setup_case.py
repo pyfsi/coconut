@@ -1,5 +1,7 @@
+import glob
 import shutil
 import subprocess
+from os.path import join
 
 from coconut import tools
 
@@ -10,6 +12,10 @@ csm_dir = './CSM'
 
 # copy run_simulation.py script to main directory
 shutil.copy('../run_simulation.py', './')
+
+# clean up Fluent
+if glob.glob(join(cfd_dir, 'cleanup-fluent*')):
+    subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir)
 
 # clean working directories
 shutil.rmtree(cfd_dir, ignore_errors=True)

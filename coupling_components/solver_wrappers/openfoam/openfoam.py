@@ -128,7 +128,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         # self.settings["boundary_names"]
         self.read_modify_controldict()
 
-        if self.save_restart % self.write_interval:
+        if self.write_interval is not None and self.save_restart % self.write_interval:
             raise RuntimeError(
                 f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval '
                 f'(= {self.write_interval}). Modify the controlDict accordingly.')
@@ -536,7 +536,9 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-        self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
+        write_control = of_io.get_string(input_string=control_dict, keyword='writeControl')
+        if write_control == 'timeStep':
+            self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
         time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
         self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
 
