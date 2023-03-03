@@ -9,6 +9,7 @@ import multiprocessing
 import shutil
 import re
 import json
+import glob
 from subprocess import check_call, DEVNULL
 
 
@@ -50,7 +51,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.working_dir)
 
-    def clean_case(self):
+    def clean_case(self):  # means redoing blockMesh which takes a long time
         check_call('sh ' + os.path.join(self.folder_path, 'Allclean'), shell=True, env=self.env)
 
     def set_up_case(self):
@@ -77,6 +78,13 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         dz = dr * np.sin(theta)
         return dy, dz
 
+    # noinspection PyMethodMayBeStatic
+    def rm_time_dirs(self, solver):
+        # remove 0.0000 type folder created by functionObject during serial run,
+        # resulting in an error when decomposed for a parallel run in the same directory
+        for time_dir in glob.glob(join(solver.working_directory, '0.*')):
+            shutil.rmtree(time_dir)
+
     # test if order of nodes vary with different decomposition
     def test_model_part_nodes_with_different_cores(self):
         # create two solvers with different flow solver partitioning
@@ -91,6 +99,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             y0.append(model_part.y0)
             z0.append(model_part.z0)
             ids.append(model_part.id)
+
+            self.rm_time_dirs(solver)
 
         # compare ModelParts of both solvers
         for attr in [x0, y0, z0, ids]:
@@ -130,6 +140,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
                                                        f'{self.delta_t:.{solver.time_precision}f}', 'mantle')
             np.testing.assert_allclose(node_coords, node_coords_ref, rtol=1e-12)
 
+            self.rm_time_dirs(solver)
+
     # check if different partitioning gives the same pressure and traction results
     def test_pressure_wall_shear_on_nodes_parallel(self):
         output_list = []
@@ -151,7 +163,8 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             output_list.append(output_interface.get_interface_data())
             solver.finalize_solution_step()
             solver.finalize()
-            self.clean_case()
+
+            self.rm_time_dirs(solver)
 
         ref_output = output_list[0]  # single core result
         max_value = np.max(np.abs(ref_output))

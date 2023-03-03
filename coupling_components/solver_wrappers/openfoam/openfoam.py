@@ -128,7 +128,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         # self.settings["boundary_names"]
         self.read_modify_controldict()
 
-        if self.save_restart % self.write_interval:
+        if self.write_interval is not None and self.save_restart % self.write_interval:
             raise RuntimeError(
                 f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval '
                 f'(= {self.write_interval}). Modify the controlDict accordingly.')
@@ -313,9 +313,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                                                         self.cur_timestamp)
                 shutil.rmtree(post_process_time_folder)
 
-        if not (self.timestep % self.write_interval):
-            self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready')
+        self.coco_messages.send_message('save')
+        self.coco_messages.wait_message('save_ready')
 
         if self.residual_variables is not None:
             self.write_of_residuals()
@@ -537,7 +536,9 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-        self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
+        write_control = of_io.get_string(input_string=control_dict, keyword='writeControl')
+        if write_control == 'timeStep':
+            self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
         time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
         self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
 
@@ -564,18 +565,21 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         with open(file_name, 'w') as control_dict_file:
             control_dict_file.write(control_dict)
             control_dict_file.write(coconut_start_string + '\n')
-            control_dict_file.write('boundary_names (')
 
-            for boundary_name in self.boundary_names:
-                control_dict_file.write(boundary_name + ' ')
+            control_dict_file.write('boundaryNames (' + ' '.join(self.boundary_names) + ');\n\n')
 
-            control_dict_file.write(');\n\n')
             control_dict_file.write('functions\n{\n')
-
-            control_dict_file.write(self.wall_shear_stress_dict())
+            dct, name = self.wall_shear_stress_dict()
+            control_dict_file.write(dct)
+            function_object_names = [name]
             for boundary_name in self.boundary_names:
-                control_dict_file.write(self.pressure_and_traction_dict(boundary_name))
-            control_dict_file.write('}')
+                dct, name = self.pressure_and_traction_dict(boundary_name)
+                control_dict_file.write(dct)
+                function_object_names.append(name)
+            control_dict_file.write('}\n\n')
+
+            control_dict_file.write('coconutFunctionObjects \n(\n\t' + '\n\t'.join(function_object_names)+'\n);\n')
+
             self.write_footer(file_name)
 
     def wall_shear_stress_dict(self):

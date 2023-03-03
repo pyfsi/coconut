@@ -71,15 +71,18 @@ int main(int argc, char *argv[])
     iteration = 0;
 
     IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
-    wordList boundary_names (controlDict.lookup("boundary_names"));
+    wordList boundaryNames (controlDict.lookup("boundaryNames"));
+    wordList coconutFunctionObjects (controlDict.lookup("coconutFunctionObjects"));
 
-    while (true) // NOT (pimple.run(runTime))
+    while (true)
     {
         usleep(1000); // Expressed in microseconds
 
         if (exists("next.coco"))
         {
             waitForSync("next"); // Keep the sync at the beginning of the block
+
+            runTime.run();
 
             #include "readDyMControls.H"
             #include "CourantNo.H"
@@ -99,10 +102,10 @@ int main(int argc, char *argv[])
             Info << "Coupling iteration = " << iteration << nl << endl;
 
             // Define movement of the coupling interface
-            forAll(boundary_names, s)
+            forAll(boundaryNames, s)
             {
-                word boundary_name = boundary_names[s];
-                ApplyFSIPointDisplacement(mesh, boundary_name);
+                word boundaryName = boundaryNames[s];
+                ApplyFSIPointDisplacement(mesh, boundaryName);
             }
 
             // --- Pressure-velocity PIMPLE corrector loop
@@ -117,17 +120,17 @@ int main(int argc, char *argv[])
                     {
                         MRF.update();
 
-                        // Calculate absolute flux
-                        // from the mapped surface velocity
-                        phi = mesh.Sf() & Uf();
-
                         if (correctPhi)
                         {
-                            #include "correctPhi.H"
-                        }
+                            // Calculate absolute flux
+                            // from the mapped surface velocity
+                            phi = mesh.Sf() & Uf();
 
-                        // Make the flux relative to the mesh motion
-                        fvc::makeRelative(phi, U);
+                            #include "correctPhi.H"
+
+                            // Make the flux relative to the mesh motion
+                            fvc::makeRelative(phi, U);
+                        }
 
                         if (checkMeshCourantNo)
                         {
@@ -156,7 +159,7 @@ int main(int argc, char *argv[])
                 << nl << endl;
 
             // Return the coupling interface output
-            runTime.run();
+            #include "executeCoconutFunctionObjects.H"
 
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
         }

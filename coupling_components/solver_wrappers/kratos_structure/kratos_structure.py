@@ -66,7 +66,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         run_script_file = os.path.join(dir_path, f'run_kratos_structural_{self.version}.py')
 
-        self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> log',
+        self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> kratos.log',
                                     shell=True, cwd=self.working_directory, env=self.env)
         self.coco_messages.wait_message('start_ready')
 

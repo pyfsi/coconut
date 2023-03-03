@@ -38,19 +38,21 @@ class SolverWrapperOpenFOAM41(SolverWrapperOpenFOAM):
         return x0, y0, z0
 
     def wall_shear_stress_dict(self):
-        dct = (f'    {self.wall_shear_stress_variable}\n'
+        name = self.wall_shear_stress_variable
+        dct = (f'    {name}\n'
                f'    {{\n'
                f'        type            {self.wall_shear_stress_variable};\n'
                f'        libs            ("libfieldFunctionObjects.so");\n'
                f'        executeControl  timeStep;\n'
                f'        executeInterval 1;\n'
                f'        writeControl    none;\n'
-               f'        patches         $boundary_names;\n'
+               f'        patches         $boundaryNames;\n'
                f'    }}\n')
-        return dct
+        return dct, name
 
     def pressure_and_traction_dict(self, boundary_name):
-        dct = (f'    coconut_{boundary_name}\n'
+        name = f'coconut_{boundary_name}'
+        dct = (f'    {name}\n'
                f'    {{\n'
                f'        type            surfaceRegion;\n'
                f'        libs            ("libfieldFunctionObjects.so");\n'
@@ -63,4 +65,4 @@ class SolverWrapperOpenFOAM41(SolverWrapperOpenFOAM):
                f'        name            {boundary_name};\n'
                f'        fields          (p {self.wall_shear_stress_variable});\n'
                f'    }}\n')
-        return dct
+        return dct, name

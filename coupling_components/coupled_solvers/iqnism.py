@@ -36,7 +36,7 @@ class CoupledSolverIQNISM(CoupledSolver):
                 and 'omega' not in self.settings):
             raise ValueError('A relaxation factor (omega) is required when no surrogate Jacobian is used')
 
-        self.restart_model_surrogate = [False, False]  # indicates if model has to be restarted
+        self.restart_model_surrogate = [False, False]  # indicates if model and/or surrogate has to be restarted
 
     def initialize(self):
         super().initialize()
