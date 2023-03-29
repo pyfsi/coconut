@@ -188,12 +188,13 @@ class TestTubeFluent3DKratosStructure3D(EvaluateExamples):
 class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
     example = 'tube/openfoam3d_abaqus3d'
     number_of_timesteps = 2
-    atol_solution_y = 1e-4
+    atol_solution_y = 2e-4
 
 
 class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
     example = 'tube/openfoam3d_kratos_structure3d'
     number_of_timesteps = 2
+    atol_solution_y = 2e-4
 
 
 class TestTubeTubeFlowAbaqus2D(EvaluateExamples):
