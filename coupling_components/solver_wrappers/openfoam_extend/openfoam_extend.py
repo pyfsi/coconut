@@ -618,7 +618,7 @@ class SolverWrapperOpenFOAMExtend(Component):
             filter_node_coords = mp_out[mask, :]
             displacement_mask = displacement[mask, :]
 
-            displacement_mask[:, 0] = displacement_mask[:, 0] * 0.0000000000001
+            displacement_mask[:, 0] = displacement_mask[:, 0] * 1e-5
 
             self.model.delete_model_part(mp_name)
             self.model.create_model_part(mp_name, filter_node_coords[:, 0], filter_node_coords[:, 1],

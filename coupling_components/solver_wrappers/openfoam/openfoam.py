@@ -689,7 +689,7 @@ class SolverWrapperOpenFOAM(Component):
                         displacement[:,0] = 1
                         velocity = displacement[:,0]
                     else:
-                        velocity = displacement[:,0] * 1e13
+                        velocity = displacement[:,0] * 1e5
 
                     data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                self.cur_timestamp)

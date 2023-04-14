@@ -66,19 +66,27 @@
         << " " << min(rho).value() << endl;
 
     #include "alphavPsi.H"
+    #include "CourantNo.H"
 
     //p =
     //    (rho
     //  - alphal*rholRef
     //  + alphal*psilRef*pRef
     //)/(alphav*psiv + alphal*psilRef);
+    dimensionedScalar pMin = pSat;
+    dimensionedScalar pMax = pSat * 1.67 * 10000;
 
-    p == max((rho - alphal*rholRef + alphal*psilRef*pRef)/(alphav*psiv + alphal*psilRef),pSat); //Mathieu
+//    p == max((rho - alphal*rholRef + alphal*psilRef*pRef)/(alphav*psiv + alphal*psilRef),pMin); //Mathieu_1
+    p == max(min((rho - alphal*rholRef + alphal*psilRef*pRef)/(alphav*psiv + alphal*psilRef),pMax),pMin); //Mathieu_2
 
     p.correctBoundaryConditions();
 
+    Info<< "max-min setted p: " << pMin
+        << " " << pMax << endl;
     Info<< "max-min phase-change corrected p: " << max(p).value()
         << " " << min(p).value() << endl;
+    Info<< "max-min psi: " << gMax(psi)
+        << " " << gMin(psi) << endl;
 
     EOSModel->correctRho();
     EOSModel->correctPsi();
