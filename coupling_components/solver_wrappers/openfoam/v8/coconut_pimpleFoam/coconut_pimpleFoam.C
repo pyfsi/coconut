@@ -81,6 +81,8 @@ int main(int argc, char *argv[])
         {
             waitForSync("next"); // Keep the sync at the beginning of the block
 
+            runTime.run();
+
             #include "readDyMControls.H"
             #include "CourantNo.H"
             #include "setDeltaT.H"

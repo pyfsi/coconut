@@ -888,6 +888,7 @@ coconut_plasticNonLinSolidFoam.dep: /cfdfile2/data/fm/mathieu/foam/bekaert_src/s
 coconut_plasticNonLinSolidFoam.dep: /cfdfile2/data/fm/mathieu/foam/bekaert_src/src/solidModelsBekaert/lnInclude/pointGaussLeastSquaresGrad.C
 coconut_plasticNonLinSolidFoam.dep: /cfdfile2/data/fm/mathieu/foam/bekaert_src/src/solidModelsBekaert/lnInclude/fvcGradf.H
 coconut_plasticNonLinSolidFoam.dep: /cfdfile2/data/fm/mathieu/foam/bekaert_src/src/solidModelsBekaert/lnInclude/fvcGradf.C
+coconut_plasticNonLinSolidFoam.dep: waitForSync.H
 coconut_plasticNonLinSolidFoam.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/setRootCase.H
 coconut_plasticNonLinSolidFoam.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/createTime.H
 coconut_plasticNonLinSolidFoam.dep: checkDynamicMeshDict.H

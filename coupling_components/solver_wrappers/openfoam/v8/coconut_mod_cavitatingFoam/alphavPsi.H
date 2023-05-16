@@ -19,5 +19,6 @@
 
     psiModel->correct();
 
-    // Info<< "min a: " << 1.0/sqrt(max(psi)).value() << endl;
+    Info<< "max a: " << 1.0/sqrt(min(psi)).value() << endl;
+    Info<< "min a: " << 1.0/sqrt(max(psi)).value() << endl;
 }

@@ -73,8 +73,8 @@
     //  - alphal*rholRef
     //  + alphal*psilRef*pRef
     //)/(alphav*psiv + alphal*psilRef);
-    dimensionedScalar pMin = pSat;
-    dimensionedScalar pMax = pSat * 1.67 * 10000;
+    dimensionedScalar pMin = pSat ;
+    dimensionedScalar pMax = pSat * 10000;
 
 //    p == max((rho - alphal*rholRef + alphal*psilRef*pRef)/(alphav*psiv + alphal*psilRef),pMin); //Mathieu_1
     p == max(min((rho - alphal*rholRef + alphal*psilRef*pRef)/(alphav*psiv + alphal*psilRef),pMax),pMin); //Mathieu_2

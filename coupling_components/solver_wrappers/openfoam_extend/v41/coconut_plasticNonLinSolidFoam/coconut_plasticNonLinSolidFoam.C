@@ -82,6 +82,8 @@ Author
 #include "pointGaussLeastSquaresGrad.H"
 #include "interpolationTable.H"
 #include "foamTime.H"
+#include "waitForSync.H"
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 #include <stdlib.h>
@@ -110,9 +112,10 @@ int main(int argc, char *argv[])
 
 
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    runTime.run();
+//    runTime.run();
     word prevRunTime;
     pointField oldPoints_;
 
@@ -123,6 +126,7 @@ int main(int argc, char *argv[])
     lduSolverPerformance solverPerf;
     bool converged = false;
     blockLduMatrix::debug = 0;
+    int lo = 1;
 
     IOdictionary controlDict(IOobject("controlDict",runTime.system(),mesh,IOobject::MUST_READ,IOobject::NO_WRITE));
     wordList boundary_names (controlDict.lookup("boundary_names"));
@@ -132,13 +136,18 @@ int main(int argc, char *argv[])
           scalar relativeResidual = 1.0;
           scalar materialResidual = 0.0;
 
+
         usleep(10000);
 
         if (exists("next.coco"))
         {
+            waitForSync("next");
+            runTime.run();
+            if (lo >= 2)
+            {
             mesh.update();
             mechanical.updateYieldStress();
-
+            }
             // Update surface fields after a topoChange
             mu = mechanical.mu();
             lambda = mechanical.lambda();
@@ -152,9 +161,12 @@ int main(int argc, char *argv[])
             prevRunTime = runTime.timeName();
             oldPoints_ = mesh.points();
             runTime++;
-            remove("next.coco");
-            OFstream outfile ("next_ready.coco");
-            outfile << "next.coco" << endl;
+            lo++;
+            Info << "Time step number:  "<< lo << endl;
+            waitForSync("next");
+//            remove("next.coco");
+//            OFstream outfile ("next_ready.coco");
+//            outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
             iteration = 0;
             converged = false;
@@ -170,39 +182,39 @@ int main(int argc, char *argv[])
         if (exists("continue.coco"))
         {
 
-            pointField &oldPoints = const_cast<pointField&>(oldPoints_);
-            mesh.movePoints(oldPoints);
+            //pointField &oldPoints = const_cast<pointField&>(oldPoints_); test to clean up code 2 => ok
+            //mesh.movePoints(oldPoints); test to clean up code 2 => ok
 
 //            curS == curS.oldTime();
 //            DU == DU.oldTime();
 //            cauchyTraction == cauchyTraction.oldTime();
-            mechanical.resetYieldStress();
+            //mechanical.resetYieldStress(); test to clean up code 1 => ok
 
-            gradDU = fvc::grad(DU);
+            //gradDU = fvc::grad(DU); test to clean up code 10
 
             // Relative deformation gradient
-            relF = I + gradDU.T();
+            //relF = I + gradDU.T(); test to clean up code 10 => ok
 
             // Inverse relative deformation gradient
-            relFinv = hinv(relF);
+            //relFinv = hinv(relF); test to clean up code 9 => ok
 
              // Total deformation gradient
-            F = relF & F.oldTime();
+            //F = relF & F.oldTime(); test to clean up code 8 => ok
 
             // Relative Jacobian (Jacobian of relative deformation gradient)
-            relJ = det(relF);
+            //relJ = det(relF); test to clean up code 7 => ok
 
             // Relative deformation gradient with volumetric strain removed
-            relFbar = pow(relJ, -1.0/3.0)*relF;
+            //relFbar = pow(relJ, -1.0/3.0)*relF;test to clean up code 6 => ok
 
              // Jacobian of deformation gradient
-            J = det(F);
+            //J = det(F); test to clean up code 5 => ok
 
             // Update tau using material model
-            mechanical.correct(tau);
+            //mechanical.correct(tau); test to clean up code 3 => ok
 
-            rho == rho.oldTime();
-            U == U.oldTime();
+            //rho == rho.oldTime(); test to clean up code 4 => ok
+            //U == U.oldTime(); test to clean up code 4 => ok
 
             iteration++;
             Info<< "Coupling iteration = " << iteration << nl << endl;
@@ -396,7 +408,7 @@ int main(int argc, char *argv[])
                 #include "TEqn.H"
             }
 
-            remove("continue.coco");
+//            remove("continue.coco");
             //Return the coupling interface output
 
             Info<< "ExecutionTime = "<< runTime.elapsedCpuTime() << " s"
@@ -406,7 +418,8 @@ int main(int argc, char *argv[])
             runTime.run();
             runTime.write(); //debugging
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
-            OFstream outfile ("continue_ready.coco");
+//            OFstream outfile ("continue_ready.coco");
+            waitForSync("continue");
 
         }
 
@@ -419,17 +432,19 @@ int main(int argc, char *argv[])
 
         if (exists("save.coco"))
         {
+            waitForSync("save");
             #include "writeFields.H"
             //runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
-            remove("save.coco");
-            OFstream outfile ("save_ready.coco");
+//            remove("save.coco");
+//            OFstream outfile ("save_ready.coco");
         }
 
         if (exists("stop.coco"))
         {
-            remove("stop.coco"); // should not be uncommented
+            waitForSync("stop");
+//            remove("stop.coco"); // should not be uncommented
             runTime.stopAt(Time::stopAtControls::saNoWriteNow);
-            OFstream outfile ("stop_ready.coco");
+//            OFstream outfile ("stop_ready.coco");
             break;
         }
     }
