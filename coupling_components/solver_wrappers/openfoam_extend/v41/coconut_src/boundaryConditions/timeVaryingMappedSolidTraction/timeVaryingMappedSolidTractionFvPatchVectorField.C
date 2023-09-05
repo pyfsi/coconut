@@ -522,7 +522,6 @@ void timeVaryingMappedSolidTractionFvPatchVectorField::checkTable()
     label lo = -1;
     label hi = -1;
 
-
     findTime
     (
         this->db().time().constant(),
@@ -618,7 +617,7 @@ void timeVaryingMappedSolidTractionFvPatchVectorField::checkTable()
         //}
         //else
         //{
-            if (true)
+            if (debug)
             {
                 Pout<< "checkTable : Reading endValues from "
                     <<   "boundaryData"
@@ -742,7 +741,7 @@ void timeVaryingMappedSolidTractionFvPatchVectorField::updateCoeffs()
 
         scalar s = (this->db().time().value()-start)/(end-start);
 
-        if (true)
+        if (debug)
         {
             Pout<< "updateCoeffs : Sampled, interpolated values"
                 << " between start time:"
