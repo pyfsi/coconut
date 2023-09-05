@@ -525,14 +525,21 @@ class SolverWrapperOpenFOAMExtend(Component):
         try:
             if self.compile_clean:
                 subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+                subprocess.check_call(
+                    f'wclean {boundary_cond_dir} && wmake libso {boundary_cond_dir} &> log.wmake_libso',
+                    cwd=self.working_directory, shell=True,
+                    env=self.env)
 
             else:
                 subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
                                       env=self.env)
+                subprocess.check_call(f'wmake libso {boundary_cond_dir} &> log.wmake_libso',
+                                      cwd=self.working_directory, shell=True,
+                                      env=self.env)
 
         except subprocess.CalledProcessError:
             raise RuntimeError(
-                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
+                f'Compilation of {self.application} or coconut_src failed. Check {os.path.join(self.working_directory, "log.wmake or CSM/log.wmake_libso")}')
 
     # def write_cell_centres(self):
     #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
