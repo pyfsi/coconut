@@ -7,12 +7,6 @@
 
     rhoEqn.solve();
 
-    rhoPhi = rhoEqn.flux();
-
     Info<< "max-min rho: " << max(rho).value()
         << " " << min(rho).value() << endl;
-
-    dimensionedScalar rhoSubMin = rhoMin * 0.2; //Mathieu
-
-    rho == max(rho, rhoSubMin);
 }

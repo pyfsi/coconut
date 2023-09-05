@@ -60,6 +60,9 @@ class SolverWrapperOpenFOAMExtend(Component):
         # set on True to save copy of input and output files in every iteration
         self.debug = self.settings.get('debug', False)
 
+        # set on True if you want to clean the adapted application and compile.
+        self.compile_clean = self.settings.get('compile_clean', False)
+
         # remove possible CoCoNuT-message from previous interrupt
         self.remove_all_messages()
 
@@ -269,7 +272,8 @@ class SolverWrapperOpenFOAMExtend(Component):
                 path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                 shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                 shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
-                for i in range(self.number_of_timesteps):
+                # number_of_timesteps + 1 to avoid problems with hi label in timeVaryingMappedSolidTraction boundary condition @ the end the simulation. This has no influence on the result.
+                for i in range(self.number_of_timesteps + 1):
                     timestamp_i = self.delta_t *(i +1)
                     format_i = '{:.{}f}'.format(timestamp_i, self.time_precision)
                     str_i = str(format_i)
@@ -516,8 +520,16 @@ class SolverWrapperOpenFOAMExtend(Component):
     def compile_adapted_openfoam_extend_solver(self):
         # compile foam-Extend adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
+        boundary_cond_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', 'coconut_src',
+                                         'boundaryConditions')
         try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+            if self.compile_clean:
+                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+
+            else:
+                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
+
         except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
