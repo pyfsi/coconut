@@ -367,7 +367,7 @@ class SolverWrapperOpenFOAM(Component):
                     path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                     shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                     shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
-                    for i in range(self.number_of_timesteps):
+                    for i in range(self.number_of_timesteps + 1):
                         time = self.delta_t * (i + 1)
                         timestamp = '{:.{}f}'.format(time, self.time_precision)
                         new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
