@@ -60,6 +60,9 @@ class SolverWrapperOpenFOAMExtend(Component):
         # set on True to save copy of input and output files in every iteration
         self.debug = self.settings.get('debug', False)
 
+        # set on True if you want to clean the adapted application and compile.
+        self.compile_clean = self.settings.get('compile_clean', False)
+
         # remove possible CoCoNuT-message from previous interrupt
         self.remove_all_messages()
 
@@ -147,6 +150,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         # print("mp_output")
         # print(mp_output.x0,mp_output.y0,mp_output.z0)
 
+        # Initialize timeVaryingMappedSolidTraction boundary condition
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             mp = self.model.get_model_part(mp_name)
@@ -154,6 +158,7 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             self.x0 = x0
             self.size_BC = self.x0.size
+            angle = 1.25
 
             x = np.zeros( 2 * self.x0.size)
             y = np.zeros( 2 * self.x0.size)
@@ -164,12 +169,12 @@ class SolverWrapperOpenFOAMExtend(Component):
             for i in range(len(x)):
                 if i < self.x0.size:
                     x[j] = self.x0[i]
-                    y[j] = y0[i]*np.cos(1.25*np.pi/180)
-                    z[j] = y0[i] * - np.sin(1.25 * np.pi / 180)
+                    y[j] = y0[i]*np.cos(angle*np.pi/180)
+                    z[j] = y0[i] * - np.sin(angle * np.pi / 180)
                 else:
                     x[j]= self.x0[i -self.x0.size]
-                    y[j] = y0[i - self.x0.size] * np.cos(1.25 * np.pi / 180)
-                    z[j] = y0[i - self.x0.size] * np.sin(1.25 * np.pi / 180)
+                    y[j] = y0[i - self.x0.size] * np.cos(angle * np.pi / 180)
+                    z[j] = y0[i - self.x0.size] * np.sin(angle * np.pi / 180)
                 j+=1
 
             boundary_data_path = os.path.join(self.working_directory,'constant/boundaryData')
@@ -269,7 +274,8 @@ class SolverWrapperOpenFOAMExtend(Component):
                 path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                 shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                 shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
-                for i in range(self.number_of_timesteps):
+                # number_of_timesteps + 1 to avoid problems with hi label in timeVaryingMappedSolidTraction boundary condition @ the end the simulation. This has no influence on the result.
+                for i in range(self.number_of_timesteps + 1):
                     timestamp_i = self.delta_t *(i +1)
                     format_i = '{:.{}f}'.format(timestamp_i, self.time_precision)
                     str_i = str(format_i)
@@ -357,21 +363,21 @@ class SolverWrapperOpenFOAMExtend(Component):
             check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         #TODO: Parallel running isn't checked yet! A prelimanary implementation has been done.
-        # else:
-        #     for i in np.arange(self.cores):
-        #         new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
-        #         for boundary in self.boundary_names:
-        #             new_path_boundaryData = os.path.join(self.working_directory,
-        #                                              'constant/boundaryData', boundary, self.cur_timestamp)
-        #         if os.path.isdir(new_path):
-        #             if i == 0:
-        #                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-        #             check_call(f'rm -rf {new_path}', shell=True)
-        #         if os.path.isdir(new_path_boundaryData):
-        #             tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
-        #             check_call(f'rm -rf {new_path_boundaryData}', shell=True)
-        #         check_call(f'mkdir -p {new_path}', shell=True)
-        #         check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+        else:
+            for i in np.arange(self.cores):
+                new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
+                for boundary in self.boundary_names:
+                    new_path_boundaryData = os.path.join(self.working_directory,
+                                                     'constant/boundaryData', boundary, self.cur_timestamp)
+                if os.path.isdir(new_path):
+                    if i == 0:
+                        tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                    check_call(f'rm -rf {new_path}', shell=True)
+                if os.path.isdir(new_path_boundaryData):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                    check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+                check_call(f'mkdir -p {new_path}', shell=True)
+                check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -516,11 +522,26 @@ class SolverWrapperOpenFOAMExtend(Component):
     def compile_adapted_openfoam_extend_solver(self):
         # compile foam-Extend adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
+        boundary_cond_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', 'coconut_src',
+                                         'boundaryConditions')
         try:
-            check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+            if self.compile_clean:
+                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True, env=self.env)
+                subprocess.check_call(
+                    f'wclean {boundary_cond_dir} && wmake libso {boundary_cond_dir} &> log.wmake_libso',
+                    cwd=self.working_directory, shell=True,
+                    env=self.env)
+
+            else:
+                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                                      env=self.env)
+                subprocess.check_call(f'wmake libso {boundary_cond_dir} &> log.wmake_libso',
+                                      cwd=self.working_directory, shell=True,
+                                      env=self.env)
+
         except subprocess.CalledProcessError:
             raise RuntimeError(
-                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
+                f'Compilation of {self.application} or coconut_src failed. Check {os.path.join(self.working_directory, "log.wmake or CSM/log.wmake_libso")}')
 
     # def write_cell_centres(self):
     #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
@@ -654,12 +675,12 @@ class SolverWrapperOpenFOAMExtend(Component):
             x = np.linspace(1,len(pressure),len(pressure))
             # print(x)
             f =interp1d(x,pressure)
-            #plt.scatter(self.x0,pressure)
+            # plt.scatter(x,pressure)
 
-            xnew = np.linspace(1,len(pressure),self.size_BC) #Creates as such always enough data for pressure and traction with corresponding point-file in boundaryData
+            xnew = np.linspace(1,len(pressure),self.size_BC)
             pressure = f(xnew)
-            #plt.plot(self.x0,pressure)
-            #plt.show()
+            # plt.plot(self.x0,pressure)
+            # plt.show()
             # print("pressure")
             # print(pressure)
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
