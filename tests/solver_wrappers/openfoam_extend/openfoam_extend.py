@@ -39,6 +39,7 @@ class TestSolverWrapperOpenFOAMExtend(unittest.TestCase):
         self.delta_t = self.parameters['settings']['delta_t']
         self.t_prec = self.parameters['settings']['time_precision']
         self.max_cores = min(4, multiprocessing.cpu_count())  # number of cores for parallel calculation
+	self.number_of_timesteps = self.parameters['settings']['number_of_timesteps']
 
         solver_name = self.parameters['type'].replace('solver_wrappers.', '')
         self.env = get_solver_env(solver_name, self.folder_path)

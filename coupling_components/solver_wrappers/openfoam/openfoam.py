@@ -413,11 +413,13 @@ class SolverWrapperOpenFOAM(Component):
                 mp_in_name = f'{boundary}_input'
                 mp_input = self.model.get_model_part(mp_in_name)
                 self.mp_in_decompose_seq_dict[mp_in_name] = {}
+
                 # get the point sequence in the boundary for points in different processors
                 for p in range(self.cores):
                     proc_dir = os.path.join(self.working_directory, f'processor{p}')
                     point_ids, points = of_io.get_boundary_points(proc_dir, '0', boundary)
-
+                    print(f'processor{p}')
+                    print(points)
                     if point_ids.size:
                         with open(os.path.join(proc_dir, 'constant/polyMesh/pointProcAddressing'), 'r') as f:
                             point_proc_add = np.abs(of_io.get_scalar_array(input_string=f.read(), is_int=True))
@@ -454,24 +456,26 @@ class SolverWrapperOpenFOAM(Component):
         self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
 
+        new_path = os.path.join(self.working_directory, self.cur_timestamp)
+
+        if self.settings['timeVaryingMappedFixedValue']:
+            for boundary in self.boundary_names:
+                new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                     self.cur_timestamp)
+            if os.path.isdir(new_path):
+                tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                subprocess.check_call(f'rm -rf {new_path}', shell=True)
+            if os.path.isdir(new_path_boundaryData):
+                tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+            subprocess.check_call(f'mkdir -p {new_path}', shell=True)
+            subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+
         if not self.settings['parallel']:  # if serial
-            new_path = os.path.join(self.working_directory, self.cur_timestamp)
             if os.path.isdir(new_path):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                 subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
-            if self.settings['timeVaryingMappedFixedValue']:
-                for boundary in self.boundary_names:
-                    new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                                         self.cur_timestamp)
-                if os.path.isdir(new_path):
-                    tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                    subprocess.check_call(f'rm -rf {new_path}', shell=True)
-                if os.path.isdir(new_path_boundaryData):
-                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
-                    subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
-                subprocess.check_call(f'mkdir -p {new_path}', shell=True)
-                subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)

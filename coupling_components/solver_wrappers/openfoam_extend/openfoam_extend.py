@@ -150,6 +150,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         # print("mp_output")
         # print(mp_output.x0,mp_output.y0,mp_output.z0)
 
+        # Initialize timeVaryingMappedSolidTraction boundary condition
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
             mp = self.model.get_model_part(mp_name)
@@ -157,6 +158,7 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             self.x0 = x0
             self.size_BC = self.x0.size
+            angle = 1.25
 
             x = np.zeros( 2 * self.x0.size)
             y = np.zeros( 2 * self.x0.size)
@@ -167,12 +169,12 @@ class SolverWrapperOpenFOAMExtend(Component):
             for i in range(len(x)):
                 if i < self.x0.size:
                     x[j] = self.x0[i]
-                    y[j] = y0[i]*np.cos(1.25*np.pi/180)
-                    z[j] = y0[i] * - np.sin(1.25 * np.pi / 180)
+                    y[j] = y0[i]*np.cos(angle*np.pi/180)
+                    z[j] = y0[i] * - np.sin(angle * np.pi / 180)
                 else:
                     x[j]= self.x0[i -self.x0.size]
-                    y[j] = y0[i - self.x0.size] * np.cos(1.25 * np.pi / 180)
-                    z[j] = y0[i - self.x0.size] * np.sin(1.25 * np.pi / 180)
+                    y[j] = y0[i - self.x0.size] * np.cos(angle * np.pi / 180)
+                    z[j] = y0[i - self.x0.size] * np.sin(angle * np.pi / 180)
                 j+=1
 
             boundary_data_path = os.path.join(self.working_directory,'constant/boundaryData')
@@ -361,21 +363,21 @@ class SolverWrapperOpenFOAMExtend(Component):
             check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         #TODO: Parallel running isn't checked yet! A prelimanary implementation has been done.
-        # else:
-        #     for i in np.arange(self.cores):
-        #         new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
-        #         for boundary in self.boundary_names:
-        #             new_path_boundaryData = os.path.join(self.working_directory,
-        #                                              'constant/boundaryData', boundary, self.cur_timestamp)
-        #         if os.path.isdir(new_path):
-        #             if i == 0:
-        #                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-        #             check_call(f'rm -rf {new_path}', shell=True)
-        #         if os.path.isdir(new_path_boundaryData):
-        #             tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
-        #             check_call(f'rm -rf {new_path_boundaryData}', shell=True)
-        #         check_call(f'mkdir -p {new_path}', shell=True)
-        #         check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+        else:
+            for i in np.arange(self.cores):
+                new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
+                for boundary in self.boundary_names:
+                    new_path_boundaryData = os.path.join(self.working_directory,
+                                                     'constant/boundaryData', boundary, self.cur_timestamp)
+                if os.path.isdir(new_path):
+                    if i == 0:
+                        tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                    check_call(f'rm -rf {new_path}', shell=True)
+                if os.path.isdir(new_path_boundaryData):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                    check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+                check_call(f'mkdir -p {new_path}', shell=True)
+                check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
 
         self.send_message('next')
         self.wait_message('next_ready')
