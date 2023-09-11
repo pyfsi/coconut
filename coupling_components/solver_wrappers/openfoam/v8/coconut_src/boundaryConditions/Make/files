@@ -1,4 +1,0 @@
-timeVaryingMappedCoupledVelocity/timeVaryingMappedCoupledVelocityFvPatchFields.C
-timeVaryingMappedCoupledVelocity/coconut_timeVaryingMappedFvPatchField/coconut_timeVaryingMapped.C
-
-LIB = $(FOAM_USER_LIBBIN)/libcoconut_timeVaryingMappedCoupledVelocity

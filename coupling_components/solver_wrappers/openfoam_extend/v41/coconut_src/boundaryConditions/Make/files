@@ -1,3 +1,0 @@
-timeVaryingMappedSolidTraction/timeVaryingMappedSolidTractionFvPatchVectorField.C
-
-LIB = $(FOAM_USER_LIBBIN)/libcoconut_solidModels
