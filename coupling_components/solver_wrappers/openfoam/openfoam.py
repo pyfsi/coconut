@@ -254,6 +254,7 @@ class SolverWrapperOpenFOAM(Component):
                 mp = self.model.get_model_part(mp_name)
                 x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
+
                 x = np.zeros(x0.size)
                 y = np.zeros(x0.size)
                 z = np.zeros(x0.size)
