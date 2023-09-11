@@ -64,10 +64,8 @@ Author
 #include "newLeastSquaresVolPointInterpolation.H"
 #include "twoDPointCorrector.H"
 #include "symmetryPolyPatch.H"
-//#include "solidContactFvPatchVectorField.H"
 #include "thermalModel.H"
 #include "thermalContactFvPatchScalarField.H"
-//#include "thermalGeneralContactFvPatchScalarField.H"
 #include "nonLinearGeometry.H"
 #include "transformGeometricField.H"
 #include "processorFvPatchFields.H"
@@ -109,13 +107,8 @@ int main(int argc, char *argv[])
     #include "checkForGlobalFaceZones.H"
     #include "checkForGlobalFaceZones.H"
 
-
-
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//    runTime.run();
     word prevRunTime;
     pointField oldPoints_;
 
@@ -164,9 +157,6 @@ int main(int argc, char *argv[])
             lo++;
             Info << "Time step number:  "<< lo << endl;
             waitForSync("next");
-//            remove("next.coco");
-//            OFstream outfile ("next_ready.coco");
-//            outfile << "next.coco" << endl;
             Info<< "Time: " << runTime.timeName() << nl << endl;
             iteration = 0;
             converged = false;
@@ -181,41 +171,6 @@ int main(int argc, char *argv[])
 
         if (exists("continue.coco"))
         {
-
-            //pointField &oldPoints = const_cast<pointField&>(oldPoints_); test to clean up code 2 => ok
-            //mesh.movePoints(oldPoints); test to clean up code 2 => ok
-
-//            curS == curS.oldTime();
-//            DU == DU.oldTime();
-//            cauchyTraction == cauchyTraction.oldTime();
-            //mechanical.resetYieldStress(); test to clean up code 1 => ok
-
-            //gradDU = fvc::grad(DU); test to clean up code 10
-
-            // Relative deformation gradient
-            //relF = I + gradDU.T(); test to clean up code 10 => ok
-
-            // Inverse relative deformation gradient
-            //relFinv = hinv(relF); test to clean up code 9 => ok
-
-             // Total deformation gradient
-            //F = relF & F.oldTime(); test to clean up code 8 => ok
-
-            // Relative Jacobian (Jacobian of relative deformation gradient)
-            //relJ = det(relF); test to clean up code 7 => ok
-
-            // Relative deformation gradient with volumetric strain removed
-            //relFbar = pow(relJ, -1.0/3.0)*relF;test to clean up code 6 => ok
-
-             // Jacobian of deformation gradient
-            //J = det(F); test to clean up code 5 => ok
-
-            // Update tau using material model
-            //mechanical.correct(tau); test to clean up code 3 => ok
-
-            //rho == rho.oldTime(); test to clean up code 4 => ok
-            //U == U.oldTime(); test to clean up code 4 => ok
-
             iteration++;
             Info<< "Coupling iteration = " << iteration << nl << endl;
 
@@ -408,7 +363,6 @@ int main(int argc, char *argv[])
                 #include "TEqn.H"
             }
 
-//            remove("continue.coco");
             //Return the coupling interface output
 
             Info<< "ExecutionTime = "<< runTime.elapsedCpuTime() << " s"
@@ -418,7 +372,6 @@ int main(int argc, char *argv[])
             runTime.run();
             runTime.write(); //debugging
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
-//            OFstream outfile ("continue_ready.coco");
             waitForSync("continue");
 
         }
@@ -434,17 +387,12 @@ int main(int argc, char *argv[])
         {
             waitForSync("save");
             #include "writeFields.H"
-            //runTime.write(); // OF-command: loops over all objects and requests writing - writing is done based on the specific settings of each variable (AUTO_WRITE, NO_WRITE)
-//            remove("save.coco");
-//            OFstream outfile ("save_ready.coco");
         }
 
         if (exists("stop.coco"))
         {
             waitForSync("stop");
-//            remove("stop.coco"); // should not be uncommented
             runTime.stopAt(Time::stopAtControls::saNoWriteNow);
-//            OFstream outfile ("stop_ready.coco");
             break;
         }
     }

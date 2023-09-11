@@ -254,7 +254,6 @@ class SolverWrapperOpenFOAM(Component):
                 mp = self.model.get_model_part(mp_name)
                 x0, y0, z0 = mp.x0, mp.y0, mp.z0
 
-
                 x = np.zeros(x0.size)
                 y = np.zeros(x0.size)
                 z = np.zeros(x0.size)
@@ -368,8 +367,7 @@ class SolverWrapperOpenFOAM(Component):
                     path_new_boundaryData = os.path.join(self.working_directory,'constant/boundaryData', boundary, timestamp )
                     shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                     shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
-                    # number_of_timesteps + 1 to avoid problems with hi label in timeVaryingMappedCoupledVelocity boundary condition @ the end the simulation. This has no influence on the result.
-                    for i in range(self.number_of_timesteps + 1):
+                    for i in range(self.number_of_timesteps):
                         time = self.delta_t * (i + 1)
                         timestamp = '{:.{}f}'.format(time, self.time_precision)
                         new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
@@ -414,13 +412,11 @@ class SolverWrapperOpenFOAM(Component):
                 mp_in_name = f'{boundary}_input'
                 mp_input = self.model.get_model_part(mp_in_name)
                 self.mp_in_decompose_seq_dict[mp_in_name] = {}
-
                 # get the point sequence in the boundary for points in different processors
                 for p in range(self.cores):
                     proc_dir = os.path.join(self.working_directory, f'processor{p}')
                     point_ids, points = of_io.get_boundary_points(proc_dir, '0', boundary)
-                    print(f'processor{p}')
-                    print(points)
+
                     if point_ids.size:
                         with open(os.path.join(proc_dir, 'constant/polyMesh/pointProcAddressing'), 'r') as f:
                             point_proc_add = np.abs(of_io.get_scalar_array(input_string=f.read(), is_int=True))
@@ -457,26 +453,24 @@ class SolverWrapperOpenFOAM(Component):
         self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
 
-        new_path = os.path.join(self.working_directory, self.cur_timestamp)
-
-        if self.settings['timeVaryingMappedFixedValue']:
-            for boundary in self.boundary_names:
-                new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                                     self.cur_timestamp)
-            if os.path.isdir(new_path):
-                tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
-                subprocess.check_call(f'rm -rf {new_path}', shell=True)
-            if os.path.isdir(new_path_boundaryData):
-                tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
-                subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
-            subprocess.check_call(f'mkdir -p {new_path}', shell=True)
-            subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
-
         if not self.settings['parallel']:  # if serial
+            new_path = os.path.join(self.working_directory, self.cur_timestamp)
             if os.path.isdir(new_path):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                 subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
+            if self.settings['timeVaryingMappedFixedValue']:
+                for boundary in self.boundary_names:
+                    new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                         self.cur_timestamp)
+                if os.path.isdir(new_path):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                    subprocess.check_call(f'rm -rf {new_path}', shell=True)
+                if os.path.isdir(new_path_boundaryData):
+                    tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}', layout='warning')
+                    subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+                subprocess.check_call(f'mkdir -p {new_path}', shell=True)
+                subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
         else:
             for i in np.arange(self.cores):
                 new_path = os.path.join(self.working_directory, 'processor' + str(i), self.cur_timestamp)
@@ -596,24 +590,17 @@ class SolverWrapperOpenFOAM(Component):
     def compile_adapted_openfoam_solver(self):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
-        boundary_cond_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', 'coconut_src', 'boundaryConditions')
         try:
             if self.compile_clean:
                 subprocess.check_call(f'wclean {solver_dir} && wmake {solver_dir} &> log.wmake',
                                       cwd=self.working_directory, shell=True,
                                       env=self.env)
-                subprocess.check_call(f'wclean {boundary_cond_dir} && wmake libso {boundary_cond_dir} &> log.wmake_libso',
-                                      cwd=self.working_directory, shell=True,
-                                      env=self.env)
             else:
                 subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
                                       env=self.env)
-                subprocess.check_call(f'wmake libso {boundary_cond_dir} &> log.wmake_libso',
-                    cwd=self.working_directory, shell=True,
-                    env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
-                f'Compilation of {self.application} or coconut_src failed. Check {os.path.join(self.working_directory, "log.wmake or CFD/log.wmake_libso")}')
+                f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
 
     def write_cell_centres(self):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
@@ -669,8 +656,8 @@ class SolverWrapperOpenFOAM(Component):
 
             self.interface_output.set_variable_data(mp_name, 'traction', -wall_shear_stress * self.density_for_traction)
             self.interface_output.set_variable_data(mp_name, 'pressure', pressure * self.density_for_pressure)
-            # plt.plot(x0,pressure)
-            # plt.show()
+            #plt.plot(x0,pressure)
+            #plt.show()
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):
