@@ -1,5 +1,5 @@
 {
-  "type": "solver_wrappers.fluent.v2022R1",
+  "type": "solver_wrappers.fluent.v2023R1",
   "settings": {
     "working_directory": "this is changed upon running the test",
     "case_file": "case_tube3d.cas.h5",
