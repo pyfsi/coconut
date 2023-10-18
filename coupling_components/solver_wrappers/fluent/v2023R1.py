@@ -3,12 +3,12 @@ from coconut import tools
 
 
 def create(parameters):
-    return SolverWrapperFluent2022R1(parameters)
+    return SolverWrapperFluent2023R1(parameters)
 
 
-class SolverWrapperFluent2022R1(SolverWrapperFluent):
-    version = '2022R1'
-    version_bis = '22.1.0'
+class SolverWrapperFluent2023R1(SolverWrapperFluent):
+    version = '2023R1'
+    version_bis = '23.1.0'
 
     def __init__(self, parameters):
         super().__init__(parameters)
