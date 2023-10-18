@@ -82,7 +82,8 @@ class SolverWrapperKratosStructure91(SolverWrapperKratosStructure):
                             var_residual = float(var_residual_list_2[-1])
                             residual_array[i] = var_residual
                         else:
-                            raise RuntimeError(f'{variable} or {variable} CRITERION not found in kratos log file')
+                            pass
+			    #raise RuntimeError(f'{variable} or {variable} CRITERION not found in kratos log file')
 
                     with open(self.res_filepath, 'a') as f:
                         np.savetxt(f, [residual_array], delimiter=', ')
