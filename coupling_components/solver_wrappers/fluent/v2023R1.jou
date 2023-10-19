@@ -77,8 +77,7 @@ define user-defined execute-on-demand "get_thread_ids::v2023R1"
             (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
-                user-defined \"move_nodes::v2023R1\"" (list-ref face_threads k)))
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::v2023R1\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
         )
         (if unsteady
             (begin
