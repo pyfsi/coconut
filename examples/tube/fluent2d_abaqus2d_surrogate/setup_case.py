@@ -4,7 +4,7 @@ import subprocess
 from os.path import join
 from coconut import tools
 
-cfd_solver = 'fluent.v2019R3'
+cfd_solver = 'fluent.v2022R1'
 csm_solver = 'abaqus.v614'
 
 cfd_dir = './CFD'

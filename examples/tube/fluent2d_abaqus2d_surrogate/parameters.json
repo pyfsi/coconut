@@ -194,10 +194,10 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2019R3",
+        "type": "solver_wrappers.fluent.v2023R1",
         "settings": {
           "working_directory": "CFD",
-          "case_file": "case_tube2d.cas",
+          "case_file": "case_tube2d.cas.h5",
           "dimensions": 2,
           "unsteady": true,
           "thread_names": [
