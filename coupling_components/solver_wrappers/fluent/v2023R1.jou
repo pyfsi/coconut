@@ -107,8 +107,7 @@ define user-defined execute-on-demand "get_thread_ids::v2023R1"
     (system "sleep 0.1")
     (if (check_message "save")
         (begin
-            (ti-menu-load-string (format #f
-                "file write-case-data \"case_timestep~a.cas\"" (%rpgetvar 'udf/timestep)))
+            (ti-menu-load-string (format #f "file write-case-data \"case_timestep~a.cas\"" (%rpgetvar 'udf/timestep)))
             (send_message "save_ready")
         )
     )
