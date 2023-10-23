@@ -5,6 +5,7 @@ from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 import matplotlib.pyplot as plt
 
+import copy
 import numpy as np
 import os
 import shutil
@@ -180,9 +181,6 @@ class SolverWrapperOpenFOAM(Component):
         # create interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
-
-        #if self.settings['moving_rigid_body']:
-
 
         if self.settings['timeVaryingMappedFixedValue']:
             for boundary in self.boundary_names:
@@ -430,6 +428,84 @@ class SolverWrapperOpenFOAM(Component):
                     else:
                         self.mp_in_decompose_seq_dict[mp_in_name][p] = None
 
+                    if self.settings['timeVaryingMappedFixedValue']:
+
+                        path_working_directory_processor = os.path.join(self.working_directory, f'processor{p}')
+
+                        self.write_cell_centres_parallel_timeVaryingMappedCoupledVelocity(path_working_directory_processor)
+
+                        boundary_filename = os.path.join(self.working_directory, f'processor{p}/constant/polyMesh/boundary')
+                        for boundary in self.boundary_names:
+                            with open(boundary_filename, 'r') as boundary_file:
+                                boundary_file_string = boundary_file.read()
+                            boundary_dict = of_io.get_dict(input_string=boundary_file_string, keyword=boundary)
+                            # get point ids and coordinates for all the faces in the boundary
+                            # node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory/ f'processor{p}',
+                            #                                                   time_folder='0',
+                            #                                                   boundary_name=boundary)
+                            nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
+
+                        x0, y0, z0 = self.read_face_centres_parallel_timeVaryingMappedCoupledVelocity(boundary,nfaces,p)
+
+                        x_p = np.zeros(2* x0.size)
+                        y_p = np.zeros(2* x0.size)
+                        z_p = np.zeros(2* x0.size)
+                        index = int(len(x_p) / 2)
+
+
+                        j = 0
+                        for i in range(len(x_p)):
+                            if i < len(x0):
+                                x_p[j] = x0[i]
+                                y_p[j] = y0[i] * np.cos(np.pi/180)
+                                z_p[j] = - y0[i] * np.sin(np.pi/180)
+
+                            else:
+                                x_p[j] = x0[i-index]
+                                y_p[j] = y0[i-index] * np.cos(np.pi/180)
+                                z_p[j] = y0[i-index] * np.sin(np.pi/180)
+                            j += 1
+
+                        boundary_data_path = os.path.join(self.working_directory, f'processor{p}/constant/boundaryData')
+                        if not os.path.exists(boundary_data_path):
+                            os.mkdir(boundary_data_path)
+                        boundary_path = os.path.join(boundary_data_path, boundary)
+                        shutil.rmtree(boundary_path, ignore_errors=True)
+                        os.mkdir(boundary_path)
+                        data_folder = os.path.join(boundary_path, '0')
+                        os.mkdir(data_folder)
+
+                        with open(os.path.join(boundary_path, 'points'), 'w') as f:
+                            f.write('(\n')
+                            for point in range(x_p.size):
+                                f.write(f'({x_p[point]} {y_p[point]} {z_p[point]})\n')
+                            f.write(')')
+
+                        with open(os.path.join(data_folder, 'U'), 'w') as h:
+                            h.write(f'{x_p.size}\n')
+                            h.write('(\n')
+                            for i in range(x_p.size):
+                                h.write(f'({1} {0} {0} )\n')
+                            h.write(')')
+
+                        timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
+                        path_orig_boundaryData = os.path.join(self.working_directory,
+                                                              f'processor{p}/constant/boundaryData', boundary, '0')
+                        # os.makedirs(path_orig_boundaryData)
+                        path_new_boundaryData = os.path.join(self.working_directory,
+                                                             f'processor{p}/constant/boundaryData', boundary,
+                                                             timestamp)
+                        shutil.rmtree(path_new_boundaryData, ignore_errors=True)
+                        shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
+                        for i in range(self.number_of_timesteps + 1):
+                            time = self.delta_t * (i + 1)
+                            timestamp = '{:.{}f}'.format(time, self.time_precision)
+                            new_path_boundaryData = os.path.join(self.working_directory,
+                                                                 f'processor{p}/constant/boundaryData',
+                                                                 boundary,
+                                                                 timestamp)
+                            shutil.copytree(path_orig_boundaryData, new_path_boundaryData)
+
         # starting the OpenFOAM infinite loop for coupling!
         if not self.settings['parallel']:
             cmd = self.application + '&> log.' + self.application
@@ -482,6 +558,23 @@ class SolverWrapperOpenFOAM(Component):
                     if i == 0:
                         tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                     subprocess.check_call(f'rm -rf {new_path}', shell=True)
+
+                if self.settings['timeVaryingMappedFixedValue']:
+                    for boundary in self.boundary_names:
+                        new_path_boundaryData = os.path.join(self.working_directory, f'processor{i}/constant/boundaryData', boundary,
+                                                             self.cur_timestamp)
+                    if os.path.isdir(new_path):
+                        if i == 0:
+                            tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
+                        subprocess.check_call(f'rm -rf {new_path}', shell=True)
+                    if os.path.isdir(new_path_boundaryData):
+                        if i == 0:
+                            tools.print_info(f'Overwrite existing time step folder: {new_path_boundaryData}',
+                                         layout='warning')
+                        subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
+                    subprocess.check_call(f'mkdir -p {new_path}', shell=True)
+                    subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
+
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -618,7 +711,13 @@ class SolverWrapperOpenFOAM(Component):
     def write_cell_centres(self):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
+    def write_cell_centres_parallel_timeVaryingMappedCoupledVelocity(self):
+        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+
     def read_face_centres(self, boundary_name, nfaces):
+        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+
+    def read_face_centres_parallel_timeVaryingMappedCoupledVelocity(self, boundary_name, nfaces):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def delete_prev_iter_output(self):
@@ -698,7 +797,6 @@ class SolverWrapperOpenFOAM(Component):
                 displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
                 mp = self.model.get_model_part(mp_name)
                 x0, y0, z0 = mp.x0, mp.y0, mp.z0
-                nfaces = mp.size
 
                 if self.settings['timeVaryingMappedFixedValue']:
                     if self.timestep <=10:
@@ -749,12 +847,66 @@ class SolverWrapperOpenFOAM(Component):
                 for boundary in self.boundary_names:
                     mp_name = f'{boundary}_input'
                     displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-                    seq = self.mp_in_decompose_seq_dict[mp_name][proc]
-                    if seq is not None:
-                        boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-                        boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
-                                                                           vector_array=displacement[seq])
-                        pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+
+                    if self.settings['timeVaryingMappedFixedValue']:
+                        if self.timestep <= 10:
+                            displacement[:, 0] = 1
+                            velocity = displacement[:, 0]
+                        else:
+                            velocity = displacement[:, 0] * 1e5
+
+                        velocity = copy.deepcopy(velocity)
+
+                        data_folder_home = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                                   self.cur_timestamp)
+                        velocity_input = np.zeros((len(velocity), 3))
+                        index = int(len(velocity) / 2)
+
+                        j = 0
+                        for i in range(len(velocity)):
+                            if i % 2 == 0:
+                                velocity_input[j, 0] = velocity[i]
+                            else:
+                                velocity_input[j + index, 0] = velocity[i]
+                                j += 1
+
+                        with open(os.path.join(data_folder_home, 'U'), 'w') as f:
+                            f.write(f'{velocity_input.shape[0]}\n')
+                            f.write('(\n')
+                            for i in range(velocity_input.shape[0]):
+                                f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
+                            f.write(')')
+
+                        displacement[:, 0] = 0
+
+                        seq = self.mp_in_decompose_seq_dict[mp_name][proc]
+
+                        data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',
+                                                   boundary, self.cur_timestamp)
+
+                        velocity_input = np.zeros((len(velocity[seq]), 3))
+                        index = int(len(velocity[seq]) / 2)
+
+                        j = 0
+                        for i in range(len(velocity[seq])):
+                            if i % 2 == 0:
+                                velocity_input[j, 0] = velocity[seq][i]
+                            else:
+                                velocity_input[j + index, 0] = velocity[seq][i]
+                                j += 1
+
+                        with open(os.path.join(data_folder, 'U'), 'w') as f:
+                            f.write(f'{velocity_input.shape[0]}\n')
+                            f.write('(\n')
+                            for i in range(velocity_input.shape[0]):
+                                f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
+                            f.write(')')
+
+                        if seq is not None:
+                            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
+                                                                               vector_array=displacement[seq])
+                            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
                 with open(pointdisp_filename, 'w') as f:
                     f.write(pointdisp_string)

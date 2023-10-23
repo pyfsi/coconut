@@ -27,6 +27,11 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         check_call('postProcess -func writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory,
                    shell=True, env=self.env)
 
+    def write_cell_centres_parallel_timeVaryingMappedCoupledVelocity(self, processor_directory):
+        for p in range(self.cores):
+            check_call('postProcess -func writeCellCentres -time 0 &> log.writeCellCentres;', cwd=processor_directory,
+                   shell=True, env=self.env)
+
     def read_face_centres(self, boundary_name, nfaces):
         filename_x = join(self.working_directory, '0/Cx')
         filename_y = join(self.working_directory, '0/Cy')
@@ -36,6 +41,18 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces, is_scalar=True)
         z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces, is_scalar=True)
         return x0, y0, z0
+
+    def read_face_centres_parallel_timeVaryingMappedCoupledVelocity(self, boundary_name, nfaces,processor):
+        filename_x = join(self.working_directory, f'processor{processor}/0/Cx')
+        filename_y = join(self.working_directory, f'processor{processor}/0/Cy')
+        filename_z = join(self.working_directory, f'processor{processor}/0/Cz')
+
+        x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces, is_scalar=True)
+        y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces, is_scalar=True)
+        z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces, is_scalar=True)
+
+        return x0, y0, z0
+
 
     def wall_shear_stress_dict(self):
         dct = (f'    {self.wall_shear_stress_variable}\n'

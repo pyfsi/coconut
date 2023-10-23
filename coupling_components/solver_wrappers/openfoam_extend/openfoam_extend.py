@@ -47,6 +47,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.start_time = self.settings['timestep_start'] * self.delta_t
         self.die_min = self.settings['axial_coordinate_die_min']
         self.die_max = self.settings['axial_coordinate_die_max']
+        self.slot = self.settings['slot_start_FSI']
         self.timestep = self.physical_time = self.iteration = self.cur_timestamp = self.prev_timestamp = None
         self.openfoam_extend_process = None
         self.write_interval = self.write_precision = None
@@ -385,6 +386,7 @@ class SolverWrapperOpenFOAMExtend(Component):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
+
         self.iteration += 1
 
         # store incoming displacements
@@ -597,8 +599,14 @@ class SolverWrapperOpenFOAMExtend(Component):
             y_bis = sorted[:,1]
             z_bis = sorted[:,1] * np.sin(np.radians(2.5))
             velo_axial = sorted[:,2]
-            disp_rad = sorted[:,3]
-            disp_z = sorted[:,3]* np.sin(np.radians(2.5))
+            # As the timestep for the wiredrawing case is very small, it is hard to get the wire stable, which is detrimental for the FSI calculations.
+            # This is the reason why a first amount of timesteps no displacements are transferred
+            if (self.timestep > self.slot):
+                disp_rad = sorted[:,3]
+                disp_z = sorted[:,3]* np.sin(np.radians(2.5))
+            else:
+                disp_rad = sorted[:, 3] * 0
+                disp_z = sorted[:, 3] * np.sin(np.radians(2.5)) * 0
             mp_out = np.zeros((len(x_bis) * 2, 3))
             displacement = np.zeros((len(x_bis) * 2, 3))
 
@@ -697,57 +705,92 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             pressure_in = np.zeros((2 * pressure.size))
             traction_in = np.zeros((2 * traction_new.shape[0],3))
-            # print("pressure_in")
-            k = 0
-            for i in range(len(pressure_in)):
-                if i < pressure.size:
-                    pressure_in[k] = pressure[i]
-                    # print(pressure[i])
-                else:
-                    pressure_in[k] = pressure[i - pressure.size]
-                k += 1
 
-            l = 0
-            for i in range(traction_in.shape[0]):
-                if i < traction_new.shape[0]:
-                    traction_in[l] = traction_new[i]
-                else:
-                    traction_in[l] = traction_new[i - traction_new.shape[0]]
-                l += 1
+            if (self.timestep > self.slot):
 
-            with open(os.path.join(data_folder,'pressure'),'w') as f:
-                f.write("""
+                # print("pressure_in")
+                k = 0
+                for i in range(len(pressure_in)):
+                    if i < pressure.size:
+                        pressure_in[k] = pressure[i]
+                        # print(pressure[i])
+                    else:
+                        pressure_in[k] = pressure[i - pressure.size]
+                    k += 1
+
+                l = 0
+                for i in range(traction_in.shape[0]):
+                    if i < traction_new.shape[0]:
+                        traction_in[l] = traction_new[i]
+                    else:
+                        traction_in[l] = traction_new[i - traction_new.shape[0]]
+                    l += 1
+
+                with open(os.path.join(data_folder,'pressure'),'w') as f:
+                    f.write("""
+                    FoamFile
+                    {
+                         version   2.0;
+                         format    ascii;
+                         class     scalarField;
+                         object    values;
+                    }
+                    //***********************************************************************// //\n
+                    """)
+                    f.write(f'{pressure_in.shape[0]}\n')
+                    f.write('(\n')
+                    for i in range(pressure_in.size):
+                        f.write(f'{pressure_in[i]}\n')
+                    f.write(')')
+
+                with open(os.path.join(data_folder,'traction'),'w') as f:
+                    f.write("""
+                    FoamFile
+                    {
+                         version   2.0;
+                         format    ascii;
+                         class     vectorField;
+                         object    values;
+                    }
+                    //***********************************************************************// //\n
+                    """)
+                    f.write(f'{traction_in.shape[0]}\n')
+                    f.write('(\n')
+                    for i in range(traction_in.shape[0]):
+                        f.write(f'({traction_in[i,0]} {traction_in[i,1]} {traction_in[i,2]})\n')
+                    f.write(')')
+            else:
+                with open(os.path.join(data_folder, 'pressure'), 'w') as g:
+                    g.write("""
                 FoamFile
                 {
                      version   2.0;
                      format    ascii;
                      class     scalarField;
-                     object    values;
+                     object    pressure;
                 }
-                //***********************************************************************// //\n
-                """)
-                f.write(f'{pressure_in.shape[0]}\n')
-                f.write('(\n')
-                for i in range(pressure_in.size):
-                    f.write(f'{pressure_in[i]}\n')
-                f.write(')')
+                //*************************************************************************//\n""")
+                    g.write(f'{pressure_in.shape[0]}\n')
+                    g.write('(\n')
+                    for i in range(pressure_in.size):
+                        g.write(f'{0}\n')
+                    g.write(')')
 
-            with open(os.path.join(data_folder,'traction'),'w') as f:
-                f.write("""
+                with open(os.path.join(data_folder, 'traction'), 'w') as h:
+                    h.write("""
                 FoamFile
                 {
                      version   2.0;
                      format    ascii;
                      class     vectorField;
-                     object    values;
+                     object    traction;
                 }
-                //***********************************************************************// //\n
-                """)
-                f.write(f'{traction_in.shape[0]}\n')
-                f.write('(\n')
-                for i in range(traction_in.shape[0]):
-                    f.write(f'({traction_in[i,0]} {traction_in[i,1]} {traction_in[i,2]})\n')
-                f.write(')')
+                //*************************************************************************//\n""")
+                    h.write(f'{traction_in.shape[0]}\n')
+                    h.write('(\n')
+                    for i in range(traction_in.shape[0]):
+                        h.write(f'({0} {0} {0} )\n')
+                    h.write(')')
 
             # if self.settings['parallel']:
             #     check_call(f'decomposePar -fields -time {self.cur_timestamp} &> log.decomposePar;',
