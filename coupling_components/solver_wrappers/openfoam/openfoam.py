@@ -785,6 +785,41 @@ class SolverWrapperOpenFOAM(Component):
         the field is subsequently decomposed using the command: decomposePar.
        :return:
        """
+        for boundary in self.boundary_names:
+            mp_name = f'{boundary}_input'
+            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+
+            if self.settings['timeVaryingMappedFixedValue']:
+                if self.timestep <= 10:
+                    displacement[:, 0] = 1
+                    velocity = displacement[:, 0]
+                else:
+                    velocity = displacement[:, 0] * 1e5
+
+                velocity = copy.deepcopy(velocity)
+
+                data_folder_home = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
+                                           self.cur_timestamp)
+                velocity_input = np.zeros((len(velocity), 3))
+                index = int(len(velocity) / 2)
+
+                j = 0
+                for i in range(len(velocity)):
+                    if i % 2 == 0:
+                        velocity_input[j, 0] = velocity[i]
+                    else:
+                        velocity_input[j + index, 0] = velocity[i]
+                        j += 1
+
+                with open(os.path.join(data_folder_home, 'U'), 'w') as f:
+                    f.write(f'{velocity_input.shape[0]}\n')
+                    f.write('(\n')
+                    for i in range(velocity_input.shape[0]):
+                        f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
+                    f.write(')')
+
+            displacement[:, 0] = 0
+
         if not self.settings['parallel']:
             pointdisp_filename_ref = os.path.join(self.working_directory, '0/pointDisplacement')
             pointdisp_filename = os.path.join(self.working_directory, 'constant/pointDisplacementTmp')
@@ -792,46 +827,9 @@ class SolverWrapperOpenFOAM(Component):
             with open(pointdisp_filename_ref, 'r') as ref_file:
                 pointdisp_string = ref_file.read()
 
-            for boundary in self.boundary_names:
-                mp_name = f'{boundary}_input'
-                displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-                mp = self.model.get_model_part(mp_name)
-                x0, y0, z0 = mp.x0, mp.y0, mp.z0
-
-                if self.settings['timeVaryingMappedFixedValue']:
-                    if self.timestep <=10:
-                        displacement[:,0] = 1
-                        velocity = displacement[:,0]
-                    else:
-                        velocity = displacement[:,0] * 1e5
-
-                    data_folder = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                               self.cur_timestamp)
-                    velocity_input = np.zeros((len(velocity), 3))
-                    index = int(len(velocity) / 2)
-
-                    j = 0
-                    for i in range(len(velocity)):
-                        if i % 2 == 0:
-                            velocity_input[j, 0] = velocity[i]
-                        else:
-                            velocity_input[j + index, 0] = velocity[i]
-                            j += 1
-
-                    with open(os.path.join(data_folder, 'U'), 'w') as f:
-                        f.write(f'{velocity_input.shape[0]}\n')
-                        f.write('(\n')
-                        for i in range(velocity_input.shape[0]):
-                            f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
-                        f.write(')')
-
-                displacement[:, 0] = 0
                 boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
                 boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict, vector_array=displacement)
                 pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
-
-                # plt.plot(x0,displacement[:,1])
-                # plt.show()
 
             with open(pointdisp_filename, 'w') as f:
                 f.write(pointdisp_string)
@@ -844,77 +842,39 @@ class SolverWrapperOpenFOAM(Component):
                 with open(pointdisp_filename_ref, 'r') as ref_file:
                     pointdisp_string = ref_file.read()
 
-                for boundary in self.boundary_names:
-                    mp_name = f'{boundary}_input'
-                    displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                if self.settings['timeVaryingMappedFixedValue']:
 
-                    if self.settings['timeVaryingMappedFixedValue']:
-                        if self.timestep <= 10:
-                            displacement[:, 0] = 1
-                            velocity = displacement[:, 0]
+                    seq = self.mp_in_decompose_seq_dict[mp_name][proc]
+
+                    data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',
+                                               boundary, self.cur_timestamp)
+
+                    velocity_input = np.zeros((len(velocity[seq]), 3))
+                    index = int(len(velocity[seq]) / 2)
+
+                    j = 0
+                    for i in range(len(velocity[seq])):
+                        if i % 2 == 0:
+                            velocity_input[j, 0] = velocity[seq][i]
                         else:
-                            velocity = displacement[:, 0] * 1e5
+                            velocity_input[j + index, 0] = velocity[seq][i]
+                            j += 1
 
-                        velocity = copy.deepcopy(velocity)
+                    with open(os.path.join(data_folder, 'U'), 'w') as f:
+                        f.write(f'{velocity_input.shape[0]}\n')
+                        f.write('(\n')
+                        for i in range(velocity_input.shape[0]):
+                            f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
+                        f.write(')')
 
-                        data_folder_home = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                                   self.cur_timestamp)
-                        velocity_input = np.zeros((len(velocity), 3))
-                        index = int(len(velocity) / 2)
-
-                        j = 0
-                        for i in range(len(velocity)):
-                            if i % 2 == 0:
-                                velocity_input[j, 0] = velocity[i]
-                            else:
-                                velocity_input[j + index, 0] = velocity[i]
-                                j += 1
-
-                        with open(os.path.join(data_folder_home, 'U'), 'w') as f:
-                            f.write(f'{velocity_input.shape[0]}\n')
-                            f.write('(\n')
-                            for i in range(velocity_input.shape[0]):
-                                f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
-                            f.write(')')
-
-                        displacement[:, 0] = 0
-
-                        seq = self.mp_in_decompose_seq_dict[mp_name][proc]
-
-                        data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',
-                                                   boundary, self.cur_timestamp)
-
-                        velocity_input = np.zeros((len(velocity[seq]), 3))
-                        index = int(len(velocity[seq]) / 2)
-
-                        j = 0
-                        for i in range(len(velocity[seq])):
-                            if i % 2 == 0:
-                                velocity_input[j, 0] = velocity[seq][i]
-                            else:
-                                velocity_input[j + index, 0] = velocity[seq][i]
-                                j += 1
-
-                        with open(os.path.join(data_folder, 'U'), 'w') as f:
-                            f.write(f'{velocity_input.shape[0]}\n')
-                            f.write('(\n')
-                            for i in range(velocity_input.shape[0]):
-                                f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
-                            f.write(')')
-
-                        if seq is not None:
-                            boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-                            boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
-                                                                               vector_array=displacement[seq])
-                            pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+                    if seq is not None:
+                        boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                        boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
+                                                                           vector_array=displacement[seq])
+                        pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
                 with open(pointdisp_filename, 'w') as f:
                     f.write(pointdisp_string)
-
-    # old way of implementation (with decomposePar)
-    # if self.settings['parallel']:
-    #     subprocess.check_call(f'decomposePar -fields -time '' -constant &> log.decomposePar;',
-    #                cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
     def check_output_file(self, filename, nfaces):
