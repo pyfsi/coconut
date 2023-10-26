@@ -67,7 +67,7 @@ class SolverWrapperFluent(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
-        self.moving_zone = self.settings.get('moving_zone','moving-zone')
+        self.moving_zones = self.settings.get('moving_zones','moving_zone')
         self.rigid_body_motion_on = self.settings.get('rigid_body_motion',False)
 
         # time
@@ -86,6 +86,9 @@ class SolverWrapperFluent(Component):
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
+        moving_zones_str = ''
+        for moving_zone in self.moving_zones:
+            moving_zones_str += ' "' + moving_zone + '"'
         unsteady = '#f'
         if self.unsteady:
             unsteady = '#t'
@@ -110,7 +113,7 @@ class SolverWrapperFluent(Component):
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
                                                                                         '\n'))
-                    line = line.replace('|MOVING_ZONE|', self.moving_zone)
+                    line = line.replace('|MOVING_ZONES|', moving_zones_str)
                     line = line.replace('|RIGID_BODY_MOTION|',rigid_body_motion_on)
                     line = line.replace('|DIMENSION_2D|',dimension_2D)
                     outfile.write(line)
@@ -321,7 +324,7 @@ class SolverWrapperFluent(Component):
             self.write_move_zone()
 
         # write interface data
-        self.write_node_positions()  #Commented om enkel move_zone te testen
+        self.write_node_positions()
 
         # copy input data for debugging
         if self.debug:
@@ -426,7 +429,10 @@ class SolverWrapperFluent(Component):
                 try:
                     os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
                     os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
-                    os.remove(join(self.dir_cfd, f'move_zone_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_component_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_elevator_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_rudder_left_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_rudder_right_update_timestep{timestep}.dat'))
                 except OSError:
                     pass
 
@@ -471,11 +477,42 @@ class SolverWrapperFluent(Component):
         return ids
 
     def write_move_zone(self):
+
+        # component (wing)
+        omega, axis_x, axis_y, axis_z, origin_x, origin_y, origin_z, velocity_x, velocity_y, velocity_z = \
+            self.rigid_body_motion.move_zone(self.timestep, self.delta_t)
+        data = np.array(
+            [[omega], [axis_x], [axis_y], [axis_z], [origin_x], [origin_y], [origin_z], [velocity_x], [velocity_y],
+             [velocity_z]])
+        fmt = '%27.17e'
+        tmp = f'move_zone_component_update_timestep{self.timestep}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+
+        #elevator
         omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_component(self.timestep)
+            self.rigid_body_motion.move_zone_elevator(self.timestep,self.delta_t)
         data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
         fmt = '%27.17e'
-        tmp = f'move_zone_update_timestep{self.timestep}.dat'
+        tmp = f'move_zone_elevator_update_timestep{self.timestep}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+
+        #rudder left
+        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+            self.rigid_body_motion.move_zone_rudder_left(self.timestep,self.delta_t)
+        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+        fmt = '%27.17e'
+        tmp = f'move_zone_rudder_left_update_timestep{self.timestep}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+
+        #rudder right
+        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+            self.rigid_body_motion.move_zone_rudder_right(self.timestep,self.delta_t)
+        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+        fmt = '%27.17e'
+        tmp = f'move_zone_rudder_right_update_timestep{self.timestep}.dat'
         file_name = join(self.dir_cfd, tmp)
         np.savetxt(file_name, data, fmt=fmt, header='', comments='')
 
@@ -487,7 +524,15 @@ class SolverWrapperFluent(Component):
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
 
             if self.rigid_body_motion_on:
-                x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep)
+                if mp_name == 'tail_nodes':
+                    x,y,z = self.rigid_body_motion.move_coordinates_elevator(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
+                elif mp_name == 'vtail_left_nodes':
+                    x,y,z = self.rigid_body_motion.move_coordinates_rudder_left(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
+                elif mp_name == 'vtail_right_nodes':
+                    x,y,z = self.rigid_body_motion.move_coordinates_rudder_right(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
+                else:
+                    x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep,self.delta_t)
+
             else:
                 x = model_part.x0 + displacement[:, 0]
                 y = model_part.y0 + displacement[:, 1]

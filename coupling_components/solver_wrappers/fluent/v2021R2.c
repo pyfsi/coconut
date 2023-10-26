@@ -539,7 +539,6 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                     if (NODE_DM_ID(node) == ids[i]) {
                         for (d = 0; d < ND_ND; d++) {
                             NODE_COORD(node)[d] = coords[d][i];
-                            print(NODE_COORD_REF(node)[d])
                         }
                         NODE_POS_UPDATED(node);
                         break;
@@ -549,7 +548,6 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                         exit(1);
                     }
                 }
-
             }
         }
     } end_f_loop(face, face_thread);
@@ -562,6 +560,12 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                 timestep-1, thread_id);
         remove(file_name);}
 #endif /* !RP_HOST */
+
+/*
+#if RP_NODE
+    remove(file_name);
+#endif
+*/
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }

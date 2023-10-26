@@ -59,6 +59,10 @@ solver_load_cmd_dict = {
     'hortense': {
             'fluent.v2021R2': 'module load FLUENT/2021R2 && module load intel/2020b && module load vsc-mympirun && export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                               '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && scontrol show hostnames | tr \' \' \',\' > fluent.hosts',
+        'fluent.v2021R1': 'module load FLUENT/2021R1 && module load intel/2020b  && export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be &&  cat $PBS_NODEFILE > fluent.hosts',
+        'abaqus.v2022': 'ml intel/2020b && module load ABAQUS/2022 && unset SLURM_GTIDS '
+                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
 
     }
 }

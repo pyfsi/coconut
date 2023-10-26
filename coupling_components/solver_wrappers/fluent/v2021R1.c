@@ -570,13 +570,13 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }
 
-  /*------------*/
- /* move_zone */
-/*------------*/
+  /*--------------------*/
+ /* move_zone component */
+/*--------------------*/
 
-DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
+DEFINE_ZONE_MOTION(move_zone_component,omega,axis,origin,velocity,time,dtime) {
 
-    Message0("\n\nRunning UDF 'move_zone.'\n");
+    Message0("\n\nRunning UDF 'move_zone_component.'\n");
 
     char file_name_zone[256];
     real axis_x;
@@ -601,7 +601,7 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
 
     host_to_node_int_1(timestep);
 #if !RP_NODE
-    sprintf(file_name_zone, "move_zone_update_timestep%i.dat",timestep
+    sprintf(file_name_zone, "move_zone_component_update_timestep%i.dat",timestep
             );
 #else
     struct stat st = {0};
@@ -610,7 +610,7 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
         mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
 
-    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_update_timestep%i.dat",timestep
+    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_component_update_timestep%i.dat",timestep
             );
     host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
@@ -656,6 +656,277 @@ DEFINE_ZONE_MOTION(move_zone,omega,axis,origin,velocity,time,dtime) {
     N3V_D(origin,=,origin_x,origin_y,origin_z);
     N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
 
-Message0("\n\nFinished UDF 'move_zone.'\n");
+Message0("\n\nFinished UDF 'move_zone_component.'\n");
+return;
+}
+
+  /*--------------------*/
+ /* move_zone elevator */
+/*--------------------*/
+
+DEFINE_ZONE_MOTION(move_zone_elevator,omega,axis,origin,velocity,time,dtime) {
+
+    Message0("\n\nRunning UDF 'move_zone_elevator.'\n");
+
+    char file_name_zone[256];
+    real axis_x;
+    real axis_y;
+    real axis_z;
+    real origin_x;
+    real origin_y;
+    real origin_z;
+    real velocity_x;
+    real velocity_y;
+    real velocity_z;
+
+    /*real Omega;*/
+    DECLARE_MEMORY(Omega, real);
+    ASSIGN_MEMORY(Omega, 1, real);
+
+    FILE *file = NULL;
+
+#if !RP_NODE
+    timestep = RP_Get_Integer("udf/timestep");
+#endif /* !RP_NODE */
+
+    host_to_node_int_1(timestep);
+#if !RP_NODE
+    sprintf(file_name_zone, "move_zone_elevator_update_timestep%i.dat",timestep
+            );
+#else
+    struct stat st = {0};
+
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+
+    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_elevator_update_timestep%i.dat",timestep
+            );
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
+#endif /* !RP_NODE */
+
+#if RP_HOST
+    host_to_node_sync_file(file_name_zone);
+#endif /* RP_HOST */
+
+
+    if (NULLP(file = fopen(file_name_zone, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name_zone);
+        exit(1);
+    }
+
+    fscanf(file, "%lf", &Omega[0]);
+    fscanf(file, "%lf", &axis_x);
+    fscanf(file, "%lf", &axis_y);
+    fscanf(file, "%lf", &axis_z);
+    fscanf(file, "%lf", &origin_x);
+    fscanf(file, "%lf", &origin_y);
+    fscanf(file, "%lf", &origin_z);
+    fscanf(file, "%lf", &velocity_x);
+    fscanf(file, "%lf", &velocity_y);
+    fscanf(file, "%lf", &velocity_z);
+    fclose(file);
+
+    *omega = Omega[0];
+
+    Message0("\n\nValue of Omega= %lf'\n", Omega[0]);
+    Message0("\n\nValue of axis_x= %lf'\n", axis_x);
+    Message0("\n\nValue of axis_y= %lf'\n", axis_y);
+    Message0("\n\nValue of axis_z= %lf'\n", axis_z);
+    Message0("\n\nValue of origin_x= %lf'\n", origin_x);
+    Message0("\n\nValue of origin_y= %lf'\n", origin_y);
+    Message0("\n\nValue of origin_z= %lf'\n", origin_z);
+    Message0("\n\nValue of velocity_x= %lf'\n", velocity_x);
+    Message0("\n\nValue of velocity_y= %lf'\n", velocity_y);
+    Message0("\n\nValue of velocity_z= %lf'\n", velocity_z);
+
+    RELEASE_MEMORY(Omega);
+
+    N3V_D(axis,=,axis_x,axis_y,axis_z);
+    N3V_D(origin,=,origin_x,origin_y,origin_z);
+    N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
+
+Message0("\n\nFinished UDF 'move_zone_elevator.'\n");
+return;
+}
+
+  /*--------------------*/
+ /* move_zone rudder_left */
+/*--------------------*/
+
+DEFINE_ZONE_MOTION(move_zone_rudder_left,omega,axis,origin,velocity,time,dtime) {
+
+    Message0("\n\nRunning UDF 'move_zone_rudder_left.'\n");
+
+    char file_name_zone[256];
+    real axis_x;
+    real axis_y;
+    real axis_z;
+    real origin_x;
+    real origin_y;
+    real origin_z;
+    real velocity_x;
+    real velocity_y;
+    real velocity_z;
+
+    /*real Omega;*/
+    DECLARE_MEMORY(Omega, real);
+    ASSIGN_MEMORY(Omega, 1, real);
+
+    FILE *file = NULL;
+
+#if !RP_NODE
+    timestep = RP_Get_Integer("udf/timestep");
+#endif /* !RP_NODE */
+
+    host_to_node_int_1(timestep);
+#if !RP_NODE
+    sprintf(file_name_zone, "move_zone_rudder_left_update_timestep%i.dat",timestep
+            );
+#else
+    struct stat st = {0};
+
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+
+    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_rudder_left_update_timestep%i.dat",timestep
+            );
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
+#endif /* !RP_NODE */
+
+#if RP_HOST
+    host_to_node_sync_file(file_name_zone);
+#endif /* RP_HOST */
+
+
+    if (NULLP(file = fopen(file_name_zone, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name_zone);
+        exit(1);
+    }
+
+    fscanf(file, "%lf", &Omega[0]);
+    fscanf(file, "%lf", &axis_x);
+    fscanf(file, "%lf", &axis_y);
+    fscanf(file, "%lf", &axis_z);
+    fscanf(file, "%lf", &origin_x);
+    fscanf(file, "%lf", &origin_y);
+    fscanf(file, "%lf", &origin_z);
+    fscanf(file, "%lf", &velocity_x);
+    fscanf(file, "%lf", &velocity_y);
+    fscanf(file, "%lf", &velocity_z);
+    fclose(file);
+
+    *omega = Omega[0];
+
+    Message0("\n\nValue of Omega= %lf'\n", Omega[0]);
+    Message0("\n\nValue of axis_x= %lf'\n", axis_x);
+    Message0("\n\nValue of axis_y= %lf'\n", axis_y);
+    Message0("\n\nValue of axis_z= %lf'\n", axis_z);
+    Message0("\n\nValue of origin_x= %lf'\n", origin_x);
+    Message0("\n\nValue of origin_y= %lf'\n", origin_y);
+    Message0("\n\nValue of origin_z= %lf'\n", origin_z);
+    Message0("\n\nValue of velocity_x= %lf'\n", velocity_x);
+    Message0("\n\nValue of velocity_y= %lf'\n", velocity_y);
+    Message0("\n\nValue of velocity_z= %lf'\n", velocity_z);
+
+    RELEASE_MEMORY(Omega);
+
+    N3V_D(axis,=,axis_x,axis_y,axis_z);
+    N3V_D(origin,=,origin_x,origin_y,origin_z);
+    N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
+
+Message0("\n\nFinished UDF 'move_zone_rudder_left.'\n");
+return;
+}
+
+
+  /*--------------------*/
+ /* move_zone rudder_right */
+/*--------------------*/
+
+DEFINE_ZONE_MOTION(move_zone_rudder_right,omega,axis,origin,velocity,time,dtime) {
+
+    Message0("\n\nRunning UDF 'move_zone_rudder_right.'\n");
+
+    char file_name_zone[256];
+    real axis_x;
+    real axis_y;
+    real axis_z;
+    real origin_x;
+    real origin_y;
+    real origin_z;
+    real velocity_x;
+    real velocity_y;
+    real velocity_z;
+
+    /*real Omega;*/
+    DECLARE_MEMORY(Omega, real);
+    ASSIGN_MEMORY(Omega, 1, real);
+
+    FILE *file = NULL;
+
+#if !RP_NODE
+    timestep = RP_Get_Integer("udf/timestep");
+#endif /* !RP_NODE */
+
+    host_to_node_int_1(timestep);
+#if !RP_NODE
+    sprintf(file_name_zone, "move_zone_rudder_right_update_timestep%i.dat",timestep
+            );
+#else
+    struct stat st = {0};
+
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+
+    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_rudder_right_update_timestep%i.dat",timestep
+            );
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
+#endif /* !RP_NODE */
+
+#if RP_HOST
+    host_to_node_sync_file(file_name_zone);
+#endif /* RP_HOST */
+
+
+    if (NULLP(file = fopen(file_name_zone, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name_zone);
+        exit(1);
+    }
+
+    fscanf(file, "%lf", &Omega[0]);
+    fscanf(file, "%lf", &axis_x);
+    fscanf(file, "%lf", &axis_y);
+    fscanf(file, "%lf", &axis_z);
+    fscanf(file, "%lf", &origin_x);
+    fscanf(file, "%lf", &origin_y);
+    fscanf(file, "%lf", &origin_z);
+    fscanf(file, "%lf", &velocity_x);
+    fscanf(file, "%lf", &velocity_y);
+    fscanf(file, "%lf", &velocity_z);
+    fclose(file);
+
+    *omega = Omega[0];
+
+    Message0("\n\nValue of Omega= %lf'\n", Omega[0]);
+    Message0("\n\nValue of axis_x= %lf'\n", axis_x);
+    Message0("\n\nValue of axis_y= %lf'\n", axis_y);
+    Message0("\n\nValue of axis_z= %lf'\n", axis_z);
+    Message0("\n\nValue of origin_x= %lf'\n", origin_x);
+    Message0("\n\nValue of origin_y= %lf'\n", origin_y);
+    Message0("\n\nValue of origin_z= %lf'\n", origin_z);
+    Message0("\n\nValue of velocity_x= %lf'\n", velocity_x);
+    Message0("\n\nValue of velocity_y= %lf'\n", velocity_y);
+    Message0("\n\nValue of velocity_z= %lf'\n", velocity_z);
+
+    RELEASE_MEMORY(Omega);
+
+    N3V_D(axis,=,axis_x,axis_y,axis_z);
+    N3V_D(origin,=,origin_x,origin_y,origin_z);
+    N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
+
+Message0("\n\nFinished UDF 'move_zone_rudder_left.'\n");
 return;
 }
