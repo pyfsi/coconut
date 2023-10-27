@@ -433,6 +433,8 @@ class SolverWrapperFluent(Component):
                     os.remove(join(self.dir_cfd, f'move_zone_elevator_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'move_zone_rudder_left_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'move_zone_rudder_right_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_aileron_left_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_aileron_right_update_timestep{timestep}.dat'))
                 except OSError:
                     pass
 
@@ -513,6 +515,24 @@ class SolverWrapperFluent(Component):
         data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
         fmt = '%27.17e'
         tmp = f'move_zone_rudder_right_update_timestep{self.timestep}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+
+        #aileron left
+        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+            self.rigid_body_motion.move_zone_aileron_left(self.timestep,self.delta_t)
+        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+        fmt = '%27.17e'
+        tmp = f'move_zone_aileron_left_update_timestep{self.timestep}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+
+        #aileron right
+        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+            self.rigid_body_motion.move_zone_aileron_right(self.timestep,self.delta_t)
+        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+        fmt = '%27.17e'
+        tmp = f'move_zone_aileron_right_update_timestep{self.timestep}.dat'
         file_name = join(self.dir_cfd, tmp)
         np.savetxt(file_name, data, fmt=fmt, header='', comments='')
 
