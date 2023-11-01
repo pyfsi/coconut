@@ -34,6 +34,8 @@ define dynamic-mesh controls smoothing-parameters boundary-distance-method n
 define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 0
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing y
+;next line not needed in older versions
+define dynamic-mesh controls remeshing-parameters unified-remeshing? n
 define dynamic-mesh controls remeshing-parameters remeshing-methods y y y n
 define dynamic-mesh controls remeshing-parameters cell-skew-max 0.6
 ;0.6 0.6 0.6
@@ -50,7 +52,8 @@ define dynamic-mesh controls remeshing-parameters sizing-function n
  (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary fluid constant 0 n" zone)))
  '(in out box circleoutside)
 )
-define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
+;define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
+define dynamic-mesh zones create fluid deforming y y n 0.00125 0.0125 0.6
 ;0.00500 0.00250 0.00125
 ;0.0500 0.0250 0.0125
 ;0.6 0.6 0.6

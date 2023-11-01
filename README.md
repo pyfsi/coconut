@@ -29,8 +29,8 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 
 ### Requirements
 
--   `python>=3.6` 
--   `numpy>=1.18.5`
+-   `python>=3.6.8` 
+-   `numpy>=1.19.5`
 -   `scipy>=1.3.0`
 -   `pandas>=1.0.0` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos.md))
 -   `matplotlib=3.1.3` (recommended)
