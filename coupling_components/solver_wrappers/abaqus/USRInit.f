@@ -69,7 +69,7 @@ C==============================================================================
       INTEGER NOEL_PREV(S)
       COMMON /PREV/ NOEL_PREV
       SAVE /PREV/
-      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS, PREPENDED
       COMMON /SURF/ SURFACEIDS
       SAVE /SURF/
 
@@ -102,17 +102,18 @@ C==============================================================================
       FOUND  = .FALSE.
       IF (S > 1) THEN
          DO R = 1,S
-            IF (INDEX(SNAME, TRIM(SURFACEIDS(R))) > 0) THEN
+            PREPENDED = 'ASSEMBLY_' // SURFACEIDS(R)
+            IF (ALL(SNAME == PREPENDED)) THEN
                FOUND = .TRUE.
                EXIT
             END IF
          END DO
          IF (.NOT. FOUND) THEN
-            PRINT *, 'USR-abort: no matching surface name found for Mod
-     &elPart.'
+            PRINT *, 'USR-abort: no matching Modelpart found for surfac
+     &e.', SNAME
             CALL FLUSH(6)
-            CALL STDB_ABQERR(-3,'USR-abort: no matching surface name fo
-     &und for ModelPart.')
+            CALL STDB_ABQERR(-3,'USR-abort: no matching ModelPart found
+     &for surface.', SNAME)
          END IF
       ELSE
          R = 1

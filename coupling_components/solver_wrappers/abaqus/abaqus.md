@@ -123,7 +123,7 @@ Abaqus models contain parts and those parts are used to create assemblies. The b
  Abaqus has a GUI as well as a Python 2 interface (which is also accessible) via the GUI. References to both the Python interface and GUI will be made below.
  
 ### Setup for Abaqus input (loads)
-Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created **in the assembly**. The name of these surfaces can freely be chosen, but they should not be sub-strings of each other. There are multiple possibilities to create these surfaces:
+Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created **in the assembly**. There are multiple possibilities to create these surfaces:
 
  - From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.
  - From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.
@@ -166,7 +166,7 @@ The Abaqus wrapper tries to check if the increments comply with the `delta_t` se
 It is required to have `initial=NO` when using the application transient fidelity (default when no application specified). This corresponds to the `initialConditons=OFF` setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found on [this Abaqus documentation page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm), for static cases on [this page](https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm).
 
 #### Input-related settings in JSON file
-The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list, but with "_load_points" appended to it. Remember that the names should not be sub-strings of each other. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.
+The name of the surface has to be put as value for the `"model_part"` key in the `interface_input` list, but with "_load_points" appended to it. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.
 
 ```json
 {
