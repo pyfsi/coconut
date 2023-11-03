@@ -58,10 +58,10 @@ class SolverWrapperAbaqus(SolverWrapper):
         self.mp_out = []
         for item in self.settings['interface_input']:
             idx = item['model_part'].rindex('_load_points')
-            self.mp_in.append(item['model_part'][:idx].upper())
+            self.mp_in.append(item['model_part'][:idx])
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
-            self.mp_out.append(item['model_part'][:idx].upper())
+            self.mp_out.append(item['model_part'][:idx])
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
@@ -113,7 +113,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                     for line in infile:
                         line = line.replace('|dimension|', str(self.dimensions))
                         line = line.replace('|surfaces|', str(len(self.mp_in)))
-                        line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
+                        line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in).upper() + '\'')
                         line = line.replace('|cpus|', str(self.cores))
 
                         # if PWD is too long then FORTRAN code can not compile so this needs special treatment
@@ -182,7 +182,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                     line = line.replace('|dimension|', str(self.dimensions))
                     line = line.replace('|arraySize|', str(self.array_size))
                     line = line.replace('|surfaces|', str(len(self.mp_in)))
-                    line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
+                    line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in).upper() + '\'')
                     line = line.replace('|cpus|', str(self.cores))
                     line = line.replace('|ramp|', str(self.ramp))
                     line = line.replace('|deltaT|', str(self.delta_t))
