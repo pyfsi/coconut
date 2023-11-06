@@ -95,8 +95,8 @@ In their turn, each of these dictionaries contains keys for all solvers that are
 The values are strings containing terminal commands to load the software, thus setting the environment which allows running the solver. 
 For example, on the UGent cluster, the [Lmod system](https://lmod.readthedocs.io/en/latest/) is used, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. 
 If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semi-colon (;) or double ampersand (&&) can be used.
-Since `machine_name` is set to `ugent_cluster_SL6.3`, this dictionary is used by default.
-In case your system differs from the `ugent_cluster_SL6.3` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
+Since `machine_name` is set to `ugent_cluster_CO7`, this dictionary is used by default.
+In case your system differs from the `ugent_cluster_CO7` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
 If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
 When CoCoNuT tries to use a solver module that is not present in the `solver_load_cmd_dict` or that has the wrong value, an error will be raised.
 
