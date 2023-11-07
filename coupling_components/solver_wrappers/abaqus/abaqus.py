@@ -113,7 +113,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                     for line in infile:
                         line = line.replace('|dimension|', str(self.dimensions))
                         line = line.replace('|surfaces|', str(len(self.mp_in)))
-                        line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in).upper() + '\'')
+                        line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                         line = line.replace('|cpus|', str(self.cores))
 
                         # if PWD is too long then FORTRAN code can not compile so this needs special treatment
@@ -182,7 +182,7 @@ class SolverWrapperAbaqus(SolverWrapper):
                     line = line.replace('|dimension|', str(self.dimensions))
                     line = line.replace('|arraySize|', str(self.array_size))
                     line = line.replace('|surfaces|', str(len(self.mp_in)))
-                    line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in).upper() + '\'')
+                    line = line.replace('|surfaceIDs|', '\'' + '\', \''.join(self.mp_in) + '\'')
                     line = line.replace('|cpus|', str(self.cores))
                     line = line.replace('|ramp|', str(self.ramp))
                     line = line.replace('|deltaT|', str(self.delta_t))
