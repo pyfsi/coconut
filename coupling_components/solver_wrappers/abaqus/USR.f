@@ -285,7 +285,8 @@ C==============================================================================
       PARAMETER (D = |dimension|)
       PARAMETER (N = |arraySize|)
       PARAMETER (S = |surfaces|)
-      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS, PREPENDED
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      CHARACTER (LEN=89) :: PREPENDED
       COMMON /SURF/ SURFACEIDS
       SAVE /SURF/
 
@@ -337,7 +338,7 @@ C==============================================================================
       IF (S > 1) THEN
          DO R = 1,S
             PREPENDED = 'ASSEMBLY_' // SURFACEIDS(R)
-            IF (ALL(SNAME == PREPENDED)) THEN
+            IF (SNAME == PREPENDED) THEN
                FOUND = .TRUE.
                EXIT
             END IF
@@ -392,7 +393,8 @@ C==============================================================================
       PARAMETER (D = |dimension|)
       PARAMETER (N = |arraySize|)
       PARAMETER (S = |surfaces|)
-      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS, PREPENDED
+      CHARACTER (LEN=80), DIMENSION(S) :: SURFACEIDS
+      CHARACTER (LEN=89) :: PREPENDED
       COMMON /SURF/ SURFACEIDS
       SAVE /SURF/
 
@@ -436,7 +438,7 @@ C==============================================================================
       IF (S > 1) THEN
          DO R = 1,S
             PREPENDED = 'ASSEMBLY_' // SURFACEIDS(R)
-            IF (ALL(SNAME == PREPENDED)) THEN
+            IF (SNAME == PREPENDED) THEN
                FOUND = .TRUE.
                EXIT
             END IF
