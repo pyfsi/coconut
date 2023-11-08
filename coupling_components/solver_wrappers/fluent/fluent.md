@@ -93,7 +93,7 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 First version.
 
-### v2019R2 (19.4.0)
+### v2019R2 (19.4.0) (no longer maintained)
 
 No changes.
 
