@@ -75,22 +75,22 @@ int timestep = 0;
 DEFINE_ON_DEMAND(get_thread_ids) {
     /* Read in thread ids, which is the name of the ModelParts in Fluent. Should be called early on. */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
     int k;
     FILE *file;
     file = fopen("bcs.txt", "r");
     fscanf(file, "%i", &n_threads);
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     host_to_node_int_1(n_threads); /* send n_threads (read from file on host) from host and receive on node(s) */
     ASSIGN_MEMORY(thread_ids, n_threads, int);
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
     for (k = 0; k < n_threads; k++) {
         fscanf(file, "%*s %i", &thread_ids[k]);
     }
     fclose(file);
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     host_to_node_int(thread_ids, n_threads); /* thread_ids (read from file on host) communicated to nodes */
 }
@@ -110,38 +110,34 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
     if (myid == 0) {printf("\n\nStarted UDF store_coordinates_id.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n_nodes, n_faces, i_n, i_f, d;
+    int thread, n_nodes, n_faces, i_n, i_f, d, compute_node;
     DECLARE_MEMORY_N(node_coords, real, ND_ND);
     DECLARE_MEMORY(node_ids, int);
     DECLARE_MEMORY_N(face_coords, real, ND_ND);
     DECLARE_MEMORY_N(face_ids, int, mnpf);
 
-#if !RP_HOST /* only compute nodes are involved, code not compiled for host */
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
     Domain *domain;
     Thread *face_thread; /* points to face thread i.e. number of faces corresponding (to part) of moving interface */
     face_t face; /* variable to keep track of current face in face loop */
     Node *node; /* points to node */
     int node_number, j;
     real centroid[ND_ND]; /* array to store 2 or 3 coordinates */
-#endif /* !RP_HOST */
+#endif /* RP_NODE */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
     char file_nodes_name[256];
     char file_faces_name[256];
     FILE *file_nodes = NULL;
     FILE *file_faces = NULL;
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
 
-#if PARALLEL
-    int compute_node;
-#endif /* PARALLEL */
-
     for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
         sprintf(file_nodes_name, "nodes_timestep%i_thread%i.dat", timestep, thread_ids[thread]);
         sprintf(file_faces_name, "faces_timestep%i_thread%i.dat", timestep, thread_ids[thread]);
 
@@ -161,9 +157,9 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
         fprintf(file_nodes, "%27s %27s %27s %10s\n", "x-coordinate", "y-coordinate", "z-coordinate", "unique-id");
         fprintf(file_faces, "%27s %27s %27s  %10s\n", "x-coordinate", "y-coordinate", "z-coordinate", "unique-ids");
 #endif /* RP_2D */
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
-#if !RP_HOST /* only compute nodes are involved, code not compiled for host */
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
         domain = Get_Domain(1);
         face_thread = Lookup_Thread(domain, thread_ids[thread]);
 
@@ -219,9 +215,7 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
             }
             i_f++;
         } end_f_loop(face, face_thread);
-#endif /* !RP_HOST */
 
-#if RP_NODE /* only compute nodes are involved, code not compiled for host */
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
         compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
 
@@ -301,9 +295,7 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
             PRF_CRECV_INT(node_zero, node_ids, n_nodes, compute_node);
             PRF_CRECV_REAL_N(node_zero, face_coords, n_faces, compute_node, ND_ND);
             PRF_CRECV_INT_N(node_zero, face_ids, n_faces, compute_node, mnpf);
-#endif /* RP_HOST */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
             for (i_n = 0; i_n < n_nodes; i_n++) {
                 for (d = 0; d < ND_ND; d++) {
                     fprintf(file_nodes, "%27.17e ", node_coords[d][i_n]);
@@ -326,16 +318,11 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
             RELEASE_MEMORY(node_ids);
             RELEASE_MEMORY_N(face_coords, ND_ND);
             RELEASE_MEMORY_N(face_ids, mnpf);
-#endif /* !RP_NODE */
-
-#if RP_HOST /* only host process is involved, code not compiled for node */
         } /* close compute_node_loop */
-#endif /* RP_HOST */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
         fclose(file_nodes);
         fclose(file_faces);
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     } /* close loop over threads */
 
@@ -354,36 +341,32 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
     if (myid == 0) {printf("\nStarted UDF store_pressure_traction.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n, i, d;
+    int thread, n, i, d, compute_node;
     DECLARE_MEMORY_N(array, real, ND_ND + 1);
     DECLARE_MEMORY_N(ids, int, mnpf);
 
-#if !RP_HOST /* only compute nodes are involved, code not compiled for host */
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
     Domain *domain;
     Thread *face_thread;
     face_t face;
     Node *node;
     int node_number, j;
     real traction[ND_ND], area[ND_ND]; /* store 2 or 3 traction and up-to-date face area in arrays */
-#endif /* !RP_HOST */
+#endif /* RP_NODE */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
     char file_name[256];
     FILE *file = NULL;
     iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
 
-#if PARALLEL
-    int compute_node;
-#endif /* PARALLEL */
-
     for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
         sprintf(file_name, "pressure_traction_timestep%i_thread%i.dat",
                 timestep, thread_ids[thread]);
 
@@ -400,9 +383,9 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
             "x-shear", "y-shear", "z-shear", "pressure", "unique-ids");
 
 #endif /* RP_2D */
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
-#if !RP_HOST /* only compute nodes are involved, code not compiled for host */
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
         domain = Get_Domain(1);
         face_thread = Lookup_Thread(domain, thread_ids[thread]);
 
@@ -440,9 +423,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
             }
             i++;
         } end_f_loop(face, face_thread);
-#endif /* !RP_HOST */
 
-#if RP_NODE /* only compute nodes are involved, code not compiled for host */
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
         compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
 
@@ -502,9 +483,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
             /* receive the 2D-arrays from node_zero */
             PRF_CRECV_REAL_N(node_zero, array, n, compute_node, ND_ND + 1);
             PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
-#endif /* RP_HOST */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
             for (i = 0; i < n; i++) {
                 for (d = 0; d < ND_ND + 1; d++) {
                     fprintf(file, "%27.17e ", array[d][i]);
@@ -517,15 +496,10 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
             /* after files have been appended, the memory can be freed */
             RELEASE_MEMORY_N(array, ND_ND + 1);
             RELEASE_MEMORY_N(ids, mnpf);
-#endif /* !RP_NODE */
-
-#if RP_HOST
         } /* close compute_node_loop */
-#endif /* RP_HOST */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
         fclose(file);
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     } /* close loop over threads */
 
@@ -545,24 +519,24 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     Thread *face_thread = DT_THREAD(dynamic_thread); /* face_thread to which UDF is assigned in Fluent */
     int thread_id = THREAD_ID(face_thread);
 
-#if !RP_HOST /* only compute nodes are involved, code not compiled for host */
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
     Node *node;
     int i, d, n, node_number;
     DECLARE_MEMORY_N(coords, real, ND_ND);
     DECLARE_MEMORY(ids, int);
     FILE *file = NULL;
-#endif /* !RP_HOST */
+#endif /* RP_NODE */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
     iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
     host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
 
-#if !RP_NODE /* only host process is involved, code not compiled for node */
+#if RP_HOST /* only host process is involved, code not compiled for node */
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
     host_to_node_sync_file(file_name); /* send file to the compute nodes */
@@ -575,9 +549,9 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
     host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
-#endif /* !RP_NODE */
+#endif /* RP_HOST */
 
-#if !RP_HOST /* only compute nodes are involved, code not compiled for host */
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
     if (NULLP(file = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
         exit(1);
@@ -625,7 +599,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
         sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
                 timestep-1, thread_id);
         remove(file_name);}
-#endif /* !RP_HOST */
+#endif /* RP_NODE */
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }
