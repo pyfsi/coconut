@@ -109,6 +109,7 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
     collected on node_zero, which communicates it further to the host. The host finally writes the files. */
     if (myid == 0) {printf("\n\nStarted UDF store_coordinates_id.\n"); fflush(stdout);}
 
+    /* declaring variables */
     int thread, n_nodes, n_faces, i_n, i_f, d;
     DECLARE_MEMORY_N(node_coords, real, ND_ND);
     DECLARE_MEMORY(node_ids, int);
@@ -166,14 +167,16 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
         domain = Get_Domain(1);
         face_thread = Lookup_Thread(domain, thread_ids[thread]);
 
-        n_nodes = 0;
-        /* loop over all faces in face_thread (tracked by variable "face") and count number of nodes in each face,
-        knowing the total number of nodes allows assigning memory for the coordinate arrays and id arrays */
+        n_nodes = 0; /* to store number of nodes in current compute node partition of the face_thread */
+        /* Loop over all faces (tracked by variable "face") in partition of face_thread to which current compute node
+        has access and count number of nodes in each face. Knowing the number of nodes in partition allows assigning
+        memory for the coordinate arrays and id arrays */
         begin_f_loop(face, face_thread) {
             n_nodes += F_NNODES(face, face_thread);
         } end_f_loop(face, face_thread)
-        n_faces = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in face_thread */
+        n_faces = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
 
+        /* assign memory on compute node that accesses its partition of the face_thread */
         ASSIGN_MEMORY_N(node_coords, n_nodes, real, ND_ND);
         ASSIGN_MEMORY(node_ids, n_nodes, int);
         ASSIGN_MEMORY_N(face_coords, n_faces, real, ND_ND);
@@ -181,7 +184,7 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
 
         i_n = 0;
         i_f = 0;
-        /* loop over all faces in face_thread (tracked by variable "face") */
+        /* loop over all faces (tracked by variable "face") in current compute node partition of face_thread */
         begin_f_loop(face, face_thread) {
             if (i_f >= n_faces) {Error("\nIndex %i >= array size %i.", i_f, n_faces);}
 
@@ -248,7 +251,8 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
                 PRF_CRECV_INT(compute_node, &n_nodes, 1, compute_node);
                 PRF_CRECV_INT(compute_node, &n_faces, 1, compute_node);
 
-                /* once n_nodes and n_faces has been received, the correct amount of memory can be allocated */
+                /* Once n_nodes and n_faces has been received, the correct amount of memory can be allocated on compute
+                node 0. This depends on the partition assigned to the sending compute node. */
                 ASSIGN_MEMORY_N(node_coords, n_nodes, real, ND_ND);
                 ASSIGN_MEMORY(node_ids, n_nodes, int);
                 ASSIGN_MEMORY_N(face_coords, n_faces, real, ND_ND);
@@ -260,7 +264,9 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
                 PRF_CRECV_REAL_N(compute_node, face_coords, n_faces, compute_node, ND_ND);
                 PRF_CRECV_INT_N(compute_node, face_ids, n_faces, compute_node, mnpf);
 
-                /* send the variables to the host */
+                /* Send the variables to the host. Deviating from the tag convention, the message tag is now the
+                original non-zero compute node on which the mesh data was stored, even though node 0 does the actual
+                communication */
                 PRF_CSEND_INT(node_host, &n_nodes, 1, compute_node);
                 PRF_CSEND_INT(node_host, &n_faces, 1, compute_node);
 
@@ -279,17 +285,18 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
 #endif /* RP_NODE */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
+        /* loop over all compute nodes (corresponding to the message tags), receive data and append to file for each */
         compute_node_loop(compute_node) {
             PRF_CRECV_INT(node_zero, &n_nodes, 1, compute_node);
             PRF_CRECV_INT(node_zero, &n_faces, 1, compute_node);
 
-            /* once n_nodes and n_faces has been received, the correct amount of memory can be allocated */
+            /* once n_nodes and n_faces has been received, the correct amount of memory can be allocated on the host */
             ASSIGN_MEMORY_N(node_coords, n_nodes, real, ND_ND);
             ASSIGN_MEMORY(node_ids, n_nodes, int);
             ASSIGN_MEMORY_N(face_coords, n_faces, real, ND_ND);
             ASSIGN_MEMORY_N(face_ids, n_faces, int, mnpf);
 
-            /* receive the 2D-arrays */
+            /* receive the 2D-arrays from node_zero */
             PRF_CRECV_REAL_N(node_zero, node_coords, n_nodes, compute_node, ND_ND);
             PRF_CRECV_INT(node_zero, node_ids, n_nodes, compute_node);
             PRF_CRECV_REAL_N(node_zero, face_coords, n_faces, compute_node, ND_ND);
@@ -314,7 +321,7 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
                 fprintf(file_faces, "\n");
             }
 
-            /* after files have been written, the memory can be freed */
+            /* after files have been appended, the memory can be freed */
             RELEASE_MEMORY_N(node_coords, ND_ND);
             RELEASE_MEMORY(node_ids);
             RELEASE_MEMORY_N(face_coords, ND_ND);
@@ -346,6 +353,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
     a file pressure_traction_timestep%i_thread%i.dat. */
     if (myid == 0) {printf("\nStarted UDF store_pressure_traction.\n"); fflush(stdout);}
 
+    /* declaring variables */
     int thread, n, i, d;
     DECLARE_MEMORY_N(array, real, ND_ND + 1);
     DECLARE_MEMORY_N(ids, int, mnpf);
@@ -398,14 +406,14 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
         domain = Get_Domain(1);
         face_thread = Lookup_Thread(domain, thread_ids[thread]);
 
-        n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in face_thread */
+        n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
 
-        /* with the number of faces known, memory can be assigned */
+        /* assign memory on compute node that accesses its partition of the face_thread */
         ASSIGN_MEMORY_N(array, n, real, ND_ND + 1);
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
         i = 0;
-        /* loop over all faces in face_thread (tracked by variable "face") */
+        /* loop over all faces (tracked by variable "face") in current compute node partition of face_thread */
         begin_f_loop(face, face_thread) {
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
@@ -458,6 +466,8 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
                 argument the same as the from argument (that is, the first argument) for receive messages */
                 PRF_CRECV_INT(compute_node, &n, 1, compute_node);
 
+                /* Once n has been received, the correct amount of memory can be allocated on compute node 0. This
+                depends on the partition assigned to the sending compute node. */
                 ASSIGN_MEMORY_N(array, n, real, ND_ND + 1);
                 ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
@@ -465,7 +475,9 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
                 PRF_CRECV_REAL_N(compute_node, array, n, compute_node, ND_ND + 1);
                 PRF_CRECV_INT_N(compute_node, ids, n, compute_node, mnpf);
 
-                /* send the variables to the host */
+                /* Send the variables to the host. Deviating from the tag convention, the message tag is now the
+                original non-zero compute node on which the mesh data was stored, even though node 0 does the actual
+                communication */
                 PRF_CSEND_INT(node_host, &n, 1, compute_node);
 
                 PRF_CSEND_REAL_N(node_host, array, n, compute_node, ND_ND + 1);
@@ -479,13 +491,15 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
 #endif /* RP_NODE */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
+        /* loop over all compute nodes (corresponding to the message tags), receive data and append to file for each */
         compute_node_loop(compute_node) {
             PRF_CRECV_INT(node_zero, &n, 1, compute_node);
 
+            /* once n has been received, the correct amount of memory can be allocated on the host */
             ASSIGN_MEMORY_N(array, n, real, ND_ND + 1);
             ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
-            /* receive the 2D-arrays */
+            /* receive the 2D-arrays from node_zero */
             PRF_CRECV_REAL_N(node_zero, array, n, compute_node, ND_ND + 1);
             PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
 #endif /* RP_HOST */
@@ -500,7 +514,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
                 }
                 fprintf(file, "\n");
             }
-            /* after files have been written, the memory can be freed */
+            /* after files have been appended, the memory can be freed */
             RELEASE_MEMORY_N(array, ND_ND + 1);
             RELEASE_MEMORY_N(ids, mnpf);
 #endif /* !RP_NODE */
