@@ -430,9 +430,9 @@ class SolverWrapperOpenFOAMExtend(Component):
                                      object    traction;
                                 }
                                 //*************************************************************************//\n""")
-                        h.write(f'{x.size}\n')
+                        h.write(f'{x_p.size}\n')
                         h.write('(\n')
-                        for i in range(x.size):
+                        for i in range(x_p.size):
                             h.write(f'({0} {0} {0} )\n')
                         h.write(')')
 
@@ -455,8 +455,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                                                              boundary,
                                                              timestamp)
                         shutil.copytree(path_orig_boundaryData, new_path_boundaryData)
-
-
 
         # starting the FOAM-Extend infinite loop for coupling!
         if not self.settings['parallel']:
@@ -607,15 +605,15 @@ class SolverWrapperOpenFOAMExtend(Component):
                         f.write(f'{mp.x0[point]} {disp[point, 1]} {disp[point, 2]}\n')
 
                 # specify location of yield
-                yield_name = 'YIELD_' + boundary
-                sigmaY_name = 'sigma_Y_' + boundary
-                yield_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'sigmaY')
-                yield_iter_filepath = os.path.join(self.working_directory, 'postProcessing', yield_name,
-                                                  'surface',
-                                                  self.cur_timestamp, f'sigmaY_{self.iteration}')
-                if not os.path.exists(yield_iter_filepath):
-                    os.makedirs(yield_iter_filepath)
-                shutil.copy(yield_filepath, yield_iter_filepath)
+                # yield_name = 'YIELD_' + boundary
+                # sigmaY_name = 'sigma_Y_' + boundary
+                # yield_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'sigmaY')
+                # yield_iter_filepath = os.path.join(self.working_directory, 'postProcessing', yield_name,
+                #                                   'surface',
+                #                                   self.cur_timestamp, f'sigmaY_{self.iteration}')
+                # if not os.path.exists(yield_iter_filepath):
+                #     os.makedirs(yield_iter_filepath)
+                # shutil.copy(yield_filepath, yield_iter_filepath)
 
                 velocity_name = 'VELOCITY_' + boundary
                 velocity_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
@@ -720,16 +718,30 @@ class SolverWrapperOpenFOAMExtend(Component):
         1 collomn is velocity in axial direction. colomn 2 and 3 consist of displacement. Modificiactions will be executed in the future.
         :return:
         """
+
+        # specify location of displacement
         for boundary in self.boundary_names:
-            # specify location of displacement
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
             nfaces = mp.size
 
-            self.write_cell_centres()
+            if self.settings['parallel']:
+                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(U)'"' &> log.reconstructPar;',
+                           cwd=self.working_directory, shell=True, env=self.env)
+                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(Velocity)'"' &> log.reconstructPar;',
+                           cwd=self.working_directory, shell=True, env=self.env)
+                for p in range(self.cores):
+                    path_working_directory_processor = os.path.join(self.working_directory, f'processor{p}')
+                    self.write_cell_centres_parallel_timeVaryingMappedSolidTraction(path_working_directory_processor)
+                    self.read_face_centres_parallel_timeVaryingMappedSolidTraction(boundary,nfaces,p)
+                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccx)'"' &> log.reconstructPar;',
+                    cwd=self.working_directory, shell=True, env=self.env)
+                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccy)'"' &> log.reconstructPar;',
+                           cwd=self.working_directory, shell=True, env=self.env)
+                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccz)'"' &> log.reconstructPar;',
+                           cwd=self.working_directory, shell=True, env=self.env)
 
-            # if self.settings['parallel']:
-            #     pos_list = self.mp_out_reconstruct_seq_dict[mp_name]
+            self.write_cell_centres()
 
             filename_displacement = os.path.join(self.working_directory, self.cur_timestamp, 'U')
             filename_velocity = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
@@ -822,21 +834,27 @@ class SolverWrapperOpenFOAMExtend(Component):
        """
         for boundary in self.boundary_names:
             mp_name = f'{boundary}_input'
+            mp_name_out = f'{boundary}_output'
 
-            # mp = self.model.get_model_part(mp_name)
-            # x0, y0, z0 = mp.x0, mp.y0, mp.z0
+            mp = self.model.get_model_part(mp_name_out)
+            self.x0_p, self.y0_p, self.z0_p = mp.x0, mp.y0, mp.z0
 
             pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
 
             pressure = list(np.array(pressure).reshape(-1,))
             x = np.linspace(1,len(pressure),len(pressure))
-            # print(x)
             f =interp1d(x,pressure)
             # plt.scatter(x,pressure)
 
             xnew = np.linspace(1,len(pressure),self.size_BC)
+            # print(xnew)
             pressure = f(xnew)
-            # plt.plot(self.x0,pressure)
+            #getting pressure for parallel running
+            # x_proc = np.linspace(1, len(pressure), int(self.x0_p.size / 2))
+            x_proc = np.linspace(1, len(pressure), int(246/ 2))# hard coded_MATHIEU
+            pressure_in_para = f(x_proc)
+
+            # plt.plot(x_proc,pressure_in_para)
             # plt.show()
             # print("pressure")
             # print(pressure)
@@ -849,6 +867,12 @@ class SolverWrapperOpenFOAMExtend(Component):
             traction_new[:,1] = h(xnew)
             traction_new[:,2] = k(xnew)
 
+            # traction_in_para = np.zeros([int(self.x0_p.size / 2), 3])
+            traction_in_para = np.zeros([int(246/ 2), 3]) #hard coded_MATHIEU
+            traction_in_para[:, 0] = g(x_proc)
+            traction_in_para[:, 1] = h(x_proc)
+            traction_in_para[:, 2] = k(x_proc)
+
             data_folder_home = os.path.join(self.working_directory,'constant/boundaryData', boundary, self.cur_timestamp)
             os.makedirs(data_folder_home, exist_ok = True)
 
@@ -857,12 +881,11 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             if (self.timestep > self.slot):
 
-                # print("pressure_in")
                 k = 0
                 for i in range(len(pressure_in)):
                     if i < pressure.size:
                         pressure_in[k] = pressure[i]
-                        # print(pressure[i])
+
                     else:
                         pressure_in[k] = pressure[i - pressure.size]
                     k += 1
@@ -942,30 +965,70 @@ class SolverWrapperOpenFOAMExtend(Component):
                     h.write(')')
 
             if self.settings['parallel']:
-                for proc in range(self.cores):
+                pressure_input_para = np.zeros(2 * pressure_in_para.size)
+                traction_input_para = np.zeros([2 * traction_in_para.shape[0],3])
 
-                    seq = self.mp_in_decompose_seq_dict[mp_name][proc]
-
-                    data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',boundary, self.cur_timestamp)
-
-                    pressure_input_proc =np.zeros(len(pressure_in[seq]))
-                    traction_input_proc = np.zeros(len(traction_new[seq],3))
+                # print(pressure_in_para)
+                if (self.timestep > self.slot):
 
                     k = 0
-                    for i in range(len(pressure_input_proc)):
-                        if i < pressure[seq].size:
-                            pressure_input_proc[k] = pressure[seq][i]
+                    for i in range(len(pressure_input_para)):
+                        if i < pressure_in_para.size:
+                            pressure_input_para[k] = pressure_in_para[i]
                         else:
-                            pressure_input_proc[k] = pressure[seq][i - pressure[seq].size]
+                            pressure_input_para[k] = pressure_in_para[i - pressure_in_para.size]
                         k += 1
 
                     l = 0
-                    for i in range(traction_input_proc.shape[0]):
-                        if i < traction_new[seq].shape[0]:
-                            traction_input_proc[l] = traction_new[seq][i]
+                    for i in range(traction_input_para.shape[0]):
+                        if i < traction_in_para.shape[0]:
+                            traction_input_para[l] = traction_in_para[i]
                         else:
-                            traction_input_proc[l] = traction_new[seq][i - traction_new[seq].shape[0]]
+                            traction_input_para[l] = traction_in_para[i - traction_in_para.shape[0]]
                         l += 1
+
+                    with open(os.path.join(data_folder_home, 'pressure'), 'w') as f:
+                        f.write("""
+                        FoamFile
+                        {
+                             version   2.0;
+                             format    ascii;
+                             class     scalarField;
+                             object    values;
+                        }
+                        //***********************************************************************// //\n
+                        """)
+                        f.write(f'{pressure_input_para.shape[0]}\n')
+                        f.write('(\n')
+                        for i in range(pressure_input_para.size):
+                            f.write(f'{pressure_input_para[i]}\n')
+                        f.write(')')
+
+                    with open(os.path.join(data_folder_home, 'traction'), 'w') as f:
+                        f.write("""
+                        FoamFile
+                        {
+                             version   2.0;
+                             format    ascii;
+                             class     vectorField;
+                             object    values;
+                        }
+                        //***********************************************************************// //\n
+                        """)
+                        f.write(f'{traction_input_para.shape[0]}\n')
+                        f.write('(\n')
+                        for i in range(traction_input_para.shape[0]):
+                            f.write(f'({traction_input_para[i, 0]} {traction_input_para[i, 1]} {traction_input_para[i, 2]})\n')
+                        f.write(')')
+
+                for proc in range(self.cores):
+
+                    seq = self.mp_in_decompose_seq_dict[mp_name_out][proc]
+
+                    data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',boundary, self.cur_timestamp)
+
+                    pressure_input_proc = pressure_input_para[seq]
+                    traction_input_proc = traction_input_para[seq]
 
                     with open(os.path.join(data_folder, 'pressure'), 'w') as f:
                         f.write("""
@@ -1000,9 +1063,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                         for i in range(traction_input_proc.shape[0]):
                             f.write(f'({traction_input_proc[i, 0]} {traction_input_proc[i, 1]} {traction_input_proc[i, 2]})\n')
                         f.write(')')
-
-            #     check_call(f'decomposePar -fields -time {self.cur_timestamp} &> log.decomposePar;',
-            #                cwd=self.working_directory, shell=True, env=self.env)
 
     # noinspection PyMethodMayBeStatic
     def check_output_file(self, filename, nfaces):
@@ -1200,7 +1260,7 @@ class SolverWrapperOpenFOAMExtend(Component):
     def write_cell_centres_parallel_timeVaryingMappedSolidTraction(self, processor_directory):
         if self.timestep:
             for p in range(self.cores):
-                check_call('writeCellCentres -time' + self.cur_timestep + ' &> log.writeCellCentres;', cwd=processor_directory,
+                check_call('writeCellCentres -time ' + self.cur_timestamp + ' &> log.writeCellCentres;', cwd=processor_directory,
                            shell=True, env=self.env)
 
         else:
@@ -1239,7 +1299,7 @@ class SolverWrapperOpenFOAMExtend(Component):
     def read_face_centres_parallel_timeVaryingMappedSolidTraction(self, boundary_name, nfaces, processor):
         if self.timestep:
             filename_ccx = os.path.join(self.working_directory, f'processor{processor}',self.cur_timestamp,'ccx')
-            filename_ccy = os.path.join(self.working_directory,f'processor{processor}', self.cur_timestamp,'ccy')
+            filename_ccy = os.path.join(self.working_directory, f'processor{processor}', self.cur_timestamp,'ccy')
             filename_ccz = os.path.join(self.working_directory, f'processor{processor}', self.cur_timestamp,'ccz')
 
             x = of_io.get_boundary_field(file_name=filename_ccx, boundary_name=boundary_name, size=nfaces,
