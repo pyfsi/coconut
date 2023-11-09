@@ -294,7 +294,7 @@ class SolverWrapperOpenFOAMExtend(Component):
 
         if self.settings['parallel']:
             if self.start_time == 0:
-                subprocess.check_call(f'decomposePar -force  &> log.decomposePar',
+                subprocess.check_call(f'decomposePar -force1  &> log.decomposePar',
                                       cwd=self.working_directory, shell=True, env=self.env)
 
                 for boundary in self.boundary_names:
