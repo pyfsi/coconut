@@ -591,26 +591,6 @@ class SolverWrapperOpenFOAM(Component):
 
         # copy input data for debugging
         if self.debug:
-            # for boundary in self.boundary_names:
-            #     mp_filepath = os.path.join(self.working_directory, 'postProcessing')
-            #     if not os.path.exists(mp_filepath):
-            #         os.makedirs(mp_filepath)
-            #     path_from_Velocity = os.path.join(self.working_directory, 'constant/boundaryData', boundary,self.cur_timestamp, 'U')
-            #     path_to_Velocity = os.path.join(self.working_directory,'constant/boundaryData', boundary,self.cur_timestamp, f'U_{self.iteration}')
-            #     shutil.copy(path_from_Velocity, path_to_Velocity)
-            #
-            #     node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory,
-            #                                                       time_folder='0',
-            #                                                       boundary_name=boundary)
-            #     with open(os.path.join(mp_filepath, 'mp_x0_points'), 'w') as f:
-            #         f.write('')
-            #         for point in range(node_coords[:,0].size):
-            #             f.write(f'{node_coords[point,0]}\n')
-            #
-            #
-            #     mp_name = f'{boundary}_input'
-            #     displacement_debug = self.interface_input.get_variable_data(mp_name, 'displacement')
-
             if self.cores > 1:
                 for i in range(0, self.cores):
                     path_from = os.path.join(self.working_directory, f'processor{i}/constant/pointDisplacementTmp')
@@ -653,7 +633,15 @@ class SolverWrapperOpenFOAM(Component):
                 post_process_time_folder = os.path.join(self.working_directory,
                                                         f'postProcessing/coconut_{boundary}/surface',
                                                         self.cur_timestamp)
+                working_directory_folder = os.path.join(self.working_directory, self.cur_timestamp)
                 shutil.rmtree(post_process_time_folder)
+                print("hallo")
+                print(self.timestep %10)
+                print(working_directory_folder)
+
+                if (self.timestep % 10 != 0):
+                    print("remove")
+                    subprocess.check_call(f'rm -rf {working_directory_folder}', shell=True)
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
