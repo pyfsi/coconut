@@ -576,7 +576,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.read_node_output()
 
         # copy output data for debugging
-        if True: #self.debug:
+        if self.debug:
             for boundary in self.boundary_names:
                 # specify location of displacement
                 disp_name = 'DISP_' + boundary
@@ -604,17 +604,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                     for point in range(mp.x0.size):
                         f.write(f'{mp.x0[point]} {disp[point, 1]} {disp[point, 2]}\n')
 
-                # specify location of yield
-                # yield_name = 'YIELD_' + boundary
-                # sigmaY_name = 'sigma_Y_' + boundary
-                # yield_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'sigmaY')
-                # yield_iter_filepath = os.path.join(self.working_directory, 'postProcessing', yield_name,
-                #                                   'surface',
-                #                                   self.cur_timestamp, f'sigmaY_{self.iteration}')
-                # if not os.path.exists(yield_iter_filepath):
-                #     os.makedirs(yield_iter_filepath)
-                # shutil.copy(yield_filepath, yield_iter_filepath)
-
                 velocity_name = 'VELOCITY_' + boundary
                 velocity_filepath = os.path.join(self.working_directory, self.cur_timestamp, 'Velocity')
                 velocity_iter_filepath = os.path.join(self.working_directory, 'postProcessing', velocity_name,
@@ -629,28 +618,21 @@ class SolverWrapperOpenFOAMExtend(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-
-        # prev_timestep = self.timestep - 1
-        # Propability not necessary. remove the folder that was used for pointDisplacement_Next if not in writeInterval
-        # if self.settings['parallel']:
-        #     dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-        #     shutil.rmtree(dir_pointdisp_next)
-        #
-        #     if prev_timestep % self.write_interval:
-        #         for p in range(self.cores):
-        #             prev_timestep_dir = os.path.join(self.working_directory, f'processor{p}/{self.prev_timestamp}')
-        #             shutil.rmtree(prev_timestep_dir)
-        # else:
-        #     if prev_timestep % self.write_interval:
-        #         dir_pointdisp_next = os.path.join(self.working_directory, self.prev_timestamp)
-        #         shutil.rmtree(dir_pointdisp_next)
+        # if debugging is not activated, to save memory the time folders and boundaryData folders are saved after each 10 time steps.
+        # This has no influence on the solution of the calculation
+        if not self.debug:
+            for boundary in self.boundary_names:
+                prev_directory_folder = os.path.join(self.working_directory, self.prev_timestamp)
+                prev_directory_boundaryData_folder = os.path.join(self.working_directory,
+                                                                                  f'constant/boundaryData/{boundary}',
+                                                                                  self.prev_timestamp)
+                if (self.timestep % 10 != 1):
+                    shutil.rmtree(prev_directory_folder)
+                    shutil.rmtree(prev_directory_boundaryData_folder)
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
             self.wait_message('save_ready')
-
-        # if self.residual_variables is not None:
-        #     self.write_of_residuals()
 
     def finalize(self):
         super().finalize()

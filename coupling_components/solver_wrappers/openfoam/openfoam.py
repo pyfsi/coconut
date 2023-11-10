@@ -628,7 +628,7 @@ class SolverWrapperOpenFOAM(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
-        #if debugging is not activated, to save memory the post process files are removed after each time step and the time folder are saved after each 10 time steps.
+        #if debugging is not activated, to save memory the post process files are removed after each time step and the time folder and boundaryData folders are saved after each 10 time steps.
         # This has no influence on the solution of the calculation
         if not self.debug:
             for boundary in self.boundary_names:
