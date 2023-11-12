@@ -6,7 +6,7 @@ from os.path import join
 from coconut import tools
 
 cfd_solver = 'fluent.v2023R1'
-csm_solver = 'abaqus.v614'
+csm_solver = 'abaqus.v2022'
 cfd_dir = './CFD'
 csm_dir = './CSM'
 
