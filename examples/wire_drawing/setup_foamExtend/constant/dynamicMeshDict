@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dynamicFvMesh   layerAdditionFvMesh;
+
+layerAdditionFvMeshCoeffs
+{
+    movingCells     wire;
+    frontFaces      wireInletFaces;
+    backFaces       wireOutletFaces;
+    wireInlet       wireUpstream;
+    wireOutlet      wireDownstream;
+    wireEndingLocation 0.003;
+    targetLayerThickness 0.00004;
+
+    wireFlowDirection x;
+    meshSmoothing   no;
+    meshSmoothingCoeffs
+    {
+        smoothingFrequency 1;
+        type            implicitVolume;
+        implicitVolumeCoeffs
+        {
+            cellZones       1 ( wire );
+            nCorrectors     1;
+            cellMotionLimit 0.1;
+            advectFields    true;
+            extrapolateBoundaries false;
+            zeroGradientBoundaries false;
+            oscillationCorrection 0.1;
+            flatPatches     2 ( wireUpstream wireDownstream );
+        }
+    }
+}
+
+
+// ************************************************************************* //

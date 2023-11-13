@@ -1,0 +1,152 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+libs            ("libcoconut_timeVaryingMappedCoupledVelocity.so");
+
+application     coconut_pimpleFoam;
+
+startFrom       startTime;
+
+startTime       0.0;
+
+stopAt          endTime;
+
+endTime         1e15;
+
+deltaT          5e-05;
+
+writeControl    timeStep;
+
+writeInterval   1;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  15;
+
+writeCompression off;
+
+timeFormat    fixed;
+
+timePrecision   7;
+
+runTimeModifiable true;
+
+adjustTimeStep  no;
+
+maxCo           0.2;
+
+functions
+{
+    PRESSURE_Wire
+	{
+	 type			surfaceFieldValue;
+	 libs			("libfieldFunctionObjects.so");
+	 executeControl		timeStep;
+	 executeInterval	1;
+	 writeControl		timeStep;
+	 writeInterval		1;
+	 timeFormat    fixed;
+	 timePrecision   7;
+	 operation		none;
+	 writeFields	 	true;
+	 surfaceFormat		raw;
+	 regionType		patch;
+	 name			Wire;
+	 fields			(p);		
+	}
+  
+   wallShearStress
+       {
+ 	type			wallShearStress;
+	libs			("libfieldFunctionObjects.so");
+	executeControl		timeStep;
+	executeInterval		1;
+	writeControl		timeStep;
+	writeInterval		10000000000;
+	timeFormat    fixed;
+	timeprecision		5;
+	log			false;
+       }
+
+   TRACTION_Wire
+	{
+	type			surfaceFieldValue;
+	libs			("libfieldFunctionObjects.so");
+	executeControl		timeStep;
+	executeInterval		1;
+	writeControl		timeStep;
+	writeInterval		1;
+	timeFormat    fixed;
+	timePrecision   7;
+	operation		none;
+	writeFields		true;
+	surfaceFormat		raw;
+	regionType		patch;
+	name			Wire;
+	fields			(wallShearStress);
+	}
+
+    forces
+                 {
+                         type forces;
+                         libs ("libforces.so");
+                         writeControl timeStep;
+                         timeInterval 1;
+                         log     yes;
+                         patches (Wire);
+                         rho     rhoInf;
+                         log true;
+                         rhoInf  1;
+                         CofR    (0 0 0);
+                  }
+
+}
+
+    
+
+// ************************************************************************* //
+
+// CoCoNuT function objects
+boundary_names (Wire );
+
+functions
+{
+    wallShearStress
+    {
+        type            wallShearStress;
+        libs            ("libfieldFunctionObjects.so");
+        executeControl  timeStep;
+        executeInterval 1;
+        writeControl    none;
+        patches         $boundary_names;
+    }
+    coconut_Wire
+    {
+        type            surfaceFieldValue;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    timeStep;
+        writeInterval   1;
+        operation       none;
+        writeFields     true;
+        surfaceFormat   raw;
+        regionType      patch;
+        name            Wire;
+        fields          (p wallShearStress);
+    }
+}

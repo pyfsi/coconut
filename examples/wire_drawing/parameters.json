@@ -1,0 +1,185 @@
+{
+  "settings": {
+    "number_of_timesteps": 1600
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.00005,
+      "omega": 0.1,
+      "save_results": 1,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-14,
+          "q": 0
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum":20,
+              "minimum": 4
+            }
+          }
+           ,{
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-4,
+              "order": 2
+            }
+          },
+	  {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+             "tolerance": 5e-9,
+              "order": 2
+
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.openfoam.v8",
+        "settings": {
+          "working_directory": "CFD",
+          "application": "coconut_pimpleFoam",
+          "boundary_names": [
+            "Wire"
+          ],
+          "interface_input": [
+            {
+              "model_part": "Wire_input",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "Wire_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "time_precision": 7,
+          "density": 1,
+          "debug": false,
+          "moving_rigid_body": true,
+          "moving_rigid_bodies_names": ["dieWall"],
+          "radial_displacement_rigid_body": 1.8e-5,
+          "number_of_time_increments_rigid_body": 1400,
+          "radius_wire": 0.00075,
+          "start_increment": 20,
+          "timeVaryingMappedFixedValue": true,
+          "parallel": false,
+          "residual_variables": [
+            "Ux",
+            "Uy",
+            "Uz",
+            "p"
+          ]
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped_updated",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.openfoam_extend.v41",
+            "settings": {
+              "working_directory": "CSM",
+              "application": "coconut_plasticNonLinSolidFoam",
+              "time_precision": 7,
+              "axial_coordinate_die_min": -0.003,
+              "axial_coordinate_die_max": 0.003,
+  	      "slot_start_FSI": 20,
+	      "debug": false,
+              "time_folder_postProcess": "0.0800000",
+              "parallel": false,
+              "boundary_names": [
+                                "wireTopContact"
+              ],
+              "interface_input": [
+                {
+                  "model_part": "wireTopContact_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "wireTopContact_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.combined",
+              "settings": {
+		"mappers":[
+		  {
+		    "type": "mappers.3d_wedge_2d_axisymmetric",
+		    "settings": {
+			"direction_axial": "x",
+			"direction_radial": "y"
+			}
+		      },
+		       {
+			"type": "mappers.linear",
+		"settings": {
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+		 ]
+		}
+		},
+		{
+		  "type": "mappers.2d_axisymmetric_3d_wedge",
+		  "settings":{
+			"direction_axial": "x",
+			"direction_radial": "y"
+			     }
+		}
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
