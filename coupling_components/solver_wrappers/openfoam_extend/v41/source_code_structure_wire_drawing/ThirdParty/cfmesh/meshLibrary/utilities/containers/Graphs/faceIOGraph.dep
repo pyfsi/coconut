@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/faceIOGraph.o: $(EXE_DEP)
+$(OBJECTS_DIR)/faceIOGraph.o:
+	@SOURCE_DIR=utilities/containers/Graphs
+	SOURCE=utilities/containers/Graphs/faceIOGraph.C ; $(Ctoo)

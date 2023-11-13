@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/fixedScalarFvPatchScalarField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fixedScalarFvPatchScalarField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/fixedScalar
+	SOURCE=boundaryConditions/fvPatchFields/fixedScalar/fixedScalarFvPatchScalarField.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/principalStresses.o: $(EXE_DEP)
+$(OBJECTS_DIR)/principalStresses.o:
+	@SOURCE_DIR=functionObjects/principalStresses
+	SOURCE=functionObjects/principalStresses/principalStresses.C ; $(Ctoo)

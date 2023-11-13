@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/componentMixedPointPatchFields.o: $(EXE_DEP)
+$(OBJECTS_DIR)/componentMixedPointPatchFields.o:
+	@SOURCE_DIR=boundaryConditions/pointPatchFields/componentMixed
+	SOURCE=boundaryConditions/pointPatchFields/componentMixed/componentMixedPointPatchFields.C ; $(Ctoo)

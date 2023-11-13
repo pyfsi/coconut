@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfFacets.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfFacets.o:
+	@SOURCE_DIR=utilities/meshes/triSurf
+	SOURCE=utilities/meshes/triSurf/triSurfFacets.C ; $(Ctoo)

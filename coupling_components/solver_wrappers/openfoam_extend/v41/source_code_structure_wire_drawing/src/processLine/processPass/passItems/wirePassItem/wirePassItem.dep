@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/wirePassItem.o: $(EXE_DEP)
+$(OBJECTS_DIR)/wirePassItem.o:
+	@SOURCE_DIR=processPass/passItems/wirePassItem
+	SOURCE=processPass/passItems/wirePassItem/wirePassItem.C ; $(Ctoo)

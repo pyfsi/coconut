@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/volumeOptimizerHeight.o: $(EXE_DEP)
+$(OBJECTS_DIR)/volumeOptimizerHeight.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/advancedSmoothers/volumeOptimizerHeight
+	SOURCE=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/advancedSmoothers/volumeOptimizerHeight/volumeOptimizerHeight.C ; $(Ctoo)

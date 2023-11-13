@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/elastoPlasticBatheHill.o: $(EXE_DEP)
+$(OBJECTS_DIR)/elastoPlasticBatheHill.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/mechanicalLaws/elastoPlasticBatheHill
+	SOURCE=materialModels/mechanicalModel/mechanicalLaws/elastoPlasticBatheHill/elastoPlasticBatheHill.C ; $(Ctoo)

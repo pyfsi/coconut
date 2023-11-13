@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/fixedRotationFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fixedRotationFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/fixedRotation
+	SOURCE=boundaryConditions/fvPatchFields/fixedRotation/fixedRotationFvPatchVectorField.C ; $(Ctoo)

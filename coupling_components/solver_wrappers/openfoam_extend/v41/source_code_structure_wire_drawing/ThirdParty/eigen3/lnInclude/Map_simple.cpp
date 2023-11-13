@@ -1,0 +1,1 @@
+../doc/snippets/Map_simple.cpp

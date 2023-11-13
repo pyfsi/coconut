@@ -1,0 +1,2 @@
+EXE_INC = -Wno-old-style-cast -Wno-deprecated-declarations -std=c++11 -I../../../ThirdParty/eigen3 -IRBFInterpolation -IRBFInterpolation/RBFFunctions -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude
+EXE_LIBS = -lfiniteVolume -lmeshTools

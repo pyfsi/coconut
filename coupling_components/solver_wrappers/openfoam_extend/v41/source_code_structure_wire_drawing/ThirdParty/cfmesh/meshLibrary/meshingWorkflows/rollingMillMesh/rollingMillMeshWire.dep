@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/rollingMillMeshWire.o: $(EXE_DEP)
+$(OBJECTS_DIR)/rollingMillMeshWire.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh
+	SOURCE=meshingWorkflows/rollingMillMesh/rollingMillMeshWire.C ; $(Ctoo)

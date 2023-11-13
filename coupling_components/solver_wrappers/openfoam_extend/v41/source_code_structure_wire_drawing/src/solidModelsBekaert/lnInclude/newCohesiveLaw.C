@@ -1,0 +1,1 @@
+../materialModels/mechanicalModel/cohesiveLaws/cohesiveLaw/newCohesiveLaw.C

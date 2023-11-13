@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/extrapolatedFvPatchFields.o: $(EXE_DEP)
+$(OBJECTS_DIR)/extrapolatedFvPatchFields.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/extrapolated
+	SOURCE=boundaryConditions/fvPatchFields/extrapolated/extrapolatedFvPatchFields.C ; $(Ctoo)

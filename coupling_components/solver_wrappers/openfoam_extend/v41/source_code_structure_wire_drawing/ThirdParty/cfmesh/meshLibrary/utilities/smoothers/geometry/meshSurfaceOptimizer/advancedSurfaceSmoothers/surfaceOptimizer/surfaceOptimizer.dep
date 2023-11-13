@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/surfaceOptimizer.o: $(EXE_DEP)
+$(OBJECTS_DIR)/surfaceOptimizer.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshSurfaceOptimizer/advancedSurfaceSmoothers/surfaceOptimizer
+	SOURCE=utilities/smoothers/geometry/meshSurfaceOptimizer/advancedSurfaceSmoothers/surfaceOptimizer/surfaceOptimizer.C ; $(Ctoo)

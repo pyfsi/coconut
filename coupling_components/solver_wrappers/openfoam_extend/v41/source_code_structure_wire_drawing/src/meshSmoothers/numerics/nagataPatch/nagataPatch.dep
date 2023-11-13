@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/nagataPatch.o: $(EXE_DEP)
+$(OBJECTS_DIR)/nagataPatch.o:
+	@SOURCE_DIR=numerics/nagataPatch
+	SOURCE=numerics/nagataPatch/nagataPatch.C ; $(Ctoo)

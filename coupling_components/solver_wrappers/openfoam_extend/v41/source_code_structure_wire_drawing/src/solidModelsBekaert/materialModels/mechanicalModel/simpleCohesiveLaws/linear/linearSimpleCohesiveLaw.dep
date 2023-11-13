@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/linearSimpleCohesiveLaw.o: $(EXE_DEP)
+$(OBJECTS_DIR)/linearSimpleCohesiveLaw.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/simpleCohesiveLaws/linear
+	SOURCE=materialModels/mechanicalModel/simpleCohesiveLaws/linear/linearSimpleCohesiveLaw.C ; $(Ctoo)

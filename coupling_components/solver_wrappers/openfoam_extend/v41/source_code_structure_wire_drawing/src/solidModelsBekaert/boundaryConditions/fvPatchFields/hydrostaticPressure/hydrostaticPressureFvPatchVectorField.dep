@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/hydrostaticPressureFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/hydrostaticPressureFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/hydrostaticPressure
+	SOURCE=boundaryConditions/fvPatchFields/hydrostaticPressure/hydrostaticPressureFvPatchVectorField.C ; $(Ctoo)

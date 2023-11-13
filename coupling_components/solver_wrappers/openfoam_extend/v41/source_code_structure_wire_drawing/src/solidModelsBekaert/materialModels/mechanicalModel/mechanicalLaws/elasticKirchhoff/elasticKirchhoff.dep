@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/elasticKirchhoff.o: $(EXE_DEP)
+$(OBJECTS_DIR)/elasticKirchhoff.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/mechanicalLaws/elasticKirchhoff
+	SOURCE=materialModels/mechanicalModel/mechanicalLaws/elasticKirchhoff/elasticKirchhoff.C ; $(Ctoo)

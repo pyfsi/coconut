@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/optimizeMeshFV.o: $(EXE_DEP)
+$(OBJECTS_DIR)/optimizeMeshFV.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshOptimizer
+	SOURCE=utilities/smoothers/geometry/meshOptimizer/optimizeMeshFV.C ; $(Ctoo)

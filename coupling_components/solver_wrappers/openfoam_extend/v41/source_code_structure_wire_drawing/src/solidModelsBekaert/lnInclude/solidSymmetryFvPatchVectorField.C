@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidSymmetry/solidSymmetryFvPatchVectorField.C

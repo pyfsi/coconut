@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/decomposeCellsPyramids.o: $(EXE_DEP)
+$(OBJECTS_DIR)/decomposeCellsPyramids.o:
+	@SOURCE_DIR=utilities/decomposeCells
+	SOURCE=utilities/decomposeCells/decomposeCellsPyramids.C ; $(Ctoo)

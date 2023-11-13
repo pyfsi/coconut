@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/philipcardiff-bekaert-v2.0-master', '.' ]
+images: ['gcr.io/$PROJECT_ID/philipcardiff-bekaert-v2.0-master']
+timeout: 7200s

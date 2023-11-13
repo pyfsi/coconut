@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/surfaceMorpherCellsCreateBoundaryFaces.o: $(EXE_DEP)
+$(OBJECTS_DIR)/surfaceMorpherCellsCreateBoundaryFaces.o:
+	@SOURCE_DIR=utilities/surfaceTools/surfaceMorpherCells
+	SOURCE=utilities/surfaceTools/surfaceMorpherCells/surfaceMorpherCellsCreateBoundaryFaces.C ; $(Ctoo)

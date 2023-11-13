@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidRigidContact/triSurfaceMotion/triSurfaceMotion.C

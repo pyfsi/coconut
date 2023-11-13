@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeNeighbourSearches.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeNeighbourSearches.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree
+	SOURCE=utilities/octrees/meshOctree/meshOctreeNeighbourSearches.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/cfMeshSmoother.o: $(EXE_DEP)
+$(OBJECTS_DIR)/cfMeshSmoother.o:
+	@SOURCE_DIR=cfMeshSmoother
+	SOURCE=cfMeshSmoother/cfMeshSmoother.C ; $(Ctoo)

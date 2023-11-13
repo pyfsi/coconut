@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/elastoPlasticDistortional.o: $(EXE_DEP)
+$(OBJECTS_DIR)/elastoPlasticDistortional.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/mechanicalLaws/elastoPlasticDistortional
+	SOURCE=materialModels/mechanicalModel/mechanicalLaws/elastoPlasticDistortional/elastoPlasticDistortional.C ; $(Ctoo)

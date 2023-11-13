@@ -1,0 +1,1 @@
+../materialModels/mechanicalModel/simpleCohesiveLaws/linear/linearSimpleCohesiveLaw.C

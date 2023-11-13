@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/pointGaussLeastSquaresGrads.o: $(EXE_DEP)
+$(OBJECTS_DIR)/pointGaussLeastSquaresGrads.o:
+	@SOURCE_DIR=numerics/pointGaussLeastSquaresGrad
+	SOURCE=numerics/pointGaussLeastSquaresGrad/pointGaussLeastSquaresGrads.C ; $(Ctoo)

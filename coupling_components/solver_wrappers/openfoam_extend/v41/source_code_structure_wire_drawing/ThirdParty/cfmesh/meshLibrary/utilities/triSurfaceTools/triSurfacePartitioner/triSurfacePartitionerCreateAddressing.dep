@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfacePartitionerCreateAddressing.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfacePartitionerCreateAddressing.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfacePartitioner
+	SOURCE=utilities/triSurfaceTools/triSurfacePartitioner/triSurfacePartitionerCreateAddressing.C ; $(Ctoo)

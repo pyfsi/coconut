@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeCreatorAdjustOctreeToSurface.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeCreatorAdjustOctreeToSurface.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeCreator
+	SOURCE=utilities/octrees/meshOctree/meshOctreeCreator/meshOctreeCreatorAdjustOctreeToSurface.C ; $(Ctoo)

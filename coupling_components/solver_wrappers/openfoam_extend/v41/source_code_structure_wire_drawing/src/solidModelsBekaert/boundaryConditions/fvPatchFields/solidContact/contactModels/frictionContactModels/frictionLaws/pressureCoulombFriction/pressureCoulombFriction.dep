@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/pressureCoulombFriction.o: $(EXE_DEP)
+$(OBJECTS_DIR)/pressureCoulombFriction.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/pressureCoulombFriction
+	SOURCE=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/pressureCoulombFriction/pressureCoulombFriction.C ; $(Ctoo)

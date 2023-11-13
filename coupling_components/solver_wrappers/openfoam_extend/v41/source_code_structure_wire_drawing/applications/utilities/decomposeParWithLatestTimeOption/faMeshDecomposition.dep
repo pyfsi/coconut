@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/faMeshDecomposition.o: $(EXE_DEP)
+$(OBJECTS_DIR)/faMeshDecomposition.o:
+	@SOURCE_DIR=.
+	SOURCE=faMeshDecomposition.C ; $(Ctoo)

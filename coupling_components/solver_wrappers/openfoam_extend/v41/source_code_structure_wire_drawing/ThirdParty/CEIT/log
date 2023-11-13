@@ -1,0 +1,4 @@
+'/cfdfile2/data/fm/mathieu/foam/mathieu-4.1-20200408/lib/linux64GccDPInt32Opt/libceitHomogStressAtIntPoint.so' is up to date.
+'/cfdfile2/data/fm/mathieu/foam/mathieu-4.1-20200408/lib/linux64GccDPInt32Opt/libceitMesoStressAtIntPointv2.so' is up to date.
+Compiling mesostressAtIntPoint_v2 and placing object in /cfdfile2/data/fm/mathieu/foam/mathieu-4.1-20200408/lib/linux64GccDPInt32Opt
+Compiling homogstressAtIntPoint_v5 and placing object in /cfdfile2/data/fm/mathieu/foam/mathieu-4.1-20200408/lib/linux64GccDPInt32Opt

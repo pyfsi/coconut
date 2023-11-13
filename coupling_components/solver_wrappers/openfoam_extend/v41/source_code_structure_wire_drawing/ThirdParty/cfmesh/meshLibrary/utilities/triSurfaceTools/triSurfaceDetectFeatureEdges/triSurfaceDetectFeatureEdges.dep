@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceDetectFeatureEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceDetectFeatureEdges.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceDetectFeatureEdges
+	SOURCE=utilities/triSurfaceTools/triSurfaceDetectFeatureEdges/triSurfaceDetectFeatureEdges.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/splineBase.o: $(EXE_DEP)
+$(OBJECTS_DIR)/splineBase.o:
+	@SOURCE_DIR=utilities/helperClasses/geometry/splines
+	SOURCE=utilities/helperClasses/geometry/splines/splineBase.C ; $(Ctoo)

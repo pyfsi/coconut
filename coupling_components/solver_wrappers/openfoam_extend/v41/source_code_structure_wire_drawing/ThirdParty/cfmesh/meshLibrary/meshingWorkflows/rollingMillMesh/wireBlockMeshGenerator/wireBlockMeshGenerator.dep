@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/wireBlockMeshGenerator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/wireBlockMeshGenerator.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/wireBlockMeshGenerator
+	SOURCE=meshingWorkflows/rollingMillMesh/wireBlockMeshGenerator/wireBlockMeshGenerator.C ; $(Ctoo)

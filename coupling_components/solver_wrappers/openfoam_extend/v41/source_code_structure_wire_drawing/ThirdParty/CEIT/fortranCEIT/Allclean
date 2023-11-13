@@ -1,0 +1,4 @@
+echo "Removing mesoStressAtIntPointv2.o from $FOAM_USER_LIBBIN"
+\rm -f $FOAM_USER_LIBBIN/mesoStressAtIntPointv2.o
+echo "Removing homogStressAtIntPoint.o from $FOAM_USER_LIBBIN"
+\rm -f $FOAM_USER_LIBBIN/homogStressAtIntPoint.o

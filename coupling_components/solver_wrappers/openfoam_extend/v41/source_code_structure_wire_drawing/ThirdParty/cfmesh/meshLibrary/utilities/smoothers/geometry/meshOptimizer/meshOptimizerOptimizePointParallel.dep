@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOptimizerOptimizePointParallel.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOptimizerOptimizePointParallel.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshOptimizer
+	SOURCE=utilities/smoothers/geometry/meshOptimizer/meshOptimizerOptimizePointParallel.C ; $(Ctoo)

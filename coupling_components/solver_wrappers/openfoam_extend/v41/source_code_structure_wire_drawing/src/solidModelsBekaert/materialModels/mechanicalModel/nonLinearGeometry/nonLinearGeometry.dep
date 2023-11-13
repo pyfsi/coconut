@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/nonLinearGeometry.o: $(EXE_DEP)
+$(OBJECTS_DIR)/nonLinearGeometry.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/nonLinearGeometry
+	SOURCE=materialModels/mechanicalModel/nonLinearGeometry/nonLinearGeometry.C ; $(Ctoo)

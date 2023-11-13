@@ -1,0 +1,2 @@
+reorderPatchesConsistent.C
+EXE = $(FOAM_USER_APPBIN)/reorderPatchesConsistent

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/createFundamentalSheetsFJ.o: $(EXE_DEP)
+$(OBJECTS_DIR)/createFundamentalSheetsFJ.o:
+	@SOURCE_DIR=utilities/surfaceTools/createFundamentalSheets/createFundamentalSheetsFJ
+	SOURCE=utilities/surfaceTools/createFundamentalSheets/createFundamentalSheetsFJ/createFundamentalSheetsFJ.C ; $(Ctoo)

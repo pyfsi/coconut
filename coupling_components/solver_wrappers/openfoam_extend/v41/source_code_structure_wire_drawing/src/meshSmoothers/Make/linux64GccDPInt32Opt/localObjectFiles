@@ -1,0 +1,11 @@
+LOCAL_OBJECTS = \
+meshSmoother.o\
+pointNormalsConsistent.o\
+cfMeshSmoother.o\
+laplacianSmoother.o\
+taubinSmoother.o\
+volumeSmoother.o\
+newFvMeshSubset.o\
+newLeastSquaresVolPointInterpolation.o\
+globalPolyPatch.o\
+nagataPatch.o

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSurfaceMapper.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSurfaceMapper.o:
+	@SOURCE_DIR=utilities/surfaceTools/meshSurfaceMapper
+	SOURCE=utilities/surfaceTools/meshSurfaceMapper/meshSurfaceMapper.C ; $(Ctoo)

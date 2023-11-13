@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSurfaceOptimizerCalculateTrianglesAndAddressing.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSurfaceOptimizerCalculateTrianglesAndAddressing.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshSurfaceOptimizer
+	SOURCE=utilities/smoothers/geometry/meshSurfaceOptimizer/meshSurfaceOptimizerCalculateTrianglesAndAddressing.C ; $(Ctoo)

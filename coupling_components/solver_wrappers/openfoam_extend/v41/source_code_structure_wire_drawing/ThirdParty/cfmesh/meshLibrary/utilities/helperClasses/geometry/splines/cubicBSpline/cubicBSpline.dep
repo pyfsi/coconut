@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/cubicBSpline.o: $(EXE_DEP)
+$(OBJECTS_DIR)/cubicBSpline.o:
+	@SOURCE_DIR=utilities/helperClasses/geometry/splines/cubicBSpline
+	SOURCE=utilities/helperClasses/geometry/splines/cubicBSpline/cubicBSpline.C ; $(Ctoo)

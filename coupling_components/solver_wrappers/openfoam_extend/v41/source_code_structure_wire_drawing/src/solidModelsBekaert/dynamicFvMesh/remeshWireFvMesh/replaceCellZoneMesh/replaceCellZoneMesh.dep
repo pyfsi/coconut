@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/replaceCellZoneMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/replaceCellZoneMesh.o:
+	@SOURCE_DIR=dynamicFvMesh/remeshWireFvMesh/replaceCellZoneMesh
+	SOURCE=dynamicFvMesh/remeshWireFvMesh/replaceCellZoneMesh/replaceCellZoneMesh.C ; $(Ctoo)

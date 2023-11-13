@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/coulombFrictionAnisotropic.o: $(EXE_DEP)
+$(OBJECTS_DIR)/coulombFrictionAnisotropic.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/coulombFrictionAnisotropic
+	SOURCE=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/coulombFrictionAnisotropic/coulombFrictionAnisotropic.C ; $(Ctoo)

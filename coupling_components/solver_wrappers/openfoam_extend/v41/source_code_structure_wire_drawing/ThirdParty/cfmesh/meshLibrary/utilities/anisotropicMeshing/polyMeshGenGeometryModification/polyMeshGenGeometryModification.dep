@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenGeometryModification.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenGeometryModification.o:
+	@SOURCE_DIR=utilities/anisotropicMeshing/polyMeshGenGeometryModification
+	SOURCE=utilities/anisotropicMeshing/polyMeshGenGeometryModification/polyMeshGenGeometryModification.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/surfaceQuadricMetric.o: $(EXE_DEP)
+$(OBJECTS_DIR)/surfaceQuadricMetric.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshSurfaceOptimizer/advancedSurfaceSmoothers/surfaceQuadricMetric
+	SOURCE=utilities/smoothers/geometry/meshSurfaceOptimizer/advancedSurfaceSmoothers/surfaceQuadricMetric/surfaceQuadricMetric.C ; $(Ctoo)

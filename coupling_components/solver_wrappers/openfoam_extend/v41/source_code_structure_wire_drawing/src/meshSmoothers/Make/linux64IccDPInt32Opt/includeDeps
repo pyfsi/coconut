@@ -1,0 +1,10 @@
+include meshSmoother/meshSmoother.dep
+include meshSmoother/pointNormalsConsistent/pointNormalsConsistent.dep
+include cfMeshSmoother/cfMeshSmoother.dep
+include laplacianSmoother/laplacianSmoother.dep
+include taubinSmoother/taubinSmoother.dep
+include volumeSmoother/volumeSmoother.dep
+include numerics/newFvMeshSubset/newFvMeshSubset.dep
+include numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.dep
+include numerics/globalPolyPatch/globalPolyPatch.dep
+include numerics/nagataPatch/nagataPatch.dep

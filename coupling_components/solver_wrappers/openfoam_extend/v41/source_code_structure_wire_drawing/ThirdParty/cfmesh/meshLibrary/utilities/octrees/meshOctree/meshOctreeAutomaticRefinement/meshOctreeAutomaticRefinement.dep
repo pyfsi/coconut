@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeAutomaticRefinement.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeAutomaticRefinement.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeAutomaticRefinement
+	SOURCE=utilities/octrees/meshOctree/meshOctreeAutomaticRefinement/meshOctreeAutomaticRefinement.C ; $(Ctoo)

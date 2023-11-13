@@ -1,0 +1,468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="algorithms\algorithms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Array_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\check_Tensor_Operations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\cputimeprofiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1_contract_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1_divided_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1_Equals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1_minus_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1_plus_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1_times_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr1_times_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\Expr1s.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_contract_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_contract_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_divided_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_Equals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_minus_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_plus_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_times_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2_times_Expr0a.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr2_times_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr2_times_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\Expr2s.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_contract_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_contract_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_contract_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_divided_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_Equals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_equals_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_minus_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_plus_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_times_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr3_times_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3_to_Expr3permuted.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\Expr3s.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_divided_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_Equals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_equals_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_minus_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_plus_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4_times_Expr0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\Expr4s.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Exprs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\F_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\F_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\F_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\F_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Index.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\IndexedArray1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\IndexedArray2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\IndexF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\IndexG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\IndexH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\IndexH_bis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LTensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Marray\Marray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Marray\Marray_rank1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Marray\Marray_rank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Marray\Marray_rank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Marray\Marray_rank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="meta\Metaprograms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\minus_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\minus_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\minus_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\minus_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Number.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_TensorsRank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_TensorsRank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_TensorsRank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr1\plus_Expr1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr2\plus_Expr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr3\plus_Expr3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Expr\Expr4\plus_Expr4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Promote_Types\promote.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\Range.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="storage\storage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_Tensors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="static\sVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor1_contracts_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor1_times_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor2_contracts_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor2_contracts_Tensor2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor2_times_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor2_times_Tensor2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_itsindices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_Tensor2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_Tensor3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor3_times_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_itsindices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor_Contractions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\Tensor_divided_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_Operations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\Tensor_times_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor_times_Tensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank1_divided_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank1_times_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank2_divided_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank2_times_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank3_divided_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank3_times_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank4_divided_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank4_times_Scalar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base\TinyArray_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

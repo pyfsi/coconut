@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/detectBoundaryLayers.o: $(EXE_DEP)
+$(OBJECTS_DIR)/detectBoundaryLayers.o:
+	@SOURCE_DIR=utilities/boundaryLayers/detectBoundaryLayers
+	SOURCE=utilities/boundaryLayers/detectBoundaryLayers/detectBoundaryLayers.C ; $(Ctoo)

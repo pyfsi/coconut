@@ -1,0 +1,1 @@
+../doc/snippets/Tutorial_solve_singular.cpp

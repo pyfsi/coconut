@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetCreatorOctreeTetsAroundSplitEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetCreatorOctreeTetsAroundSplitEdges.o:
+	@SOURCE_DIR=utilities/tetrahedra/tetCreatorOctree
+	SOURCE=utilities/tetrahedra/tetCreatorOctree/tetCreatorOctreeTetsAroundSplitEdges.C ; $(Ctoo)

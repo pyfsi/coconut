@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/boundaryPatchBase.o: $(EXE_DEP)
+$(OBJECTS_DIR)/boundaryPatchBase.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGen/boundaryPatch
+	SOURCE=utilities/meshes/polyMeshGen/boundaryPatch/boundaryPatchBase.C ; $(Ctoo)

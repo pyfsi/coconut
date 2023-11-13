@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfacePatchManipulator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfacePatchManipulator.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfacePatchManipulator
+	SOURCE=utilities/triSurfaceTools/triSurfacePatchManipulator/triSurfacePatchManipulator.C ; $(Ctoo)

@@ -1,0 +1,13 @@
+meshSmoother/meshSmoother.C
+meshSmoother/pointNormalsConsistent/pointNormalsConsistent.C
+cfMeshSmoother/cfMeshSmoother.C
+laplacianSmoother/laplacianSmoother.C
+taubinSmoother/taubinSmoother.C
+volumeSmoother/volumeSmoother.C
+
+numerics/newFvMeshSubset/newFvMeshSubset.C
+numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.C
+numerics/globalPolyPatch/globalPolyPatch.C
+numerics/nagataPatch/nagataPatch.C
+
+LIB = $(FOAM_USER_LIBBIN)/coconut_libmeshSmoothers

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/quadricMetric.o: $(EXE_DEP)
+$(OBJECTS_DIR)/quadricMetric.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/advancedSmoothers/quadricMetric
+	SOURCE=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/advancedSmoothers/quadricMetric/quadricMetric.C ; $(Ctoo)

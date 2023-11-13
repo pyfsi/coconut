@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidSymmetryFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidSymmetryFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidSymmetry
+	SOURCE=boundaryConditions/fvPatchFields/solidSymmetry/solidSymmetryFvPatchVectorField.C ; $(Ctoo)

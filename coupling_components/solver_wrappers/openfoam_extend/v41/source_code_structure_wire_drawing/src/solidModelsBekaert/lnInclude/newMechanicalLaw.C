@@ -1,0 +1,1 @@
+../materialModels/mechanicalModel/mechanicalLaws/mechanicalLaw/newMechanicalLaw.C

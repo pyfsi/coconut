@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/newFvMeshSubset.o: $(EXE_DEP)
+$(OBJECTS_DIR)/newFvMeshSubset.o:
+	@SOURCE_DIR=numerics/newFvMeshSubset
+	SOURCE=numerics/newFvMeshSubset/newFvMeshSubset.C ; $(Ctoo)

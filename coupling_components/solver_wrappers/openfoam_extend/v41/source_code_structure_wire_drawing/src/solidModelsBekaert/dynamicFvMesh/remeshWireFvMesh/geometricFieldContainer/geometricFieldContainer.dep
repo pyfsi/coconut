@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/geometricFieldContainer.o: $(EXE_DEP)
+$(OBJECTS_DIR)/geometricFieldContainer.o:
+	@SOURCE_DIR=dynamicFvMesh/remeshWireFvMesh/geometricFieldContainer
+	SOURCE=dynamicFvMesh/remeshWireFvMesh/geometricFieldContainer/geometricFieldContainer.C ; $(Ctoo)

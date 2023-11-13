@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/fixedDisplacementZeroShearFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fixedDisplacementZeroShearFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/fixedDisplacementZeroShear
+	SOURCE=boundaryConditions/fvPatchFields/fixedDisplacementZeroShear/fixedDisplacementZeroShearFvPatchVectorField.C ; $(Ctoo)

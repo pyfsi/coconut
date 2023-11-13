@@ -1,0 +1,1 @@
+../materialModels/thermalModel/thermalLaws/thermalLaw/newThermalLaw.C

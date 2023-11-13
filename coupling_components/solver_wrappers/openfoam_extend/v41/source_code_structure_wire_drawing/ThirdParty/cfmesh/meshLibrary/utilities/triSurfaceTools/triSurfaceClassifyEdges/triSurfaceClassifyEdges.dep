@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceClassifyEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceClassifyEdges.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceClassifyEdges
+	SOURCE=utilities/triSurfaceTools/triSurfaceClassifyEdges/triSurfaceClassifyEdges.C ; $(Ctoo)

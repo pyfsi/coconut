@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Clean ThirdParty
+(cd ThirdParty && ./Allwclean)
+
+# Clean libraries
+(cd src && ./Allwclean)
+
+# Clean applications
+(cd applications && ./Allwclean)
+
+# Remove library binaries to avoid conflicts with older versions
+echo "Cleaning legacy binaries"
+echo
+\rm -rf $FOAM_LIBBIN/libsolidModelsBekaert* || true
+\rm -rf $FOAM_USER_LIBBIN/libsolidModelsBekaert* || true
+\rm -rf $FOAM_USER_LIBBIN/libprocessLine* || true
+\rm -rf $FOAM_USER_LIBBIN/libmeshSmoothers* || true
+
+echo "All is clean"

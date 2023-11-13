@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/planeScaling.o: $(EXE_DEP)
+$(OBJECTS_DIR)/planeScaling.o:
+	@SOURCE_DIR=utilities/anisotropicMeshing/coordinateModification
+	SOURCE=utilities/anisotropicMeshing/coordinateModification/planeScaling.C ; $(Ctoo)

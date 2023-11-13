@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/smoothMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/smoothMesh.o:
+	@SOURCE_DIR=.
+	SOURCE=smoothMesh.C ; $(Ctoo)

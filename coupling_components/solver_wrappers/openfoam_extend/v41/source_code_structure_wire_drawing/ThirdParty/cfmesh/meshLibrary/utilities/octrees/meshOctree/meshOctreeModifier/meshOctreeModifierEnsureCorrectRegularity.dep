@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeModifierEnsureCorrectRegularity.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeModifierEnsureCorrectRegularity.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeModifier
+	SOURCE=utilities/octrees/meshOctree/meshOctreeModifier/meshOctreeModifierEnsureCorrectRegularity.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/eig3Field.o: $(EXE_DEP)
+$(OBJECTS_DIR)/eig3Field.o:
+	@SOURCE_DIR=numerics/logExpVolFields
+	SOURCE=numerics/logExpVolFields/eig3Field.C ; $(Ctoo)

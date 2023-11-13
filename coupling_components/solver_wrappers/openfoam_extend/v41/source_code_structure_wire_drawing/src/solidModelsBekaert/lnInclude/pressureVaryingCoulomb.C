@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/pressureVaryingCoulomb/pressureVaryingCoulomb.C

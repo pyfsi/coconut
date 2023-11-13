@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSurfacePartitioner.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSurfacePartitioner.o:
+	@SOURCE_DIR=utilities/surfaceTools/meshSurfacePartitioner
+	SOURCE=utilities/surfaceTools/meshSurfacePartitioner/meshSurfacePartitioner.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/extrude2DMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/extrude2DMesh.o:
+	@SOURCE_DIR=utilities/helperClasses/extrude2DMesh
+	SOURCE=utilities/helperClasses/extrude2DMesh/extrude2DMesh.C ; $(Ctoo)

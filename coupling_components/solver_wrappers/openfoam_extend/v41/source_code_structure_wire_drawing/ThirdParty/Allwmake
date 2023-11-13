@@ -1,0 +1,172 @@
+#!/bin/bash
+cd ${0%/*} || exit 1    # run from this directory
+
+# To use system version of a ThirdParty code, set the corresponding
+# environmental variable: for example, for the Eigen library add the following
+# line to your ~.bashrc:
+#     export EIGEN_DIR="/opt/local/include/eigen3"
+
+
+# Eigen library: http://eigen.tuxfamily.org/index.php?title=Main_Page
+# Check if eigen3 directory is found
+if [ -d $(pwd)/eigen3 ]
+then
+    echo "eigen3 found."
+else
+    if [ -z $EIGEN_DIR ]
+    then
+        # Download eigen using wget
+        echo "Downloading eigen3"
+        wget --no-check-certificate \
+             https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
+        if [ $? -ne 0 ]
+        then
+            echo "Download failed!"
+            echo "Check your internet connection and check the following link "
+            echo "is valid: http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz"
+            echo
+            exit 1
+        fi
+        \tar xvf eigen-3.3.7.tar.gz
+        \rm -f eigen-3.3.7.tar.gz
+        \mv eigen-3.3.7 eigen3
+        (cd eigen3 && wmakeLnInclude .)
+    else
+        #  If EIGEN_DIR is set then then we will create a symbolic link to it
+        echo "EIGEN_DIR is set: creating symbolic link"
+        \ln -s $EIGEN_DIR eigen3
+    fi
+fi
+
+# GSL library: https://www.gnu.org/software/gsl/
+# Check if gsl2 directory is found
+if [ -d $(pwd)/gsl2$WM_COMPILER$WM_COMPILE_OPTION ]
+then
+    echo "gsl2 found."
+else
+    if [ -z $GSL_DIR ]
+    then
+        # Download gsl using wget
+        echo "Downloading gsl2"
+        wget --no-check-certificate http://ftp.gnu.org/gnu/gsl/gsl-2.1.tar.gz
+        if [ $? -ne 0 ]
+        then
+            echo "Download failed!"
+            echo "Check your internet connection and check the following link "
+            echo "is valid: http://ftp.gnu.org/gnu/gsl/gsl-2.1.tar.gz"
+            echo
+            exit 1
+        fi
+        \tar xvf gsl-2.1.tar.gz
+        \rm -f gsl-2.1.tar.gz
+        \mv gsl-2.1 gsl2$WM_COMPILER$WM_COMPILE_OPTION
+        (cd gsl2$WM_COMPILER$WM_COMPILE_OPTION && ./configure --prefix=$(pwd) --bindir=$FOAM_USER_APPBIN --libdir=$FOAM_USER_LIBBIN && make && make install)
+    else
+        #  If GSL_DIR is set then then we will create a symbolic link to it
+        echo "GSL_DIR is set: creating symbolic link"
+        \ln -s $GSL_DIR gsl2$WM_COMPILER$WM_COMPILE_OPTION
+    fi
+fi
+\ln -s gsl2$WM_COMPILER$WM_COMPILE_OPTION gsl2
+
+# LTensor library: https://code.google.com/archive/p/ltensor/
+# Check if ltensor directory is found
+if [ -d $(pwd)/ltensor ]
+then
+    echo "ltensor found."
+else
+    if [ -z $LTENSOR_DIR ]
+    then
+        # Download LTensor using wget
+        echo "Downloading ltensor"
+        wget --no-check-certificate https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/ltensor/LTensor21112012.zip
+        if [ $? -ne 0 ]
+        then
+            echo "Download failed!"
+            echo "Check your internet connection and check the following link "
+            echo "is valid: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/ltensor/LTensor21112012.zip"
+            echo
+            exit 1
+        fi
+        \unzip LTensor21112012.zip
+        \rm -f LTensor21112012.zip
+        \mv ltensor-svn ltensor
+        (cd ltensor && wmakeLnInclude .)
+    else
+        #  If LTENSOR_DIR is set then then we will create a symbolic link to it
+        echo "LTENSOR_DIR is set: creating symbolic link"
+        \ln -s $LTENSOR_DIR ltensor
+    fi
+fi
+
+# FADBAD library: http://www.fadbad.com/fadbad.html
+# Automatic differentiation header library
+# Check if FADBAD directory is found
+if [ -d $(pwd)/FADBAD ]
+then
+    echo "FADBAD found."
+else
+    if [ -z $FADBAD_DIR ]
+    then
+        # Download FADBAD using wget
+        echo "Downloading FADBAD"
+        wget --no-check-certificate http://www.fadbad.com/download/FADBAD++-2.1.tar.gz
+        if [ $? -ne 0 ]
+        then
+            echo "Download failed!"
+            echo "Check your internet connection and check the following link "
+            echo "is valid: http://www.fadbad.com/download/FADBAD++-2.1.tar.gz"
+            echo
+            exit 1
+        fi
+        \tar xzf FADBAD++-2.1.tar.gz
+        \rm -f FADBAD++-2.1.tar.gz
+        \mv FADBAD++ FADBAD
+    else
+        #  If FADBAD_DIR is set then then we will create a symbolic link to it
+        echo "FADBAD_DIR is set: creating symbolic link"
+        \ln -s $FADBAD_DIR FADBAD
+    fi
+fi
+
+# Compile cfmesh submodule
+echo "Checking cfmesh"
+(cd cfmesh && ./Allwmake)
+
+# Compile CEIT code
+echo "Checking CEIT"
+(cd CEIT && ./Allwmake)
+if [ $? -ne 0 ]
+then
+    exit 1
+fi
+
+# GMSH meshing utility: http://gmsh.info
+# Check if gmsh directory is found OR if the gmsh executable exists in the PATH
+if [ -x "$(which gmsh)" ]
+then
+    echo "gmsh found."
+else
+    if [ -z $GMSH_DIR ]
+    then
+        # Download gmsh using wget
+        echo "Downloading gmsh"
+        wget --no-check-certificate http://gmsh.info/bin/Linux/gmsh-2.16.0-Linux64.tgz
+        if [ $? -ne 0 ]
+        then
+            echo "Download failed!"
+            echo "Check your internet connection and check the following link "
+            echo "is valid: http://gmsh.info/bin/Linux/gmsh-2.16.0-Linux64.tgz"
+            echo
+            exit 1
+        fi
+        \tar -xvzf gmsh-2.16.0-Linux64.tgz
+        \rm -f gmsh-2.16.0-Linux64.tgz
+        \mv gmsh-2.16.0-Linux gmsh
+        \ln -s $(pwd)/gmsh/bin/gmsh $FOAM_USER_APPBIN
+    else
+        #  If GMSH_DIR is set then then we will create a symbolic link to it
+        echo "GMSH_DIR is set: creating symbolic link"
+        \ln -s $GMSH_DIR gmsh
+    fi
+fi

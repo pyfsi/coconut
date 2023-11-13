@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/wireStreamlines.o: $(EXE_DEP)
+$(OBJECTS_DIR)/wireStreamlines.o:
+	@SOURCE_DIR=numerics/wireStreamlines
+	SOURCE=numerics/wireStreamlines/wireStreamlines.C ; $(Ctoo)

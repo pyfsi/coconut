@@ -1,0 +1,12 @@
+#!/bin/bash
+cd ${0%/*} || exit 1    # run from this directory
+
+echo
+echo "Cleaning ThirdParty"
+
+\rm -rf eigen3*
+\rm -rf gsl2*
+\rm -rf ltensor*
+\rm -rf FADBAD*
+\rm -rf gmsh*
+(cd CEIT && ./Allwclean)

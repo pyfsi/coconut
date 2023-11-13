@@ -1,0 +1,11 @@
+DEPENDENCIES = \
+meshSmoother/meshSmoother.dep\
+meshSmoother/pointNormalsConsistent/pointNormalsConsistent.dep\
+cfMeshSmoother/cfMeshSmoother.dep\
+laplacianSmoother/laplacianSmoother.dep\
+taubinSmoother/taubinSmoother.dep\
+volumeSmoother/volumeSmoother.dep\
+numerics/newFvMeshSubset/newFvMeshSubset.dep\
+numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.dep\
+numerics/globalPolyPatch/globalPolyPatch.dep\
+numerics/nagataPatch/nagataPatch.dep

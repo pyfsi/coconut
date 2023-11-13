@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetPointFieldDecomposer.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetPointFieldDecomposer.o:
+	@SOURCE_DIR=.
+	SOURCE=tetPointFieldDecomposer.C ; $(Ctoo)

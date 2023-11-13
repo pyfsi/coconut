@@ -1,0 +1,1 @@
+../doc/snippets/Tridiagonalization_packedMatrix.cpp

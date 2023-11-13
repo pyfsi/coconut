@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/dataFriction.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dataFriction.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/dataFriction
+	SOURCE=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/dataFriction/dataFriction.C ; $(Ctoo)

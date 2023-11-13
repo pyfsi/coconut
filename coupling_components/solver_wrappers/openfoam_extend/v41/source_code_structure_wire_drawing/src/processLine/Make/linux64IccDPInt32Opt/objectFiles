@@ -1,0 +1,12 @@
+OBJECTS = \
+$(OBJECTS_DIR)/processLine.o\
+$(OBJECTS_DIR)/boundaryConditionsContainer.o\
+$(OBJECTS_DIR)/dataHandler.o\
+$(OBJECTS_DIR)/runSystemCommandWithPOpen.o\
+$(OBJECTS_DIR)/processPass.o\
+$(OBJECTS_DIR)/passItem.o\
+$(OBJECTS_DIR)/newPassItem.o\
+$(OBJECTS_DIR)/wirePassItem.o\
+$(OBJECTS_DIR)/simpleDiePassItem.o\
+$(OBJECTS_DIR)/rollerPassItem.o\
+$(OBJECTS_DIR)/PatchToPatchInterpolationNewName.o

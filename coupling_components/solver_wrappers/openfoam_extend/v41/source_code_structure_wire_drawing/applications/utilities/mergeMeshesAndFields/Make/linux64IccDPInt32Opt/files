@@ -1,0 +1,2 @@
+mergeMeshesAndFields.C
+EXE = $(FOAM_USER_APPBIN)/mergeMeshesAndFields

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/expVolFields.o: $(EXE_DEP)
+$(OBJECTS_DIR)/expVolFields.o:
+	@SOURCE_DIR=numerics/logExpVolFields
+	SOURCE=numerics/logExpVolFields/expVolFields.C ; $(Ctoo)

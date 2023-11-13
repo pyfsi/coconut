@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshToFPMA.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshToFPMA.o:
+	@SOURCE_DIR=.
+	SOURCE=meshToFPMA.C ; $(Ctoo)

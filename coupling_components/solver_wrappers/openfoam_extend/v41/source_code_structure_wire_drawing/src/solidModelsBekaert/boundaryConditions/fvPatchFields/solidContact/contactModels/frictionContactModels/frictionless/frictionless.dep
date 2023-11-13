@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/frictionless.o: $(EXE_DEP)
+$(OBJECTS_DIR)/frictionless.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionless
+	SOURCE=boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionless/frictionless.C ; $(Ctoo)

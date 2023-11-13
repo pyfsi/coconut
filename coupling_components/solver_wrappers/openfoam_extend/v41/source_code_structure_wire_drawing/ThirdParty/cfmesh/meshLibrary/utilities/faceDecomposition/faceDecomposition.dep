@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/faceDecomposition.o: $(EXE_DEP)
+$(OBJECTS_DIR)/faceDecomposition.o:
+	@SOURCE_DIR=utilities/faceDecomposition
+	SOURCE=utilities/faceDecomposition/faceDecomposition.C ; $(Ctoo)

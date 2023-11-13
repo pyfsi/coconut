@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeModifierUpdateCommunicationPattern.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeModifierUpdateCommunicationPattern.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeModifier
+	SOURCE=utilities/octrees/meshOctree/meshOctreeModifier/meshOctreeModifierUpdateCommunicationPattern.C ; $(Ctoo)

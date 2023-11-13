@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidPower.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidPower.o:
+	@SOURCE_DIR=functionObjects/solidPower
+	SOURCE=functionObjects/solidPower/solidPower.C ; $(Ctoo)

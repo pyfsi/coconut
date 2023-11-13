@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/generateWireMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/generateWireMesh.o:
+	@SOURCE_DIR=.
+	SOURCE=generateWireMesh.C ; $(Ctoo)

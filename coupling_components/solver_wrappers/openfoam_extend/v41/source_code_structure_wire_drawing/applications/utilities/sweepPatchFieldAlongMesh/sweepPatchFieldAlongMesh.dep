@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/sweepPatchFieldAlongMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/sweepPatchFieldAlongMesh.o:
+	@SOURCE_DIR=.
+	SOURCE=sweepPatchFieldAlongMesh.C ; $(Ctoo)

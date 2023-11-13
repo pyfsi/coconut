@@ -1,0 +1,11 @@
+OBJECTS = \
+$(OBJECTS_DIR)/meshSmoother.o\
+$(OBJECTS_DIR)/pointNormalsConsistent.o\
+$(OBJECTS_DIR)/cfMeshSmoother.o\
+$(OBJECTS_DIR)/laplacianSmoother.o\
+$(OBJECTS_DIR)/taubinSmoother.o\
+$(OBJECTS_DIR)/volumeSmoother.o\
+$(OBJECTS_DIR)/newFvMeshSubset.o\
+$(OBJECTS_DIR)/newLeastSquaresVolPointInterpolation.o\
+$(OBJECTS_DIR)/globalPolyPatch.o\
+$(OBJECTS_DIR)/nagataPatch.o

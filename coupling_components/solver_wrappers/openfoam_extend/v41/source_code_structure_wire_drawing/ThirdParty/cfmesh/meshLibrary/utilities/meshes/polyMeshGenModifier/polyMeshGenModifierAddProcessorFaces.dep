@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenModifierAddProcessorFaces.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenModifierAddProcessorFaces.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenModifier
+	SOURCE=utilities/meshes/polyMeshGenModifier/polyMeshGenModifierAddProcessorFaces.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/simpleDiePassItem.o: $(EXE_DEP)
+$(OBJECTS_DIR)/simpleDiePassItem.o:
+	@SOURCE_DIR=processPass/passItems/simpleDiePassItem
+	SOURCE=processPass/passItems/simpleDiePassItem/simpleDiePassItem.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/partTriMeshSimplex.o: $(EXE_DEP)
+$(OBJECTS_DIR)/partTriMeshSimplex.o:
+	@SOURCE_DIR=utilities/meshes/partTriMesh
+	SOURCE=utilities/meshes/partTriMesh/partTriMeshSimplex.C ; $(Ctoo)

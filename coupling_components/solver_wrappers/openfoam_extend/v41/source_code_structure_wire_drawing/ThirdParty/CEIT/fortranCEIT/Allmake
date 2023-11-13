@@ -1,0 +1,5 @@
+echo "Compiling mesostressAtIntPoint_v2 and placing object in $FOAM_USER_LIBBIN"
+gfortran -c mesostressAtIntPoint_v2.f -o $FOAM_USER_LIBBIN/mesostressAtIntPoint_v2.o
+
+echo "Compiling homogstressAtIntPoint_v5 and placing object in $FOAM_USER_LIBBIN"
+gfortran -c homogstressAtIntPoint_v5.f -o $FOAM_USER_LIBBIN/homogstressAtIntPoint_v5.o

@@ -1,0 +1,11 @@
+# Specify foam-extend-4.0 docker image as the build environment
+image:
+  name: philippic/foam-extend-4.0.ubuntu18.04.gfortran:latest
+  run-as-user: 1000
+
+pipelines:
+  default:
+    - step:
+        script:
+          # Compile repository
+          - ./Allwmake

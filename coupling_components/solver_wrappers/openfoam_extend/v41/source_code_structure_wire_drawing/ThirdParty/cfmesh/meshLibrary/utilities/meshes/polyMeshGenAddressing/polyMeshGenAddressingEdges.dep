@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenAddressingEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenAddressingEdges.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenAddressing
+	SOURCE=utilities/meshes/polyMeshGenAddressing/polyMeshGenAddressingEdges.C ; $(Ctoo)

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="Expr\Expr1\Expr1.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="39" />
+	</File>
+	<File name="Expr\Expr1\Expr1_plus_Expr1.h" open="0" top="0" tabpos="0">
+		<Cursor position="2641" topLine="31" />
+	</File>
+	<File name="Expr\Expr1\F_Expr1.h" open="0" top="0" tabpos="0">
+		<Cursor position="3005" topLine="54" />
+	</File>
+	<File name="Expr\Expr2\Expr2_contract_Expr2.h" open="1" top="1" tabpos="3">
+		<Cursor position="3854" topLine="86" />
+	</File>
+	<File name="Expr\Expr3\Expr3_contract_Expr3.h" open="0" top="0" tabpos="0">
+		<Cursor position="5579" topLine="132" />
+	</File>
+	<File name="Expr\Exprs.h" open="0" top="0" tabpos="0">
+		<Cursor position="2027" topLine="0" />
+	</File>
+	<File name="LTensor.h" open="0" top="0" tabpos="0">
+		<Cursor position="2296" topLine="18" />
+	</File>
+	<File name="Marray\Marray.h" open="0" top="0" tabpos="0">
+		<Cursor position="2079" topLine="14" />
+	</File>
+	<File name="Marray\Marray_rank2.h" open="1" top="0" tabpos="2">
+		<Cursor position="2589" topLine="35" />
+	</File>
+	<File name="Tensor_Operations\Encapsulate_Tensors\Encapsulate_Tensors.h" open="0" top="0" tabpos="0">
+		<Cursor position="2054" topLine="0" />
+	</File>
+	<File name="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr1.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="18" />
+	</File>
+	<File name="Tensor_Operations\Permute_Tensors\Permute_Tensors.h" open="0" top="0" tabpos="0">
+		<Cursor position="2053" topLine="0" />
+	</File>
+	<File name="Tensor_Operations\Permute_Tensors\Permute_TensorsRank2.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="24" />
+	</File>
+	<File name="Tensor_Operations\Tensor_Operations.h" open="0" top="0" tabpos="0">
+		<Cursor position="2076" topLine="4" />
+	</File>
+	<File name="Tensor_Operations\check_Tensor_Operations.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="2" />
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="232" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

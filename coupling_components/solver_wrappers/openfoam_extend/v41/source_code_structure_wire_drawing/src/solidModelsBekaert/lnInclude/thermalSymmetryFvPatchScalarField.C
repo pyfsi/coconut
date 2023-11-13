@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/thermalSymmetry/thermalSymmetryFvPatchScalarField.C

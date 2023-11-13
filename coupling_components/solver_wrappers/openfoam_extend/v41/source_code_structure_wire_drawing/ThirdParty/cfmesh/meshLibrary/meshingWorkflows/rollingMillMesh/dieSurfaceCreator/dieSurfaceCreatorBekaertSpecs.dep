@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/dieSurfaceCreatorBekaertSpecs.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dieSurfaceCreatorBekaertSpecs.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/dieSurfaceCreator
+	SOURCE=meshingWorkflows/rollingMillMesh/dieSurfaceCreator/dieSurfaceCreatorBekaertSpecs.C ; $(Ctoo)

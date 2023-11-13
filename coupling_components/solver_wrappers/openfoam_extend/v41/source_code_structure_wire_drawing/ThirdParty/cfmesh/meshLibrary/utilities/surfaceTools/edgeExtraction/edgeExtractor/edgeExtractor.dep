@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/edgeExtractor.o: $(EXE_DEP)
+$(OBJECTS_DIR)/edgeExtractor.o:
+	@SOURCE_DIR=utilities/surfaceTools/edgeExtraction/edgeExtractor
+	SOURCE=utilities/surfaceTools/edgeExtraction/edgeExtractor/edgeExtractor.C ; $(Ctoo)

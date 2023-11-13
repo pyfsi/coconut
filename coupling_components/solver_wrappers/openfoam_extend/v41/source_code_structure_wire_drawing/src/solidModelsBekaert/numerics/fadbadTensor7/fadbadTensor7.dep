@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/fadbadTensor7.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fadbadTensor7.o:
+	@SOURCE_DIR=numerics/fadbadTensor7
+	SOURCE=numerics/fadbadTensor7/fadbadTensor7.C ; $(Ctoo)

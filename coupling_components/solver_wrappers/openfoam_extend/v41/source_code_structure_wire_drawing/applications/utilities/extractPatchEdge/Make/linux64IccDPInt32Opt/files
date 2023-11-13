@@ -1,0 +1,2 @@
+extractPatchEdge.C
+EXE = $(FOAM_USER_APPBIN)/extractPatchEdge

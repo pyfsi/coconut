@@ -1,0 +1,3 @@
+ceitHomogStressAtIntPoint.C
+
+LIB = $(FOAM_USER_LIBBIN)/libceitHomogStressAtIntPoint

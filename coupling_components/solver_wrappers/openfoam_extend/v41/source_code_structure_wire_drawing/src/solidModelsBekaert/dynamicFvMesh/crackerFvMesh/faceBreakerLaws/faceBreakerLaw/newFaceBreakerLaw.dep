@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/newFaceBreakerLaw.o: $(EXE_DEP)
+$(OBJECTS_DIR)/newFaceBreakerLaw.o:
+	@SOURCE_DIR=dynamicFvMesh/crackerFvMesh/faceBreakerLaws/faceBreakerLaw
+	SOURCE=dynamicFvMesh/crackerFvMesh/faceBreakerLaws/faceBreakerLaw/newFaceBreakerLaw.C ; $(Ctoo)

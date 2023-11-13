@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshUntanglerCutRegionEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshUntanglerCutRegionEdges.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/advancedSmoothers/meshUntangler
+	SOURCE=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/advancedSmoothers/meshUntangler/meshUntanglerCutRegionEdges.C ; $(Ctoo)

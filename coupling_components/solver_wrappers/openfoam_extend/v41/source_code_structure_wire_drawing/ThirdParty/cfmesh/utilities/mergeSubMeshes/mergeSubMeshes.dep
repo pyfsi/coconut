@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/mergeSubMeshes.o: $(EXE_DEP)
+$(OBJECTS_DIR)/mergeSubMeshes.o:
+	@SOURCE_DIR=.
+	SOURCE=mergeSubMeshes.C ; $(Ctoo)

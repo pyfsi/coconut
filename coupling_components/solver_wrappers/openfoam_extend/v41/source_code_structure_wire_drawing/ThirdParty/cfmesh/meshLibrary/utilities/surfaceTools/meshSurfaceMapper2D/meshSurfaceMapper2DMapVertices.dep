@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSurfaceMapper2DMapVertices.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSurfaceMapper2DMapVertices.o:
+	@SOURCE_DIR=utilities/surfaceTools/meshSurfaceMapper2D
+	SOURCE=utilities/surfaceTools/meshSurfaceMapper2D/meshSurfaceMapper2DMapVertices.C ; $(Ctoo)

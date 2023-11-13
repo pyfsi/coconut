@@ -1,0 +1,2 @@
+LOCAL_OBJECTS = \
+DXFTo2DSurface.o

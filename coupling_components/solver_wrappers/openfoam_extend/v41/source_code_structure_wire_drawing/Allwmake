@@ -1,0 +1,35 @@
+#!/bin/bash
+cd ${0%/*} || exit 1    # run from this directory
+
+# Check if OpenFOAM/FOAM has been sourced
+if [[ -z "${WM_PROJECT}" ]]
+then
+    echo "Please source the OpenFOAM/FOAM bashrc first!"
+    exit 1
+fi
+
+# Replace files in the main foam libraries
+echo "WIP: fe41 filesToReplaceInOF"
+#(cd filesToReplaceInOF && ./Allcheck)
+#if [ $? -ne 0 ]
+#then
+#    echo "Please fix the filesToReplaceInOF above!"
+#    exit 1
+#fi
+
+# Generate lnInclude directories needed for CEIT in ThirdParty
+(cd src && wmakeLnInclude solidModelsBekaert)
+
+# Download ThirdParty software
+(cd ThirdParty && ./Allwmake)
+if [ $? -ne 0 ]
+then
+    echo "Please fix the ThirdParty errors above!"
+    exit 1
+fi
+
+# Compile libraries
+(cd src && ./Allwmake)
+
+# Compile applications
+(cd applications && ./Allwmake)

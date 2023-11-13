@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenModifierRemoveFaces.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenModifierRemoveFaces.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenModifier
+	SOURCE=utilities/meshes/polyMeshGenModifier/polyMeshGenModifierRemoveFaces.C ; $(Ctoo)

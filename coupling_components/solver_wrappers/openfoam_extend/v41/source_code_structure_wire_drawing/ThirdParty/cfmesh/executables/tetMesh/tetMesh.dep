@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetMesh.o:
+	@SOURCE_DIR=.
+	SOURCE=tetMesh.C ; $(Ctoo)

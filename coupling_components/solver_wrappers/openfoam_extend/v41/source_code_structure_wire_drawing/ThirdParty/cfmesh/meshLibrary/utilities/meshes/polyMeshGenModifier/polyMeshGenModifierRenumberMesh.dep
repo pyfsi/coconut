@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenModifierRenumberMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenModifierRenumberMesh.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenModifier
+	SOURCE=utilities/meshes/polyMeshGenModifier/polyMeshGenModifierRenumberMesh.C ; $(Ctoo)

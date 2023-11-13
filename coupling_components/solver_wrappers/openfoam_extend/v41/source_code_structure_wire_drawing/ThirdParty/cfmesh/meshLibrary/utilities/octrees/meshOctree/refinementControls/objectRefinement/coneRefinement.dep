@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/coneRefinement.o: $(EXE_DEP)
+$(OBJECTS_DIR)/coneRefinement.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/refinementControls/objectRefinement
+	SOURCE=utilities/octrees/meshOctree/refinementControls/objectRefinement/coneRefinement.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetMeshExtractorOctree.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetMeshExtractorOctree.o:
+	@SOURCE_DIR=tetMesh/tetMeshExtractorOctree
+	SOURCE=tetMesh/tetMeshExtractorOctree/tetMeshExtractorOctree.C ; $(Ctoo)

@@ -1,0 +1,12 @@
+DEPENDENCIES = \
+processLine.dep\
+boundaryConditionsContainer/boundaryConditionsContainer.dep\
+dataHandler/dataHandler.dep\
+runSystemCommandWithPOpen/runSystemCommandWithPOpen.dep\
+processPass/processPass.dep\
+processPass/passItems/passItem/passItem.dep\
+processPass/passItems/passItem/newPassItem.dep\
+processPass/passItems/wirePassItem/wirePassItem.dep\
+processPass/passItems/simpleDiePassItem/simpleDiePassItem.dep\
+processPass/passItems/rollerPassItem/rollerPassItem.dep\
+numerics/patchToPatchInterpolationNew/PatchToPatchInterpolationNewName.dep

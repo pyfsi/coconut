@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/ceitHomogStressAtIntPoint.o: $(EXE_DEP)
+$(OBJECTS_DIR)/ceitHomogStressAtIntPoint.o:
+	@SOURCE_DIR=.
+	SOURCE=ceitHomogStressAtIntPoint.C ; $(Ctoo)

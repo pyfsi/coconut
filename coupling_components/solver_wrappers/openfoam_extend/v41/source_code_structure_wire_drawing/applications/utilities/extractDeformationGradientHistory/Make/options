@@ -1,0 +1,32 @@
+EXE_INC = \
+    -I../../../src/meshSmoothers/lnInclude \
+    -I../../../src/solidModelsBekaert/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/finiteArea/lnInclude \
+    -I$(LIB_SRC)/sampling/lnInclude \
+    -I$(LIB_SRC)/postProcessing/foamCalcFunctions/lnInclude \
+    -I$(LIB_SRC)/dynamicMesh/dynamicMesh/lnInclude \
+    -I$(LIB_SRC)/dynamicMesh/topoChangerFvMesh/lnInclude \
+    -I$(LIB_SRC)/dynamicMesh/dynamicFvMesh/lnInclude
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lmeshSmoothers \
+    -lmeshLibrary \
+    -lprocessLine \
+    -lgsl -lgslcblas \
+    -lsolidModelsBekaert \
+    -lfiniteVolume \
+    -lfiniteArea \
+    -lmeshTools \
+    -lsampling \
+    -lfoamCalcFunctions \
+    -ldynamicFvMesh \
+    -ltopoChangerFvMesh \
+    -lmetisDecomp \
+    -llduSolvers \
+    -lextrudeModel \
+    -lgfortran \
+    $(FOAM_USER_LIBBIN)/mesostressAtIntPoint_v2.o \
+    -lceitMesoStressAtIntPointv2

@@ -1,0 +1,71 @@
+# 1 "options"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 4 "<command-line>" 2
+# 1 "options"
+ifeq (Gcc,$(findstring Gcc,$(WM_COMPILER)))
+    OMP_FLAGS = -DUSE_OMP -fopenmp
+else
+    OMP_FLAGS =
+endif
+
+ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
+    ifeq (Int,$(findstring Int,$(WM_LABEL_OPTION)))
+        CFMESH_MACROS = -DNoSizeType -std=gnu++11
+        LIBS =
+    else
+        CFMESH_MACROS = -std=gnu++11
+        LIBS =
+    endif
+endif
+
+ifeq ($(WM_PROJECT), foam)
+    VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
+    ifeq ($(VER), 1)
+        CFMESH_MACROS = -DExtendSpecific -std=gnu++11
+        LIBS = -lmeshTools -ledgeMesh -ltetFiniteElement
+    else
+        CFMESH_MACROS = -std=gnu++11
+        LIBS =
+    endif
+endif
+
+EXE_INC =     $(OMP_FLAGS) $(CFMESH_MACROS)     -I$(LIB_SRC)/triSurface/lnInclude     -I$(LIB_SRC)/edgeMesh/lnInclude     -I$(LIB_SRC)/meshTools/lnInclude     -I$(LIB_SRC)/mesh/blockMesh/lnInclude     -I$(LIB_SRC)/tetFiniteElement/lnInclude
+
+
+
+
+
+
+
+LIB_LIBS =      $(LIBS)      -lblockMesh

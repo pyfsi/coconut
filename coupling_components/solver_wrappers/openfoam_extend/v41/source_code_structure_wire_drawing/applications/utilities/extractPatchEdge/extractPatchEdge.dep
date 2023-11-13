@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/extractPatchEdge.o: $(EXE_DEP)
+$(OBJECTS_DIR)/extractPatchEdge.o:
+	@SOURCE_DIR=.
+	SOURCE=extractPatchEdge.C ; $(Ctoo)

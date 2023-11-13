@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurface2DCheck.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurface2DCheck.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurface2DCheck
+	SOURCE=utilities/triSurfaceTools/triSurface2DCheck/triSurface2DCheck.C ; $(Ctoo)

@@ -1,0 +1,1 @@
+../doc/snippets/LeastSquaresQR.cpp

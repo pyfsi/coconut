@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidTorque.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidTorque.o:
+	@SOURCE_DIR=functionObjects/solidTorque
+	SOURCE=functionObjects/solidTorque/solidTorque.C ; $(Ctoo)

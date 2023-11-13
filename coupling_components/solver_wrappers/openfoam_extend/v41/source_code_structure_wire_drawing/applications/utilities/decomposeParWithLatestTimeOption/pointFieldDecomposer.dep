@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/pointFieldDecomposer.o: $(EXE_DEP)
+$(OBJECTS_DIR)/pointFieldDecomposer.o:
+	@SOURCE_DIR=.
+	SOURCE=pointFieldDecomposer.C ; $(Ctoo)

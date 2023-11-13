@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidWedge/solidWedgeFvPatchVectorField.C

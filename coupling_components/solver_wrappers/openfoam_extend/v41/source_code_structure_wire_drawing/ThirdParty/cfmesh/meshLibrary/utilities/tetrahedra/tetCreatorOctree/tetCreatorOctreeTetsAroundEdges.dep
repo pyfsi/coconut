@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetCreatorOctreeTetsAroundEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetCreatorOctreeTetsAroundEdges.o:
+	@SOURCE_DIR=utilities/tetrahedra/tetCreatorOctree
+	SOURCE=utilities/tetrahedra/tetCreatorOctree/tetCreatorOctreeTetsAroundEdges.C ; $(Ctoo)

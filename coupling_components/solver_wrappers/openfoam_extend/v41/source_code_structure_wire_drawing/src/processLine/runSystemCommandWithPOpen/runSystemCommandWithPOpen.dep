@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/runSystemCommandWithPOpen.o: $(EXE_DEP)
+$(OBJECTS_DIR)/runSystemCommandWithPOpen.o:
+	@SOURCE_DIR=runSystemCommandWithPOpen
+	SOURCE=runSystemCommandWithPOpen/runSystemCommandWithPOpen.C ; $(Ctoo)

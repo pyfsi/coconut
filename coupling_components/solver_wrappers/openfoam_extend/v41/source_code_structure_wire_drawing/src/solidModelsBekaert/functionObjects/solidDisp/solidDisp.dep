@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidDisp.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidDisp.o:
+	@SOURCE_DIR=functionObjects/solidDisp
+	SOURCE=functionObjects/solidDisp/solidDisp.C ; $(Ctoo)

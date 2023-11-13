@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeModifierDistributeLeavesToProcessors.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeModifierDistributeLeavesToProcessors.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeModifier
+	SOURCE=utilities/octrees/meshOctree/meshOctreeModifier/meshOctreeModifierDistributeLeavesToProcessors.C ; $(Ctoo)

@@ -1,0 +1,2 @@
+ceitMesoStressAtIntPointv2.C
+LIB = $(FOAM_USER_LIBBIN)/libceitMesoStressAtIntPointv2

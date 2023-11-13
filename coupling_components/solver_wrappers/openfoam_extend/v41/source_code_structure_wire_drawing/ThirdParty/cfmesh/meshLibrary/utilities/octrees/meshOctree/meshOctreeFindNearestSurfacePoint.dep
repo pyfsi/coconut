@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeFindNearestSurfacePoint.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeFindNearestSurfacePoint.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree
+	SOURCE=utilities/octrees/meshOctree/meshOctreeFindNearestSurfacePoint.C ; $(Ctoo)

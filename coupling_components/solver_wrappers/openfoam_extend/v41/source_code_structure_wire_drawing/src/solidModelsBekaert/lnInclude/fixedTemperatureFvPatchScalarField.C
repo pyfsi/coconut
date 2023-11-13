@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/fixedTemperature/fixedTemperatureFvPatchScalarField.C

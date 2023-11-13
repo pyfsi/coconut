@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/FLMAToSurface.o: $(EXE_DEP)
+$(OBJECTS_DIR)/FLMAToSurface.o:
+	@SOURCE_DIR=.
+	SOURCE=FLMAToSurface.C ; $(Ctoo)

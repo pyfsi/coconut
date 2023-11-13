@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidDynamicFvMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidDynamicFvMesh.o:
+	@SOURCE_DIR=dynamicFvMesh/solidDynamicFvMesh
+	SOURCE=dynamicFvMesh/solidDynamicFvMesh/solidDynamicFvMesh.C ; $(Ctoo)

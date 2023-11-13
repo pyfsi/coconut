@@ -1,0 +1,1 @@
+../doc/examples/CustomizingEigen_Inheritance.cpp

@@ -1,0 +1,2 @@
+echo "Creating python module from mesostressAtIntPoint_v2_F2PY.f"
+f2py -c -m mesostress_v2 mesostressAtIntPoint_v2_F2PY.f

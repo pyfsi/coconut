@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidDirectionMixed/solidDirectionMixedFvPatchVectorField.H

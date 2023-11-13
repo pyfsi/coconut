@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/profiledDieMeshGenerator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/profiledDieMeshGenerator.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/profiledDie/profiledDieMeshGenerator
+	SOURCE=meshingWorkflows/rollingMillMesh/profiledDie/profiledDieMeshGenerator/profiledDieMeshGenerator.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSurfaceCheckEdgeTypes.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSurfaceCheckEdgeTypes.o:
+	@SOURCE_DIR=utilities/surfaceTools/meshSurfaceCheckEdgeTypes
+	SOURCE=utilities/surfaceTools/meshSurfaceCheckEdgeTypes/meshSurfaceCheckEdgeTypes.C ; $(Ctoo)

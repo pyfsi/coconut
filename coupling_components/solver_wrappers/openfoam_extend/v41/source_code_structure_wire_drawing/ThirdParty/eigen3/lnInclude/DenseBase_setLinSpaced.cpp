@@ -1,0 +1,1 @@
+../doc/snippets/DenseBase_setLinSpaced.cpp

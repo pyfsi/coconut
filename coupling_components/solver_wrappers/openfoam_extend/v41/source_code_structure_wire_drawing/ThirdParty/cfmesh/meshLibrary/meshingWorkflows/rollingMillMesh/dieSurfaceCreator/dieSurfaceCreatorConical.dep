@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/dieSurfaceCreatorConical.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dieSurfaceCreatorConical.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/dieSurfaceCreator
+	SOURCE=meshingWorkflows/rollingMillMesh/dieSurfaceCreator/dieSurfaceCreatorConical.C ; $(Ctoo)

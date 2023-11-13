@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenModifierZipUpCells.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenModifierZipUpCells.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenModifier
+	SOURCE=utilities/meshes/polyMeshGenModifier/polyMeshGenModifierZipUpCells.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/boxScaling.o: $(EXE_DEP)
+$(OBJECTS_DIR)/boxScaling.o:
+	@SOURCE_DIR=utilities/anisotropicMeshing/coordinateModification
+	SOURCE=utilities/anisotropicMeshing/coordinateModification/boxScaling.C ; $(Ctoo)

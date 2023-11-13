@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetCreatorOctreePointsAndAddressing.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetCreatorOctreePointsAndAddressing.o:
+	@SOURCE_DIR=utilities/tetrahedra/tetCreatorOctree
+	SOURCE=utilities/tetrahedra/tetCreatorOctree/tetCreatorOctreePointsAndAddressing.C ; $(Ctoo)

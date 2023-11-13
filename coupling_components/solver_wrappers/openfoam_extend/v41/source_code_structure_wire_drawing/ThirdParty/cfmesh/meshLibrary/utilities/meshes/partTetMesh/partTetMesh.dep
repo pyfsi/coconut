@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/partTetMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/partTetMesh.o:
+	@SOURCE_DIR=utilities/meshes/partTetMesh
+	SOURCE=utilities/meshes/partTetMesh/partTetMesh.C ; $(Ctoo)

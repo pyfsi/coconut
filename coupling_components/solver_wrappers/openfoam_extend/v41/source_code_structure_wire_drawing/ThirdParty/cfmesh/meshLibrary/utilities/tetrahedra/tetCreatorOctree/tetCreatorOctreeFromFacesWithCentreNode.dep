@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetCreatorOctreeFromFacesWithCentreNode.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetCreatorOctreeFromFacesWithCentreNode.o:
+	@SOURCE_DIR=utilities/tetrahedra/tetCreatorOctree
+	SOURCE=utilities/tetrahedra/tetCreatorOctree/tetCreatorOctreeFromFacesWithCentreNode.C ; $(Ctoo)

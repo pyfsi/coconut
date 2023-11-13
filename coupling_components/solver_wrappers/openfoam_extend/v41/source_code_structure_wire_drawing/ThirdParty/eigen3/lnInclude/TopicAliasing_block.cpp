@@ -1,0 +1,1 @@
+../doc/snippets/TopicAliasing_block.cpp

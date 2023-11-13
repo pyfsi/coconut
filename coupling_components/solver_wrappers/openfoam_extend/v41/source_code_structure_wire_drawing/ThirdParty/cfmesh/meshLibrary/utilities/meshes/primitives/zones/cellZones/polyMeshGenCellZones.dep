@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenCellZones.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenCellZones.o:
+	@SOURCE_DIR=utilities/meshes/primitives/zones/cellZones
+	SOURCE=utilities/meshes/primitives/zones/cellZones/polyMeshGenCellZones.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/sizeTypeIO.o: $(EXE_DEP)
+$(OBJECTS_DIR)/sizeTypeIO.o:
+	@SOURCE_DIR=utilities/containers/LongList/sizeType
+	SOURCE=utilities/containers/LongList/sizeType/sizeTypeIO.C ; $(Ctoo)

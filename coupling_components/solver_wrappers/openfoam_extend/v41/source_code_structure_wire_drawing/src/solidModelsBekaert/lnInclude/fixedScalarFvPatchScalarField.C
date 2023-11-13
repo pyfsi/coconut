@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/fixedScalar/fixedScalarFvPatchScalarField.C

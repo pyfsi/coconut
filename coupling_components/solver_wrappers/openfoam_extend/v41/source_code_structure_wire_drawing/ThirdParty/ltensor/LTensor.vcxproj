@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{75F1C8A8-F2B1-40F2-9ED3-373DDCD11D50}</ProjectGuid>
+    <RootNamespace>LTensor</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>MSVC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>MSVC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="algorithms\algorithms.h" />
+    <ClInclude Include="base\Array_base.h" />
+    <ClInclude Include="Tensor_Operations\check_Tensor_Operations.h" />
+    <ClInclude Include="base\Constants.h" />
+    <ClInclude Include="utils\cputimeprofiler.h" />
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr1.h" />
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr2.h" />
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr3.h" />
+    <ClInclude Include="Tensor_Operations\Encapsulate_Tensors\Encapsulate_to_Expr4.h" />
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank1.h" />
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank2.h" />
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank3.h" />
+    <ClInclude Include="Tensor_Operations\Equate_Tensors\Equate_TensorsRank4.h" />
+    <ClInclude Include="Expr\Expr1\Expr1.h" />
+    <ClInclude Include="Expr\Expr1\Expr1_contract_Expr1.h" />
+    <ClInclude Include="Expr\Expr1\Expr1_divided_Expr0.h" />
+    <ClInclude Include="Expr\Expr1\Expr1_Equals.h" />
+    <ClInclude Include="Expr\Expr1\Expr1_minus_Expr1.h" />
+    <ClInclude Include="Expr\Expr1\Expr1_plus_Expr1.h" />
+    <ClInclude Include="Expr\Expr1\Expr1_times_Expr0.h" />
+    <ClInclude Include="Expr\Expr2\Expr1_times_Expr1.h" />
+    <ClInclude Include="Expr\Expr1\Expr1s.h" />
+    <ClInclude Include="Expr\Expr2\Expr2.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_contract_Expr1.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_contract_Expr2.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_divided_Expr0.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_Equals.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_minus_Expr2.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_plus_Expr2.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_times_Expr0.h" />
+    <ClInclude Include="Expr\Expr2\Expr2_times_Expr0a.h" />
+    <ClInclude Include="Expr\Expr3\Expr2_times_Expr1.h" />
+    <ClInclude Include="Expr\Expr4\Expr2_times_Expr2.h" />
+    <ClInclude Include="Expr\Expr2\Expr2s.h" />
+    <ClInclude Include="Expr\Expr3\Expr3.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_contract_Expr1.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_contract_Expr2.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_contract_Expr3.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_divided_Expr0.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_Equals.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_equals_Expr3.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_minus_Expr3.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_plus_Expr3.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_times_Expr0.h" />
+    <ClInclude Include="Expr\Expr4\Expr3_times_Expr1.h" />
+    <ClInclude Include="Expr\Expr3\Expr3_to_Expr3permuted.h" />
+    <ClInclude Include="Expr\Expr3\Expr3s.h" />
+    <ClInclude Include="Expr\Expr4\Expr4.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr1.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr2.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr3.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_contract_Expr4.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_divided_Expr0.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_Equals.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_equals_Expr4.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_minus_Expr4.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_plus_Expr4.h" />
+    <ClInclude Include="Expr\Expr4\Expr4_times_Expr0.h" />
+    <ClInclude Include="Expr\Expr4\Expr4s.h" />
+    <ClInclude Include="Expr\Exprs.h" />
+    <ClInclude Include="Expr\Expr1\F_Expr1.h" />
+    <ClInclude Include="Expr\Expr2\F_Expr2.h" />
+    <ClInclude Include="Expr\Expr3\F_Expr3.h" />
+    <ClInclude Include="Expr\Expr4\F_Expr4.h" />
+    <ClInclude Include="Expr\Index.h" />
+    <ClInclude Include="Expr\Expr1\IndexedArray1.h" />
+    <ClInclude Include="Expr\Expr2\IndexedArray2.h" />
+    <ClInclude Include="Expr\IndexF.h" />
+    <ClInclude Include="Expr\IndexG.h" />
+    <ClInclude Include="Expr\IndexH.h" />
+    <ClInclude Include="Expr\IndexH_bis.h" />
+    <ClInclude Include="LTensor.h" />
+    <ClInclude Include="Marray\Marray.h" />
+    <ClInclude Include="Marray\Marray_rank1.h" />
+    <ClInclude Include="Marray\Marray_rank2.h" />
+    <ClInclude Include="Marray\Marray_rank3.h" />
+    <ClInclude Include="Marray\Marray_rank4.h" />
+    <ClInclude Include="meta\Metaprograms.h" />
+    <ClInclude Include="Expr\Expr1\minus_Expr1.h" />
+    <ClInclude Include="Expr\Expr2\minus_Expr2.h" />
+    <ClInclude Include="Expr\Expr3\minus_Expr3.h" />
+    <ClInclude Include="Expr\Expr4\minus_Expr4.h" />
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank1.h" />
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank2.h" />
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank3.h" />
+    <ClInclude Include="Tensor_Operations\Minus_Tensors\Minus_TensorsRank4.h" />
+    <ClInclude Include="Expr\Number.h" />
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_TensorsRank2.h" />
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_TensorsRank3.h" />
+    <ClInclude Include="Tensor_Operations\Permute_Tensors\Permute_TensorsRank4.h" />
+    <ClInclude Include="Expr\Expr1\plus_Expr1.h" />
+    <ClInclude Include="Expr\Expr2\plus_Expr2.h" />
+    <ClInclude Include="Expr\Expr3\plus_Expr3.h" />
+    <ClInclude Include="Expr\Expr4\plus_Expr4.h" />
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank1.h" />
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank2.h" />
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank3.h" />
+    <ClInclude Include="Tensor_Operations\Plus_Tensors\Plus_TensorsRank4.h" />
+    <ClInclude Include="Promote_Types\promote.h" />
+    <ClInclude Include="base\Range.h" />
+    <ClInclude Include="storage\storage.h" />
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank1.h" />
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank2.h" />
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank3.h" />
+    <ClInclude Include="Tensor_Operations\Subtract_Tensors\Subtract_TensorsRank4.h" />
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_Tensors.h" />
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank1.h" />
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank2.h" />
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank3.h" />
+    <ClInclude Include="Tensor_Operations\Sum_Tensors\Sum_TensorsRank4.h" />
+    <ClInclude Include="static\sVector.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor1_contracts_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor1_times_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor2_contracts_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor2_contracts_Tensor2.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor2_times_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor2_times_Tensor2.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_itsindices.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_Tensor2.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor3_contracts_Tensor3.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor3_times_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_itsindices.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor1.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor2.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor3.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor4_contracts_Tensor4.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Contractions\Tensor_Contractions.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\Tensor_divided_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_Operations.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\Tensor_times_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Tensor\Tensor_times_Tensor.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank1_divided_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank1_times_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank2_divided_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank2_times_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank3_divided_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank3_times_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_divided_Scalar\TensorRank4_divided_Scalar.h" />
+    <ClInclude Include="Tensor_Operations\Tensor_times_Scalar\TensorRank4_times_Scalar.h" />
+    <ClInclude Include="utils\timer.h" />
+    <ClInclude Include="base\TinyArray_base.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceMotion.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceMotion.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidRigidContact/triSurfaceMotion
+	SOURCE=boundaryConditions/fvPatchFields/solidRigidContact/triSurfaceMotion/triSurfaceMotion.C ; $(Ctoo)

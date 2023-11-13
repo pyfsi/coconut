@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/preparePar.o: $(EXE_DEP)
+$(OBJECTS_DIR)/preparePar.o:
+	@SOURCE_DIR=.
+	SOURCE=preparePar.C ; $(Ctoo)

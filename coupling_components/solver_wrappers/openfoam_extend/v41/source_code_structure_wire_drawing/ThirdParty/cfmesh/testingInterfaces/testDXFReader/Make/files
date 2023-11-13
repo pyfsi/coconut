@@ -1,0 +1,4 @@
+
+testDXFReader.C
+
+EXE = $(FOAM_USER_APPBIN)/testDXFReader

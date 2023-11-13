@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/drawingFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/drawingFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/drawing
+	SOURCE=boundaryConditions/fvPatchFields/drawing/drawingFvPatchVectorField.C ; $(Ctoo)

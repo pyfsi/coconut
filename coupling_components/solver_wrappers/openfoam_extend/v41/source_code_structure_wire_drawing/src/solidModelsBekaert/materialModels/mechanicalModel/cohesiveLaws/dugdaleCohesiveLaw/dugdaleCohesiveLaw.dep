@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/dugdaleCohesiveLaw.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dugdaleCohesiveLaw.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/cohesiveLaws/dugdaleCohesiveLaw
+	SOURCE=materialModels/mechanicalModel/cohesiveLaws/dugdaleCohesiveLaw/dugdaleCohesiveLaw.C ; $(Ctoo)

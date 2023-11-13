@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenChecksTopology.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenChecksTopology.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenChecks
+	SOURCE=utilities/meshes/polyMeshGenChecks/polyMeshGenChecksTopology.C ; $(Ctoo)

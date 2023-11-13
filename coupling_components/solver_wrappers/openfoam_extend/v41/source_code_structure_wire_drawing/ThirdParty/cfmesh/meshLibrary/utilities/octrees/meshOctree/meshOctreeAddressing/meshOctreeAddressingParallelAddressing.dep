@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeAddressingParallelAddressing.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeAddressingParallelAddressing.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeAddressing
+	SOURCE=utilities/octrees/meshOctree/meshOctreeAddressing/meshOctreeAddressingParallelAddressing.C ; $(Ctoo)

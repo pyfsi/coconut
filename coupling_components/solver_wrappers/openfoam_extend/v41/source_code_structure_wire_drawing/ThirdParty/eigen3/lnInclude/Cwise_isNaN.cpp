@@ -1,0 +1,1 @@
+../doc/snippets/Cwise_isNaN.cpp

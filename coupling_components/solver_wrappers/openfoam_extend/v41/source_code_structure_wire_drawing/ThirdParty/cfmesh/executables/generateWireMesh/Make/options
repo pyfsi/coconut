@@ -1,0 +1,33 @@
+ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
+    CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
+    ifeq (Int,$(findstring Int,$(WM_LABEL_OPTION)))
+        CFMESH_MACROS = -DNoSizeType
+    else
+        CFMESH_MACROS =
+    endif
+endif
+
+ifeq ($(WM_PROJECT), foam)
+    VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
+    ifeq ($(VER), 1)
+        CFMESH_LIBS = -lmeshTools -lfiniteVolume -ledgeMesh
+        CFMESH_MACROS = -DExtendSpecific -std=c++11
+    else
+        CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
+        CFMESH_MACROS = -std=c++11
+    endif
+endif
+
+EXE_INC = \
+    $(CFMESH_MACROS) \
+    -I$(LIB_SRC)/triSurface/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/edgeMesh/lnInclude \
+    -I../../meshLibrary/lnInclude
+
+EXE_LIBS = \
+    $(CFMESH_LIBS) \
+    -L$(FOAM_USER_LIBBIN) \
+    -lblockMesh \
+    -lmeshLibrary

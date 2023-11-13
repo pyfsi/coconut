@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceCurvatureEstimator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceCurvatureEstimator.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceCurvatureEstimator
+	SOURCE=utilities/triSurfaceTools/triSurfaceCurvatureEstimator/triSurfaceCurvatureEstimator.C ; $(Ctoo)

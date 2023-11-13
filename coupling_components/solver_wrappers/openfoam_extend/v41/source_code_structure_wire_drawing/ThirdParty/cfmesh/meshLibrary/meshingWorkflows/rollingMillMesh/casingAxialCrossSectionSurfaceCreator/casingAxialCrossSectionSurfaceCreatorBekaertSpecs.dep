@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/casingAxialCrossSectionSurfaceCreatorBekaertSpecs.o: $(EXE_DEP)
+$(OBJECTS_DIR)/casingAxialCrossSectionSurfaceCreatorBekaertSpecs.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/casingAxialCrossSectionSurfaceCreator
+	SOURCE=meshingWorkflows/rollingMillMesh/casingAxialCrossSectionSurfaceCreator/casingAxialCrossSectionSurfaceCreatorBekaertSpecs.C ; $(Ctoo)

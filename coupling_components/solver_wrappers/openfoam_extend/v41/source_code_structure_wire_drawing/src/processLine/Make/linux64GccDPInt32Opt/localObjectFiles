@@ -1,0 +1,12 @@
+LOCAL_OBJECTS = \
+processLine.o\
+boundaryConditionsContainer.o\
+dataHandler.o\
+runSystemCommandWithPOpen.o\
+processPass.o\
+passItem.o\
+newPassItem.o\
+wirePassItem.o\
+simpleDiePassItem.o\
+rollerPassItem.o\
+PatchToPatchInterpolationNewName.o

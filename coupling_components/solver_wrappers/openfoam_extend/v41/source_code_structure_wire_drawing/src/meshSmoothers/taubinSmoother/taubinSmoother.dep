@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/taubinSmoother.o: $(EXE_DEP)
+$(OBJECTS_DIR)/taubinSmoother.o:
+	@SOURCE_DIR=taubinSmoother
+	SOURCE=taubinSmoother/taubinSmoother.C ; $(Ctoo)

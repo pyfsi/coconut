@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/rollerPassItem.o: $(EXE_DEP)
+$(OBJECTS_DIR)/rollerPassItem.o:
+	@SOURCE_DIR=processPass/passItems/rollerPassItem
+	SOURCE=processPass/passItems/rollerPassItem/rollerPassItem.C ; $(Ctoo)

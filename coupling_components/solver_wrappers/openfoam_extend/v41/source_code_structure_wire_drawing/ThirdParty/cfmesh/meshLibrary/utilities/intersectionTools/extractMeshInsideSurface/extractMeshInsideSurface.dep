@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/extractMeshInsideSurface.o: $(EXE_DEP)
+$(OBJECTS_DIR)/extractMeshInsideSurface.o:
+	@SOURCE_DIR=utilities/intersectionTools/extractMeshInsideSurface
+	SOURCE=utilities/intersectionTools/extractMeshInsideSurface/extractMeshInsideSurface.C ; $(Ctoo)

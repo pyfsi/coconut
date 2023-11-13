@@ -1,0 +1,1 @@
+../doc/snippets/FullPivLU_solve.cpp

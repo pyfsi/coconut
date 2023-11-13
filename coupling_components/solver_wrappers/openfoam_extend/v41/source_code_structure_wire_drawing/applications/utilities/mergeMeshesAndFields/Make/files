@@ -1,0 +1,4 @@
+mergeMeshesAndFields.C
+
+EXE = $(FOAM_USER_APPBIN)/coconut_mergeMeshesAndFields
+

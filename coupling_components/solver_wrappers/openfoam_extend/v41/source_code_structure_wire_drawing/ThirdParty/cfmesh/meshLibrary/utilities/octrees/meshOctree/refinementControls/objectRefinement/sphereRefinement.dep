@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/sphereRefinement.o: $(EXE_DEP)
+$(OBJECTS_DIR)/sphereRefinement.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/refinementControls/objectRefinement
+	SOURCE=utilities/octrees/meshOctree/refinementControls/objectRefinement/sphereRefinement.C ; $(Ctoo)

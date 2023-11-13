@@ -1,0 +1,1 @@
+../boundaryConditions/pointPatchFields/componentMixed/componentMixedPointPatchFields.H

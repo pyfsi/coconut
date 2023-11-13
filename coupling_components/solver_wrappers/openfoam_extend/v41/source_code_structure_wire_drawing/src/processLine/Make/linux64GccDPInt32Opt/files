@@ -1,0 +1,48 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 4 "<command-line>" 2
+# 1 "files"
+processLine.C
+boundaryConditionsContainer/boundaryConditionsContainer.C
+dataHandler/dataHandler.C
+runSystemCommandWithPOpen/runSystemCommandWithPOpen.C
+processPass/processPass.C
+processPass/passItems/passItem/passItem.C
+processPass/passItems/passItem/newPassItem.C
+processPass/passItems/wirePassItem/wirePassItem.C
+processPass/passItems/simpleDiePassItem/simpleDiePassItem.C
+processPass/passItems/rollerPassItem/rollerPassItem.C
+numerics/patchToPatchInterpolationNew/PatchToPatchInterpolationNewName.C
+
+LIB = $(FOAM_USER_LIBBIN)/coconut_libprocessLine

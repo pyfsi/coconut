@@ -1,0 +1,6 @@
+#!/bin/bash
+cd ${0%/*} || exit 1    # run from this directory
+
+wmake libso meshSmoothers
+wmake libso processLine
+wmake libso solidModelsBekaert

@@ -1,0 +1,4 @@
+OBJECTS = \
+$(OBJECTS_DIR)/mapHardnessFileToYieldStrengthField.o\
+$(OBJECTS_DIR)/RBFInterpolation.o\
+$(OBJECTS_DIR)/TPSFunction.o

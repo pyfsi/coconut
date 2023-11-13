@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceImportSurfaceAsSubset.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceImportSurfaceAsSubset.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceImportSurfaceAsSubset
+	SOURCE=utilities/triSurfaceTools/triSurfaceImportSurfaceAsSubset/triSurfaceImportSurfaceAsSubset.C ; $(Ctoo)

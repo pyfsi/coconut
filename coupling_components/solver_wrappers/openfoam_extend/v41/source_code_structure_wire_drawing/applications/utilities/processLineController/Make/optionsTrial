@@ -1,0 +1,10 @@
+EXE_INC = \
+    -I$(FOAM_SOLVERS)/cfMeshBekaert/meshLibrary/lnInclude \
+    -I./processLine \
+    -I./processLine/processPasses/processPass \
+    -I./processLine/processPasses/wire \
+    -I./processLine/processPasses/processPass/deformationTools/deformationTool
+
+EXE_LIBS =
+    -L$(FOAM_USER_LIBBIN) -lmeshLibrary
+

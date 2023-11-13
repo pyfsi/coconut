@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/checkIrregularSurfaceConnectionsFunctions.o: $(EXE_DEP)
+$(OBJECTS_DIR)/checkIrregularSurfaceConnectionsFunctions.o:
+	@SOURCE_DIR=utilities/smoothers/topology/checkIrregularSurfaceConnections
+	SOURCE=utilities/smoothers/topology/checkIrregularSurfaceConnections/checkIrregularSurfaceConnectionsFunctions.C ; $(Ctoo)

@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/thermalGeneralContact/thermalGeneralContactFvPatchScalarField.C

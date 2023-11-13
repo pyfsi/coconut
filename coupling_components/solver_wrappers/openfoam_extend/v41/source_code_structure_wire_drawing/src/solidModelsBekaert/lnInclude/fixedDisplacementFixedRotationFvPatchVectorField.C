@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/fixedDisplacementFixedRotation/fixedDisplacementFixedRotationFvPatchVectorField.C

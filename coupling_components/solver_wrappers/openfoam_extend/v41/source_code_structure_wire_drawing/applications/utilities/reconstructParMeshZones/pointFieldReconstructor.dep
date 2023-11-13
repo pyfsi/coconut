@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/pointFieldReconstructor.o: $(EXE_DEP)
+$(OBJECTS_DIR)/pointFieldReconstructor.o:
+	@SOURCE_DIR=.
+	SOURCE=pointFieldReconstructor.C ; $(Ctoo)

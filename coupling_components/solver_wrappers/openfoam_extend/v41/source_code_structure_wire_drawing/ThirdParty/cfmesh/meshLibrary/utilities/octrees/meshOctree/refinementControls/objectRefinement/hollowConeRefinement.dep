@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/hollowConeRefinement.o: $(EXE_DEP)
+$(OBJECTS_DIR)/hollowConeRefinement.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/refinementControls/objectRefinement
+	SOURCE=utilities/octrees/meshOctree/refinementControls/objectRefinement/hollowConeRefinement.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/writeMeshFPMA.o: $(EXE_DEP)
+$(OBJECTS_DIR)/writeMeshFPMA.o:
+	@SOURCE_DIR=utilities/dataConversion/foamToFPMA
+	SOURCE=utilities/dataConversion/foamToFPMA/writeMeshFPMA.C ; $(Ctoo)

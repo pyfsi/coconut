@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/voronoiMeshGenerator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/voronoiMeshGenerator.o:
+	@SOURCE_DIR=voronoiMesh/voronoiMeshGenerator
+	SOURCE=voronoiMesh/voronoiMeshGenerator/voronoiMeshGenerator.C ; $(Ctoo)

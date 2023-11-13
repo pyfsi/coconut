@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/DxfFileToTriSurfConverter.o: $(EXE_DEP)
+$(OBJECTS_DIR)/DxfFileToTriSurfConverter.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceDXFReader
+	SOURCE=utilities/triSurfaceTools/triSurfaceDXFReader/DxfFileToTriSurfConverter.C ; $(Ctoo)

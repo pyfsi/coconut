@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/standardPenaltyFriction/standardPenaltyFriction.H

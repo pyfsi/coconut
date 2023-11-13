@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/detachFaceCracker.o: $(EXE_DEP)
+$(OBJECTS_DIR)/detachFaceCracker.o:
+	@SOURCE_DIR=dynamicFvMesh/crackerFvMesh/faceCracker
+	SOURCE=dynamicFvMesh/crackerFvMesh/faceCracker/detachFaceCracker.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/newCrackPathLimiter.o: $(EXE_DEP)
+$(OBJECTS_DIR)/newCrackPathLimiter.o:
+	@SOURCE_DIR=dynamicFvMesh/crackerFvMesh/faceBreakerLaws/faceBreakerLaw/crackPathLimiters/crackPathLimiter
+	SOURCE=dynamicFvMesh/crackerFvMesh/faceBreakerLaws/faceBreakerLaw/crackPathLimiters/crackPathLimiter/newCrackPathLimiter.C ; $(Ctoo)

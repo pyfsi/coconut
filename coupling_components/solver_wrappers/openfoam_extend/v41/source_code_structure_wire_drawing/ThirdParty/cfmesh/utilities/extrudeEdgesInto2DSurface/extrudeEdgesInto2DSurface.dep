@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/extrudeEdgesInto2DSurface.o: $(EXE_DEP)
+$(OBJECTS_DIR)/extrudeEdgesInto2DSurface.o:
+	@SOURCE_DIR=.
+	SOURCE=extrudeEdgesInto2DSurface.C ; $(Ctoo)

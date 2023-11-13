@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/thermalSymmetryFvPatchScalarField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/thermalSymmetryFvPatchScalarField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/thermalSymmetry
+	SOURCE=boundaryConditions/fvPatchFields/thermalSymmetry/thermalSymmetryFvPatchScalarField.C ; $(Ctoo)

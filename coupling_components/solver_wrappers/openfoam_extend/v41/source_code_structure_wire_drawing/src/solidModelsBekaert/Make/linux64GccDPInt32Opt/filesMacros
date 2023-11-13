@@ -1,0 +1,16 @@
+faceBreakerLaws = dynamicFvMesh/crackerFvMesh/faceBreakerLaws
+pathLimiters = $(faceBreakerLaws)/faceBreakerLaw/crackPathLimiters
+fvPatchFields = boundaryConditions/fvPatchFields
+pointPatchFields = boundaryConditions/pointPatchFields
+contactModels = $(fvPatchFields)/solidContact/contactModels
+normalContactModels = $(contactModels)/normalContactModels
+frictionContactModels = $(contactModels)/frictionContactModels
+mechanicalModel = materialModels/mechanicalModel
+cohesiveLaws = $(mechanicalModel)/cohesiveLaws
+simpleCohesiveLaws = $(mechanicalModel)/simpleCohesiveLaws
+mechanicalLaws = $(mechanicalModel)/mechanicalLaws
+damageLaws = $(mechanicalLaws)/mechanicalLaw/damageLaws
+thermalModel = materialModels/thermalModel
+thermalLaws = $(thermalModel)/thermalLaws
+materialInterfaces = numerics/materialInterfaces
+LIB = $(FOAM_USER_LIBBIN)/coconut_libsolidModelsBekaert

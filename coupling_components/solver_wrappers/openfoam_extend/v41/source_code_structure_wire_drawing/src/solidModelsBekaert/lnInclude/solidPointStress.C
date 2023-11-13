@@ -1,0 +1,1 @@
+../functionObjects/solidPointStress/solidPointStress.C

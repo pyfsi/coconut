@@ -1,0 +1,1 @@
+../test/stable_norm.cpp

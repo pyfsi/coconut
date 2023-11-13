@@ -1,0 +1,1 @@
+../doc/snippets/MatrixBase_diagonal.cpp

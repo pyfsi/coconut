@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/collapseBoundaryLayers.o: $(EXE_DEP)
+$(OBJECTS_DIR)/collapseBoundaryLayers.o:
+	@SOURCE_DIR=utilities/boundaryLayers/collapseBoundaryLayers
+	SOURCE=utilities/boundaryLayers/collapseBoundaryLayers/collapseBoundaryLayers.C ; $(Ctoo)

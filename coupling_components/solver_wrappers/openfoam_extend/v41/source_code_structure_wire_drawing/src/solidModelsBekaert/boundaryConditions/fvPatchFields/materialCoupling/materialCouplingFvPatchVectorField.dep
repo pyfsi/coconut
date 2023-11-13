@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/materialCouplingFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/materialCouplingFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/materialCoupling
+	SOURCE=boundaryConditions/fvPatchFields/materialCoupling/materialCouplingFvPatchVectorField.C ; $(Ctoo)

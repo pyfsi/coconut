@@ -1,0 +1,1 @@
+../test/product_selfadjoint.cpp

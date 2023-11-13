@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceCleanupDuplicateTrianglesFunctions.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceCleanupDuplicateTrianglesFunctions.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceCleanupDuplicateTriangles
+	SOURCE=utilities/triSurfaceTools/triSurfaceCleanupDuplicateTriangles/triSurfaceCleanupDuplicateTrianglesFunctions.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetMeshOptimisation.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetMeshOptimisation.o:
+	@SOURCE_DIR=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation
+	SOURCE=utilities/smoothers/geometry/meshOptimizer/tetMeshOptimisation/tetMeshOptimisation.C ; $(Ctoo)

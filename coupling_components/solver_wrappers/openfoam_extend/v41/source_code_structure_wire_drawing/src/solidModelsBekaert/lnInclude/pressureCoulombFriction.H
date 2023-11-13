@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidContact/contactModels/frictionContactModels/frictionLaws/pressureCoulombFriction/pressureCoulombFriction.H

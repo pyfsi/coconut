@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/zoneIOList.o: $(EXE_DEP)
+$(OBJECTS_DIR)/zoneIOList.o:
+	@SOURCE_DIR=utilities/meshes/primitives/zones/zoneIO
+	SOURCE=utilities/meshes/primitives/zones/zoneIO/zoneIOList.C ; $(Ctoo)

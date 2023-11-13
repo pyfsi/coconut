@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeParallelCommunication.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeParallelCommunication.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree
+	SOURCE=utilities/octrees/meshOctree/meshOctreeParallelCommunication.C ; $(Ctoo)

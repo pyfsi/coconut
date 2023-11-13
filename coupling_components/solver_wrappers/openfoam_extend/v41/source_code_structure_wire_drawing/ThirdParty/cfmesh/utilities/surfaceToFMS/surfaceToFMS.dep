@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/surfaceToFMS.o: $(EXE_DEP)
+$(OBJECTS_DIR)/surfaceToFMS.o:
+	@SOURCE_DIR=.
+	SOURCE=surfaceToFMS.C ; $(Ctoo)

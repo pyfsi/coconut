@@ -1,6 +1,0 @@
-{
-  "type": "coupled_solvers.aitken",
-  "settings": {
-    "omega_max": 0.8
-  }
-}

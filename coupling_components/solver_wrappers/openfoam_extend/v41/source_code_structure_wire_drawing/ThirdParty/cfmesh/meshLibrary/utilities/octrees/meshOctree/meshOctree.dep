@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctree.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctree.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree
+	SOURCE=utilities/octrees/meshOctree/meshOctree.C ; $(Ctoo)

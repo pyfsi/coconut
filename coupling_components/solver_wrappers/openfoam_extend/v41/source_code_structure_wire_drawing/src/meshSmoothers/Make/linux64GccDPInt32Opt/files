@@ -1,0 +1,48 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 4 "<command-line>" 2
+# 1 "files"
+meshSmoother/meshSmoother.C
+meshSmoother/pointNormalsConsistent/pointNormalsConsistent.C
+cfMeshSmoother/cfMeshSmoother.C
+laplacianSmoother/laplacianSmoother.C
+taubinSmoother/taubinSmoother.C
+volumeSmoother/volumeSmoother.C
+
+numerics/newFvMeshSubset/newFvMeshSubset.C
+numerics/newLeastSquaresVolPointInterpolation/newLeastSquaresVolPointInterpolation.C
+numerics/globalPolyPatch/globalPolyPatch.C
+numerics/nagataPatch/nagataPatch.C
+
+LIB = $(FOAM_USER_LIBBIN)/coconut_libmeshSmoothers

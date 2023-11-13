@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/harmonicEdgeInterpolation.o: $(EXE_DEP)
+$(OBJECTS_DIR)/harmonicEdgeInterpolation.o:
+	@SOURCE_DIR=numerics/finiteArea/interpolation/edgeInterpolation/schemes/harmonic
+	SOURCE=numerics/finiteArea/interpolation/edgeInterpolation/schemes/harmonic/harmonicEdgeInterpolation.C ; $(Ctoo)

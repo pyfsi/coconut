@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/improveSymmetryPlanes.o: $(EXE_DEP)
+$(OBJECTS_DIR)/improveSymmetryPlanes.o:
+	@SOURCE_DIR=.
+	SOURCE=improveSymmetryPlanes.C ; $(Ctoo)

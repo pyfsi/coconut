@@ -1,0 +1,1 @@
+../doc/snippets/Map_outer_stride.cpp

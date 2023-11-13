@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/thermalConvectionFvPatchScalarField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/thermalConvectionFvPatchScalarField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/thermalConvection
+	SOURCE=boundaryConditions/fvPatchFields/thermalConvection/thermalConvectionFvPatchScalarField.C ; $(Ctoo)

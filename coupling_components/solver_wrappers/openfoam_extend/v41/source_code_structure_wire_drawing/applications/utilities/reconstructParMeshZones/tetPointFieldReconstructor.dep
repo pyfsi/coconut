@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/tetPointFieldReconstructor.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tetPointFieldReconstructor.o:
+	@SOURCE_DIR=.
+	SOURCE=tetPointFieldReconstructor.C ; $(Ctoo)

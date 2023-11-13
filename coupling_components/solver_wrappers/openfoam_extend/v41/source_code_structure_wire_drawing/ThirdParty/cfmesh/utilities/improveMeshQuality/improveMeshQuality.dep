@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/improveMeshQuality.o: $(EXE_DEP)
+$(OBJECTS_DIR)/improveMeshQuality.o:
+	@SOURCE_DIR=.
+	SOURCE=improveMeshQuality.C ; $(Ctoo)

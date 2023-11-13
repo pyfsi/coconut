@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/decomposeMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/decomposeMesh.o:
+	@SOURCE_DIR=.
+	SOURCE=decomposeMesh.C ; $(Ctoo)

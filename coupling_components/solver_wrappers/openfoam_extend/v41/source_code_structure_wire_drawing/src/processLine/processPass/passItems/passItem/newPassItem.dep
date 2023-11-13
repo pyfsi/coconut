@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/newPassItem.o: $(EXE_DEP)
+$(OBJECTS_DIR)/newPassItem.o:
+	@SOURCE_DIR=processPass/passItems/passItem
+	SOURCE=processPass/passItems/passItem/newPassItem.C ; $(Ctoo)

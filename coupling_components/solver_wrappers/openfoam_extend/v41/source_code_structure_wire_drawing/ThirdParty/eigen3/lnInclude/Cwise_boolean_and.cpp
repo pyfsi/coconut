@@ -1,0 +1,1 @@
+../doc/snippets/Cwise_boolean_and.cpp

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/edgeMeshGeometryModification.o: $(EXE_DEP)
+$(OBJECTS_DIR)/edgeMeshGeometryModification.o:
+	@SOURCE_DIR=utilities/anisotropicMeshing/edgeMeshGeometryModification
+	SOURCE=utilities/anisotropicMeshing/edgeMeshGeometryModification/edgeMeshGeometryModification.C ; $(Ctoo)

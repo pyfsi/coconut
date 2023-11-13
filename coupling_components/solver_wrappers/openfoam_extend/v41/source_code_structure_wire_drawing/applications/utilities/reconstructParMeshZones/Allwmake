@@ -1,0 +1,13 @@
+#!/bin/bash
+cd ${0%/*} || exit 1    # run from this directory
+
+if [ "$WM_PROJECT" = "foam" ]
+then
+    if (( $(echo "$WM_PROJECT_VERSION < 4.1" |bc -l) ))
+    then
+        wmake
+        exit 0
+    fi
+fi
+
+echo "reconstructParMeshZones not compiled for this version: TO-DO!"

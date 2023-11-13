@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/surfaceMeshGeometryModification.o: $(EXE_DEP)
+$(OBJECTS_DIR)/surfaceMeshGeometryModification.o:
+	@SOURCE_DIR=utilities/anisotropicMeshing/surfaceMeshGeometryModification
+	SOURCE=utilities/anisotropicMeshing/surfaceMeshGeometryModification/surfaceMeshGeometryModification.C ; $(Ctoo)

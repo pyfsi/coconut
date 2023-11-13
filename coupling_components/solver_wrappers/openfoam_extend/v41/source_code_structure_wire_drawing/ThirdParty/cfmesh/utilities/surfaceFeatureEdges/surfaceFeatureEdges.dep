@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/surfaceFeatureEdges.o: $(EXE_DEP)
+$(OBJECTS_DIR)/surfaceFeatureEdges.o:
+	@SOURCE_DIR=.
+	SOURCE=surfaceFeatureEdges.C ; $(Ctoo)

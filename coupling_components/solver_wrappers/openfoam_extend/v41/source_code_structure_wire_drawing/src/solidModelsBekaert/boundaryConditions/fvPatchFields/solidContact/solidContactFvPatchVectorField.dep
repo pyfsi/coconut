@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidContactFvPatchVectorField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidContactFvPatchVectorField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidContact
+	SOURCE=boundaryConditions/fvPatchFields/solidContact/solidContactFvPatchVectorField.C ; $(Ctoo)

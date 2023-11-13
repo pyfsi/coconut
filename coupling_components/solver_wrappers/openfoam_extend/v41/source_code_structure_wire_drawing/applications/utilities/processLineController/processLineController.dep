@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/processLineController.o: $(EXE_DEP)
+$(OBJECTS_DIR)/processLineController.o:
+	@SOURCE_DIR=.
+	SOURCE=processLineController.C ; $(Ctoo)

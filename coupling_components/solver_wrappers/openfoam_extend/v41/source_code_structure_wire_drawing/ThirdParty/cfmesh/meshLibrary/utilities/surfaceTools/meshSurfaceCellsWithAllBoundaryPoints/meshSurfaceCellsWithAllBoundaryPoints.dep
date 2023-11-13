@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSurfaceCellsWithAllBoundaryPoints.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSurfaceCellsWithAllBoundaryPoints.o:
+	@SOURCE_DIR=utilities/surfaceTools/meshSurfaceCellsWithAllBoundaryPoints
+	SOURCE=utilities/surfaceTools/meshSurfaceCellsWithAllBoundaryPoints/meshSurfaceCellsWithAllBoundaryPoints.C ; $(Ctoo)

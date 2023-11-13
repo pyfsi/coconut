@@ -1,0 +1,41 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      meshSmootherDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Smoothing method
+type                  implicitVolume;
+
+// Smoothing settings
+implicitVolumeCoeffs
+{
+    // Optional: cell zone(s) to smooth
+    // If this entry is not found then the entire mesh is smoothed
+    cellZones             (wire);
+
+    // Number of outer smoothing iterations
+    nCorrectors           10;
+
+    // Overwrite option
+    // no: writes to the next time-step
+    // yes: overwrites the mesh
+    overwrite             no;
+
+    // If the angle between two faces is greater than this feature angle then
+    // this sharp edge is preserved 
+    featureAngle          45;
+}
+
+// ************************************************************************* //

@@ -1,0 +1,1 @@
+../doc/snippets/Cwise_cos.cpp

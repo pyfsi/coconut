@@ -1,0 +1,1 @@
+../doc/examples/make_circulant.cpp

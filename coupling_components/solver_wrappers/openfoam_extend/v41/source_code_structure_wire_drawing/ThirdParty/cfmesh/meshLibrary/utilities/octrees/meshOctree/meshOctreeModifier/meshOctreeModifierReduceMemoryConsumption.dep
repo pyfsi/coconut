@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeModifierReduceMemoryConsumption.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeModifierReduceMemoryConsumption.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeModifier
+	SOURCE=utilities/octrees/meshOctree/meshOctreeModifier/meshOctreeModifierReduceMemoryConsumption.C ; $(Ctoo)

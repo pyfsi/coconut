@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshOctreeCubeIntersections.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshOctreeCubeIntersections.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/meshOctreeCube
+	SOURCE=utilities/octrees/meshOctree/meshOctreeCube/meshOctreeCubeIntersections.C ; $(Ctoo)

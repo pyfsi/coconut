@@ -1,0 +1,10 @@
+#!/bin/bash
+cd ${0%/*} || exit 1    # run from this directory
+
+echo
+echo "Cleaning src"
+echo
+
+wclean lib meshSmoothers
+wclean lib processLine
+wclean lib solidModelsBekaert

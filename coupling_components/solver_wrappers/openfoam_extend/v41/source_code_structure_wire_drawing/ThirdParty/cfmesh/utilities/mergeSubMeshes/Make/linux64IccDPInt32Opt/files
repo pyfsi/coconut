@@ -1,0 +1,2 @@
+mergeSubMeshes.C
+EXE = $(FOAM_USER_APPBIN)/mergeSubMeshes

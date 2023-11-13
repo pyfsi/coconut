@@ -1,0 +1,1 @@
+../doc/snippets/PartialRedux_norm.cpp

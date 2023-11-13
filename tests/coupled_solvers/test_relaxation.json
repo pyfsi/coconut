@@ -1,6 +1,0 @@
-{
-  "type": "coupled_solvers.relaxation",
-  "settings": {
-    "omega": 0.1
-  }
-}

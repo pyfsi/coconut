@@ -1,0 +1,4 @@
+LOCAL_OBJECTS = \
+mapHardnessFileToYieldStrengthField.o\
+RBFInterpolation.o\
+TPSFunction.o

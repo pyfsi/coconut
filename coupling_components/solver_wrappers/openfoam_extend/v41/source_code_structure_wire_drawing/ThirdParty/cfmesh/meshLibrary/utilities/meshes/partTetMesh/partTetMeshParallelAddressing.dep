@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/partTetMeshParallelAddressing.o: $(EXE_DEP)
+$(OBJECTS_DIR)/partTetMeshParallelAddressing.o:
+	@SOURCE_DIR=utilities/meshes/partTetMesh
+	SOURCE=utilities/meshes/partTetMesh/partTetMeshParallelAddressing.C ; $(Ctoo)

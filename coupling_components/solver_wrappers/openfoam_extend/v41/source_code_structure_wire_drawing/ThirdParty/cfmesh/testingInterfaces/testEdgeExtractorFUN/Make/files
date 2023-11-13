@@ -1,0 +1,4 @@
+
+testEdgeExtractorFUN.C
+
+EXE = $(FOAM_USER_APPBIN)/testEdgeExtractorFUN

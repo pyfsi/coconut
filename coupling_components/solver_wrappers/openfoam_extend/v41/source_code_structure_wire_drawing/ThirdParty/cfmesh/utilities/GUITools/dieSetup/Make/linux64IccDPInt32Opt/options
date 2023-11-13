@@ -1,0 +1,2 @@
+EXE_INC = -I../../../meshLibrary/lnInclude -I$(FOAM_SRC)/finiteVolume/lnInclude
+EXE_LIBS = -L$(FOAM_USER_LIBBIN) -lfiniteVolume

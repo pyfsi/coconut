@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/patchesToSubsets.o: $(EXE_DEP)
+$(OBJECTS_DIR)/patchesToSubsets.o:
+	@SOURCE_DIR=.
+	SOURCE=patchesToSubsets.C ; $(Ctoo)

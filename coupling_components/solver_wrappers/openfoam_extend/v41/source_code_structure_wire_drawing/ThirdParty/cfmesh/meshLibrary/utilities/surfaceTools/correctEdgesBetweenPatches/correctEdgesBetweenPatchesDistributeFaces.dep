@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/correctEdgesBetweenPatchesDistributeFaces.o: $(EXE_DEP)
+$(OBJECTS_DIR)/correctEdgesBetweenPatchesDistributeFaces.o:
+	@SOURCE_DIR=utilities/surfaceTools/correctEdgesBetweenPatches
+	SOURCE=utilities/surfaceTools/correctEdgesBetweenPatches/correctEdgesBetweenPatchesDistributeFaces.C ; $(Ctoo)

@@ -1,0 +1,11 @@
+DEPENDENCIES = \
+decomposeMesh.dep\
+decomposePar.dep\
+domainDecomposition.dep\
+distributeCells.dep\
+faMeshDecomposition.dep\
+fvFieldDecomposer.dep\
+faFieldDecomposer.dep\
+pointFieldDecomposer.dep\
+tetPointFieldDecomposer.dep\
+lagrangianFieldDecomposer.dep

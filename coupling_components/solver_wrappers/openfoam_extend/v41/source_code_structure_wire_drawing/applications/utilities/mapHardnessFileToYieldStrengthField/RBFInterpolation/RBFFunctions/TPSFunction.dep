@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/TPSFunction.o: $(EXE_DEP)
+$(OBJECTS_DIR)/TPSFunction.o:
+	@SOURCE_DIR=RBFInterpolation/RBFFunctions
+	SOURCE=RBFInterpolation/RBFFunctions/TPSFunction.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/dataHandler.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dataHandler.o:
+	@SOURCE_DIR=dataHandler
+	SOURCE=dataHandler/dataHandler.C ; $(Ctoo)

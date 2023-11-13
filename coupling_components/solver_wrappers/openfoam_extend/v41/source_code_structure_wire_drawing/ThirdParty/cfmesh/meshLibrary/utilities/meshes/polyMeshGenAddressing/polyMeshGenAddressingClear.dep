@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenAddressingClear.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenAddressingClear.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenAddressing
+	SOURCE=utilities/meshes/polyMeshGenAddressing/polyMeshGenAddressingClear.C ; $(Ctoo)

@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/checkNonMappableCellConnections.o: $(EXE_DEP)
+$(OBJECTS_DIR)/checkNonMappableCellConnections.o:
+	@SOURCE_DIR=utilities/smoothers/topology/checkNonMappableCellConnections
+	SOURCE=utilities/smoothers/topology/checkNonMappableCellConnections/checkNonMappableCellConnections.C ; $(Ctoo)

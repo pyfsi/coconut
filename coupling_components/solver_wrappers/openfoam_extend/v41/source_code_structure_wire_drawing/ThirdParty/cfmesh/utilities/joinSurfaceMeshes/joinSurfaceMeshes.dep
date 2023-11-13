@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/joinSurfaceMeshes.o: $(EXE_DEP)
+$(OBJECTS_DIR)/joinSurfaceMeshes.o:
+	@SOURCE_DIR=.
+	SOURCE=joinSurfaceMeshes.C ; $(Ctoo)

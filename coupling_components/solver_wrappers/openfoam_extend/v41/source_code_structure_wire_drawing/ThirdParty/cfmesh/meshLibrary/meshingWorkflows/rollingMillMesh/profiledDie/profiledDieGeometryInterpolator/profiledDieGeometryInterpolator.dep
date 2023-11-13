@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/profiledDieGeometryInterpolator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/profiledDieGeometryInterpolator.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/profiledDie/profiledDieGeometryInterpolator
+	SOURCE=meshingWorkflows/rollingMillMesh/profiledDie/profiledDieGeometryInterpolator/profiledDieGeometryInterpolator.C ; $(Ctoo)

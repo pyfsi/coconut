@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/distributeCells.o: $(EXE_DEP)
+$(OBJECTS_DIR)/distributeCells.o:
+	@SOURCE_DIR=.
+	SOURCE=distributeCells.C ; $(Ctoo)

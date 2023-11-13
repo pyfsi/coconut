@@ -1,0 +1,9 @@
+#!/bin/sh
+# Compile mesh library
+wclean libso meshLibrary
+
+# Compile executables
+wclean all executables
+
+# Compile utilities
+wclean all utilities

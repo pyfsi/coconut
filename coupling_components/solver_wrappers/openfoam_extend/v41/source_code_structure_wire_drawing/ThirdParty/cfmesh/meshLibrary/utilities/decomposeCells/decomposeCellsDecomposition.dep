@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/decomposeCellsDecomposition.o: $(EXE_DEP)
+$(OBJECTS_DIR)/decomposeCellsDecomposition.o:
+	@SOURCE_DIR=utilities/decomposeCells
+	SOURCE=utilities/decomposeCells/decomposeCellsDecomposition.C ; $(Ctoo)

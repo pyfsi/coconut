@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/newNormalContactModel.o: $(EXE_DEP)
+$(OBJECTS_DIR)/newNormalContactModel.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/solidContact/contactModels/normalContactModels/normalContactModel
+	SOURCE=boundaryConditions/fvPatchFields/solidContact/contactModels/normalContactModels/normalContactModel/newNormalContactModel.C ; $(Ctoo)

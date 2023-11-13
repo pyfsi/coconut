@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/fvFieldReconstructor.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fvFieldReconstructor.o:
+	@SOURCE_DIR=.
+	SOURCE=fvFieldReconstructor.C ; $(Ctoo)

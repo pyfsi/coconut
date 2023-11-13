@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/meshSmoother.o: $(EXE_DEP)
+$(OBJECTS_DIR)/meshSmoother.o:
+	@SOURCE_DIR=meshSmoother
+	SOURCE=meshSmoother/meshSmoother.C ; $(Ctoo)

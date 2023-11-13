@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/voronoiMeshExtractor.o: $(EXE_DEP)
+$(OBJECTS_DIR)/voronoiMeshExtractor.o:
+	@SOURCE_DIR=voronoiMesh/voronoiMeshExtractor
+	SOURCE=voronoiMesh/voronoiMeshExtractor/voronoiMeshExtractor.C ; $(Ctoo)

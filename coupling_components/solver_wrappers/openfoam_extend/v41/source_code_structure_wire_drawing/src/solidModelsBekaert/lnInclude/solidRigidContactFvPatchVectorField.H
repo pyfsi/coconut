@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/solidRigidContact/solidRigidContactFvPatchVectorField.H

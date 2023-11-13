@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/multiMaterialCohesiveLaw.o: $(EXE_DEP)
+$(OBJECTS_DIR)/multiMaterialCohesiveLaw.o:
+	@SOURCE_DIR=materialModels/mechanicalModel/cohesiveLaws/multiMaterialCohesiveLaw
+	SOURCE=materialModels/mechanicalModel/cohesiveLaws/multiMaterialCohesiveLaw/multiMaterialCohesiveLaw.C ; $(Ctoo)

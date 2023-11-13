@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/fixedTemperatureGradientFvPatchScalarField.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fixedTemperatureGradientFvPatchScalarField.o:
+	@SOURCE_DIR=boundaryConditions/fvPatchFields/fixedTemperatureGradient
+	SOURCE=boundaryConditions/fvPatchFields/fixedTemperatureGradient/fixedTemperatureGradientFvPatchScalarField.C ; $(Ctoo)

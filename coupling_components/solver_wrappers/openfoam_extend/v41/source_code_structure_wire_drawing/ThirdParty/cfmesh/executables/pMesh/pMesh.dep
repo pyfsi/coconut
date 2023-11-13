@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/pMesh.o: $(EXE_DEP)
+$(OBJECTS_DIR)/pMesh.o:
+	@SOURCE_DIR=.
+	SOURCE=pMesh.C ; $(Ctoo)

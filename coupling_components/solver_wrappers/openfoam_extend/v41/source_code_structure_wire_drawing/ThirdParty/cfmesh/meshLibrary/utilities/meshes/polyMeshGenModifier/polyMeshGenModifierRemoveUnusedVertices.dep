@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenModifierRemoveUnusedVertices.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenModifierRemoveUnusedVertices.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenModifier
+	SOURCE=utilities/meshes/polyMeshGenModifier/polyMeshGenModifierRemoveUnusedVertices.C ; $(Ctoo)

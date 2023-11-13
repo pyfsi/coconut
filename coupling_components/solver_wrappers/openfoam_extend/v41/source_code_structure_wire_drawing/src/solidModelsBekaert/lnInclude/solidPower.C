@@ -1,0 +1,1 @@
+../functionObjects/solidPower/solidPower.C

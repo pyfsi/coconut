@@ -1,0 +1,9 @@
+#!/bin/sh
+# Compile mesh library
+wmake libso meshLibrary
+
+# Compile executables
+wmake all executables
+
+# Compile utilities
+wmake all utilities

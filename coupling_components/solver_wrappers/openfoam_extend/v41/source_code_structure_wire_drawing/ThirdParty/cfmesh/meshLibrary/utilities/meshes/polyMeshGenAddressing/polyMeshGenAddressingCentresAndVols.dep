@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/polyMeshGenAddressingCentresAndVols.o: $(EXE_DEP)
+$(OBJECTS_DIR)/polyMeshGenAddressingCentresAndVols.o:
+	@SOURCE_DIR=utilities/meshes/polyMeshGenAddressing
+	SOURCE=utilities/meshes/polyMeshGenAddressing/polyMeshGenAddressingCentresAndVols.C ; $(Ctoo)

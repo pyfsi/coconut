@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/addPatch.o: $(EXE_DEP)
+$(OBJECTS_DIR)/addPatch.o:
+	@SOURCE_DIR=.
+	SOURCE=addPatch.C ; $(Ctoo)

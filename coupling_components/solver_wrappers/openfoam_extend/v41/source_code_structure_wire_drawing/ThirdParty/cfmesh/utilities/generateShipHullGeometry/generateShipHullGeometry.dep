@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/generateShipHullGeometry.o: $(EXE_DEP)
+$(OBJECTS_DIR)/generateShipHullGeometry.o:
+	@SOURCE_DIR=.
+	SOURCE=generateShipHullGeometry.C ; $(Ctoo)

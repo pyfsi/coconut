@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/triSurfaceRemoveFacets.o: $(EXE_DEP)
+$(OBJECTS_DIR)/triSurfaceRemoveFacets.o:
+	@SOURCE_DIR=utilities/triSurfaceTools/triSurfaceRemoveFacets
+	SOURCE=utilities/triSurfaceTools/triSurfaceRemoveFacets/triSurfaceRemoveFacets.C ; $(Ctoo)

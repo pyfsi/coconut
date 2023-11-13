@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/cartesianMeshGenerator.o: $(EXE_DEP)
+$(OBJECTS_DIR)/cartesianMeshGenerator.o:
+	@SOURCE_DIR=cartesianMesh/cartesianMeshGenerator
+	SOURCE=cartesianMesh/cartesianMeshGenerator/cartesianMeshGenerator.C ; $(Ctoo)

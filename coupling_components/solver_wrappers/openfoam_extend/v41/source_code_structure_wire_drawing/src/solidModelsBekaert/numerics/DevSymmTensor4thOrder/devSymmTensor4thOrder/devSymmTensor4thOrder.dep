@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/devSymmTensor4thOrder.o: $(EXE_DEP)
+$(OBJECTS_DIR)/devSymmTensor4thOrder.o:
+	@SOURCE_DIR=numerics/DevSymmTensor4thOrder/devSymmTensor4thOrder
+	SOURCE=numerics/DevSymmTensor4thOrder/devSymmTensor4thOrder/devSymmTensor4thOrder.C ; $(Ctoo)

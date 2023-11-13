@@ -1,0 +1,2 @@
+generateShipHullGeometry.C
+EXE = $(FOAM_USER_APPBIN)/generateShipHullGeometry

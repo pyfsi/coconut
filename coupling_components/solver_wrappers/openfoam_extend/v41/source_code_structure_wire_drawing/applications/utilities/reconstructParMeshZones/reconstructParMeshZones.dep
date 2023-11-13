@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/reconstructParMeshZones.o: $(EXE_DEP)
+$(OBJECTS_DIR)/reconstructParMeshZones.o:
+	@SOURCE_DIR=.
+	SOURCE=reconstructParMeshZones.C ; $(Ctoo)

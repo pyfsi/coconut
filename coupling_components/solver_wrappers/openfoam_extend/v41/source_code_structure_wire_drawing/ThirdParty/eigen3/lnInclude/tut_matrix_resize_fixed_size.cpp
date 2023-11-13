@@ -1,0 +1,1 @@
+../doc/examples/tut_matrix_resize_fixed_size.cpp

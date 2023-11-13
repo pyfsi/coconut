@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/topologyCleanerNonConsecutiveBoundaryVertices.o: $(EXE_DEP)
+$(OBJECTS_DIR)/topologyCleanerNonConsecutiveBoundaryVertices.o:
+	@SOURCE_DIR=utilities/smoothers/topology/topologicalCleaner
+	SOURCE=utilities/smoothers/topology/topologicalCleaner/topologyCleanerNonConsecutiveBoundaryVertices.C ; $(Ctoo)

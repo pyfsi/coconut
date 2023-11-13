@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/taperedBoxRefinement.o: $(EXE_DEP)
+$(OBJECTS_DIR)/taperedBoxRefinement.o:
+	@SOURCE_DIR=utilities/octrees/meshOctree/refinementControls/objectRefinement
+	SOURCE=utilities/octrees/meshOctree/refinementControls/objectRefinement/taperedBoxRefinement.C ; $(Ctoo)

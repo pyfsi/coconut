@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/VRWGraphList.o: $(EXE_DEP)
+$(OBJECTS_DIR)/VRWGraphList.o:
+	@SOURCE_DIR=utilities/containers/VRWGraphList
+	SOURCE=utilities/containers/VRWGraphList/VRWGraphList.C ; $(Ctoo)

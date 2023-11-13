@@ -1,0 +1,1 @@
+../boundaryConditions/fvPatchFields/fixedDisplacementZeroShearOrSolidTraction/fixedDisplacementZeroShearOrSolidTractionFvPatchVectorField.C

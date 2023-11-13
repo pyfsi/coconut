@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/DXFTo2DSurface.o: $(EXE_DEP)
+$(OBJECTS_DIR)/DXFTo2DSurface.o:
+	@SOURCE_DIR=.
+	SOURCE=DXFTo2DSurface.C ; $(Ctoo)

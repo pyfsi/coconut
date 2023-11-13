@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/rollerSurfaceCreatorDXF.o: $(EXE_DEP)
+$(OBJECTS_DIR)/rollerSurfaceCreatorDXF.o:
+	@SOURCE_DIR=meshingWorkflows/rollingMillMesh/rollerSurfaceCreator
+	SOURCE=meshingWorkflows/rollingMillMesh/rollerSurfaceCreator/rollerSurfaceCreatorDXF.C ; $(Ctoo)

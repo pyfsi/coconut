@@ -1,0 +1,4 @@
+$(OBJECTS_DIR)/solidPointStress.o: $(EXE_DEP)
+$(OBJECTS_DIR)/solidPointStress.o:
+	@SOURCE_DIR=functionObjects/solidPointStress
+	SOURCE=functionObjects/solidPointStress/solidPointStress.C ; $(Ctoo)
