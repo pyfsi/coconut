@@ -64,7 +64,6 @@ for (_d = 0; _d < dim; _d++) {                                      \
 int _d; /* don't use in UDFs! (overwritten by functions above) */
 int n_threads;
 DECLARE_MEMORY(thread_ids, int);
-int iteration = 0;
 int timestep = 0;
 
 
@@ -357,11 +356,9 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
 #if RP_HOST /* only host process is involved, code not compiled for node */
     char file_name[256];
     FILE *file = NULL;
-    iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
 #endif /* RP_HOST */
 
-    host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
 
     for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
@@ -529,11 +526,9 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 #endif /* RP_NODE */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
-    iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
 #endif /* RP_HOST */
 
-    host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
