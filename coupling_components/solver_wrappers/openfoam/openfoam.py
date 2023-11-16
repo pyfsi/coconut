@@ -632,14 +632,12 @@ class SolverWrapperOpenFOAM(Component):
         # This has no influence on the solution of the calculation
         if not self.debug:
             for boundary in self.boundary_names:
-                prev_directory_folder = os.path.join(self.working_directory, self.prev_timestamp)
-
                 post_process_time_folder = os.path.join(self.working_directory,
                                                         f'postProcessing/coconut_{boundary}/surface',
                                                         self.prev_timestamp)
                 post_process_time_folder_pressure = os.path.join(self.working_directory,
-                                                        f'postProcessing/PRESSURE_{boundary}/surface',
-                                                        self.prev_timestamp)
+                                                                 f'postProcessing/PRESSURE_{boundary}/surface',
+                                                                 self.prev_timestamp)
                 post_process_time_folder_traction = os.path.join(self.working_directory,
                                                                  f'postProcessing/TRACTION_{boundary}/surface',
                                                                  self.prev_timestamp)
@@ -649,19 +647,31 @@ class SolverWrapperOpenFOAM(Component):
                 shutil.rmtree(post_process_time_folder_traction)
 
                 if (self.timestep % 10 != 1):
-                    shutil.rmtree(prev_directory_folder)
                     if self.settings['timeVaryingMappedFixedValue']:
                         prev_directory_boundaryData_coupledVelocity_folder = os.path.join(self.working_directory,
-                                                                          f'constant/boundaryData/{boundary}',
-                                                                          self.prev_timestamp)
-                        shutil.rmtree(prev_directory_boundaryData_coupledVelocity_folder )
-                    if self.settings['moving_rigid_body'] and self.start_increment < self.timestep - 1 and self.timestep - 1 < self.start_increment + self.number_of_timeIncrements + self.number_of_timeIncrements//10:
+                                                                                          f'constant/boundaryData/{boundary}',
+                                                                                          self.prev_timestamp)
+                        shutil.rmtree(prev_directory_boundaryData_coupledVelocity_folder)
+                    if self.settings[
+                        'moving_rigid_body'] and self.start_increment < self.timestep - 1 and self.timestep - 1 < self.start_increment + self.number_of_timeIncrements + self.number_of_timeIncrements // 10:
                         for body in self.moving_rigid_bodies_names:
                             prev_directory_boundaryData_movingBody_folder = os.path.join(self.working_directory,
-                                                                                              f'constant/boundaryData/{body}',
-                                                                                              self.prev_timestamp)
+                                                                                         f'constant/boundaryData/{body}',
+                                                                                         self.prev_timestamp)
                             shutil.rmtree(prev_directory_boundaryData_movingBody_folder)
 
+                    if not self.settings['parallel']:
+                        prev_directory_folder = os.path.join(self.working_directory, self.prev_timestamp)
+                        shutil.rmtree(prev_directory_folder)
+
+                    else:
+                        for proc in range(self.cores):
+                           prev_directory_folder_proc = os.path.join(self.working_directory, f'processor{proc}',self.prev_timestamp)
+                           shutil.rmtree(prev_directory_folder_proc)
+
+                           if self.settings['timeVaryingMappedFixedValue']:
+                               prev_directory_boundaryData_coupledVelocity_folder_proc = os.path.join(self.working_directory,f'processor{proc}/constant/boundaryData/{boundary}',self.prev_timestamp)
+                               shutil.rmtree(prev_directory_boundaryData_coupledVelocity_folder_proc)
 
 
         if not (self.timestep % self.write_interval):
