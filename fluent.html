@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -637,8 +637,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#v2019r2-1940" class="md-nav__link">
-    v2019R2 (19.4.0)
+  <a href="#v2019r2-1940-no-longer-maintained" class="md-nav__link">
+    v2019R2 (19.4.0) (no longer maintained)
   </a>
   
 </li>
@@ -674,6 +674,13 @@
           <li class="md-nav__item">
   <a href="#v2022r1-2210" class="md-nav__link">
     v2022R1 (22.1.0)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v2023r1-2310" class="md-nav__link">
+    v2023R1 (23.1.0)
   </a>
   
 </li>
@@ -1417,7 +1424,7 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <h2 id="version-specific-documentation">Version specific documentation</h2>
 <h3 id="v2019r1-1930">v2019R1 (19.3.0)</h3>
 <p>First version.</p>
-<h3 id="v2019r2-1940">v2019R2 (19.4.0)</h3>
+<h3 id="v2019r2-1940-no-longer-maintained">v2019R2 (19.4.0) (no longer maintained)</h3>
 <p>No changes.</p>
 <h3 id="v2019r3-1950">v2019R3 (19.5.0)</h3>
 <p>The solutions in this version are (slightly) different because the <em>Rhie-Chow face flux interpolation in the pressure-based solver</em> has changed. This setting can be reverted with the TUI command <code>solve set previous undo-2019r3 y n</code>, which is included in <em><code>v2019R3.jou</code></em>.</p>
@@ -1436,6 +1443,8 @@ The saving of "cell residuals" for postprocessing with the following command <co
 <code>Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3</code>.
 This issue is solved in v2022R1.</p>
 <h3 id="v2022r1-2210">v2022R1 (22.1.0)</h3>
+<p>No changes.</p>
+<h3 id="v2023r1-2310">v2023R1 (23.1.0)</h3>
 <p>No changes.</p>
 
               
@@ -1507,10 +1516,10 @@ This issue is solved in v2022R1.</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
+      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
