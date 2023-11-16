@@ -77,4 +77,4 @@ In the structure solver wrapper, a linear interpolation mapper is used to interp
 
 ## References
 <a id="1">[1]</a>
-[Antoci C., Gallatie M. and Sibilla S., "Numerical simulation of fluid-structure interaction by sph", Computers & Structures, vol. 85, no. 11, pp. 879-890, 2007.](https://doi.org/10.1007/3-540-34596-5_15)
+[Antoci C., Gallatie M. and Sibilla S., "Numerical simulation of fluid-structure interaction by SPH", Computers & Structures, vol. 85, no. 11, pp. 879-890, 2007.](https://doi.org/10.1016/j.compstruc.2007.01.002)

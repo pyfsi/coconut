@@ -8,8 +8,8 @@ from fractions import Fraction
 
 
 # This file contains the class Animation, which can be used to make an animation, showing a variable on the interface
-# for different time steps. Also a plot of the variable on a certain time step can be made. Alternatively, the
-# the coordinates of the interface can also be animated using 'coordinates' as variable.
+# for different time steps. Also, a plot of the variable on a certain time step can be made. Alternatively, the
+# coordinates of the interface can also be animated using 'coordinates' as variable.
 # These Animation instances have to be added to an AnimationFigure instance. All Animations added to the same
 # AnimationFigure will be plotted in the same Figure.
 # After adding to an AimationFigure,animation has to initialized, specifying which plane of the 3D space to plot in as

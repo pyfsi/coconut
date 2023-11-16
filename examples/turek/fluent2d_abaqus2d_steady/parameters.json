@@ -42,10 +42,10 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2019R3",
+        "type": "solver_wrappers.fluent.v2023R1",
         "settings": {
           "working_directory": "CFD",
-          "case_file": "case_turek.cas",
+          "case_file": "case_turek.cas.h5",
           "dimensions": 2,
           "unsteady": false,
           "end_of_timestep_commands": "(ti-menu-load-string \"report forces wall-forces n circleoutside beamtopoutside beamrightoutside beambottomoutside () 1 0 y forces.frp\")",
