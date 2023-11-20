@@ -5,7 +5,7 @@ from os.path import join
 
 from coconut import tools
 
-cfd_solver = 'fluent.v2021R2'
+cfd_solver = 'fluent.v2023R1'
 csm_solver = 'kratos_structure.v91'
 cfd_dir = './CFD'
 csm_dir = './CSM'

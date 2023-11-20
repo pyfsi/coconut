@@ -3,7 +3,7 @@ import subprocess
 
 from coconut import tools
 
-csm_solver = 'abaqus.v614'
+csm_solver = 'abaqus.v2022'
 cfd_dir = './CFD'
 csm_dir = './CSM'
 

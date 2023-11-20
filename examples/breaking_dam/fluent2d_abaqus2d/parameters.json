@@ -43,10 +43,10 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2019R3",
+        "type": "solver_wrappers.fluent.v2023R1",
         "settings": {
           "working_directory": "CFD",
-          "case_file": "case_breaking_dam.cas",
+          "case_file": "case_breaking_dam.cas.h5",
           "dimensions": 2,
           "unsteady": true,
           "multiphase": true,
@@ -109,7 +109,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.v614",
+            "type": "solver_wrappers.abaqus.v2022",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,

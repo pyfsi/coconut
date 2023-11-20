@@ -25,7 +25,7 @@ define boundary-conditions wall box y motion-bc-stationary y shear-bc-noslip
 define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
-define dynamic-mesh dynamic-mesh y n n y n
+define dynamic-mesh dynamic-mesh y n n
 define dynamic-mesh controls smoothing y
 define dynamic-mesh controls smoothing-parameters smoothing-method diffusion
 define dynamic-mesh controls smoothing-parameters max-iter 20
@@ -39,7 +39,7 @@ define dynamic-mesh controls remeshing n
  (lambda (zone) (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary fluid constant 0" zone)))
  '(in out box circleoutside)
 )
-define dynamic-mesh zones create fluid deforming y y 0.00125 0.0125 0.6
+define dynamic-mesh zones create fluid deforming y y n 0.00125 0.0125 0.6
 ;0.00500 0.00250 0.00125
 ;0.0500 0.0250 0.0125
 ;0.6 0.6 0.6
