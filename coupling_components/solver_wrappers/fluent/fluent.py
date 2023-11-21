@@ -199,6 +199,10 @@ class SolverWrapperFluent(SolverWrapper):
                 file.write(f'{name} {id}\n')
         self.coco_messages.send_message('thread_ids_written_to_file')
 
+        # remove "report.sum" because the batch options to overwrite report files and case files conflict in some
+        # versions of Fluent (2023R1)
+        os.unlink(report)
+
         # import node and face information if no restart
         if self.timestep_start == 0:
             self.coco_messages.wait_message('nodes_and_faces_stored')

@@ -93,7 +93,7 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 First version.
 
-### v2019R2 (19.4.0)
+### v2019R2 (19.4.0) (no longer maintained)
 
 No changes.
 
@@ -123,5 +123,9 @@ The saving of "cell residuals" for postprocessing with the following command `so
 This issue is solved in v2022R1.
 
 ### v2022R1 (22.1.0)
+
+No changes.
+
+### v2023R1 (23.1.0)
 
 No changes.
