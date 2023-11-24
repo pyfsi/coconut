@@ -510,7 +510,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
 
 DEFINE_ON_DEMAND(store_temperature){
     /* Similar as the function store_coordinates_id and store_pressure_traction, but now the temperature at the faces
-    are stored in a file temperature_timestep%i_thread%i.dat. */
+    is stored in a file temperature_timestep%i_thread%i.dat. */
     if (myid == 0) {printf("\nStarted UDF store_temperature.\n"); fflush(stdout);}
 
     /* declaring variables */
@@ -557,7 +557,7 @@ DEFINE_ON_DEMAND(store_temperature){
         n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
 
         /* assign memory on compute node that accesses its partition of the face_thread */
-        ASSIGN_MEMORY(temp, n, real;
+        ASSIGN_MEMORY(temp, n, real);
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
         i = 0;
@@ -654,7 +654,7 @@ DEFINE_ON_DEMAND(store_temperature){
                 fprintf(file, "\n");
             }
             /* after files have been appended, the memory can be freed */
-            RELEASE_MEMORY_N(temp);
+            RELEASE_MEMORY(temp);
             RELEASE_MEMORY_N(ids, mnpf);
         } /* close compute_node_loop */
 
@@ -667,25 +667,192 @@ DEFINE_ON_DEMAND(store_temperature){
 }
 
 
-  /*------------*/
- /* store_flux */
-/*------------*/
+  /*-----------------*/
+ /* store_heat_flux */
+/*-----------------*/
 
-/* placeholder */
+DEFINE_ON_DEMAND(store_heat_flux){
+    /* Similar as the function store_temperature, but now the heat flux and its magnitude projected on the normal
+    direction outwards of the faces is stored in a file heat_flux_timestep%i_thread%i.dat. */
+    if (myid == 0) {printf("\nStarted UDF store_heat_flux.\n"); fflush(stdout);}
+
+    /* declaring variables */
+    int thread, n, i, d, compute_node; /* Check if all variables necessary */
+    DECLARE_MEMORY_N(flux, real, ND_ND + 1) /* 2 or 3 components of the heat flux vector + the normal component outwards of the faces */
+    DECLARE_MEMORY_N(ids, int, mnpf);
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    Domain *domain;
+    Thread *face_thread;
+    face_t face;
+    Node *node;
+    int node_number, j;
+    real vector[ND_ND], area[ND_ND]; /* store 2 or 3D heat flux and up-to-date face area in arrays */
+#endif /* RP_NODE */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+    char file_name[256];
+    FILE *file = NULL;
+    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
+#endif /* RP_HOST */
+
+    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
+
+    for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+        sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
+                timestep, thread_ids[thread]);
+
+        if (NULLP(file = fopen(file_name, "w"))) {
+            Error("\nUDF-error: Unable to open %s for writing\n", file_name);
+            exit(1);
+        }
+
+#if RP_2D
+        fprintf(file, "%27s %27s %27s  %10s\n",
+            "x-flux", "y-flux", "flux-normal", "unique-ids");
+#else /* RP_2D */
+        fprintf(file, "%27s %27s %27s %27s  %10s\n",
+            "x-flux", "y-flux", "z-flux", "flux-normal", "unique-ids");
+
+#endif /* RP_2D */
+#endif /* RP_HOST */
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+        domain = Get_Domain(1);
+        face_thread = Lookup_Thread(domain, thread_ids[thread]);
+
+        n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
+
+        /* assign memory on compute node that accesses its partition of the face_thread */
+        ASSIGN_MEMORY_N(flux, n, real, ND_ND + 1);
+        ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+        i = 0;
+        /* loop over all faces (tracked by variable "face") in current compute node partition of face_thread */
+        begin_f_loop(face, face_thread) {
+            if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
+
+            F_AREA(area, face, face_thread);
+            vector = F_STORAGE_R_N3V(face, face_thread, SV_HEAT_FLUX);
+            for (d = 0; d < ND_ND; d++) {
+                flux[d][i] = vector[d];
+            }
+            flux[ND_ND][i] = NV_DOT(area, vector);
+
+            for (j = 0; j < mnpf; j++) {
+                /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
+                ids[j][i] = -1;
+            }
+
+            j = 0;
+            /* loop over all nodes in the face, "node_number" is the local node index number that keeps track of the
+            current node */
+            f_node_loop(face, face_thread, node_number) {
+                if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
+                node = F_NODE(face, face_thread, node_number);
+                ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                j++;
+            }
+            i++;
+        } end_f_loop(face, face_thread);
+
+        /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
+        compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
+
+        /* send from node to either node_zero, or if the current process is node_zero, to node_host */
+        /* the tag argument myid is the ID of the sending node, as the convention is to have the tag argument the same
+        as the from argument (that is, the first argument) for receive messages */
+        PRF_CSEND_INT(compute_node, &n, 1, myid);
+
+        PRF_CSEND_REAL_N(compute_node, flux, n, myid, ND_ND + 1);
+        PRF_CSEND_INT_N(compute_node, ids, n, myid, mnpf);
+
+        /* memory can be freed once the data is sent */
+        RELEASE_MEMORY_N(flux, ND_ND + 1);
+        RELEASE_MEMORY_N(ids, mnpf);
+
+        /* node_zero is the only one that can communicate with host, so it first receives from the other nodes, then
+        sends to the host */
+        if(I_AM_NODE_ZERO_P){
+            compute_node_loop_not_zero(compute_node) { /* loop over all other nodes and receive from each */
+                /* the tag argument compute_node is the ID of the sending node, as the convention is to have the tag
+                argument the same as the from argument (that is, the first argument) for receive messages */
+                PRF_CRECV_INT(compute_node, &n, 1, compute_node);
+
+                /* Once n has been received, the correct amount of memory can be allocated on compute node 0. This
+                depends on the partition assigned to the sending compute node. */
+                ASSIGN_MEMORY_N(flux, n, real, ND_ND + 1);
+                ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+                /* receive the 2D-arrays from the other nodes on node_zero */
+                PRF_CRECV_REAL_N(compute_node, flux, n, compute_node, ND_ND + 1);
+                PRF_CRECV_INT_N(compute_node, ids, n, compute_node, mnpf);
+
+                /* Send the variables to the host. Deviating from the tag convention, the message tag is now the
+                original non-zero compute node on which the mesh data was stored, even though node 0 does the actual
+                communication */
+                PRF_CSEND_INT(node_host, &n, 1, compute_node);
+
+                PRF_CSEND_REAL_N(node_host, flux, n, compute_node, ND_ND + 1);
+                PRF_CSEND_INT_N(node_host, ids, n, compute_node, mnpf);
+
+                /* once all data has been sent to host, memory on the node can be freed */
+                RELEASE_MEMORY_N(flux, ND_ND + 1);
+                RELEASE_MEMORY_N(ids, mnpf);
+            }
+        }
+#endif /* RP_NODE */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+        /* loop over all compute nodes (corresponding to the message tags), receive data and append to file for each */
+        compute_node_loop(compute_node) {
+            PRF_CRECV_INT(node_zero, &n, 1, compute_node);
+
+            /* once n has been received, the correct amount of memory can be allocated on the host */
+            ASSIGN_MEMORY_N(flux, n, real, ND_ND + 1);
+            ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+            /* receive the 2D-arrays from node_zero */
+            PRF_CRECV_REAL_N(node_zero,flux, n, compute_node, ND_ND + 1);
+            PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
+
+            for (i = 0; i < n; i++) {
+                for (d = 0; d < ND_ND + 1; d++) {
+                    fprintf(file, "%27.17e ", flux[d][i]);
+                }
+                for (d = 0; d < mnpf; d++) {
+                    fprintf(file, " %10d", ids[d][i]);
+                }
+                fprintf(file, "\n");
+            }
+            /* after files have been appended, the memory can be freed */
+            RELEASE_MEMORY_N(flux, ND_ND + 1);
+            RELEASE_MEMORY_N(ids, mnpf);
+        } /* close compute_node_loop */
+
+        fclose(file);
+#endif /* RP_HOST */
+
+    } /* close loop over threads */
+
+    if (myid == 0) {printf("\nFinished UDF store_heat_flux.\n"); fflush(stdout);}
+}
 
 
   /*-----------------*/
  /* set_temperature */
 /*-----------------*/
 
-/* placeholder */
+/* DEFINE_PROFILE */
 
 
-  /*----------*/
- /* set_flux */
-/*----------*/
+  /*---------------*/
+ /* set_heat_flux */
+/*---------------*/
 
-/* placeholder */
+/* DEFINE_PROFILE */
 
 
   /*------------*/
