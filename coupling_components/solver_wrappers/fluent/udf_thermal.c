@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 /* dynamic memory allocation for 1D and 2D arrays */
 #define DECLARE_MEMORY(name, type) type *name = NULL
@@ -680,7 +681,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
 
     /* declaring variables */
     int thread, n, i, d, compute_node; /* Check if all variables necessary */
-    DECLARE_MEMORY_N(flux, real, ND_ND + 1) /* 2 or 3 components of the heat flux vector + the normal component outwards of the faces */
+    DECLARE_MEMORY_N(flux, real, ND_ND + 1); /* 2 or 3 components of the heat flux vector + the normal component outwards of the faces */
     DECLARE_MEMORY_N(ids, int, mnpf);
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
@@ -737,7 +738,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
             F_AREA(area, face, face_thread);
-            vector = F_STORAGE_R_N3V(face, face_thread, SV_HEAT_FLUX);
+            NV_VS(vector, =, F_STORAGE_R_N3V(face, face_thread, SV_HEAT_FLUX), *, 1.0);
             for (d = 0; d < ND_ND; d++) {
                 flux[d][i] = vector[d];
             }
@@ -910,6 +911,7 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
         flag[i] = false;
         for (d = 0; d < mnpf; d++) {
             fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
+        }
     }
 
     fclose(file);
