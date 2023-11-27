@@ -3,6 +3,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 
 /* dynamic memory allocation for 1D and 2D arrays */
 #define DECLARE_MEMORY(name, type) type *name = NULL
@@ -845,7 +847,129 @@ DEFINE_ON_DEMAND(store_heat_flux){
  /* set_temperature */
 /*-----------------*/
 
-/* DEFINE_PROFILE */
+DEFINE_PROFILE(set_temperature, face_thread, var) {
+    /* UDF that can be used to define a custom temperature boundary profile in Fluent. It will read the updated
+    temperature profile from a file and set them as thermal boundary condition. As only the compute nodes have access
+    to their own partition of the mesh, each one is responsible for reading the file containing the updated
+    temperatures and selecting the correct row. */
+    char file_name[256];
+    int thread_id = THREAD_ID(face_thread);
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    face_t face;
+    Node *node;
+    int i, d, n, node_number, id;
+    DECLARE_MEMORY(temp, real);
+    DECLARE_MEMORY(flag, bool);
+    DECLARE_MEMORY_N(ids, int, mnpf);
+    FILE *file = NULL;
+#endif /* RP_NODE */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
+#endif /* RP_HOST */
+
+    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+    sprintf(file_name, "temperature_timestep%i_thread%i.dat",
+            timestep, thread_id);
+    host_to_node_sync_file(file_name); /* send file to the compute nodes */
+#else
+    struct stat st = {0};
+    /* create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved */
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+    sprintf(file_name, "|TMP_DIRECTORY_NAME|/temperature_timestep%i_thread%i.dat",
+            timestep, thread_id);
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
+#endif /* RP_HOST */
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    if (NULLP(file = fopen(file_name, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name);
+        exit(1);
+    }
+
+    char line[1024];
+    n = 0;
+    while (fgets(line, sizeof(line), file) != NULL) {
+            n++;
+        }
+    n--;
+    fseek(file, 0L, SEEK_SET);
+    fgets(line, sizeof(line), file); // Discard the header line
+
+    ASSIGN_MEMORY(temp, n, real);
+    ASSIGN_MEMORY(flag, n, bool);
+    ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+    for (i=0; i < n; i++) {
+        fscanf(file, "%lf", &temp[i]); /* read temperature from file */
+        flag[i] = false;
+        for (d = 0; d < mnpf; d++) {
+            fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
+    }
+
+    fclose(file);
+
+    char error_msg[256] = "UDF-error: No match for face with node ids";
+    bool isNodeFound;
+    begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
+        for (i=0; i < n; i++) { /* loop over all faces in ids array */
+            if (flag[i]) { /* skip faces in ids array that have been assigned already */
+                continue;
+            } else {
+                isNodeFound = true;
+                f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
+                    if (!isNodeFound) { /* break loop if previous node was not found */
+                        break;
+                    }
+                    node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
+                    id = NODE_DM_ID(node);
+                    for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
+                        if (id == ids[d][i]) {
+                            isNodeFound = true;
+                            break;
+                        } else {
+                            isNodeFound = false;
+                        }
+                    }
+                }
+                if (isNodeFound) { /* All nodes have been found, so the faces match */
+                    flag[i] = true;
+                    F_PROFILE(face, face_thread, var) = temp[i];
+                    break;
+                }
+            }
+        }
+        if (!isNodeFound) {
+            for (d = 0; d < mnpf; d++) {
+                char nodeID[11];
+                sprintf(nodeID, " %d", ids[d][i]);
+                strcat(error_msg, nodeID);
+                if (d < mnpf - 1) {
+                    strcat(error_msg, ",");
+                }
+            }
+            Error("\n%s\n", error_msg);
+            exit(1);
+        }
+    } end_f_loop(face, face_thread);
+
+    RELEASE_MEMORY(temp);
+    RELEASE_MEMORY(flag);
+    RELEASE_MEMORY_N(ids, mnpf);
+
+    if (myid == 0) {
+        sprintf(file_name, "|TMP_DIRECTORY_NAME|/temperature_timestep%i_thread%i.dat",
+                timestep-1, thread_id);
+        remove(file_name);}
+#endif /* RP_NODE */
+
+    if (myid == 0) {printf("\nFinished UDF set_temperature.\n"); fflush(stdout);}
+}
 
 
   /*---------------*/
