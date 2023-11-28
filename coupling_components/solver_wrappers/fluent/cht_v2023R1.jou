@@ -8,6 +8,8 @@ file set-batch-options n n n
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
+(define flow_equations |FLOW_EQUATIONS|)
+(define heat_equation |HEAT_EQUATION|)
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
