@@ -8,8 +8,8 @@ file set-batch-options n n n
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
-(define flow_equations |FLOW_EQUATIONS|)
-(define heat_equation |HEAT_EQUATION|)
+(define stored |STORED_VARIABLES|)
+(define moving_boundary |MOVING_BOUNDARY|)
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -79,8 +79,10 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
-        )
+            (if moving_boundary
+                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
+                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary , constant 0 no\n"(list-ref face_threads k))) ; in case the interface is stationary
+            )
         (if unsteady
             (begin
                 (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")

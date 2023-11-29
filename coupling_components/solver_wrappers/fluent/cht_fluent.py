@@ -49,9 +49,12 @@ class SolverWrapperFluent(SolverWrapper):
         elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
+        self.ini_temp_interface = self.settings.get('ini_temperature', None) # NEW variable in json file
+        self.ini_hf_interface = self.settings.get('ini_heat_flux', None) # NEW variable in json file
         self.dimensions = self.settings['dimensions']
-        self.flow_equations = self.settings.get('flow_equations', True) # New variable in json file
-        self.heat_equation = self.settings.get('heat_equation', False) # New variable in json file
+        self.flow_equations = self.settings.get('flow_equations', True) # NEW variable in json file
+        self.heat_equation = self.settings.get('heat_equation', False) # NEW variable in json file
+        self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
         self.flow_iterations = self.settings['flow_iterations'] # Flow solver iterations -> also in case of no flow
@@ -68,6 +71,22 @@ class SolverWrapperFluent(SolverWrapper):
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.model = None
 
+        f = 0
+        for mp in self.settings['interface_output']:
+            if f == 0:
+                self.output_variables = mp['variables'] # NEW: list of variables to be stored for communication
+                f = 1
+            elif f == 1 and self.output_variables != mp['variables']:
+                raise ValueError('Stored variables at interface output are not equal for all model parts.')
+
+        f = 0
+        for mp in self.settings['interface_input']:
+            if f == 0:
+                self.input_variables = mp['variables']  # NEW: list of input variables
+                f = 1
+            elif f == 1 and self.input_variables != mp['variables']:
+                raise ValueError('Input variables at interface are not equal for all model parts.')
+
     @tools.time_initialize
     def initialize(self):
         super().initialize()
@@ -83,12 +102,23 @@ class SolverWrapperFluent(SolverWrapper):
         multiphase = '#f'
         if self.multiphase:
             multiphase = '#t'
-        flow_equations = '#t'
-        if not self.flow_equations:
-            flow_equations = '#f'
-        heat_equation = '#f'
-        if self.heat_equation:
-            flow_equations = '#t'
+        moving_boundary = '#t'
+        if not self.moving_boundary:
+            moving_boundary = '#f'
+        if "pressure" in self.output_variables and "traction" in self.output_variables:
+            if "temperature" in self.output_variables:
+                stored_variables = "ptt"
+            elif "heat_flux" in self.output_variables:
+                stored_variables = "pthf"
+            else:
+                stored_variables = "pt"
+        else:
+            if "temperature" in self.output_variables:
+                stored_variables = "t"
+            elif "heat_flux" in self.output_variables:
+                stored_variables = "hf"
+            else:
+                raise ValueError('The FSI loop needs to store at least one variable.')
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -96,8 +126,8 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
                     line = line.replace('|MULTIPHASE|', multiphase)
-                    line = line.replace('|FLOW_EQUATIONS|', flow_equations)
-                    line = line.replace('|HEAT_EQUATION|', heat_equation)
+                    line = line.replace('|STORED_VARIABLES|', stored_variables)
+                    line = line.replace('|MOVING_BOUNDARY|', moving_boundary)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
@@ -106,7 +136,7 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        udf = f'v{self.version}.c'
+        udf = 'udf_thermal.c' # old: f'v{self.version}.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
@@ -171,10 +201,13 @@ class SolverWrapperFluent(SolverWrapper):
                         if not self.multiphase:
                             raise ValueError('Singlephase in JSON does not match multiphase Fluent')
                         break
+                        #check = 5
                     elif 'Numerics' in line:
                         if self.multiphase:
                             raise ValueError('Multiphase in JSON does not match singlephase Fluent')
                         break
+                        #check = 5
+                #elif check == 5 and ... -> implement check for flow and heat equations
 
         if os.path.isfile(join(self.dir_cfd, 'log')):
             os.unlink(join(self.dir_cfd, 'log'))  # delete log file (fluent.log is sufficient)
@@ -220,7 +253,7 @@ class SolverWrapperFluent(SolverWrapper):
         # create Model
         self.model = data_structure.Model()
 
-        # create input ModelParts (nodes)
+        # create input ModelParts (nodes for displacement, faces for temperature or heat flux)
         for item in (self.settings['interface_input']):
             mp_name = item['model_part']
 
@@ -234,15 +267,29 @@ class SolverWrapperFluent(SolverWrapper):
 
             # read in datafile
             thread_id = self.model_part_thread_ids[mp_name]
-            file_name = join(self.dir_cfd, f'nodes_timestep0_thread{thread_id}.dat')
-            data = np.loadtxt(file_name, skiprows=1)
-            if data.shape[1] != self.dimensions + 1:
-                raise ValueError('Given dimension does not match coordinates')
+            if "nodes" in mp_name:
+                file_name = join(self.dir_cfd, f'nodes_timestep0_thread{thread_id}.dat')
+                data = np.loadtxt(file_name, skiprows=1)
+                if data.shape[1] != self.dimensions + 1:
+                    raise ValueError('Given dimension does not match coordinates')
+            elif "faces" in mp_name:
+                file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
+                data = np.loadtxt(file_name, skiprows=1)
+                if data.shape[1] != self.dimensions + self.mnpf:
+                    raise ValueError(f'Given dimension does not match coordinates')
 
             # get node coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
-            coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
-            ids_tmp = data[:, -1].astype(int)  # array is flattened
+            if "nodes" in mp_name:
+                coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
+                ids_tmp = data[:, -1].astype(int)  # array is flattened
+            elif "faces" in mp_name:
+                coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
+                ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+
+                # define initial input profile if no restart
+                if self.timestep_start == 0:
+                    self.initial_profile(thread_id, data[:, -self.mnpf:])
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -288,7 +335,8 @@ class SolverWrapperFluent(SolverWrapper):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create Interfaces
-        self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
+        self.interface_input_nodes = data_structure.Interface(self.settings['interface_input'], self.model)
+        # TODO: self.interface_input_faces
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
     def initialize_solution_step(self):
@@ -301,24 +349,24 @@ class SolverWrapperFluent(SolverWrapper):
         self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
-    def solve_solution_step(self, interface_input):
+    def solve_solution_step(self, interface_input = None):
         self.iteration += 1
 
-        # store incoming displacements
-        self.interface_input.set_interface_data(interface_input.get_interface_data())
+        if "displacement" in self.input_variables and interface_input is not None:
+            # store incoming displacements
+            self.interface_input_nodes.set_interface_data(interface_input.get_interface_data())
+            # write interface data
+            self.write_node_positions()
 
-        # write interface data
-        self.write_node_positions()
-
-        # copy input data for debugging
-        if self.debug:
-            for dct in self.interface_input.parameters:
-                mp_name = dct['model_part']
-                thread_id = self.model_part_thread_ids[mp_name]
-                src = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
-                dst = f'nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
-                cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
-                os.system(cmd)
+            # copy input data for debugging
+            if self.debug:
+                for dct in self.interface_input_nodes.parameters:
+                    mp_name = dct['model_part']
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    src = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                    dst = f'nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                    cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
+                    os.system(cmd)
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
@@ -450,12 +498,39 @@ class SolverWrapperFluent(SolverWrapper):
             ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
         return ids
 
+    def initial_profile(self, thread_id, face_nodeIDs):
+        n = np.shape(face_nodeIDs)[0]
+        if "temperature" in self.input_variables:
+            T = np.ones((n, 1))*self.ini_temp_interface
+            prof = np.append(T, face_nodeIDs, axis=1)
+            fmt = '%27.17e'
+            for i in range(self.mnpf):
+                fmt += '%27d'
+            tmp = f'temperature_timestep0_thread{thread_id}.dat'
+            file_name = join(self.dir_cfd, tmp)
+            np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
+        elif "heat_flux" in self.input_variables:
+            q = np.zeros((n, self.dimensions + 1))
+            q[:, -1] += self.ini_hf_interface
+            prof = np.append(q, face_nodeIDs, axis=1)
+            if self.dimensions == 2:
+                fmt = '%27.17e%27.17e%27.17e'
+                header = 'x-flux y-flux flux-normal unique-ids'
+            else:
+                fmt = '%27.17e%27.17e%27.17e%27.17e'
+                header = 'x-flux y-flux z-flux flux-normal unique-ids'
+            for i in range(self.mnpf):
+                fmt += '%27d'
+            tmp = f'heat_flux_timestep0_thread{thread_id}.dat'
+            file_name = join(self.dir_cfd, tmp)
+            np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
+
     def write_node_positions(self):
-        for dct in self.interface_input.parameters:
+        for dct in self.interface_input_nodes.parameters:
             mp_name = dct['model_part']
             thread_id = self.model_part_thread_ids[mp_name]
             model_part = self.model.get_model_part(mp_name)
-            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+            displacement = self.interface_input_nodes.get_variable_data(mp_name, 'displacement')
             x = model_part.x0 + displacement[:, 0]
             y = model_part.y0 + displacement[:, 1]
             z = model_part.z0 + displacement[:, 2]
@@ -487,7 +562,7 @@ class SolverWrapperFluent(SolverWrapper):
         coord_data = {}
 
         # get ids and coordinates for input ModelParts (nodes)
-        for dct in self.interface_input.parameters:
+        for dct in self.interface_input_nodes.parameters:
             mp_name = dct['model_part']
             coord_data[mp_name] = {}
             thread_id = self.model_part_thread_ids[mp_name]
