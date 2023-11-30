@@ -82,18 +82,24 @@ class SolverWrapperFluent(SolverWrapper):
         f_n = 0
         f_f = 0
         self.input_variables_nodes = []
+        self.input_variables_faces = []
+        self.dict_input_nodes = []
+        self.dict_input_faces = []
         for mp in self.settings['interface_input']:
-            if f_n == 0 and "nodes" in mp["model_part"]:
-                self.input_variables_nodes = mp['variables']  # NEW: list of input variables
-                f_n = 1
-            elif f_n == 1 and self.input_variables_nodes != mp['variables'] and "nodes" in mp["model_part"]:
-                raise ValueError('Input node variables at interface are not equal for all model parts.')
-            if f_f == 0 and "faces" in mp["model_part"]:
-                self.input_variables_faces = mp['variables']  # NEW: list of input variables
-                f_f = 1
-            elif f_f == 1 and self.input_variables_faces != mp['variables'] and "faces" in mp["model_part"]:
-                raise ValueError('Input face variables at interface are not equal for all model parts.')
-
+            if "nodes" in mp["model_part"]:
+                self.dict_input_nodes.append(mp)
+                if f_n == 0:
+                    self.input_variables_nodes = mp['variables']  # NEW: list of input variables
+                    f_n = 1
+                elif f_n == 1 and self.input_variables_nodes != mp['variables']:
+                    raise ValueError('Input node variables at interface are not equal for all model parts.')
+            if "faces" in mp["model_part"]:
+                self.dict_input_faces.append(mp)
+                if f_f == 0:
+                    self.input_variables_faces = mp['variables']  # NEW: list of input variables
+                    f_f = 1
+                elif f_f == 1 and self.input_variables_faces != mp['variables']:
+                    raise ValueError('Input face variables at interface are not equal for all model parts.')
 
 
     @tools.time_initialize
@@ -298,7 +304,7 @@ class SolverWrapperFluent(SolverWrapper):
                 if data.shape[1] != self.dimensions + self.mnpf:
                     raise ValueError(f'Given dimension does not match coordinates')
 
-            # get node coordinates and ids
+            # get node or face coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
             if "nodes" in mp_name:
                 coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
@@ -332,6 +338,7 @@ class SolverWrapperFluent(SolverWrapper):
             if mp_name not in self.model_part_thread_ids:
                 raise AttributeError('Could not find thread name corresponding ' +
                                      f'to ModelPart {mp_name}')
+
             # read in datafile
             thread_id = self.model_part_thread_ids[mp_name]
             file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
@@ -355,8 +362,8 @@ class SolverWrapperFluent(SolverWrapper):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create Interfaces
-        self.interface_input_nodes = data_structure.Interface(self.settings['interface_input'], self.model)
-        # TODO: self.interface_input_faces
+        self.interface_input_nodes = data_structure.Interface(self.dict_input_nodes, self.model)
+        self.interface_input_faces = data_structure.Interface(self.dict_input_faces, self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
     def initialize_solution_step(self):
@@ -565,7 +572,7 @@ class SolverWrapperFluent(SolverWrapper):
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
     def get_coordinates(self):
-        """  # TODO: rewrite this
+        """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)
         This function can be used e.g. for debugging or testing.
         It returns a dict that contains keys for the ModelParts
         on the two Interfaces.
