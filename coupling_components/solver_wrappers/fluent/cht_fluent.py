@@ -49,8 +49,7 @@ class SolverWrapperFluent(SolverWrapper):
         elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
-        self.ini_temp_interface = self.settings.get('ini_temperature', None) # NEW variable in json file
-        self.ini_hf_interface = self.settings.get('ini_heat_flux', None) # NEW variable in json file
+        self.ini_condition = self.settings.get('ini_condition', None) # NEW variable in json file
         self.dimensions = self.settings['dimensions']
         self.flow_equations = self.settings.get('flow_equations', True) # NEW variable in json file
         self.heat_equation = self.settings.get('heat_equation', False) # NEW variable in json file
@@ -101,6 +100,11 @@ class SolverWrapperFluent(SolverWrapper):
                 elif f_f == 1 and self.input_variables_faces != mp['variables']:
                     raise ValueError('Input face variables at interface are not equal for all model parts.')
 
+            self.thermal_bc = None
+            if "temperature" in self.input_variables_faces:
+                self.thermal_bc = "temperature"
+            elif "heat_flux" in self.input_variables_faces:
+                self.thermal_bc = "heat_flux"
 
     @tools.time_initialize
     def initialize(self):
@@ -143,6 +147,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|MULTIPHASE|', multiphase)
                     line = line.replace('|STORED_VARIABLES|', stored_variables)
                     line = line.replace('|MOVING_BOUNDARY|', moving_boundary)
+                    line = line.replace('|THERMAL_BC|', self.thermal_bc)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
@@ -326,6 +331,8 @@ class SolverWrapperFluent(SolverWrapper):
 
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
+
+        self.coco_messages.send_message("initial_interface_profiles_written")
 
         # create output ModelParts (faces)
         for item in (self.settings['interface_output']):
@@ -528,7 +535,7 @@ class SolverWrapperFluent(SolverWrapper):
     def initial_profile(self, thread_id, face_nodeIDs):
         n = np.shape(face_nodeIDs)[0]
         if "temperature" in self.input_variables_faces:
-            T = np.ones((n, 1))*self.ini_temp_interface
+            T = np.ones((n, 1))*self.ini_condition
             prof = np.append(T, face_nodeIDs, axis=1)
             fmt = '%27.17e'
             for i in range(self.mnpf):
@@ -538,7 +545,7 @@ class SolverWrapperFluent(SolverWrapper):
             np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
         elif "heat_flux" in self.input_variables_faces:
             q = np.zeros((n, self.dimensions + 1))
-            q[:, -1] += self.ini_hf_interface
+            q[:, -1] += self.ini_condition
             prof = np.append(q, face_nodeIDs, axis=1)
             if self.dimensions == 2:
                 fmt = '%27.17e%27.17e%27.17e'

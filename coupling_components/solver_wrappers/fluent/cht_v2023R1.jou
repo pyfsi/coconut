@@ -10,6 +10,7 @@ file set-batch-options n n n
 (define timestep_start |TIMESTEP_START|)
 (define stored |STORED_VARIABLES|)
 (define moving_boundary |MOVING_BOUNDARY|)
+(define thermal_bc |THERMAL_BC|)
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -83,6 +84,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                 (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
                 (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary , constant 0 no\n"(list-ref face_threads k))) ; in case the interface is stationary
             )
+        )
         (if unsteady
             (begin
                 (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")
@@ -106,7 +108,19 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))
 )
 ;
-;   HOOK PROFILE UDFs TO BC's!
+;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS
+(if (= timestep_start 0)
+    (wait_message "initial_interface_profiles_written")
+    (cond ((= thermal_bc "temperature")
+        (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
+            (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes "udf" \"set_temperature::udf_thermal\" no ,\n"(list-ref face_threads k))))
+        )
+        ((= thermal_bc "heat_flux")
+        (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
+            (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes "udf" \"set_heat_flux::udf_thermal\" no ,\n"(list-ref face_threads k))))
+        )
+    )
+)
 ;
 ;   FSI LOOP
 (do ((j 0 j)) ((= j 1))

@@ -53,8 +53,7 @@
           "heat_equation": true,
           "moving_boundary": false,
           "multiphase": true,
-          "ini_temperature": 293.15,
-          "ini_heat_flux": 0,
+          "ini_condition": 293.15,
           "thread_names": [
             "interface"
           ],
