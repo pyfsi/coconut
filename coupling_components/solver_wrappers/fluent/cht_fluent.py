@@ -79,13 +79,22 @@ class SolverWrapperFluent(SolverWrapper):
             elif f == 1 and self.output_variables != mp['variables']:
                 raise ValueError('Stored variables at interface output are not equal for all model parts.')
 
-        f = 0
+        f_n = 0
+        f_f = 0
+        self.input_variables_nodes = []
         for mp in self.settings['interface_input']:
-            if f == 0:
-                self.input_variables = mp['variables']  # NEW: list of input variables
-                f = 1
-            elif f == 1 and self.input_variables != mp['variables']:
-                raise ValueError('Input variables at interface are not equal for all model parts.')
+            if f_n == 0 and "nodes" in mp["model_part"]:
+                self.input_variables_nodes = mp['variables']  # NEW: list of input variables
+                f_n = 1
+            elif f_n == 1 and self.input_variables_nodes != mp['variables'] and "nodes" in mp["model_part"]:
+                raise ValueError('Input node variables at interface are not equal for all model parts.')
+            if f_f == 0 and "faces" in mp["model_part"]:
+                self.input_variables_faces = mp['variables']  # NEW: list of input variables
+                f_f = 1
+            elif f_f == 1 and self.input_variables_faces != mp['variables'] and "faces" in mp["model_part"]:
+                raise ValueError('Input face variables at interface are not equal for all model parts.')
+
+
 
     @tools.time_initialize
     def initialize(self):
@@ -153,6 +162,17 @@ class SolverWrapperFluent(SolverWrapper):
         if self.cores < 1 or self.cores > max_cores:
             tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
             self.cores = max_cores
+
+        # check variables in parameter.json file
+        for var in self.input_variables_nodes:
+            if var != "displacement":
+                raise NameError("Only permitted input variable for nodes is displacement")
+        for var in self.input_variables_faces:
+            if var not in ["temperature", "heat_flux"]:
+                raise NameError("Only permitted input variables for faces are temperature and heat flux")
+        for var in self.output_variables:
+            if var not in ["temperature", "heat_flux", "pressure", "traction"]:
+                raise NameError("Only permitted output variables for faces are temperature, heat flux, pressure and traction")
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
@@ -352,7 +372,7 @@ class SolverWrapperFluent(SolverWrapper):
     def solve_solution_step(self, interface_input = None):
         self.iteration += 1
 
-        if "displacement" in self.input_variables and interface_input is not None:
+        if "displacement" in self.input_variables_nodes and interface_input is not None:
             # store incoming displacements
             self.interface_input_nodes.set_interface_data(interface_input.get_interface_data())
             # write interface data
@@ -500,7 +520,7 @@ class SolverWrapperFluent(SolverWrapper):
 
     def initial_profile(self, thread_id, face_nodeIDs):
         n = np.shape(face_nodeIDs)[0]
-        if "temperature" in self.input_variables:
+        if "temperature" in self.input_variables_faces:
             T = np.ones((n, 1))*self.ini_temp_interface
             prof = np.append(T, face_nodeIDs, axis=1)
             fmt = '%27.17e'
@@ -509,7 +529,7 @@ class SolverWrapperFluent(SolverWrapper):
             tmp = f'temperature_timestep0_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
             np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
-        elif "heat_flux" in self.input_variables:
+        elif "heat_flux" in self.input_variables_faces:
             q = np.zeros((n, self.dimensions + 1))
             q[:, -1] += self.ini_hf_interface
             prof = np.append(q, face_nodeIDs, axis=1)
