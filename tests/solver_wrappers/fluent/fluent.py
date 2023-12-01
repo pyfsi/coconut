@@ -33,6 +33,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
         self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.mp_name_in = 'beamoutside_nodes'
         self.mp_name_out = 'beamoutside_faces'
 
@@ -80,7 +81,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
         # create two solvers with different partitioning
         x0, y0, z0, ids = [], [], [], []
-        for cores in [0, 1]:
+        for cores in [1, max(2, min(4, multiprocessing.cpu_count()))]:
             self.parameters['settings']['cores'] = cores
             solver = create_instance(self.parameters)
             solver.initialize()
@@ -98,18 +99,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
     def test_pressure_traction(self):
         # test if same coordinates always give same pressure & traction
 
-        # adapt parameters, create solver
-        max_cores = multiprocessing.cpu_count()  # max available cores
-        # fix cores based on available cores
-        if max_cores >= 8:
-            cores = 8
-        elif max_cores >= 4:
-            cores = 4
-        elif max_cores >= 2:
-            cores = 2
-        else:
-            cores = 1
-        self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
@@ -235,6 +225,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
         self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.mp_name_in = 'wall_nodes'
         self.mp_name_out = 'wall_faces'
 
@@ -289,7 +280,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
         # create two solvers with different partitioning
         x0, y0, z0, ids = [], [], [], []
-        for cores in [0, 1]:
+        for cores in [1, max(2, min(4, multiprocessing.cpu_count()))]:
             self.parameters['settings']['cores'] = cores
             solver = create_instance(self.parameters)
             solver.initialize()
@@ -307,18 +298,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
     def test_pressure_traction(self):
         # test if same coordinates always give same pressure & traction
 
-        # adapt parameters, create solver
-        max_cores = multiprocessing.cpu_count()  # max available cores
-        # fix cores based on available cores
-        if max_cores >= 8:
-            cores = 8
-        elif max_cores >= 4:
-            cores = 4
-        elif max_cores >= 2:
-            cores = 2
-        else:
-            cores = 1
-        self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
