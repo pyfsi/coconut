@@ -1,6 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
+from coconut.data_structure.variables import accepted_variables
 
 import os
 from os.path import join
@@ -51,8 +52,6 @@ class SolverWrapperFluent(SolverWrapper):
         self.mnpf = self.settings['max_nodes_per_face']
         self.ini_condition = self.settings.get('ini_condition', None) # NEW variable in json file
         self.dimensions = self.settings['dimensions']
-        self.flow_equations = self.settings.get('flow_equations', True) # NEW variable in json file
-        self.heat_equation = self.settings.get('heat_equation', False) # NEW variable in json file
         self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
@@ -100,11 +99,12 @@ class SolverWrapperFluent(SolverWrapper):
                 elif f_f == 1 and self.input_variables_faces != mp['variables']:
                     raise ValueError('Input face variables at interface are not equal for all model parts.')
 
-            self.thermal_bc = None
-            if "temperature" in self.input_variables_faces:
-                self.thermal_bc = "temperature"
-            elif "heat_flux" in self.input_variables_faces:
-                self.thermal_bc = "heat_flux"
+        self.input_variables = np.concatenate((self.input_variables_nodes, self.input_variables_faces))
+        self.thermal_bc = None
+        if "temperature" in self.input_variables_faces:
+            self.thermal_bc = "temperature"
+        elif "heat_flux" in self.input_variables_faces:
+            self.thermal_bc = "heat_flux"
 
     @tools.time_initialize
     def initialize(self):
@@ -182,7 +182,7 @@ class SolverWrapperFluent(SolverWrapper):
             if var not in ["temperature", "heat_flux"]:
                 raise NameError("Only permitted input variables for faces are temperature and heat flux")
         for var in self.output_variables:
-            if var not in ["temperature", "heat_flux", "pressure", "traction"]:
+            if var not in accepted_variables['out']:
                 raise NameError("Only permitted output variables for faces are temperature, heat flux, pressure and traction")
 
         # start Fluent with journal
@@ -386,68 +386,79 @@ class SolverWrapperFluent(SolverWrapper):
     def solve_solution_step(self, interface_input = None):
         self.iteration += 1
 
-        if "displacement" in self.input_variables_nodes and interface_input is not None:
-            # store incoming displacements
+        if interface_input is not None:
+            # store incoming variables
             self.interface_input_nodes.set_interface_data(interface_input.get_interface_data())
-            # write interface data
-            self.write_node_positions()
+            for var in self.input_variables:
+                if var == "displacement":
+                    # write interface displacement data
+                    self.write_node_positions()
 
-            # copy input data for debugging
-            if self.debug:
-                for dct in self.interface_input_nodes.parameters:
-                    mp_name = dct['model_part']
-                    thread_id = self.model_part_thread_ids[mp_name]
-                    src = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
-                    dst = f'nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
-                    cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
-                    os.system(cmd)
+                # copy input data for debugging
+                if self.debug:
+                    for dct in self.interface_input_nodes.parameters:
+                        mp_name = dct['model_part']
+                        thread_id = self.model_part_thread_ids[mp_name]
+                        src = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
+                        dst = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                        cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
+                        os.system(cmd)
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
-        # read data from Fluent
-        for dct in self.interface_output.parameters:
-            mp_name = dct['model_part']
+        if interface_input is not None:
+            # read data from Fluent
+            for dct in self.interface_output.parameters:
+                mp_name = dct['model_part']
+                thread_id = self.model_part_thread_ids[mp_name]
 
-            # read in datafile
-            thread_id = self.model_part_thread_ids[mp_name]
-            tmp = f'pressure_traction_timestep{self.timestep}_thread{thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
-            data = np.loadtxt(file_name, skiprows=1)
-            if data.shape[1] != self.dimensions + 1 + self.mnpf:
-                raise ValueError('Given dimension does not match coordinates')
+                # read in datafile
+                for var in self.output_variables:
+                    pre = accepted_variables['out'][var][0]
+                    # Avoid repeat of commands in case variables are stored in the same file
+                    if pre is not 'repeat':
+                        tmp = pre + f'_timestep{self.timestep}_thread{thread_id}.dat'
+                        file_name = join(self.dir_cfd, tmp)
+                        data = np.loadtxt(file_name, skiprows=1)
+                        req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
+                        if data.shape[1] != req_dim:
+                            raise ValueError('Given dimension does not match coordinates')
 
-            # copy output data for debugging
-            if self.debug:
-                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
-                cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
-                os.system(cmd)
+                        # copy output data for debugging
+                        if self.debug:
+                            dst = pre + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
+                            cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
+                            os.system(cmd)
 
-            # get face coordinates and ids
-            traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
-            pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
-            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+                        if var == 'pressure' or var == 'traction':
+                            # get face coordinates and ids
+                            traction_tmp = np.zeros((data.shape[0], 3)) * 0.
+                            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
+                            pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
+                            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-            # sort and remove doubles
-            args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            traction = traction_tmp[args, :]
-            pressure = pressure_tmp[args]
-            ids = ids_tmp[args]
+                            # sort and remove doubles
+                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                            traction = traction_tmp[args, :]
+                            pressure = pressure_tmp[args]
+                            ids = ids_tmp[args]
 
-            # store pressure and traction in Nodes
-            model_part = self.model.get_model_part(mp_name)
-            if ids.size != model_part.size:
-                raise ValueError('Size of data does not match size of ModelPart')
-            if not np.all(ids == model_part.id):
-                raise ValueError('IDs of data do not match ModelPart IDs')
+                            # store pressure and traction in Nodes
+                            model_part = self.model.get_model_part(mp_name)
+                            if ids.size != model_part.size:
+                                raise ValueError('Size of data does not match size of ModelPart')
+                            if not np.all(ids == model_part.id):
+                                raise ValueError('IDs of data do not match ModelPart IDs')
 
-            self.interface_output.set_variable_data(mp_name, 'traction', traction)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure)
+                            self.interface_output.set_variable_data(mp_name, 'traction', traction)
+                            self.interface_output.set_variable_data(mp_name, 'pressure', pressure)
 
-        # return interface_output object
-        return self.interface_output
+                        # TODO: add processing for other variables
+
+            # return interface_output object
+            return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
