@@ -432,30 +432,53 @@ class SolverWrapperFluent(SolverWrapper):
                             cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                             os.system(cmd)
 
-                        if var == 'pressure' or var == 'traction':
+                        if accepted_variables['out'][var][1] == 0:
                             # get face coordinates and ids
-                            traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-                            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
-                            pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
+                            vector_tmp = np.zeros((data.shape[0], 3)) * 0.
+                            vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
+                            scalar_tmp = data[:, self.dimensions].reshape(-1, 1)
                             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
                             # sort and remove doubles
                             args = np.unique(ids_tmp, return_index=True)[1].tolist()
-                            traction = traction_tmp[args, :]
-                            pressure = pressure_tmp[args]
+                            vector = vector_tmp[args, :]
+                            scalar = scalar_tmp[args]
                             ids = ids_tmp[args]
 
-                            # store pressure and traction in Nodes
+                            # store vector and scalar values in Nodes
                             model_part = self.model.get_model_part(mp_name)
                             if ids.size != model_part.size:
                                 raise ValueError('Size of data does not match size of ModelPart')
                             if not np.all(ids == model_part.id):
                                 raise ValueError('IDs of data do not match ModelPart IDs')
 
-                            self.interface_output.set_variable_data(mp_name, 'traction', traction)
-                            self.interface_output.set_variable_data(mp_name, 'pressure', pressure)
+                            if var == 'pressure':
+                                self.interface_output.set_variable_data(mp_name, 'traction', vector)
+                                self.interface_output.set_variable_data(mp_name, var, scalar)
+                            elif var == 'traction':
+                                self.interface_output.set_variable_data(mp_name, var, vector)
+                                self.interface_output.set_variable_data(mp_name, 'pressure', scalar)
+                            elif var == 'heat_flux':
+                                self.interface_output.set_variable_data(mp_name, var, scalar)
 
-                        # TODO: add processing for other variables
+                        if accepted_variables['out'][var][1] == 1:
+                            # get face coordinates and ids
+                            scalar_tmp = data[:, 0].reshape(-1, 1)
+                            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+
+                            # sort and remove doubles
+                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                            scalar = scalar_tmp[args]
+                            ids = ids_tmp[args]
+
+                            # store scalar values in Nodes
+                            model_part = self.model.get_model_part(mp_name)
+                            if ids.size != model_part.size:
+                                raise ValueError('Size of data does not match size of ModelPart')
+                            if not np.all(ids == model_part.id):
+                                raise ValueError('IDs of data do not match ModelPart IDs')
+
+                            self.interface_output.set_variable_data(mp_name, var, scalar)
 
             # return interface_output object
             return self.interface_output

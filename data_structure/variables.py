@@ -10,7 +10,7 @@ variables_dimensions = {
 
 accepted_variables = { # each variable key has a list as value containing a prefix for the corresponding file and an integer related to the dimensions of the file
     'in': {
-        'displacement': ['nodes_update', 0],
+        'displacement': ['nodes_update', 3],
         'temperature': ['temperature', 1],
         'heat_flux': ['heat_flux', 0]
     },
