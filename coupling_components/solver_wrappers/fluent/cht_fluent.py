@@ -82,18 +82,14 @@ class SolverWrapperFluent(SolverWrapper):
         f_f = 0
         self.input_variables_nodes = []
         self.input_variables_faces = []
-        self.dict_input_nodes = []
-        self.dict_input_faces = []
         for mp in self.settings['interface_input']:
             if "nodes" in mp["model_part"]:
-                self.dict_input_nodes.append(mp)
                 if f_n == 0:
                     self.input_variables_nodes = mp['variables']  # NEW: list of input variables
                     f_n = 1
                 elif f_n == 1 and self.input_variables_nodes != mp['variables']:
                     raise ValueError('Input node variables at interface are not equal for all model parts.')
             if "faces" in mp["model_part"]:
-                self.dict_input_faces.append(mp)
                 if f_f == 0:
                     self.input_variables_faces = mp['variables']  # NEW: list of input variables
                     f_f = 1
@@ -370,8 +366,7 @@ class SolverWrapperFluent(SolverWrapper):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create Interfaces
-        self.interface_input_nodes = data_structure.Interface(self.dict_input_nodes, self.model)
-        self.interface_input_faces = data_structure.Interface(self.dict_input_faces, self.model)
+        self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
     def initialize_solution_step(self):
@@ -384,24 +379,20 @@ class SolverWrapperFluent(SolverWrapper):
         self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
-    def solve_solution_step(self, interface_input_nodes = None, interface_input_faces = None):
+    def solve_solution_step(self, interface_input = None):
         self.iteration += 1
 
         # process input interface data
-        if interface_input_nodes is not None:
+        if interface_input is not None:
             # store incoming variables
-            self.interface_input_nodes.set_interface_data(interface_input_nodes.get_interface_data())
-        if interface_input_faces is not None:
-            # store incoming variables
-            self.interface_input_faces.set_interface_data(interface_input_faces.get_interface_data())
-        if interface_input_faces is not None or interface_input_nodes is not None:
+            self.interface_input.set_interface_data(interface_input.get_interface_data())
             for var in self.input_variables:
                 # write interface input data
                 self.write_input_to_file(var)
 
                 # copy input data for debugging
                 if self.debug:
-                    for dct in self.interface_input_nodes.parameters:
+                    for dct in self.interface_input.parameters:
                         mp_name = dct['model_part']
                         thread_id = self.model_part_thread_ids[mp_name]
                         src = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
@@ -615,73 +606,76 @@ class SolverWrapperFluent(SolverWrapper):
 
     def write_input_to_file(self, var):
         if var == 'displacement':
-            for dct in self.interface_input_nodes.parameters:
+            for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
-                thread_id = self.model_part_thread_ids[mp_name]
-                model_part = self.model.get_model_part(mp_name)
-                displacement = self.interface_input_nodes.get_variable_data(mp_name, 'displacement')
-                x = model_part.x0 + displacement[:, 0]
-                y = model_part.y0 + displacement[:, 1]
-                z = model_part.z0 + displacement[:, 2]
-                if self.dimensions == 2:
-                    data = np.rec.fromarrays([x, y, model_part.id])
-                    fmt = '%27.17e%27.17e%27d'
-                else:
-                    data = np.rec.fromarrays([x, y, z, model_part.id])
-                    fmt = '%27.17e%27.17e%27.17e%27d'
-                tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
-                file_name = join(self.dir_cfd, tmp)
-                np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
+                if 'nodes' in mp_name:
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    model_part = self.model.get_model_part(mp_name)
+                    displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                    x = model_part.x0 + displacement[:, 0]
+                    y = model_part.y0 + displacement[:, 1]
+                    z = model_part.z0 + displacement[:, 2]
+                    if self.dimensions == 2:
+                        data = np.rec.fromarrays([x, y, model_part.id])
+                        fmt = '%27.17e%27.17e%27d'
+                    else:
+                        data = np.rec.fromarrays([x, y, z, model_part.id])
+                        fmt = '%27.17e%27.17e%27.17e%27d'
+                    tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
         if var == 'temperature':
-            for dct in self.interface_input_faces.parameters:
+            for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
-                thread_id = self.model_part_thread_ids[mp_name]
-                model_part = self.model.get_model_part(mp_name)
-                T = self.interface_input_faces.get_variable_data(mp_name, 'temperature')
-                face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
-                index = 0
-                for id in model_part.id:
-                    list = self.reverse_face_ids(id, mp_name)
-                    if len(list) == self.mnpf:
-                        face_nodeIDs[index,:] = np.array(list)
-                    else:
-                        raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
-                    index += 1
-                prof = np.append(T, face_nodeIDs, axis=1)
-                fmt = '%27.17e'
-                for i in range(self.mnpf):
-                    fmt += '%27d'
-                tmp = f'temperature_timestep{self.timestep}_thread{thread_id}.dat'
-                file_name = join(self.dir_cfd, tmp)
-                np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
+                if 'faces' in mp_name:
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    model_part = self.model.get_model_part(mp_name)
+                    T = self.interface_input.get_variable_data(mp_name, 'temperature')
+                    face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
+                    index = 0
+                    for id in model_part.id:
+                        list = self.reverse_face_ids(id, mp_name)
+                        if len(list) == self.mnpf:
+                            face_nodeIDs[index,:] = np.array(list)
+                        else:
+                            raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
+                        index += 1
+                    prof = np.append(T, face_nodeIDs, axis=1)
+                    fmt = '%27.17e'
+                    for i in range(self.mnpf):
+                        fmt += '%27d'
+                    tmp = f'temperature_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
         if var == 'heat_flux':
-            for dct in self.interface_input_faces.parameters:
+            for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
-                thread_id = self.model_part_thread_ids[mp_name]
-                model_part = self.model.get_model_part(mp_name)
-                q_tmp = self.interface_input_faces.get_variable_data(mp_name, 'heat_flux')
-                q = np.append(np.zeros((np.size(q_tmp), self.dimensions)), q_tmp, axis=1)
-                face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
-                index = 0
-                for id in model_part.id:
-                    list = self.reverse_face_ids(id, mp_name)
-                    if len(list) == self.mnpf:
-                        face_nodeIDs[index,:] = np.array(list)
+                if 'faces' in mp_name:
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    model_part = self.model.get_model_part(mp_name)
+                    q_tmp = self.interface_input.get_variable_data(mp_name, 'heat_flux')
+                    q = np.append(np.zeros((np.size(q_tmp), self.dimensions)), q_tmp, axis=1)
+                    face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
+                    index = 0
+                    for id in model_part.id:
+                        list = self.reverse_face_ids(id, mp_name)
+                        if len(list) == self.mnpf:
+                            face_nodeIDs[index,:] = np.array(list)
+                        else:
+                            raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
+                        index += 1
+                    prof = np.append(q, face_nodeIDs, axis=1)
+                    if self.dimensions == 2:
+                        fmt = '%27.17e%27.17e%27.17e'
+                        header = 'x-flux y-flux flux-normal unique-ids'
                     else:
-                        raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
-                    index += 1
-                prof = np.append(q, face_nodeIDs, axis=1)
-                if self.dimensions == 2:
-                    fmt = '%27.17e%27.17e%27.17e'
-                    header = 'x-flux y-flux flux-normal unique-ids'
-                else:
-                    fmt = '%27.17e%27.17e%27.17e%27.17e'
-                    header = 'x-flux y-flux z-flux flux-normal unique-ids'
-                for i in range(self.mnpf):
-                    fmt += '%27d'
-                tmp = f'heat_flux_timestep{self.timestep}_thread{thread_id}.dat'
-                file_name = join(self.dir_cfd, tmp)
-                np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
+                        fmt = '%27.17e%27.17e%27.17e%27.17e'
+                        header = 'x-flux y-flux z-flux flux-normal unique-ids'
+                    for i in range(self.mnpf):
+                        fmt += '%27d'
+                    tmp = f'heat_flux_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def get_coordinates(self):
         """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)
@@ -701,7 +695,7 @@ class SolverWrapperFluent(SolverWrapper):
         coord_data = {}
 
         # get ids and coordinates for input ModelParts (nodes)
-        for dct in self.interface_input_nodes.parameters:
+        for dct in self.interface_input.parameters:
             mp_name = dct['model_part']
             coord_data[mp_name] = {}
             thread_id = self.model_part_thread_ids[mp_name]
