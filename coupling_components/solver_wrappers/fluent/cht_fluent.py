@@ -67,6 +67,7 @@ class SolverWrapperFluent(SolverWrapper):
         for thread_name in self.settings['thread_names']:
             self.thread_ids[thread_name] = None
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
+        self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
 
         f = 0
@@ -316,7 +317,7 @@ class SolverWrapperFluent(SolverWrapper):
                 ids_tmp = data[:, -1].astype(int)  # array is flattened
             elif "faces" in mp_name:
                 coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
-                ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+                ids_tmp, self.dict_face_ids[mp_name] = self.get_unique_face_ids(data[:, -self.mnpf:])
 
                 # define initial input profile if no restart
                 if self.timestep_start == 0:
@@ -356,7 +357,7 @@ class SolverWrapperFluent(SolverWrapper):
             # get face coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
             coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
-            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -383,16 +384,20 @@ class SolverWrapperFluent(SolverWrapper):
         self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
-    def solve_solution_step(self, interface_input = None):
+    def solve_solution_step(self, interface_input_nodes = None, interface_input_faces = None):
         self.iteration += 1
 
-        if interface_input is not None:
+        # process input interface data
+        if interface_input_nodes is not None:
             # store incoming variables
-            self.interface_input_nodes.set_interface_data(interface_input.get_interface_data())
+            self.interface_input_nodes.set_interface_data(interface_input_nodes.get_interface_data())
+        if interface_input_faces is not None:
+            # store incoming variables
+            self.interface_input_faces.set_interface_data(interface_input_faces.get_interface_data())
+        if interface_input_faces is not None or interface_input_nodes is not None:
             for var in self.input_variables:
-                if var == "displacement":
-                    # write interface displacement data
-                    self.write_node_positions()
+                # write interface input data
+                self.write_input_to_file(var)
 
                 # copy input data for debugging
                 if self.debug:
@@ -408,8 +413,8 @@ class SolverWrapperFluent(SolverWrapper):
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
-        if interface_input is not None:
-            # read data from Fluent
+        # process output interface data
+        if self.interface_input is not None:
             for dct in self.interface_output.parameters:
                 mp_name = dct['model_part']
                 thread_id = self.model_part_thread_ids[mp_name]
@@ -437,7 +442,7 @@ class SolverWrapperFluent(SolverWrapper):
                             vector_tmp = np.zeros((data.shape[0], 3)) * 0.
                             vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
                             scalar_tmp = data[:, self.dimensions].reshape(-1, 1)
-                            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
                             # sort and remove doubles
                             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -464,7 +469,7 @@ class SolverWrapperFluent(SolverWrapper):
                         if accepted_variables['out'][var][1] == 1:
                             # get face coordinates and ids
                             scalar_tmp = data[:, 0].reshape(-1, 1)
-                            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
                             # sort and remove doubles
                             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -559,10 +564,12 @@ class SolverWrapperFluent(SolverWrapper):
                  the face ID is "5-7-9"
 
         # *** NEW: as we need integer IDs, the string is hashed and shortened
+        # *** NEW: store the unique string alongside the hash value to enable reconstruction
         """
         data = data.astype(int)
         # ids = np.zeros(data.shape[0], dtype='U256')  # array is flattened
         ids = np.zeros(data.shape[0], dtype=int)
+        face_ids = {}  # Dictionary to store face IDs and corresponding unique strings
         for i in range(ids.size):
             tmp = np.unique(data[i, :])
             if tmp[0] == -1:
@@ -570,7 +577,14 @@ class SolverWrapperFluent(SolverWrapper):
             unique_string = '-'.join(tuple(tmp.astype(str)))
             hash_id = hashlib.sha1(str.encode(unique_string))
             ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
-        return ids
+            face_ids[hash_id] = unique_string
+        return ids, face_ids
+
+    def reverse_face_ids(self, id, mp_name):
+        str_ids = self.dict_face_ids[mp_name][id]
+        int_strings = str_ids.split("-")
+        node_ids = [int(x) for x in int_strings]
+        return node_ids
 
     def initial_profile(self, thread_id, face_nodeIDs):
         n = np.shape(face_nodeIDs)[0]
@@ -599,24 +613,75 @@ class SolverWrapperFluent(SolverWrapper):
             file_name = join(self.dir_cfd, tmp)
             np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
-    def write_node_positions(self):
-        for dct in self.interface_input_nodes.parameters:
-            mp_name = dct['model_part']
-            thread_id = self.model_part_thread_ids[mp_name]
-            model_part = self.model.get_model_part(mp_name)
-            displacement = self.interface_input_nodes.get_variable_data(mp_name, 'displacement')
-            x = model_part.x0 + displacement[:, 0]
-            y = model_part.y0 + displacement[:, 1]
-            z = model_part.z0 + displacement[:, 2]
-            if self.dimensions == 2:
-                data = np.rec.fromarrays([x, y, model_part.id])
-                fmt = '%27.17e%27.17e%27d'
-            else:
-                data = np.rec.fromarrays([x, y, z, model_part.id])
-                fmt = '%27.17e%27.17e%27.17e%27d'
-            tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
-            np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
+    def write_input_to_file(self, var):
+        if var == 'displacement':
+            for dct in self.interface_input_nodes.parameters:
+                mp_name = dct['model_part']
+                thread_id = self.model_part_thread_ids[mp_name]
+                model_part = self.model.get_model_part(mp_name)
+                displacement = self.interface_input_nodes.get_variable_data(mp_name, 'displacement')
+                x = model_part.x0 + displacement[:, 0]
+                y = model_part.y0 + displacement[:, 1]
+                z = model_part.z0 + displacement[:, 2]
+                if self.dimensions == 2:
+                    data = np.rec.fromarrays([x, y, model_part.id])
+                    fmt = '%27.17e%27.17e%27d'
+                else:
+                    data = np.rec.fromarrays([x, y, z, model_part.id])
+                    fmt = '%27.17e%27.17e%27.17e%27d'
+                tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                file_name = join(self.dir_cfd, tmp)
+                np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
+        if var == 'temperature':
+            for dct in self.interface_input_faces.parameters:
+                mp_name = dct['model_part']
+                thread_id = self.model_part_thread_ids[mp_name]
+                model_part = self.model.get_model_part(mp_name)
+                T = self.interface_input_faces.get_variable_data(mp_name, 'temperature')
+                face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
+                index = 0
+                for id in model_part.id:
+                    list = self.reverse_face_ids(id, mp_name)
+                    if len(list) == self.mnpf:
+                        face_nodeIDs[index,:] = np.array(list)
+                    else:
+                        raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
+                    index += 1
+                prof = np.append(T, face_nodeIDs, axis=1)
+                fmt = '%27.17e'
+                for i in range(self.mnpf):
+                    fmt += '%27d'
+                tmp = f'temperature_timestep{self.timestep}_thread{thread_id}.dat'
+                file_name = join(self.dir_cfd, tmp)
+                np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
+        if var == 'heat_flux':
+            for dct in self.interface_input_faces.parameters:
+                mp_name = dct['model_part']
+                thread_id = self.model_part_thread_ids[mp_name]
+                model_part = self.model.get_model_part(mp_name)
+                q_tmp = self.interface_input_faces.get_variable_data(mp_name, 'heat_flux')
+                q = np.append(np.zeros((np.size(q_tmp), self.dimensions)), q_tmp, axis=1)
+                face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
+                index = 0
+                for id in model_part.id:
+                    list = self.reverse_face_ids(id, mp_name)
+                    if len(list) == self.mnpf:
+                        face_nodeIDs[index,:] = np.array(list)
+                    else:
+                        raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
+                    index += 1
+                prof = np.append(q, face_nodeIDs, axis=1)
+                if self.dimensions == 2:
+                    fmt = '%27.17e%27.17e%27.17e'
+                    header = 'x-flux y-flux flux-normal unique-ids'
+                else:
+                    fmt = '%27.17e%27.17e%27.17e%27.17e'
+                    header = 'x-flux y-flux z-flux flux-normal unique-ids'
+                for i in range(self.mnpf):
+                    fmt += '%27d'
+                tmp = f'heat_flux_timestep{self.timestep}_thread{thread_id}.dat'
+                file_name = join(self.dir_cfd, tmp)
+                np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def get_coordinates(self):
         """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)
@@ -672,7 +737,7 @@ class SolverWrapperFluent(SolverWrapper):
             # get face coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
             coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
-            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
