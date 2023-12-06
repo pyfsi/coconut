@@ -526,11 +526,17 @@ class SolverWrapperFluent(SolverWrapper):
     def remove_dat_files(self, timestep):
         if not self.debug:
             for thread_id in self.thread_ids.values():
-                try:
-                    os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
-                    os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
-                except OSError:
-                    pass
+                for var in self.output_variables:
+                    if accepted_variables['out'][var][0] is not 'repeat':
+                        try:
+                            os.remove(join(self.dir_cfd, accepted_variables['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                        except OSError:
+                            pass
+                for var in self.input_variables:
+                    try:
+                        os.remove(join(self.dir_cfd, accepted_variables['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                    except OSError:
+                        pass
 
     def check_software(self):
         # Fluent version: see set_fluent_version
