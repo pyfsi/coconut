@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 50
+    "number_of_timesteps": 40
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
@@ -84,7 +84,7 @@
           "number_of_time_increments_rigid_body": 1800,
           "radius_wire": 0.00075,
           "start_increment": 20,
-          "timeVaryingMappedFixedValue": true,
+          "timeVaryingMappedCoupledVelocity": true,
           "parallel": false,
           "residual_variables": [
             "Ux",

@@ -14,11 +14,8 @@ import time
 import subprocess
 import re
 import copy
-from glob import glob
-import matplotlib.pyplot as plt
 
-
-#TODO:wrappper is not adapted to run in parallel
+#TODO:wrappper is not adapted to run in parallel and the restart function is not implemented yet.
 
 def create(parameters):
     return SolverWrapperOpenFOAMExtend(parameters)
@@ -58,7 +55,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
-        # print(self.working_directory)
         # set on True to save copy of input and output files in every iteration
         self.debug = self.settings.get('debug', False)
 
@@ -106,11 +102,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         # self.settings["boundary_names"]
         self.read_modify_controldict()
 
-        # if self.save_restart % self.write_interval:
-        #     raise RuntimeError(
-        #         f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval '
-        #         f'(= {self.write_interval}). Modify the controlDict accordingly.')
-
         # creating Model
         self.model = data_structure.Model()
 
@@ -148,11 +139,6 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
         self.test = copy.deepcopy(self.interface_output)
-
-        # for item_output in self.interface_output.parameters:
-        #     mp_output = self.interface_input.get_model_part(item_output['model_part'])
-        # print("mp_output")
-        # print(mp_output.x0,mp_output.y0,mp_output.z0)
 
         # Initialize timeVaryingMappedSolidTraction boundary condition
         for boundary in self.boundary_names:
@@ -352,10 +338,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                         with open(boundary_filename, 'r') as boundary_file:
                             boundary_file_string = boundary_file.read()
                         boundary_dict = of_io.get_dict(input_string=boundary_file_string, keyword=boundary)
-                        # get point ids and coordinates for all the faces in the boundary
-                        # node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory/ f'processor{p}',
-                        #                                                   time_folder='0',
-                        #                                                   boundary_name=boundary)
                         nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
 
                     x0, y0, z0 = self.read_face_centres_parallel_timeVaryingMappedSolidTraction(boundary, nfaces, p)
@@ -554,20 +536,6 @@ class SolverWrapperOpenFOAMExtend(Component):
                                                 self.cur_timestamp, f'traction_{self.iteration}')
                 shutil.copy(path_from_traction, path_to_traction)
 
-
-        #     if self.cores > 1:
-        #         for i in range(0, self.cores):
-        #             path_from = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-        #                                      'pointDisplacement_Next')
-        #             path_to = os.path.join(self.working_directory, 'processor' + str(i), self.prev_timestamp,
-        #                                    'pointDisplacement_Next_Iter' + str(self.iteration))
-        #             shutil.copy(path_from, path_to)
-        #     else:
-        #         path_from = os.path.join(self.working_directory, self.prev_timestamp, 'pointDisplacement_Next')
-        #         path_to = os.path.join(self.working_directory, self.prev_timestamp,
-        #                                'pointDisplacement_Next_Iter' + str(self.iteration))
-        #         shutil.copy(path_from, path_to)
-
         self.delete_prev_iter_output()
         self.send_message('continue')
         self.wait_message('continue_ready')
@@ -671,28 +639,13 @@ class SolverWrapperOpenFOAMExtend(Component):
             raise RuntimeError(
                 f'Compilation of {self.application} or coconut_src failed. Check {os.path.join(self.working_directory, "log.wmake or CSM/log.wmake_libso")}')
 
-    # def write_cell_centres(self):
-    #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
-
-    # def read_face_centres(self, boundary_name, nfaces):
-    #     raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
     def delete_prev_iter_output(self):
         # displacement file is removed to avoid foam-Extend to append data in the new iteration
         for boundary in self.boundary_names:
-            # specify location of displacement
-            # displacement_name = 'DISPLACEMENT_' + boundary
-            # disp_file = os.path.join(self.working_directory, 'postProcessing', displacement_name, 'surface',
-            #                         self.cur_timestamp, f'DU_patch_{boundary}.raw')
-            # if os.path.isfile(disp_file):
-            #     os.remove(disp_file)
             displacement_name = os.path.join(self.working_directory, self.cur_timestamp, 'U')
-            # velocity_name = os.path.join(self.working_directory, self.timestep, 'Velocity')
             if os.path.isfile(displacement_name):
                 os.remove(displacement_name)
-            # if os.path.isfile(velocity_name):
-            #     os.remove(velocity_name)
-
 
     def read_node_output(self):
         """
@@ -826,20 +779,13 @@ class SolverWrapperOpenFOAMExtend(Component):
             pressure = list(np.array(pressure).reshape(-1,))
             x = np.linspace(1,len(pressure),len(pressure))
             f =interp1d(x,pressure)
-            # plt.scatter(x,pressure)
 
             xnew = np.linspace(1,len(pressure),self.size_BC)
-            # print(xnew)
             pressure = f(xnew)
             #getting pressure for parallel running
-            # x_proc = np.linspace(1, len(pressure), int(self.x0_p.size / 2))
             x_proc = np.linspace(1, len(pressure), int(246/ 2))# hard coded_MATHIEU
             pressure_in_para = f(x_proc)
 
-            # plt.plot(x_proc,pressure_in_para)
-            # plt.show()
-            # print("pressure")
-            # print(pressure)
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             g = interp1d(x,traction[:,0])
             h = interp1d(x,traction[:,1])
@@ -1178,9 +1124,6 @@ class SolverWrapperOpenFOAMExtend(Component):
 
             control_dict_file.write(');\n\n')
             control_dict_file.write('functions\n{\n')
-
-            # for boundary_name in self.boundary_names:
-            #     control_dict_file.write(self.displacement_dict(boundary_name))
             control_dict_file.write('}')
             self.write_footer(file_name)
 

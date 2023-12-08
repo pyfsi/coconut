@@ -3,7 +3,6 @@ from coconut.coupling_components.component import Component
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
-import matplotlib.pyplot as plt
 
 import copy
 import numpy as np
@@ -20,7 +19,7 @@ def create(parameters):
 
 
 class SolverWrapperOpenFOAM(Component):
-    version = None  # OpenFOAM version with dot, e.g. 4.1 , set in sub-class
+    version = None  # OpenFOAM version with dot, e.g. 8 , set in sub-class
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -182,7 +181,7 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_input = Interface(self.settings['interface_input'], self.model)
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
-        if self.settings['timeVaryingMappedFixedValue']:
+        if self.settings['timeVaryingMappedCoupledVelocity']:
             for boundary in self.boundary_names:
                 mp_name = f'{boundary}_input'
                 mp = self.model.get_model_part(mp_name)
@@ -245,12 +244,7 @@ class SolverWrapperOpenFOAM(Component):
                     self.number_of_timeIncrements = self.settings['number_of_time_increments_rigid_body']  # number of timeIncrements is the value how many times a displacement of the rigid body is done.
                     self.radius = self.settings['radius_wire'],
                     self.start_increment = self.settings['start_increment']
-                    # rigid_body_filename = os.path.join( self.working_directory,'constant/polyMesh/boundary')
                     for rigid in self.moving_rigid_bodies_names:
-                        # with open (rigid_body_filename,'r') as rigidBody_file:
-                        # rigidBody_string = rigidBody_file.read()
-                        # rigidBody_dict = of_io.get_dict(input_string=rigidBody_string, keyword=rigid)
-                        # get point ids and coordinates for all the faces in the boundary
                         node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory,
                                                                           time_folder='0',
                                                                           boundary_name=rigid)
@@ -359,10 +353,7 @@ class SolverWrapperOpenFOAM(Component):
                                   h.write(f'({0} {deltaY[k]} {deltaZ[k]})\n')
                               h.write(')')
 
-            # plt.plot(q, displacement_increment)
-            # plt.show()
-
-            if self.settings['timeVaryingMappedFixedValue']:
+            if self.settings['timeVaryingMappedCoupledVelocity']:
                 for boundary in self.boundary_names:
                     timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
                     path_orig_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, '0')
@@ -428,7 +419,7 @@ class SolverWrapperOpenFOAM(Component):
                     else:
                         self.mp_in_decompose_seq_dict[mp_in_name][p] = None
 
-                    if self.settings['timeVaryingMappedFixedValue']:
+                    if self.settings['timeVaryingMappedCoupledVelocity']:
 
                         path_working_directory_processor = os.path.join(self.working_directory, f'processor{p}')
 
@@ -439,10 +430,6 @@ class SolverWrapperOpenFOAM(Component):
                             with open(boundary_filename, 'r') as boundary_file:
                                 boundary_file_string = boundary_file.read()
                             boundary_dict = of_io.get_dict(input_string=boundary_file_string, keyword=boundary)
-                            # get point ids and coordinates for all the faces in the boundary
-                            # node_ids, node_coords = of_io.get_boundary_points(case_directory=self.working_directory/ f'processor{p}',
-                            #                                                   time_folder='0',
-                            #                                                   boundary_name=boundary)
                             nfaces = of_io.get_int(input_string=boundary_dict, keyword='nFaces')
 
                         x0, y0, z0 = self.read_face_centres_parallel_timeVaryingMappedCoupledVelocity(boundary,nfaces,p)
@@ -491,7 +478,6 @@ class SolverWrapperOpenFOAM(Component):
                         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
                         path_orig_boundaryData = os.path.join(self.working_directory,
                                                               f'processor{p}/constant/boundaryData', boundary, '0')
-                        # os.makedirs(path_orig_boundaryData)
                         path_new_boundaryData = os.path.join(self.working_directory,
                                                              f'processor{p}/constant/boundaryData', boundary,
                                                              timestamp)
@@ -519,7 +505,7 @@ class SolverWrapperOpenFOAM(Component):
 
         timestamp = '{:.{}f}'.format(self.physical_time, self.time_precision)
 
-        if self.settings['timeVaryingMappedFixedValue']:
+        if self.settings['timeVaryingMappedCoupledVelocity']:
             for boundary in self.boundary_names:
                 path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary, timestamp)
                 if self.cores > 1 or self.physical_time == 0:
@@ -539,7 +525,7 @@ class SolverWrapperOpenFOAM(Component):
                 tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                 subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
-            if self.settings['timeVaryingMappedFixedValue']:
+            if self.settings['timeVaryingMappedCoupledVelocity']:
                 for boundary in self.boundary_names:
                     new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                          self.cur_timestamp)
@@ -559,7 +545,7 @@ class SolverWrapperOpenFOAM(Component):
                         tools.print_info(f'Overwrite existing time step folder: {new_path}', layout='warning')
                     subprocess.check_call(f'rm -rf {new_path}', shell=True)
 
-                if self.settings['timeVaryingMappedFixedValue']:
+                if self.settings['timeVaryingMappedCoupledVelocity']:
                     for boundary in self.boundary_names:
                         new_path_boundaryData = os.path.join(self.working_directory, f'processor{i}/constant/boundaryData', boundary,
                                                              self.cur_timestamp)
@@ -574,7 +560,6 @@ class SolverWrapperOpenFOAM(Component):
                         subprocess.check_call(f'rm -rf {new_path_boundaryData}', shell=True)
                     subprocess.check_call(f'mkdir -p {new_path}', shell=True)
                     subprocess.check_call(f'mkdir -p {new_path_boundaryData}', shell=True)
-
 
         self.send_message('next')
         self.wait_message('next_ready')
@@ -644,16 +629,12 @@ class SolverWrapperOpenFOAM(Component):
                                                                  f'postProcessing/TRACTION_{boundary}/surface',
                                                                  self.prev_timestamp)
 
-                # shutil.rmtree(post_process_time_folder)
-                # shutil.rmtree(post_process_time_folder_pressure)
-                # shutil.rmtree(post_process_time_folder_traction)
-
                 if (self.timestep % 10 != 1):
                     shutil.rmtree(post_process_time_folder)
                     shutil.rmtree(post_process_time_folder_pressure)
                     shutil.rmtree(post_process_time_folder_traction)
                     shutil.rmtree(prev_directory_folder)
-                    if self.settings['timeVaryingMappedFixedValue']:
+                    if self.settings['timeVaryingMappedCoupledVelocity']:
                         prev_directory_boundaryData_coupledVelocity_folder = os.path.join(self.working_directory,
                                                                           f'constant/boundaryData/{boundary}',
                                                                           self.prev_timestamp)
@@ -664,8 +645,6 @@ class SolverWrapperOpenFOAM(Component):
                                                                                               f'constant/boundaryData/{body}',
                                                                                               self.prev_timestamp)
                             shutil.rmtree(prev_directory_boundaryData_movingBody_folder)
-
-
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
@@ -754,7 +733,6 @@ class SolverWrapperOpenFOAM(Component):
             # specify location of pressure and traction
             mp_name = f'{boundary}_output'
             mp = self.model.get_model_part(mp_name)
-            x0, y0, z0 = mp.x0, mp.y0, mp.z0
             nfaces = mp.size
             post_process_time_folder = os.path.join(self.working_directory,
                                                     f'postProcessing/coconut_{boundary}/surface', self.cur_timestamp)
@@ -799,7 +777,7 @@ class SolverWrapperOpenFOAM(Component):
             mp_name = f'{boundary}_input'
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
 
-            if self.settings['timeVaryingMappedFixedValue']:
+            if self.settings['timeVaryingMappedCoupledVelocity']:
                 if self.timestep <= 10:
                     displacement[:, 0] = 1
                     velocity = displacement[:, 0]
@@ -852,7 +830,7 @@ class SolverWrapperOpenFOAM(Component):
                 with open(pointdisp_filename_ref, 'r') as ref_file:
                     pointdisp_string = ref_file.read()
 
-                if self.settings['timeVaryingMappedFixedValue']:
+                if self.settings['timeVaryingMappedCoupledVelocity']:
 
                     seq = self.mp_in_decompose_seq_dict[mp_name][proc]
 
