@@ -58,6 +58,7 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.model = None
         self.interface_input = None
         self.interface_output = None
+        self.adjustFSITimeStep = None
         # print(self.working_directory)
         # set on True to save copy of input and output files in every iteration
         self.debug = self.settings.get('debug', False)
@@ -275,7 +276,16 @@ class SolverWrapperOpenFOAMExtend(Component):
                 shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
                 # number_of_timesteps + 1 to avoid problems with hi label in timeVaryingMappedSolidTraction boundary condition @ the end the simulation. This has no influence on the result.
                 for i in range(self.number_of_timesteps + 1):
-                    timestamp_i = self.delta_t *(i +1)
+                    if self.adjustFSITimeStep:
+                        if i < 6:
+                            timestamp_i = self.delta_t * (i + 1)
+                        else:
+                            delta_time = self.delta_t * 0.5 ** (i - 5)
+                            if delta_time < 1e-8:
+                                delta_time = 1e-8
+                            timestamp_i += delta_time
+                    else:
+                        timestamp_i = self.delta_t *(i +1)
                     format_i = '{:.{}f}'.format(timestamp_i, self.time_precision)
                     str_i = str(format_i)
                     path_new_boundaryData_i = os.path.join(self.working_directory,'constant/boundaryData', boundary, str_i)
@@ -480,7 +490,16 @@ class SolverWrapperOpenFOAMExtend(Component):
         # prepare new time step folder and reset the number of iterations
         self.timestep += 1
         self.iteration = 0
-        self.physical_time += self.delta_t
+        if self.adjustFSITimeStep:
+            if self.timestep < 7:
+                self.physical_time += self.delta_t
+            else:
+                delta_time = self.delta_t * 0.5 ** (self.timestep - 6)
+                if delta_time < 1e-8:
+                    delta_time = 1e-8
+                self.physical_time += delta_time
+        else:
+            self.physical_time += self.delta_t
 
         self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
@@ -1147,6 +1166,11 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
         time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
         self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
+        adjustTimeStep = of_io.get_string(input_string=control_dict, keyword='adjustTimeStep')
+        if adjustTimeStep == "no":
+            self.adjustFSITimeStep = False
+        else:
+            self.adjustFSITimeStep = True
 
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'

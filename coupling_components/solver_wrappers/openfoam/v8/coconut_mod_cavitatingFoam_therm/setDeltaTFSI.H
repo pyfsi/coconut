@@ -22,30 +22,35 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Global
-    setInitialDeltaT
+    setDeltaT
 
 Description
-    Set the initial timestep corresponding to the timestep adjustment
-    algorithm in setDeltaT
+    Reset the timestep to maintain a constant maximum courant Number.
+    Reduction of time-step is immediate, but increase is damped to avoid
+    unstable oscillations.
 
 \*---------------------------------------------------------------------------*/
 
-if (adjustTimeStep)
+if (adjustTimeStep && runTime.timeIndex() > 5)
 {
-    if (CoNum > small)
-    {
-        scalar maxDeltaTFact =
-            min(maxCo/(CoNum + small), maxAcousticCo/(acousticCoNum + small));
+    Info<< "Adjusting the time step" <<endl;
 
-        runTime.setDeltaT
-        (
-            min
-            (
-                maxDeltaTFact*runTime.deltaTValue(),
-                maxDeltaT
-            )
-        );
+    const scalar minDeltaT = 1e-8;
+    const scalar deltaTFact = 0.5;
+
+    scalar newDeltaT = deltaTFact*runTime.deltaTValue();
+    
+    if (newDeltaT < minDeltaT)
+    
+    {
+	Info<< "**Setting deltaT to the minDeltaT" <<endl;
+	newDeltaT = minDeltaT;
     }
+   
+   runTime.setDeltaT(newDeltaT);
+
+    Info<< "deltaT = " <<  runTime.deltaTValue() << endl;
+    Info<< "Desired time step scaling factor = "<< deltaTFact << endl;
 }
 
 // ************************************************************************* //

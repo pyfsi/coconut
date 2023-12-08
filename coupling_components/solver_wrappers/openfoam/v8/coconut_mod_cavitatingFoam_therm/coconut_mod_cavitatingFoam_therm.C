@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
     #include "createPcorrTypes.H"
 
     #include "CourantNo.H"
-    #include "setInitialDeltaT.H"
 
     turbulence->validate();
 
@@ -93,7 +92,7 @@ int main(int argc, char *argv[])
             #include "readControls.H"
 
             #include "CourantNo.H"
-            #include "setDeltaT.H"
+            #include "setDeltaTFSI.H"
 
             // Store divRhoU from the previous mesh so that it can be mapped
             // and used in correctPhi to ensure the corrected phi has the

@@ -902,7 +902,7 @@ coconut_plasticNonLinSolidFoam.dep: createThermalFields.H
 coconut_plasticNonLinSolidFoam.dep: /cfdfile2/data/fm/mathieu/foam/bekaert_src/src/solidModelsBekaert/lnInclude/axisymmetricSolid.H
 coconut_plasticNonLinSolidFoam.dep: readSolidMechanicsControls.H
 coconut_plasticNonLinSolidFoam.dep: checkForGlobalFaceZones.H
-coconut_plasticNonLinSolidFoam.dep: setDeltaT.H
+coconut_plasticNonLinSolidFoam.dep: setDeltaTFSI.H
 coconut_plasticNonLinSolidFoam.dep: calcCauchyTraction.H
 coconut_plasticNonLinSolidFoam.dep: correctDispGrad.H
 coconut_plasticNonLinSolidFoam.dep: checkConvergence.H

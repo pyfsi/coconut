@@ -45,6 +45,8 @@ class SolverWrapperOpenFOAM(Component):
         self.save_restart = self.settings['save_restart']
         self.openfoam_process = None
         self.write_interval = self.write_precision = None
+        self.adjustFSITimeStep = None
+        self.velocityList=[]
 
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
@@ -370,11 +372,21 @@ class SolverWrapperOpenFOAM(Component):
                     shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                     shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
                     for i in range(self.number_of_timesteps + 1):
-                        time = self.delta_t * (i + 1)
+                        if self.adjustFSITimeStep:
+                            if i < 6:
+                                time = self.delta_t * (i + 1)
+                            else:
+                                delta_time = self.delta_t*0.5**(i-5)
+                                if delta_time < 1e-8:
+                                    delta_time = 1e-8
+                                time += delta_time
+                        else:
+                            time = self.delta_t * (i + 1)
                         timestamp = '{:.{}f}'.format(time, self.time_precision)
                         new_path_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
                                                                  timestamp)
                         shutil.copytree(path_orig_boundaryData, new_path_boundaryData)
+
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
         # Note concerning the sequence: The file ./processorX/constant/polyMesh/faceprocAddressing contains a list of
@@ -498,7 +510,16 @@ class SolverWrapperOpenFOAM(Component):
                         shutil.rmtree(path_new_boundaryData, ignore_errors=True)
                         shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
                         for i in range(self.number_of_timesteps + 1):
-                            time = self.delta_t * (i + 1)
+                            if self.adjustFSITimeStep:
+                                if i < 6:
+                                    time = self.delta_t * (i + 1)
+                                else:
+                                    delta_time = self.delta_t * 0.5 ** (i - 5)
+                                    if delta_time < 1e-8:
+                                        delta_time = 1e-8
+                                    time += delta_time
+                            else:
+                                time = self.delta_t * (i + 1)
                             timestamp = '{:.{}f}'.format(time, self.time_precision)
                             new_path_boundaryData = os.path.join(self.working_directory,
                                                                  f'processor{p}/constant/boundaryData',
@@ -528,7 +549,17 @@ class SolverWrapperOpenFOAM(Component):
         # prepare new time step folder and reset the number of iterations
         self.timestep += 1
         self.iteration = 0
-        self.physical_time += self.delta_t
+
+        if self.adjustFSITimeStep:
+            if self.timestep < 7:
+                self.physical_time += self.delta_t
+            else:
+                delta_time = self.delta_t * 0.5 ** (self.timestep - 6)
+                if delta_time < 1e-8:
+                    delta_time = 1e-8
+                self.physical_time += delta_time
+        else:
+            self.physical_time += self.delta_t
 
         self.prev_timestamp = timestamp
         self.cur_timestamp = f'{self.physical_time:.{self.time_precision}f}'
@@ -628,6 +659,10 @@ class SolverWrapperOpenFOAM(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+        # if os.path.exists(self.file_path):
+        #     print("REMOVE")
+        #     os.remove(self.file_path)
         #if debugging is not activated, to save memory the post process files are removed after each time step and the time folder and boundaryData folders are saved after each 10 time steps.
         # This has no influence on the solution of the calculation
         if not self.debug:
@@ -645,6 +680,8 @@ class SolverWrapperOpenFOAM(Component):
                 shutil.rmtree(post_process_time_folder)
                 shutil.rmtree(post_process_time_folder_pressure)
                 shutil.rmtree(post_process_time_folder_traction)
+
+
 
                 if (self.timestep % 10 != 1):
                     if self.settings['timeVaryingMappedFixedValue']:
@@ -672,7 +709,6 @@ class SolverWrapperOpenFOAM(Component):
                            if self.settings['timeVaryingMappedFixedValue']:
                                prev_directory_boundaryData_coupledVelocity_folder_proc = os.path.join(self.working_directory,f'processor{proc}/constant/boundaryData/{boundary}',self.prev_timestamp)
                                shutil.rmtree(prev_directory_boundaryData_coupledVelocity_folder_proc)
-
 
         if not (self.timestep % self.write_interval):
             self.send_message('save')
@@ -725,7 +761,7 @@ class SolverWrapperOpenFOAM(Component):
                                       env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
-                f'Compilation of {self.application} or coconut_src failed. Check {os.path.join(self.working_directory, "log.wmake or CSM/log.wmake_libso")}')
+                f'Compilation of {self.application} or coconut_src failed. Check {os.path.join(self.working_directory, "log.wmake or CFD/log.wmake_libso")}')
 
     def write_cell_centres(self):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
@@ -809,16 +845,31 @@ class SolverWrapperOpenFOAM(Component):
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
 
             if self.settings['timeVaryingMappedFixedValue']:
+                # cwd = os.getcwd()
+                # CSM_directory = cwd + '/CSM'
+                # self.file_path = CSM_directory + '/update_velocity'
                 if self.timestep <= 10:
                     displacement[:, 0] = 1
                     velocity = displacement[:, 0]
+                    # speed =velocity
                 else:
                     velocity = displacement[:, 0] * 1e5
-
                 velocity = copy.deepcopy(velocity)
+                # self.velocityList.append(velocity)
+                # if self.timestep >1:
+                #     if os.path.exists(self.file_path):
+                #         speed = self.velocityList[-1]
+                #         # print("Update_velocity")
+                #     else:
+                #         speed = self.velocityList[-2]
+                #         self.velocityList[-1] =speed
+                #         # print("No_update_velocity")
+                #         self.velocityList.pop(-2)
+
+                # speed = copy.deepcopy(speed)
 
                 data_folder_home = os.path.join(self.working_directory, 'constant/boundaryData', boundary,
-                                           self.cur_timestamp)
+                                                self.cur_timestamp)
                 velocity_input = np.zeros((len(velocity), 3))
                 index = int(len(velocity) / 2)
 
@@ -836,6 +887,16 @@ class SolverWrapperOpenFOAM(Component):
                     for i in range(velocity_input.shape[0]):
                         f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
                     f.write(')')
+
+                    # for timeLabel in range(self.timestep, self.number_of_timesteps ):
+                    #     time = (self.timeList[timeLabel])
+                    #     timestamp = '{:.{}f}'.format(time, self.time_precision)
+                    #     print("timeStamp")
+                    #     print(timestamp)
+                    #     updated_boundaryData = os.path.join(self.working_directory, 'constant/boundaryData',
+                    #                                          boundary,
+                    #                                          timestamp)
+                    #     shutil.copytree(data_folder_home, updated_boundaryData)
 
             displacement[:, 0] = 0
 
@@ -999,6 +1060,11 @@ class SolverWrapperOpenFOAM(Component):
         self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
         time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
         self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
+        adjustTimeStep = of_io.get_string(input_string=control_dict, keyword='adjustTimeStep')
+        if adjustTimeStep == "no":
+            self.adjustFSITimeStep = False
+        else:
+            self.adjustFSITimeStep = True
 
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
@@ -1015,6 +1081,7 @@ class SolverWrapperOpenFOAM(Component):
                               f'{"timePrecision":<16}{self.time_precision}',
                               control_dict)
         control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
+
 
         # delete previously defined coconut functions
         coconut_start_string = '\n// CoCoNuT function objects'

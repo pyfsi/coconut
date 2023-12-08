@@ -1,0 +1,32 @@
+EXE_INC = \
+    -I. \
+    -I.. \
+    -I../.. \
+    -I$(LIB_SRC)/transportModels/lnInclude \
+    -I$(LIB_SRC)/twoPhaseModels/twoPhaseMixture/lnInclude \
+    -I$(LIB_SRC)/twoPhaseModels/interfaceProperties/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/incompressible/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/cfdTools \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/dynamicFvMesh/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(WM_PROJECT_USER_DIR)/src/myModels/mixtureCompressibilityModels/lnInclude \
+    -I$(WM_PROJECT_USER_DIR)/src/myModels/compressibleTwoPhaseMixture/lnInclude \
+    -I$(WM_PROJECT_USER_DIR)/src/myModels/EOSModels/lnInclude \
+    -I$(WM_PROJECT_USER_DIR)/src/myModels/heatCapacityModels/lnInclude \
+    -I$(WM_PROJECT_USER_DIR)/src/myModels/thermalConductivityModels/lnInclude
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lmomentumTransportModels \
+    -lincompressibleMomentumTransportModels \
+    -lfiniteVolume \
+    -ldynamicFvMesh \
+    -lfvOptions \
+    -lmeshTools \
+    -lmyMixtureCompressibilityModels \
+    -lmyCompressibleTwoPhaseMixture \
+    -lmyEOSModels \
+    -lmyHeatCapacityModels \
+    -lmyThermalConductivityModels

@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
             twoMuLambdaf = fvc::interpolate(twoMuLambda, "twoMuLambda");
             RhieChowScaleFactor = mechanical.RhieChowScaleFactor();
 
-            #include "setDeltaT.H"
+            #include "setDeltaTFSI.H"
             #include "createNonLinearGeometry.H"
 
             prevRunTime = runTime.timeName();

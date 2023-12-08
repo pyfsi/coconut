@@ -113,7 +113,7 @@ void Foam::coconut_timeVaryingMappedFvPatchField<Type>::checkTable()
         // Read the times for which data is available
         sampleTimes_ = Time::findTimes(dataDir_);
 
-        if (debug)
+        if (true) //(debug)
         {
             Info<< "coconut_timeVaryingMappedFvPatchField : In directory "
                 << dataDir_ << " found times "
@@ -138,16 +138,27 @@ void Foam::coconut_timeVaryingMappedFvPatchField<Type>::checkTable()
           hi
         );
 
-    Info << "lo1 " << lo << endl;
+    Info << "lo 1 " << lo << endl;
     Info << "hi" << hi<< endl;
     double num1 = time().value()/0.00005;
+//    double num1 = time().value()/time().deltaTValue();
     std::cout << "Nearest integer after round ("<<num1<<") :" << round(num1)<< "\n";
     label check = round(num1);
     lo = check  + 1;
     hi = check + 2;
+//    Info << "Time_before = " << time().timeName() << nl << endl;
+//    Info <<" LabelData_before = " << sampleTimes_[lo].name() << endl;
+//	    if ( time().timeName()!= sampleTimes_[lo].name())
+//    {
+//        lo = lo + 1;
+//        hi = hi + 1;
+//    }
 
     Info <<"Corrected lo " << lo  << endl;
     Info <<"Corrected hi " << hi << endl;
+    Info<< "deltaT = " <<  time().deltaTValue() << endl;
+    Info << "Time = " << time().timeName() << nl << endl;
+    Info <<" LabelData = " << sampleTimes_[lo].name() << endl;
 
     if (!foundTime)
     {
@@ -166,6 +177,8 @@ void Foam::coconut_timeVaryingMappedFvPatchField<Type>::checkTable()
    
         Info << "Update sampled data fields " << endl;
 	startSampleTime_ = lo;
+
+
     
         //Info << "TIME_findtime: " << time().value() << endl;
         if (startSampleTime_==endSampleTime_)
