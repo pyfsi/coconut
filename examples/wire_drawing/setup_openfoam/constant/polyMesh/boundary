@@ -22,40 +22,40 @@ FoamFile
         type            wall;
         inGroups        List<word> 1(wall);
         nFaces          100;
-        startFace       1094;
+        startFace       1691;
     }
     outlet
     {
         type            patch;
-        nFaces          6;
-        startFace       1194;
+        nFaces          9;
+        startFace       1791;
     }
     Wire
     {
         type            wall;
         inGroups        List<word> 1(wall);
         nFaces          100;
-        startFace       1200;
+        startFace       1800;
     }
     inlet
     {
         type            patch;
-        nFaces          6;
-        startFace       1300;
+        nFaces          9;
+        startFace       1900;
     }
     back
     {
         type            wedge;
         inGroups        List<word> 1(wedge);
-        nFaces          600;
-        startFace       1306;
+        nFaces          900;
+        startFace       1909;
     }
     front
     {
         type            wedge;
         inGroups        List<word> 1(wedge);
-        nFaces          600;
-        startFace       1906;
+        nFaces          900;
+        startFace       2809;
     }
 )
 

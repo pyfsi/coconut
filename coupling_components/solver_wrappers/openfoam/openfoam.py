@@ -644,11 +644,14 @@ class SolverWrapperOpenFOAM(Component):
                                                                  f'postProcessing/TRACTION_{boundary}/surface',
                                                                  self.prev_timestamp)
 
-                shutil.rmtree(post_process_time_folder)
-                shutil.rmtree(post_process_time_folder_pressure)
-                shutil.rmtree(post_process_time_folder_traction)
+                # shutil.rmtree(post_process_time_folder)
+                # shutil.rmtree(post_process_time_folder_pressure)
+                # shutil.rmtree(post_process_time_folder_traction)
 
                 if (self.timestep % 10 != 1):
+                    shutil.rmtree(post_process_time_folder)
+                    shutil.rmtree(post_process_time_folder_pressure)
+                    shutil.rmtree(post_process_time_folder_traction)
                     shutil.rmtree(prev_directory_folder)
                     if self.settings['timeVaryingMappedFixedValue']:
                         prev_directory_boundaryData_coupledVelocity_folder = os.path.join(self.working_directory,
@@ -777,8 +780,6 @@ class SolverWrapperOpenFOAM(Component):
 
             self.interface_output.set_variable_data(mp_name, 'traction', -wall_shear_stress * self.density_for_traction)
             self.interface_output.set_variable_data(mp_name, 'pressure', pressure * self.density_for_pressure)
-            #plt.plot(x0,pressure)
-            #plt.show()
 
     # noinspection PyMethodMayBeStatic
     def write_footer(self, file_name):

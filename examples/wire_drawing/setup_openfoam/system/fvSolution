@@ -86,7 +86,7 @@ relaxationFactors
    // }	
     equations
     {
-        "U.*"            0.95;
+        "U.*"            0.77;
 	"p.*"		 1;
     }
 }

@@ -47,6 +47,8 @@ timePrecision   6;
 
 runTimeModifiable no;
 
+adjustTimeStep	no;
+
 functions
 
 {

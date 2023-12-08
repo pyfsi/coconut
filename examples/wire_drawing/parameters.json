@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 1600
+    "number_of_timesteps": 50
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
@@ -80,8 +80,8 @@
           "debug": false,
           "moving_rigid_body": true,
           "moving_rigid_bodies_names": ["dieWall"],
-          "radial_displacement_rigid_body": 1.8e-5,
-          "number_of_time_increments_rigid_body": 1400,
+          "radial_displacement_rigid_body": 1.7e-5,
+          "number_of_time_increments_rigid_body": 1800,
           "radius_wire": 0.00075,
           "start_increment": 20,
           "timeVaryingMappedFixedValue": true,
@@ -107,7 +107,7 @@
               "axial_coordinate_die_max": 0.003,
   	      "slot_start_FSI": 20,
 	      "debug": false,
-              "time_folder_postProcess": "0.0800000",
+              "time_folder_postProcess": "0.0025000",
               "parallel": false,
               "boundary_names": [
                                 "wireTopContact"

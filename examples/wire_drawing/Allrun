@@ -1,0 +1,6 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+./setup_openfoam.sh; ./setup_foamExtend.sh; python run_simulation.py
+
+#------------------------------------------------------------------------------
