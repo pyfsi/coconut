@@ -1,0 +1,13 @@
+README file for wire drawing case:
+The parameter.json file includes teh settings of the FSI case
+The setup_openfoam and setup_foamExtend directories contain the initial case for the fluid as the structural calculations respectively. 
+To start the simulation. Go to the directory case of "wire_drawing"
+
+execute following commands:
+./Allrun
+
+After the simulation has been ran, executing the post processing of the results, execute the command:
+python postProcess.py
+Different graphs with the distribution of different parameters will appear at steady state. 
+
+The results can also been seen at paraFoam. 
