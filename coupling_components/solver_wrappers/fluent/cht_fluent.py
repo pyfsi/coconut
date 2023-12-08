@@ -379,105 +379,103 @@ class SolverWrapperFluent(SolverWrapper):
         self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
-    def solve_solution_step(self, interface_input = None):
+    def solve_solution_step(self, interface_input):
         self.iteration += 1
 
         # process input interface data
-        if interface_input is not None:
-            # store incoming variables
-            self.interface_input.set_interface_data(interface_input.get_interface_data())
-            for var in self.input_variables:
-                # write interface input data
-                self.write_input_to_file(var)
+        # store incoming variables
+        self.interface_input.set_interface_data(interface_input.get_interface_data())
+        for var in self.input_variables:
+            # write interface input data
+            self.write_input_to_file(var)
 
-                # copy input data for debugging
-                if self.debug:
-                    for dct in self.interface_input.parameters:
-                        mp_name = dct['model_part']
-                        thread_id = self.model_part_thread_ids[mp_name]
-                        src = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
-                        dst = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
-                        cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
-                        os.system(cmd)
+            # copy input data for debugging
+            if self.debug:
+                for dct in self.interface_input.parameters:
+                    mp_name = dct['model_part']
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    src = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
+                    dst = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                    cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
+                    os.system(cmd)
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
         # process output interface data
-        if self.interface_input is not None:
-            for dct in self.interface_output.parameters:
-                mp_name = dct['model_part']
-                thread_id = self.model_part_thread_ids[mp_name]
+        for dct in self.interface_output.parameters:
+            mp_name = dct['model_part']
+            thread_id = self.model_part_thread_ids[mp_name]
 
-                # read in datafile
-                for var in self.output_variables:
-                    pre = accepted_variables['out'][var][0]
-                    # Avoid repeat of commands in case variables are stored in the same file
-                    if pre is not 'repeat':
-                        tmp = pre + f'_timestep{self.timestep}_thread{thread_id}.dat'
-                        file_name = join(self.dir_cfd, tmp)
-                        data = np.loadtxt(file_name, skiprows=1)
-                        req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
-                        if data.shape[1] != req_dim:
-                            raise ValueError('Given dimension does not match coordinates')
+            # read in datafile
+            for var in self.output_variables:
+                pre = accepted_variables['out'][var][0]
+                # Avoid repeat of commands in case variables are stored in the same file
+                if pre is not 'repeat':
+                    tmp = pre + f'_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    data = np.loadtxt(file_name, skiprows=1)
+                    req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
+                    if data.shape[1] != req_dim:
+                        raise ValueError('Given dimension does not match coordinates')
 
-                        # copy output data for debugging
-                        if self.debug:
-                            dst = pre + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
-                            cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
-                            os.system(cmd)
+                    # copy output data for debugging
+                    if self.debug:
+                        dst = pre + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
+                        cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
+                        os.system(cmd)
 
-                        if accepted_variables['out'][var][1] == 0:
-                            # get face coordinates and ids
-                            vector_tmp = np.zeros((data.shape[0], 3)) * 0.
-                            vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
-                            scalar_tmp = data[:, self.dimensions].reshape(-1, 1)
-                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+                    if accepted_variables['out'][var][1] == 0:
+                        # get face coordinates and ids
+                        vector_tmp = np.zeros((data.shape[0], 3)) * 0.
+                        vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
+                        scalar_tmp = data[:, self.dimensions].reshape(-1, 1)
+                        ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-                            # sort and remove doubles
-                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
-                            vector = vector_tmp[args, :]
-                            scalar = scalar_tmp[args]
-                            ids = ids_tmp[args]
+                        # sort and remove doubles
+                        args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                        vector = vector_tmp[args, :]
+                        scalar = scalar_tmp[args]
+                        ids = ids_tmp[args]
 
-                            # store vector and scalar values in Nodes
-                            model_part = self.model.get_model_part(mp_name)
-                            if ids.size != model_part.size:
-                                raise ValueError('Size of data does not match size of ModelPart')
-                            if not np.all(ids == model_part.id):
-                                raise ValueError('IDs of data do not match ModelPart IDs')
+                        # store vector and scalar values in Nodes
+                        model_part = self.model.get_model_part(mp_name)
+                        if ids.size != model_part.size:
+                            raise ValueError('Size of data does not match size of ModelPart')
+                        if not np.all(ids == model_part.id):
+                            raise ValueError('IDs of data do not match ModelPart IDs')
 
-                            if var == 'pressure':
-                                self.interface_output.set_variable_data(mp_name, 'traction', vector)
-                                self.interface_output.set_variable_data(mp_name, var, scalar)
-                            elif var == 'traction':
-                                self.interface_output.set_variable_data(mp_name, var, vector)
-                                self.interface_output.set_variable_data(mp_name, 'pressure', scalar)
-                            elif var == 'heat_flux':
-                                self.interface_output.set_variable_data(mp_name, var, scalar)
-
-                        if accepted_variables['out'][var][1] == 1:
-                            # get face coordinates and ids
-                            scalar_tmp = data[:, 0].reshape(-1, 1)
-                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
-
-                            # sort and remove doubles
-                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
-                            scalar = scalar_tmp[args]
-                            ids = ids_tmp[args]
-
-                            # store scalar values in Nodes
-                            model_part = self.model.get_model_part(mp_name)
-                            if ids.size != model_part.size:
-                                raise ValueError('Size of data does not match size of ModelPart')
-                            if not np.all(ids == model_part.id):
-                                raise ValueError('IDs of data do not match ModelPart IDs')
-
+                        if var == 'pressure':
+                            self.interface_output.set_variable_data(mp_name, 'traction', vector)
+                            self.interface_output.set_variable_data(mp_name, var, scalar)
+                        elif var == 'traction':
+                            self.interface_output.set_variable_data(mp_name, var, vector)
+                            self.interface_output.set_variable_data(mp_name, 'pressure', scalar)
+                        elif var == 'heat_flux':
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
-            # return interface_output object
-            return self.interface_output
+                    if accepted_variables['out'][var][1] == 1:
+                        # get face coordinates and ids
+                        scalar_tmp = data[:, 0].reshape(-1, 1)
+                        ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+
+                        # sort and remove doubles
+                        args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                        scalar = scalar_tmp[args]
+                        ids = ids_tmp[args]
+
+                        # store scalar values in Nodes
+                        model_part = self.model.get_model_part(mp_name)
+                        if ids.size != model_part.size:
+                            raise ValueError('Size of data does not match size of ModelPart')
+                        if not np.all(ids == model_part.id):
+                            raise ValueError('IDs of data do not match ModelPart IDs')
+
+                        self.interface_output.set_variable_data(mp_name, var, scalar)
+
+        # return interface_output object
+        return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()

@@ -1,15 +1,15 @@
 {
   "settings": {
-    "number_of_timesteps": 400
+    "number_of_timesteps": 600
   },
   "coupled_solver": {
     "type": "coupled_solvers.gauss_seidel",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.001,
+      "delta_t": 0.1,
       "omega": 0.05,
       "save_results": 20,
-      "save_restart": 50,
+      "save_restart": 0,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -45,65 +45,36 @@
       {
         "type": "solver_wrappers.fluent.cht_v2023R1",
         "settings": {
-          "working_directory": "CFD",
-          "case_file": "case_breaking_dam.cas.h5",
+          "working_directory": "CFD_1",
+          "case_file": "cht_hf_in.cas.h5",
           "dimensions": 2,
           "unsteady": true,
-          "flow_equations": false,
-          "heat_equation": true,
           "moving_boundary": false,
-          "multiphase": true,
-          "ini_condition": 293.15,
+          "multiphase": false,
+          "ini_condition": 0,
           "thread_names": [
-            "interface"
+            "boundary"
           ],
           "interface_input": [
             {
-              "model_part": "beamleft_nodes",
+              "model_part": "boundary_faces",
               "variables": [
-                "displacement"
-              ]
-            },
-            {
-              "model_part": "beambottom_nodes",
-              "variables": [
-                "displacement"
-              ]
-            },
-            {
-              "model_part": "beamright_nodes",
-              "variables": [
-                "displacement"
+                "heat_flux"
               ]
             }
           ],
           "interface_output": [
             {
-              "model_part": "beamleft_faces",
+              "model_part": "boundary_faces",
               "variables": [
-                "pressure",
-                "traction"
-              ]
-            },
-            {
-              "model_part": "beambottom_faces",
-              "variables": [
-                "pressure",
-                "traction"
-              ]
-            },
-            {
-              "model_part": "beamright_faces",
-              "variables": [
-                "pressure",
-                "traction"
+                "temperature"
               ]
             }
           ],
           "cores": 1,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 500,
+          "flow_iterations": 100,
           "save_results": 1
         }
       },
@@ -111,64 +82,45 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.v2022",
+            "type": "solver_wrappers.fluent.cht_v2023R1",
             "settings": {
-              "working_directory": "CSM",
-              "cores": 1,
+              "working_directory": "CFD_2",
+              "case_file": "cht_temp_in.cas.h5",
               "dimensions": 2,
-              "arraysize": 200,
+              "unsteady": true,
+              "moving_boundary": false,
+              "multiphase": false,
+              "ini_condition": 293.15,
+              "thread_names": [
+                "boundary"
+              ],
               "interface_input": [
                 {
-                  "model_part": "BEAMINSIDEMOVING0_load_points",
+                  "model_part": "boundary_faces",
                   "variables": [
-                    "pressure",
-                    "traction"
-                  ]
-                },
-                {
-                  "model_part": "BEAMINSIDEMOVING1_load_points",
-                  "variables": [
-                    "pressure",
-                    "traction"
-                  ]
-                },
-                {
-                  "model_part": "BEAMINSIDEMOVING2_load_points",
-                  "variables": [
-                    "pressure",
-                    "traction"
+                    "temperature"
                   ]
                 }
               ],
               "interface_output": [
                 {
-                  "model_part": "BEAMINSIDEMOVING0_nodes",
+                  "model_part": "boundary_faces",
                   "variables": [
-                    "displacement"
-                  ]
-                },
-                {
-                  "model_part": "BEAMINSIDEMOVING1_nodes",
-                  "variables": [
-                    "displacement"
-                  ]
-                },
-                {
-                  "model_part": "BEAMINSIDEMOVING2_nodes",
-                  "variables": [
-                    "displacement"
+                    "heat_flux"
                   ]
                 }
               ],
-              "mp_mode": "THREADS",
-              "input_file": "case_breaking_dam.inp",
+              "cores": 1,
+              "fluent_gui": false,
+              "max_nodes_per_face": 2,
+              "flow_iterations": 100,
               "save_results": 1
             }
           },
           "mapper_interface_input": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.linear",
+              "type": "mappers.nearest",
               "settings": {
                 "directions": [
                   "x",
@@ -180,7 +132,7 @@
           "mapper_interface_output": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.linear",
+              "type": "mappers.nearest",
               "settings": {
                 "directions": [
                   "x",
