@@ -36,13 +36,13 @@ coconut/coupling_components/solver_wrappers/openfoam_extend/v41/source_code_stru
 To install CoCoNuT, instructions can be found on: https://github.com/pyfsi/coconut/tree/wire_drawing
 The  "wire_drawing" branch is used for this simulation, with corresponding modified solver wrappers and mappers.
 The wrappers are made for OpenFOAM 8 and foam-extend 4.1 and modified to let it run a wire drawing case with sliding interface and no-slip
-condition at the FSI interface.
+condition at the FSI interface (see wrappers directory).
 
 The structural solver is developped by Philip Cardiff and adapt to achieve FSI calculations for this wire drawing case with black box approach.
-Please read carefully the README file for installing the structural solver(https://github.com/pyfsi/coconut/tree/wire_drawing/coupling_components/
+Please read carefully the README file for installing the structural solver(coconut/coupling_components/
 solver_wrappers/openfoam_extend/v41/source_code_structure_wire_drawing). The structural calculation makes use of a layering technique in order
-to reduce the computational cost. Unfortunally, this code can't be shared as this is developped in-house the company where the strucutural solver is applied,
-to have a deeper understanding of the metal forming process of dry wire drawing.
+to reduce the computational cost. Unfortunally, this code can't be shared as this is developped by the company where the structural
+solver is applied and is classified.
 
 The parameter.json file includes the settings of the FSI case
 The setup_openfoam and setup_foamExtend directories contain the initial case for the fluid as the structural calculations respectively.
@@ -52,7 +52,7 @@ execute following commands:
 
 "./Allrun"
 
-For this case, the debug switches of the fluid and structure solver are set on"false" to save space, meaning that only results are saved at
+For this case, the debug switches of the fluid and structure solver are set on "false" to save space, meaning that only results are saved at
 every 10th time steps.
 
 After the simulation has been ran, the results at steady state are obtained by executing the command:
