@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 40
+    "number_of_timesteps": 2000
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",

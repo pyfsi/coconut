@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1-20200408                       |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1-20200408
+Exec   : writeCellCentres -time 0.1000000
+Date   : Dec 10 2023
+Time   : 09:28:51
+Host   : "cfdclu60.ugent.be"
+PID    : 18487
+CtrlDict : "/lusers/temp/mathieu/wire_drawing/CSM/system/controlDict"
+Case   : /lusers/temp/mathieu/wire_drawing/CSM
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+allowSystemOperations : Disallowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+--> FOAM Warning : 
+    From function void* Foam::dlOpen(const Foam::fileName&, bool)
+    in file POSIX.C at line 1204
+    dlopen error : libconservativeMeshToMesh.so: cannot open shared object file: No such file or directory
+--> FOAM Warning : 
+    From function bool Foam::dlLibraryTable::open(const Foam::fileName&, bool)
+    in file db/dynamicLibrary/dlLibraryTable/dlLibraryTable.C at line 97
+    could not load "libconservativeMeshToMesh.so"
+Create mesh for time = 0.1000000
+
+Time = 0.1000000
+Writing components of cellCentre positions to volScalarFields ccx, ccy, ccz in 0.1000000
+
+End

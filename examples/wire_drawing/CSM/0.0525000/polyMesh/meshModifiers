@@ -1,0 +1,54 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1-20200408                       |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       polyTopoChanger;
+    location    "0.0525000/polyMesh";
+    object      meshModifiers;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+3
+(
+wireInletLayerAddition
+{
+    type wireLayerAdditionRemoval;
+    faceZoneName wireInletFaces;
+    minLayerThickness 1e-15;
+    maxLayerThickness 1.025e-05;
+    oldLayerThickness 0;
+    active true;
+    wireCellZoneIndex 0;
+}
+
+wireInletLayerRemoval
+{
+    type wireLayerAdditionRemoval;
+    faceZoneName wireInletFaces;
+    minLayerThickness 1e-11;
+    maxLayerThickness 1e+15;
+    oldLayerThickness 5e-05;
+    active true;
+    wireCellZoneIndex 0;
+}
+
+wireOutletLayerRemoval
+{
+    type wireLayerAdditionRemoval;
+    faceZoneName wireOutletFaces;
+    minLayerThickness 0.000533333;
+    maxLayerThickness 1e+15;
+    oldLayerThickness 1e+15;
+    active true;
+    wireCellZoneIndex 0;
+}
+)
+
+// ************************************************************************* //
