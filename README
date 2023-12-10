@@ -33,7 +33,7 @@ coconut/coupling_components/solver_wrappers/openfoam_extend/v41/coconut_plasticN
 Directory library source code structural calculations:
 coconut/coupling_components/solver_wrappers/openfoam_extend/v41/source_code_structure_wire_drawing
 
-To install CoCoNuT, instructions can be found on: https://github.com/pyfsi/coconut/tree/wire_drawing
+To install CoCoNuT, instructions can be found on README.md
 The  "wire_drawing" branch is used for this simulation, with corresponding modified solver wrappers and mappers.
 The wrappers are made for OpenFOAM 8 and foam-extend 4.1 and modified to let it run a wire drawing case with sliding interface and no-slip
 condition at the FSI interface (see wrappers directory).
