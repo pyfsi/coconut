@@ -123,16 +123,16 @@ class SolverWrapperFluent(SolverWrapper):
             moving_boundary = '#f'
         if "pressure" in self.output_variables and "traction" in self.output_variables:
             if "temperature" in self.output_variables:
-                stored_variables = "ptt"
+                stored_variables = str(3)
             elif "heat_flux" in self.output_variables:
-                stored_variables = "pthf"
+                stored_variables = str(4)
             else:
-                stored_variables = "pt"
+                stored_variables = str(2)
         else:
             if "temperature" in self.output_variables:
-                stored_variables = "t"
+                stored_variables = str(0)
             elif "heat_flux" in self.output_variables:
-                stored_variables = "hf"
+                stored_variables = str(1)
             else:
                 raise ValueError('The FSI loop needs to store at least one variable.')
         with open(join(self.dir_src, journal)) as infile:
@@ -144,7 +144,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|MULTIPHASE|', multiphase)
                     line = line.replace('|STORED_VARIABLES|', stored_variables)
                     line = line.replace('|MOVING_BOUNDARY|', moving_boundary)
-                    line = line.replace('|THERMAL_BC|', self.thermal_bc)
+                    line = line.replace('|THERMAL_BC|', str(1) if (self.thermal_bc == 'heat_flux') else str(0))
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
@@ -412,7 +412,7 @@ class SolverWrapperFluent(SolverWrapper):
             for var in self.output_variables:
                 pre = accepted_variables['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
-                if pre is not 'repeat':
+                if pre != 'repeat':
                     tmp = pre + f'_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     data = np.loadtxt(file_name, skiprows=1)
@@ -521,7 +521,7 @@ class SolverWrapperFluent(SolverWrapper):
         if not self.debug:
             for thread_id in self.thread_ids.values():
                 for var in self.output_variables:
-                    if accepted_variables['out'][var][0] is not 'repeat':
+                    if accepted_variables['out'][var][0] != 'repeat':
                         try:
                             os.remove(join(self.dir_cfd, accepted_variables['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:
@@ -566,7 +566,7 @@ class SolverWrapperFluent(SolverWrapper):
             unique_string = '-'.join(tuple(tmp.astype(str)))
             hash_id = hashlib.sha1(str.encode(unique_string))
             ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
-            face_ids[hash_id] = unique_string
+            face_ids[ids[i]] = unique_string
         return ids, face_ids
 
     def reverse_face_ids(self, id, mp_name):

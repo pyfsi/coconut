@@ -103,25 +103,25 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     )
 )
 ;
-;   SET DELTA_T
-(if unsteady
-    (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))
-)
-;
 ;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS
 (if (= timestep_start 0)
     (begin
         (wait_message "initial_interface_profiles_written")
-        (cond ((= thermal_bc "temperature")
+        (if (= thermal_bc 0)
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes "udf" \"set_temperature::udf_thermal\" no ,\n"(list-ref face_threads k))))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no ,\n"(list-ref face_threads k)))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_temperature::udf_thermal\" no ,\n"(list-ref face_threads k)))
             )
-            ((= thermal_bc "heat_flux")
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes "udf" \"set_heat_flux::udf_thermal\" no ,\n"(list-ref face_threads k))))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no ,\n"(list-ref face_threads k)))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_heat_flux::udf_thermal\" no ,\n"(list-ref face_threads k)))
             )
         )
     )
+)
+;   SET DELTA_T
+(if unsteady
+    (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))
 )
 ;
 ;   FSI LOOP
@@ -167,9 +167,9 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             (if moving_boundary
                 (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::udf_thermal\"")
             )
-            (cond ((= thermal_bc "temperature")
+            (cond ((= thermal_bc 0)
                     (ti-menu-load-string "define user-defined execute-on-demand \"store_heat_flux::udf_thermal\""))
-                ((= thermal_bc "heat_flux")
+                ((= thermal_bc 1)
                     (ti-menu-load-string "define user-defined execute-on-demand \"store_temperature::udf_thermal\""))
             )
             (send_message "continue_ready")

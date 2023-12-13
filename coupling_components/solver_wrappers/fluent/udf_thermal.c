@@ -690,7 +690,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
     face_t face;
     Node *node;
     int node_number, j;
-    real vector[ND_ND], area[ND_ND]; /* store 2 or 3D heat flux and up-to-date face area in arrays */
+    real vector[ND_ND], area[ND_ND], normal[ND_ND]; /* store 2 or 3D heat flux and up-to-date face area in arrays */
 #endif /* RP_NODE */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
@@ -738,11 +738,12 @@ DEFINE_ON_DEMAND(store_heat_flux){
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
             F_AREA(area, face, face_thread);
+            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area));
             NV_VS(vector, =, F_STORAGE_R_N3V(face, face_thread, SV_HEAT_FLUX), *, 1.0);
             for (d = 0; d < ND_ND; d++) {
                 flux[d][i] = vector[d];
             }
-            flux[ND_ND][i] = NV_DOT(area, vector);
+            flux[ND_ND][i] = NV_DOT(normal, vector);
 
             for (j = 0; j < mnpf; j++) {
                 /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
@@ -856,51 +857,44 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
     char file_name[256];
     int thread_id = THREAD_ID(face_thread);
 
-#if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
     Node *node;
     int i, d, n, node_number, id;
+    int timestep;
     DECLARE_MEMORY(temp, real);
     DECLARE_MEMORY(flag, bool);
     DECLARE_MEMORY_N(ids, int, mnpf);
     FILE *file = NULL;
-#endif /* RP_NODE */
 
-#if RP_HOST /* only host process is involved, code not compiled for node */
-    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
-#endif /* RP_HOST */
+    timestep = N_TIME;
 
-    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
-
-#if RP_HOST /* only host process is involved, code not compiled for node */
-    sprintf(file_name, "temperature_timestep%i_thread%i.dat",
-            timestep, thread_id);
-    host_to_node_sync_file(file_name); /* send file to the compute nodes */
-#else
+/*
     struct stat st = {0};
-    /* create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved */
+    create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved
     if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
         mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
     sprintf(file_name, "|TMP_DIRECTORY_NAME|/temperature_timestep%i_thread%i.dat",
             timestep, thread_id);
-    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
-#endif /* RP_HOST */
+*/
 
-#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    sprintf(file_name, "temperature_timestep%i_thread%i.dat",
+            timestep, thread_id);
+
     if (NULLP(file = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
         exit(1);
     }
 
-    char line[1024];
+    char line[256];
     n = 0;
     while (fgets(line, sizeof(line), file) != NULL) {
             n++;
         }
     n--;
+    char line_bis[64];
     fseek(file, 0L, SEEK_SET);
-    fgets(line, sizeof(line), file); // Discard the header line
+    fgets(line_bis, sizeof(line_bis), file); // Discard the header line
 
     ASSIGN_MEMORY(temp, n, real);
     ASSIGN_MEMORY(flag, n, bool);
@@ -964,11 +958,12 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
     RELEASE_MEMORY(flag);
     RELEASE_MEMORY_N(ids, mnpf);
 
+/*
     if (myid == 0) {
-        sprintf(file_name, "|TMP_DIRECTORY_NAME|/temperature_timestep%i_thread%i.dat",
+        sprintf(file_name, "temperature_timestep%i_thread%i.dat",
                 timestep-1, thread_id);
         remove(file_name);}
-#endif /* RP_NODE */
+*/
 
     if (myid == 0) {printf("\nFinished UDF set_temperature.\n"); fflush(stdout);}
 }
@@ -986,59 +981,53 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
     char file_name[256];
     int thread_id = THREAD_ID(face_thread);
 
-#if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
     Node *node;
     int i, d, n, node_number, id;
+    int timestep;
     DECLARE_MEMORY(heat_flux, real);
     DECLARE_MEMORY(flag, bool);
     DECLARE_MEMORY_N(ids, int, mnpf);
     FILE *file = NULL;
-#endif /* RP_NODE */
 
-#if RP_HOST /* only host process is involved, code not compiled for node */
-    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
-#endif /* RP_HOST */
+    timestep = N_TIME; /* Test if this works on the nodes */
 
-    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
-
-#if RP_HOST /* only host process is involved, code not compiled for node */
-    sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
-            timestep, thread_id);
-    host_to_node_sync_file(file_name); /* send file to the compute nodes */
-#else
+/*
     struct stat st = {0};
-    /* create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved */
+    create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved
     if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
         mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
     sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
             timestep, thread_id);
-    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
-#endif /* RP_HOST */
+*/
 
-#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
+            timestep, thread_id);
+
     if (NULLP(file = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
         exit(1);
     }
 
-    char line[1024];
+    char line[256];
     n = 0;
     while (fgets(line, sizeof(line), file) != NULL) {
             n++;
         }
     n--;
+    char line_bis[64];
     fseek(file, 0L, SEEK_SET);
-    fgets(line, sizeof(line), file); // Discard the header line
+    fgets(line_bis, sizeof(line_bis), file); // Discard the header line
 
     ASSIGN_MEMORY(heat_flux, n, real);
     ASSIGN_MEMORY(flag, n, bool);
     ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
-    for (i=0; i < n; i++) {
+    double dummy;
+    for (i = 0; i < n; i++) {
         for (d = 0; d < ND_ND; d++) {
-            fscanf(file, "%lf"); /* read and discard x-, y-, (z-) flux components */
+            fscanf(file, "%lf", &dummy); /* read and discard x-, y-, (z-) flux components */
         }
         fscanf(file, "%lf", &heat_flux[i]); /* read normal incoming heat flux from file */
         flag[i] = false;
@@ -1097,15 +1086,27 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
     RELEASE_MEMORY(flag);
     RELEASE_MEMORY_N(ids, mnpf);
 
+/*
     if (myid == 0) {
         sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
                 timestep-1, thread_id);
         remove(file_name);}
-#endif /* RP_NODE */
+*/
 
     if (myid == 0) {printf("\nFinished UDF set_heat_flux.\n"); fflush(stdout);}
 }
 
+  /*-------*/
+ /* dummy */
+/*-------*/
+
+DEFINE_PROFILE(dummy, face_thread, var) {
+    face_t face;
+
+    begin_f_loop(face, face_thread) {
+        F_PROFILE(face, face_thread, var) = 0;
+    } end_f_loop(face, face_thread);
+}
 
   /*------------*/
  /* move_nodes */

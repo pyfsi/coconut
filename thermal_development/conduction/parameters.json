@@ -6,7 +6,7 @@
     "type": "coupled_solvers.gauss_seidel",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.1,
+      "delta_t": 10,
       "omega": 0.05,
       "save_results": 20,
       "save_restart": 0,
@@ -22,23 +22,9 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.or",
+      "type": "convergence_criteria.iteration_limit",
       "settings": {
-        "criteria_list": [
-          {
-            "type": "convergence_criteria.iteration_limit",
-            "settings": {
-              "maximum": 20
-            }
-          },
-          {
-            "type": "convergence_criteria.relative_norm",
-            "settings": {
-              "tolerance": 1e-3,
-              "order": 2
-            }
-          }
-        ]
+        "maximum": 5
       }
     },
     "solver_wrappers": [
@@ -57,7 +43,7 @@
           ],
           "interface_input": [
             {
-              "model_part": "boundary_faces",
+              "model_part": "boundary_in_faces",
               "variables": [
                 "heat_flux"
               ]
@@ -65,7 +51,7 @@
           ],
           "interface_output": [
             {
-              "model_part": "boundary_faces",
+              "model_part": "boundary_out_faces",
               "variables": [
                 "temperature"
               ]
@@ -75,7 +61,7 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 1
+          "save_results": 20
         }
       },
       {
@@ -96,7 +82,7 @@
               ],
               "interface_input": [
                 {
-                  "model_part": "boundary_faces",
+                  "model_part": "boundary_in_faces",
                   "variables": [
                     "temperature"
                   ]
@@ -104,7 +90,7 @@
               ],
               "interface_output": [
                 {
-                  "model_part": "boundary_faces",
+                  "model_part": "boundary_out_faces",
                   "variables": [
                     "heat_flux"
                   ]
@@ -114,13 +100,13 @@
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 1
+              "save_results": 20
             }
           },
           "mapper_interface_input": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.nearest",
+              "type": "mappers.linear",
               "settings": {
                 "directions": [
                   "x",
@@ -132,7 +118,7 @@
           "mapper_interface_output": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.nearest",
+              "type": "mappers.linear",
               "settings": {
                 "directions": [
                   "x",
