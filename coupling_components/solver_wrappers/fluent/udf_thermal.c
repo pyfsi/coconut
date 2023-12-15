@@ -691,6 +691,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
     Node *node;
     int node_number, j;
     real vector[ND_ND], area[ND_ND], normal[ND_ND]; /* store 2 or 3D heat flux and up-to-date face area in arrays */
+    real heat;
 #endif /* RP_NODE */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
@@ -743,7 +744,9 @@ DEFINE_ON_DEMAND(store_heat_flux){
             for (d = 0; d < ND_ND; d++) {
                 flux[d][i] = vector[d];
             }
-            flux[ND_ND][i] = NV_DOT(normal, vector);
+            heat = BOUNDARY_HEAT_FLUX(face, face_thread);
+            // flux[ND_ND][i] = NV_DOT(normal, vector);
+            flux[ND_ND][i] = heat/NV_MAG(area);
 
             for (j = 0; j < mnpf; j++) {
                 /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */

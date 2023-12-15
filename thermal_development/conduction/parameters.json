@@ -8,7 +8,7 @@
       "timestep_start": 0,
       "delta_t": 10,
       "omega": 0.05,
-      "save_results": 20,
+      "save_results": 1,
       "save_restart": 0,
       "model": {
         "type": "coupled_solvers.models.ls",
@@ -22,9 +22,23 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.iteration_limit",
+      "type": "convergence_criteria.or",
       "settings": {
-        "maximum": 5
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 30
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
+          }
+        ]
       }
     },
     "solver_wrappers": [

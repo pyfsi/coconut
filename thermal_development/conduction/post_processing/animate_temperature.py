@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 import pickle
 
+# Initial interface temperature
+T_ini = 20 # °C
+
 # different cases to be plotted
 common_path = '../../../thermal_development/conduction/'
 case_paths = ['case_results.pickle']
@@ -25,7 +28,10 @@ line_styles = ['-', '--', ':', '-.']
 for sol, itf, var, uni, ani_fig in (('solution_y', 'interface_y', 'temperature', 'K', animation_figure_temperature),
                                     ('solution_x', 'interface_x', 'heat_flux', 'W', animation_figure_heat_flux)):
     for j, name in enumerate(legend_entries):
-        solution = results[name][sol]
+        if var == 'temperature':
+            solution = results[name][sol] - 273.15
+        else:
+            solution = results[name][sol]
         interface = results[name][itf]
         dt = results[name]['delta_t']
         time_step_start = results[name]['timestep_start']
@@ -40,7 +46,7 @@ for sol, itf, var, uni, ani_fig in (('solution_y', 'interface_y', 'temperature',
         mask_z = (coordinates[:, 2] > -0.0005) & (coordinates[:, 2] < 0.0005)  # for face centers (pressure, traction)
         # mask_z = (coordinates[:, 2] >= 1e-16) & (coordinates[:, 2] < 0.0005)  # for both
         abscissa = 1  # y-axis
-        component = 1  # y-component
+        component = 0  # x-component in case solution is vector
 
         animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
         animation.line.set_color(colors[j % len(colors)])
@@ -48,8 +54,20 @@ for sol, itf, var, uni, ani_fig in (('solution_y', 'interface_y', 'temperature',
         animation.line.set_marker('o')
         animation.line.set_markersize(2)
 
+        # Plot avg interface temperature in time
+        if var == "temperature":
+            print(type(solution))
+            avg_T = np.array([np.mean(solution[:,i]) for i in range(np.shape(solution)[1])])
+            avg_T[0] = T_ini
+            time = time_step_start + dt*np.array(range(np.shape(solution)[1]))
+            plt.plot(time, avg_T, 'or')
+            plt.ylabel('Interface temperature [°C]')
+            plt.xlabel('Time [s]')
+            plt.ylim((np.min(avg_T)-1, np.max(avg_T)+1))
+            plt.show()
+
     ani_fig.figure.axes[0].set_ylabel(f'{var} ({uni})')
-    ani_fig.figure.axes[0].set_xlabel('axial coordinate (m)')
+    ani_fig.figure.axes[0].set_xlabel('height on itf (m)')
     ani_fig.figure.axes[0].legend()
     ani_fig.figure.tight_layout()
     # or make figure active using plt.figure(ani_fig.number) and use plt.xlabel('') type commands etc.
