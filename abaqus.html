@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -1589,19 +1589,19 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 <p>It is required to have <code>initial=NO</code> when using the application transient fidelity (default when no application specified). This corresponds to the <code>initialConditons=OFF</code> setting when creating a step using Python. As mentioned earlier, this makes sure that for each time step the accelerations from the previous time step are used. The time step (0.0001) will in this case be replaced by settings found in the JSON file. More information for dynamic cases can be found on <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-dynamic.htm">this Abaqus documentation page</a>, for static cases on <a href="https://abaqus-docs.mit.edu/2017/English/SIMACAEKEYRefMap/simakey-r-static.htm">this page</a>.</p>
 <h4 id="input-related-settings-in-json-file">Input-related settings in JSON file</h4>
 <p>The name of the surface has to be put as value for the <code>"model_part"</code> key in the <code>interface_input</code> list, but with "_load_points" appended to it. If multiple surfaces are defined, their geometry should match those in the flow solver wrapper counterpart and be listed in the same order.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;interface_input&quot;</span><span class="p">:</span><span class="w"> </span>
-<span class="w">  </span><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SURFACE_NAME_A_load_points&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;traction&quot;</span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SURFACE_NAME_B_load_points&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;traction&quot;</span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">]</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;interface_input&quot;</span><span class="p">:</span> 
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFACE_NAME_A_load_points&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;traction&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;SURFACE_NAME_B_load_points&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;traction&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="setup-for-abaqus-output-displacements">Setup for Abaqus output (displacements)</h3>
 <p>After creation of the step, Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. To do so one must create node sets in the assembly (if this had not been done before) containing all structural nodes of the surfaces, then create a Field Output Request for at least the coordinates and the displacements. This Field Output Request can in the GUI be found as part of the model tree, but below also an example for the Python interface is given. A Field Output Request requests field output (as the name says) to be written to the output database file (.odb).</p>
@@ -1617,19 +1617,19 @@ Note that the step type "ImplicitDynamicsStep" is an example, it depends on the 
 </code></pre></div>
 <h4 id="output-related-settings-in-json-file">Output-related settings in JSON file</h4>
 <p>The values of the <code>interface_output["model_part"]</code> keys should match the names of the node sets defined in Abaqus, appended with "_nodes". These values are internally used in CoCoNuT to distinguish the different <code>ModelParts</code>. The order defined in the <code>interface_output</code> list should be the same as the <code>interface_input</code> list and match the flow solver wrapper counterpart. </p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;interface_output&quot;</span><span class="p">:</span><span class="w"> </span>
-<span class="w">  </span><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NODESET_NAME_A_nodes&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;model_part&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NODESET_NAME_B_nodes&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;variables&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">]</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;interface_output&quot;</span><span class="p">:</span> 
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_A_nodes&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;model_part&quot;</span><span class="p">:</span> <span class="s2">&quot;NODESET_NAME_B_nodes&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;variables&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displacement&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="note-about-choosing-modelparts">Note about choosing <code>ModelParts</code></h3>
 <p>The created "surfaces" and "node sets" for load input and displacement output respectively, correspond to <code>ModelParts</code> in the CoCoNuT code, a representation of the data used for the coupling. It is strongly advised to sub-divide to fluid-structure interaction interface intelligently, depending on the geometry. As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different <code>ModelPart</code>. As the interpolation is based on shortest distance, issues can arise at sharp corners. Those are avoided by having different <code>ModelParts</code> at each side of the corner. Another reason to do this is because the code cannot handle elements with two or more faces being part of the same <code>ModelPart</code>. This situation would occur if the surface contains corners. An example is an airfoil where the suction side and pressure side belong to the same <code>ModelPart</code>: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side. Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or load point on the suction side could have a nearest neighbour on the pressure side, causing that the wrong data is used for interpolation.</p>
@@ -1719,10 +1719,10 @@ Since Abaqus only uses the <em><code>CSM_Restart.inp</code></em> (which does not
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.6">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.cd566b2a.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
@@ -56,7 +56,7 @@
   
     
     
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -1356,7 +1356,7 @@ More information on running tests can be found <a href="https://pyfsi.github.io/
 <div class="highlight"><pre><span></span><code><span class="nv">COCO</span><span class="o">=</span>/some/absolute/path
 </code></pre></div>
 <p>We can now navigate to the folder of the example we will simulate. 
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$COCO</span>/coconut/examples/tube_tube_flow_tube_structure/
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$COCO</span>/coconut/examples/tube/tube_flow_tube_structure/
 </code></pre></div>
 This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file <em><code>parameters.json</code></em> will be used to run the actual FSI simulation, but we will come back to that later. 
 First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
@@ -1468,10 +1468,10 @@ We would now expect the second dictionary to generate a solver wrapper to commun
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.22074ed6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.1514a9a0.min.js"></script>
+      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
