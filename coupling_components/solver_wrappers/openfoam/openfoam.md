@@ -187,14 +187,11 @@ OpenFOAM-directory:
   
 ## Version specific documentation
 
-### v41 (OpenFOAM 4.1)
-
-First version.
-
 ### v8 (OpenFOAM 8)
 
-In this OpenFOAM version, the name of some commands and classes are different. The required changes are visible in the
-version specific solver wrapper Python file _`v8.py`_.
+Base version.
+In this OpenFOAM version some changes were made with respect to older versions, for example, the name of some commands and classes are different.
+The required changes are visible in the version specific solver wrapper Python file _`v8.py`_.
 
 Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:
 

@@ -335,8 +335,8 @@ def get_solver_env(solver_module_name, working_dir):
     pickle file. Finally, pickle file is loaded and returned as a python-dict.
 
     @param solver_module_name: module name of the solver wrapper,
-    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
-    e.g. fluent.v2019R1
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2023R1.
+    e.g. fluent.v2023R1
     @type: str
 
     @param working_dir: working directory of the solver where the simulation is run.
@@ -375,8 +375,8 @@ def get_solver_env(solver_module_name, working_dir):
 def solver_available(solver_module_name):
     """
     @param solver_module_name: module name of the solver wrapper,
-    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
-    e.g. fluent.v2019R1
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2023R1
+    e.g. fluent.v2023R1
     @type: str
 
     @return: presence of solver env

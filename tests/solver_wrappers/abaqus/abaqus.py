@@ -104,10 +104,10 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
     def test_restart(self):
         """
         Test whether restarting at time step 2 and simulating 2 time steps yields the same displacement as when the
-        simulation is ran from time step 0 until time step 4. A constant pressure is applied and no shear, on the tube
+        simulation is run from time step 0 until time step 4. A constant pressure is applied and no shear, on the tube
         examples. For the test the relative difference between displacements is checked, but it is required to also use
         a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e. whenever one of the
-        original coordinates is 0), because those have a near-zero displacement after applying a uniform pressure an no
+        original coordinates is 0), because those have a near-zero displacement after applying a uniform pressure and no
         shear. This near-zero value is a noise and has large relative differences between runs, but a very low absolute
         value, they are successfully filtered with an absolute tolerance.
         """
@@ -155,7 +155,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         shear, on the tube examples. For the test the relative difference between displacements is checked, but it is
         required to also use a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e.
         whenever one of the original coordinates is 0), because those have a near-zero displacement after applying a
-        uniform pressure an no shear. This near-zero value is a noise and has large relative differences between runs,
+        uniform pressure and no shear. This near-zero value is a noise and has large relative differences between runs,
         but a very low absolute value, they are successfully filtered with an absolute tolerance.
         """
 

@@ -37,7 +37,7 @@ For example
 python3 run_tests.py fluent abaqus
 ```
 will run all tests that have the `fluent` or `abaqus` in its path: e.g.
-`coconut.tests.solver_wrappers.fluent.test_v2019R1.test_move_nodes`.
+`coconut.tests.solver_wrappers.fluent.test_v2023R1.test_move_nodes`.
 
 Besides the method of running tests explained above, it is also possible to use commands of the form
 ```bash
@@ -56,34 +56,35 @@ on the level of a file, or on the level of the class or even a method. While in 
 it is sometimes needed to start the test from the _`coconut/tests/`_ directory! 
 If not, errors will occur due to erroneous paths, especially in the tests of a solver wrapper.
 
-Let us consider the Abaqus unit test as an example. It is located in _`coconut/tests/solver_wrappers/abaqus/test_v614.py`_. In this file
-there are two test classes: `TestSolverWrapperAbaqus614Tube2D` and `TestSolverWrapperAbaqus614Tube3D`, which inherit from the former.
-Within these test classes, four test methods are run: `test_repeat_iteration`, `test_restart`, `test_partitioning` and 
-`test_shear`. The other two methods, `setUpClass` and `setUp`, are run just before each test class and test method, respectively.
+Let us consider the Abaqus unit test as an example. It is located in _`coconut/tests/solver_wrappers/fluent/test_v2023R1.py`_. In this file
+there are two test classes: `TestSolverWrapperFluent2023R1Tube2D` and `TestSolverWrapperFluent2023R1Tube3D`, which inherit from the former.
+Within these test classes, four test methods are run: `test_move_nodes`, `test_partitioning`, `test_pressure_traction` and 
+`test_restart`. The two methods `setUpClass` and `setUp` are run just before each test class and test method, respectively.
+The method `tearDownClass` is run after each test class.
 
 If one wants to test this entire file, type following command in the terminal:
 
 ```bash
-python3 -m unittest -bv solver_wrappers/abaqus/test_v614.py
+python3 -m unittest -bv solver_wrappers/fluent/test_v2023R1.py
 ```
  
  This will run both test classes and all four test methods for each test class. The `-b` and `-v` keywords have the same meaning 
  as above. If one wants to test for example only the 2D test class, type the following command in the terminal:
  
 ```bash
-python3 -m unittest -bv solver_wrappers.abaqus.test_v614.TestSolverWrapperAbaqus614Tube2D
+python3 -m unittest -bv solver_wrappers.fluent.test_v2023R1.TestSolverWrapperFluent2023R1Tube2D
 ```
 
 Note the `.` instead of the `/` to separate the folders since now classes are considered rather than files. This command 
 will cause Python to run all four test methods from the 2D test class. Finally, it is also possible to run a single 
-test method as well. Consider one wants to test only the correct partitioning of the Abaqus solver over multiple cores 
+test method as well. Consider one wants to test only the correct partitioning of the Fluent solver over multiple cores 
 in the 3D test class, type following command in the terminal:
 
 ```bash
-python3 -m unittest -bv solver_wrappers.abaqus.test_v614.TestSolverWrapperAbaqus614Tube3D.test_partitioning
+python3 -m unittest -bv solver_wrappers.fluent.test_v2023R1.TestSolverWrapperFluent2023R1Tube3D.test_partitioning
 ```
 
-Here, only the test method `test_partitioning` is run in the `TestSolverWrapperAbaqus614Tube3D` class.
+Here, only the test method `test_partitioning` is run in the `TestSolverWrapperFluent2023R1Tube3D` class.
 
 ### What if solver software is not available
 If a solver wrapper test is run, but the software is not available, the test will automatically be skipped and the non-availability wil be given

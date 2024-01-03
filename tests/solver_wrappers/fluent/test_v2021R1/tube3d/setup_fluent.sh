@@ -9,7 +9,8 @@ then
 fi
 
 # create new CFD folder
-cp -r setup_fluent CFD
+cp -r ./../../test_v2019R3/tube3d/setup_fluent/ CFD
+cp ./setup_fluent/case.jou CFD  # overwrite case.jou file
 cd CFD
 
 # make fluent case
