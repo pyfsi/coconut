@@ -131,7 +131,7 @@ COCO=/some/absolute/path
 
 We can now navigate to the folder of the example we will simulate. 
 ```bash
-cd $COCO/coconut/examples/tube_tube_flow_tube_structure/
+cd $COCO/coconut/examples/tube/tube_flow_tube_structure/
 ```
 This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file *`parameters.json`* will be used to run the actual FSI simulation, but we will come back to that later. 
 First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
