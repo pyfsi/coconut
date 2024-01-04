@@ -1066,7 +1066,7 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
                 }
                 if (isNodeFound) { /* All nodes have been found, so the faces match */
                     flag[i] = true;
-                    F_PROFILE(face, face_thread, var) = heat_flux[i];
+                    F_PROFILE(face, face_thread, var) = -1*heat_flux[i];
                     break;
                 }
             }
