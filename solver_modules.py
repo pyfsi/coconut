@@ -5,7 +5,7 @@ uses the environment variables in all the spawned processes, used for executing 
 in the various stages of the simulation.
 """
 
-machine_name = 'ugent_cluster_CO7'
+machine_name = 'hortense'
 
 solver_load_cmd_dict = {
     'ugent_cluster_CO7': {
@@ -29,11 +29,18 @@ solver_load_cmd_dict = {
         'openfoam.v8' : 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },
     'hortense': {
-        'fluent.v2021R1': 'module load FLUENT/2021R1 && module load intel/2020b  '
+        'fluent.v2019R3': 'ml FLUENT/2019R3 && ml intel/2021a '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be &&  cat $PBS_NODEFILE > fluent.hosts',
-        'abaqus.v2022': 'ml intel/2020b && module load ABAQUS/2022 && unset SLURM_GTIDS '
-                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',  # TODO does this work?
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'fluent.v2021R1': 'ml FLUENT/2021R1 && ml intel/2021a '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'fluent.v2023R1': 'ml FLUENT/2023R1 && ml intel/2021a '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'abaqus.v2022': 'ml intel/2021a && module load ABAQUS/2022 '
+                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
+        'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     }
 }
 
