@@ -49,7 +49,7 @@ This section describes the parameter settings in the JSON file. A distinction is
 | <nobr>`save_results`</nobr> | int  | Default: `1`. Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.                                             |
 
 ## Overview of operation
-The solver wrapper consists of 6 types of files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v614.py`*):
+The solver wrapper consists of 6 types of files located in the source directory (with *`X`* denoting the Abaqus version, e.g. *`v2022.py`*):
 
  - *`abaqus.py`*: Contains the base class `SolverWrapperAbaqus`.
  - *`X.py`*: Defines the `SolverWrapperAbaqusX`class, which inherits from the base class. Some version specific parameters might be overwritten in these subclasses. 
@@ -240,11 +240,8 @@ Since Abaqus only uses the *`CSM_Restart.inp`* (which does not contain any mesh 
 
 ## Version specific documentation
 
-### v6.14
-First version.
-
 ### v2021
-No major changes. 
+Base version.
 
 ### v2022
 No major changes. 
