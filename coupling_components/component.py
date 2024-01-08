@@ -2,6 +2,9 @@ from coconut import tools
 
 
 class Component(object):
+    mapped = False
+    dummy = False
+
     def __init__(self):
         self.initialized = False
         self.initialized_solution_step = False

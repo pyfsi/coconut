@@ -1,4 +1,0 @@
-coconut_interFoam.C
-../coconut_functionObjects/field/rhoWallShearStress/rhoWallShearStress.C
-
-EXE = $(FOAM_USER_APPBIN)/coconut_interFoam

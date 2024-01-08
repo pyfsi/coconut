@@ -18,6 +18,7 @@ def create(parameters):
 class SolverWrapperTubeFlow(SolverWrapper):
     al = 4  # number of terms below diagonal in matrix
     au = 4  # number of terms above diagonal in matrix
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -183,6 +184,11 @@ class SolverWrapperTubeFlow(SolverWrapper):
         f = self.get_residual()
         if self.k == 1:
             self.residual0 = np.linalg.norm(f)
+        residual = np.linalg.norm(f)
+        if self.check_coupling_convergence and residual / self.residual0 < self.newtontol:
+            self.coupling_convergence = True
+            if self.print_coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
         if self.residual0:
             for s in range(self.newtonmax):
                 j = self.get_jacobian()

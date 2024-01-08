@@ -7,6 +7,7 @@ def create(parameters):
 
 
 class ModelDummy(Component):
+    dummy = True
     provides_get_solution = True
     provides_set_solution = False
 

@@ -44,7 +44,7 @@ class CoupledSolver(Component):
                                                                              'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
-            if parameters['type'] == 'solver_wrappers.mapped':
+            if self.solver_wrappers[-1].mapped:
                 self.index_mapped = index
             else:
                 self.index_other = index
@@ -85,6 +85,8 @@ class CoupledSolver(Component):
     def initialize(self):
         super().initialize()
 
+        self.convergence_criterion.initialize(self.solver_wrappers)
+
         # initialize mappers if required
         if self.index_mapped is not None:
             self.solver_wrappers[self.index_other].initialize()
@@ -97,7 +99,6 @@ class CoupledSolver(Component):
 
         self.x = self.solver_wrappers[1].get_interface_output().copy()
         self.y = self.solver_wrappers[0].get_interface_output().copy()
-        self.convergence_criterion.initialize()
         self.predictor.initialize(self.x)
 
         if self.solver_level == 0:

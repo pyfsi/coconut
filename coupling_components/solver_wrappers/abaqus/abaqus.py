@@ -21,6 +21,7 @@ def create(parameters):
 
 class SolverWrapperAbaqus(SolverWrapper):
     version = None
+    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):

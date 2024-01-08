@@ -46,7 +46,7 @@ If different parameters are used with different Fluent versions, this should be 
 
 ## Overview of operation
 
-The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2019R1"):
+The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
 
 -   *`X.py`*: defines the `SolverWrapperFluentX` class, 
 -   *`X.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
@@ -89,39 +89,21 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Version specific documentation
 
-### v2019R1 (19.3.0)
-
-First version.
-
-### v2019R2 (19.4.0)
-
-No changes.
-
 ### v2019R3 (19.5.0)
 
-The solutions in this version are (slightly) different because the *Rhie-Chow face flux interpolation in the pressure-based solver* has changed. This setting can be reverted with the TUI command `solve set previous undo-2019r3 y n`, which is included in *`v2019R3.jou`*.
+Base version.
+With respect to older Fluent versions, the solutions in this version are (slightly) different because the *Rhie-Chow face flux interpolation in the pressure-based solver* has changed. This setting can be reverted with the TUI command `solve set previous undo-2019r3 y n`, which is included in *`v2019R3.jou`*.
 
 The results can be slightly different when restarts are used for multi-core simulations for the following reason: *For parallel cases with smoothing that do not use dynamic load balancing, a zonal partitioning with Laplace smoothing will automatically be applied when the file is read, which should result in better load balancing for the mesh smoothing calculations.*
-After a restart, the partitioning can be different and hence the mesh deformation can be slightly different. 
-
-### v2020R1 (20.1.0)
-
-No changes.
+After a restart, the partitioning can be different and hence the mesh deformation can be slightly different.
 
 ### v2021R1 (21.1.0)
 
 This version fails for the tested multiphase problems.
 The saving of "cell residuals" for postprocessing with the following command `solve set expert y y n y` results in the following error:
 `Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3`.
-This issue is solved in v2022R1.
+This issue is solved in v2023R1.
 
-### v2021R2 (21.2.0)
+### v2023R1 (23.1.0)
 
-This version fails for the tested multiphase problems.
-The saving of "cell residuals" for postprocessing with the following command `solve set expert y y n y` results in the following error:
-`Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3`.
-This issue is solved in v2022R1.
-
-### v2022R1 (22.1.0)
-
-No changes.
+No major changes.

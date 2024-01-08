@@ -12,6 +12,8 @@ def create(parameters):
 
 
 class SolverWrapperTubeRingmodel(SolverWrapper):
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -116,6 +118,11 @@ class SolverWrapperTubeRingmodel(SolverWrapper):
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
+
+        # coupling convergence
+        self.coupling_convergence = True
+        if self.print_coupling_convergence:
+            tools.print_info(f'{self.__class__.__name__} converged')
 
         # output
         self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.rreference

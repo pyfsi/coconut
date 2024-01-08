@@ -42,7 +42,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.v41",
+        "type": "solver_wrappers.openfoam.v8",
         "settings": {
           "working_directory": "CFD",
           "application": "coconut_pimpleFoam",

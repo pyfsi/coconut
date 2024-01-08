@@ -1,3 +1,19 @@
+void sendMessage(word message)
+{
+    if (Pstream::master())
+    {
+        OFstream outfile (message);
+    }
+}
+
+void removeMessage(word message)
+{
+    if (Pstream::master())
+    {
+       rm(message);
+    }
+}
+
 void waitForSync(word message)
 {
     // using separate blocks ensures that the labels are restricted to their own scope
@@ -9,15 +25,8 @@ void waitForSync(word message)
 
         if (Pstream::master() && (totNprocs == Pstream::nProcs()))
         {
-            word extension = ".coco";
-            word ready = "_ready";
-            fileName file;
-
-            file = message + ready + extension;
-            OFstream outfile (file);
-
-            file = message + extension;
-            rm(file);
+            sendMessage(message + "_ready.coco");
+            removeMessage(message + ".coco");
         }
     }
 

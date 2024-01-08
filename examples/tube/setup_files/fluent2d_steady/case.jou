@@ -8,7 +8,8 @@ grid modify-zones zone-name default-interior fluid-interior
 
 define materials change-create air fluid y constant 1000.0 n n y constant 0.003 n n n y
 
-define models steady y
+;define models steady y
+define models steady
 define models viscous laminar y
 define models solver pressure-based y
 define boundary-conditions zone-type in pressure-inlet

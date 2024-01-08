@@ -21,6 +21,7 @@ class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -75,12 +76,9 @@ class SolverWrapperFluent(SolverWrapper):
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
-        unsteady = '#f'
-        if self.unsteady:
-            unsteady = '#t'
-        multiphase = '#f'
-        if self.multiphase:
-            multiphase = '#t'
+        unsteady = '#t' if self.unsteady else '#f'
+        multiphase = '#t' if self.multiphase else '#f'
+        check_coupling_convergence = '#t' if self.check_coupling_convergence else '#f'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -89,6 +87,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|UNSTEADY|', unsteady)
                     line = line.replace('|MULTIPHASE|', multiphase)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
+                    line = line.replace('|CHECK_COUPLING_CONVERGENCE|', check_coupling_convergence)
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
@@ -198,6 +197,10 @@ class SolverWrapperFluent(SolverWrapper):
             for name, id in self.thread_ids.items():
                 file.write(f'{name} {id}\n')
         self.coco_messages.send_message('thread_ids_written_to_file')
+
+        # remove "report.sum" because the batch options to overwrite report files and case files conflict in some
+        # versions of Fluent (2023R1)
+        os.unlink(report)
 
         # import node and face information if no restart
         if self.timestep_start == 0:
@@ -309,6 +312,12 @@ class SolverWrapperFluent(SolverWrapper):
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
+
+        if self.check_coupling_convergence:
+            # check if Fluent converged after 1 iteration
+            self.coupling_convergence = self.coco_messages.check_message('solver_converged')
+            if self.print_coupling_convergence and self.coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
 
         # read data from Fluent
         for dct in self.interface_output.parameters:

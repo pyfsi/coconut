@@ -66,44 +66,22 @@ Following items are taken care of by CoCoNuT, and must therefore will be automat
 
 ### Tip
 ````
- When starting a simulation from time=0 after having restarted in the same folder, clean the directory or delete the case folder and copy the required files 
- from a "set up" folder.
+When starting a simulation from time=0 after having restarted in the same folder, clean the directory or delete the case folder and copy the required files from a "set up" folder.
 ````
 The reason for this is that the `ProjectParameters.json` file is modified when performing restart in such a way that it can no longer be used to start from time=0.
 
 ## Post-processing
 
-Kratos `StructuralMechanicsApplication` v70 and v91 allow for saving VTK files. The number of files saved is set in `ProjectParameters.json` and is not modified by CoCoNuT.
+Kratos `StructuralMechanicsApplication` v91 allows for saving VTK files. The number of files saved is set in `ProjectParameters.json` and is not modified by CoCoNuT.
 Note that the zeroth instance corresponds to the first time step.
 
 ## Version specific documentation
-
-### v60 (6.0)
-
-First version.
-
-Negative numbers for `save_restart` are not supported in Kratos 6.0, therefore the absolute value is used.
-
-Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other `elements` in Kratos.
-
-The error is expressed, by the calculation which remains frozen after the first time step, when attempting to store restart files.
-
-### v70 (7.0)
-
-The *`ProjectParameters.json`* required by Kratos is slightly different in the version 7.0. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/releases/tag/7.0) for the changes.
-Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v70/setup_kratos`* as a reference.
-
-Negative numbers for `save_restart` are not supported in Kratos 7.0, therefore the absolute value is used.
-
-Based on testing, restart works with the `PrestressMembrane` elements and doesn't work with the `Shell elements` due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
-
-The error is expressed, by the calculation which remains frozen after the first time step, when attempting to store restart files.
 
 ### v91 (9.1)
 
 The *`ProjectParameters.json`* required by Kratos is slightly different in the version 9.1. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/v9.1) for the changes.
 Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v91/setup_kratos`* as a reference.
-The most important changes with respect to version 7.0 include:
+The most important changes with respect to older versions include:
 
 - The adaptation of model part names to include parents, e.g. from `Parts_tube` to `Structure.Parts_tube`
 - The removal of the keys `problem_domain_sub_model_part_list` and `processes_sub_model_part_list` in `solver_settings`

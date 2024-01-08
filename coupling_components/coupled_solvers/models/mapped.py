@@ -7,6 +7,8 @@ def create(parameters):
 
 
 class ModelMapped(Component):
+    mapped = True
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
