@@ -125,13 +125,16 @@ class SolverWrapperTubeRingmodel(SolverWrapper):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.debug:
             file_name = join(self.working_directory, f'area_ts{self.n}.txt')
             with open(file_name, 'w') as file:
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
+
+    def finalize(self):
+        super().finalize()

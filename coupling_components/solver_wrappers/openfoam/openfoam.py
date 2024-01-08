@@ -306,6 +306,11 @@ class SolverWrapperOpenFOAM(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         if not self.debug:
             for boundary in self.boundary_names:
                 post_process_time_folder = os.path.join(self.working_directory,

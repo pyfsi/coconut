@@ -106,6 +106,11 @@ class SolverWrapperKratosStructure(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         self.coco_messages.send_message('save')
         self.coco_messages.wait_message('save_ready')
         if self.residual_variables is not None:
@@ -113,6 +118,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
 
     def finalize(self):
         super().finalize()
+
         self.coco_messages.send_message('stop')
         self.coco_messages.wait_message('stop_ready')
         self.coco_messages.remove_all_messages()

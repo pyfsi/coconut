@@ -505,8 +505,8 @@ The physical effect of previous time steps dealt with by the solver wrappers.
 **Therefore, in order to be able to perform a restart, the solver files for the corresponding time step also need to be present!**
 
 When performing restart, the new data will be neatly appended to the already existing results pickle file, leaving out existing time step data after the new time step start.
-As a result, the results pickle file looks exactly as if the calculation was never stopped, with the exception of the fields `run_time` and `info`.
-The latter provides a very shot log of when restart is performed.
+As a result, the results pickle file looks exactly as if the calculation was never stopped, except the fields `run_time`, `time_allocation` and `info`.
+The latter provides a very short log of when restart is performed.
 
 If the results pickle file would not be found for any reason, the user is informed and a new one is made, with the correct `timestep_start`.
 Note that the presence of the restart pickle file on the other hand is required. If the `case_name` is changed, the restart can still be performed by providing the case name for restart using `restart_case` (see explanation above).

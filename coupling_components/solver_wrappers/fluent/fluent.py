@@ -360,6 +360,10 @@ class SolverWrapperFluent(SolverWrapper):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         # save if required
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):

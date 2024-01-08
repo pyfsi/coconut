@@ -1,7 +1,6 @@
 from coconut import tools
 from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
-import numpy as np
 import time
 
 
@@ -39,7 +38,7 @@ class CoupledSolverIQNISM(CoupledSolver):
         self.restart_model_surrogate = [False, False]  # indicates if model and/or surrogate has to be restarted
 
     def initialize(self):
-        super().initialize()
+        super().initialize(print_components=False)
 
         self.surrogate.solver_level = self.solver_level + 1
 
@@ -70,6 +69,9 @@ class CoupledSolverIQNISM(CoupledSolver):
 
         self.start_run_time = time.time()  # reset start of calculation
         self.init_time = self.start_run_time - self.start_init_time  # reset duration of initialization
+
+        if self.solver_level == 0:
+            self.print_components_info(' ')
 
     def solve_solution_step(self):
         # solve surrogate
@@ -129,69 +131,33 @@ class CoupledSolverIQNISM(CoupledSolver):
     def add_restart_data(self, restart_data):
         restart_data.update({'model': self.model.save_restart_data(), 'surrogate': self.surrogate.save_restart_data()})
 
-    def print_summary(self):
-        solver_init_time_percs = []
-        solver_run_time_percs = []
-        pre = '║' + ' │' * self.solver_level
-        out = ''
-        if self.solver_level == 0:
-            out += f'{pre}Total calculation time{" (after restart)" if self.restart else ""}:' \
-                   f' {self.init_time + self.run_time:.3f}s\n'
-        # initialization time
-        if self.solver_level == 0:
-            out += f'{pre}Initialization time: {self.init_time:0.3f}s\n'
-        out += f'{pre}Distribution of initialization time:\n'
-        for solver in self.solver_wrappers:
-            solver_init_time_percs.append(solver.init_time / self.init_time * 100)
-            out += f'{pre}\t{solver.__class__.__name__}: {solver.init_time:.0f}s ({solver_init_time_percs[-1]:0.1f}%)\n'
-            if solver.__class__.__name__ == 'SolverWrapperMapped':
-                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.init_time:.0f}s' \
-                       f' ({solver.solver_wrapper.init_time / self.init_time * 100:0.1f}%)\n'
-        surrogate_init_time_perc = self.surrogate.init_time / self.init_time * 100
-        out += f'{pre}\t{self.surrogate.__class__.__name__}: {self.surrogate.init_time:.0f}s' \
-               f' ({surrogate_init_time_perc:0.1f}%)\t\n'
-        if self.surrogate.__class__.__name__ == 'ModelMapped':
-            out += f'{pre}\t└─{self.surrogate.surrogate.__class__.__name__}: ' \
-                   f'{self.surrogate.surrogate.init_time:.0f}s' \
-                   f' ({self.surrogate.surrogate.init_time / self.init_time * 100:0.1f}%)\n'
-        if self.solver_level == 0:
-            other_time = self.init_time - sum([s.init_time for s in self.solver_wrappers]) \
-                         - self.surrogate.init_time
-            out += f'{pre}\tOther: {other_time:.0f}s' \
-                   f' ({100 - sum(solver_init_time_percs) - surrogate_init_time_perc:0.1f}%)\n'
-        # run time
-        if self.solver_level == 0:
-            out += f'{pre}Run time{" (after restart)" if self.restart else ""}: {self.run_time:0.3f}s\n'
-        out += f'{pre}Distribution of run time:\n'
-        for solver in self.solver_wrappers:
-            solver_run_time_percs.append(solver.run_time / self.run_time * 100)
-            out += f'{pre}\t{solver.__class__.__name__}: {solver.run_time:.0f}s ({solver_run_time_percs[-1]:0.1f}%)\n'
-            if solver.__class__.__name__ == 'SolverWrapperMapped':
-                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.run_time:.0f}s' \
-                       f' ({solver.solver_wrapper.run_time / self.run_time * 100:0.1f}%)\n'
-        surrogate_run_time_perc = self.surrogate.run_time / self.run_time * 100
-        out += f'{pre}\t{self.surrogate.__class__.__name__}: {self.surrogate.run_time:.0f}s' \
-               f' ({surrogate_run_time_perc:0.1f}%)\t\n'
-        if self.surrogate.__class__.__name__ == 'ModelMapped':
-            out += f'{pre}\t└─{self.surrogate.surrogate.__class__.__name__}: {self.surrogate.surrogate.run_time:.0f}s' \
-                   f' ({self.surrogate.surrogate.run_time / self.run_time * 100:0.1f}%)\n'
-        if self.solver_level == 0:
-            coupling_time = self.run_time - sum([s.run_time for s in self.solver_wrappers]) \
-                            - self.surrogate.run_time
-            out += f'{pre}\tCoupling: {coupling_time:.0f}s' \
-                   f' ({100 - sum(solver_run_time_percs) - surrogate_run_time_perc:0.1f}%)\n'
-        out += f'{pre}Average number of iterations per time step' \
-               f'{" (including before restart)" if self.restart else ""}: {np.array(self.iterations).mean():0.2f}'
-        if self.solver_level == 0:
-            out += '\n╚' + 79 * '═'
-        tools.print_info(out)
+    def add_time_allocation(self, time_allocation):
+        if hasattr(self.surrogate, 'get_time_allocation'):
+            time_allocation_surrogate = self.surrogate.get_time_allocation()
+            for time_type in ('init_time', 'run_time', 'save_time'):
+                time_allocation_sub = time_allocation[time_type]
+                tasur_sub = time_allocation_surrogate[time_type]
+                time_allocation_sub.update({'surrogate': tasur_sub})
+                time_allocation_sub['coupling'] = time_allocation_sub['coupling'] \
+                    - tasur_sub if isinstance(tasur_sub, float) else tasur_sub['total']
 
-    def get_time_allocation(self):
-        time_allocation = super().get_time_allocation()
-        for time_type in ('init_time', 'run_time'):
-            time_allocation_sub = time_allocation[time_type]
-            time_allocation_sub.update({f'surrogate': self.surrogate.get_time_allocation()[time_type]})
-            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum([
-                s.__getattribute__(time_type) for s in self.solver_wrappers]) - self.surrogate.__getattribute__(
-                time_type)
-        return time_allocation
+    def add_time_distribution(self, ta, pre, reference=None):
+        out = ''
+        if 'surrogate' not in ta:
+            return out
+        if reference is None:
+            reference = ta['total']
+        ta_surrogate = ta['surrogate']
+        if isinstance(ta_surrogate, float):
+            out += f'{pre}├─{self.surrogate.__class__.__name__}: {ta_surrogate:.0f}s ' \
+                  f'({ta_surrogate / reference * 100:0.1f}%)\n'
+        else:
+            out += f'{pre}├─{self.surrogate.__class__.__name__}: {ta_surrogate["total"]:.0f}s ' \
+                   f'({ta_surrogate["total"] / reference * 100:0.1f}%)\n'
+            if self.surrogate.mapped:
+                ta_surrogate = ta_surrogate['surrogate']
+                out += f'{pre}│ └─{self.surrogate.surrogate.__class__.__name__}: {ta_surrogate["total"]:.0f}s' \
+                       f' ({ta_surrogate["total"] / reference * 100:0.1f}%)\n'
+            out += self.surrogate.print_time_distribution(
+                ta_surrogate, pre + f'│ {"  " if self.surrogate.mapped else ""}', reference=reference)
+        return out

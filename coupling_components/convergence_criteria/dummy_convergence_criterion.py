@@ -6,6 +6,8 @@ def create(parameters):
 
 
 class ConvergenceCriterionDummy(Component):
+    dummy = True
+
     def __init__(self, _):
         super().__init__()
 
@@ -14,4 +16,4 @@ class ConvergenceCriterionDummy(Component):
 
     def is_satisfied(self):
         raise NotImplementedError('is_satisfied() called for ConvergenceCriterionDummy,'
-                                  ' use another convegence_criterion')
+                                  ' use another convergence_criterion')
