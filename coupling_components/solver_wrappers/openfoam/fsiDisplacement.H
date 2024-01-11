@@ -2,19 +2,7 @@
 
 void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name)
 {
-
-    label patchWallID = mesh.boundaryMesh().findPatchID(boundary_name);
-
-    // *** Set patch displacement for motion solver *** //
-    // Find the reference to the pointDisplacement field
-    pointVectorField& pointDisp = const_cast<pointVectorField&>
-    (
-        mesh.objectRegistry::lookupObject<pointVectorField>
-        (
-        "pointDisplacement"
-        )
-    );
-
+    // Read input pointDisplacement
     Info<< "Reading pointDisplacement\n" << endl;
 
     pointVectorField pointDispTmp_
@@ -30,10 +18,15 @@ void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name)
         pointMesh::New(mesh)
     );
 
+    // Get the displacement on the patch
+    Foam::pointVectorField* pointDisplacement_;
+    pointDisplacement_ = const_cast<pointVectorField*>(&mesh.lookupObject<pointVectorField>("pointDisplacement"));
+
     pointVectorField& pointDispTmp = const_cast<pointVectorField&>(pointDispTmp_);
 
+    label patchWallID = mesh.boundaryMesh().findPatchID(boundary_name);
     vectorField& patchpointDispTmp = refCast<vectorField>(pointDispTmp.boundaryFieldRef()[patchWallID]);
 
-    // Assign the new boundary displacements
-    pointDisp.boundaryFieldRef()[patchWallID] == patchpointDispTmp;
+    // Overwrite the nodes on the interface directly
+    pointDisplacement_->boundaryFieldRef()[patchWallID] == patchpointDispTmp;
 }

@@ -19,8 +19,8 @@ def create(parameters):
 
 class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
-    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
-    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
+    version = None  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
+    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
@@ -34,7 +34,7 @@ class SolverWrapperFluent(SolverWrapper):
         # set parameters
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
+        self.env = None  # environment in which correct version of Fluent software is available, set in subclass
         self.coco_messages = tools.CocoMessages(self.dir_cfd)
         self.coco_messages.remove_all_messages()
         self.backup_fluent_log()

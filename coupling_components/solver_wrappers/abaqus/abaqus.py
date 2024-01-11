@@ -20,7 +20,7 @@ def create(parameters):
 
 
 class SolverWrapperAbaqus(SolverWrapper):
-    version = None
+    version = None  # Abaqus version, e.g. 2022, set in subclass
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize

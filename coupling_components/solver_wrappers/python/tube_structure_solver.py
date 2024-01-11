@@ -48,7 +48,7 @@ class SolverWrapperTubeStructure(SolverWrapper):
 
         l = self.settings['l']  # length
         d = self.settings['d']  # diameter
-        self.rreference = d / 2  # reference radius of cross section
+        self.rreference = d / 2  # reference radius of cross-section
         self.rhof = self.settings['rhof']  # fluid density
 
         self.preference = self.settings.get('preference', 0)  # reference pressure
@@ -91,11 +91,11 @@ class SolverWrapperTubeStructure(SolverWrapper):
             self.nm = False
 
         # initialization
-        self.areference = np.pi * self.rreference ** 2  # reference area of cross section
+        self.areference = np.pi * self.rreference ** 2  # reference area of cross-section
         self.p = np.ones(self.m) * self.preference  # pressure
-        self.a = np.ones(self.m) * self.areference  # area of cross section
+        self.a = np.ones(self.m) * self.areference  # area of cross-section
         if self.timestep_start == 0:  # no restart
-            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross section
+            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross-section
             if self.unsteady:
                 self.rdot = np.zeros(self.m)  # first derivative of the radius with respect to time in current timestep
                 self.rddot = np.zeros(self.m)  # second derivative of radius with respect to time in current timestep
@@ -103,10 +103,10 @@ class SolverWrapperTubeStructure(SolverWrapper):
             file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
             with open(file_name, 'rb') as file:
                 data = pickle.load(file)
-            self.r = data['r']  # radius of cross section
+            self.r = data['r']  # radius of cross-section
             self.rdot = data['rdot']  # first derivative of the radius with respect to time in current timestep
             self.rddot = data['rddot']  # second derivative of the radius with respect to time in current timestep
-        self.rn = np.array(self.r)  # previous radius of cross section
+        self.rn = np.array(self.r)  # previous radius of cross-section
         self.rndot = np.zeros(self.m)  # first derivative of the radius with respect to time in previous timestep
         self.rnddot = np.zeros(self.m)  # second derivative of the radius with respect to time in previous timestep
 

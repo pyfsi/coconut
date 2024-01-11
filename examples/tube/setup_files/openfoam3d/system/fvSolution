@@ -54,12 +54,12 @@ solvers
         relTol          0;
     }
 
-    "cellDisplacement"
+    cellDisplacement
     {
     	solver          GAMG;
     	smoother        GaussSeidel;
     	tolerance       1e-10;
-    	relTol          0.001;
+    	relTol          0;
     }
 }
 

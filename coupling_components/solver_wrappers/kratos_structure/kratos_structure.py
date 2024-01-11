@@ -164,7 +164,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
                 shutil.copy(file_path, file_path[:-4] + f'_ts{self.timestep}_it{self.iteration}.csv')
 
     def update_kratos_parameter_file(self, input_file_name):
-        raise NotImplementedError('Base class method is called, should be implemented in sub-class')
+        raise NotImplementedError('Base class method is called, should be implemented in subclass')
 
     def check_software(self):
         with open('check_software.py', 'w') as f:
@@ -225,4 +225,4 @@ class SolverWrapperKratosStructure(SolverWrapper):
             f.write(header.strip(sep) + '\n')
 
     def write_residuals(self):
-        raise NotImplementedError('Base class method is called, should be implemented in sub-class')
+        raise NotImplementedError('Base class method is called, should be implemented in subclass')

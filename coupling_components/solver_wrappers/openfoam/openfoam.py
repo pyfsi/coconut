@@ -18,7 +18,7 @@ def create(parameters):
 
 
 class SolverWrapperOpenFOAM(SolverWrapper):
-    version = None  # OpenFOAM version with dot, e.g. 4.1 , set in sub-class
+    version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
@@ -32,7 +32,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         # settings
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
+        self.env = None  # environment in which correct version of OpenFOAM software is available, set in subclass
 
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']

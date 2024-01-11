@@ -25,7 +25,7 @@ class SolverWrapperMapped(SolverWrapper):
 
         # check coupling convergence
         self.check_coupling_convergence_possible = self.solver_wrapper.__class__.check_coupling_convergence_possible
-        self.check_coupling_convergence = None
+        self.check_coupling_convergence = False
 
         # create mappers
         self.mapper_interface_input = create_instance(self.settings['mapper_interface_input'])
