@@ -8,6 +8,8 @@ def create(parameters):
 
 
 class SolverWrapperMapped(Component):
+    mapped = True
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
@@ -33,6 +35,7 @@ class SolverWrapperMapped(Component):
         # noinspection PyUnresolvedReferences
         self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
+        self.save_time = 0.0
 
     @tools.time_initialize
     def initialize(self, interface_input_from, interface_output_to):
@@ -68,19 +71,20 @@ class SolverWrapperMapped(Component):
 
         self.solver_wrapper.finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
-        self.solver_wrapper.finalize()
-        self.mapper_interface_input.finalize()
-        self.mapper_interface_output.finalize()
-
+    @tools.time_save
     def output_solution_step(self):
         super().output_solution_step()
 
         self.solver_wrapper.output_solution_step()
         self.mapper_interface_input.output_solution_step()
         self.mapper_interface_output.output_solution_step()
+
+    def finalize(self):
+        super().finalize()
+
+        self.solver_wrapper.finalize()
+        self.mapper_interface_input.finalize()
+        self.mapper_interface_output.finalize()
 
     def get_interface_input(self):
         # does not contain most recent data
@@ -93,7 +97,7 @@ class SolverWrapperMapped(Component):
 
     def get_time_allocation(self):
         time_allocation = {}
-        for time_type in ('init_time', 'run_time'):
+        for time_type in ('init_time', 'run_time', 'save_time'):
             total_time = self.__getattribute__(time_type)
             solver_wrapper_time = self.solver_wrapper.get_time_allocation()[time_type]
             mapper_time = total_time - (

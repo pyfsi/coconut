@@ -101,12 +101,12 @@ class SolverWrapperCombined(Component):
 
     def get_time_allocation(self):
         time_allocation = {}
-        for time_type in ('init_time', 'run_time'):
+        for time_type in ('init_time', 'run_time', 'save_time'):
             time_allocation_sub = time_allocation[time_type] = {}
             time_allocation_sub['total'] = self.__getattribute__(time_type)
             for i, solver_wrapper in enumerate(self.solver_wrappers):
                 time_allocation_sub[f'solver_wrapper_{i}'] = solver_wrapper.get_time_allocation()[time_type]
-            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum(
+            time_allocation_sub['coupling'] = self.__getattribute__(time_type) - sum(
                 [s.__getattribute__(time_type) for s in self.solver_wrappers])
         return time_allocation
 

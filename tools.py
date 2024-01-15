@@ -233,6 +233,20 @@ def time_solve_solution_step(solve_solution_step):
     return wrapper
 
 
+# save time measuring function
+def time_save(output_solution_step):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'save_time'):
+            self.save_time = 0.0
+        start_time = time.time()
+        interface_output = output_solution_step(*args)
+        self.save_time += time.time() - start_time
+        return interface_output
+
+    return wrapper
+
+
 # pass on parameters
 def pass_on_parameters(settings_from, settings_to, keys):
     for key in keys:

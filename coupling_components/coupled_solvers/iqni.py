@@ -19,7 +19,7 @@ class CoupledSolverIQNI(CoupledSolver):
         self.restart_model = False  # indicates if model has to be restarted
 
     def initialize(self):
-        super().initialize()
+        super().initialize(print_components=False)
 
         self.model.size_in = self.model.size_out = self.x.size
         self.model.out = self.x.copy()
@@ -27,6 +27,9 @@ class CoupledSolverIQNI(CoupledSolver):
         if self.restart_model:  # restart with the same model type
             self.model.restart(self.restart_data['model'])
         self.components += [self.model]
+
+        if self.solver_level == 0:
+            self.print_components_info(' ')
 
     def solve_solution_step(self):
         # initial value

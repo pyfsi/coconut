@@ -9,6 +9,7 @@ def create(parameters):
 class ModelDummy(Component):
     provides_get_solution = True
     provides_set_solution = False
+    dummy = True
 
     @tools.time_initialize
     def __init__(self, _):
@@ -20,6 +21,7 @@ class ModelDummy(Component):
         # noinspection PyUnresolvedReferences
         self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
+        self.save_time = 0.0
 
     @tools.time_solve_solution_step
     def get_solution(self):
@@ -33,6 +35,10 @@ class ModelDummy(Component):
         out = f'{pre} └{(78 - len(pre)) * "─"}\n' \
               f'{pre}{"Iteration":<16}{"Norm residual":<28}'
         tools.print_info(out)
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
 
     # noinspection PyMethodMayBeStatic
     def predict(self, dr, **_):
@@ -59,4 +65,4 @@ class ModelDummy(Component):
         pass
 
     def get_time_allocation(self):
-        return {'init_time': self.init_time, 'run_time': self.run_time}
+        return {'init_time': self.init_time, 'run_time': self.run_time, 'save_time': self.save_time}

@@ -227,10 +227,10 @@ class SolverWrapperTubeFlow(SolverWrapper):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
             file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
             with open(file_name, 'wb') as file:
@@ -248,6 +248,9 @@ class SolverWrapperTubeFlow(SolverWrapper):
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
+
+    def finalize(self):
+        super().finalize()
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:
