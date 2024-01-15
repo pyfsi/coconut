@@ -413,8 +413,7 @@ Other dictionaries, used for the actual calculation can be kept, but will not be
 The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `case_name` if not provided in `test_settings`. Note that `test_settings` has priority over the parameters defined in `settings`. This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
 An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 
-The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0. As such, previous test solver working directories are not overwritten.
-The optional pickle file, which saves some [results](#save-results), uses the name as specified by the JSON settings followed by an underscore and the solver test working directory. As such, the pickle file can always be linked to the corresponding test working directory.
+The optional pickle file, which saves some [results](#save-results), uses the name as specified by the JSON settings followed by an underscore and the solver working directory.
 
 During run time, the norm of $x$ and $y$ are printed. A residual does not exist here. The arrays $x$ and $y$ do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector $y$ will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.
 
