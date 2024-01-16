@@ -255,13 +255,38 @@ The compilaltion has been checked on with systems and compilers, for example:
 - CO7: GCC/8.3.0   
 
 ### All packages loaded to let foam-Extend/4.1 run on local cluster:
-  1) Java/1.8.0_281                8) numactl/2.0.12-GCCcore-8.3.0     15) gompi/2019b                  22) Mesquite/2.3.0-GCCcore-8.3.0   29) GMP/6.1.2-GCCcore-8.3.0
-  2) PyCharm/2019.1.3              9) XZ/5.2.4-GCCcore-8.3.0           16) FFTW/3.3.8-gompi-2019b       23) ParMGridGen/1.0-gompi-2019b    30) libffi/3.2.1-GCCcore-8.3.0
-  3) Anaconda3-python/2020.07     10) libxml2/2.9.9-GCCcore-8.3.0      17) ScaLAPACK/2.0.2-gompi-2019b  24) bzip2/1.0.8-GCCcore-8.3.0      31) Python/2.7.16-GCCcore-8.3.0
-  4) GCCcore/8.3.0                11) libpciaccess/0.14-GCCcore-8.3.0  18) foss/2019b                   25) ncurses/6.1-GCCcore-8.3.0      32) OpenFOAM-Extend/4.1-20200408-foss-2019b-Python-2.7.16
-  5) zlib/1.2.11-GCCcore-8.3.0    12) hwloc/1.11.12-GCCcore-8.3.0      19) ParMETIS/4.0.3-gompi-2019b   26) libreadline/8.0-GCCcore-8.3.0
-  6) binutils/2.32-GCCcore-8.3.0  13) OpenMPI/3.1.4-GCC-8.3.0          20) METIS/5.1.0-GCCcore-8.3.0    27) Tcl/8.6.9-GCCcore-8.3.0
-  7) GCC/8.3.0                    14) OpenBLAS/0.3.7-GCC-8.3.0         21) SCOTCH/6.0.9-gompi-2019b     28) SQLite/3.29.0-GCCcore-8.3.0
+  1) Java/1.8.0_281               
+  2) PyCharm/2019.1.3              
+  3) Anaconda3-python/2020.07     
+  4) GCCcore/8.3.0                
+  5) zlib/1.2.11-GCCcore-8.3.0    
+  6) binutils/2.32-GCCcore-8.3.0  
+  7) GCC/8.3.0                    
+  8) numactl/2.0.12-GCCcore-8.3.0     
+  9) XZ/5.2.4-GCCcore-8.3.0           
+  10) libxml2/2.9.9-GCCcore-8.3.0      
+  11) libpciaccess/0.14-GCCcore-8.3.0  
+  12) hwloc/1.11.12-GCCcore-8.3.0      
+  13) OpenMPI/3.1.4-GCC-8.3.0          
+  14) OpenBLAS/0.3.7-GCC-8.3.0         
+  15) gompi/2019b                 
+  16) FFTW/3.3.8-gompi-2019b       
+  17) ScaLAPACK/2.0.2-gompi-2019b  
+  18) foss/2019b                  
+  19) ParMETIS/4.0.3-gompi-2019b   
+  20) METIS/5.1.0-GCCcore-8.3.0    
+  21) SCOTCH/6.0.9-gompi-2019b     
+  22) Mesquite/2.3.0-GCCcore-8.3.0  
+  23) ParMGridGen/1.0-gompi-2019b    
+  24) bzip2/1.0.8-GCCcore-8.3.0      
+  25) ncurses/6.1-GCCcore-8.3.0      
+  26) libreadline/8.0-GCCcore-8.3.0
+  27) Tcl/8.6.9-GCCcore-8.3.0
+  28) SQLite/3.29.0-GCCcore-8.3.0
+  29) GMP/6.1.2-GCCcore-8.3.0
+  30) libffi/3.2.1-GCCcore-8.3.0
+  31) Python/2.7.16-GCCcore-8.3.0
+  32) OpenFOAM-Extend/4.1-20200408-foss-2019b-Python-2.7.16
 
 # Installation of the fluid solver
 In following list the packages are displayed, which are loaded to execute the fluid calculations during the FSI calculations. 
