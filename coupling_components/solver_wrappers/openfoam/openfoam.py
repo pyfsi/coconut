@@ -922,12 +922,12 @@ class SolverWrapperOpenFOAM(Component):
                 with open(pointdisp_filename_ref, 'r') as ref_file:
                     pointdisp_string = ref_file.read()
 
+                seq = self.mp_in_decompose_seq_dict[mp_name][proc]
+
+                data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',
+                                           boundary, self.cur_timestamp)
+
                 if self.settings['timeVaryingMappedFixedValue']:
-
-                    seq = self.mp_in_decompose_seq_dict[mp_name][proc]
-
-                    data_folder = os.path.join(self.working_directory, f'processor{proc}', 'constant/boundaryData',
-                                               boundary, self.cur_timestamp)
 
                     velocity_input = np.zeros((len(velocity[seq]), 3))
                     index = int(len(velocity[seq]) / 2)
@@ -947,11 +947,11 @@ class SolverWrapperOpenFOAM(Component):
                             f.write(f'({velocity_input[i, 0]} {velocity_input[i, 1]} {velocity_input[i, 2]})\n')
                         f.write(')')
 
-                    if seq is not None:
-                        boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
-                        boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
-                                                                           vector_array=displacement[seq])
-                        pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
+                if seq is not None:
+                    boundary_dict = of_io.get_dict(input_string=pointdisp_string, keyword=boundary)
+                    boundary_dict_new = of_io.update_vector_array_dict(dict_string=boundary_dict,
+                                                                       vector_array=displacement[seq])
+                    pointdisp_string = pointdisp_string.replace(boundary_dict, boundary_dict_new)
 
                 with open(pointdisp_filename, 'w') as f:
                     f.write(pointdisp_string)

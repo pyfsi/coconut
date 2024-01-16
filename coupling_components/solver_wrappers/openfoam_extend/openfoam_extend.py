@@ -726,21 +726,21 @@ class SolverWrapperOpenFOAMExtend(Component):
             mp = self.model.get_model_part(mp_name)
             nfaces = mp.size
 
-            if self.settings['parallel']:
-                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(U)'"' &> log.reconstructPar;',
-                           cwd=self.working_directory, shell=True, env=self.env)
-                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(Velocity)'"' &> log.reconstructPar;',
-                           cwd=self.working_directory, shell=True, env=self.env)
-                for p in range(self.cores):
-                    path_working_directory_processor = os.path.join(self.working_directory, f'processor{p}')
-                    self.write_cell_centres_parallel_timeVaryingMappedSolidTraction(path_working_directory_processor)
-                    self.read_face_centres_parallel_timeVaryingMappedSolidTraction(boundary,nfaces,p)
-                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccx)'"' &> log.reconstructPar;',
-                    cwd=self.working_directory, shell=True, env=self.env)
-                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccy)'"' &> log.reconstructPar;',
-                           cwd=self.working_directory, shell=True, env=self.env)
-                check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccz)'"' &> log.reconstructPar;',
-                           cwd=self.working_directory, shell=True, env=self.env)
+            # if self.settings['parallel']:
+            #     check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(U)'"' &> log.reconstructPar;',
+            #                cwd=self.working_directory, shell=True, env=self.env)
+            #     check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(Velocity)'"' &> log.reconstructPar;',
+            #                cwd=self.working_directory, shell=True, env=self.env)
+            #     for p in range(self.cores):
+            #         path_working_directory_processor = os.path.join(self.working_directory, f'processor{p}')
+            #         self.write_cell_centres_parallel_timeVaryingMappedSolidTraction(path_working_directory_processor)
+            #         self.read_face_centres_parallel_timeVaryingMappedSolidTraction(boundary,nfaces,p)
+            #     check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccx)'"' &> log.reconstructPar;',
+            #         cwd=self.working_directory, shell=True, env=self.env)
+            #     check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccy)'"' &> log.reconstructPar;',
+            #                cwd=self.working_directory, shell=True, env=self.env)
+            #     check_call(f'reconstructPar -time {self.cur_timestamp}  -fields ' "'(ccz)'"' &> log.reconstructPar;',
+            #                cwd=self.working_directory, shell=True, env=self.env)
 
             self.write_cell_centres()
 
