@@ -290,24 +290,92 @@ The compilaltion has been checked on with systems and compilers, for example:
 
 # Installation of the fluid solver
 In following list the packages are displayed, which are loaded to execute the fluid calculations during the FSI calculations. 
-  1) Java/1.8.0_281                    19) gompi/2020b                     37) zstd/1.4.5-GCCcore-10.2.0               55) PCRE2/10.35-GCCcore-10.2.0          73) x265/3.3-GCCcore-10.2.0
-  2) PyCharm/2019.1.3                  20) FFTW/3.3.8-gompi-2020b          38) expat/2.2.9-GCCcore-10.2.0              56) DBus/1.13.18-GCCcore-10.2.0         74) FriBidi/1.0.10-GCCcore-10.2.0
-  3) Anaconda3-python/2020.07          21) ScaLAPACK/2.1.0-gompi-2020b     39) libpng/1.6.37-GCCcore-10.2.0            57) NASM/2.15.05-GCCcore-10.2.0         75) FFmpeg/4.3.1-GCCcore-10.2.0
-  4) GCCcore/10.2.0                    22) foss/2020b                      40) freetype/2.10.3-GCCcore-10.2.0          58) libjpeg-turbo/2.0.5-GCCcore-10.2.0  76) ParaView/5.8.1-foss-2020b-mpi
-  5) zlib/1.2.11-GCCcore-10.2.0        23) ncurses/6.2-GCCcore-10.2.0      41) util-linux/2.36-GCCcore-10.2.0          59) NSPR/4.29-GCCcore-10.2.0            77) pixman/0.40.0-GCCcore-10.2.0
-  6) binutils/2.35-GCCcore-10.2.0      24) libreadline/8.0-GCCcore-10.2.0  42) fontconfig/2.13.92-GCCcore-10.2.0       60) NSS/3.57-GCCcore-10.2.0             78) cairo/1.16.0-GCCcore-10.2.0
-  7) GCC/10.2.0                        25) METIS/5.1.0-GCCcore-10.2.0      43) xorg-macros/1.19.2-GCCcore-10.2.0       61) snappy/1.1.8-GCCcore-10.2.0         79) libgd/2.3.0-GCCcore-10.2.0
-  8) numactl/2.0.13-GCCcore-10.2.0     26) SCOTCH/6.1.0-gompi-2020b        44) X11/20201008-GCCcore-10.2.0             62) JasPer/2.0.14-GCCcore-10.2.0        80) ICU/67.1-GCCcore-10.2.0
-  9) XZ/5.2.5-GCCcore-10.2.0           27) bzip2/1.0.8-GCCcore-10.2.0      45) libdrm/2.4.102-GCCcore-10.2.0           63) Qt5/5.14.2-GCCcore-10.2.0           81) HarfBuzz/2.6.7-GCCcore-10.2.0
- 10) libxml2/2.9.10-GCCcore-10.2.0     28) Tcl/8.6.10-GCCcore-10.2.0       46) libglvnd/1.3.2-GCCcore-10.2.0           64) CGAL/5.2-gompi-2020b                82) Pango/1.47.0-GCCcore-10.2.0
- 11) libpciaccess/0.16-GCCcore-10.2.0  29) SQLite/3.33.0-GCCcore-10.2.0    47) libunwind/1.4.0-GCCcore-10.2.0          65) pybind11/2.6.0-GCCcore-10.2.0       83) libcerf/1.14-GCCcore-10.2.0
- 12) hwloc/2.2.0-GCCcore-10.2.0        30) GMP/6.2.0-GCCcore-10.2.0        48) LLVM/11.0.0-GCCcore-10.2.0              66) SciPy-bundle/2020.11-foss-2020b     84) Lua/5.4.2-GCCcore-10.2.0
- 13) libevent/2.1.12-GCCcore-10.2.0    31) libffi/3.3-GCCcore-10.2.0       49) Mesa/20.2.1-GCCcore-10.2.0              67) Szip/2.1.1-GCCcore-10.2.0           85) gnuplot/5.4.1-GCCcore-10.2.0
- 14) UCX/1.9.0-GCCcore-10.2.0          32) Python/3.8.6-GCCcore-10.2.0     50) libGLU/9.0.1-GCCcore-10.2.0             68) HDF5/1.10.7-gompi-2020b             86) OpenFOAM/8-foss-2020b
- 15) libfabric/1.11.0-GCCcore-10.2.0   33) Boost/1.74.0-GCC-10.2.0         51) double-conversion/3.1.5-GCCcore-10.2.0  69) cURL/7.72.0-GCCcore-10.2.0
- 16) PMIx/3.1.5-GCCcore-10.2.0         34) MPFR/4.1.0-GCCcore-10.2.0       52) gettext/0.21-GCCcore-10.2.0             70) netCDF/4.7.4-gompi-2020b
- 17) OpenMPI/4.0.5-GCC-10.2.0          35) gzip/1.10-GCCcore-10.2.0        53) PCRE/8.44-GCCcore-10.2.0                71) x264/20201026-GCCcore-10.2.0
- 18) OpenBLAS/0.3.12-GCC-10.2.0        36) lz4/1.9.2-GCCcore-10.2.0        54) GLib/2.66.1-GCCcore-10.2.0              72) LAME/3.100-GCCcore-10.2.0
+  1) Java/1.8.0_281                    
+  2) PyCharm/2019.1.3                  
+  3) Anaconda3-python/2020.07          
+  4) GCCcore/10.2.0                   
+  5) zlib/1.2.11-GCCcore-10.2.0        
+  6) binutils/2.35-GCCcore-10.2.0      
+  7) GCC/10.2.0                        
+  8) numactl/2.0.13-GCCcore-10.2.0     
+  9) XZ/5.2.5-GCCcore-10.2.0           
+ 10) libxml2/2.9.10-GCCcore-10.2.0          
+ 11) libpciaccess/0.16-GCCcore-10.2.0  
+ 12) hwloc/2.2.0-GCCcore-10.2.0       
+ 13) libevent/2.1.12-GCCcore-10.2.0    
+ 14) UCX/1.9.0-GCCcore-10.2.0          
+ 15) libfabric/1.11.0-GCCcore-10.2.0   
+ 16) PMIx/3.1.5-GCCcore-10.2.0         
+ 17) OpenMPI/4.0.5-GCC-10.2.0          
+ 18) OpenBLAS/0.3.12-GCC-10.2.0        
+ 19) gompi/2020b                    
+ 20) FFTW/3.3.8-gompi-2020b          
+ 21) ScaLAPACK/2.1.0-gompi-2020b    
+ 22) foss/2020b                      
+ 23) ncurses/6.2-GCCcore-10.2.0      
+ 24) libreadline/8.0-GCCcore-10.2.0  
+ 25) METIS/5.1.0-GCCcore-10.2.0      
+ 26) SCOTCH/6.1.0-gompi-2020b        
+ 27) bzip2/1.0.8-GCCcore-10.2.0      
+ 28) Tcl/8.6.10-GCCcore-10.2.0      
+ 29) SQLite/3.33.0-GCCcore-10.2.0    
+ 30) GMP/6.2.0-GCCcore-10.2.0        
+ 31) libffi/3.3-GCCcore-10.2.0       
+ 32) Python/3.8.6-GCCcore-10.2.0    
+ 33) Boost/1.74.0-GCC-10.2.0        
+ 34) MPFR/4.1.0-GCCcore-10.2.0       
+ 35) gzip/1.10-GCCcore-10.2.0       
+ 36) lz4/1.9.2-GCCcore-10.2.0        
+ 37) zstd/1.4.5-GCCcore-10.2.0              
+ 38) expat/2.2.9-GCCcore-10.2.0              
+ 39) libpng/1.6.37-GCCcore-10.2.0            
+ 40) freetype/2.10.3-GCCcore-10.2.0          
+ 41) util-linux/2.36-GCCcore-10.2.0          
+ 42) fontconfig/2.13.92-GCCcore-10.2.0       
+ 43) xorg-macros/1.19.2-GCCcore-10.2.0       
+ 44) X11/20201008-GCCcore-10.2.0            
+ 45) libdrm/2.4.102-GCCcore-10.2.0           
+ 46) libglvnd/1.3.2-GCCcore-10.2.0           
+ 47) libunwind/1.4.0-GCCcore-10.2.0         
+ 48) LLVM/11.0.0-GCCcore-10.2.0              
+ 49) Mesa/20.2.1-GCCcore-10.2.0         
+ 50) libGLU/9.0.1-GCCcore-10.2.0            
+ 51) double-conversion/3.1.5-GCCcore-10.2.0  
+ 52) gettext/0.21-GCCcore-10.2.0             
+ 53) PCRE/8.44-GCCcore-10.2.0               
+ 54) GLib/2.66.1-GCCcore-10.2.0              
+ 55) PCRE2/10.35-GCCcore-10.2.0          
+ 56) DBus/1.13.18-GCCcore-10.2.0        
+ 57) NASM/2.15.05-GCCcore-10.2.0         
+ 58) libjpeg-turbo/2.0.5-GCCcore-10.2.0  
+ 59) NSPR/4.29-GCCcore-10.2.0            
+ 60) NSS/3.57-GCCcore-10.2.0             
+ 61) snappy/1.1.8-GCCcore-10.2.0         
+ 62) JasPer/2.0.14-GCCcore-10.2.0        
+ 63) Qt5/5.14.2-GCCcore-10.2.0           
+ 64) CGAL/5.2-gompi-2020b               
+ 65) pybind11/2.6.0-GCCcore-10.2.0       
+ 66) SciPy-bundle/2020.11-foss-2020b     
+ 67) Szip/2.1.1-GCCcore-10.2.0           
+ 68) HDF5/1.10.7-gompi-2020b             
+ 69) cURL/7.72.0-GCCcore-10.2.0
+ 70) netCDF/4.7.4-gompi-2020b
+ 71) x264/20201026-GCCcore-10.2.0
+ 72) LAME/3.100-GCCcore-10.2.0
+ 73) x265/3.3-GCCcore-10.2.0
+ 74) 74) FriBidi/1.0.10-GCCcore-10.2.0
+ 75) FFmpeg/4.3.1-GCCcore-10.2.0
+ 76) ParaView/5.8.1-foss-2020b-mpi
+ 77) pixman/0.40.0-GCCcore-10.2.0
+ 78) cairo/1.16.0-GCCcore-10
+ 79) libgd/2.3.0-GCCcore-10.2.0.2.0
+ 80) ICU/67.1-GCCcore-10.2.0
+ 81) HarfBuzz/2.6.7-GCCcore-10.2.0
+ 82) Pango/1.47.0-GCCcore-10.2.0
+ 83) libcerf/1.14-GCCcore-10.2.0
+ 84) Lua/5.4.2-GCCcore-10.2.0
+ 85) gnuplot/5.4.1-GCCcore-10.2.0
+ 86) OpenFOAM/8-foss-2020b
 
 #    Wire drawing case: the simulation itself
 
