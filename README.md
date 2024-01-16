@@ -224,3 +224,69 @@ This folder contains the unit tests. These are created for each piece of code th
 
 <a id="2">[2]</a> 
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+
+README file for wire drawing case:
+
+Results for the FSI case can be found on directory:
+coconut/examples/wire_drawing
+
+Directory implemented boundary condition sliding FSI interface:
+coconut/coupling_components/solver_wrappers/openfoam_extend/v41/coconut_src/boundaryConditions
+
+Directory implemented boundary condition no-slip (synchronizing drawing velocity):
+coconut/coupling_components/solver_wrappers/openfoam/v8/coconut_src/boundaryConditions
+
+Directory mappers:
+coconut/coupling_components/mappers
+
+H-file synchronizing processors during parallel running:
+coconut/coupling_components/solver_wrappers/openfoam/waitForSync.H
+
+Directory fluid solver during FSI calculations:
+coconut/coupling_components/solver_wrappers/openfoam/v8/coconut_pimpleFoam
+
+Fluid solver wrapper for FSI calculations in OpenFOAM:
+coconut/coupling_components/solver_wrappers/openfoam/openfoam.py
+
+Directory fluid solver during FSI calculations:
+coconut/coupling_components/solver_wrappers/openfoam/v8/coconut_pimpleFoam
+
+Structural solver wrapper for FSI calculations in OpenFOAM:
+coconut/coupling_components/solver_wrappers/openfoam_extend/openfoam_extend.py
+
+Directory structural solver during FSI calculations:
+coconut/coupling_components/solver_wrappers/openfoam_extend/v41/coconut_plasticNonLinSolidFoam
+
+Directory library source code structural calculations:
+coconut/coupling_components/solver_wrappers/openfoam_extend/v41/source_code_structure_wire_drawing
+
+To install CoCoNuT, instructions can be found on README.md
+The  "wire_drawing" branch is used for this simulation, with corresponding modified solver wrappers and mappers.
+The wrappers are made for OpenFOAM 8 and foam-extend 4.1 and modified to let it run a wire drawing case with sliding interface and no-slip
+condition at the FSI interface (see wrappers directory).
+
+The structural solver is developped by Philip Cardiff and adapt to achieve FSI calculations for this wire drawing case with black box approach.
+Please read carefully the README file for installing the structural solver(coconut/coupling_components/
+solver_wrappers/openfoam_extend/v41/source_code_structure_wire_drawing). The structural calculation makes use of a layering technique in order
+to reduce the computational cost. Unfortunally, this code can't be shared as this is developped by the company where the structural
+solver is applied and is classified.
+
+The parameter.json file includes the settings of the FSI case
+The setup_openfoam and setup_foamExtend directories contain the initial case for the fluid as the structural calculations respectively.
+To start the simulation. Go to the directory case of "wire_drawing" (coconut/examples/wire_drawing)
+
+execute following commands:
+
+"./Allrun"
+
+For this case, the debug switches of the fluid and structure solver are set on "false" to save space, meaning that only results are saved at
+every 10th time steps.
+
+After the simulation has been ran, the results at steady state are obtained by executing the command:
+
+"python postProcess.py"
+
+Different graphs with the distribution of different parameters will appear at steady state.
+
+The results can also been seen at paraFoam.
+
