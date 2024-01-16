@@ -1,3 +1,0 @@
-coconut_plasticNonLinSolidFoam_updated.C
-
-EXE = $(FOAM_USER_APPBIN)/coconut_plasticNonLinSolidFoam_updated
