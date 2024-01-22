@@ -56,6 +56,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         # step 1, coupling 2
         output1_2 = solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
+        solver.output_solution_step()
 
         # save output for comparison, as input hasn't changed these should be the same
         cls.a1_1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement')
@@ -66,6 +67,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # get data for solver without restart
@@ -131,6 +133,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # compare output, as input hasn't changed these should be the same
@@ -178,6 +181,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # compare output, as input hasn't changed these should be the same
@@ -214,6 +218,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # compare output, as shear input has changed these should be different

@@ -67,6 +67,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         load_interface.set_interface_data(load_data_3)
         output_3 = solver.solve_solution_step(load_interface).copy()
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         # obtain the  data and compare
@@ -95,13 +96,14 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         traction_z = 0.0
         traction = np.array([traction_x, traction_y, traction_z])
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             load = self.get_uniform_load_data(pressure * i, traction * i)
             load_interface.set_interface_data(load)
             solver.initialize_solution_step()
             solver.solve_solution_step(load_interface).copy()
             solver.finalize_solution_step()
+            solver.output_solution_step()
 
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
@@ -120,6 +122,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(load_interface).copy()
             solver.finalize_solution_step()
+            solver.output_solution_step()
 
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()

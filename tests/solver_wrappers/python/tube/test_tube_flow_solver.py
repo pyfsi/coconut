@@ -90,7 +90,7 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         displacement = interface_input.get_variable_data(self.model_part_name, 'displacement')
         displacement[:, 1] = get_dy(z0)
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.model_part_name, 'displacement', i * displacement)
@@ -106,13 +106,13 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.model_part_name, 'pressure')
         traction_1 = interface_output.get_variable_data(self.model_part_name, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, 4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.model_part_name, 'displacement', i * displacement)
