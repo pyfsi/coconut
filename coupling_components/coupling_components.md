@@ -16,8 +16,8 @@ Detailed information on these components can be found in the specific documentat
 
 All these coupling components inherit from a same superclass called `Component`, defined in *`coconut/coupling_components/component.py`*. 
 In this class some methods are implemented, which control the flow within CoCoNuT. 
-For every coupling component, there are `initialize` and `finalize`, which are called at the start and end of a calculation
-and there are `initialize_solution_step` and `finalize_solution_step`, which are called at the start and end of each time step.
+For every coupling component, there are `initialize` and `finalize`, which are called at the start and end of a calculation,
+as well as `initialize_solution_step`, called at the start of each time step, and `finalize_solution_step` and `output_solution_step`, both called at the end of each time step.
 If needed these methods are overwritten to perform a specific action.
 For example in the `finalize` method of a `solver_wrapper`, the termination of the solver software could be implemented.
 
@@ -34,11 +34,21 @@ For these `Interface` objects (implemented in *`coconut/data_structure/interface
 The main coupling component in which all other coupling components are instantiated is the coupled solver.
 The coupled solver itself is created in the `Analysis` class (*`coconut/analysis.py`*), which is the starting point of the CoCoNuT calculation.
 Upon the start of CoCoNuT, an instance of `Analysis` is made and its method `run` is executed.
-The coupled solver keeps track of all `Components` and runs the methods `initialize`, `finalize`, `initialize_solution_step` and `finalize_solution_step`,
+The coupled solver keeps track of all `Components` and runs the methods `initialize`, `finalize`, `initialize_solution_step`, `finalize_solution_step` and `output_solution_step`,
 when its respective methods are executed.
+
+## End of the calculation
+
+At the end of the calculation a summary will be printed by the coupled solver.
+Next to the average number of coupling iterations per time step required to reach convergence, it provides an overview of the computational time.
+The total calculation time is split in the time required for initialization and the actual run time.
+For both, the distribution over the different components is reported as well, for example, the run time of a `solver_wrapper` is the time spend in the `solve_solution_step` method.
+The part of the run time required for saving data is shown separately, and once more the distribution over the different components are shown.
+This so-called save time is the time spend in the method `output_solution_step`.
+This information allows to assess which part of the calculation is taking the most time and shows how to potentially reduce the calculation time.
 
 ## Tools
 
 Some code to perform specific tasks, like printing with a certain layout or performing a time measurement is useful throughout the code.
 These functionalities are grouped in the file *`coconut/tools.py`*.
-It suffices to import the file to make uses of its functions.
+It suffices to import the file to make use of its functions.

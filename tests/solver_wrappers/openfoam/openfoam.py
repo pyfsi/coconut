@@ -151,6 +151,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_disp)
             solver.finalize_solution_step()
+            solver.output_solution_step()
             solver.finalize()
 
             if cores > 1:
@@ -183,6 +184,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             output_interface = solver.solve_solution_step(solver.get_interface_input())
             output_list.append(output_interface.get_interface_data())
             solver.finalize_solution_step()
+            solver.output_solution_step()
             solver.finalize()
 
             self.rm_time_dirs(solver)
@@ -220,6 +222,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
             traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         pr_amp = 0.5 * (np.max((pressure[0] + pressure[2]) / 2) - np.min((pressure[0] + pressure[2]) / 2))
@@ -258,12 +261,13 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
         nr_time_steps = 4
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(nr_time_steps):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
 
@@ -279,18 +283,19 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, nr_time_steps):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         if cores > 1:

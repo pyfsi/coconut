@@ -75,17 +75,17 @@ class ModelAnalytical1D(Component):
         for solver_model in self.solver_models:
             solver_model.finalize_solution_step()
 
+    def output_solution_step(self):
+        super().output_solution_step()
+
+        for solver_model in self.solver_models:
+            solver_model.output_solution_step()
+
     def get_interface_input(self):
         return self.interface_input.copy()
 
-    def set_interface_input(self):
-        raise Exception('This surrogate interface provides no mapping')
-
     def get_interface_output(self):
         return self.interface_output.copy()
-
-    def set_interface_output(self):
-        raise Exception('This surrogate interface provides no mapping')
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The surrogate model ', self.__class__.__name__, ' has the following solver models:')
@@ -173,10 +173,29 @@ class ModelAnalytical1D(Component):
 
     def get_time_allocation(self):
         time_allocation = {}
-        for time_type in ('init_time', 'run_time'):
-            time_allocation_sub = time_allocation[time_type]
+        for time_type in ('init_time', 'run_time', 'save_time'):
+            time_allocation_sub = time_allocation[time_type] = {'total': 0.0}
             for i, solver_model in enumerate(self.solver_models):
-                time_allocation_sub[f'solver_wrapper_{i}'] = solver_model.get_time_allocation()
-            total_time = sum([s.__getattribute__(time_type) for s in self.solver_models])
-            time_allocation_sub['total'] = total_time
+                time_allocation_sub[f'solver_wrapper_{i}'] = solver_model.get_time_allocation()[time_type]
+            time_allocation_sub['total'] = sum([s if isinstance(s, float) else s['total']
+                                                for s in time_allocation_sub.values()])
         return time_allocation
+
+    def print_time_distribution(self, ta, pre, reference=None, last=True):
+        out = ''
+        if reference is None:
+            reference = ta['total']
+        for i, solver in enumerate(self.solver_models):
+            ta_solver = ta[f'solver_wrapper_{i}']
+            conn_char = '└' if i == len(self.solver_models) - 1 and last else '├'
+            if isinstance(ta_solver, float):
+                out += f'{pre}{conn_char}─{solver.__class__.__name__}: {ta_solver:.0f}s ' \
+                       f'({ta_solver / reference * 100:0.1f}%)\n'
+            else:
+                out += f'{pre}├─{solver.__class__.__name__}: {ta_solver["total"]:.0f}s ' \
+                       f'({ta_solver["total"] / reference * 100:0.1f}%)\n'
+                if solver.mapped:
+                    out += f'{pre}{conn_char}  └─{solver.solver_wrapper.__class__.__name__}: ' \
+                           f'{ta_solver["solver_wrapper"]:.0f}s ' \
+                           f'({ta_solver["solver_wrapper"] / reference * 100:0.1f}%)\n'
+        return out

@@ -204,10 +204,10 @@ class SolverWrapperTubeStructure(SolverWrapper):
                           - self.rndot / (self.beta * self.dt) - self.rnddot * (1 / (2 * self.beta) - 1) * self.nm)
             self.rdot = self.rndot + self.dt * (1 - self.gamma) * self.rnddot + self.dt * self.gamma * self.rddot
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
             file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
             with open(file_name, 'wb') as file:
@@ -223,6 +223,9 @@ class SolverWrapperTubeStructure(SolverWrapper):
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
+
+    def finalize(self):
+        super().finalize()
 
     def get_residual(self):
         f = np.zeros(self.m + 4)

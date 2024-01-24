@@ -69,6 +69,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         solver.initialize_solution_step()
         solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
+        solver.output_solution_step()
         coord_data = solver.get_coordinates()
         solver.finalize()
 
@@ -121,6 +122,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
             pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
             traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         # check if same position gives same pressure & traction
@@ -151,12 +153,13 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
         displacement[:, 1] = self.get_dy(x0)
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
         coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -167,18 +170,19 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, 4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -306,6 +310,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         solver.initialize_solution_step()
         solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
+        solver.output_solution_step()
         coord_data = solver.get_coordinates()
         solver.finalize()
 
@@ -363,6 +368,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
             pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
             traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         # check if same position gives same pressure & traction
@@ -396,12 +402,13 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         displacement[:, 1] = dy
         displacement[:, 2] = dz
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
         coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -412,18 +419,19 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, 4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']

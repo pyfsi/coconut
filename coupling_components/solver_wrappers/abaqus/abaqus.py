@@ -420,6 +420,10 @@ class SolverWrapperAbaqus(SolverWrapper):
         for f in self.dir_vault.iterdir():
             f.unlink()  # empty vault
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
     def finalize(self):
         super().finalize()
         if self.save_restart == 0 or self.timestep % self.save_restart != 0:  # no files needed for restart

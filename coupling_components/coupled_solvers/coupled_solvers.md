@@ -413,8 +413,7 @@ Other dictionaries, used for the actual calculation can be kept, but will not be
 The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `case_name` if not provided in `test_settings`. Note that `test_settings` has priority over the parameters defined in `settings`. This means a calculation can be tested, by only adding the `test_settings` dictionary and changing the coupled solver `type` to `coupled_solvers.test_single_solver` and without altering anything else.
 An illustration can be found in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md).
 
-The working directory of the solver is copied to a new directory with the same name and a suffix `_testX` with `X` an integer starting from 0. As such, previous test solver working directories are not overwritten.
-The optional pickle file, which saves some [results](#save-results), uses the name as specified by the JSON settings followed by an underscore and the solver test working directory. As such, the pickle file can always be linked to the corresponding test working directory.
+The optional pickle file, which saves some [results](#save-results), uses the name as specified by the JSON settings followed by an underscore and the solver working directory.
 
 During run time, the norm of $x$ and $y$ are printed. A residual does not exist here. The arrays $x$ and $y$ do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector $y$ will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.
 
@@ -505,8 +504,8 @@ The physical effect of previous time steps dealt with by the solver wrappers.
 **Therefore, in order to be able to perform a restart, the solver files for the corresponding time step also need to be present!**
 
 When performing restart, the new data will be neatly appended to the already existing results pickle file, leaving out existing time step data after the new time step start.
-As a result, the results pickle file looks exactly as if the calculation was never stopped, with the exception of the fields `run_time` and `info`.
-The latter provides a very shot log of when restart is performed.
+As a result, the results pickle file looks exactly as if the calculation was never stopped, except the fields `run_time`, `time_allocation` and `info`.
+The latter provides a very short log of when restart is performed.
 
 If the results pickle file would not be found for any reason, the user is informed and a new one is made, with the correct `timestep_start`.
 Note that the presence of the restart pickle file on the other hand is required. If the `case_name` is changed, the restart can still be performed by providing the case name for restart using `restart_case` (see explanation above).

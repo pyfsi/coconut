@@ -61,6 +61,7 @@ class CoupledSolver(Component):
         self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
+        self.save_time = 0
         self.time_allocation = {'previous_calculations': []}
         self.iterations = []
 
@@ -82,7 +83,7 @@ class CoupledSolver(Component):
         if self.debug:
             self.complete_solution_r = None
 
-    def initialize(self):
+    def initialize(self, print_components=True):
         super().initialize()
 
         self.convergence_criterion.initialize(self.solver_wrappers)
@@ -105,7 +106,8 @@ class CoupledSolver(Component):
             title = '\n╔' + 78 * '═' + f'╗\n║{self.case_name.upper():^78}║\n╚' + 78 * '═' + '╝\n'
             tools.print_info(title)
 
-        self.print_components_info(' ')
+        if print_components and self.solver_level == 0:
+            self.print_components_info(' ')
 
         # restart
         if self.restart:
@@ -160,7 +162,10 @@ class CoupledSolver(Component):
         self.iteration += 1  # increment iteration
         self.convergence_criterion.update(r.copy())  # update convergence criterion
         self.print_iteration_info(r)  # print iteration information
+        self.output_iteration(r)
 
+    @tools.time_save
+    def output_iteration(self, r):
         # update save results
         if self.save_results:
             self.residual[self.time_step - self.timestep_start_global - 1].append(r.norm())
@@ -178,6 +183,13 @@ class CoupledSolver(Component):
         self.predictor.update(self.x)
         for component in self.components:
             component.finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
+        for component in self.components:
+            component.output_solution_step()
 
         # save data for restart
         if self.save_restart != 0 and self.time_step % self.save_restart == 0:
@@ -199,12 +211,10 @@ class CoupledSolver(Component):
                 self.complete_solution_y = np.hstack((self.complete_solution_y,
                                                       self.y.get_interface_data().reshape(-1, 1)))
 
-    def output_solution_step(self):
-        super().output_solution_step()
-
-        self.time_allocation.update(self.get_time_allocation())
+        # output save results
         if self.save_results != 0 and (self.time_step % self.save_results == 0 or
                                        (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
+            self.time_allocation.update(self.get_time_allocation())
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,
                       'residual': self.residual, 'run_time': self.run_time + self.run_time_previous,
@@ -217,21 +227,17 @@ class CoupledSolver(Component):
             with open(self.case_name + '_results.pickle', 'wb') as file:
                 pickle.dump(output, file)
 
-        for component in self.components:
-            component.output_solution_step()
-
     def finalize(self):
         super().finalize()
 
-        # print summary header
-        if self.solver_level == 0:
-            out = '╔' + 79 * '═' + '\n║\tSummary\n╠' + 79 * '═'
-            tools.print_info(out)
+        time_allocation = self.get_time_allocation()  # the save time for the coupling will have changed
 
         for component in self.components:
             component.finalize()
 
-        self.print_summary()
+        # print summary
+        if self.solver_level == 0:
+            self.print_summary(time_allocation)
 
     def load_restart_data(self):
         restart_file_name = self.restart_case + f'_restart_ts{self.timestep_start_current}.pickle'
@@ -276,6 +282,7 @@ class CoupledSolver(Component):
                              f"\n\tnew: {self.delta_t}s")
         return continue_check
 
+    @tools.time_save
     def save_restart_data(self):
         restart_data = {'predictor': self.predictor.save_restart_data(), 'interface_x': self.x, 'interface_y': self.y,
                         'parameters': {key: self.parameters[key] for key in ('type', 'settings', 'predictor')},
@@ -316,57 +323,78 @@ class CoupledSolver(Component):
             self.complete_solution_r = results_data['solution_r']
         return results_data
 
-    def print_summary(self):
-        solver_init_time_percs = []
-        solver_run_time_percs = []
+    def print_summary(self, time_allocation):
         pre = '║' + ' │' * self.solver_level
-        out = ''
-        if self.solver_level == 0:
-            out += f'{pre}Total calculation time{" (after restart)" if self.restart else ""}:' \
-                   f' {self.init_time + self.run_time:.3f}s\n'
+
+        out = '╔' + 79 * '═' + '\n║\tSummary\n╠' + 79 * '═' + '\n'
+        out += f'{pre}Total calculation time{" (after restart)" if self.restart else ""}: ' \
+               f'{time_allocation["total"]:.3f}s\n'
+
         # initialization time
-        if self.solver_level == 0:
-            out += f'{pre}Initialization time: {self.init_time:0.3f}s\n'
+        out += f'{pre}Initialization time: {time_allocation["init_time"]["total"]:0.3f}s\n'
         out += f'{pre}Distribution of initialization time:\n'
-        for solver in self.solver_wrappers:
-            solver_init_time_percs.append(solver.init_time / self.init_time * 100)
-            out += f'{pre}\t{solver.__class__.__name__}: {solver.init_time:.0f}s ({solver_init_time_percs[-1]:0.1f}%)\n'
-            if solver.__class__.__name__ == 'SolverWrapperMapped':
-                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.init_time:.0f}s' \
-                       f' ({solver.solver_wrapper.init_time / self.init_time * 100:0.1f}%)\n'
-        if self.solver_level == 0:
-            out += f'{pre}\tOther: {self.init_time - sum([s.init_time for s in self.solver_wrappers]):.0f}s' \
-                   f' ({100 - sum(solver_init_time_percs):0.1f}%)\n'
+        out += self.print_time_distribution(time_allocation['init_time'], pre + '  ')
+
         # run time
-        if self.solver_level == 0:
-            out += f'{pre}Run time{" (after restart)" if self.restart else ""}: {self.run_time:0.3f}s\n'
+        out += f'{pre}Run time{" (after restart)" if self.restart else ""}: ' \
+               f'{time_allocation["run_time"]["total"]:0.3f}s\n'
         out += f'{pre}Distribution of run time:\n'
-        for solver in self.solver_wrappers:
-            solver_run_time_percs.append(solver.run_time / self.run_time * 100)
-            out += f'{pre}\t{solver.__class__.__name__}: {solver.run_time:.0f}s ({solver_run_time_percs[-1]:0.1f}%)\n'
-            if solver.__class__.__name__ == 'SolverWrapperMapped':
-                out += f'{pre}\t└─{solver.solver_wrapper.__class__.__name__}: {solver.solver_wrapper.run_time:.0f}s' \
-                       f' ({solver.solver_wrapper.run_time / self.run_time * 100:0.1f}%)\n'
-        if self.solver_level == 0:
-            out += f'{pre}\tCoupling: {self.run_time - sum([s.run_time for s in self.solver_wrappers]):.0f}s' \
-                   f' ({100 - sum(solver_run_time_percs):0.1f}%)\n'
+        out += self.print_time_distribution(time_allocation['run_time'], pre + '  ', last=False)
+
+        # save time (part of the run time)
+        reference = time_allocation['run_time']['total']
+        ta_save = time_allocation['run_time']['save_time']
+        out += f'{pre}  └─Save time: {ta_save["total"]:.0f}s ({ta_save["total"] / reference * 100:0.1f}%)\n'
+        out += self.print_time_distribution(ta_save, pre + '    ', reference=reference)
+
         out += f'{pre}Average number of iterations per time step' \
                f'{" (including before restart)" if self.restart else ""}: {np.array(self.iterations).mean():0.2f}'
-        if self.solver_level == 0:
-            out += '\n╚' + 79 * '═'
+        out += '\n╚' + 79 * '═'
         tools.print_info(out)
 
     def get_time_allocation(self):
         self.run_time = time.time() - self.start_run_time  # duration of calculation
         time_allocation = {'total': self.run_time + self.init_time}
-        for time_type in ('init_time', 'run_time'):
+        for time_type in ('init_time', 'run_time', 'save_time'):
             time_allocation_sub = time_allocation[time_type] = {}
             time_allocation_sub['total'] = self.__getattribute__(time_type)
             for i, solver_wrapper in enumerate(self.solver_wrappers):
                 time_allocation_sub[f'solver_wrapper_{i}'] = solver_wrapper.get_time_allocation()[time_type]
-            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum(
+            time_allocation_sub['coupling'] = self.__getattribute__(time_type) - sum(
                 [s.__getattribute__(time_type) for s in self.solver_wrappers])
+        self.add_time_allocation(time_allocation)
+        if self.solver_level == 0:
+            time_allocation_save = time_allocation['run_time']['save_time'] = time_allocation.pop('save_time')
+            time_allocation['run_time']['coupling'] = time_allocation['run_time']['coupling'] \
+                - time_allocation_save['total']
         return time_allocation
+
+    def add_time_allocation(self, time_allocation):
+        pass
+
+    def print_time_distribution(self, ta, pre, reference=None, last=True):
+        out = ''
+        if reference is None:
+            reference = ta['total']
+        for i, solver in enumerate(self.solver_wrappers):
+            ta_solver = ta[f'solver_wrapper_{i}']
+            if isinstance(ta_solver, float):
+                out += f'{pre}├─{solver.__class__.__name__}: {ta_solver:.0f}s ({ta_solver / reference * 100:0.1f}%)\n'
+            else:
+                out += f'{pre}├─{solver.__class__.__name__}: {ta_solver["total"]:.0f}s ' \
+                       f'({ta_solver["total"] / reference * 100:0.1f}%)\n'
+                if solver.mapped:
+                    out += f'{pre}│ └─{solver.solver_wrapper.__class__.__name__}: ' \
+                           f'{ta_solver["solver_wrapper"]:.0f}s ' \
+                           f'({ta_solver["solver_wrapper"] / reference * 100:0.1f}%)\n'
+        out += self.add_time_distribution(ta, pre, reference)
+        out += f'{pre}{"└" if last else "├"}─Coupling: {ta["coupling"]:.0f}s ' \
+               f'({ta["coupling"] / reference * 100:0.1f}%)\n'
+        return out
+
+    @staticmethod
+    def add_time_distribution(*_):
+        return ''
 
     def print_header(self):
         header = (80 * '═' + f'\n\tTime step {self.time_step}\n' +

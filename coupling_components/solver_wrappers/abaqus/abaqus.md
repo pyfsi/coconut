@@ -238,6 +238,12 @@ The files *`CSM_Time0.inp`* and *`CSM_Restart.inp`* will be generated during ini
 This allows the user to alter some parameters in the input file before restart, e.g. altering output requests, boundary conditions or applying additional loads. 
 Since Abaqus only uses the *`CSM_Restart.inp`* (which does not contain any mesh information) and output files of the previous calculation, it is pointless to change the mesh before a restart.
 
+## End of the calculation
+
+Unlike for [other solvers](../../coupling_components.md), CoCoNuT does not keep track of the time it takes to write case files.
+The reason for this is that Abaqus starts and stops every single timestep, see [here](#the-solvesolutionstep-method) and therefore needs data files to be saved every time step in order to continue the calculation in a next time step. 
+Saving data files is as such seen as inherent to solving the solution step.
+
 ## Version specific documentation
 
 ### v2021

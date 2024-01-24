@@ -21,6 +21,7 @@ class SolverWrapper(Component):
         # noinspection PyUnresolvedReferences
         self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
+        self.save_time = 0.0
 
         # debug
         self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
@@ -38,4 +39,4 @@ class SolverWrapper(Component):
         return self.interface_output.copy()
 
     def get_time_allocation(self):
-        return {'init_time': self.init_time, 'run_time': self.run_time}
+        return {'init_time': self.init_time, 'run_time': self.run_time, 'save_time': self.save_time}

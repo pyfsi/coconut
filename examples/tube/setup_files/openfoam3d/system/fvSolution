@@ -56,10 +56,10 @@ solvers
 
     cellDisplacement
     {
-    	solver          GAMG;
-    	smoother        GaussSeidel;
-    	tolerance       1e-10;
-    	relTol          0;
+        solver          GAMG;
+        smoother        GaussSeidel;
+        tolerance       1e-10;
+        relTol          0;
     }
 }
 
@@ -72,12 +72,12 @@ PIMPLE
     {
         U
         {
-                tolerance  1e-8;
+                tolerance   1e-8;
                 relTol      0;
         }
         p
         {
-                tolerance  1e-7;
+                tolerance   1e-7;
                 relTol      0;
         }
      }

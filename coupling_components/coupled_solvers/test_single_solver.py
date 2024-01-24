@@ -51,15 +51,6 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
             parameters = parameters['settings']['solver_wrapper']  # for mapped solver: the solver_wrapper itself tested
         settings = parameters['settings']
 
-        orig_wd = settings['working_directory']  # working directory changed to a test_working_directory
-        i = 0
-        while os.path.exists(f'{orig_wd}_test{i}'):
-            i += 1
-        cur_wd = f'{orig_wd}_test{i}'
-        settings['working_directory'] = cur_wd
-        os.system(f'cp -r {orig_wd} {cur_wd}')
-        tools.print_info(f'{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n')
-
         # add delta_t and timestep_start to solver_wrapper settings
         tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t', 'save_restart'])
 
@@ -87,7 +78,7 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
             self.residual = []
             self.info = None
             self.case_name = self.settings.get('case_name', 'case')  # case name
-            self.case_name += '_' + cur_wd
+            self.case_name += '_' + settings['working_directory']  # add working directory to pickle file name
 
         if self.settings.get('debug', False):
             tools.print_info(f'{self.__class__.__name__} has no debug mode: '
