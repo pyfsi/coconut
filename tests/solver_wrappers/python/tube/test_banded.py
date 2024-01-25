@@ -79,6 +79,26 @@ class TestBanded(unittest.TestCase):
         btb = bnd.multiply_banded(bt, self.banded_matrix, output_dense=True)
         np.testing.assert_array_almost_equal(btb, dtd)
 
+    def test_multiply_banded_vector(self):
+        a = np.random.rand(6) * 10
+        self.vector = np.array([a[0], a[1],  a[2],  a[3], a[4], a[5]])
+        with self.assertRaises(ValueError):
+            bnd.multiply_banded_vector(self.dense_matrix, self.vector)
+            bnd.multiply_banded_vector(self.banded_matrix, self.banded_matrix)
+            bnd.multiply_banded_vector(self.banded_matrix, 1)
+            bnd.multiply_banded_vector(self.banded_matrix, np.array([a[0], a[1]]))
+            bnd.multiply_banded_vector(self.banded_matrix[:-1, :], self.vector)
+        # with numpy
+        b = (self.dense_matrix @ self.vector.reshape(-1, 1)).flatten()
+        # 1D vector
+        b1 = bnd.multiply_banded_vector(self.banded_matrix, self.vector)
+        self.assertTrue(b1.shape == b.shape)
+        np.testing.assert_array_almost_equal(b, b1)
+        # 2D vector
+        b2 = bnd.multiply_banded_vector(self.banded_matrix, self.vector.reshape(-1, 1))
+        self.assertTrue(b2.shape == (b.size, 1))
+        np.testing.assert_array_almost_equal(b, b2.flatten())
+
     def test_transpose_banded(self):
         np.testing.assert_array_equal(self.dense_matrix.T, bnd.to_dense(bnd.transpose_banded(self.banded_matrix)))
 

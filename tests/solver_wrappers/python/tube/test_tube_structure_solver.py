@@ -136,6 +136,7 @@ class TestSolverWrapperTubeStructureSolver(unittest.TestCase):
 
     def test_coupling_convergence(self):
         # test if check of coupling convergence works correctly
+        self.parameters['settings']['residual_atol'] = 1e-6
 
         # adapt parameters, create solver
         solver = create_instance(self.parameters)
@@ -150,8 +151,20 @@ class TestSolverWrapperTubeStructureSolver(unittest.TestCase):
 
         solver.initialize_solution_step()
 
-        # coupling iteration
+        # first coupling iteration
         interface_input.set_variable_data(self.model_part_name, 'pressure', pressure)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_variable_data(self.model_part_name, 'pressure', 2 * pressure)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_variable_data(self.model_part_name, 'pressure', 2 * pressure)
         solver.solve_solution_step(interface_input)
 
         self.assertTrue(solver.coupling_convergence)

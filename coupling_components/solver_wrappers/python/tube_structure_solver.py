@@ -90,6 +90,8 @@ class SolverWrapperTubeStructure(SolverWrapper):
             self.beta = 1
             self.nm = False
 
+        self.residual_atol = self.settings.get('residual_atol')  # absolute residual tolerance for coupling convergence
+
         # initialization
         self.areference = np.pi * self.rreference ** 2  # reference area of cross-section
         self.p = np.ones(self.m) * self.preference  # pressure
@@ -145,6 +147,10 @@ class SolverWrapperTubeStructure(SolverWrapper):
     def initialize(self):
         super().initialize()
 
+        if self.check_coupling_convergence and self.residual_atol is None:
+            raise ValueError(f'To check the coupling convergence with {self.__class__.__name__},'
+                             f' the parameter "residual_atol" needs to be specified')
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
@@ -160,6 +166,14 @@ class SolverWrapperTubeStructure(SolverWrapper):
         # input
         self.interface_input = interface_input.copy()
         self.p = interface_input.get_variable_data(self.input_model_part_name, 'pressure').flatten()
+
+        # coupling convergence
+        if self.check_coupling_convergence:
+            residual = np.linalg.norm(bnd.multiply_banded_vector(self.get_jacobian(), self.r) - self.get_b())
+            if residual < self.residual_atol:
+                self.coupling_convergence = True
+                if self.print_coupling_convergence:
+                    tools.print_info(f'{self.__class__.__name__} converged')
 
         # solve system
         if self.solver == 'solve_banded':
@@ -184,11 +198,6 @@ class SolverWrapperTubeStructure(SolverWrapper):
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
-
-        # coupling convergence
-        self.coupling_convergence = True
-        if self.print_coupling_convergence:
-            tools.print_info(f'{self.__class__.__name__} converged')
 
         # output does not contain boundary conditions
         self.a = self.r[2:self.m + 2] ** 2 * np.pi

@@ -52,6 +52,8 @@ class SolverWrapperTubeRingmodel(SolverWrapper):
         self.k = 0  # iteration
         self.n = 0  # time step
 
+        self.residual_atol = self.settings.get('residual_atol')  # absolute residual tolerance for coupling convergence
+
         # initialization
         self.areference = np.pi * d ** 2 / 4  # reference area of cross section
         self.p = np.zeros(self.m) * self.preference  # kinematic pressure
@@ -84,6 +86,10 @@ class SolverWrapperTubeRingmodel(SolverWrapper):
     def initialize(self):
         super().initialize()
 
+        if self.check_coupling_convergence and self.residual_atol is None:
+            raise ValueError(f'To check the coupling convergence with {self.__class__.__name__},'
+                             f' the parameter "residual_atol" needs to be specified')
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
@@ -96,6 +102,14 @@ class SolverWrapperTubeRingmodel(SolverWrapper):
         self.interface_input = interface_input.copy()
         self.p = interface_input.get_variable_data(self.input_model_part_name,
                                                    'pressure').flatten() / self.rhof  # kinematic pressure
+
+        # coupling convergence
+        if self.check_coupling_convergence:
+            residual = np.linalg.norm(self.a - self.areference * (2 / (2 + (self.preference - self.p) / self.c02)) ** 2)
+            if residual < self.residual_atol:
+                self.coupling_convergence = True
+                if self.print_coupling_convergence:
+                    tools.print_info(f'{self.__class__.__name__} converged')
 
         # independent rings model
         for i in range(len(self.p)):
@@ -118,11 +132,6 @@ class SolverWrapperTubeRingmodel(SolverWrapper):
                 file.write(f"{'z-coordinate':<22}\t{'area':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
-
-        # coupling convergence
-        self.coupling_convergence = True
-        if self.print_coupling_convergence:
-            tools.print_info(f'{self.__class__.__name__} converged')
 
         # output
         self.disp[:, 1] = np.sqrt(self.a / np.pi) - self.rreference
