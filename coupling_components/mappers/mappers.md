@@ -28,7 +28,7 @@ The `initialize` method performs one-time expensive operations, such as a neares
 The `__call__` method is used for the actual mapping. It takes two tuples as arguments (*from* and *to* respectively). Each tuple contains an `Interface` object, the name of the affected `ModelPart` and the name of the variable that must be mapped. This method returns nothing: the mapping is done in-place in the *to*-`Interface`.
 
 There are two types of `ModelPart` mappers: _interpolators_ and _transformers_. They can be distinguished by their superclass. 
-All interpolators inherit from the superclass `MappedInterpolator`. These mappers do the actual interpolation. Currently [a nearest-neighbour mapper](mappers.md#mappernearest), [a linear mapper](mappers.md#mapperlinear) and a [radial basis mapper](mappers.md#mapperradialbasis) are available.
+All interpolators inherit from the superclass `MappedInterpolator`. These mappers do the actual interpolation. Currently, [a nearest-neighbour mapper](mappers.md#mappernearest), [a linear mapper](mappers.md#mapperlinear) and a [radial basis mapper](mappers.md#mapperradialbasis) are available.
 All transformers inherit from the superclass `MappedTransformer`. They provide additional functionality that can be useful during mapping. They do not map values from one point cloud to another like the interpolators, but perform *one-sided* transformations on the coordinates and/or the data. One example is the permutation transformer: it swaps the coordinate axes of the `ModelPart` and accordingly the components of vector variables. 
 A transformer can never be used by itself, it must always be combined with an interpolator. The reason is that interpolators use information that comes from two sides, which is exactly what the higher-level `SolverWrapperMapped` and `MapperInterface` objects are supplying. To chain together multiple `ModelPart` mappers, the `MapperCombined` is used: it contains always one interpolator and zero or more transformers, on either side of the interpolator.
 
@@ -115,7 +115,7 @@ When the `__call__` method  of the combined mapper is used, the following happen
 
 -   The *from*-data (stored in the *from*-`Interface`) is mapped from the *from*-`ModelPart` to the first intermediate `ModelPart` using the `__call__` method of the permutation mapper: scalar variables are unchanged, vector variables are permuted. 
 -   The resulting data is now interpolated to the second intermediate `ModelPart`, using the `__call__` method of the radial basis mapper. 
--   Finally that data is mapped to the *to*-`ModelPart` using the `__call__` method of the axisymmetric transformer, reducing it from 3D to 2D. That data is written to the *to*-`Interface`. 
+-   Finally, that data is mapped to the *to*-`ModelPart` using the `__call__` method of the axisymmetric transformer, reducing it from 3D to 2D. That data is written to the *to*-`Interface`. 
 
 
 
@@ -285,5 +285,5 @@ In this case the interpolation matrix approaches the identity matrix.
 
 Choosing a higher value improves the interpolation as the basis functions become wider, but the interpolation matrix becomes less stable, i.e. the condition number increases.
 The default value is 200.
-In practice, the `shape_parameter` is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (eg. with a condition number of roughly $10^{13}$ for double-precision floating point).
+In practice, the `shape_parameter` is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (for example, with a condition number of roughly $10^{13}$ for double-precision floating point).
 A warning is printed when the condition number of an interpolation matrix becomes higher than $10^{13}$.

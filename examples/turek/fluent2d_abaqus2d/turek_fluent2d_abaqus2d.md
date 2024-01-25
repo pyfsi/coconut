@@ -2,7 +2,7 @@
 
 This example calculates the well-known Turek benchmark, which consist of laminar incompressible flow around a flexible flag attached to a rigid cylinder in a 2D channel.
 The material parameters and boundary conditions correspond to the FSI2 setup, as detailed by Turek and Hron [[1](#1)].
-The challenging aspect of this benchmark lies in the large self-indcuced oscillation of the flag.
+The challenging aspect of this benchmark lies in the large self-induced oscillation of the flag.
 The used solvers are Fluent and Abaqus.
 A script _`evaluate_benchmark.py`_ is provided to compare the results with the benchmark results in [[1](#1)].
 Furthermore, the script _`animate_beam.py`_ can be used to visualize the interface data throughout the calculation.
@@ -12,13 +12,13 @@ Due to the time required for the oscillations to enter a periodic regime, this t
 The figure below shows the resulting velocity contour plot (with Fluent).
 ![FSI2](images/turek_fsi2_velocity.gif "Velocity animation of FSI2 setup produced with Fluent")
 
-In the FSI2 setup a parabolic velocity profile is subscribed at the inlet with an average velocity of 1 m/s, ramped up slowly in time.  
-The fluid paramters are: 
+In the FSI2 set up a parabolic velocity profile is subscribed at the inlet with an average velocity of 1 m/s, ramped up slowly in time.  
+The fluid parameters are: 
 
 -   density: 1000 kg/m³
 -   dynamic viscosity: 1 Pa$\cdot$s
 
-The flag is consist of a linear elastic material with the follwing properties:
+The flag is consist of a linear elastic material with the following properties:
 
 -   density: 10$^4$ kg/m³
 -   modulus of elasticity: 1.4 10$^6$ Pa
@@ -47,7 +47,7 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 Fluent is used as flow solver.
-The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
+The provided mesh is triangular. When the gate bends re-meshing is performed to preserve its quality.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
 
 The structure solver is Abaqus.

@@ -28,7 +28,7 @@ The following parameters need to be included in the `settings` dictionary. Here 
 |                 `save_results` |  int  | (optional) Default: `0`. Time step interval at which a pickle file is written containing some main [results](#save-results) for ALL previous time steps. If `0`, no such information is stored and no pickle file is written.                                                                                                                                                                       |
 | <nobr>`time_step_start`</nobr> |  int  | Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`.                                |
 
-`timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
+`timestep_start` and `delta_t` are necessary parameters (also in a steady simulation), but can also be defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.
 
 **These parameters should also be specified for the coupled solvers inheriting from `CoupledSolver`.**
@@ -148,7 +148,7 @@ For this Jacobian the following is valid
 $$
 \Delta \widetilde{x}^k=\widetilde{\mathcal{R}}'^{-1}(x^k)\Delta r^k,
 $$
-where $\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k$ is the difference between the the output of two subsequent iterations.
+where $\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k$ is the difference between the output of two subsequent iterations.
 This Jacobian is also not known, but is approximated using a `model` and denoted by $\widetilde{N}^k$. The type of `model` and its settings are specified in the `settings` dictionary. This model returns an estimation of $\Delta\widetilde{x}^k$ given a value $\Delta r^k=-r^k$
 $$
 \Delta\widetilde{x}^k=\widetilde{N}^k \Delta r^k.
@@ -162,8 +162,8 @@ A symbolic schematic is given in the following figure.
 
 ![iqni](images/iteration_iqni.png "Residual operator iterations")
 
-For more information with respect to the approximation of the Jacobian, refer to the [models documentation](models/models.md).
-More information about residual operator methods can be found in [[1](#1)].
+For more information with respect to the approximation of the Jacobian, refer to the [models' documentation](models/models.md).
+More information about residual operator methods can be found in [[1](#1), [3](#3)].
 
 Beside the parameters required in the [class `CoupledSolver`](#the-class-coupledsolver), the following parameters need to be included in the `settings` dictionary. They are listed in alphabetical order.
 
@@ -246,7 +246,7 @@ Beside the parameters required in the [class `CoupledSolver`](#the-class-coupled
 ## IQNISM
 
 The `type` for this coupled solver is `coupled_solvers.iqnism`.
-This coupled solver is linked to the IQN-ILSM framework [[2](#2)].
+This coupled solver is linked to the IQN-ILSM framework [[2](#2), [3](#3)].
 
 The abbreviation IQNISM refers to _interface quasi-Newton with inverse Jacobian from surrogate model_.
 This coupled solver belongs in the same category as the IQNI coupled solver: the combination of the two solvers is seen as one system, where the input of the first solver is transferred unchanged to the second solver.
@@ -266,8 +266,8 @@ Both of them are required. However, a dummy model can be used to disable one of 
 It is not recommended to disable the secant model (key `model`), as this model provides a Jacobian which is based on the actual problem.
 
 The `surrogate` model solves a surrogate coupling problem at the start of every time step. The solution of this surrogate problem can be used as prediction (see [surrogate predictor](../predictors/predictors.md#surrogate)) and its Jacobian can be used here.
-More information with respect to this type of model can be found in the [models documentation](models/models.md).
-If only the solution is to be used, the parameter `surrogate_modes` has to be set to `0`. This parameters denotes the number of modes from the surrogate Jacobian that should be used (starting from the first determined mode(s)).
+More information with respect to this type of model can be found in the [models' documentation](models/models.md).
+If only the solution is to be used, the parameter `surrogate_modes` has to be set to `0`. This parameter denotes the number of modes from the surrogate Jacobian that should be used (starting from the first determined mode(s)).
 Whether the surrogate solution is used for prediction, is determined by the `predictor` settings of the coupled solver. If the surrogate model does not provide a surrogate solution (only a surrogate Jacobian), surogate prediction is not possible.
 
 The two models are combined as follows.
@@ -460,7 +460,7 @@ Besides restarting the exact same simulation, it could be useful to change the s
 This is possible, refer to the [models](models/models.md#restart) documentation for more details.
 Changing the type of coupled solver or occasional model is also possible, but no information will be transferred between the different types, meaning that for example all information from previous time steps is lost.
 
-For the predictors the same is true, with the exception of the extrapolators for which there is information transfer.
+For the predictors the same is true, except for the extrapolators for which there is information transfer.
 See the documentation of the [predictors](../predictors/predictors.md#restart) for more details.
 
 The following table gives an overview of the coupled solvers which save one or more additional components or values.
@@ -473,7 +473,7 @@ The following table gives an overview of the coupled solvers which save one or m
 | `coupled_solvers.iqnism` | `model` and `surrogate`                 |
 
 However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
-Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step $n$.
+Therefore, it is the responsibility of the solver wrappers, to set up the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step $n$.
 Moreover, its vital that they reconstruct the exact same model parts as in the initial calculation.
 In other words, the undeformed coordinates must be the same.
 Conversely, they are not required to initialize the interfaces with the correct data from time step $n$, as this taken care of by the predictor in the coupled solver.
@@ -517,3 +517,6 @@ Note that the presence of the restart pickle file on the other hand is required.
 
 <a id="2">[2]</a>
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+
+<a id="3">[3]</a> 
+[Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.](https://doi.org/10.1007/s11831-023-09907-y)

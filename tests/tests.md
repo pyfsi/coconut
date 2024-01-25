@@ -3,14 +3,14 @@
 ## Idea
 
 Unit tests are particularly important to developers to debug their code separately from other coupling components. These 
-unit tests also offer an opportunity to quickly check whether or not the installation of the package was successful, as mentioned 
+unit tests also offer an opportunity to quickly check whether the installation of the package was successful, as mentioned 
 on the [start page](../README.md#quick-test). 
 
 The remainder of this documentation page focuses on running these tests. The first section explains the procedure to run
 (almost) all tests at once, which is useful for the post-installation test. The second section contains information on how to 
 include the unit test of a solver wrapper in the testing framework. Finally, it is explained how to run a single test file,
 test class or test method. The latter is useful in the development of a new solver wrappers to quickly test a single 
-aspect of the wrapper without having to test all aspects together, which can be time consuming. 
+aspect of the wrapper without having to test all aspects together, which can be time-consuming. 
 
 ## Running unit tests
 

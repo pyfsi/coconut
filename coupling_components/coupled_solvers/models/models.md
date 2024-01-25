@@ -2,8 +2,8 @@
 
 This documentation describes the different types of available models. The purpose of a model always is to provide a (approximated) (inverse) Jacobian of a system.
 Often this achieved with the help of secant information from input-output-pairs, resulting in a so-called quasi-Newton method.
-Another approach to obtain a approximated Jacobian is the use of a surrogate model. Finally, in some cases, the Jacobian can be derived analytically.
-These three types of models will be discussed further.
+Another approach to obtain an approximated Jacobian is the use of a surrogate model. Finally, in some cases, the Jacobian can be derived analytically.
+These three types of models will be discussed further. More detailed information can be found in Delaissé et al. [[8](#8)].
 
 Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
 For example, using the coupled solver `CoupledSolverIQNI` with the model `ModelLS` corresponds to the IQN-ILS method developed by Degroote et al. [[1](#1)]. In that case, the approximated Jacobian is $\mathcal{R}'^{-1}$.
@@ -17,7 +17,7 @@ There are four model-specific methods, which are implemented by all models.
 -   The first of which is the `predict(dr)` method, which returns an estimation of the change in output variable based on a change in input variable using the Jacobian approximation.
 -   Second, the method `is_ready()` return a boolean signalling if the model is ready to _predict_ using the previous method.
 -   Third, in order to improve the estimation, information from a current iteration can be added to the model using the method `add(r, xt)`.
--   And finally, the method `filter_q(dr)` returns the part of supplied vector which falls inside of the nullspace of the Jacobian. This is the part of the supplied vector for which the model has no derivative information.
+-   And finally, the method `filter_q(dr)` returns the part of supplied vector which falls inside the nullspace of the Jacobian. This is the part of the supplied vector for which the model has no derivative information.
 
 ## Jacobian approximation from secant information
 In order to approximate the Jacobian $\mathcal{A}'$ of a general function $a=\mathcal{A}(b)$, the model needs to be supplied with matching input-output-pairs, ($b^i$, $a^i=\mathcal{A}(b^i)$).
@@ -25,7 +25,7 @@ Once at least two pairs have been supplied, the model is able to approximately p
 In other words, when a vector $\Delta b$ is given it outputs $\Delta a=\widehat{\mathcal{A}}'\Delta b$, where the hat symbol is used to denote that an approximation of the Jacobain is used.
 
 In the following, the example from IQN-ILS will be used: the inverse Jacobian of $\mathcal{R}'$ with respect to $\widetilde{x}$ is approximated which has an input vector $r$ and an output vector $\widetilde{x}$.
-For brevity, the approximation will denoted by $N^k$, where the superscript $k$ referes to the iteration.
+For brevity, the approximation will be denoted by $N^k$, where the superscript $k$ referes to the iteration.
 
 The four model-specific methods can be made concrete for this type of model:
 
@@ -142,7 +142,7 @@ The following parameter needs to be included in the `settings` dictionary.
 The `type` for this model is `coupled_solvers.models.mapped`.
 
 As a `surrogate` model usually won't have the same discretization as the actual solvers, mapping capabilities are provided.
-This special model acts analogously, to the [`mapped` solver wrapper](../../mappers.md).
+This special model acts analogously, to the [`mapped` solver wrapper](../../mappers/mappers.md).
 It contains 3 `Components`: a mapper for the input, a real model and a mapper for the output.
 
 |                              parameter | type | description                              |
@@ -154,7 +154,7 @@ It contains 3 `Components`: a mapper for the input, a real model and a mapper fo
 ## Analytically determined Jacobian
 
 Analytically determining the Jacobian is only possible for very simple solvers.
-One such `model` is available, that accomplishes this for the combination of the [python tube flow solver](../../solver_wrappers/python.md#tube-flow-solver) and [python tube structure solver](../../solver_wrappers/python.md#tube-structure-solver).
+One such `model` is available, that accomplishes this for the combination of the [python tube flow solver](../../solver_wrappers/python/python.md#tube-flow-solver) and [python tube structure solver](../../solver_wrappers/python/python.md#tube-structure-solver).
 This code can also serve as example or template for the use of own analytically determined Jacobians.
 
 ### Analytical 1D
@@ -210,3 +210,6 @@ If the use of a dummy model is allowed, the `type` (`coupled_solvers.models.dumm
 
 <a id="7">[7]</a>
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
+
+<a id="8">[8]</a> 
+[Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.](https://doi.org/10.1007/s11831-023-09907-y)
