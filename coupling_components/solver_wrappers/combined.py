@@ -1,5 +1,5 @@
 from coconut.tools import create_instance
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 
@@ -7,10 +7,10 @@ def create(parameters):
     return SolverWrapperCombined(parameters)
 
 
-class SolverWrapperCombined(Component):
+class SolverWrapperCombined(SolverWrapper):
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # read parameters
         self.parameters = parameters
@@ -42,8 +42,6 @@ class SolverWrapperCombined(Component):
                 self.mapped_solver_wrappers.append(sol_wrapper)
 
         self.master_solver_wrapper = self.solver_wrappers[self.master_sol_index]
-
-        self.interface_output = None
 
     @tools.time_initialize
     def initialize(self):
