@@ -487,7 +487,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
         self.assertFalse(solver.coupling_convergence)
 
-        # second coupling iteration
+        # third coupling iteration
         interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
         solver.solve_solution_step(interface_input)
 
