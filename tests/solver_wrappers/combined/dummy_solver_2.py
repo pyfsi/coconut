@@ -16,6 +16,7 @@ def create(parameters):
 
 
 class DummySolver2(SolverWrapper):
+    check_coupling_convergence_possible = False
 
     @tools.time_initialize
     def __init__(self, parameters):
