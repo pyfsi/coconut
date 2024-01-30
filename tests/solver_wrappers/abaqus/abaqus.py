@@ -10,7 +10,7 @@ import shutil
 
 
 class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
-    version = None
+    version = None  # Abaqus version, e.g. 2022, set in subclass
     setup_case = True
     dimension = 2
     axial_dir = 1  # y-direction is axial direction

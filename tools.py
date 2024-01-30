@@ -39,8 +39,8 @@ class CocoMessages:
         cumul_time = 0
         file = join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
-            time.sleep(0.01)
-            cumul_time += 0.01
+            time.sleep(0.001)
+            cumul_time += 0.001
             if cumul_time > self.max_wait_time:
                 if self.timed_out_action is not None:
                     self.timed_out_action(message)

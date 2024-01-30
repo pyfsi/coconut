@@ -241,8 +241,12 @@ Since Abaqus only uses the *`CSM_Restart.inp`* (which does not contain any mesh 
 ## End of the calculation
 
 Unlike for [other solvers](../../coupling_components.md), CoCoNuT does not keep track of the time it takes to write case files.
-The reason for this is that Abaqus starts and stops every single timestep, see [here](#the-solvesolutionstep-method) and therefore needs data files to be saved every time step in order to continue the calculation in a next time step. 
+The reason for this is that Abaqus starts and stops every single coupling iteration, see [here](#the-solvesolutionstep-method) and therefore needs data files to be saved every time step in order to continue the calculation in a next coupling iteration or time step. 
 Saving data files is as such seen as inherent to solving the solution step.
+
+## Solver coupling convergence
+
+The convergence criterion [solver coupling convergence](../../convergence_criteria/convergence_criteria.md#solver-coupling-convergence) can not be used for the Abaqus solver wrapper.
 
 ## Version specific documentation
 

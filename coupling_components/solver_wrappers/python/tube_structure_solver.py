@@ -18,6 +18,7 @@ def create(parameters):
 class SolverWrapperTubeStructure(SolverWrapper):
     al = 2  # Number of terms below diagonal in matrix
     au = 2  # Number of terms above diagonal in matrix
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -47,7 +48,7 @@ class SolverWrapperTubeStructure(SolverWrapper):
 
         l = self.settings['l']  # length
         d = self.settings['d']  # diameter
-        self.rreference = d / 2  # reference radius of cross section
+        self.rreference = d / 2  # reference radius of cross-section
         self.rhof = self.settings['rhof']  # fluid density
 
         self.preference = self.settings.get('preference', 0)  # reference pressure
@@ -89,12 +90,14 @@ class SolverWrapperTubeStructure(SolverWrapper):
             self.beta = 1
             self.nm = False
 
+        self.residual_atol = self.settings.get('residual_atol')  # absolute residual tolerance for coupling convergence
+
         # initialization
-        self.areference = np.pi * self.rreference ** 2  # reference area of cross section
+        self.areference = np.pi * self.rreference ** 2  # reference area of cross-section
         self.p = np.ones(self.m) * self.preference  # pressure
-        self.a = np.ones(self.m) * self.areference  # area of cross section
+        self.a = np.ones(self.m) * self.areference  # area of cross-section
         if self.timestep_start == 0:  # no restart
-            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross section
+            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross-section
             if self.unsteady:
                 self.rdot = np.zeros(self.m)  # first derivative of the radius with respect to time in current timestep
                 self.rddot = np.zeros(self.m)  # second derivative of radius with respect to time in current timestep
@@ -102,10 +105,10 @@ class SolverWrapperTubeStructure(SolverWrapper):
             file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
             with open(file_name, 'rb') as file:
                 data = pickle.load(file)
-            self.r = data['r']  # radius of cross section
+            self.r = data['r']  # radius of cross-section
             self.rdot = data['rdot']  # first derivative of the radius with respect to time in current timestep
             self.rddot = data['rddot']  # second derivative of the radius with respect to time in current timestep
-        self.rn = np.array(self.r)  # previous radius of cross section
+        self.rn = np.array(self.r)  # previous radius of cross-section
         self.rndot = np.zeros(self.m)  # first derivative of the radius with respect to time in previous timestep
         self.rnddot = np.zeros(self.m)  # second derivative of the radius with respect to time in previous timestep
 
@@ -144,6 +147,10 @@ class SolverWrapperTubeStructure(SolverWrapper):
     def initialize(self):
         super().initialize()
 
+        if self.check_coupling_convergence and self.residual_atol is None:
+            raise ValueError(f'To check the coupling convergence with {self.__class__.__name__},'
+                             f' the parameter "residual_atol" needs to be specified')
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
@@ -159,6 +166,14 @@ class SolverWrapperTubeStructure(SolverWrapper):
         # input
         self.interface_input = interface_input.copy()
         self.p = interface_input.get_variable_data(self.input_model_part_name, 'pressure').flatten()
+
+        # coupling convergence
+        if self.check_coupling_convergence:
+            residual = np.linalg.norm(bnd.multiply_banded_vector(self.get_jacobian(), self.r) - self.get_b())
+            if residual < self.residual_atol:
+                self.coupling_convergence = True
+                if self.print_coupling_convergence:
+                    tools.print_info(f'{self.__class__.__name__} converged')
 
         # solve system
         if self.solver == 'solve_banded':

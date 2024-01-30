@@ -18,10 +18,16 @@ class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
         super().__init__(model, project_parameters)
         self.dimensions = project_parameters['solver_settings']['domain_size'].GetInt()
         self.coupling_iteration = None
+        self.max_iteration_number = None
         self.pressure_directions = [direc.GetInt() for direc in project_parameters['pressure_directions']]
+        self.check_coupling_convergence = project_parameters['check_coupling_convergence'].GetBool()
 
     def Initialize(self):
         super().Initialize()
+
+        if self.check_coupling_convergence:
+            self.max_iteration_number = self._GetSolver()._GetSolutionStrategy().GetMaxIterationNumber()
+            # self._GetSolver()._GetConvergenceCriterion().SetActualizeRHSFlag(False)
 
         for sub_mp_name in self.interfaces:
             file_name_nodes = f'{sub_mp_name}_nodes.csv'
@@ -42,7 +48,20 @@ class StructuralMechanicsWrapper91(StructuralMechanicsAnalysis):
         self.coupling_iteration += 1
         KM.Logger.Print(f'Coupling iteration: {self.coupling_iteration}')
         self.InputData()
-        self._GetSolver().SolveSolutionStep()
+        if self.check_coupling_convergence:
+            # perform 1 solver iteration
+            self._GetSolver()._GetSolutionStrategy().SetMaxIterationNumber(1)
+            converged = self._GetSolver().SolveSolutionStep()
+            if converged:
+                KM.Logger.Print(f'Converged before first solver iteration')
+                open(os.path.join('solver_converged.coco'), 'w').close()
+            else:
+                KM.Logger.Print(f'Not converged before first solver iteration')
+                if self.max_iteration_number > 1:
+                    self._GetSolver()._GetSolutionStrategy().SetMaxIterationNumber(self.max_iteration_number - 1)
+                    self._GetSolver().SolveSolutionStep()
+        else:
+            self._GetSolver().SolveSolutionStep()
         KM.Logger.Print(f'Coupling iteration {self.coupling_iteration} end')
         self.OutputData()
 
@@ -117,7 +136,7 @@ if __name__ == '__main__':
     open('start_ready.coco', 'w').close()
 
     while True:
-        time.sleep(0.01)
+        time.sleep(0.001)
 
         if os.path.isfile('next.coco'):
             str_wrapper.InitializeSolutionStep()

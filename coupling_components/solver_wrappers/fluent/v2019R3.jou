@@ -6,6 +6,7 @@ file set-batch-options n n n
 (define unsteady |UNSTEADY|)
 (define multiphase |MULTIPHASE|)
 (define flow_iterations |FLOW_ITERATIONS|)
+(define check_coupling_convergence |CHECK_COUPLING_CONVERGENCE|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
 ;
@@ -60,6 +61,9 @@ file set-batch-options n n n
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
+;   STORE REPORTING INTERVAL
+;
+(define reporting_interval (%rpgetvar 'iteration-chunk))
 ;
 ;   RESET FLUX LIMITER TO OLD BEHAVIOR
 ;solve set previous undo-2019r3 y n
@@ -129,22 +133,79 @@ define user-defined execute-on-demand "get_thread_ids::v2019R3"
         (begin
             (rpsetvar 'udf/iteration (+ (%rpgetvar 'udf/iteration) 1))
             (print-iter-info)
-            (if unsteady
-                (if (= (%rpgetvar 'udf/iteration) 1)
-                    (begin
-                        (ti-menu-load-string "solve dual-time-iterate 1 0")
-                        (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
-                    )
-                    (begin
-                        (ti-menu-load-string "solve dual-time-iterate 0 1")
-                        (ti-menu-load-string "solve iterate 1")
-                        (ti-menu-load-string "solve dual-time-iterate 0 0")
-                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+            (if check_coupling_convergence
+                (begin
+                    (ti-menu-load-string "solve set reporting-interval 1")
+                    (if unsteady
+                        (if (= (%rpgetvar 'udf/iteration) 1)
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                (ti-menu-load-string "solve iterate 1")
+                                (if (%rpgetvar 'solution/converged?)
+                                    (begin
+                                        (newline)(display "Check convergence :: converged")(newline)
+                                        (send_message "solver_converged")
+                                    )
+                                    (begin
+                                        (newline)(display "Check convergence :: not converged")(newline)
+                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                    )
+                                )
+                            )
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                (ti-menu-load-string "solve iterate 1")
+                                (if (%rpgetvar 'solution/converged?)
+                                    (begin
+                                        (newline)(display "Check convergence :: converged")(newline)
+                                        (send_message "solver_converged")
+                                    )
+                                    (begin
+                                        (newline)(display "Check convergence :: not converged")(newline)
+                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                        (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                    )
+                                )
+                            )
+                        )
+                        (begin
+                            (ti-menu-load-string "solve mesh-motion y")
+                            (ti-menu-load-string "solve iterate 1")
+                            (if (%rpgetvar 'solution/converged?)
+                                (begin
+                                    (newline)(display "Check convergence :: converged")(newline)
+                                    (send_message "solver_converged")
+                                )
+                                (begin
+                                    (newline)(display "Check convergence :: not converged")(newline)
+                                    (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                    (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                )
+                            )
+                        )
                     )
                 )
                 (begin
-                    (ti-menu-load-string "solve mesh-motion y")
-                    (ti-menu-load-string "solve iterate flow_iterations")
+                    (if unsteady
+                        (if (= (%rpgetvar 'udf/iteration) 1)
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
+                            )
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                (ti-menu-load-string "solve iterate 1")
+                                (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                            )
+                        )
+                        (begin
+                            (ti-menu-load-string "solve mesh-motion y")
+                            (ti-menu-load-string "solve iterate flow_iterations")
+                        )
+                    )
                 )
             )
             (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::v2019R3\"")

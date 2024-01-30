@@ -23,14 +23,14 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 The flow solver is OpenFoam, used to solve a fully 3D tube,
-with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 48 cells on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 When setting up the case, the mesh is build based on the file *`blockMeshDict`*.
 The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
 The axial direction is along the x-axis.
 When starting the simulation, the solver `coconut_pimpleFoam` is compiled automatically, if required.
 
 The structure solver is Kratos, used to solve a fully 3D tube,
-with 24 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction. 
+with 24 elements on the fluid-structure interface in the length direction and 8 in the circumferential direction. 
 The Kratos element type used is ShellThickElementCorotational3D4N. These are 4-node shell elements.
 The displacement and loads are calculated/applied on the nodes. There are 200 nodes on the fluid-structure interface.
 The axial direction is along the x-axis. The parameter file *`ProjectParameters.json`* is passed to CoCoNuT.

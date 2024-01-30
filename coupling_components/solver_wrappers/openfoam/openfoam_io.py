@@ -43,6 +43,20 @@ def get_dict(input_string, keyword):
         return result.group()
 
 
+def get_nested_dict(input_string, keyword):
+    result = re.search(keyword + delimiter + r'\{', input_string, flags=re.S)
+    if result is None:
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
+    out = result.group()
+    level = 0
+    for char in input_string[result.end():]:
+        level = level + (char == '{') - (char == '}')
+        out += char
+        if level < 0:
+            break
+    return out
+
+
 def get_vector_array(input_string, is_int=False):
     if is_int:
         pattern = re.compile(
