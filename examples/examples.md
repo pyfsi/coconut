@@ -7,7 +7,7 @@ This documentation describes the structure of the different example cases and ho
 
 The *`examples`* folder contains different examples grouped per case, for example, the cases calculating the flow through a flexible tube is gathered in the folder *`tube`*.
 
-Each case folder, such as *`tube`*, contains the following directories and files
+Each case folder, such as *`tube`*, contains the following directories and files:
 
 - *`setup_files`* containing the necessary files to set up the case for each solver,
 - *`<flow solver>_<structural solver>`* different folders solving the case with different solver combinations, hereafter simply called examples.
