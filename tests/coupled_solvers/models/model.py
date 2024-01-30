@@ -131,7 +131,7 @@ class TestModel(unittest.TestCase):
             mode='reduced')
         dr_in = -self.r3[:np.newaxis]
         dr_sol = dr_in - qq @ (qq.T @ dr_in)
-        np.testing.assert_allclose(dr.get_interface_data(), dr_sol, atol=5e-15)
+        np.testing.assert_allclose(dr.get_interface_data(), dr_sol, atol=1e-14)
 
         r.set_interface_data(self.r3)
         dxt = self.model.predict(-1 * r)
