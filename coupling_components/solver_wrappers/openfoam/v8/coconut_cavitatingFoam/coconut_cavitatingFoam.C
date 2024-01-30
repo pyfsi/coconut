@@ -69,9 +69,7 @@ int main(int argc, char *argv[])
     unsigned int iteration;
     iteration = 0;
 
-    IOdictionary controlDict(IOobject("controlDict", runTime.system(), mesh, IOobject::MUST_READ,IOobject::NO_WRITE));
-    wordList boundaryNames (controlDict.lookup("boundaryNames"));
-    wordList coconutFunctionObjects (controlDict.lookup("coconutFunctionObjects"));
+    #include "readCoconutControls.H"
 
     while (true)
     {
@@ -140,6 +138,12 @@ int main(int argc, char *argv[])
                 if (pimple.turbCorr())
                 {
                     turbulence->correct();
+                }
+
+                // Check coupling convergence
+                if (checkCouplingConvergence && pimple.firstPimpleIter())
+                {
+                    #include "checkCouplingConvergence.H"
                 }
             }
 

@@ -30,7 +30,7 @@ checked in the `__init__` method.
 The data in `ModelPart` once created, either by `__init__` method of 
 the `ModelPart` class or by `create_model_part` method of the `Model` class, 
 cannot be changed later. This is because the initial coordinates of boundary 
-points are always supplied from the solver wrapper and they don't change during the various stages of the coupling process. 
+points are always supplied from the solver wrapper, and they don't change during the various stages of the coupling process. 
 
 --- 
 
@@ -53,34 +53,38 @@ The following schematic illustrates the data structure in the
 For example, in the schematic above, the interface has a model part named 
 "mp_1_name", which has several variable data. The data for the variable `var_1` is stored in a `numpy array` with the number of rows equal to the number points in the model part and the number of columns equal to the number of components/dimensions of the variable. The number of dimensions for a variable 
 is defined in the `variable_dimensions` `dict` in the file 
-`data_structure/variables.py`variables.py, e.g the number of dimensions for the variables 
-`pressure` and `displacement` is 1 and 3, respectively. <br>
+*`data_structure/variables.py`* variables.py, for example, the number of dimensions for the variables 
+`pressure` and `displacement` is 1 and 3, respectively.
 
-The nested `dict` in the `Interface` is constructed during the instantiation
- of the class using a parameters `dict` given as an input argument. For the 
- schematic shown above, the parameters dict would be:<br>
+The nested `dict` in the `Interface` is constructed during the instantiation of the class using a parameters `dict` given as an input argument.
+For the schematic shown above, the parameters dict would be:<br>
  
- ````
- [
-    {
-      "model_part": "mp_1_name",
-      "variables": ["var_1", var_2, ..]
-      ]
-    },
-    {
-      "model_part": "mp_2_name",
-      "variables": ["var_3",  ..]
-      ]
-    },
-    .
-    .
-    .
- ]
- ````
+ ```json
+[
+  {
+    "model_part": "mp_1_name",
+    "variables": [
+      "var_1",
+      "var_2",
+      ..
+    ]
+  },
+  {
+    "model_part": "mp_2_name",
+    "variables": [
+      "var_3",
+      ..
+    ]
+  },
+  .
+  .
+  .
+]
+ ```
  
 The data in the interface can be accessed, added, or replaced by the various 
 methods implemented in the `Interface` class, which can be looked in the file 
-`data_structure/interface.py`.
+*`data_structure/interface.py`*.
 
 ---
 

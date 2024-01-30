@@ -43,6 +43,6 @@ However, the discretization of both solvers differ.
 To account for the difference of the points where loads and displacements are applied or calculated, the use of interpolation mappers is required.
 Therefore, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.
 
-Additionally a parameter file *`parameters_conformal.json`* is also provided. This parameter file performs no interpolation.
+Additionally, a parameter file *`parameters_conformal.json`* is also provided. This parameter file performs no interpolation.
 It should be verified that the number of cells `m` is the same in both solvers before using it and is merely provided as a theoretical example as it will have close to no practical use.
 To run the example case with *`parameters_conformal.json`* as parameter file, the variable `parameter_file_name` should be adapted in the *`run_simulation.py`* script after setting up the case.

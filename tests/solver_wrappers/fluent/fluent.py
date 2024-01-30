@@ -11,7 +11,7 @@ import shutil
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
-    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version = 'xxxxRx'  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     setup_case = True
 
     @classmethod
@@ -205,9 +205,49 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
 
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 1
+        self.parameters['settings']['flow_iterations'] = 100
+        solver = create_instance(self.parameters)
+        solver.check_coupling_convergence = True
+        solver.initialize()
+        interface_input = solver.get_interface_input()
+
+        # set displacement
+        x0 = interface_input.get_model_part(self.mp_name_in).x0
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = self.get_dy(x0)
+
+        solver.initialize_solution_step()
+
+        # first coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertTrue(solver.coupling_convergence)
+
+        solver.output_solution_step()
+        solver.finalize_solution_step()
+        solver.finalize()
+
 
 class TestSolverWrapperFluentTube3D(unittest.TestCase):
-    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version = 'xxxxRx'  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     setup_case = True
 
     @classmethod
@@ -413,6 +453,49 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         # check if pressure and traction are equal
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
+
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 1
+        self.parameters['settings']['flow_iterations'] = 100
+        solver = create_instance(self.parameters)
+        solver.check_coupling_convergence = True
+        solver.initialize()
+        interface_input = solver.get_interface_input()
+
+        # set displacement
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = dy
+        displacement[:, 2] = dz
+
+        solver.initialize_solution_step()
+
+        # first coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertTrue(solver.coupling_convergence)
+
+        solver.output_solution_step()
+        solver.finalize_solution_step()
+        solver.finalize()
 
 
 if __name__ == '__main__':

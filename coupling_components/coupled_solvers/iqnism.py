@@ -24,15 +24,12 @@ class CoupledSolverIQNISM(CoupledSolver):
         self.model = tools.create_instance(self.settings['model'])
         self.settings['surrogate']['type'] = self.settings['surrogate'].get('type',
                                                                             'coupled_solvers.models.dummy_model')
-        self.surrogate_mapped = (self.settings['surrogate']['type'] == 'coupled_solvers.models.mapped')
-        self.surrogate_dummy = (self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
         self.surrogate = tools.create_instance(self.settings['surrogate'], 'models.dummy_model')
         self.omega = self.settings.get('omega', 1)  # relaxation factor
         self.surrogate_modes = self.settings.get('surrogate_modes')  # number of surrogates modes to use
         self.surrogate_synchronize = self.settings.get('surrogate_synchronize', True)  # synchronize surrogate
 
-        if ((self.surrogate_modes == 0 or self.settings['surrogate']['type'] == 'coupled_solvers.models.dummy_model')
-                and 'omega' not in self.settings):
+        if (self.surrogate_modes == 0 or self.surrogate.dummy) and 'omega' not in self.settings:
             raise ValueError('A relaxation factor (omega) is required when no surrogate Jacobian is used')
 
         self.restart_model_surrogate = [False, False]  # indicates if model and/or surrogate has to be restarted
@@ -43,7 +40,7 @@ class CoupledSolverIQNISM(CoupledSolver):
         self.surrogate.solver_level = self.solver_level + 1
 
         # initialize mapper for surrogate if required
-        if self.surrogate_mapped:
+        if self.surrogate.mapped:
             interface_input_from = self.solver_wrappers[0].get_interface_input()
             interface_output_to = self.solver_wrappers[1].get_interface_output()  # same interface a input_from
             self.surrogate.initialize(interface_input_from, interface_output_to)
@@ -64,7 +61,7 @@ class CoupledSolverIQNISM(CoupledSolver):
 
         # set initial surrogate value in surrogate predictor
         if self.surrogate.provides_get_solution and not self.restart:
-            if hasattr(self.predictor, 'update_surrogate') and not self.surrogate_dummy:
+            if hasattr(self.predictor, 'update_surrogate') and not self.surrogate.dummy:
                 self.predictor.update_surrogate(self.surrogate.get_interface_output())
 
         self.start_run_time = time.time()  # reset start of calculation
@@ -77,7 +74,7 @@ class CoupledSolverIQNISM(CoupledSolver):
         # solve surrogate
         if self.surrogate.provides_get_solution:
             x_surrogate = self.surrogate.get_solution()
-            if hasattr(self.predictor, 'update_surrogate') and not self.surrogate_dummy:
+            if hasattr(self.predictor, 'update_surrogate') and not self.surrogate.dummy:
                 self.predictor.update_surrogate(x_surrogate)
         # initial value
         self.x = self.predictor.predict(self.x)

@@ -1,5 +1,5 @@
 from coconut.tools import create_instance
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 
@@ -7,12 +7,12 @@ def create(parameters):
     return SolverWrapperMapped(parameters)
 
 
-class SolverWrapperMapped(Component):
+class SolverWrapperMapped(SolverWrapper):
     mapped = True
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # read parameters
         self.parameters = parameters
@@ -23,6 +23,10 @@ class SolverWrapperMapped(Component):
                                  ['timestep_start', 'delta_t', 'save_restart'])
         self.solver_wrapper = create_instance(self.settings['solver_wrapper'])
 
+        # check coupling convergence
+        self.check_coupling_convergence_possible = self.solver_wrapper.__class__.check_coupling_convergence_possible
+        self.check_coupling_convergence = False
+
         # create mappers
         self.mapper_interface_input = create_instance(self.settings['mapper_interface_input'])
         self.mapper_interface_output = create_instance(self.settings['mapper_interface_output'])
@@ -31,15 +35,12 @@ class SolverWrapperMapped(Component):
         self.interface_input_to = None
         self.interface_output_to = None
 
-        # time
-        # noinspection PyUnresolvedReferences
-        self.init_time = self.init_time  # created by decorator time_initialize
-        self.run_time = 0.0
-        self.save_time = 0.0
-
     @tools.time_initialize
     def initialize(self, interface_input_from, interface_output_to):
         super().initialize()
+
+        # check coupling convergence
+        self.solver_wrapper.check_coupling_convergence = self.check_coupling_convergence
 
         self.solver_wrapper.initialize()
 
@@ -85,6 +86,10 @@ class SolverWrapperMapped(Component):
         self.solver_wrapper.finalize()
         self.mapper_interface_input.finalize()
         self.mapper_interface_output.finalize()
+
+    @property
+    def coupling_convergence(self):
+        return self.solver_wrapper.coupling_convergence
 
     def get_interface_input(self):
         # does not contain most recent data

@@ -32,7 +32,7 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 -   `python>=3.6.8` 
 -   `numpy>=1.19.5`
 -   `scipy>=1.3.0`
--   `pandas>=1.0.0` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos.md))
+-   `pandas>=1.0.0` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos_structure/kratos_structure.md))
 -   `matplotlib=3.1.3` (recommended)
 
 We recommend Anaconda 2019.07 or newer.
@@ -46,7 +46,7 @@ The source code can be downloaded as a zip file, or cloned directly from GitHub.
 *Option 1: download zip*
 
 -   Download the source code from [GitHub](https://github.com/pyfsi/coconut).
--   Unzip to a folder *`coconut`*. If the folder is unzipped in Windows, some of the file permissions may change and some tests or examples may not run out of the box. 
+-   Unzip to a folder *`coconut`*. If the folder is unzipped in Windows, some file permissions may change and some tests or examples may not run out of the box. 
 
 *Option 2: clone source*
 
@@ -94,7 +94,7 @@ The file contains a nested dictionary `solver_load_cmd_dict`, which has keys suc
 In their turn, each of these dictionaries contains keys for all solvers that are available on that machine and can be used in CoCoNuT. 
 The values are strings containing terminal commands to load the software, thus setting the environment which allows running the solver. 
 For example, on the UGent cluster, the [Lmod system](https://lmod.readthedocs.io/en/latest/) is used, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. 
-If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semi-colon (;) or double ampersand (&&) can be used.
+If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semicolon (;) or double ampersand (&&) can be used.
 Since `machine_name` is set to `ugent_cluster_CO7`, this dictionary is used by default.
 In case your system differs from the `ugent_cluster_CO7` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
 If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
@@ -106,7 +106,7 @@ We recommend to run the unit tests at the end of the installation, to make sure 
 
 -   Ensure that *`coconut`* is included in your Python path.
 -   Move to the *`coconut/tests`* directory. 
--   Run the _fast_ unit tests (exclusing the non-Pythonic solvers) by executing the following line:
+-   Run the _fast_ unit tests (excluding the non-Pythonic solvers) by executing the following line:
 ```bash
 python3 run_tests.py
 ```
@@ -134,7 +134,7 @@ We can now navigate to the folder of the example we will simulate.
 cd $COCO/coconut/examples/tube/tube_flow_tube_structure/
 ```
 This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file *`parameters.json`* will be used to run the actual FSI simulation, but we will come back to that later. 
-First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
+First we must set up both single-physics solvers separately. This setup is typically done outside CoCoNuT by the user, as it is solver and case specific. 
 In this case we provide a script *`setup_case.py`* that sets up both solvers using the files in the folder *`../setup_files`*. When the script is run with
 
 ```bash
@@ -175,7 +175,7 @@ We would now expect the second dictionary to generate a solver wrapper to commun
 
 The concept of the mapped solver wrapper illustrates the modularity of CoCoNuT. As far as the coupled solver is concerned, the mapped solver wrapper acts exactly as a real solver wrapper. The real solver wrapper does not know about the mapping at all: it acts as if it directly communicates with the coupled solver. Furthermore, the interpolation method can be easily changed by swapping the mappers in the mapped solver wrapper: the current linear interpolation scheme can for example be replaced by a radial basis scheme by changing `mappers.linear` to `mappers.radial_basis`. 
 
-Now try to change some of the settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation.
+Now try to change some settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation.
 
 After a simulation is finished, it can be useful to visualize the output quantities (i.e. displacement, pressure and in general also shear). For the FSI-simulation we have just performed, post-processing has already been implemented in the file *`$COCO/coconut/examples/post_processing/`*. It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on `true`, which is for all examples done by default. As an example, we will generate an animation by running the *`animate_example.py`* file:
 
@@ -224,7 +224,7 @@ This folder contains the unit tests. These are created for each piece of code th
 
 ## References
 <a id="1">[1]</a> 
-[Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)
+[Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.](https://doi.org/10.1007/s11831-023-09907-y)
 
 <a id="2">[2]</a> 
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)

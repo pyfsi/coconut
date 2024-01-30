@@ -136,6 +136,45 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
 
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # adapt parameters, create solver
+        self.parameters['settings']['newtonmax'] = 5
+        solver = create_instance(self.parameters)
+        solver.check_coupling_convergence = True
+        solver.initialize()
+        interface_input = solver.get_interface_input()
+
+        # set displacement
+        z0 = interface_input.get_model_part(self.model_part_name).z0
+        displacement = interface_input.get_variable_data(self.model_part_name, 'displacement')
+        displacement[:, 1] = get_dy(z0)
+
+        solver.initialize_solution_step()
+
+        # first coupling iteration
+        interface_input.set_variable_data(self.model_part_name, 'displacement', displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_variable_data(self.model_part_name, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_variable_data(self.model_part_name, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertTrue(solver.coupling_convergence)
+
+        solver.output_solution_step()
+        solver.finalize_solution_step()
+        solver.finalize()
+
     def test_area_jacobian(self):
         # test area derivative
 
@@ -211,25 +250,25 @@ class TestSolverWrapperTubeFlowSolver(unittest.TestCase):
         self.assertLess(np.linalg.norm(d1 - d2), 1e-15)
 
     def test_surrogate_jacobian(self):
-        # test surrogate jacobian
+        # test surrogate Jacobian
 
         # create solver and set displacement
         solver = self.set_up_solver()
 
-        # verify surrogate jacobian
-        input = np.zeros((solver.m, 3))
+        # verify surrogate Jacobian
+        input_data = np.zeros((solver.m, 3))
         a = np.array(solver.a[1:-1])
         r = np.sqrt(a / np.pi)  # local radius
         dr = 1e-18 * np.ones_like(r)
 
-        input[:, 1] = r - dr / 2 - solver.d / 2
+        input_data[:, 1] = r - dr / 2 - solver.d / 2
         interface_input = solver.get_interface_input()
-        interface_input.set_variable_data(self.model_part_name, self.variable, input)
+        interface_input.set_variable_data(self.model_part_name, self.variable, input_data)
         f1 = solver.solve_solution_step(interface_input).get_variable_data(self.model_part_name, 'pressure').flatten()
 
-        input[:, 1] = r + dr / 2 - solver.d / 2
+        input_data[:, 1] = r + dr / 2 - solver.d / 2
         interface_input = solver.get_interface_input()
-        interface_input.set_variable_data(self.model_part_name, self.variable, input)
+        interface_input.set_variable_data(self.model_part_name, self.variable, input_data)
         f2 = solver.solve_solution_step(interface_input).get_variable_data(self.model_part_name, 'pressure').flatten()
 
         jsurrogate = solver.get_surrogate_jacobian()

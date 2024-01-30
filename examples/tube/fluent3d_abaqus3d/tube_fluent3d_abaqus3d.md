@@ -23,17 +23,17 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 The flow solver is Fluent, used to solve a fully 3D tube,
-with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 48 cells on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 When setting up the case, the mesh is build based on the file *`mesh.jou`* using Gambit.
 The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
 The axial direction is along the x-axis.
-The setup script runs Fluent with the *`case.jou`* journal file to setup the case parameters, starting from the mesh file *`mesh_tube3d.msh`*.
+The setup script runs Fluent with the *`case.jou`* journal file to set up the case parameters, starting from the mesh file *`mesh_tube3d.msh`*.
 This case is written to the *`case_tube3d.cas`* file, which serves as input for CoCoNuT. 
 Additionally, a folder *`create_mesh`* is provided containing a script to create the mesh in Gambit using a journal file.
 The mesh can be created by running the script *`create_mesh.sh`*, given that Gambit v2.4.6 is available.
 
 The structure solver is Abaqus, used to solve a fully 3D tube,
-with 12 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 12 elements on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 The Abaqus case is built when setting up the case starting from the file *`mesh_tube3d.inp`* containing nodes and elements. 
 This is done by running Abaqus with the *`make_inp.py`* Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
 The result of the setup is a completed input file *`case_tube3d.inp`*.

@@ -18,7 +18,7 @@ class MapperInterpolator(Component):
         self.settings = parameters['settings']
         self.balanced_tree = self.settings.get('balanced_tree', False)
         self.check_bounding_box = self.settings.get('check_bounding_box', True)
-        self.n_nearest = 0  # must be set in sub-class!
+        self.n_nearest = 0  # must be set in subclass!
 
         # initialization
         self.n_from, self.n_to = None, None

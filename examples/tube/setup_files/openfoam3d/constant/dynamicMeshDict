@@ -23,7 +23,7 @@ solver             displacementLaplacian;
 
 displacementLaplacianCoeffs
 {
-	diffusivity	   	inverseDistance 1 (mantle);
+	diffusivity	   inverseDistance 1 (mantle);
 }
 
 // ************************************************************************* //
