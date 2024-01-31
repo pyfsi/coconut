@@ -72,10 +72,10 @@ def get_vector_array(input_string, is_int=False):
 
     if is_int:
         for i, elem in enumerate(data_list):
-            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=np.int)
+            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=int)
     else:
         for i, elem in enumerate(data_list):
-            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=np.float)
+            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=float)
 
     return data
 
@@ -91,9 +91,9 @@ def get_vector_array_from_dict(dict_string, size=None, is_int=False):
     elif not (result_uniform is None or size is None):
         value_list = result_uniform.group(1).strip().split()
         if is_int:
-            return np.full((size, len(value_list)), value_list, dtype=np.int)
+            return np.full((size, len(value_list)), value_list, dtype=int)
         else:
-            return np.full((size, len(value_list)), value_list, dtype=np.float)
+            return np.full((size, len(value_list)), value_list, dtype=float)
     else:
         raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
@@ -124,9 +124,9 @@ def get_scalar_array(input_string, is_int=False):
     scalar_string = re.search(r'\((.*)\)', input_string, re.S).group(1)
     data_list = scalar_string.split()
     if is_int:
-        return np.array(data_list, dtype=np.int)
+        return np.array(data_list, dtype=int)
     else:
-        return np.array(data_list, dtype=np.float)
+        return np.array(data_list, dtype=float)
 
 
 def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
@@ -139,9 +139,9 @@ def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
     elif not (result_uniform is None or size is None):
         value = result_uniform.group(1)
         if is_int:
-            return np.full(size, value, dtype=np.int)
+            return np.full(size, value, dtype=int)
         else:
-            return np.full(size, value, dtype=np.float)
+            return np.full(size, value, dtype=float)
     else:
         raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
