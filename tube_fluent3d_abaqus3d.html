@@ -1199,16 +1199,16 @@ This done by using Fluent and Abaqus, both with a fully 3D case.</p>
 <p>When either criterion is satisfied the simulation stops.</p>
 <h2 id="solvers">Solvers</h2>
 <p>The flow solver is Fluent, used to solve a fully 3D tube,
-with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 48 cells on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 When setting up the case, the mesh is build based on the file <em><code>mesh.jou</code></em> using Gambit.
 The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
 The axial direction is along the x-axis.
-The setup script runs Fluent with the <em><code>case.jou</code></em> journal file to setup the case parameters, starting from the mesh file <em><code>mesh_tube3d.msh</code></em>.
+The setup script runs Fluent with the <em><code>case.jou</code></em> journal file to set up the case parameters, starting from the mesh file <em><code>mesh_tube3d.msh</code></em>.
 This case is written to the <em><code>case_tube3d.cas</code></em> file, which serves as input for CoCoNuT. 
 Additionally, a folder <em><code>create_mesh</code></em> is provided containing a script to create the mesh in Gambit using a journal file.
 The mesh can be created by running the script <em><code>create_mesh.sh</code></em>, given that Gambit v2.4.6 is available.</p>
 <p>The structure solver is Abaqus, used to solve a fully 3D tube,
-with 12 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 12 elements on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 The Abaqus case is built when setting up the case starting from the file <em><code>mesh_tube3d.inp</code></em> containing nodes and elements. 
 This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
 The result of the setup is a completed input file <em><code>case_tube3d.inp</code></em>.

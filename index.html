@@ -1281,7 +1281,7 @@ We develop high-performance quasi-Newton algorithms to accelerate convergence of
 <li><code>python&gt;=3.6.8</code> </li>
 <li><code>numpy&gt;=1.19.5</code></li>
 <li><code>scipy&gt;=1.3.0</code></li>
-<li><code>pandas&gt;=1.0.0</code> (required for <a href="https://pyfsi.github.io/coconut/kratos">Kratos solver wrapper</a>)</li>
+<li><code>pandas&gt;=1.0.0</code> (required for <a href="https://pyfsi.github.io/coconut/kratos_structure">Kratos solver wrapper</a>)</li>
 <li><code>matplotlib=3.1.3</code> (recommended)</li>
 </ul>
 <p>We recommend Anaconda 2019.07 or newer.</p>
@@ -1291,7 +1291,7 @@ The source code can be downloaded as a zip file, or cloned directly from GitHub.
 <p><em>Option 1: download zip</em></p>
 <ul>
 <li>Download the source code from <a href="https://github.com/pyfsi/coconut">GitHub</a>.</li>
-<li>Unzip to a folder <em><code>coconut</code></em>. If the folder is unzipped in Windows, some of the file permissions may change and some tests or examples may not run out of the box. </li>
+<li>Unzip to a folder <em><code>coconut</code></em>. If the folder is unzipped in Windows, some file permissions may change and some tests or examples may not run out of the box. </li>
 </ul>
 <p><em>Option 2: clone source</em></p>
 <ul>
@@ -1331,7 +1331,7 @@ The file contains a nested dictionary <code>solver_load_cmd_dict</code>, which h
 In their turn, each of these dictionaries contains keys for all solvers that are available on that machine and can be used in CoCoNuT. 
 The values are strings containing terminal commands to load the software, thus setting the environment which allows running the solver. 
 For example, on the UGent cluster, the <a href="https://lmod.readthedocs.io/en/latest/">Lmod system</a> is used, but there is no general guideline on how to make the solvers' software available as long as it is compatible with your system's command-line-interface. 
-If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semi-colon (;) or double ampersand (&amp;&amp;) can be used.
+If multiple commands are needed, they should appropriately be separated within the string. For example in a Linux terminal the semicolon (;) or double ampersand (&amp;&amp;) can be used.
 Since <code>machine_name</code> is set to <code>ugent_cluster_CO7</code>, this dictionary is used by default.
 In case your system differs from the <code>ugent_cluster_CO7</code> settings, it is advised to add your own internal dictionary to <code>solver_load_cmd_dict</code> and provide this key to <code>machine_name</code>.
 If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
@@ -1341,7 +1341,7 @@ When CoCoNuT tries to use a solver module that is not present in the <code>solve
 <ul>
 <li>Ensure that <em><code>coconut</code></em> is included in your Python path.</li>
 <li>Move to the <em><code>coconut/tests</code></em> directory. </li>
-<li>Run the <em>fast</em> unit tests (exclusing the non-Pythonic solvers) by executing the following line:
+<li>Run the <em>fast</em> unit tests (excluding the non-Pythonic solvers) by executing the following line:
 <div class="highlight"><pre><span></span><code>python3 run_tests.py
 </code></pre></div></li>
 <li>Or choose to include the solver wrapper tests by using the keyword <code>-all</code> as follows
@@ -1359,7 +1359,7 @@ More information on running tests can be found <a href="https://pyfsi.github.io/
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$COCO</span>/coconut/examples/tube/tube_flow_tube_structure/
 </code></pre></div>
 This folder serves as main directory to set up and run the FSI simulation from in CoCoNuT. The file <em><code>parameters.json</code></em> will be used to run the actual FSI simulation, but we will come back to that later. 
-First we must set up both single-physics solvers separately. This setup is typically done outside of CoCoNuT by the user, as it is solver and case specific. 
+First we must set up both single-physics solvers separately. This setup is typically done outside CoCoNuT by the user, as it is solver and case specific. 
 In this case we provide a script <em><code>setup_case.py</code></em> that sets up both solvers using the files in the folder <em><code>../setup_files</code></em>. When the script is run with</p>
 <div class="highlight"><pre><span></span><code>python3 setup_case.py
 </code></pre></div>
@@ -1386,7 +1386,7 @@ This means that CoCoNuT will move to the next time step after 15 iterations or w
 <p><code>solver_wrappers</code> is a list of two solver wrapper objects, which will communicate with the two single-physics solvers, in this case the 1D flow solver and the 1D structure solver. The first dictionary in the list will generate an instance of the <code>SolverWrapperTubeFlow</code> class found in <em><code>$COCO/coconut/coupling_components/solver_wrappers/python/tube_flow_solver.py</code></em>. An important setting to generate this object is the <code>working_directory</code>, which refers to the folder <em><code>CFD</code></em> that we created with the case files of the flow solver. All files written by the flow solver will also appear in this folder.
 We would now expect the second dictionary to generate a solver wrapper to communicate with the structure solver, i.e. an instance of the <code>SolverWrapperTubeStructure</code> class found in <em><code>$COCO/coconut/coupling_components/solver_wrappers/python/tube_structure_solver.py</code></em>. This is not the case however: the flow and structure solvers typically use a different geometrical discretization (computational grid or mesh), hence they cannot readily be coupled in CoCoNuT. To overcome this issue, we put a layer of mapping around one of the solver wrappers. This is done with the <code>SolverWrapperMapped</code> class found in <em><code>$COCO/coconut/coupling_components/solver_wrappers/mapped.py</code></em>. The <em>mapped</em> solver wrapper interpolates all data flowing between the coupled solver and the real solver wrapper. The mapped solver wrapper itself contains three objects: the actual solver wrapper (<code>SolverWrapperTubeStructure</code> class), and mappers for respectively the input and the output of the solver wrapper (both <code>MapperInterface</code> class, found in <em><code>$COCO/coconut/coupling_components/mappers/interface.py</code></em>). </p>
 <p>The concept of the mapped solver wrapper illustrates the modularity of CoCoNuT. As far as the coupled solver is concerned, the mapped solver wrapper acts exactly as a real solver wrapper. The real solver wrapper does not know about the mapping at all: it acts as if it directly communicates with the coupled solver. Furthermore, the interpolation method can be easily changed by swapping the mappers in the mapped solver wrapper: the current linear interpolation scheme can for example be replaced by a radial basis scheme by changing <code>mappers.linear</code> to <code>mappers.radial_basis</code>. </p>
-<p>Now try to change some of the settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation.</p>
+<p>Now try to change some settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation.</p>
 <p>After a simulation is finished, it can be useful to visualize the output quantities (i.e. displacement, pressure and in general also shear). For the FSI-simulation we have just performed, post-processing has already been implemented in the file <em><code>$COCO/coconut/examples/post_processing/</code></em>. It requires the <code>save_results</code> setting in the <code>coupled_solver</code> part of the JSON-file to be set on <code>true</code>, which is for all examples done by default. As an example, we will generate an animation by running the <em><code>animate_example.py</code></em> file:</p>
 <div class="highlight"><pre><span></span><code>python3 <span class="nv">$COCO</span>/coconut/examples/post_processing/animate_example.py
 </code></pre></div>
@@ -1410,7 +1410,7 @@ We would now expect the second dictionary to generate a solver wrapper to commun
 <p>This folder contains the unit tests. These are created for each piece of code that is added to CoCoNuT and are run regularly, to avoid bugs. </p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
-<a href="http://hdl.handle.net/1854/LU-940283">Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers &amp; Structures, vol. 88, no. 5-6, pp. 263, 2010.</a></p>
+<a href="https://doi.org/10.1007/s11831-023-09907-y">Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.</a></p>
 <p><a id="2">[2]</a> 
 <a href="http://hdl.handle.net/1854/LU-8728347">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
 

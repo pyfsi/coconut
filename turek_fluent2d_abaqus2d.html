@@ -1193,20 +1193,20 @@
 <h1 id="turek-benchmark-with-fluent2d-and-abaqus2d">Turek benchmark with Fluent2D and Abaqus2D</h1>
 <p>This example calculates the well-known Turek benchmark, which consist of laminar incompressible flow around a flexible flag attached to a rigid cylinder in a 2D channel.
 The material parameters and boundary conditions correspond to the FSI2 setup, as detailed by Turek and Hron [<a href="#1">1</a>].
-The challenging aspect of this benchmark lies in the large self-indcuced oscillation of the flag.
+The challenging aspect of this benchmark lies in the large self-induced oscillation of the flag.
 The used solvers are Fluent and Abaqus.
 A script <em><code>evaluate_benchmark.py</code></em> is provided to compare the results with the benchmark results in [<a href="#1">1</a>].
 Furthermore, the script <em><code>animate_beam.py</code></em> can be used to visualize the interface data throughout the calculation.</p>
 <p>Due to the time required for the oscillations to enter a periodic regime, this test case takes a long time to run.</p>
 <p>The figure below shows the resulting velocity contour plot (with Fluent).
 <img alt="FSI2" src="images/turek_fsi2_velocity.gif" title="Velocity animation of FSI2 setup produced with Fluent" /></p>
-<p>In the FSI2 setup a parabolic velocity profile is subscribed at the inlet with an average velocity of 1 m/s, ramped up slowly in time.<br />
-The fluid paramters are: </p>
+<p>In the FSI2 set up a parabolic velocity profile is subscribed at the inlet with an average velocity of 1 m/s, ramped up slowly in time.<br />
+The fluid parameters are: </p>
 <ul>
 <li>density: 1000 kg/m³</li>
 <li>dynamic viscosity: 1 Pa<span class="arithmatex"><span class="MathJax_Preview">\cdot</span><script type="math/tex">\cdot</script></span>s</li>
 </ul>
-<p>The flag is consist of a linear elastic material with the follwing properties:</p>
+<p>The flag is consist of a linear elastic material with the following properties:</p>
 <ul>
 <li>density: 10<span class="arithmatex"><span class="MathJax_Preview">^4</span><script type="math/tex">^4</script></span> kg/m³</li>
 <li>modulus of elasticity: 1.4 10<span class="arithmatex"><span class="MathJax_Preview">^6</span><script type="math/tex">^6</script></span> Pa</li>
@@ -1227,7 +1227,7 @@ The reuse parameter <code>q</code> is set to 10, which means that data from the 
 <p>When either criterion is satisfied the simulation stops.</p>
 <h2 id="solvers">Solvers</h2>
 <p>Fluent is used as flow solver.
-The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
+The provided mesh is triangular. When the gate bends re-meshing is performed to preserve its quality.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.</p>
 <p>The structure solver is Abaqus.
 The Abaqus case is built when setting up the case starting from the file <em><code>mesh_turek.inp</code></em> containing nodes and elements. 

@@ -1343,7 +1343,7 @@ The following parameters need to be included in the <code>settings</code> dictio
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters (also in a steady simulation), but can also defined in the solver wrapper directly (e.g. for standalone testing).
+<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters (also in a steady simulation), but can also be defined in the solver wrapper directly (e.g. for standalone testing).
 If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.</p>
 <p><strong>These parameters should also be specified for the coupled solvers inheriting from <code>CoupledSolver</code>.</strong></p>
 <h2 id="gauss-seidel">Gauss-Seidel</h2>
@@ -1457,7 +1457,7 @@ For this Jacobian the following is valid
 $$
 \Delta \widetilde{x}^k=\widetilde{\mathcal{R}}'^{-1}(x^k)\Delta r^k,
 $$
-where <span class="arithmatex"><span class="MathJax_Preview">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</script></span> is the difference between the the output of two subsequent iterations.
+where <span class="arithmatex"><span class="MathJax_Preview">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k=\widetilde{x}^{k+1}-\widetilde{x}^k</script></span> is the difference between the output of two subsequent iterations.
 This Jacobian is also not known, but is approximated using a <code>model</code> and denoted by <span class="arithmatex"><span class="MathJax_Preview">\widetilde{N}^k</span><script type="math/tex">\widetilde{N}^k</script></span>. The type of <code>model</code> and its settings are specified in the <code>settings</code> dictionary. This model returns an estimation of <span class="arithmatex"><span class="MathJax_Preview">\Delta\widetilde{x}^k</span><script type="math/tex">\Delta\widetilde{x}^k</script></span> given a value <span class="arithmatex"><span class="MathJax_Preview">\Delta r^k=-r^k</span><script type="math/tex">\Delta r^k=-r^k</script></span>
 $$
 \Delta\widetilde{x}^k=\widetilde{N}^k \Delta r^k.
@@ -1468,8 +1468,8 @@ x^{k+1}=x^k+(\widetilde{N}^k-I)\Delta r^k=x^k-\widetilde{N}^k r^k+r^k.
 $$</p>
 <p>A symbolic schematic is given in the following figure.</p>
 <p><img alt="iqni" src="images/iteration_iqni.png" title="Residual operator iterations" /></p>
-<p>For more information with respect to the approximation of the Jacobian, refer to the <a href="https://pyfsi.github.io/coconut/models">models documentation</a>.
-More information about residual operator methods can be found in [<a href="#1">1</a>].</p>
+<p>For more information with respect to the approximation of the Jacobian, refer to the <a href="https://pyfsi.github.io/coconut/models">models' documentation</a>.
+More information about residual operator methods can be found in [<a href="#1">1</a>, <a href="#3">3</a>].</p>
 <p>Beside the parameters required in the <a href="#the-class-coupledsolver">class <code>CoupledSolver</code></a>, the following parameters need to be included in the <code>settings</code> dictionary. They are listed in alphabetical order.</p>
 <table>
 <thead>
@@ -1585,7 +1585,7 @@ More information about block methods can be found in [<a href="#1">1</a>].</p>
 </table>
 <h2 id="iqnism">IQNISM</h2>
 <p>The <code>type</code> for this coupled solver is <code>coupled_solvers.iqnism</code>.
-This coupled solver is linked to the IQN-ILSM framework [<a href="#2">2</a>].</p>
+This coupled solver is linked to the IQN-ILSM framework [<a href="#2">2</a>, <a href="#3">3</a>].</p>
 <p>The abbreviation IQNISM refers to <em>interface quasi-Newton with inverse Jacobian from surrogate model</em>.
 This coupled solver belongs in the same category as the IQNI coupled solver: the combination of the two solvers is seen as one system, where the input of the first solver is transferred unchanged to the second solver.
 The difference between output and input of this system is called the residual <span class="arithmatex"><span class="MathJax_Preview">r^k=\widetilde{x}^k-x^k</span><script type="math/tex">r^k=\widetilde{x}^k-x^k</script></span>.</p>
@@ -1601,8 +1601,8 @@ The key of the surrogate model is <code>surrogate</code>, the key of the secant 
 Both of them are required. However, a dummy model can be used to disable one of them.
 It is not recommended to disable the secant model (key <code>model</code>), as this model provides a Jacobian which is based on the actual problem.</p>
 <p>The <code>surrogate</code> model solves a surrogate coupling problem at the start of every time step. The solution of this surrogate problem can be used as prediction (see <a href="https://pyfsi.github.io/coconut/predictors#surrogate">surrogate predictor</a>) and its Jacobian can be used here.
-More information with respect to this type of model can be found in the <a href="https://pyfsi.github.io/coconut/models">models documentation</a>.
-If only the solution is to be used, the parameter <code>surrogate_modes</code> has to be set to <code>0</code>. This parameters denotes the number of modes from the surrogate Jacobian that should be used (starting from the first determined mode(s)).
+More information with respect to this type of model can be found in the <a href="https://pyfsi.github.io/coconut/models">models' documentation</a>.
+If only the solution is to be used, the parameter <code>surrogate_modes</code> has to be set to <code>0</code>. This parameter denotes the number of modes from the surrogate Jacobian that should be used (starting from the first determined mode(s)).
 Whether the surrogate solution is used for prediction, is determined by the <code>predictor</code> settings of the coupled solver. If the surrogate model does not provide a surrogate solution (only a surrogate Jacobian), surogate prediction is not possible.</p>
 <p>The two models are combined as follows.
 The secant model is used as before, but, as the secant Jacobian is defective (not full-rank), part of the residual is not <em>treated</em> by this Jacobian.
@@ -1790,8 +1790,7 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 <p>Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the <code>settings</code> dictionary.
 The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>case_name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
 An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>.</p>
-<p>The working directory of the solver is copied to a new directory with the same name and a suffix <code>_testX</code> with <code>X</code> an integer starting from 0. As such, previous test solver working directories are not overwritten.
-The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver test working directory. As such, the pickle file can always be linked to the corresponding test working directory.</p>
+<p>The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver working directory.</p>
 <p>During run time, the norm of <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
@@ -1883,7 +1882,7 @@ This is only important if the model behavior depends on data from previous time 
 <p>Besides restarting the exact same simulation, it could be useful to change the settings from the coupled solver or occasional model(s) when restarting.
 This is possible, refer to the <a href="https://pyfsi.github.io/coconut/models#restart">models</a> documentation for more details.
 Changing the type of coupled solver or occasional model is also possible, but no information will be transferred between the different types, meaning that for example all information from previous time steps is lost.</p>
-<p>For the predictors the same is true, with the exception of the extrapolators for which there is information transfer.
+<p>For the predictors the same is true, except for the extrapolators for which there is information transfer.
 See the documentation of the <a href="https://pyfsi.github.io/coconut/predictors#restart">predictors</a> for more details.</p>
 <p>The following table gives an overview of the coupled solvers which save one or more additional components or values.</p>
 <table>
@@ -1913,7 +1912,7 @@ See the documentation of the <a href="https://pyfsi.github.io/coconut/predictors
 </tbody>
 </table>
 <p>However, not only the predictor and coupling algorithm depend on previous time steps; this is typically also the case for the solvers.
-Therefore, it is the responsibility of the solver wrappers, to setup the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>.
+Therefore, it is the responsibility of the solver wrappers, to set up the solvers correctly for restart: they need to ensure that the variables in the whole computational domain are set to the value of time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>.
 Moreover, its vital that they reconstruct the exact same model parts as in the initial calculation.
 In other words, the undeformed coordinates must be the same.
 Conversely, they are not required to initialize the interfaces with the correct data from time step <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span>, as this taken care of by the predictor in the coupled solver.
@@ -1936,8 +1935,8 @@ Additionally, it is checked that the new model parts are exactly the same as the
 The physical effect of previous time steps dealt with by the solver wrappers.
 <strong>Therefore, in order to be able to perform a restart, the solver files for the corresponding time step also need to be present!</strong></p>
 <p>When performing restart, the new data will be neatly appended to the already existing results pickle file, leaving out existing time step data after the new time step start.
-As a result, the results pickle file looks exactly as if the calculation was never stopped, with the exception of the fields <code>run_time</code> and <code>info</code>.
-The latter provides a very shot log of when restart is performed.</p>
+As a result, the results pickle file looks exactly as if the calculation was never stopped, except the fields <code>run_time</code>, <code>time_allocation</code> and <code>info</code>.
+The latter provides a very short log of when restart is performed.</p>
 <p>If the results pickle file would not be found for any reason, the user is informed and a new one is made, with the correct <code>timestep_start</code>.
 Note that the presence of the restart pickle file on the other hand is required. If the <code>case_name</code> is changed, the restart can still be performed by providing the case name for restart using <code>restart_case</code> (see explanation above).</p>
 <h2 id="references">References</h2>
@@ -1945,6 +1944,8 @@ Note that the presence of the restart pickle file on the other hand is required.
 <a href="http://hdl.handle.net/1854/LU-8685199">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Comparison of different quasi-Newton techniques for coupling of black box solvers", in ECCOMAS 2020, Proceedings, Paris, France, 2021.</a></p>
 <p><a id="2">[2]</a>
 <a href="http://hdl.handle.net/1854/LU-8728347">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
+<p><a id="3">[3]</a> 
+<a href="https://doi.org/10.1007/s11831-023-09907-y">Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.</a></p>
 
               
             </article>

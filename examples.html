@@ -706,13 +706,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#project-parameters" class="md-nav__link">
-    Project Parameters
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#running-a-case" class="md-nav__link">
     Running a case
   </a>
@@ -1182,49 +1175,59 @@
                 
 
 <h1 id="examples">Examples</h1>
-<p>This documentation describes the different example cases.
-Currently all these examples calculate the flow in a flexible tube.</p>
+<p>This documentation describes the structure of the different example cases and how to run them.</p>
 <h2 id="folder-and-file-structure">Folder and file structure</h2>
-<p>This section describes the different folders and files that are provided.</p>
-<p>The <em><code>examples</code></em> folder contains following subfolders:</p>
+<p>The <em><code>examples</code></em> folder contains different examples grouped per case, for example, the cases calculating the flow through a flexible tube is gathered in the folder <em><code>tube</code></em>.</p>
+<p>Each case folder, such as <em><code>tube</code></em>, contains the following directories and files:</p>
 <ul>
-<li><em><code>debug_files</code></em>: Python scripts that are useful for debugging of the cases. These files might need some adjustments to work. In order to use them, the debug boolean <code>self.debug</code> has to be set to <code>true</code> in the settings of the corresponding solver wrappers.</li>
-<li><em><code>post_processing</code></em>: contains scripts to visualize your results. In particular, the <em><code>animate_example.py</code></em> script provides the means to animate the variables stored in the interface (pressure, traction, displacement), given that your results are stored in a pickle file, see the <a href="https://pyfsi.github.io/coconut/coupled_solvers#save-results">documentation on save results</a>.</li>
-<li><em><code>setup_files</code></em>: contains the necessary files to set up the case for each solver and the <em><code>run_simulation.py</code></em> script necessary to start the actual simulation.</li>
-<li><em><code>test_single_solver</code></em>: example to check the correct set up of your solver specific cases.</li>
-<li><em><code>tube_&lt;flow solver&gt;_&lt;structural solver&gt;</code></em>: main directory of the example cases.</li>
+<li><em><code>setup_files</code></em> containing the necessary files to set up the case for each solver,</li>
+<li><em><code>&lt;flow solver&gt;_&lt;structural solver&gt;</code></em> different folders solving the case with different solver combinations, hereafter simply called examples.</li>
 </ul>
-<p>The main directory of each example case contains following files: </p>
+<p>The following files can be found in each example:</p>
 <ul>
-<li><em><code>parameters.json</code></em>: parameter file in JSON format.</li>
-<li><em><code>setup_case.py</code></em>: Python script, which needs to be run to set up the case.</li>
-<li><em><code>tube_&lt;flow solver&gt;_&lt;structural solver&gt;.md</code></em>: description of the specific example.</li>
+<li><em><code>parameters.json</code></em> the parameter file in JSON format specifying the settings for the CoCoNuT simulation, and which can be interpreted as a dictionary (there are two main keys,
+the first is <code>settings</code> in which the number of time steps for which the calculation is run is specified and the second is <code>coupled_solver</code> in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solver wrappers),</li>
+<li><em><code>setup_case.py</code></em> the Python script used to create the working directories (copying them from <em><code>setup_files</code></em>, mentioned earlier), to set up the case for the different solvers and to copy <em><code>run_simulation.py</code></em> (note that these folders are expandable and are overwritten when the setup file is (re)run), </li>
+<li><em><code>tube_&lt;flow solver&gt;_&lt;structural solver&gt;.md</code></em> description of the specific example,</li>
+<li>optionally other files which can be used for visualization of the interface data or for comparison with benchmark data.</li>
 </ul>
-<p>When the setup file is run, working directories are created that have to match the ones specified in the parameter file.
-These folders are expandable and are deleted when the setup files are (re)run. 
-The script copies first the <em><code>run_simulation.py</code></em> file into the main directory and then the necessary case files from <em><code>setup_files</code></em> into the correct working directory.
-After the completion of this script, the example case is ready to run.</p>
-<h2 id="project-parameters">Project Parameters</h2>
-<p>The parameter file <em><code>parameters.json</code></em> can be interpreted as a dictionary. 
-There are two main keys.
-The first is <code>settings</code> in which the number of time steps for which the calculation is run is specified.
-The second is <code>coupled_solver</code> in which all parameters related to solver algorithm are given: coupling algorithm, predictor, convergence criteria and solvers.</p>
+<p>Besides the case folders, such as <em><code>tube</code></em>, the <em><code>examples</code></em> folder contains other directories:</p>
+<ul>
+<li><em><code>test_single_solver</code></em> particular example of the coupled solver <code>test_single_solver</code> that can be used to test the setup of case by only running one solver and replacing the other solver with a dummy solver that outputs prescribed data,</li>
+<li><em><code>post_processing</code></em> containing scripts to visualize your results; in particular, the <em><code>animate_example.py</code></em> script provides the means to animate the variables stored in the interface (pressure, traction, displacement), given that your results are stored in a pickle file, see the <a href="https://pyfsi.github.io/coconut/coupled_solvers#save-results">documentation on save results</a>.</li>
+<li><em><code>run_simulation.py</code></em> the script used to start the actual simulation,</li>
+<li><em><code>images</code></em> folder containing images used in the description of the examples,</li>
+<li><em><code>evaluate_examples</code></em> Python script to compare the results of the example simulation with benchmark data,</li>
+<li><em><code>benchmark_files</code></em> folder containing the benchmark data in the form of pickle files and a Python script to create this data.</li>
+</ul>
 <h2 id="running-a-case">Running a case</h2>
-<p>In order to run an example case, first, the setup script has to be run to create the working directories.
-Then, the calculation is started by running <em><code>run_simulation.py</code></em>. Make sure to add the module-load commands for the required solvers in <code>solverload_cmd_dict</code> in the <em><code>coconut/solver_modules.py</code></em> file, to load the necessary modules for your solvers during the simulation. By default, the solvers for the UGent-cluster are added to the file.</p>
-<p>In practice, you would run the following commands:</p>
+<p>In order to run an example, first, navigate to the example and run the setup script to create the working directories and set up the cases for each solver.
+This script also copies <em><code>run_simulation.py</code></em> to the example.
+The calculation is started by running <em><code>run_simulation.py</code></em>.</p>
+<p>In practice, you will run the following commands:
 <div class="highlight"><pre><span></span><code>python3 setup_case.py
 python3 run_simulation.py
-</code></pre></div>
+</code></pre></div></p>
+<p><strong>Important</strong>
+CoCoNuT launches each solver in its own environment, avoiding potential conflicts.
+This means that CoCoNuT needs to know the commands to make the software available on your machine.
+These commands are specified in the <em><code>coconut/solver_modules.py</code></em> file, in the dictionary <code>solver_load_cmd_dict</code>.
+It's important to add your own machine to this dictionary and to specify the <code>machine_name</code> correspondingly.
+The solvers for the UGent-cluster have already been added to the file.
+If it's not necessary to, for example, load modules, on your machines, an empty string should be used.</p>
 <h2 id="setting-up-your-own-case">Setting up your own case</h2>
-<p>To set up your own case, following items should be present in the main directory:</p>
+<p>To set up your own case, following items should be present:</p>
 <ul>
-<li>A JSON file containing the parameters of your simulation. In the example cases, it is called <em><code>parameters.json</code></em>. 
-In case you wish another name, make sure to adapt the variable <code>parameter_file_name</code> in the <em><code>run_simulation.py</code></em> script.</li>
-<li>The <em><code>run_simulation.py</code></em> script which initiates the CoCoNuT simulation when run.</li>
-<li>Working directories for the flow and structural solvers. In the examples they are named <em><code>CFD</code></em> and <em><code>CSM</code></em>, respectively. 
-In practice, they can bear any name as long as you make sure they are referenced correctly in the parameter file under the keyword <code>working_directory</code>.
-These working directories should contain the case files for the flow and structural calculations.</li>
+<li>a JSON file containing the parameters of your simulation; in the examples, this file is called <em><code>parameters.json</code></em>, but you can deviate from this convention as long as the variable <code>parameter_file_name</code> in the <em><code>run_simulation.py</code></em> script is modified,</li>
+<li>a <em><code>run_simulation.py</code></em> script which starts the CoCoNuT simulation when run,</li>
+<li>working directories for the used solvers, contain the case files required for the calculations; in the examples they are named <em><code>CFD</code></em> and <em><code>CSM</code></em>, respectively for the flow and structural solvers, but they can have any name as long as they are referenced correctly in the parameter file under the keyword <code>working_directory</code>.</li>
+</ul>
+<p>Finally, some tips are listed to successfully set up you and run your own case:</p>
+<ul>
+<li>Although it is not required, it can be a good idea to set up your case using a set-up-script and folder with setup-files as in the examples, allowing you to easily and reproducibly start from a clean case.</li>
+<li>The easiest way to get started is to start from an existing example closest to your own case and modify the files as required.</li>
+<li>Before coupling your solvers, it is wise to test them first separately using <code>test single solver</code> and a <code>dummy solver</code>, which can prescribe, for example, displacement of the interface. This way it can be verified if the solvers behave as expected before coupling them together.</li>
+<li>The scripts for animating the data on the interface provided in <em><code>post_processing</code></em> can be a handy tool to understand possible issues.</li>
 </ul>
 
               

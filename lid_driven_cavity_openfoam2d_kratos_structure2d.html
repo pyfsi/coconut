@@ -1222,7 +1222,7 @@ Because a two-dimensional calculation in OpenFOAM has one cell in the depth dire
 Therefore, the displacement serving as input to the flow solver is first mapped using the mapper <a href="https://pyfsi.github.io/coconut/mappers#mapperdepth2dto3d">MapperDepth2DTo3D</a> and subsequently mapped using a radial basis mapper.
 The resulting pressure and traction forces are located on the face centers, which all lie in the same plane as where the forces are applied in the structure solver.
 This means no additional transformer is required and only a radial basis mapper has to be applied.
-Mapping the flow solver instead of the structure solver, means that the coupled solver will work with the interface containing the displacements stored in Kratos nodes and not the interface which has stored the displacements in the twice as many OpenFOAM nodes.</p>
+Mapping the flow solver instead of the structure solver, means that the coupled solver will work with the interface containing the displacements stored in Kratos nodes and not the interface which has stored the displacements in twice as many OpenFOAM nodes.</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a>
 <a href="https://elib.uni-stuttgart.de/handle/11682/164">Mok D. P., “Partitionierte Lösungsansätze in der Strukturdynamik und der Fluid−Struktur−Interaktion”, PhD thesis: Institut für Baustatik, Universität Stuttgart, 2001.</a></p>

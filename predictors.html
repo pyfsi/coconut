@@ -1215,7 +1215,7 @@ A predictor is used to determine the initial guess in each time step by extrapol
 The predictors differ in the number of previous time steps they take into account and the polynomial degree that is used.
 Additionally, there is one special type that uses a surrogate model.
 The formulas in this document, use the index <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> to refer to the time step, where <span class="arithmatex"><span class="MathJax_Preview">n+1</span><script type="math/tex">n+1</script></span> is the current time step, i.e. the time step for which the initial guess is made.
-The vector <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> is the input for the first solver, conform the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers documentation</a>.</p>
+The vector <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> is the input for the first solver, conform the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled solvers' documentation</a>.</p>
 <p>A predictor is intialized in the coupled solver using an initial solution as determined by the coupled solver.
 As such, there is at least one previous solution available.</p>
 <p>For the polynomial predictors, the <code>predictor</code> dictionary only requires a <code>type</code> (e.g. <code>predictors.linear</code>) in the JSON file, no <code>settings</code> dictionary has to be provided.</p>

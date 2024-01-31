@@ -705,19 +705,19 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    Solver coupling convergence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#version-specific-documentation" class="md-nav__link">
     Version specific documentation
   </a>
   
     <nav class="md-nav" aria-label="Version specific documentation">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v41-openfoam-41" class="md-nav__link">
-    v41 (OpenFOAM 4.1)
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#v8-openfoam-8" class="md-nav__link">
@@ -1300,12 +1300,12 @@ multiphysics problems.</p>
 </thead>
 <tbody>
 <tr>
-<td align="right"><nobr><code>application</code></nobr></td>
+<td align="right"><code>application</code></td>
 <td align="center">str</td>
 <td>Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with <code>coconut_</code>.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>boundary_names</code></nobr></td>
+<td align="right"><code>boundary_names</code></td>
 <td align="center">list</td>
 <td>List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.</td>
 </tr>
@@ -1330,27 +1330,32 @@ multiphysics problems.</p>
 <td>(optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>interface_input</code></nobr></td>
+<td align="right"><code>interface_input</code></td>
 <td align="center">dict</td>
 <td>List of dictionaries that describes the input <code>Interface</code>. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code>, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  <code>variables_dimensions</code> <code>dict</code> in  the file <em><code>coconut/data_structure/variables.py</code></em>. The model part name must be the concatenation of an entry from <code>boundary_names</code> and the string <code>_input</code>.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>interface_output</code></nobr></td>
+<td align="right"><code>interface_output</code></td>
 <td align="center">dict</td>
 <td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>boundary_names</code> and the string <code>_output</code>. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>parallel</code></nobr></td>
+<td align="right"><code>parallel</code></td>
 <td align="center">bool</td>
 <td>Set it to <code>true</code> if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the <em><code>&lt;case_directory&gt;/system/decomposeParDict</code></em> file.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>residual_variables</code></td>
+<td align="right"><nobr><code>print_coupling_convergence</code><nobr></td>
+<td align="center">bool</td>
+<td>(optional) Default <code>false</code>. If <code>true</code> and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.</td>
+</tr>
+<tr>
+<td align="right"><code>residual_variables</code></td>
 <td align="center">list</td>
 <td>(optional) A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in <em><code>&lt;case_directory&gt;/residuals.csv</code></em>.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>time_precision</code></nobr></td>
+<td align="right"><code>time_precision</code></td>
 <td align="center">int</td>
 <td>Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.</td>
 </tr>
@@ -1360,7 +1365,7 @@ multiphysics problems.</p>
 <td>Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>working_directory</code></nobr></td>
+<td align="right"><code>working_directory</code></td>
 <td align="center">str</td>
 <td>Directory where the OpenFOAM-case is defined (and which contains the JSON-file).</td>
 </tr>
@@ -1536,12 +1541,19 @@ OpenFOAM-directory:</p>
 <li>If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the
   solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers.</li>
 </ul>
+<h2 id="solver-coupling-convergence">Solver coupling convergence</h2>
+<p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> has been implemented for the OpenFOAM solver wrapper.
+Instead of comparing the different residuals (U, p, ...) with their respective tolerances before the first iteration, they are checked after the first iteration due to implementation restrictions.
+Note that OpenFOAM will always execute a final solver iteration after convergence.
+Depending on the settings, this final iteration may have different or no relaxation factors.
+Calling the solver twice with the same interface displacement, will not necessarily mean that the second call immediately converges.
+This is due to a (weak) nonlinearity in the calculation of the mesh deformation as a result of the explicit non-orthogonality correction in the normal gradient calculation used in the Laplacian equation.
+Attempts to use the option moveMeshOuterCorrectors (recalculating mesh motion in every solver iteration) showed that there exist problems with this feature: it disturbs the convergence checks and, when used in parallel, even causes the code to crash.</p>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="v41-openfoam-41">v41 (OpenFOAM 4.1)</h3>
-<p>First version.</p>
 <h3 id="v8-openfoam-8">v8 (OpenFOAM 8)</h3>
-<p>In this OpenFOAM version, the name of some commands and classes are different. The required changes are visible in the
-version specific solver wrapper Python file <em><code>v8.py</code></em>.</p>
+<p>Base version.
+In this OpenFOAM version some changes were made with respect to older versions, for example, the name of some commands and classes are different.
+The required changes are visible in the version specific solver wrapper Python file <em><code>v8.py</code></em>.</p>
 <p>Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:</p>
 <ul>
 <li>The interpolation point for <code>arc</code> definitions using <code>blockMesh</code> has to be on the arc and not just on its 'elongation'</li>

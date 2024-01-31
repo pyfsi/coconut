@@ -1216,7 +1216,7 @@ The axial direction is along the z-axis, the radial direction along the y-axis.<
 However, the discretization of both solvers differ.
 To account for the difference of the points where loads and displacements are applied or calculated, the use of interpolation mappers is required.
 Therefore, a linear interpolation mapper is introduced in the structure solver to interpolate in the x-direction.</p>
-<p>Additionally a parameter file <em><code>parameters_conformal.json</code></em> is also provided. This parameter file performs no interpolation.
+<p>Additionally, a parameter file <em><code>parameters_conformal.json</code></em> is also provided. This parameter file performs no interpolation.
 It should be verified that the number of cells <code>m</code> is the same in both solvers before using it and is merely provided as a theoretical example as it will have close to no practical use.
 To run the example case with <em><code>parameters_conformal.json</code></em> as parameter file, the variable <code>parameter_file_name</code> should be adapted in the <em><code>run_simulation.py</code></em> script after setting up the case.</p>
 

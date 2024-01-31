@@ -1208,7 +1208,7 @@ These files are converted to a static website using <a href="https://www.mkdocs.
 <p>An important rule for writing MD files for this documentation website is that the name of the file must be unique: use names like <code>fluent.md</code> or <code>examples.md</code>, not <code>readme.md</code>.</p>
 <h3 id="links-to-other-markdown-files">Links to other MarkDown files</h3>
 <p>It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax
-<div class="highlight"><pre><span></span><code>[<span class="nt">link description</span>](<span class="na">relative_path</span>)
+<div class="highlight"><pre><span></span><code>[<span class="nt">link description</span>](<span class="na">https://pyfsi.github.io/coconut/mappers</span>)
 </code></pre></div>
 where <code>relative_path</code> is the relative path to another MarkDown file, e.g. <code>../coupling_components/mappers/mappers.md</code>. </p>
 <p>These links can be used in rendered MarkDown, e.g. in PyCharm, but also on GitHub itself (see <a href="https://github.blog/2013-01-31-relative-links-in-markup-files/">this blogpost</a>). 
@@ -1227,14 +1227,14 @@ e^{i \pi} + 1 = 0.
 </div>
 <p>LaTeX expressions will <em>not</em> be rendered on GitHub, but only on the documentation website. For the latter, the MD extension <a href="https://facelessuser.github.io/pymdown-extensions/extensions/arithmatex/">Arithmatex</a> is used to render the expressions with MathJax. Note that <a href="https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/">MathJax syntax</a> is a little more restrictive than a real LaTeX installation. </p>
 <h3 id="images">Images</h3>
-<p>External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory <code>images</code> next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. </p>
+<p>External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory <em><code>images</code></em> next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. </p>
 <p>An image can be added with the MD command</p>
 <div class="highlight"><pre><span></span><code>![<span class="nt">alt</span>](<span class="na">images/example.png &quot;description&quot;</span>)
 </code></pre></div>
 <p>with <code>alt</code> displayed when the image cannot be shown/viewed for some reason, and <code>description</code> appearing when hovering over the image with your mouse. For example:</p>
 <p><img alt="example image" src="images/lachend_kakske.png" title="diefstal in Oostende" /></p>
-<p>Only image formats specified in <code>run_mkdocs.py</code> (i.e. png, jpg, jpeg, gif, svg) are copied to the website; missing extensions can be added. 
-Images from all <code>coconut</code> subdirectories called <code>images</code> are copied to the website, so care must be taken that <code>images</code> is not used in e.g. the output of the test examples.</p>
+<p>Only image formats specified in <em><code>run_mkdocs.py</code></em> (i.e. png, jpg, jpeg, gif, svg) are copied to the website; missing extensions can be added. 
+Images from all <em><code>coconut</code></em> subdirectories called <em><code>images</code></em> are copied to the website, so care must be taken that <em><code>images</code></em> is not used in e.g. the output of the test examples.</p>
 <h3 id="style-layout-guide">Style &amp; layout guide</h3>
 <p>This section gives some guidelines about style and layout of MarkDown files, to keep the documentation consistent.</p>
 <ul>
@@ -1248,9 +1248,9 @@ Images from all <code>coconut</code> subdirectories called <code>images</code> a
 <li>
 <p>Use code style + italics for:</p>
 <ul>
-<li>files: <code>run_simulation.py</code>, <code>parameters.json</code></li>
-<li>folders: <code>data_structure</code></li>
-<li>paths: <code>coupling_components/solver_wrappers/mapped.py</code></li>
+<li>files: <em><code>run_simulation.py</code></em>, <em><code>parameters.json</code></em></li>
+<li>folders: <em><code>data_structure</code></em></li>
+<li>paths: <em><code>coupling_components/solver_wrappers/mapped.py</code></em></li>
 </ul>
 </li>
 <li>
@@ -1289,18 +1289,18 @@ In this case, two lines must be added to your <code>.bashrc</code> file:
 <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>/some/absolute/path:<span class="nv">$PYTHONPATH</span>
 <span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span>/some/absolute/path/bin:<span class="nv">$PATH</span>
 </code></pre></div></p>
-<p>The structure/outline of the website is dictated by the <code>nav</code> variable in <code>mkdocs.yml</code>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
-<p>The complete process to create the documentation website is automated by <code>run_mkdocs.py</code>. This does the following things:</p>
+<p>The structure/outline of the website is dictated by the <code>nav</code> variable in <em><code>mkdocs.yml</code></em>. This is the only variable that must be adjusted when new MD files are added to the code.</p>
+<p>The complete process to create the documentation website is automated by <em><code>run_mkdocs.py</code></em>. This does the following things:</p>
 <ul>
-<li>Copy all MD files in <code>coconut</code> and its subfolders to folder <code>docs</code>. </li>
+<li>Copy all MD files in <em><code>coconut</code></em> and its subfolders to folder <em><code>docs</code></em>. </li>
 <li>Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.</li>
-<li>Check if each MD file is mentioned in <code>mkdocs.yml</code>. If a file is not mentioned, a warning is given.</li>
+<li>Check if each MD file is mentioned in <em><code>mkdocs.yml</code></em>. If a file is not mentioned, a warning is given.</li>
 <li>Build static HTML website using <code>mkdocs build</code>. </li>
 </ul>
-<p>You can run <code>run_mkdocs.py</code> with an extra command line argument: </p>
+<p>You can run <em><code>run_mkdocs.py</code></em> with an extra command line argument: </p>
 <p><div class="highlight"><pre><span></span><code>python3 run_mkdocs.py --preview example
 </code></pre></div>
-opens a preview of the website in Firefox, showing the webpage corresponding to the file <code>example.md</code>. This can be used to check MD and LaTeX syntax. </p>
+opens a preview of the website in Firefox, showing the webpage corresponding to the file <em><code>example.md</code></em>. This can be used to check MD and LaTeX syntax. </p>
 <p><div class="highlight"><pre><span></span><code>python3 run_mkdocs.py --deploy
 </code></pre></div>
 deploys the website on GitHub Pages using <code>mkdocs gh-deploy</code>. It seems this is currently only possible if the remote is configured with SSH, not with HTTPS.  </p>

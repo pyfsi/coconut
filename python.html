@@ -648,14 +648,14 @@
         
           <li class="md-nav__item">
   <a href="#inlet-boundary" class="md-nav__link">
-    Inlet Boundary
+    Inlet boundary
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#outlet-boundary" class="md-nav__link">
-    Outlet Boundary
+    Outlet boundary
   </a>
   
 </li>
@@ -672,10 +672,10 @@
         
           <li class="md-nav__item">
   <a href="#tube-ringmodel-solver" class="md-nav__link">
-    Tube Ringmodel solver
+    Tube ringmodel solver
   </a>
   
-    <nav class="md-nav" aria-label="Tube Ringmodel solver">
+    <nav class="md-nav" aria-label="Tube ringmodel solver">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -707,6 +707,13 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    Solver coupling convergence
+  </a>
   
 </li>
         
@@ -1314,6 +1321,11 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 <td>Analogous to <code>interface_input</code>. However, the variables are different: <code>['pressure','traction']</code> for a flow solver and <code>['displacement']</code> for a structure solver.</td>
 </tr>
 <tr>
+<td align="right"><nobr><code>print_coupling_convergence</code></nobr></td>
+<td align="center">bool</td>
+<td>(optional) Default <code>false</code>. If <code>true</code> and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.</td>
+</tr>
+<tr>
 <td align="right"><code>unsteady</code></td>
 <td align="center">bool</td>
 <td>(optional) Default: <code>true</code>. Indicates if case is steady or unsteady.</td>
@@ -1329,7 +1341,7 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 <td>(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file <em><code>case_timestep&lt;timestep_start&gt;.pickle</code></em> to start from the corresponding time step. For a steady simulation, the value should be <code>0</code>.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>working_directory</code></nobr></td>
+<td align="right"><code>working_directory</code></td>
 <td align="center">str</td>
 <td>Absolute path to the working directory or relative path with respect to the current directory.</td>
 </tr>
@@ -1449,7 +1461,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </tr>
 </tbody>
 </table>
-<h5 id="inlet-boundary">Inlet Boundary</h5>
+<h5 id="inlet-boundary">Inlet boundary</h5>
 <p>This section describes all parameters that need to be specified in the dictionary <code>inlet_boundary</code>, listed in alphabetical order.</p>
 <table>
 <thead>
@@ -1487,7 +1499,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </tr>
 </tbody>
 </table>
-<h5 id="outlet-boundary">Outlet Boundary</h5>
+<h5 id="outlet-boundary">Outlet boundary</h5>
 <p>This section describes all parameters that need to be specified in the dictionary <code>outlet_boundary</code>, listed in alphabetical order.</p>
 <table>
 <thead>
@@ -1505,7 +1517,7 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </tr>
 </tbody>
 </table>
-<h3 id="tube-ringmodel-solver">Tube Ringmodel solver</h3>
+<h3 id="tube-ringmodel-solver">Tube ringmodel solver</h3>
 <p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
 The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.ring_model_solver</code>.
 The tube is regarded as made up of independent rings and no inertia is taken into account.
@@ -1578,6 +1590,11 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>(optional) Default: <code>0</code>. Reference pressure.</td>
 </tr>
 <tr>
+<td align="right"><code>residual_atol</code></td>
+<td align="center">double</td>
+<td>Absolute residual tolerance, only used and required for the <a href="#solver-coupling-convergence">solver coupling convergence</a> criterion.</td>
+</tr>
+<tr>
 <td align="right"><code>rhof</code></td>
 <td align="center">double</td>
 <td>Density of the fluid.</td>
@@ -1628,7 +1645,7 @@ $$
 $$
 Typical values are <span class="arithmatex"><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> equal to 1/2 and <span class="arithmatex"><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> equal to 1/4.</p>
 <p>A different time discretization for flow and structure can lead to difficulties for strongly coupled problems, especially looking at the resulting pressure distributions.
-As most flow solvers are discretized using the backward Euler method, it is advised to chose the same method for the structure solver (the time discretization of <code>SolverWrapperTubeFlowSolver</code> is also backward Euler).
+As most flow solvers are discretized using the backward Euler method, it is advised to choose the same method for the structure solver (the time discretization of <code>SolverWrapperTubeFlowSolver</code> is also backward Euler).
 This avoids the occurrence of spurious oscillations of the pressure in time [<a href="#3">3</a>].</p>
 <p>Finally, this solver also provides a Jacobian of the change in radius with pressure, which can be used as surrogate Jacobian [<a href="#4">4</a>].</p>
 <h4 id="solver-parameters_2">Solver parameters</h4>
@@ -1694,6 +1711,11 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <td>(optional) Default: <code>0</code>. Reference pressure.</td>
 </tr>
 <tr>
+<td align="right"><code>residual_atol</code></td>
+<td align="center">double</td>
+<td>Absolute residual tolerance, only used and required for the <a href="#solver-coupling-convergence">solver coupling convergence</a> criterion.</td>
+</tr>
+<tr>
 <td align="right"><code>rhof</code></td>
 <td align="center">double</td>
 <td>Density of the fluid.</td>
@@ -1715,6 +1737,13 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 </tr>
 </tbody>
 </table>
+<h3 id="solver-coupling-convergence">Solver coupling convergence</h3>
+<p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> has been implemented for the Tube Python solvers.
+The Tube Structure solver and the Tube Ringmodel solver are linear, meaning that no solver iterations are performed.
+As a consequence no convergence tolerance is prescribed for these solvers.</p>
+<p>However, when coupled with another solver, the initial residual (calculated with an updated right-hand side, but before the solution of their linear system) can still have a non-converged value.
+This is exactly the residual value that is used by the convergence criterion to determine if the coupling has converged.
+Therefore, a solver tolerance <code>residual_atol</code> has to be defined for these solvers in case the solver coupling convergence criterion is selected.</p>
 <h2 id="references">References</h2>
 <p><a id="1">[1]</a> 
 <a href="http://hdl.handle.net/1854/LU-940283">Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers &amp; Structures, vol. 88, no. 5-6, pp. 263, 2010.</a></p>

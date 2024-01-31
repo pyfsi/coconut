@@ -649,26 +649,19 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    Solver coupling convergence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#version-specific-documentation" class="md-nav__link">
     Version specific documentation
   </a>
   
     <nav class="md-nav" aria-label="Version specific documentation">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v60-60" class="md-nav__link">
-    v60 (6.0)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#v70-70" class="md-nav__link">
-    v70 (7.0)
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#v91-91" class="md-nav__link">
@@ -1264,7 +1257,7 @@
                 
 
 <h1 id="kratosstructure">KratosStructure</h1>
-<p>KratosMultiphysics is an open source framework for finite element simulations. More information on Kratos and the source code can be found on the <a href="https://github.com/KratosMultiphysics">Kratos Github page</a>. 
+<p>KratosMultiphysics is an open source framework for finite element simulations. More information on Kratos and the source code can be found on the <a href="https://github.com/KratosMultiphysics">Kratos GitHub page</a>. 
 The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos has been implemented in CoCoNuT. This a documentation of this solver wrapper. </p>
 <h2 id="parameters">Parameters</h2>
 <p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
@@ -1303,7 +1296,7 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 <td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>kratos_interface_sub_model_parts_list</code> and the string <code>_output</code>. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
 </tr>
 <tr>
-<td align="right"><code>kratos_interface_sub_model_parts_list</code></td>
+<td align="right"><nobr><code>kratos_interface_sub_model_parts_list</code><nobr></td>
 <td align="center">str</td>
 <td>Names of sub-model parts used for input and output in Kratos.</td>
 </tr>
@@ -1311,6 +1304,11 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 <td align="right"><code>pressure_directions</code></td>
 <td align="center">list</td>
 <td>A list containing 1 or -1 designating the direction in which the pressure is applied: a positive value means NEGATIVE_FACE_PRESSURE is used. This implies applying a pressure on the - face, which hence goes in the direction of the normal (-1,1), in other words 1 should be used when the normal points outwards from the fluid domain. A negative unit value results in the opposite directions, in other words -1 should be used when the normal points into the fluid domain. The length of the list must be equal to that of <code>kratos_interface_sub_model_parts_list</code>.</td>
+</tr>
+<tr>
+<td align="right"><code>print_coupling_convergence</code></td>
+<td align="center">bool</td>
+<td>(optional) Default <code>false</code>. If <code>true</code> and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.</td>
 </tr>
 <tr>
 <td align="right"><code>residual_variables</code></td>
@@ -1328,7 +1326,7 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 <td>(optional) Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>working_directory</code></nobr></td>
+<td align="right"><code>working_directory</code></td>
 <td align="center">str</td>
 <td>Path to the working directory (i.e. where the <code>input_file</code> for Kratos is located), either absolute or relative w.r.t the current directory (i.e. from where the analysis is started).</td>
 </tr>
@@ -1345,7 +1343,7 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 <h3 id="the-__init__-method">The <code>__init__</code> method</h3>
 <p>During initialization, the <em><code>ProjectParameters.json</code></em> file required for Kratos simulation is read and modified (parameter values are filled in) in the <code>working_directory</code>. 
 One additional parameter called  <code>interface_sub_model_parts_list</code> is added in the <em><code>ProjectParameters.json</code></em> that tells Kratos about the interface model parts used in the coupling. 
-Kratos structural simulation is then started in that directory using the parameter <code>cores</code> (multi-processing not implemented yet). 
+Kratos structural simulation is then started in that directory using the parameter <code>cores</code> (multiprocessing not implemented yet). 
 The solver wrapper waits for the Kratos simulation to output interface sub-model parts nodes, so that <code>SolverWrapperKratosStructureX</code> can create model parts in CoCoNuT for each entry in <code>interface_input</code> and <code>interface_output</code>. 
 Finally, the interfaces are created.</p>
 <h3 id="files-created-during-simulation">Files created during simulation</h3>
@@ -1369,29 +1367,34 @@ Finally, the interfaces are created.</p>
 <li>Initialization of the solution field</li>
 </ul>
 <h3 id="tip">Tip</h3>
-<p><div class="highlight"><pre><span></span><code> When starting a simulation from time=0 after having restarted in the same folder, clean the directory or delete the case folder and copy the required files 
- from a &quot;set up&quot; folder.
+<p><div class="highlight"><pre><span></span><code>When starting a simulation from time=0 after having restarted in the same folder, clean the directory or delete the case folder and copy the required files from a &quot;set up&quot; folder.
 </code></pre></div>
 The reason for this is that the <code>ProjectParameters.json</code> file is modified when performing restart in such a way that it can no longer be used to start from time=0.</p>
 <h2 id="post-processing">Post-processing</h2>
-<p>Kratos <code>StructuralMechanicsApplication</code> v70 and v91 allow for saving VTK files. The number of files saved is set in <code>ProjectParameters.json</code> and is not modified by CoCoNuT.
+<p>Kratos <code>StructuralMechanicsApplication</code> v91 allows for saving VTK files. The number of files saved is set in <code>ProjectParameters.json</code> and is not modified by CoCoNuT.
 Note that the zeroth instance corresponds to the first time step.</p>
+<h2 id="solver-coupling-convergence">Solver coupling convergence</h2>
+<p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> is implemented for the Kratos StructuralMechanics solver wrapper.</p>
+<p>When using the <code>residual_criterion</code> in Kratos as convergence criterion, it's important to set the relative tolerance to <code>-1</code>, effectively disabling it.
+This is needed because Kratos sets the relative residual to zero in the first time step, wrongly leading to immediate convergence.
+Although this is also the case when other coupling convergence criteria are used, it deserves special attention in case of the solver coupling convergence criterion.</p>
+<p>Below, an example of the <em><code>ProjectParameters.json</code></em> file is included using the <code>and_criterion</code>.
+This criterion combines the displacement and residual criteria and declares the solver converged only if both criteria are satisfied.
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="err">...</span>
+  <span class="nt">&quot;convergence_criterion&quot;</span><span class="p">:</span> <span class="s2">&quot;and_criterion&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;displacement_relative_tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-7</span><span class="p">,</span>
+  <span class="nt">&quot;displacement_absolute_tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-7</span><span class="p">,</span>
+  <span class="nt">&quot;residual_relative_tolerance&quot;</span><span class="p">:</span> <span class="mi">-1</span><span class="p">,</span>
+  <span class="nt">&quot;residual_absolute_tolerance&quot;</span><span class="p">:</span> <span class="mf">1e-7</span><span class="p">,</span>
+  <span class="err">...</span>
+<span class="p">}</span>
+</code></pre></div></p>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="v60-60">v60 (6.0)</h3>
-<p>First version.</p>
-<p>Negative numbers for <code>save_restart</code> are not supported in Kratos 6.0, therefore the absolute value is used.</p>
-<p>Based on testing, restart works with the <code>PrestressMembrane</code> elements and doesn't work with the <code>Shell elements</code> due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other <code>elements</code> in Kratos.</p>
-<p>The error is expressed, by the calculation which remains frozen after the first time step, when attempting to store restart files.</p>
-<h3 id="v70-70">v70 (7.0)</h3>
-<p>The <em><code>ProjectParameters.json</code></em> required by Kratos is slightly different in the version 7.0. The user can refer to the <a href="https://github.com/KratosMultiphysics/Kratos/releases/tag/7.0">source code</a> for the changes.
-Alternatively, the user can use the file in <em><code>tests/solver_wrappers/kratos_structure/test_v70/setup_kratos</code></em> as a reference.</p>
-<p>Negative numbers for <code>save_restart</code> are not supported in Kratos 7.0, therefore the absolute value is used.</p>
-<p>Based on testing, restart works with the <code>PrestressMembrane</code> elements and doesn't work with the <code>Shell elements</code> due to problems in implementation in Kratos. More testing is required to ascertain if the restart works with the other<code>elements</code> in Kratos.</p>
-<p>The error is expressed, by the calculation which remains frozen after the first time step, when attempting to store restart files.</p>
 <h3 id="v91-91">v91 (9.1)</h3>
 <p>The <em><code>ProjectParameters.json</code></em> required by Kratos is slightly different in the version 9.1. The user can refer to the <a href="https://github.com/KratosMultiphysics/Kratos/tree/v9.1">source code</a> for the changes.
 Alternatively, the user can use the file in <em><code>tests/solver_wrappers/kratos_structure/test_v91/setup_kratos</code></em> as a reference.
-The most important changes with respect to version 7.0 include:</p>
+The most important changes with respect to older versions include:</p>
 <ul>
 <li>The adaptation of model part names to include parents, e.g. from <code>Parts_tube</code> to <code>Structure.Parts_tube</code></li>
 <li>The removal of the keys <code>problem_domain_sub_model_part_list</code> and <code>processes_sub_model_part_list</code> in <code>solver_settings</code></li>

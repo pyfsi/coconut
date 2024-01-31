@@ -443,6 +443,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    Solver coupling convergence
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -458,6 +465,13 @@
         <li class="md-nav__item">
   <a href="#dummy-convergence-criterion" class="md-nav__link">
     Dummy convergence criterion
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
   </a>
   
 </li>
@@ -1269,6 +1283,30 @@ comparing the norm of the residual of the first coupling iteration to the machin
 different from zero. In case this initial norm is too small, an exception will be raised. Should this happen, it is advised to opt
 for the absolute norm criterion instead of relative norm.</p>
 <p>These are the same as for <code>convergence_criterion.absolute_norm</code>.</p>
+<h3 id="solver-coupling-convergence">Solver coupling convergence</h3>
+<p>The <code>type</code> <code>convergence_criterion.solver_coupling_convergence</code> is a convergence criterion that uses the convergence of a solver to determine the convergence of the coupling loop.
+The criterion is considered fulfilled once the solver converges in its first solver iteration.
+Not all solvers allow for this feature, see their respective documentation.
+A detailed explanation of this criterion is found in Spenke and Delaissé et al. [<a href="#1">1</a>].</p>
+<p>Typically, a <code>solver_coupling_convergence</code> criterion is used for each solver, combined with an <code>and</code> criterion (see <a href="#combining-multiple-convergence-criteria">Combining multiple convergence criteria</a>).
+This way, the coupling loop is considered converged when all solvers converge in their first solver iteration.</p>
+<p>The <code>settings</code> dictionary contains one entry:</p>
+<table>
+<thead>
+<tr>
+<th align="right">parameter</th>
+<th align="center">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>solver_index</code></td>
+<td align="center">int</td>
+<td>Index of the solverwrapper in the <code>solver_wrappers</code> list of the coupled solver to which this convergence criterion belongs.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="combining-multiple-convergence-criteria">Combining multiple convergence criteria</h2>
 <p>In most cases, it is wise to combine two criteria: one to ensure a high enough accuracy and an iteration limit in order
 to break loops that are not converging fast enough. In that case, the criteria are combined via <code>or</code> or <code>and</code> statements.
@@ -1298,10 +1336,34 @@ Moreover, the <code>or</code> and <code>and</code> statements can be combined mu
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>An example of the use of the <code>and</code> criterion is with use of the <code>solver_coupling_convergence</code> criterion.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.and&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;criteria_list&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.solver_coupling_convergence&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;solver_index&quot;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;convergence_criteria.solver_coupling_convergence&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;solver_index&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="dummy-convergence-criterion">Dummy convergence criterion</h2>
 <p>This dummy convergence criterion can be used in the <a href="https://pyfsi.github.io/coconut/coupled_solvers#explicit">explicit</a> or <a href="https://pyfsi.github.io/coconut/coupled_solvers#one-way">one-way</a> coupled solvers, which don't require a convergence criterion.</p>
 <p>If the use of a dummy convergence criterion is allowed, the <code>type</code> (<code>convergence_criteria.dummy_convergence_criterion</code>) can be written explicitly or omitted. No <code>settings</code> are required.
 Note that the key <code>convergence_criterion</code> is still required.</p>
+<h2 id="references">References</h2>
+<p><a id="1">[1]</a> 
+<a href="http://doi.org/10.1002/nme.7420">Spenke T., Delaissé N., Degroote J. and Hosters, N., "On the number of subproblem iterations per coupling step in partitioned fluid-structure interaction simulations", International Journal for Numerical Methods in Engineering, 2024.</a></p>
 
               
             </article>

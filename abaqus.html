@@ -742,19 +742,26 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#end-of-the-calculation" class="md-nav__link">
+    End of the calculation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    Solver coupling convergence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#version-specific-documentation" class="md-nav__link">
     Version specific documentation
   </a>
   
     <nav class="md-nav" aria-label="Version specific documentation">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v614" class="md-nav__link">
-    v6.14
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#v2021" class="md-nav__link">
@@ -1487,7 +1494,7 @@ Subcycling within the structural solver is possible.</p>
 </tbody>
 </table>
 <h2 id="overview-of-operation">Overview of operation</h2>
-<p>The solver wrapper consists of 6 types of files located in the source directory (with <em><code>X</code></em> denoting the Abaqus version, e.g. <em><code>v614.py</code></em>):</p>
+<p>The solver wrapper consists of 6 types of files located in the source directory (with <em><code>X</code></em> denoting the Abaqus version, e.g. <em><code>v2022.py</code></em>):</p>
 <ul>
 <li><em><code>abaqus.py</code></em>: Contains the base class <code>SolverWrapperAbaqus</code>.</li>
 <li><em><code>X.py</code></em>: Defines the <code>SolverWrapperAbaqusX</code>class, which inherits from the base class. Some version specific parameters might be overwritten in these subclasses. </li>
@@ -1642,11 +1649,15 @@ Particulary for the Abaqus solver wrapper, it is important that the files <em><c
 The files <em><code>CSM_Time0.inp</code></em> and <em><code>CSM_Restart.inp</code></em> will be generated during initialization of the restarted calculation. 
 This allows the user to alter some parameters in the input file before restart, e.g. altering output requests, boundary conditions or applying additional loads. 
 Since Abaqus only uses the <em><code>CSM_Restart.inp</code></em> (which does not contain any mesh information) and output files of the previous calculation, it is pointless to change the mesh before a restart.</p>
+<h2 id="end-of-the-calculation">End of the calculation</h2>
+<p>Unlike for <a href="https://pyfsi.github.io/coconut/coupling_components">other solvers</a>, CoCoNuT does not keep track of the time it takes to write case files.
+The reason for this is that Abaqus starts and stops every single coupling iteration, see <a href="#the-solvesolutionstep-method">here</a> and therefore needs data files to be saved every time step in order to continue the calculation in a next coupling iteration or time step. 
+Saving data files is as such seen as inherent to solving the solution step.</p>
+<h2 id="solver-coupling-convergence">Solver coupling convergence</h2>
+<p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> can not be used for the Abaqus solver wrapper.</p>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="v614">v6.14</h3>
-<p>First version.</p>
 <h3 id="v2021">v2021</h3>
-<p>No major changes. </p>
+<p>Base version.</p>
 <h3 id="v2022">v2022</h3>
 <p>No major changes. </p>
 

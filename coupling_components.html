@@ -408,6 +408,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#end-of-the-calculation" class="md-nav__link">
+    End of the calculation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tools" class="md-nav__link">
     Tools
   </a>
@@ -1183,8 +1190,8 @@ Moreover, components can be used multiple times without the need for copying cod
 Detailed information on these components can be found in the specific documentation.</p>
 <p>All these coupling components inherit from a same superclass called <code>Component</code>, defined in <em><code>coconut/coupling_components/component.py</code></em>. 
 In this class some methods are implemented, which control the flow within CoCoNuT. 
-For every coupling component, there are <code>initialize</code> and <code>finalize</code>, which are called at the start and end of a calculation
-and there are <code>initialize_solution_step</code> and <code>finalize_solution_step</code>, which are called at the start and end of each time step.
+For every coupling component, there are <code>initialize</code> and <code>finalize</code>, which are called at the start and end of a calculation,
+as well as <code>initialize_solution_step</code>, called at the start of each time step, and <code>finalize_solution_step</code> and <code>output_solution_step</code>, both called at the end of each time step.
 If needed these methods are overwritten to perform a specific action.
 For example in the <code>finalize</code> method of a <code>solver_wrapper</code>, the termination of the solver software could be implemented.</p>
 <p>A schematic of the relation between the coupling components for a basic calculation is given in the following figure.</p>
@@ -1196,12 +1203,20 @@ For these <code>Interface</code> objects (implemented in <em><code>coconut/data_
 <p>The main coupling component in which all other coupling components are instantiated is the coupled solver.
 The coupled solver itself is created in the <code>Analysis</code> class (<em><code>coconut/analysis.py</code></em>), which is the starting point of the CoCoNuT calculation.
 Upon the start of CoCoNuT, an instance of <code>Analysis</code> is made and its method <code>run</code> is executed.
-The coupled solver keeps track of all <code>Components</code> and runs the methods <code>initialize</code>, <code>finalize</code>, <code>initialize_solution_step</code> and <code>finalize_solution_step</code>,
+The coupled solver keeps track of all <code>Components</code> and runs the methods <code>initialize</code>, <code>finalize</code>, <code>initialize_solution_step</code>, <code>finalize_solution_step</code> and <code>output_solution_step</code>,
 when its respective methods are executed.</p>
+<h2 id="end-of-the-calculation">End of the calculation</h2>
+<p>At the end of the calculation a summary will be printed by the coupled solver.
+Next to the average number of coupling iterations per time step required to reach convergence, it provides an overview of the computational time.
+The total calculation time is split in the time required for initialization and the actual run time.
+For both, the distribution over the different components is reported as well, for example, the run time of a <code>solver_wrapper</code> is the time spend in the <code>solve_solution_step</code> method.
+The part of the run time required for saving data is shown separately, and once more the distribution over the different components are shown.
+This so-called save time is the time spend in the method <code>output_solution_step</code>.
+This information allows to assess which part of the calculation is taking the most time and shows how to potentially reduce the calculation time.</p>
 <h2 id="tools">Tools</h2>
 <p>Some code to perform specific tasks, like printing with a certain layout or performing a time measurement is useful throughout the code.
 These functionalities are grouped in the file <em><code>coconut/tools.py</code></em>.
-It suffices to import the file to make uses of its functions.</p>
+It suffices to import the file to make use of its functions.</p>
 
               
             </article>

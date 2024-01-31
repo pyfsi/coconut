@@ -1201,7 +1201,7 @@ checked in the <code>__init__</code> method.</p>
 The data in <code>ModelPart</code> once created, either by <code>__init__</code> method of 
 the <code>ModelPart</code> class or by <code>create_model_part</code> method of the <code>Model</code> class, 
 cannot be changed later. This is because the initial coordinates of boundary 
-points are always supplied from the solver wrapper and they don't change during the various stages of the coupling process. </p>
+points are always supplied from the solver wrapper, and they don't change during the various stages of the coupling process. </p>
 <hr />
 <h2 id="interface">Interface</h2>
 <p><code>Interface</code> stores the <code>variable</code> data that are transferred between the 
@@ -1219,30 +1219,34 @@ The following schematic illustrates the data structure in the
 <p>For example, in the schematic above, the interface has a model part named 
 "mp_1_name", which has several variable data. The data for the variable <code>var_1</code> is stored in a <code>numpy array</code> with the number of rows equal to the number points in the model part and the number of columns equal to the number of components/dimensions of the variable. The number of dimensions for a variable 
 is defined in the <code>variable_dimensions</code> <code>dict</code> in the file 
-<code>data_structure/variables.py</code>variables.py, e.g the number of dimensions for the variables 
-<code>pressure</code> and <code>displacement</code> is 1 and 3, respectively. <br></p>
-<p>The nested <code>dict</code> in the <code>Interface</code> is constructed during the instantiation
- of the class using a parameters <code>dict</code> given as an input argument. For the 
- schematic shown above, the parameters dict would be:<br></p>
-<div class="highlight"><pre><span></span><code>[
-   {
-     &quot;model_part&quot;: &quot;mp_1_name&quot;,
-     &quot;variables&quot;: [&quot;var_1&quot;, var_2, ..]
-     ]
-   },
-   {
-     &quot;model_part&quot;: &quot;mp_2_name&quot;,
-     &quot;variables&quot;: [&quot;var_3&quot;,  ..]
-     ]
-   },
-   .
-   .
-   .
-]
-</code></pre></div>
+<em><code>data_structure/variables.py</code></em> variables.py, for example, the number of dimensions for the variables 
+<code>pressure</code> and <code>displacement</code> is 1 and 3, respectively.</p>
+<p>The nested <code>dict</code> in the <code>Interface</code> is constructed during the instantiation of the class using a parameters <code>dict</code> given as an input argument.
+For the schematic shown above, the parameters dict would be:<br></p>
+<p><code>json
+[
+  {
+    "model_part": "mp_1_name",
+    "variables": [
+      "var_1",
+      "var_2",
+      ..
+    ]
+  },
+  {
+    "model_part": "mp_2_name",
+    "variables": [
+      "var_3",
+      ..
+    ]
+  },
+  .
+  .
+  .
+]</code></p>
 <p>The data in the interface can be accessed, added, or replaced by the various 
 methods implemented in the <code>Interface</code> class, which can be looked in the file 
-<code>data_structure/interface.py</code>.</p>
+<em><code>data_structure/interface.py</code></em>.</p>
 <hr />
 <p><strong>NOTE</strong>:<br>
 The file <em><code>data_structure/variables.py</code></em> does not contain a class definition. 

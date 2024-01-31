@@ -1267,8 +1267,8 @@
 <h1 id="models">Models</h1>
 <p>This documentation describes the different types of available models. The purpose of a model always is to provide a (approximated) (inverse) Jacobian of a system.
 Often this achieved with the help of secant information from input-output-pairs, resulting in a so-called quasi-Newton method.
-Another approach to obtain a approximated Jacobian is the use of a surrogate model. Finally, in some cases, the Jacobian can be derived analytically.
-These three types of models will be discussed further.</p>
+Another approach to obtain an approximated Jacobian is the use of a surrogate model. Finally, in some cases, the Jacobian can be derived analytically.
+These three types of models will be discussed further. More detailed information can be found in Delaissé et al. [<a href="#8">8</a>].</p>
 <p>Which Jacobian is approximated in practice will depend on the use of the model in the coupled solver.
 For example, using the coupled solver <code>CoupledSolverIQNI</code> with the model <code>ModelLS</code> corresponds to the IQN-ILS method developed by Degroote et al. [<a href="#1">1</a>]. In that case, the approximated Jacobian is <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}'^{-1}</span><script type="math/tex">\mathcal{R}'^{-1}</script></span>.
 If the coupled solver <code>CoupledSolverIBQN</code> is combined with two instances the model <code>ModelLS</code>, the resulting algorithm corresponds to the IBQN-LS method developed by Vierendeels et al. [<a href="#2">2</a>]. Then, the two models each approximate one Jacobian: <span class="arithmatex"><span class="MathJax_Preview">\mathcal{F}'</span><script type="math/tex">\mathcal{F}'</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\mathcal{S}'</span><script type="math/tex">\mathcal{S}'</script></span>.
@@ -1279,14 +1279,14 @@ Refer to the <a href="https://pyfsi.github.io/coconut/coupled_solvers">coupled s
 <li>The first of which is the <code>predict(dr)</code> method, which returns an estimation of the change in output variable based on a change in input variable using the Jacobian approximation.</li>
 <li>Second, the method <code>is_ready()</code> return a boolean signalling if the model is ready to <em>predict</em> using the previous method.</li>
 <li>Third, in order to improve the estimation, information from a current iteration can be added to the model using the method <code>add(r, xt)</code>.</li>
-<li>And finally, the method <code>filter_q(dr)</code> returns the part of supplied vector which falls inside of the nullspace of the Jacobian. This is the part of the supplied vector for which the model has no derivative information.</li>
+<li>And finally, the method <code>filter_q(dr)</code> returns the part of supplied vector which falls inside the nullspace of the Jacobian. This is the part of the supplied vector for which the model has no derivative information.</li>
 </ul>
 <h2 id="jacobian-approximation-from-secant-information">Jacobian approximation from secant information</h2>
 <p>In order to approximate the Jacobian <span class="arithmatex"><span class="MathJax_Preview">\mathcal{A}'</span><script type="math/tex">\mathcal{A}'</script></span> of a general function <span class="arithmatex"><span class="MathJax_Preview">a=\mathcal{A}(b)</span><script type="math/tex">a=\mathcal{A}(b)</script></span>, the model needs to be supplied with matching input-output-pairs, (<span class="arithmatex"><span class="MathJax_Preview">b^i</span><script type="math/tex">b^i</script></span>, <span class="arithmatex"><span class="MathJax_Preview">a^i=\mathcal{A}(b^i)</span><script type="math/tex">a^i=\mathcal{A}(b^i)</script></span>).
 Once at least two pairs have been supplied, the model is able to approximately predict the product of the Jacobian with an arbitrary vector <span class="arithmatex"><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span>.
 In other words, when a vector <span class="arithmatex"><span class="MathJax_Preview">\Delta b</span><script type="math/tex">\Delta b</script></span> is given it outputs <span class="arithmatex"><span class="MathJax_Preview">\Delta a=\widehat{\mathcal{A}}'\Delta b</span><script type="math/tex">\Delta a=\widehat{\mathcal{A}}'\Delta b</script></span>, where the hat symbol is used to denote that an approximation of the Jacobain is used.</p>
 <p>In the following, the example from IQN-ILS will be used: the inverse Jacobian of <span class="arithmatex"><span class="MathJax_Preview">\mathcal{R}'</span><script type="math/tex">\mathcal{R}'</script></span> with respect to <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span> is approximated which has an input vector <span class="arithmatex"><span class="MathJax_Preview">r</span><script type="math/tex">r</script></span> and an output vector <span class="arithmatex"><span class="MathJax_Preview">\widetilde{x}</span><script type="math/tex">\widetilde{x}</script></span>.
-For brevity, the approximation will denoted by <span class="arithmatex"><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
+For brevity, the approximation will be denoted by <span class="arithmatex"><span class="MathJax_Preview">N^k</span><script type="math/tex">N^k</script></span>, where the superscript <span class="arithmatex"><span class="MathJax_Preview">k</span><script type="math/tex">k</script></span> referes to the iteration.</p>
 <p>The four model-specific methods can be made concrete for this type of model:</p>
 <ul>
 <li>The <code>predict(dr)</code> method returns an estimation of <span class="arithmatex"><span class="MathJax_Preview">\Delta \widetilde{x}=N^k\Delta r</span><script type="math/tex">\Delta \widetilde{x}=N^k\Delta r</script></span> from an input <span class="arithmatex"><span class="MathJax_Preview">\Delta r</span><script type="math/tex">\Delta r</script></span>, based on stored input-output-pairs.</li>
@@ -1512,6 +1512,8 @@ This model will not provide any (surrogate) Jacobian approximation nor surrogate
 <a href="https://doi.org/10.1016/j.cma.2019.112810">Spenke T., Hosters N. and Behr M., "A multi-vector interface quasi-newton method with linear complexity for partitioned fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 361, pp. 112810, 2020.</a></p>
 <p><a id="7">[7]</a>
 <a href="http://hdl.handle.net/1854/LU-8728347">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
+<p><a id="8">[8]</a> 
+<a href="https://doi.org/10.1007/s11831-023-09907-y">Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.</a></p>
 
               
             </article>
