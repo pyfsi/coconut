@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "model_part_name": "Structure.Parts_beam",
+      "properties_id": 1,
+      "Material": {
+        "constitutive_law": {
+          "name": "LinearElasticPlaneStrain2DLaw"
+        },
+        "Variables": {
+          "YOUNG_MODULUS": 1e7,
+          "DENSITY": 1100.0,
+          "POISSON_RATIO": 0.4
+        },
+        "Tables": {}
+      }
+    }
+  ]
+}

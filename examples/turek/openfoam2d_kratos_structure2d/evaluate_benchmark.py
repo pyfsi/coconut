@@ -20,11 +20,11 @@ dt = results['delta_t']
 time_step_start = results['timestep_start']
 # create animate object
 animation = animation_figure.add_animation(solution, interface, dt, time_step_start, variable='displacement',
-                                           name=fsi_case, model_part_name='beamrightoutside_nodes')
+                                           name=fsi_case, model_part_name='plateEnd_input')
 # select points and component of variable to plot
 coordinates = animation.coordinates
 mask_x = (coordinates[:, 0] > -np.inf)
-mask_y = (abs(coordinates[:, 1] - 0.2) < 1e-16)
+mask_y = (abs(coordinates[:, 1] - 0.2) < 0.003)
 mask_z = (coordinates[:, 2] > -np.inf)
 abscissa = 0  # x-axis
 component = 1  # y-component
@@ -36,17 +36,16 @@ uy = np.mean(np.array(animation.solution), axis=1)  # y displacement of tip
 ux = np.mean(np.array(animation.displacement), axis=1)  # x displacement of tip
 drag = []
 lift = []
-with open(f'CFD/forces.frp', 'r') as f:
+with open(f'CFD/postProcessing/forces/0.000/forces.dat', 'r') as f:
     for line in f:
-        if line.startswith('Net'):
+        if not line.startswith('#'):
             forces = line.split()
-            if forces[1].startswith('('):
-                drag.append(float(forces[7].strip('()')))
-                lift.append(float(forces[8].strip('()')))
+            drag.append(float(forces[1].strip('()')) + float(forces[4].strip('()')))
+            lift.append(float(forces[2].strip('()')) + float(forces[5].strip('()')))
 drag = [np.nan] * (17501 - len(drag)) + drag
 lift = [np.nan] * (17501 - len(lift)) + lift
-drag = np.array(drag)
-lift = np.array(lift)
+drag = np.array(drag) * 100 # mesh depth (z-direction) is 0.01 m
+lift = np.array(lift) * 100 # mesh depth (z-direction) is 0.01 m
 time = animation.time_step_start + np.arange(animation.time_steps + 1) * animation.dt
 
 # benchmark data
