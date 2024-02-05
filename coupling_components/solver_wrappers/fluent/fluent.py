@@ -542,21 +542,24 @@ class SolverWrapperFluent(Component):
             thread_id = self.model_part_thread_ids[mp_name]
             model_part = self.model.get_model_part(mp_name)
             displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+            x = model_part.x0 + displacement[:, 0]
+            y = model_part.y0 + displacement[:, 1]
+            z = model_part.z0 + displacement[:, 2]
 
-            if self.rigid_body_motion_on:
-                if mp_name == 'tail_nodes':
-                    x,y,z = self.rigid_body_motion.move_coordinates_elevator(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
-                elif mp_name == 'vtail_left_nodes':
-                    x,y,z = self.rigid_body_motion.move_coordinates_rudder_left(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
-                elif mp_name == 'vtail_right_nodes':
-                    x,y,z = self.rigid_body_motion.move_coordinates_rudder_right(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
-                else:
-                    x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep,self.delta_t)
-
-            else:
-                x = model_part.x0 + displacement[:, 0]
-                y = model_part.y0 + displacement[:, 1]
-                z = model_part.z0 + displacement[:, 2]
+            # if self.rigid_body_motion_on:
+            #     if mp_name == 'tail_nodes':
+            #         x,y,z = self.rigid_body_motion.move_coordinates_elevator(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
+            #     elif mp_name == 'vtail_left_nodes':
+            #         x,y,z = self.rigid_body_motion.move_coordinates_rudder_left(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
+            #     elif mp_name == 'vtail_right_nodes':
+            #         x,y,z = self.rigid_body_motion.move_coordinates_rudder_right(model_part.x0, model_part.y0, model_part.z0, displacement, self.timestep, self.delta_t)
+            #     else:
+            #         x,y,z = self.rigid_body_motion.move_coordinates(model_part.x0,model_part.y0,model_part.z0, displacement, self.timestep,self.delta_t)
+            #
+            # else:
+            #     x = model_part.x0 + displacement[:, 0]
+            #     y = model_part.y0 + displacement[:, 1]
+            #     z = model_part.z0 + displacement[:, 2]
 
             if self.dimensions == 2:
                 data = np.rec.fromarrays([x, y, model_part.id])
