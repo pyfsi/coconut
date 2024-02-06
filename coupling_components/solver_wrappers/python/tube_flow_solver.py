@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
 import coconut.coupling_components.solver_wrappers.python.banded as bnd
@@ -15,13 +15,14 @@ def create(parameters):
     return SolverWrapperTubeFlow(parameters)
 
 
-class SolverWrapperTubeFlow(Component):
+class SolverWrapperTubeFlow(SolverWrapper):
     al = 4  # number of terms below diagonal in matrix
     au = 4  # number of terms above diagonal in matrix
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
@@ -147,12 +148,6 @@ class SolverWrapperTubeFlow(Component):
         self.interface_output.set_variable_data(self.output_model_part_name, 'pressure', self.pres.reshape(-1, 1))
         self.interface_output.set_variable_data(self.output_model_part_name, 'traction', self.trac)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
@@ -184,11 +179,20 @@ class SolverWrapperTubeFlow(Component):
 
         self.k += 1
 
-        # Newton iterations
-        converged = False
+        # initial residual
         f = self.get_residual()
         if self.k == 1:
             self.residual0 = np.linalg.norm(f)
+
+        # coupling convergence
+        residual = np.linalg.norm(f)
+        if self.check_coupling_convergence and residual / self.residual0 < self.newtontol:
+            self.coupling_convergence = True
+            if self.print_coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
+
+        # Newton iterations
+        converged = False
         if self.residual0:
             for s in range(self.newtonmax):
                 j = self.get_jacobian()
@@ -233,10 +237,10 @@ class SolverWrapperTubeFlow(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
             file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
             with open(file_name, 'wb') as file:
@@ -255,11 +259,8 @@ class SolverWrapperTubeFlow(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
 
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
+    def finalize(self):
+        super().finalize()
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:

@@ -3,8 +3,8 @@ import subprocess
 
 from coconut import tools
 
-cfd_solver = 'openfoam.v41'
-csm_solver = 'abaqus.v614'
+cfd_solver = 'openfoam.v8'
+csm_solver = 'abaqus.v2022'
 cfd_dir = './CFD'
 csm_dir = './CSM'
 
@@ -18,7 +18,6 @@ shutil.rmtree(csm_dir, ignore_errors=True)
 # create new CFD folder
 shutil.copytree('../setup_files/openfoam3d', cfd_dir)
 cfd_env = tools.get_solver_env(cfd_solver, cfd_dir)
-
 subprocess.check_call('./setup_openfoam3d.sh', shell=True, cwd=cfd_dir, env=cfd_env)
 
 # create new CSM folder

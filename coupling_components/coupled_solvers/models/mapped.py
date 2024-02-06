@@ -7,6 +7,8 @@ def create(parameters):
 
 
 class ModelMapped(Component):
+    mapped = True
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__()
@@ -35,8 +37,10 @@ class ModelMapped(Component):
         self.solver_level = None
 
         # time
-        self.init_time = 0.0
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
+        self.save_time = 0.0
 
     @tools.time_initialize
     def initialize(self, interface_input_from, interface_output_to):
@@ -103,19 +107,20 @@ class ModelMapped(Component):
 
         self.surrogate.finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
-        self.surrogate.finalize()
-        self.mapper_interface_input.finalize()
-        self.mapper_interface_output.finalize()
-
+    @tools.time_save
     def output_solution_step(self):
         super().output_solution_step()
 
         self.surrogate.output_solution_step()
         self.mapper_interface_input.output_solution_step()
         self.mapper_interface_output.output_solution_step()
+
+    def finalize(self):
+        super().finalize()
+
+        self.surrogate.finalize()
+        self.mapper_interface_input.finalize()
+        self.mapper_interface_output.finalize()
 
     def get_interface_input(self):
         # does not contain most recent data
@@ -125,6 +130,27 @@ class ModelMapped(Component):
         interface_output_from = self.surrogate.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
+
+    def restart(self, restart_data):
+        self.surrogate.restart(restart_data)
+
+    def check_restart_data(self, restart_data):
+        self.surrogate.check_restart_data(restart_data)
+
+    def save_restart_data(self):
+        self.surrogate.save_restart_data()
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time', 'save_time'):
+            total_time = self.__getattribute__(time_type)
+            surrogate_time = self.surrogate.get_time_allocation()[time_type]
+            mapper_time = total_time - (surrogate_time['total'] if isinstance(surrogate_time, dict) else surrogate_time)
+            time_allocation[time_type] = {'total': total_time, 'mapper': mapper_time, 'surrogate': surrogate_time}
+        return time_allocation
+
+    def print_time_distribution(self, ta, pre, reference=None, last=True):
+        return self.surrogate.print_time_distribution(ta, pre, reference=reference, last=last)
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' maps the following surrogate model:')

@@ -7,7 +7,14 @@ import numpy as np
 class TestModelMV(model.TestModel):
 
     def setUp(self):
-        self.parameters['type'] = 'coupled_solvers.models.mv'
+        self.min_significant = 1.0
+
+        self.parameters = {'type': 'coupled_solvers.models.mv',
+                           'settings': {
+                               'min_significant': self.min_significant
+                           }}
+        self.settings = self.parameters['settings']
+
         super().setUp()
 
     def test_model(self):
@@ -174,6 +181,17 @@ class TestModelMV(model.TestModel):
         np.testing.assert_array_equal(self.model.v, self.r12[:, np.newaxis] - self.r11[:, np.newaxis])
         self.assertEqual(self.model.w.shape, (self.m, 1))
         np.testing.assert_array_equal(self.model.w, self.xt12[:, np.newaxis] - self.xt11[:, np.newaxis])
+
+    def store_old_values(self):
+        self.nprev = self.model.nprev.copy()
+
+    def set_new_values(self):
+        self.min_significant_new = 0.5
+        self.settings['min_significant'] = self.min_significant_new
+
+    def check_new_values(self):
+        self.assertEqual(self.model.min_significant, self.min_significant_new)
+        np.testing.assert_allclose(self.model.nprev, self.nprev)
 
 
 if __name__ == '__main__':

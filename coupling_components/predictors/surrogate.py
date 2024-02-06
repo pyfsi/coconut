@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import Component
+from coconut import tools
 
 
 def create(parameters):
@@ -69,3 +70,19 @@ class Surrogate(Component):
             raise Exception('Already updated')
         self.dataprev = x.get_interface_data()
         self.updated = True
+
+    def restart(self, restart_data):
+        self.dataprev = restart_data['dataprev']
+        self.surrogate_data = restart_data['surrogate_data']
+
+    def check_restart_data(self, restart_data):
+        model_type = restart_data['type']
+        for key in ['predict_change']:
+            new_value = self.settings.get(key)
+            old_value = restart_data['settings'].get(key)
+            if new_value != old_value:
+                tools.print_info(f'"{model_type}" parameter "{key}" changed from {old_value} to {new_value}',
+                                 layout='blue')
+
+    def save_restart_data(self):
+        return {'dataprev': self.dataprev, 'surrogate_data': self.surrogate_data}

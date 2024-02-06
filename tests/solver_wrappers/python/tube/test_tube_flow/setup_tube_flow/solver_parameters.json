@@ -18,5 +18,5 @@
   "h": 0.001,
   "m": 100,
   "newtonmax": 3,
-  "newtontol": 1e-14
+  "newtontol": 1e-12
 }

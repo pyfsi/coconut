@@ -12,9 +12,9 @@ The `type` `convergence_criterion.iteration_limit` is satisfied if the number of
 
 The `settings` dictionary contains one entry:
 
-parameter|type|description
----:|:---:|---
-`maximum`|int|Maximum number of iterations.
+| parameter | type | description                   |
+|----------:|:----:|-------------------------------|
+| `maximum` | int  | Maximum number of iterations. |
 
 ### Absolute norm
 
@@ -31,10 +31,10 @@ where $r_i$ is the $i$-th component of the residual.
 
 The `settings` are as follows:
 
-parameter|type|description
----:|:---:|---
-`order`|int|Order $p$ of the norm.
-`tolerance`|double|Limit value for convergence.
+|   parameter |  type  | description                  |
+|------------:|:------:|------------------------------|
+|     `order` |  int   | Order $p$ of the norm.       |
+| `tolerance` | double | Limit value for convergence. |
 
 ### Relative norm
 
@@ -46,6 +46,22 @@ different from zero. In case this initial norm is too small, an exception will b
 for the absolute norm criterion instead of relative norm.
 
 These are the same as for `convergence_criterion.absolute_norm`.
+
+### Solver coupling convergence
+
+The `type` `convergence_criterion.solver_coupling_convergence` is a convergence criterion that uses the convergence of a solver to determine the convergence of the coupling loop.
+The criterion is considered fulfilled once the solver converges in its first solver iteration.
+Not all solvers allow for this feature, see their respective documentation.
+A detailed explanation of this criterion is found in Spenke and Delaissé et al. [[1](#1)].
+
+Typically, a `solver_coupling_convergence` criterion is used for each solver, combined with an `and` criterion (see [Combining multiple convergence criteria](#combining-multiple-convergence-criteria)).
+This way, the coupling loop is considered converged when all solvers converge in their first solver iteration.
+
+The `settings` dictionary contains one entry:
+
+|      parameter | type | description                                                                                                                 |
+|---------------:|:----:|-----------------------------------------------------------------------------------------------------------------------------|
+| `solver_index` | int  | Index of the solverwrapper in the `solver_wrappers` list of the coupled solver to which this convergence criterion belongs. |
 
 ## Combining multiple convergence criteria
 
@@ -80,3 +96,40 @@ Moreover, the `or` and `and` statements can be combined multiple times, if neede
   }
 }
 ```
+
+An example of the use of the `and` criterion is with use of the `solver_coupling_convergence` criterion.
+
+```json
+{
+  "type": "convergence_criteria.and",
+  "settings": {
+    "criteria_list": [
+      {
+        "type": "convergence_criteria.solver_coupling_convergence",
+        "settings": {
+          "solver_index": 0
+        }
+      },
+      {
+        "type": "convergence_criteria.solver_coupling_convergence",
+        "settings": {
+          "solver_index": 1
+        }
+      }
+    ]
+  }
+}
+```
+
+## Dummy convergence criterion
+
+This dummy convergence criterion can be used in the [explicit](../coupled_solvers.md#explicit) or [one-way](../coupled_solvers.md#one-way) coupled solvers, which don't require a convergence criterion.
+
+If the use of a dummy convergence criterion is allowed, the `type` (`convergence_criteria.dummy_convergence_criterion`) can be written explicitly or omitted. No `settings` are required.
+Note that the key `convergence_criterion` is still required.
+
+## References
+
+<a id="1">[1]</a> 
+[Spenke T., Delaissé N., Degroote J. and Hosters, N., "On the number of subproblem iterations per coupling step in partitioned fluid-structure interaction simulations", International Journal for Numerical Methods in Engineering, 2024.](
+http://doi.org/10.1002/nme.7420)

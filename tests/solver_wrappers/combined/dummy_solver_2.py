@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut.data_structure.interface import Interface
 from coconut import tools
 
@@ -15,11 +15,16 @@ def create(parameters):
     return DummySolver2(parameters)
 
 
-class DummySolver2(Component):
+class DummySolver2(SolverWrapper):
+    check_coupling_convergence_possible = False
+
+    @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
         self.settings = parameters['settings']
         self.model = data_structure.Model()
+        self.timestep = None
+
         dx = lx / (nx - 1)
         dy = ly / (ny - 1)
         perturb_factor = 0.0
@@ -48,13 +53,11 @@ class DummySolver2(Component):
             self.model.create_model_part(interface_settings['model_part'], x0_out, y0_out, z0_out, node_ids_out)
             self.mp_name_out_list.append(interface_settings['model_part'])
 
-        # # Interfaces
+        # interfaces
         self.interface_input = Interface(self.settings["interface_input"], self.model)
         self.interface_output = Interface(self.settings["interface_output"], self.model)
 
-        # run time
-        self.run_time = 0.0
-
+    @tools.time_initialize
     def initialize(self):
         super().initialize()
         self.timestep = 0
@@ -65,6 +68,7 @@ class DummySolver2(Component):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
+        self.interface_input = interface_input.copy()
         interface_data = interface_input.get_interface_data()
         for mp_name in self.mp_name_out_list:
             pressure_array, traction_array = self.calculate_output(interface_data, self.interface_output, mp_name)
@@ -78,12 +82,6 @@ class DummySolver2(Component):
 
     def finalize(self):
         super().finalize()
-
-    def get_interface_input(self):
-        return self.interface_input
-
-    def get_interface_output(self):
-        return self.interface_output
 
     def calculate_output(self, data, out_interface, out_mp_name):
         nr_nodes = out_interface.get_model_part(out_mp_name).size

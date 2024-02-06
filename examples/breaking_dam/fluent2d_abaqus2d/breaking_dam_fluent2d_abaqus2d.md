@@ -14,13 +14,13 @@ The gap beneath the gate is exagerated for clarity.
  
 The corresponding parameters are:
 
-parameter|value|description
----:|:---:|---
-`A`|0.1 m|Width of the liquid tank.
-`G`|0.0025 m|Clearance of the elastic gate.
-`H`|0.14 m|Initial height of the liquid column.
-`L`|0.079 m|Height of the elastic gate.
-`S`|0.005 m|Thickness of the elastic gate.
+| parameter |  value   | description                          |
+|----------:|:--------:|--------------------------------------|
+|       `A` |  0.1 m   | Width of the liquid tank.            |
+|       `G` | 0.0025 m | Clearance of the elastic gate.       |
+|       `H` |  0.14 m  | Initial height of the liquid column. |
+|       `L` | 0.079 m  | Height of the elastic gate.          |
+|       `S` | 0.005 m  | Thickness of the elastic gate.       |
 
 The elastic gate is made of rubber and has the following parameters:
 
@@ -77,4 +77,4 @@ In the structure solver wrapper, a linear interpolation mapper is used to interp
 
 ## References
 <a id="1">[1]</a>
-[Antoci C., Gallatie M. and Sibilla S., "Numerical simulation of fluid-structure interaction by sph", Computers & Structures, vol. 85, no. 11, pp. 879-890, 2007.](https://doi.org/10.1007/3-540-34596-5_15)
+[Antoci C., Gallatie M. and Sibilla S., "Numerical simulation of fluid-structure interaction by SPH", Computers & Structures, vol. 85, no. 11, pp. 879-890, 2007.](https://doi.org/10.1016/j.compstruc.2007.01.002)

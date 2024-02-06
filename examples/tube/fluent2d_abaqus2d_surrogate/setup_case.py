@@ -1,10 +1,11 @@
+import glob
 import shutil
 import subprocess
-
+from os.path import join
 from coconut import tools
 
-cfd_solver = 'fluent.v2019R3'
-csm_solver = 'abaqus.v614'
+cfd_solver = 'fluent.v2023R1'
+csm_solver = 'abaqus.v2022'
 
 cfd_dir = './CFD'
 csm_dir = './CSM'
@@ -13,6 +14,10 @@ csm_sur_dir = './CSM_surrogate'
 
 # copy run_simulation.py script to main directory
 shutil.copy('../../run_simulation.py', './')
+
+# clean up Fluent
+if glob.glob(join(cfd_dir, 'cleanup-fluent*')):
+    subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir)
 
 # clean working directories
 shutil.rmtree(cfd_dir, ignore_errors=True)

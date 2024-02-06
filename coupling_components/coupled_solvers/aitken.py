@@ -1,4 +1,4 @@
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 import numpy as np
 
@@ -7,7 +7,7 @@ def create(parameters):
     return CoupledSolverAITKEN(parameters)
 
 
-class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
+class CoupledSolverAITKEN(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 
@@ -21,7 +21,7 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
     def initialize(self):
         super().initialize()
 
-        if self.restart:  # restart
+        if self.restart and 'omega' in self.restart_data:  # restart
             self.omega = self.restart_data['omega']
 
     def initialize_solution_step(self):
@@ -76,5 +76,8 @@ class CoupledSolverAITKEN(CoupledSolverGaussSeidel):
     def is_ready(self):
         return self.added
 
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        super().check_restart_data(restart_data, ['omega_max'])
+
     def add_restart_data(self, restart_data):
-        return restart_data.update({'omega': self.omega})
+        restart_data.update({'omega': self.omega})

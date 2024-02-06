@@ -3,12 +3,13 @@ from coconut import tools
 
 
 def create(parameters):
-    return DummyModel(parameters)
+    return ModelDummy(parameters)
 
 
-class DummyModel(Component):
+class ModelDummy(Component):
     provides_get_solution = True
     provides_set_solution = False
+    dummy = True
 
     @tools.time_initialize
     def __init__(self, _):
@@ -17,8 +18,10 @@ class DummyModel(Component):
         self.solver_level = None
 
         # time
-        self.init_time = 0.0
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
+        self.save_time = 0.0
 
     @tools.time_solve_solution_step
     def get_solution(self):
@@ -32,6 +35,10 @@ class DummyModel(Component):
         out = f'{pre} └{(78 - len(pre)) * "─"}\n' \
               f'{pre}{"Iteration":<16}{"Norm residual":<28}'
         tools.print_info(out)
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
 
     # noinspection PyMethodMayBeStatic
     def predict(self, dr, **_):
@@ -48,5 +55,14 @@ class DummyModel(Component):
     def filter_q(self, dr, **_):
         return dr
 
-    def print_components_info(self, pre):
-        tools.print_info(pre, 'The component ', self.__class__.__name__)
+    def restart(self, restart_data):
+        pass
+
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        pass
+
+    def get_time_allocation(self):
+        return {'init_time': self.init_time, 'run_time': self.run_time, 'save_time': self.save_time}

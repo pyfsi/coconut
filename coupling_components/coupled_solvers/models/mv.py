@@ -15,9 +15,9 @@ class ModelMV(Component):
         self.settings = parameters['settings']
         self.min_significant = self.settings.get('min_significant', 0)
 
-        self.size_in = None
-        self.size_out = None
-        self.out = None  # interface of output
+        self.size_in = None  # set by coupled solver
+        self.size_out = None  # set by coupled solver
+        self.out = None  # interface of output, set by coupled solver
         self.added = False
         self.rref = None
         self.xtref = None
@@ -29,8 +29,6 @@ class ModelMV(Component):
     def initialize(self):
         super().initialize()
 
-        self.v = np.empty((self.size_in, 0))
-        self.w = np.empty((self.size_out, 0))
         self.nprev = np.zeros((self.size_out, self.size_in))
 
     def filter(self):
@@ -116,3 +114,18 @@ class ModelMV(Component):
             tools.print_info(f'Mode limiting not possible for MV model', layout='warning')
         dr_out.set_interface_data(dr.flatten())
         return dr_out
+
+    def restart(self, restart_data):
+        self.nprev = restart_data['nprev']
+
+    def check_restart_data(self, restart_data):
+        model_type = restart_data['type']
+        for key in ['min_significant']:
+            new_value = self.settings.get(key)
+            old_value = restart_data['settings'].get(key)
+            if new_value != old_value:
+                tools.print_info(f'"{model_type}" parameter "{key}" changed from {old_value} to {new_value}',
+                                 layout='blue')
+
+    def save_restart_data(self):
+        return {'settings': self.settings, 'nprev': self.nprev}

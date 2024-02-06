@@ -43,7 +43,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.v41",
+        "type": "solver_wrappers.openfoam.v8",
         "settings": {
           "working_directory": "CFD",
           "application": "coconut_pimpleFoam",
@@ -82,7 +82,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.kratos_structure.v60",
+            "type": "solver_wrappers.kratos_structure.v91",
             "settings": {
               "working_directory": "CSM",
               "input_file": "ProjectParameters.json",

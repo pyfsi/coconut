@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
 import coconut.coupling_components.solver_wrappers.python.banded as bnd
@@ -15,13 +15,14 @@ def create(parameters):
     return SolverWrapperTubeStructure(parameters)
 
 
-class SolverWrapperTubeStructure(Component):
+class SolverWrapperTubeStructure(SolverWrapper):
     al = 2  # Number of terms below diagonal in matrix
     au = 2  # Number of terms above diagonal in matrix
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
@@ -47,7 +48,7 @@ class SolverWrapperTubeStructure(Component):
 
         l = self.settings['l']  # length
         d = self.settings['d']  # diameter
-        self.rreference = d / 2  # reference radius of cross section
+        self.rreference = d / 2  # reference radius of cross-section
         self.rhof = self.settings['rhof']  # fluid density
 
         self.preference = self.settings.get('preference', 0)  # reference pressure
@@ -89,12 +90,14 @@ class SolverWrapperTubeStructure(Component):
             self.beta = 1
             self.nm = False
 
+        self.residual_atol = self.settings.get('residual_atol')  # absolute residual tolerance for coupling convergence
+
         # initialization
-        self.areference = np.pi * self.rreference ** 2  # reference area of cross section
+        self.areference = np.pi * self.rreference ** 2  # reference area of cross-section
         self.p = np.ones(self.m) * self.preference  # pressure
-        self.a = np.ones(self.m) * self.areference  # area of cross section
+        self.a = np.ones(self.m) * self.areference  # area of cross-section
         if self.timestep_start == 0:  # no restart
-            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross section
+            self.r = np.ones(self.m + 4) * self.rreference  # radius of cross-section
             if self.unsteady:
                 self.rdot = np.zeros(self.m)  # first derivative of the radius with respect to time in current timestep
                 self.rddot = np.zeros(self.m)  # second derivative of radius with respect to time in current timestep
@@ -102,10 +105,10 @@ class SolverWrapperTubeStructure(Component):
             file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
             with open(file_name, 'rb') as file:
                 data = pickle.load(file)
-            self.r = data['r']  # radius of cross section
+            self.r = data['r']  # radius of cross-section
             self.rdot = data['rdot']  # first derivative of the radius with respect to time in current timestep
             self.rddot = data['rddot']  # second derivative of the radius with respect to time in current timestep
-        self.rn = np.array(self.r)  # previous radius of cross section
+        self.rn = np.array(self.r)  # previous radius of cross-section
         self.rndot = np.zeros(self.m)  # first derivative of the radius with respect to time in previous timestep
         self.rnddot = np.zeros(self.m)  # second derivative of the radius with respect to time in previous timestep
 
@@ -138,17 +141,15 @@ class SolverWrapperTubeStructure(Component):
             j = bnd.to_dense(self.get_jacobian())
             self.ji = np.linalg.inv(j)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
     def initialize(self):
         super().initialize()
+
+        if self.check_coupling_convergence and self.residual_atol is None:
+            raise ValueError(f'To check the coupling convergence with {self.__class__.__name__},'
+                             f' the parameter "residual_atol" needs to be specified')
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -165,6 +166,14 @@ class SolverWrapperTubeStructure(Component):
         # input
         self.interface_input = interface_input.copy()
         self.p = interface_input.get_variable_data(self.input_model_part_name, 'pressure').flatten()
+
+        # coupling convergence
+        if self.check_coupling_convergence:
+            residual = np.linalg.norm(bnd.multiply_banded_vector(self.get_jacobian(), self.r) - self.get_b())
+            if residual < self.residual_atol:
+                self.coupling_convergence = True
+                if self.print_coupling_convergence:
+                    tools.print_info(f'{self.__class__.__name__} converged')
 
         # solve system
         if self.solver == 'solve_banded':
@@ -204,10 +213,10 @@ class SolverWrapperTubeStructure(Component):
                           - self.rndot / (self.beta * self.dt) - self.rnddot * (1 / (2 * self.beta) - 1) * self.nm)
             self.rdot = self.rndot + self.dt * (1 - self.gamma) * self.rnddot + self.dt * self.gamma * self.rddot
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
             file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
             with open(file_name, 'wb') as file:
@@ -224,11 +233,8 @@ class SolverWrapperTubeStructure(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
+    def finalize(self):
+        super().finalize()
 
     def get_residual(self):
         f = np.zeros(self.m + 4)

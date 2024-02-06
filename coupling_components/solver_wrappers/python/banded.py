@@ -101,6 +101,26 @@ def multiply_banded(a, b, output_dense=False):
     return c
 
 
+def multiply_banded_vector(a, x):
+    banded_a, au, al = check_banded(a)
+    if not banded_a:
+        raise ValueError('The matrix must be banded')
+    if x.ndim not in (1, 2):
+        raise ValueError('The second argument needs to be a row or column numpy array')
+    n = x.size
+    if not a.shape[1] == n:
+        raise ValueError('The size of the vector does not match the number of columns of the banded matrix')
+    b = np.zeros(n + au + al)
+    t = a * x.flatten()
+    for j in range(n):
+        b[j:min(j + au + al + 1, n + au + al)] += t[:, j]
+    b = b[au:-al]
+    if x.ndim == 2:
+        return b.reshape(-1, 1)
+    else:
+        return b
+
+
 def transpose_banded(a):
     banded, au, al = check_banded(a)
     if not banded:

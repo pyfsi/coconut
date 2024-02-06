@@ -3,10 +3,10 @@ from coconut import tools
 
 
 def create(parameters):
-    return Surrogate(parameters)
+    return ModelSurrogate(parameters)
 
 
-class Surrogate(Component):
+class ModelSurrogate(Component):
     provides_get_solution = provides_set_solution = True
 
     @tools.time_initialize
@@ -27,8 +27,10 @@ class Surrogate(Component):
         self.solver_level = None
 
         # time
-        self.init_time = 0.0
+        # noinspection PyUnresolvedReferences
+        self.init_time = self.init_time  # created by decorator time_initialize
         self.run_time = 0.0
+        self.save_time = 0.0
 
     @tools.time_initialize
     def initialize(self):
@@ -47,17 +49,16 @@ class Surrogate(Component):
 
         self.coupled_solver.finalize_solution_step()
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
+        self.coupled_solver.output_solution_step()
+
     def finalize(self):
         super().finalize()
 
-        pre = '║' + ' │' * (self.solver_level - 1)
-        out = f'{pre} ┌{(78 - len(pre)) * "─"}\n' \
-              f'{pre} │\tSummary surrogate\n' \
-              f'{pre} ├{(78 - len(pre)) * "─"}'
-        tools.print_info(out)
         self.coupled_solver.finalize()
-        out = f'{pre} └{(78 - len(pre)) * "─"}'
-        tools.print_info(out)
 
     @tools.time_solve_solution_step
     def get_solution(self):
@@ -104,12 +105,32 @@ class Surrogate(Component):
     def get_interface_output(self):
         return self.coupled_solver.x.copy()
 
-    def output_solution_step(self):
-        super().output_solution_step()
+    def restart(self, restart_data):
+        pass
 
-        self.coupled_solver.output_solution_step()
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        pass
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time', 'save_time'):
+            total_time = self.__getattribute__(time_type)
+            coupled_solver_time = self.coupled_solver.get_time_allocation()[time_type]
+            solution_time = coupled_solver_time.pop('total') - coupled_solver_time.pop(
+                'coupling')  # time for solver, surrogates etc
+            other_time = total_time - solution_time
+            time_allocation[time_type] = {'total': total_time}
+            time_allocation[time_type].update(coupled_solver_time)
+            time_allocation[time_type].update({'coupling': other_time})
+        return time_allocation
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' with the following CoupledSolver:')
         pre = tools.update_pre(pre)
         self.coupled_solver.print_components_info(pre + '└─')
+
+    def print_time_distribution(self, ta, pre, reference=None, last=True):
+        return self.coupled_solver.print_time_distribution(ta, pre, reference=reference, last=last)

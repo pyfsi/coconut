@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 import os
@@ -7,7 +7,6 @@ from os.path import join
 import glob
 import subprocess
 import shutil
-import sys
 import time
 import numpy as np
 import textwrap
@@ -20,12 +19,13 @@ def create(parameters):
     return SolverWrapperAbaqus(parameters)
 
 
-class SolverWrapperAbaqus(Component):
-    version = None
+class SolverWrapperAbaqus(SolverWrapper):
+    version = None  # Abaqus version, e.g. 2022, set in subclass
+    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None:
             raise NotImplementedError(
@@ -59,28 +59,15 @@ class SolverWrapperAbaqus(Component):
         self.mp_out = []
         for item in self.settings['interface_input']:
             idx = item['model_part'].rindex('_load_points')
-            self.mp_in.append(item['model_part'][:idx].upper())
-        for mp_1 in self.mp_in:
-            for mp_2 in self.mp_in:
-                if mp_1 in mp_2 and not mp_1 == mp_2:
-                    raise ValueError('Input interface contains names that are substrings of each other')
+            self.mp_in.append(item['model_part'][:idx])
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
-            self.mp_out.append(item['model_part'][:idx].upper())
-        self.interface_input = None
-        self.interface_output = None
+            self.mp_out.append(item['model_part'][:idx])
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
         self.link_sl = None
         self.link_exe = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -243,7 +230,7 @@ class SolverWrapperAbaqus(Component):
             prev_lp = 0
             ids = np.arange(n_lp)
             coords_tmp = np.zeros((n_lp, 3))  # z-coordinate mandatory: 0.0 for 2D
-            for i in range(0, n_lp):
+            for i in range(n_lp):
                 elem = int(faces0[i, 0])
                 lp = int(faces0[i, 1])
                 if elem < prev_elem:
@@ -433,17 +420,15 @@ class SolverWrapperAbaqus(Component):
         for f in self.dir_vault.iterdir():
             f.unlink()  # empty vault
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
     def finalize(self):
         super().finalize()
         if self.save_restart == 0 or self.timestep % self.save_restart != 0:  # no files needed for restart
             self.remove_files(self.timestep)
         self.dir_vault.rmdir()
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def check_software(self):
         """Check whether the software requirements for this wrapper are fulfilled."""
@@ -580,7 +565,7 @@ class SolverWrapperAbaqus(Component):
                         with warnings.catch_warnings():
                             warnings.filterwarnings('always', category=UserWarning)
                             warnings.warn(f'recommended setting "INITIAL=NO" not found in input file, please consult '
-                                          f'the documention on STEP definition',
+                                          f'the documentation on STEP definition',
                                           category=UserWarning)
                     of.write(line)
                     if bool_restart:

@@ -10,7 +10,7 @@ import shutil
 
 
 class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
-    version = None
+    version = None  # Abaqus version, e.g. 2022, set in subclass
     setup_case = True
     dimension = 2
     axial_dir = 1  # y-direction is axial direction
@@ -56,6 +56,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         # step 1, coupling 2
         output1_2 = solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
+        solver.output_solution_step()
 
         # save output for comparison, as input hasn't changed these should be the same
         cls.a1_1 = output1_1.get_variable_data(cls.mp_name_out, 'displacement')
@@ -66,6 +67,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # get data for solver without restart
@@ -104,10 +106,10 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
     def test_restart(self):
         """
         Test whether restarting at time step 2 and simulating 2 time steps yields the same displacement as when the
-        simulation is ran from time step 0 until time step 4. A constant pressure is applied and no shear, on the tube
+        simulation is run from time step 0 until time step 4. A constant pressure is applied and no shear, on the tube
         examples. For the test the relative difference between displacements is checked, but it is required to also use
         a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e. whenever one of the
-        original coordinates is 0), because those have a near-zero displacement after applying a uniform pressure an no
+        original coordinates is 0), because those have a near-zero displacement after applying a uniform pressure and no
         shear. This near-zero value is a noise and has large relative differences between runs, but a very low absolute
         value, they are successfully filtered with an absolute tolerance.
         """
@@ -131,6 +133,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # compare output, as input hasn't changed these should be the same
@@ -155,7 +158,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         shear, on the tube examples. For the test the relative difference between displacements is checked, but it is
         required to also use a small absolute tolerance, otherwise the test will fail in the symmetry planes (i.e.
         whenever one of the original coordinates is 0), because those have a near-zero displacement after applying a
-        uniform pressure an no shear. This near-zero value is a noise and has large relative differences between runs,
+        uniform pressure and no shear. This near-zero value is a noise and has large relative differences between runs,
         but a very low absolute value, they are successfully filtered with an absolute tolerance.
         """
 
@@ -178,6 +181,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # compare output, as input hasn't changed these should be the same
@@ -214,6 +218,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         solver.finalize()
 
         # compare output, as shear input has changed these should be different

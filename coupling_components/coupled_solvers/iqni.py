@@ -1,30 +1,35 @@
-from coconut.tools import create_instance, pass_on_parameters
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut import tools
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 
 def create(parameters):
     return CoupledSolverIQNI(parameters)
 
 
-class CoupledSolverIQNI(CoupledSolverGaussSeidel):
+class CoupledSolverIQNI(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        pass_on_parameters(self.settings, self.settings['model']['settings'], ('timestep_start', 'delta_t'))
+        tools.pass_on_parameters(self.settings, self.settings['model']['settings'],
+                                 ('timestep_start', 'delta_t', 'save_restart'))
 
-        self.model = create_instance(self.parameters['settings']['model'])
+        self.model = tools.create_instance(self.parameters['settings']['model'])
         self.omega = self.settings['omega']
 
-    def initialize(self):
-        super().initialize()
+        self.restart_model = False  # indicates if model has to be restarted
 
-        if not self.restart:  # no restart
-            self.model.size_in = self.model.size_out = self.x.size
-            self.model.out = self.x.copy()
-            self.model.initialize()
-        else:  # restart
-            self.model = self.restart_data['model']
+    def initialize(self):
+        super().initialize(print_components=False)
+
+        self.model.size_in = self.model.size_out = self.x.size
+        self.model.out = self.x.copy()
+        self.model.initialize()
+        if self.restart_model:  # restart with the same model type
+            self.model.restart(self.restart_data['model'])
         self.components += [self.model]
+
+        if self.solver_level == 0:
+            self.print_components_info(' ')
 
     def solve_solution_step(self):
         # initial value
@@ -49,12 +54,16 @@ class CoupledSolverIQNI(CoupledSolverGaussSeidel):
             self.model.add(r.copy(), xt)
             self.finalize_iteration(r)
 
-    def check_restart_data(self, restart_data):
-        model_original = self.parameters['settings']['model']['type']
-        model_new = restart_data['parameters']['settings']['model']['type']
-        if model_original != model_new:
-            raise ValueError(f'Restart not possible because model type changed:'
-                             f'\n\toriginal: {model_original}\n\tnew: {model_new}')
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        continue_check = super().check_restart_data(restart_data, ['omega'])
+        if continue_check:
+            old_model_type = restart_data['parameters']['settings']['model']['type']
+            new_model_type = self.parameters['settings']['model']['type']
+            if new_model_type != old_model_type:
+                tools.print_info(f'Model type changed from "{old_model_type}" to "{new_model_type}"', layout='blue')
+            else:
+                self.restart_model = True
+                self.model.check_restart_data(restart_data['parameters']['settings']['model'])
 
     def add_restart_data(self, restart_data):
-        return restart_data.update({'model': self.model})
+        restart_data.update({'model': self.model.save_restart_data()})

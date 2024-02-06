@@ -16,7 +16,7 @@ An important rule for writing MD files for this documentation website is that th
 ### Links to other MarkDown files
 It is possible to use relative links to other MarkDown files in CoCoNuT, using the syntax
 ```markdown
-[link description](relative_path)
+[link description](../coupling_components/mappers/mappers.md)
 ```
 where `relative_path` is the relative path to another MarkDown file, e.g. `../coupling_components/mappers/mappers.md`. 
 
@@ -38,7 +38,7 @@ $$
 LaTeX expressions will *not* be rendered on GitHub, but only on the documentation website. For the latter, the MD extension [Arithmatex](https://facelessuser.github.io/pymdown-extensions/extensions/arithmatex/) is used to render the expressions with MathJax. Note that [MathJax syntax](https://math.meta.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference/) is a little more restrictive than a real LaTeX installation. 
 
 ### Images
-External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory `images` next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. 
+External images can be included with their URL. Adding locally stored images is a bit more complicated: these images must be stored in a directory *`images`* next to the MD file. If another location is used, they will not be shown on the website, only on GitHub. Furthermore, images must have a unique name. A warning is shown when this is not the case. 
 
 An image can be added with the MD command
 
@@ -50,8 +50,8 @@ with `alt` displayed when the image cannot be shown/viewed for some reason, and 
 
 ![example image](images/lachend_kakske.png "diefstal in Oostende")
 
-Only image formats specified in `run_mkdocs.py` (i.e. png, jpg, jpeg, gif, svg) are copied to the website; missing extensions can be added. 
-Images from all `coconut` subdirectories called `images` are copied to the website, so care must be taken that `images` is not used in e.g. the output of the test examples.
+Only image formats specified in *`run_mkdocs.py`* (i.e. png, jpg, jpeg, gif, svg) are copied to the website; missing extensions can be added. 
+Images from all *`coconut`* subdirectories called *`images`* are copied to the website, so care must be taken that *`images`* is not used in e.g. the output of the test examples.
 
 ### Style & layout guide
 
@@ -64,9 +64,9 @@ This section gives some guidelines about style and layout of MarkDown files, to 
     
 * Use code style + italics for:
 
-    * files: `run_simulation.py`, `parameters.json`
-    * folders: `data_structure`
-    * paths: `coupling_components/solver_wrappers/mapped.py`
+    * files: *`run_simulation.py`*, *`parameters.json`*
+    * folders: *`data_structure`*
+    * paths: *`coupling_components/solver_wrappers/mapped.py`*
 
 * Use normal text for:
 
@@ -103,21 +103,21 @@ export PYTHONPATH=/some/absolute/path:$PYTHONPATH
 export PATH=/some/absolute/path/bin:$PATH
 ```
 
-The structure/outline of the website is dictated by the `nav` variable in `mkdocs.yml`. This is the only variable that must be adjusted when new MD files are added to the code.
+The structure/outline of the website is dictated by the `nav` variable in *`mkdocs.yml`*. This is the only variable that must be adjusted when new MD files are added to the code.
 
-The complete process to create the documentation website is automated by `run_mkdocs.py`. This does the following things:
+The complete process to create the documentation website is automated by *`run_mkdocs.py`*. This does the following things:
 
-*   Copy all MD files in `coconut` and its subfolders to folder `docs`. 
+*   Copy all MD files in *`coconut`* and its subfolders to folder *`docs`*. 
 *   Check if there are duplicate filenames: these overwrite each other! If duplicates are found, a warning is given with the original paths.
-*   Check if each MD file is mentioned in `mkdocs.yml`. If a file is not mentioned, a warning is given.
+*   Check if each MD file is mentioned in *`mkdocs.yml`*. If a file is not mentioned, a warning is given.
 *   Build static HTML website using `mkdocs build`. 
 
-You can run `run_mkdocs.py` with an extra command line argument: 
+You can run *`run_mkdocs.py`* with an extra command line argument: 
 
 ```bash
 python3 run_mkdocs.py --preview example
 ```
-opens a preview of the website in Firefox, showing the webpage corresponding to the file `example.md`. This can be used to check MD and LaTeX syntax. 
+opens a preview of the website in Firefox, showing the webpage corresponding to the file *`example.md`*. This can be used to check MD and LaTeX syntax. 
 
 
 ```bash

@@ -23,7 +23,6 @@ class Analysis:
 
     def initialize(self):
         self.coupled_solver.initialize()
-        self.coupled_solver.print_components_info(' ')
 
     def run_solution_loop(self):
         for _ in range(self.number_of_timesteps):

@@ -12,9 +12,13 @@ import importlib.util
 import shutil
 
 
-def create_instance(settings):
-    # create instance of given class based on settings dict
-    object_type = settings['type']
+def create_instance(settings, if_not_defined=None):
+    if 'type' not in settings and if_not_defined is not None:
+        # create dummy object denoted by if_not_defined
+        object_type = if_not_defined
+    else:
+        # create instance of given class based on settings dict
+        object_type = settings['type']
     object_module = __import__('coconut.coupling_components.' + object_type, fromlist=[object_type])
     return object_module.create(settings)
 
@@ -35,8 +39,8 @@ class CocoMessages:
         cumul_time = 0
         file = join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
-            time.sleep(0.01)
-            cumul_time += 0.01
+            time.sleep(0.001)
+            cumul_time += 0.001
             if cumul_time > self.max_wait_time:
                 if self.timed_out_action is not None:
                     self.timed_out_action(message)
@@ -64,6 +68,7 @@ class LayoutStyles:
               'underline': '\033[4m',
               'inverse': '\033[7m',
               'negative': '\033[97m',
+              'info': '\033[94m',
               'warning': '\033[91m',
               'fail': '\033[41m',
               'grey': '\033[90m',
@@ -86,7 +91,8 @@ class LayoutStyles:
     def check(self, layout):
         if layout not in self.styles:
             raise ValueError(f'Layout style "{layout}" is not implemented, correct layout styles are: '
-                             'header, blue, green, red, warning, fail, bold, underline and plain.')
+                             'plain, bold, underline, inverse, negative, info, warning, fail, grey, red, green, yellow,'
+                             'blue, magenta, cyan, white and black.')
 
 
 layout_style = LayoutStyles()
@@ -94,8 +100,8 @@ layout_style = LayoutStyles()
 
 # print_info: printing with color
 #  @param args          The arguments to be printed
-#  @param layout        The layout to be used: plain, bold, underline, inverse, negative, warning, fail, grey, red,
-#                       green, yellow, flue, magenta, cyan, white, black
+#  @param layout        The layout to be used: plain, bold, underline, inverse, negative, info, warning, fail, grey,
+#                       red, green, yellow, blue, magenta, cyan, white, black
 def print_info(*args, layout=None, **kwargs):
     if layout is None:
         print("".join(map(str, args)), **kwargs)
@@ -130,10 +136,10 @@ def update_pre(pre):
 #  @param compent_list  List of Components from which the info is printed
 def print_components_info(pre, component_list):
     """
-    This function accepts a list of Components and print their info in a structured tree-like format as such:
-    ├─Component0.PrintInfo
+    This function accepts a list of Components and print their info in a structured tree-like format as follows:
+    ├─Component0.print_components_info
     │ XXX
-    └─Component1.PrintInfo
+    └─Component1.print_components_info
       XXX
     """
     pre = update_pre(pre)
@@ -222,6 +228,20 @@ def time_solve_solution_step(solve_solution_step):
         start_time = time.time()
         interface_output = solve_solution_step(*args)
         self.run_time += time.time() - start_time
+        return interface_output
+
+    return wrapper
+
+
+# save time measuring function
+def time_save(output_solution_step):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'save_time'):
+            self.save_time = 0.0
+        start_time = time.time()
+        interface_output = output_solution_step(*args)
+        self.save_time += time.time() - start_time
         return interface_output
 
     return wrapper
@@ -329,8 +349,8 @@ def get_solver_env(solver_module_name, working_dir):
     pickle file. Finally, pickle file is loaded and returned as a python-dict.
 
     @param solver_module_name: module name of the solver wrapper,
-    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
-    e.g. fluent.v2019R1
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2023R1.
+    e.g. fluent.v2023R1
     @type: str
 
     @param working_dir: working directory of the solver where the simulation is run.
@@ -369,8 +389,8 @@ def get_solver_env(solver_module_name, working_dir):
 def solver_available(solver_module_name):
     """
     @param solver_module_name: module name of the solver wrapper,
-    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
-    e.g. fluent.v2019R1
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2023R1
+    e.g. fluent.v2023R1
     @type: str
 
     @return: presence of solver env

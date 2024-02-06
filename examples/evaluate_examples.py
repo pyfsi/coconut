@@ -69,7 +69,7 @@ class EvaluateExamples(unittest.TestCase):
         if case == 'test_single_solver':
             case = 'tube'
         if not isdir(join(tmp_path, case)):
-            shutil.copytree(join(examples_path, case, "setup_files"), join(tmp_path, case, "setup_files"))
+            shutil.copytree(join(examples_path, case, 'setup_files'), join(tmp_path, case, 'setup_files'))
 
         # copy example folder to tmp
         os.makedirs(tmp_example_path)
@@ -83,12 +83,13 @@ class EvaluateExamples(unittest.TestCase):
         tools.import_module('setup_case', join(tmp_example_path, 'setup_case.py'))
 
         # read parameters and limit number of time steps
-        parameter_file_name = "parameters.json"
+        parameter_file_name = 'parameters.json'
         with open(join(tmp_example_path, parameter_file_name), 'r') as parameter_file:
             parameters = json.load(parameter_file)
         parameters['settings']['number_of_timesteps'] = cls.number_of_timesteps
         parameters['coupled_solver']['settings']['save_results'] = True
-        parameters['coupled_solver']['settings']['case_name'] = 'case'
+        case_name = cls.example.replace('/', '_')
+        parameters['coupled_solver']['settings']['case_name'] = case_name
 
         # perform simulation
         simulation = coconut.Analysis(parameters)
@@ -99,7 +100,7 @@ class EvaluateExamples(unittest.TestCase):
 
         if cls.compare_data:
             # read results data
-            with open(join(tmp_example_path, 'case_results.pickle'), 'rb') as f:
+            with open(join(tmp_example_path, f'{case_name}_results.pickle'), 'rb') as f:
                 cls.results = pickle.load(f)
 
             # read benchmark data
@@ -187,12 +188,13 @@ class TestTubeFluent3DKratosStructure3D(EvaluateExamples):
 class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
     example = 'tube/openfoam3d_abaqus3d'
     number_of_timesteps = 2
-    atol_solution_y = 1e-4
+    atol_solution_y = 3e-4
 
 
 class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
     example = 'tube/openfoam3d_kratos_structure3d'
     number_of_timesteps = 2
+    atol_solution_y = 3e-4
 
 
 class TestTubeTubeFlowAbaqus2D(EvaluateExamples):

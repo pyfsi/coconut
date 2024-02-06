@@ -43,10 +43,10 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2019R3",
+        "type": "solver_wrappers.fluent.v2023R1",
         "settings": {
           "working_directory": "CFD",
-          "case_file": "case_tube3d.cas",
+          "case_file": "case_tube3d.cas.h5",
           "dimensions": 3,
           "unsteady": true,
           "thread_names": [
@@ -80,7 +80,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.kratos_structure.v60",
+            "type": "solver_wrappers.kratos_structure.v91",
             "settings": {
               "working_directory": "CSM",
               "input_file": "ProjectParameters.json",

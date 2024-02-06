@@ -80,6 +80,6 @@ def get_coeffs(distances, coords_from, shape_parameter):
     cond = np.linalg.cond(Phi)
 
     # solve system Phi^T c = Phi_t for c (Phi is symmetric)
-    coeffs = solve(Phi, Phi_to, sym_pos=True)
+    coeffs = solve(Phi, Phi_to, assume_a='gen')
 
     return coeffs.reshape(1, -1), cond

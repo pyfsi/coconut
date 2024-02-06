@@ -44,8 +44,10 @@ define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
 
 define dynamic-mesh zones create fluid deforming y all n y
-define dynamic-mesh zones create cavityleft deforming user-defined "left::udf_top" n y n n y n
-define dynamic-mesh zones create cavityright deforming user-defined "right::udf_top" n y n n y n
+;define dynamic-mesh zones create cavityleft deforming user-defined "left::udf_top" n y n n y n
+define dynamic-mesh zones create cavityleft deforming user-defined "left::udf_top" n y n n y n y
+;define dynamic-mesh zones create cavityright deforming user-defined "right::udf_top" n y n n y n
+define dynamic-mesh zones create cavityright deforming user-defined "right::udf_top" n y n n y n y
 
 solve monitors residual normalize n
 solve monitors residual scale-by-coefficient n n
@@ -57,7 +59,7 @@ solve set discretization-scheme mom 1
 solve set discretization-scheme pressure 12
 solve set p-v-coupling 24
 solve set gradient-scheme y
-solve set reporting-interval 1
+solve set reporting-interval 10
 solve set flow-warnings n
 
 solve initialize set-defaults pressure 0

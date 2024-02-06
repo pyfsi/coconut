@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut.data_structure.interface import Interface
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
@@ -17,12 +17,13 @@ def create(parameters):
     return SolverWrapperOpenFOAM(parameters)
 
 
-class SolverWrapperOpenFOAM(Component):
-    version = None  # OpenFOAM version with dot, e.g. 4.1 , set in sub-class
+class SolverWrapperOpenFOAM(SolverWrapper):
+    version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None:
             raise NotImplementedError(
@@ -31,13 +32,14 @@ class SolverWrapperOpenFOAM(Component):
         # settings
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
+        self.env = None  # environment in which correct version of OpenFOAM software is available, set in subclass
 
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']
         self.delta_t = self.settings['delta_t']
         self.time_precision = self.settings['time_precision']
-        self.start_time = self.settings['timestep_start'] * self.delta_t
+        self.timestep_start = self.settings['timestep_start']
+        self.start_time = self.timestep_start * self.delta_t
         self.timestep = self.physical_time = self.iteration = self.prev_timestamp = self.cur_timestamp = None
         self.save_restart = self.settings['save_restart']
         self.openfoam_process = None
@@ -47,11 +49,6 @@ class SolverWrapperOpenFOAM(Component):
         self.boundary_names = self.settings['boundary_names']
         self.cores = None
         self.model = None
-        self.interface_input = None
-        self.interface_output = None
-
-        # set on True to save copy of input and output files in every iteration
-        self.debug = self.settings.get('debug', False)
 
         # set on True if you want to clean the adapted application and compile.
         self.compile_clean = self.settings.get('compile_clean', False)
@@ -66,10 +63,6 @@ class SolverWrapperOpenFOAM(Component):
         self.density_for_traction = None
         self.wall_shear_stress_variable = None
         self.wall_shear_stress_function_object_library = None
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
 
         # residual variables
         self.residual_variables = self.settings.get('residual_variables', None)
@@ -136,7 +129,7 @@ class SolverWrapperOpenFOAM(Component):
         # self.settings["boundary_names"]
         self.read_modify_controldict()
 
-        if self.save_restart % self.write_interval:
+        if self.write_interval is not None and self.save_restart % self.write_interval:
             raise RuntimeError(
                 f'self.save_restart (= {self.save_restart}) should be an integer multiple of writeInterval '
                 f'(= {self.write_interval}). Modify the controlDict accordingly.')
@@ -173,7 +166,7 @@ class SolverWrapperOpenFOAM(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
 
         # define timestep and physical time
-        self.timestep = 0
+        self.timestep = self.timestep_start
         self.physical_time = self.start_time
 
         # if parallel do a decomposition and establish a remapping for the output based on the faceProcAddressing
@@ -295,6 +288,13 @@ class SolverWrapperOpenFOAM(Component):
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
+        if self.check_coupling_convergence:
+            # check if OpenFOAM converged after 1 iteration
+            self.coco_messages.wait_message('check_ready')
+            self.coupling_convergence = self.coco_messages.check_message('solver_converged')
+            if self.print_coupling_convergence and self.coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
+
         # read data from OpenFOAM
         self.read_node_output()
 
@@ -314,6 +314,11 @@ class SolverWrapperOpenFOAM(Component):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         if not self.debug:
             for boundary in self.boundary_names:
                 post_process_time_folder = os.path.join(self.working_directory,
@@ -321,9 +326,8 @@ class SolverWrapperOpenFOAM(Component):
                                                         self.cur_timestamp)
                 shutil.rmtree(post_process_time_folder)
 
-        if not (self.timestep % self.write_interval):
-            self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready')
+        self.coco_messages.send_message('save')
+        self.coco_messages.wait_message('save_ready')
 
         if self.residual_variables is not None:
             self.write_of_residuals()
@@ -343,12 +347,6 @@ class SolverWrapperOpenFOAM(Component):
             for boundary in self.boundary_names:
                 post_process_folder = os.path.join(self.working_directory, f'postProcessing/coconut_{boundary}')
                 shutil.rmtree(post_process_folder, ignore_errors=True)
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def compile_adapted_openfoam_solver(self):
         # compile openfoam adapted solver
@@ -551,45 +549,53 @@ class SolverWrapperOpenFOAM(Component):
         file_name = os.path.join(self.working_directory, 'system/controlDict')
         with open(file_name, 'r') as control_dict_file:
             control_dict = control_dict_file.read()
-        self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
+        write_control = of_io.get_string(input_string=control_dict, keyword='writeControl')
+        if write_control == 'timeStep':
+            self.write_interval = of_io.get_int(input_string=control_dict, keyword='writeInterval')
         time_format = of_io.get_string(input_string=control_dict, keyword='timeFormat')
         self.write_precision = of_io.get_int(input_string=control_dict, keyword='writePrecision')
 
         if not time_format == 'fixed':
             msg = f'timeFormat:{time_format} in controlDict not implemented. Changed to "fixed"'
             tools.print_info(msg, layout='warning')
-            control_dict = re.sub(r'timeFormat' + of_io.delimter + r'\w+', f'timeFormat    fixed',
+            control_dict = re.sub(r'timeFormat' + of_io.delimiter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-        control_dict = re.sub(r'application' + of_io.delimter + r'\w+', f'{"application":<16}{self.application}',
+        control_dict = re.sub(r'application' + of_io.delimiter + r'\w+', f'{"application":<16}{self.application}',
                               control_dict)
-        control_dict = re.sub(r'startTime' + of_io.delimter + of_io.float_pattern,
+        control_dict = re.sub(r'startTime' + of_io.delimiter + of_io.float_pattern,
                               f'{"startTime":<16}{self.start_time}', control_dict)
-        control_dict = re.sub(r'deltaT' + of_io.delimter + of_io.float_pattern, f'{"deltaT":<16}{self.delta_t}',
+        control_dict = re.sub(r'deltaT' + of_io.delimiter + of_io.float_pattern, f'{"deltaT":<16}{self.delta_t}',
                               control_dict)
-        control_dict = re.sub(r'timePrecision' + of_io.delimter + of_io.int_pattern,
+        control_dict = re.sub(r'timePrecision' + of_io.delimiter + of_io.int_pattern,
                               f'{"timePrecision":<16}{self.time_precision}',
                               control_dict)
-        control_dict = re.sub(r'endTime' + of_io.delimter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
+        control_dict = re.sub(r'endTime' + of_io.delimiter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
 
         # delete previously defined coconut functions
-        coconut_start_string = '\n// CoCoNuT function objects'
+        coconut_start_string = '\n\n// CoCoNuT function objects'
         control_dict = re.sub(coconut_start_string + r'.*', '', control_dict, flags=re.S)
 
         with open(file_name, 'w') as control_dict_file:
             control_dict_file.write(control_dict)
             control_dict_file.write(coconut_start_string + '\n')
-            control_dict_file.write('boundary_names (')
 
-            for boundary_name in self.boundary_names:
-                control_dict_file.write(boundary_name + ' ')
+            control_dict_file.write('boundaryNames   (' + ' '.join(self.boundary_names) + ');\n\n')
 
-            control_dict_file.write(');\n\n')
+            if self.check_coupling_convergence:
+                control_dict_file.write(f'checkCouplingConvergence    true;\n\n')
+
             control_dict_file.write('functions\n{\n')
-
-            control_dict_file.write(self.wall_shear_stress_dict())
+            dct, name = self.wall_shear_stress_dict()
+            control_dict_file.write(dct)
+            function_object_names = [name]
             for boundary_name in self.boundary_names:
-                control_dict_file.write(self.pressure_and_traction_dict(boundary_name))
-            control_dict_file.write('}')
+                dct, name = self.pressure_and_traction_dict(boundary_name)
+                control_dict_file.write(dct)
+                function_object_names.append(name)
+            control_dict_file.write('}\n\n')
+
+            control_dict_file.write('coconutFunctionObjects \n(\n\t' + '\n\t'.join(function_object_names)+'\n);\n')
+
             self.write_footer(file_name)
 
     def wall_shear_stress_dict(self):

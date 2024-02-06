@@ -22,17 +22,18 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 
 The following parameters, listed in alphabetical order, need to be provided in the main JSON parameter file as `settings` of the solver wrapper.
 
-parameter|type|description
----:|:---:|---
-`debug`|bool|(optional) Default: `false`. For every iteration, text files are saved with the input and output data of the solver.
-`delta_t`|double|Fixed time step size. This parameter is usually specified in a higher component.
-`input_file`|str|(optional) Name of the input file, which may be present in the folder given in `working_directory`. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.
-`interface_input`|list|List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `['displacement']` for a flow solver and `['pressure','traction']` for a structure solver.
-`interface_output`|list|Analogous to `interface_input`. However, the variables are different: `['pressure','traction']` for a flow solver and `['displacement']` for a structure solver.
-`unsteady`|bool|(optional) Default: `true`. Indicates if case is steady or unsteady.
-`save_restart`|int|(optional) Default: 0. Determines the time step interval upon which a pickle file *`case_timestep<time step>.pickle`* is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.
-`time_step_start`|int|(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file *`case_timestep<timestep_start>.pickle`* to start from the corresponding time step. For a steady simulation, the value should be `0`.
-<nobr>`working_directory`</nobr>|str|Absolute path to the working directory or relative path with respect to the current directory.
+|                                 parameter |  type  | description                                                                                                                                                                                                                                                                                                                                                                                                      |
+|------------------------------------------:|:------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                                   `debug` |  bool  | (optional) Default: `false`. For every iteration, text files are saved with the input and output data of the solver.                                                                                                                                                                                                                                                                                             |
+|                                 `delta_t` | double | Fixed time step size. This parameter is usually specified in a higher component.                                                                                                                                                                                                                                                                                                                                 |
+|                              `input_file` |  str   | (optional) Name of the input file, which may be present in the folder given in `working_directory`. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.                                                                                                                       |
+|                         `interface_input` |  list  | List of dictionaries; each dictionary requires two keys: `model_part` and `variables`. The former contains the name of the `ModelPart` as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: `['displacement']` for a flow solver and `['pressure','traction']` for a structure solver. |
+|                        `interface_output` |  list  | Analogous to `interface_input`. However, the variables are different: `['pressure','traction']` for a flow solver and `['displacement']` for a structure solver.                                                                                                                                                                                                                                                 |
+| <nobr>`print_coupling_convergence`</nobr> |  bool  | (optional) Default `false`. If `true` and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see [solver coupling convergence](#solver-coupling-convergence).                                                                                                                                                                        |
+|                                `unsteady` |  bool  | (optional) Default: `true`. Indicates if case is steady or unsteady.                                                                                                                                                                                                                                                                                                                                             |
+|                            `save_restart` |  int   | (optional) Default: 0. Determines the time step interval upon which a pickle file *`case_timestep<time step>.pickle`* is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.                                                                                                                                                                      |
+|                         `time_step_start` |  int   | (optional) Default: 0. Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file *`case_timestep<timestep_start>.pickle`* to start from the corresponding time step. For a steady simulation, the value should be `0`.                                                                                       |
+|                       `working_directory` |  str   | Absolute path to the working directory or relative path with respect to the current directory.                                                                                                                                                                                                                                                                                                                   |
 
 `delta_t` is a necessary parameter, while `timestep_start` and `save_restart` are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.
 
@@ -76,44 +77,44 @@ Finally, this solver also provides a Jacobian of the change in radius with press
 The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the structural solver.
 
-parameter|type|description
----:|:---:|---
-`axial_offset`|double|(optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.
-`d`|double|Nominal diameter of the tube.
-`e`|double|Modulus of elasticity of the tube wall.
-`h`|double|Thickness of the tube wall.
-`inlet_boundary`|dict|Dictionary containing all information with respect to the inlet boundary condition.
-`l`|double|Length of the tube.
-`m`|int|Number of cells for discretization. The values are calculated in the cell centers.
-`newtonmax`|double|Maximum number of Newton-Raphson iterations for the flow solver calculation.
-`newtontol`|double|Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.
-`outlet_boundary`|dict|Dictionary containing all information with respect to the outlet boundary condition.
-`preference`|double|(optional) Default: `0`. Reference pressure and initial pressure.
-`u0`|double|(optional) Default: `ureference`. Initial velocity throughout the tube.
-`ureference`|double|Reference velocity used for determination of pressure stabilization term.
-`rhof`|double|Density of the fluid.
+|         parameter |  type  | description                                                                                      |
+|------------------:|:------:|--------------------------------------------------------------------------------------------------|
+|    `axial_offset` | double | (optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system. |
+|               `d` | double | Nominal diameter of the tube.                                                                    |
+|               `e` | double | Modulus of elasticity of the tube wall.                                                          |
+|               `h` | double | Thickness of the tube wall.                                                                      |
+|  `inlet_boundary` |  dict  | Dictionary containing all information with respect to the inlet boundary condition.              |
+|               `l` | double | Length of the tube.                                                                              |
+|               `m` |  int   | Number of cells for discretization. The values are calculated in the cell centers.               |
+|       `newtonmax` | double | Maximum number of Newton-Raphson iterations for the flow solver calculation.                     |
+|       `newtontol` | double | Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.            |
+| `outlet_boundary` |  dict  | Dictionary containing all information with respect to the outlet boundary condition.             |
+|      `preference` | double | (optional) Default: `0`. Reference pressure and initial pressure.                                |
+|              `u0` | double | (optional) Default: `ureference`. Initial velocity throughout the tube.                          |
+|      `ureference` | double | Reference velocity used for determination of pressure stabilization term.                        |
+|            `rhof` | double | Density of the fluid.                                                                            |
 
-##### Inlet Boundary
+##### Inlet boundary
 
 This section describes all parameters that need to be specified in the dictionary `inlet_boundary`, listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`amplitude`|double|Amplitude of the inlet boundary condition.
-`period`|double|Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type `4`).
-`reference`|double|(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `rhof` * `ureference`^2 / 2.
-`type`|int|Type of inlet boundary condition. <br>If `1`, a sine wave is used with amplitude, reference and period as specified. <br>If `2`, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If `3`, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If `4`, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.
-`variable`|str|Variable upon which the inlet boundary condition is defined, either `'pressure'`, `'velocity'` or `'total pressure'`.
+|   parameter |  type  | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+|------------:|:------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `amplitude` | double | Amplitude of the inlet boundary condition.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+|    `period` | double | Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type `4`).                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `reference` | double | (optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. `ureference`, `preference` or `preference` + `rhof` * `ureference`^2 / 2.                                                                                                                                                                                                                                                                                                                                                                       |
+|      `type` |  int   | Type of inlet boundary condition. <br>If `1`, a sine wave is used with amplitude, reference and period as specified. <br>If `2`, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If `3`, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If `4`, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used. |
+|  `variable` |  str   | Variable upon which the inlet boundary condition is defined, either `'pressure'`, `'velocity'` or `'total pressure'`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-##### Outlet Boundary
+##### Outlet boundary
 
 This section describes all parameters that need to be specified in the dictionary `outlet_boundary`, listed in alphabetical order.
 
-parameter|type|description
----:|:---:|---
-`type`|int|Type of outlet boundary condition. <br>If `1`, a non-reflecting boundary condition is applied. This type cannot be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.
+| parameter | type | description                                                                                                                                                                                                               |
+|----------:|:----:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|    `type` | int  | Type of outlet boundary condition. <br>If `1`, a non-reflecting boundary condition is applied. This type cannot be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied. |
 
-### Tube Ringmodel solver
+### Tube ringmodel solver
 
 This structure solver calculates the deformation of the wall of a straight and flexible tube.
 The `type` for this solver wrapper is `solver_wrappers.python.ring_model_solver`.
@@ -147,16 +148,17 @@ More information about the implementation of this solver can be found in [[2](#2
 The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
-parameter|type|description
----:|:---:|---
-<nobr>`axial_offset`</nobr>|double|(optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.
-`d`|double|Nominal diameter of the tube.
-`e`|double|Modulus of elasticity of the tube wall.
-`h`|double|Thickness of tube wall.
-`l`|double|Length of the tube.
-`m`|int|Number of cells for discretization. The values are calculated in the cell centers.
-`preference`|double|(optional) Default: `0`. Reference pressure.
-`rhof`|double|Density of the fluid.
+|                   parameter |  type  | description                                                                                                                        |
+|----------------------------:|:------:|------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`axial_offset`</nobr> | double | (optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.                                   |
+|                         `d` | double | Nominal diameter of the tube.                                                                                                      |
+|                         `e` | double | Modulus of elasticity of the tube wall.                                                                                            |
+|                         `h` | double | Thickness of tube wall.                                                                                                            |
+|                         `l` | double | Length of the tube.                                                                                                                |
+|                         `m` |  int   | Number of cells for discretization. The values are calculated in the cell centers.                                                 |
+|                `preference` | double | (optional) Default: `0`. Reference pressure.                                                                                       |
+|             `residual_atol` | double | Absolute residual tolerance, only used and required for the [solver coupling convergence](#solver-coupling-convergence) criterion. |
+|                      `rhof` | double | Density of the fluid.                                                                                                              |
 
 ### Tube structure solver
 
@@ -209,7 +211,7 @@ $$
 Typical values are $\gamma$ equal to 1/2 and $\beta$ equal to 1/4.
 
 A different time discretization for flow and structure can lead to difficulties for strongly coupled problems, especially looking at the resulting pressure distributions.
-As most flow solvers are discretized using the backward Euler method, it is advised to chose the same method for the structure solver (the time discretization of `SolverWrapperTubeFlowSolver` is also backward Euler).
+As most flow solvers are discretized using the backward Euler method, it is advised to choose the same method for the structure solver (the time discretization of `SolverWrapperTubeFlowSolver` is also backward Euler).
 This avoids the occurrence of spurious oscillations of the pressure in time [[3](#3)].
 
 Finally, this solver also provides a Jacobian of the change in radius with pressure, which can be used as surrogate Jacobian [[4](#4)].
@@ -219,22 +221,35 @@ Finally, this solver also provides a Jacobian of the change in radius with press
 The following parameters, listed in alphabetical order, need to be specified in the main JSON file or in a file with name *`input_file`*, located in the `working_directory`.
 Care should be taken that the values of `d`, `e`, `h`, `l` and `rhof` match the corresponding values of the flow solver.
 
-parameter|type|description
----:|:---:|---
-`axial_offset`|double|(optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.
-`beta`|double|(optional) Newmark parameter $\beta$. Only required when the Newmark-beta time discretization is used.
-`d`|double|Nominal diameter of the tube.
-`e`|double|Modulus of elasticity of the tube wall.
-`h`|double|Thickness of the tube wall.
-`gamma`|double|(optional) Newmark parameter $\gamma$. Only required when the Newmark-beta time discretization is used.
-`l`|double|Length of the tube.
-`m`|int|Number of cells for discretization. The values are calculated in the cell centers.
-`nu`|double|Poisson's ratio.
-`preference`|double|(optional) Default: `0`. Reference pressure.
-`rhof`|double|Density of the fluid.
-`rhos`|double|Density of the tube wall.
-`solver`|str|(optional) Default: `solve_banded`. Either `solve_banded` or `direct`. Specifies the solution method for the linear system of equations.
-`time_disretization`|str|(optional) Default: `backward Euler`. Specifies the time discretization: either `Newmark` or `backward Euler`. Not case sensitive.
+|            parameter |  type  | description                                                                                                                              |
+|---------------------:|:------:|------------------------------------------------------------------------------------------------------------------------------------------|
+|       `axial_offset` | double | (optional) Default: `0`. Distance over which tube is displaced axially in the coordinate system.                                         |
+|               `beta` | double | (optional) Newmark parameter $\beta$. Only required when the Newmark-beta time discretization is used.                                   |
+|                  `d` | double | Nominal diameter of the tube.                                                                                                            |
+|                  `e` | double | Modulus of elasticity of the tube wall.                                                                                                  |
+|                  `h` | double | Thickness of the tube wall.                                                                                                              |
+|              `gamma` | double | (optional) Newmark parameter $\gamma$. Only required when the Newmark-beta time discretization is used.                                  |
+|                  `l` | double | Length of the tube.                                                                                                                      |
+|                  `m` |  int   | Number of cells for discretization. The values are calculated in the cell centers.                                                       |
+|                 `nu` | double | Poisson's ratio.                                                                                                                         |
+|         `preference` | double | (optional) Default: `0`. Reference pressure.                                                                                             |
+|      `residual_atol` | double | Absolute residual tolerance, only used and required for the [solver coupling convergence](#solver-coupling-convergence) criterion.       |
+|               `rhof` | double | Density of the fluid.                                                                                                                    |
+|               `rhos` | double | Density of the tube wall.                                                                                                                |
+|             `solver` |  str   | (optional) Default: `solve_banded`. Either `solve_banded` or `direct`. Specifies the solution method for the linear system of equations. |
+| `time_disretization` |  str   | (optional) Default: `backward Euler`. Specifies the time discretization: either `Newmark` or `backward Euler`. Not case sensitive.       |
+
+
+### Solver coupling convergence
+
+The convergence criterion [solver coupling convergence](../../convergence_criteria/convergence_criteria.md#solver-coupling-convergence) has been implemented for the Tube Python solvers.
+The Tube Structure solver and the Tube Ringmodel solver are linear, meaning that no solver iterations are performed.
+As a consequence no convergence tolerance is prescribed for these solvers.
+
+However, when coupled with another solver, the initial residual (calculated with an updated right-hand side, but before the solution of their linear system) can still have a non-converged value.
+This is exactly the residual value that is used by the convergence criterion to determine if the coupling has converged.
+Therefore, a solver tolerance `residual_atol` has to be defined for these solvers in case the solver coupling convergence criterion is selected.
+
 
 ## References
 <a id="1">[1]</a> 

@@ -5,10 +5,10 @@ import numpy as np
 
 
 def create(parameters):
-    return Analytical1D(parameters)
+    return ModelAnalytical1D(parameters)
 
 
-class Analytical1D(Component):
+class ModelAnalytical1D(Component):
     provides_get_solution = provides_set_solution = False
 
     def __init__(self, parameters):
@@ -23,7 +23,7 @@ class Analytical1D(Component):
         # add timestep_start and delta_t to solver_models settings
         for solver_model_parameters in self.settings['solver_models']:
             tools.pass_on_parameters(self.settings, solver_model_parameters['settings'],
-                                     ['timestep_start', 'delta_t'])
+                                     ['timestep_start', 'delta_t', 'save_restart'])
 
         # initialization
         self.solver_models = []
@@ -75,17 +75,17 @@ class Analytical1D(Component):
         for solver_model in self.solver_models:
             solver_model.finalize_solution_step()
 
+    def output_solution_step(self):
+        super().output_solution_step()
+
+        for solver_model in self.solver_models:
+            solver_model.output_solution_step()
+
     def get_interface_input(self):
         return self.interface_input.copy()
 
-    def set_interface_input(self):
-        raise Exception('This surrogate interface provides no mapping')
-
     def get_interface_output(self):
         return self.interface_output.copy()
-
-    def set_interface_output(self):
-        raise Exception('This surrogate interface provides no mapping')
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The surrogate model ', self.__class__.__name__, ' has the following solver models:')
@@ -112,6 +112,7 @@ class Analytical1D(Component):
         if self.update_every_iteration:
             self.jit = self.get_inverse_jacobian()
 
+    # noinspection PyMethodMayBeStatic
     def is_ready(self):
         return True
 
@@ -120,7 +121,6 @@ class Analytical1D(Component):
 
         # calculate yt
         self.solver_models[0].solve_solution_step(self.x)
-        self.run_time = self.solver_models[0].run_time
 
         # calculation of Jacobian
         return self.solver_models[0].get_surrogate_jacobian()
@@ -161,3 +161,41 @@ class Analytical1D(Component):
         r_full[1::3] = dr.flatten()
         dr_out.set_interface_data(r_full)
         return dr_out
+
+    def restart(self, restart_data):
+        pass
+
+    def check_restart_data(self, restart_data):
+        pass
+
+    def save_restart_data(self):
+        pass
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time', 'save_time'):
+            time_allocation_sub = time_allocation[time_type] = {'total': 0.0}
+            for i, solver_model in enumerate(self.solver_models):
+                time_allocation_sub[f'solver_wrapper_{i}'] = solver_model.get_time_allocation()[time_type]
+            time_allocation_sub['total'] = sum([s if isinstance(s, float) else s['total']
+                                                for s in time_allocation_sub.values()])
+        return time_allocation
+
+    def print_time_distribution(self, ta, pre, reference=None, last=True):
+        out = ''
+        if reference is None:
+            reference = ta['total']
+        for i, solver in enumerate(self.solver_models):
+            ta_solver = ta[f'solver_wrapper_{i}']
+            conn_char = '└' if i == len(self.solver_models) - 1 and last else '├'
+            if isinstance(ta_solver, float):
+                out += f'{pre}{conn_char}─{solver.__class__.__name__}: {ta_solver:.0f}s ' \
+                       f'({ta_solver / reference * 100:0.1f}%)\n'
+            else:
+                out += f'{pre}├─{solver.__class__.__name__}: {ta_solver["total"]:.0f}s ' \
+                       f'({ta_solver["total"] / reference * 100:0.1f}%)\n'
+                if solver.mapped:
+                    out += f'{pre}{conn_char}  └─{solver.solver_wrapper.__class__.__name__}: ' \
+                           f'{ta_solver["solver_wrapper"]:.0f}s ' \
+                           f'({ta_solver["solver_wrapper"] / reference * 100:0.1f}%)\n'
+        return out

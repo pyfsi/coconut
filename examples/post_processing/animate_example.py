@@ -8,7 +8,7 @@ import pickle
 
 # different cases to be plotted
 common_path = '../../examples/'
-case_paths = ['tube_tube_flow_tube_structure/case_results.pickle']
+case_paths = ['tube/tube_flow_tube_structure/case_results.pickle']
 legend_entries = ['case']
 
 # load cases

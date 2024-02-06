@@ -9,6 +9,7 @@
       "delta_t": 0.0001,
       "omega": 0.01,
       "save_results": 1,
+      "save_restart": -10,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -42,7 +43,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.v41",
+        "type": "solver_wrappers.openfoam.v8",
         "settings": {
           "working_directory": "CFD",
           "application": "coconut_pimpleFoam",
@@ -81,7 +82,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.v614",
+            "type": "solver_wrappers.abaqus.v2022",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,

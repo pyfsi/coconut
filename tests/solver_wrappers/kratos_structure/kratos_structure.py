@@ -9,7 +9,7 @@ from shutil import copytree, rmtree
 
 
 class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
-    version_label = None
+    version_label = None  # KratosMultiphysics version without dot, e.g. 91, set in subclass
 
     @classmethod
     def setUpClass(cls):
@@ -28,7 +28,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
 
         self.parameters['settings']['working_directory'] = relpath(self.working_dir)
 
-        self.mp_out_name = self.parameters['settings']['interface_output'][0]['model_part']
+        self.mp_in_name = self.parameters['settings']['interface_input'][0]['model_part']
 
     @classmethod
     def tearDownClass(cls):
@@ -38,7 +38,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
     def test_apply_load(self):
         solver = create_instance(self.parameters)
         solver.initialize()
-        self.mp_out = solver.model.get_model_part(self.mp_out_name)
+        self.mp_in = solver.model.get_model_part(self.mp_in_name)
 
         load_interface = solver.get_interface_input()
 
@@ -67,6 +67,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         load_interface.set_interface_data(load_data_3)
         output_3 = solver.solve_solution_step(load_interface).copy()
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         # obtain the  data and compare
@@ -80,12 +81,11 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         np.testing.assert_allclose(a1, a3, rtol=0, atol=1e-10)
         self.assertRaises(AssertionError, np.testing.assert_allclose, a1, a2, rtol=0, atol=1e-10)
 
-    # restart only works for membrane elements among planar elements (v60, v70)
     def test_restart(self):
         self.parameters['settings']['save_restart'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
-        self.mp_out = solver.model.get_model_part(self.mp_out_name)
+        self.mp_in = solver.model.get_model_part(self.mp_in_name)
         load_interface = solver.get_interface_input()
 
         initial_pressure = 10
@@ -96,13 +96,14 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         traction_z = 0.0
         traction = np.array([traction_x, traction_y, traction_z])
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             load = self.get_uniform_load_data(pressure * i, traction * i)
             load_interface.set_interface_data(load)
             solver.initialize_solution_step()
             solver.solve_solution_step(load_interface).copy()
             solver.finalize_solution_step()
+            solver.output_solution_step()
 
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
@@ -121,6 +122,7 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(load_interface).copy()
             solver.finalize_solution_step()
+            solver.output_solution_step()
 
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
@@ -141,20 +143,15 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         np.testing.assert_allclose(out_data / max_value, out_data_restart / max_value, rtol=0, atol=1e-10)
 
     def get_uniform_load_data(self, pressure, traction):
-        load = []
-        for i in range(0, self.mp_out.size):
-            load.append(pressure)
-        for i in range(0, self.mp_out.size):
-            load += traction.tolist()
-
+        load = self.mp_in.size * [pressure] + self.mp_in.size * traction.tolist()
         return np.array(load)
 
-    def get_non_uniform_load(self, pressure, traction):
+    def get_non_uniform_load_data(self, pressure, traction):
         l0 = 0.05
-        pressure_data = pressure * np.sin(2 * np.pi / l0 * self.mp_out.x0)
-        traction_x = traction[0] * np.sin(2 * np.pi / l0 * self.mp_out.x0)
-        traction_y = traction[1] * np.sin(2 * np.pi / l0 * self.mp_out.x0)
-        traction_z = traction[2] * np.sin(2 * np.pi / l0 * self.mp_out.x0)
+        pressure_data = pressure * np.sin(2 * np.pi / l0 * self.mp_in.x0)
+        traction_x = traction[0] * np.sin(2 * np.pi / l0 * self.mp_in.x0)
+        traction_y = traction[1] * np.sin(2 * np.pi / l0 * self.mp_in.x0)
+        traction_z = traction[2] * np.sin(2 * np.pi / l0 * self.mp_in.x0)
         traction_data = np.column_stack((traction_x, traction_y, traction_z))
         traction_data = np.ravel(traction_data)
 
@@ -173,3 +170,47 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         traction_z = np.array(df_tr['traction_z'])
         traction = np.ravel(np.column_stack((traction_x, traction_y, traction_z)))
         return np.concatenate((pressure, traction))
+
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # adapt parameters, create solver
+        solver = create_instance(self.parameters)
+        solver.check_coupling_convergence = True
+        solver.initialize()
+        self.mp_in = solver.model.get_model_part(self.mp_in_name)
+        interface_input = solver.get_interface_input()
+
+        # set pressure and traction
+        initial_pressure = 100
+
+        pressure = initial_pressure
+        traction_x = 0.3  # set traction values to zero for faster testing
+        traction_y = 0.2
+        traction_z = 0.1
+        traction = np.array([traction_x, traction_y, traction_z])
+        load_data = self.get_non_uniform_load_data(pressure, traction)
+
+        solver.initialize_solution_step()
+
+        # first coupling iteration
+        interface_input.set_interface_data(load_data)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_interface_data(load_data * 2)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_interface_data(load_data * 2)
+        solver.solve_solution_step(interface_input)
+
+        self.assertTrue(solver.coupling_convergence)
+
+        solver.output_solution_step()
+        solver.finalize_solution_step()
+        solver.finalize()

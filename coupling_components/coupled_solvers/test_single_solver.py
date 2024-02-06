@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut import tools
 from coconut.coupling_components.component import Component
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 import time
 import os
@@ -12,7 +12,7 @@ def create(parameters):
     return CoupledSolverTestSingleSolver(parameters)
 
 
-class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
+class CoupledSolverTestSingleSolver(CoupledSolver):
 
     def __init__(self, parameters):
         """Should only initialize the solver that is to be tested"""
@@ -36,6 +36,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.settings['save_restart'] = 0  # in order to pass on default value
         self.save_restart = 0  # no restart files are saved
         self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.delta_t = self.settings['delta_t']
         tools.print_info(f'Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}')
 
@@ -49,15 +50,6 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         if parameters['type'] == 'solver_wrappers.mapped':
             parameters = parameters['settings']['solver_wrapper']  # for mapped solver: the solver_wrapper itself tested
         settings = parameters['settings']
-
-        orig_wd = settings['working_directory']  # working directory changed to a test_working_directory
-        i = 0
-        while os.path.exists(f'{orig_wd}_test{i}'):
-            i += 1
-        cur_wd = f'{orig_wd}_test{i}'
-        settings['working_directory'] = cur_wd
-        os.system(f'cp -r {orig_wd} {cur_wd}')
-        tools.print_info(f'{cur_wd} is the working_directory for the test\nCopying {orig_wd} to {cur_wd} \n')
 
         # add delta_t and timestep_start to solver_wrapper settings
         tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t', 'save_restart'])
@@ -76,6 +68,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
         self.start_run_time = None
         self.run_time = None
         self.run_time_previous = 0
+        self.time_allocation = {'previous_calculations': []}
         self.iterations = []
 
         # save results variables
@@ -85,7 +78,7 @@ class CoupledSolverTestSingleSolver(CoupledSolverGaussSeidel):
             self.residual = []
             self.info = None
             self.case_name = self.settings.get('case_name', 'case')  # case name
-            self.case_name += '_' + cur_wd
+            self.case_name += '_' + settings['working_directory']  # add working directory to pickle file name
 
         if self.settings.get('debug', False):
             tools.print_info(f'{self.__class__.__name__} has no debug mode: '

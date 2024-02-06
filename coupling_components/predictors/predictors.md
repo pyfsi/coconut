@@ -5,7 +5,7 @@ A predictor is used to determine the initial guess in each time step by extrapol
 The predictors differ in the number of previous time steps they take into account and the polynomial degree that is used.
 Additionally, there is one special type that uses a surrogate model.
 The formulas in this document, use the index $n$ to refer to the time step, where $n+1$ is the current time step, i.e. the time step for which the initial guess is made.
-The vector $x$ is the input for the first solver, conform the [coupled solvers documentation](../coupled_solvers/coupled_solvers.md).
+The vector $x$ is the input for the first solver, conform the [coupled solvers' documentation](../coupled_solvers/coupled_solvers.md).
 
 A predictor is intialized in the coupled solver using an initial solution as determined by the coupled solver.
 As such, there is at least one previous solution available.
@@ -64,7 +64,7 @@ The `type` for this predictor is `predictors.surrogate`.
 
 The following parameters may be included in the `settings` dictionary.
 
-This predictor requires that a `surrogate` model is used in the coupled solver [`CoupledSolverIQNISM`](../coupled_solvers.md#iqnism) (defined in the settings of the coupled solver).
+This predictor requires that a `surrogate` model is used in the coupled solver [`CoupledSolverIQNISM`](../coupled_solvers/coupled_solvers.md#iqnism) (defined in the settings of the coupled solver).
 Moreover, this `surrogate` model must provide a surrogate solution, which is used to update the values in this predictor.
 
 There are two options available:
@@ -74,6 +74,22 @@ There are two options available:
 
 The following parameters need to be included in the `settings` dictionary.
 
-parameter|type|description
----:|:---:|---
-<nobr>`predict_change`</nobr>|dict|(optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly.
+|                     parameter | type | description                                                                                                                                                 |
+|------------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <nobr>`predict_change`</nobr> | dict | (optional) Default: `true`. Indicates it the change in surrogate solution should be used. If `false`, the surrogate solution serves as prediction directly. |
+
+## Restart
+
+Upon restart, the predictor may be changed.
+When changing an extrapolator (Constant, Linear, Quadratic, Legacy and Cubic) to a higher order, the first extrapolation will still be of the original order, but the order will increase with each time step until the new order is reached,
+just like at the start of a simulation.
+Changing to a lower order has direct effect.
+
+No information is transferred when switching from or to a [surrogate predictor](#surrogate).
+
+## Dummy predictor
+
+This dummy predictor can be used in the [one-way](../coupled_solvers/coupled_solvers.md#one-way) coupled solvers, which doesn't require a predictor.
+
+If the use of a dummy predictor is allowed, the `type` (`convergence_criteria.dummy_convergence_criterion`) can be written explicitly or omitted. No `settings` are required.
+Note that the key `predictor` is still required.

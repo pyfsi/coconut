@@ -1,5 +1,5 @@
 from coconut.tools import create_instance
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 
@@ -7,11 +7,14 @@ def create(parameters):
     return SolverWrapperMapped(parameters)
 
 
-class SolverWrapperMapped(Component):
+class SolverWrapperMapped(SolverWrapper):
+    mapped = True
+
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
+        # read parameters
         self.parameters = parameters
         self.settings = parameters['settings']
 
@@ -19,6 +22,10 @@ class SolverWrapperMapped(Component):
         tools.pass_on_parameters(self.settings, self.settings['solver_wrapper']['settings'],
                                  ['timestep_start', 'delta_t', 'save_restart'])
         self.solver_wrapper = create_instance(self.settings['solver_wrapper'])
+
+        # check coupling convergence
+        self.check_coupling_convergence_possible = self.solver_wrapper.__class__.check_coupling_convergence_possible
+        self.check_coupling_convergence = False
 
         # create mappers
         self.mapper_interface_input = create_instance(self.settings['mapper_interface_input'])
@@ -28,13 +35,12 @@ class SolverWrapperMapped(Component):
         self.interface_input_to = None
         self.interface_output_to = None
 
-        # time
-        self.init_time = 0.0
-        self.run_time = 0.0
-
     @tools.time_initialize
     def initialize(self, interface_input_from, interface_output_to):
         super().initialize()
+
+        # check coupling convergence
+        self.solver_wrapper.check_coupling_convergence = self.check_coupling_convergence
 
         self.solver_wrapper.initialize()
 
@@ -66,6 +72,14 @@ class SolverWrapperMapped(Component):
 
         self.solver_wrapper.finalize_solution_step()
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
+        self.solver_wrapper.output_solution_step()
+        self.mapper_interface_input.output_solution_step()
+        self.mapper_interface_output.output_solution_step()
+
     def finalize(self):
         super().finalize()
 
@@ -73,12 +87,9 @@ class SolverWrapperMapped(Component):
         self.mapper_interface_input.finalize()
         self.mapper_interface_output.finalize()
 
-    def output_solution_step(self):
-        super().output_solution_step()
-
-        self.solver_wrapper.output_solution_step()
-        self.mapper_interface_input.output_solution_step()
-        self.mapper_interface_output.output_solution_step()
+    @property
+    def coupling_convergence(self):
+        return self.solver_wrapper.coupling_convergence
 
     def get_interface_input(self):
         # does not contain most recent data
@@ -88,6 +99,17 @@ class SolverWrapperMapped(Component):
         interface_output_from = self.solver_wrapper.get_interface_output()
         self.mapper_interface_output(interface_output_from, self.interface_output_to)
         return self.interface_output_to.copy()
+
+    def get_time_allocation(self):
+        time_allocation = {}
+        for time_type in ('init_time', 'run_time', 'save_time'):
+            total_time = self.__getattribute__(time_type)
+            solver_wrapper_time = self.solver_wrapper.get_time_allocation()[time_type]
+            mapper_time = total_time - (
+                solver_wrapper_time['total'] if isinstance(solver_wrapper_time, dict) else solver_wrapper_time)
+            time_allocation[time_type] = {'total': total_time, 'mapper': mapper_time,
+                                          'solver_wrapper': solver_wrapper_time}
+        return time_allocation
 
     def print_components_info(self, pre):
         tools.print_info(pre, 'The component ', self.__class__.__name__, ' maps the following solver wrapper:')

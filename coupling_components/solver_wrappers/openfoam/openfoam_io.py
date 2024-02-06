@@ -5,11 +5,11 @@ from collections import OrderedDict
 
 float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
 int_pattern = r'[+-]?\d+'
-delimter = r'[\s\n]+'
+delimiter = r'[\s\n]+'
 
 
 def get_float(input_string, keyword):
-    result = re.search(keyword + delimter + r'(?P<value>' + float_pattern + r')', input_string)
+    result = re.search(keyword + delimiter + r'(?P<value>' + float_pattern + r')', input_string)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
 
@@ -18,7 +18,7 @@ def get_float(input_string, keyword):
 
 
 def get_int(input_string, keyword):
-    result = re.search(keyword + delimter + r'(?P<value>' + int_pattern + r')', input_string)
+    result = re.search(keyword + delimiter + r'(?P<value>' + int_pattern + r')', input_string)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
 
@@ -27,7 +27,7 @@ def get_int(input_string, keyword):
 
 
 def get_string(input_string, keyword):
-    result = re.search(keyword + delimter + r'(?P<value>' + r'\w+' + r')', input_string)
+    result = re.search(keyword + delimiter + r'(?P<value>' + r'\w+' + r')', input_string)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
 
@@ -36,21 +36,35 @@ def get_string(input_string, keyword):
 
 
 def get_dict(input_string, keyword):
-    result = re.search(keyword + delimter + r'\{.*?\}', input_string, flags=re.S)
+    result = re.search(keyword + delimiter + r'\{.*?\}', input_string, flags=re.S)
     if result is None:
         raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
     else:
         return result.group()
 
 
+def get_nested_dict(input_string, keyword):
+    result = re.search(keyword + delimiter + r'\{', input_string, flags=re.S)
+    if result is None:
+        raise RuntimeError(f'keyword not found: {keyword} in \n{input_string}')
+    out = result.group()
+    level = 0
+    for char in input_string[result.end():]:
+        level = level + (char == '{') - (char == '}')
+        out += char
+        if level < 0:
+            break
+    return out
+
+
 def get_vector_array(input_string, is_int=False):
     if is_int:
         pattern = re.compile(
-            r'\(' + r'[\s\n]*' + int_pattern + delimter + int_pattern + delimter + int_pattern + r'[\s\n]*\)',
+            r'\(' + r'[\s\n]*' + int_pattern + delimiter + int_pattern + delimiter + int_pattern + r'[\s\n]*\)',
             flags=re.S)
     else:
         pattern = re.compile(
-            r'\(' + r'[\s\n]*' + float_pattern + delimter + float_pattern + delimter + float_pattern + r'[\s\n]*\)',
+            r'\(' + r'[\s\n]*' + float_pattern + delimiter + float_pattern + delimiter + float_pattern + r'[\s\n]*\)',
             flags=re.S)
     data_list = re.findall(pattern, input_string)
     data = np.empty(shape=(len(data_list), 3))
@@ -58,10 +72,10 @@ def get_vector_array(input_string, is_int=False):
 
     if is_int:
         for i, elem in enumerate(data_list):
-            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=np.int)
+            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=int)
     else:
         for i, elem in enumerate(data_list):
-            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=np.float)
+            data[i, :] = np.array(re.search(pattern, elem).group(1).strip().split(), dtype=float)
 
     return data
 
@@ -70,16 +84,16 @@ def get_vector_array_from_dict(dict_string, size=None, is_int=False):
     # keyword = 'value'+r'\s+\n*'+r'nonuniform List\<vector\>'
     keyword = 'value'
     result_non_uniform = re.search(
-        keyword + delimter + 'nonuniform List<vector>' + delimter + r'\d*' + r'(.*)', dict_string, re.S)
-    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'\((.*)\)', dict_string)
+        keyword + delimiter + 'nonuniform List<vector>' + delimiter + r'\d*' + r'(.*)', dict_string, re.S)
+    result_uniform = re.search(keyword + delimiter + r'uniform' + delimiter + r'\((.*)\)', dict_string)
     if not result_non_uniform is None:
         return get_vector_array(input_string=result_non_uniform.group(1), is_int=is_int)
     elif not (result_uniform is None or size is None):
         value_list = result_uniform.group(1).strip().split()
         if is_int:
-            return np.full((size, len(value_list)), value_list, dtype=np.int)
+            return np.full((size, len(value_list)), value_list, dtype=int)
         else:
-            return np.full((size, len(value_list)), value_list, dtype=np.float)
+            return np.full((size, len(value_list)), value_list, dtype=float)
     else:
         raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 
@@ -87,8 +101,8 @@ def get_vector_array_from_dict(dict_string, size=None, is_int=False):
 def update_vector_array_dict(dict_string, vector_array):
     keyword = 'value'
     result_non_uniform = re.search(
-        keyword + delimter + 'nonuniform List<vector>' + delimter + r'(\d*' + r'\(.*\))', dict_string, re.S)
-    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'(\(.*\))', dict_string)
+        keyword + delimiter + 'nonuniform List<vector>' + delimiter + r'(\d*' + r'\(.*\))', dict_string, re.S)
+    result_uniform = re.search(keyword + delimiter + r'uniform' + delimiter + r'(\(.*\))', dict_string)
     size = vector_array.shape[0]
     replace_string = '\n' + str(size) + '\n' + np.array2string(vector_array, separator=' ', threshold=1e15,
                                                                precision=15).replace('[', '(').replace(
@@ -110,24 +124,24 @@ def get_scalar_array(input_string, is_int=False):
     scalar_string = re.search(r'\((.*)\)', input_string, re.S).group(1)
     data_list = scalar_string.split()
     if is_int:
-        return np.array(data_list, dtype=np.int)
+        return np.array(data_list, dtype=int)
     else:
-        return np.array(data_list, dtype=np.float)
+        return np.array(data_list, dtype=float)
 
 
 def get_scalar_array_from_dict(dict_string, size=None, is_int=False):
     keyword = 'value'
     result_non_uniform = re.search(
-        keyword + delimter + 'nonuniform List<scalar>' + delimter + r'\d*' + r'(.*)', dict_string, re.S)
-    result_uniform = re.search(keyword + delimter + r'uniform' + delimter + r'(' + float_pattern + r')', dict_string)
+        keyword + delimiter + 'nonuniform List<scalar>' + delimiter + r'\d*' + r'(.*)', dict_string, re.S)
+    result_uniform = re.search(keyword + delimiter + r'uniform' + delimiter + r'(' + float_pattern + r')', dict_string)
     if not result_non_uniform is None:
         return get_scalar_array(input_string=result_non_uniform.group(1), is_int=is_int)
     elif not (result_uniform is None or size is None):
         value = result_uniform.group(1)
         if is_int:
-            return np.full(size, value, dtype=np.int)
+            return np.full(size, value, dtype=int)
         else:
-            return np.full(size, value, dtype=np.float)
+            return np.full(size, value, dtype=float)
     else:
         raise RuntimeError(f'keyword not found: {keyword} in \n{dict_string}')
 

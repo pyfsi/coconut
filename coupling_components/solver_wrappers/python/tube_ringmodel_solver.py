@@ -1,4 +1,4 @@
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 from coconut.data_structure import Model, Interface
 
@@ -11,10 +11,12 @@ def create(parameters):
     return SolverWrapperTubeRingmodel(parameters)
 
 
-class SolverWrapperTubeRingmodel(Component):
+class SolverWrapperTubeRingmodel(SolverWrapper):
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
+
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # reading
         self.parameters = parameters
@@ -50,6 +52,8 @@ class SolverWrapperTubeRingmodel(Component):
         self.k = 0  # iteration
         self.n = 0  # time step
 
+        self.residual_atol = self.settings.get('residual_atol')  # absolute residual tolerance for coupling convergence
+
         # initialization
         self.areference = np.pi * d ** 2 / 4  # reference area of cross section
         self.p = np.zeros(self.m) * self.preference  # kinematic pressure
@@ -76,17 +80,15 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_output = Interface(self.settings['interface_output'], self.model)
         self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.disp)
 
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save input and output of each iteration of every time step
         self.output_solution_step()
 
     @tools.time_initialize
     def initialize(self):
         super().initialize()
+
+        if self.check_coupling_convergence and self.residual_atol is None:
+            raise ValueError(f'To check the coupling convergence with {self.__class__.__name__},'
+                             f' the parameter "residual_atol" needs to be specified')
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -100,6 +102,14 @@ class SolverWrapperTubeRingmodel(Component):
         self.interface_input = interface_input.copy()
         self.p = interface_input.get_variable_data(self.input_model_part_name,
                                                    'pressure').flatten() / self.rhof  # kinematic pressure
+
+        # coupling convergence
+        if self.check_coupling_convergence:
+            residual = np.linalg.norm(self.a - self.areference * (2 / (2 + (self.preference - self.p) / self.c02)) ** 2)
+            if residual < self.residual_atol:
+                self.coupling_convergence = True
+                if self.print_coupling_convergence:
+                    tools.print_info(f'{self.__class__.__name__} converged')
 
         # independent rings model
         for i in range(len(self.p)):
@@ -131,10 +141,10 @@ class SolverWrapperTubeRingmodel(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.debug:
             file_name = join(self.working_directory, f'area_ts{self.n}.txt')
             with open(file_name, 'w') as file:
@@ -142,8 +152,5 @@ class SolverWrapperTubeRingmodel(Component):
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{self.a[i]:<22}\n')
 
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
+    def finalize(self):
+        super().finalize()

@@ -17,23 +17,24 @@ class ModelMVMF(Component):
         self.min_significant = self.settings.get('min_significant', 0)
         self.q = self.settings['q']
 
-        self.size_in = None
-        self.size_out = None
-        self.out = None  # interface of output
+        self.size_in = None  # set by coupled solver
+        self.size_out = None  # set by coupled solver
+        self.out = None  # interface of output, set by coupled solver
         self.added = False
         self.rref = None
         self.xtref = None
         self.v = None
         self.w = None
-        self.wprev = []
-        self.rrprev = []
-        self.qqprev = []
+        self.wprev = None
+        self.rrprev = None
+        self.qqprev = None
 
     def initialize(self):
         super().initialize()
 
-        self.v = np.empty((self.size_in, 0))
-        self.w = np.empty((self.size_out, 0))
+        self.wprev = []
+        self.rrprev = []
+        self.qqprev = []
 
     def filter(self):
         if self.v.shape[1] == 0:
@@ -46,7 +47,7 @@ class ModelMVMF(Component):
             m = min(abs(diag))
             if m < self.min_significant:
                 i = np.argmin(abs(diag))
-                tools.print_info(f'Removing column {i}: {m} < minsignificant', layout='warning')
+                tools.print_info(f'Removing column {i}: {m} < minsignificant', layout='info')
                 self.v = np.delete(self.v, i, 1)
                 self.w = np.delete(self.w, i, 1)
             else:
@@ -58,6 +59,8 @@ class ModelMVMF(Component):
 
     def predict(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
+        if self.v.shape[1] > 1:
+            self.filter()
         if modes == 0:
             tools.print_info("Jacobian of model MVMF disabled: zero returned", layout='warning')
             return dr_in * 0
@@ -102,7 +105,6 @@ class ModelMVMF(Component):
             # update V and W matrices
             self.v = np.hstack((dr, self.v))
             self.w = np.hstack((dxt, self.w))
-            self.filter()
         else:
             self.added = True
         self.rref = r
@@ -120,6 +122,12 @@ class ModelMVMF(Component):
         self.w = np.empty((self.size_out, 0))
         self.added = False
 
+        # limit number of time steps reused to q
+        while len(self.wprev) > max(self.q, 1):  # for q = 0, there is one item: an empty array
+            self.wprev.pop()
+            self.rrprev.pop()
+            self.qqprev.pop()
+
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
@@ -127,11 +135,6 @@ class ModelMVMF(Component):
         qq, rr = np.linalg.qr(self.v, mode='reduced')
         self.rrprev = [rr] + self.rrprev
         self.qqprev = [qq] + self.qqprev
-        # limit number of timesteps reused to q
-        if len(self.wprev) > self.q:
-            self.wprev.pop()
-            self.rrprev.pop()
-            self.qqprev.pop()
 
     def filter_q(self, dr_in, modes=None):
         dr = dr_in.get_interface_data().reshape(-1, 1)
@@ -147,3 +150,21 @@ class ModelMVMF(Component):
             tools.print_info(f'Mode limiting not possible for MVMF model', layout='warning')
         dr_out.set_interface_data(dr.flatten())
         return dr_out
+
+    def restart(self, restart_data):
+        if self.q != 0:
+            self.wprev = restart_data['wprev']
+            self.rrprev = restart_data['rrprev']
+            self.qqprev = restart_data['qqprev']
+
+    def check_restart_data(self, restart_data):
+        model_type = restart_data['type']
+        for key in ['min_significant', 'q']:
+            new_value = self.settings.get(key)
+            old_value = restart_data['settings'].get(key)
+            if new_value != old_value:
+                tools.print_info(f'"{model_type}" parameter "{key}" changed from {old_value} to {new_value}',
+                                 layout='blue')
+
+    def save_restart_data(self):
+        return {'settings': self.settings, 'wprev': self.wprev, 'rrprev': self.rrprev, 'qqprev': self.qqprev}

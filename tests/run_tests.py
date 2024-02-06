@@ -30,7 +30,8 @@ def generate_test_suite(keys, all_tests):
         elif key == '-fast':
             test_suite.addTests(generate_test_suite(['tests.convergence_criteria', 'tests.coupled_solvers',
                                                      'tests.data_structure', 'tests.mappers', 'tests.predictors',
-                                                     'tests.solver_wrappers.python'], all_tests))
+                                                     'tests.solver_wrappers.python', 'tests.solver_wrappers.combined'],
+                                                    all_tests))
         else:
             for test in all_tests:
                 test_suite.addTests(key_in_test(key, test))

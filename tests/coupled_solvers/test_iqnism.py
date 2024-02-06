@@ -37,6 +37,19 @@ class TestCoupledSolverIQNISM(coupled_solver.TestCoupledSolver):
             remove_recursively(key, self.parameters['settings']['model'])
             remove_recursively(key, self.parameters['settings']['surrogate'])
 
+    def set_new_values(self):
+        self.omega_new = 0.1
+        self.surrogate_modes_new = 5
+        self.surrogate_synchronize_new = False
+        self.settings['omega'] = self.omega_new
+        self.settings['surrogate_modes'] = self.surrogate_modes_new
+        self.settings['surrogate_synchronize'] = self.surrogate_synchronize_new
+
+    def check_new_values(self, coupled_solver):
+        self.assertEqual(coupled_solver.omega, self.omega_new)
+        self.assertEqual(coupled_solver.surrogate_modes, self.surrogate_modes_new)
+        self.assertEqual(coupled_solver.surrogate_synchronize, self.surrogate_synchronize_new)
+
 
 if __name__ == '__main__':
     unittest.main()

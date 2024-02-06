@@ -1,11 +1,11 @@
-from coconut.coupling_components.coupled_solvers.gauss_seidel import CoupledSolverGaussSeidel
+from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
 
 
 def create(parameters):
     return CoupledSolverRelaxation(parameters)
 
 
-class CoupledSolverRelaxation(CoupledSolverGaussSeidel):
+class CoupledSolverRelaxation(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 
@@ -26,3 +26,6 @@ class CoupledSolverRelaxation(CoupledSolverGaussSeidel):
             xt = self.solver_wrappers[1].solve_solution_step(self.y.copy()).copy()
             r = xt - self.x
             self.finalize_iteration(r)
+
+    def check_restart_data(self, restart_data, coupled_solver_settings=None):
+        super().check_restart_data(restart_data, ['omega'])
