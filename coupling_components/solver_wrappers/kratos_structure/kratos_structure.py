@@ -15,7 +15,8 @@ def create(parameters):
 
 
 class SolverWrapperKratosStructure(SolverWrapper):
-    version = None  # KratosMultiphysics version, set in sub-class, for version 9.1 f. ex.: '91'
+    version = None  # KratosMultiphysics version, set in subclass, for version 9.1 f. ex.: '91'
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -50,9 +51,6 @@ class SolverWrapperKratosStructure(SolverWrapper):
 
         if self.residual_variables is not None:
             self.write_residuals_fileheader()
-
-        # coupling convergence
-        self.coupling_convergence = False
 
     @tools.time_initialize
     def initialize(self):
@@ -101,11 +99,23 @@ class SolverWrapperKratosStructure(SolverWrapper):
         self.write_input_data()
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
+
+        if self.check_coupling_convergence:
+            # check if Kratos converged after one iteration
+            self.coupling_convergence = self.coco_messages.check_message('solver_converged')
+            if self.print_coupling_convergence and self.coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
+
         self.update_interface_output()
         return self.get_interface_output()
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         self.coco_messages.send_message('save')
         self.coco_messages.wait_message('save_ready')
         if self.residual_variables is not None:
@@ -113,6 +123,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
 
     def finalize(self):
         super().finalize()
+
         self.coco_messages.send_message('stop')
         self.coco_messages.wait_message('stop_ready')
         self.coco_messages.remove_all_messages()
@@ -159,7 +170,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
                 shutil.copy(file_path, file_path[:-4] + f'_ts{self.timestep}_it{self.iteration}.csv')
 
     def update_kratos_parameter_file(self, input_file_name):
-        raise NotImplementedError('Base class method is called, should be implemented in sub-class')
+        raise NotImplementedError('Base class method is called, should be implemented in subclass')
 
     def check_software(self):
         with open('check_software.py', 'w') as f:
@@ -220,4 +231,4 @@ class SolverWrapperKratosStructure(SolverWrapper):
             f.write(header.strip(sep) + '\n')
 
     def write_residuals(self):
-        raise NotImplementedError('Base class method is called, should be implemented in sub-class')
+        raise NotImplementedError('Base class method is called, should be implemented in subclass')

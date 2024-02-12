@@ -45,7 +45,7 @@ When setting up the case, the mesh is build based on the file *`mesh.jou`* using
 The displacements are applied in the nodes, of which there are 101. 
 In contrast, the loads (pressure and traction) are calculated in the cell centers, of which there are 100.
 The axial direction is along the x-axis, the radial direction along the y-axis. 
-The setup script runs Fluent with the *`case.jou`* journal file to setup the case parameters, starting from the mesh file *`mesh_tube2d.msh`*.
+The setup script runs Fluent with the *`case.jou`* journal file to set up the case parameters, starting from the mesh file *`mesh_tube2d.msh`*.
 This case is written to the *`case_tube2d.cas`* file, which serves as input for CoCoNuT. 
 Additionally, a folder *`create_mesh`* is provided containing a script to create the mesh in Gambit using a journal file.
 The mesh can be created by running the script *`create_mesh.sh`*, given that Gambit v2.4.6 is available.

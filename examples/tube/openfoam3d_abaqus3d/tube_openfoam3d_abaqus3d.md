@@ -23,14 +23,14 @@ When either criterion is satisfied the simulation stops.
 ## Solvers
 
 The flow solver is OpenFoam, used to solve a fully 3D tube,
-with 48 cells on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 48 cells on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 When setting up the case, the mesh is build based on the file *`blockMeshDict`*.
 The displacements are applied in the nodes. In contrast, the loads (pressure and traction) are calculated in the cell centers.
 The axial direction is along the x-axis.
 When setting up the case using the *`setup.sh`* script, the solver `coconut_pimpleFoam` is compiled automatically.
 
 The structure solver is Abaqus, used to solve a fully 3D tube,
-with 12 elements on the fluid-structure interface in the length-wise direction and 8 in the circumferential direction.
+with 12 elements on the fluid-structure interface in the length direction and 8 in the circumferential direction.
 The Abaqus case is built when setting up the case starting from the file *`mesh_tube3d.inp`* containing nodes and elements. 
 This is done by running Abaqus with the *`make_inp.py`* Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
 The result of the setup is a completed input file *`case_tube3d.inp`*.

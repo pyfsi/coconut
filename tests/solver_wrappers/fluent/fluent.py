@@ -11,7 +11,7 @@ import shutil
 
 
 class TestSolverWrapperFluentTube2D(unittest.TestCase):
-    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version = 'xxxxRx'  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     setup_case = True
 
     @classmethod
@@ -33,6 +33,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
         self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.mp_name_in = 'beamoutside_nodes'
         self.mp_name_out = 'beamoutside_faces'
 
@@ -68,6 +69,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         solver.initialize_solution_step()
         solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
+        solver.output_solution_step()
         coord_data = solver.get_coordinates()
         solver.finalize()
 
@@ -80,7 +82,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
         # create two solvers with different partitioning
         x0, y0, z0, ids = [], [], [], []
-        for cores in [0, 1]:
+        for cores in [1, max(2, min(4, multiprocessing.cpu_count()))]:
             self.parameters['settings']['cores'] = cores
             solver = create_instance(self.parameters)
             solver.initialize()
@@ -98,18 +100,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
     def test_pressure_traction(self):
         # test if same coordinates always give same pressure & traction
 
-        # adapt parameters, create solver
-        max_cores = multiprocessing.cpu_count()  # max available cores
-        # fix cores based on available cores
-        if max_cores >= 8:
-            cores = 8
-        elif max_cores >= 4:
-            cores = 4
-        elif max_cores >= 2:
-            cores = 2
-        else:
-            cores = 1
-        self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
@@ -131,6 +122,7 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
             pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
             traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         # check if same position gives same pressure & traction
@@ -161,12 +153,13 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
         displacement[:, 1] = self.get_dy(x0)
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
         coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -177,18 +170,19 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, 4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -211,9 +205,49 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
 
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 1
+        self.parameters['settings']['flow_iterations'] = 100
+        solver = create_instance(self.parameters)
+        solver.check_coupling_convergence = True
+        solver.initialize()
+        interface_input = solver.get_interface_input()
+
+        # set displacement
+        x0 = interface_input.get_model_part(self.mp_name_in).x0
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = self.get_dy(x0)
+
+        solver.initialize_solution_step()
+
+        # first coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertTrue(solver.coupling_convergence)
+
+        solver.output_solution_step()
+        solver.finalize_solution_step()
+        solver.finalize()
+
 
 class TestSolverWrapperFluentTube3D(unittest.TestCase):
-    version = 'xxxxRx'  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
+    version = 'xxxxRx'  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     setup_case = True
 
     @classmethod
@@ -235,6 +269,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         with open(self.file_name) as parameter_file:
             self.parameters = json.load(parameter_file)
         self.parameters['settings']['working_directory'] = os.path.relpath(self.working_dir)  # set working directory
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.mp_name_in = 'wall_nodes'
         self.mp_name_out = 'wall_faces'
 
@@ -275,6 +310,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         solver.initialize_solution_step()
         solver.solve_solution_step(interface_input)
         solver.finalize_solution_step()
+        solver.output_solution_step()
         coord_data = solver.get_coordinates()
         solver.finalize()
 
@@ -289,7 +325,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
         # create two solvers with different partitioning
         x0, y0, z0, ids = [], [], [], []
-        for cores in [0, 1]:
+        for cores in [1, max(2, min(4, multiprocessing.cpu_count()))]:
             self.parameters['settings']['cores'] = cores
             solver = create_instance(self.parameters)
             solver.initialize()
@@ -307,18 +343,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
     def test_pressure_traction(self):
         # test if same coordinates always give same pressure & traction
 
-        # adapt parameters, create solver
-        max_cores = multiprocessing.cpu_count()  # max available cores
-        # fix cores based on available cores
-        if max_cores >= 8:
-            cores = 8
-        elif max_cores >= 4:
-            cores = 4
-        elif max_cores >= 2:
-            cores = 2
-        else:
-            cores = 1
-        self.parameters['settings']['cores'] = cores
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         self.parameters['settings']['flow_iterations'] = 500
         solver = create_instance(self.parameters)
         solver.initialize()
@@ -343,6 +368,7 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
             pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
             traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         # check if same position gives same pressure & traction
@@ -376,12 +402,13 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         displacement[:, 1] = dy
         displacement[:, 2] = dz
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
         coords_1 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -392,18 +419,19 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, 4):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         coords_2 = solver.get_coordinates()[self.mp_name_in]['coords']
@@ -425,6 +453,49 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
         # check if pressure and traction are equal
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-14)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-14)
+
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # adapt parameters, create solver
+        self.parameters['settings']['cores'] = 1
+        self.parameters['settings']['flow_iterations'] = 100
+        solver = create_instance(self.parameters)
+        solver.check_coupling_convergence = True
+        solver.initialize()
+        interface_input = solver.get_interface_input()
+
+        # set displacement
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+        dy, dz = self.get_dy_dz(x0, y0, z0)
+        displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
+        displacement[:, 1] = dy
+        displacement[:, 2] = dz
+
+        solver.initialize_solution_step()
+
+        # first coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # second coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertFalse(solver.coupling_convergence)
+
+        # third coupling iteration
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+        solver.solve_solution_step(interface_input)
+
+        self.assertTrue(solver.coupling_convergence)
+
+        solver.output_solution_step()
+        solver.finalize_solution_step()
+        solver.finalize()
 
 
 if __name__ == '__main__':

@@ -31,6 +31,7 @@ class SolverWrapperKratosStructure91(SolverWrapperKratosStructure):
             kratos_parameters['solver_settings']['max_iteration'] = self.settings['structure_iterations']
         kratos_parameters['interface_sub_model_parts_list'] = self.interface_sub_model_parts_list
         kratos_parameters['pressure_directions'] = self.check_pressure_directions()
+        kratos_parameters['check_coupling_convergence'] = self.check_coupling_convergence
 
         if self.save_restart:
             restart_save_dict = {'restart_processes': [{'python_module': 'save_restart_process',

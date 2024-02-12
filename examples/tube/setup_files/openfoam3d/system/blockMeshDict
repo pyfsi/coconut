@@ -1,9 +1,9 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  4.x                                   |
-|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
-|    \\/     M anipulation  |                                                 |
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
@@ -17,64 +17,65 @@ FoamFile
 convertToMeters 1;
 
 R 0.005; 	// Radius of tube
-L 0.05; 	// Length of tube 
+L 0.05; 	// Length of tube
 
-Ntop 48; 	// Number of intervals along axis 
+Ntop 48; 	// Number of intervals along axis
 N1 8;		// Number of intervals on the edges of the central block
 N2 8;		// Number of intervals on the diagonals connecting the central block to the outer cylinder
 
-nR #calc "-$R";
-nL #calc "-$L";
-halfR #calc "$R/2";
-halfL #calc "$L/2";
-nhalfR #calc "-$halfR";
-nhalfL #calc "-$halfL";
+nR          #calc "-$R";
+nL          #calc "-$L";
+halfR       #calc "${R}/2";
+halfL       #calc "${L}/2";
+nhalfR      #calc "-$halfR";
+nhalfL      #calc "-$halfL";
+Rdivsqrt2   #calc "${R}/sqrt(2.0)";
+nRdivsqrt2  #calc "-$Rdivsqrt2";
 
 
 vertices
 (
-    ($nhalfL $nhalfR 0)		//0
-    ($halfL $nhalfR 0)         	//1
-    ($halfL 0 $halfR)         	//2
-    ($nhalfL 0 $halfR)         	//3
+    ($nhalfL $halfR 0)		//0
+    ($nhalfL 0 $nhalfR)
+    ($nhalfL $nhalfR 0)     //2
+    ($nhalfL 0 $halfR)
 
-    ($nhalfL $halfR 0)         	//4
-    ($nhalfL 0 $nhalfR)         //5
-    ($halfL 0 $nhalfR)        	//6
-    ($halfL $halfR 0)         	//7
+    ($nhalfL $R 0)		    //4
+    ($nhalfL 0 $nR)
+    ($nhalfL $nR 0)         //6
+    ($nhalfL 0 $R)
 
-    ($nhalfL $nR 0)      	//8
-    ($halfL $nR 0)      	//9
-    ($nhalfL 0 $R)      	//10
-    ($halfL 0 $R)      		//11
-	
-    ($nhalfL $R 0)		//12
-    ($halfL $R 0)		//13
-    
-    ($nhalfL 0 $nR)		//14
-    ($halfL 0 $nR) 		//15
+    ($halfL $halfR 0)		//8
+    ($halfL 0 $nhalfR)
+    ($halfL $nhalfR 0)      //10
+    ($halfL 0 $halfR)
 
-);
-
-blocks
-(
-    hex (1 0 3 2 6 5 4 7) ($Ntop $N1 $N1) simpleGrading (1 1 1)
-    hex (0 1 2 3 8 9 11 10) ($Ntop $N1 $N2) simpleGrading (1 1 1)
-    hex (3 2 7 4 10 11 13 12) ($Ntop $N1 $N2) simpleGrading (1 1 1)
-    hex (4 7 6 5 12 13 15 14) ($Ntop $N1 $N2) simpleGrading (1 1 1)
-    hex (5 6 1 0 14 15 9 8) ($Ntop $N1 $N2) simpleGrading (1 1 1)
+    ($halfL $R 0)		    //12
+    ($halfL 0 $nR)
+    ($halfL $nR 0)          //14
+    ($halfL 0 $R)
 );
 
 edges
 (
-    arc 8 10 ($nhalfL $R 0)
-    arc 10 12 ($nhalfL 0 $nR)
-    arc 12 14 ($nhalfL $nR 0)
-    arc 14 8 ($nhalfL 0 $R)
-    arc 9 11 ($halfL $R 0)
-    arc 11 13 ($halfL 0 $nR)
-    arc 13 15 ($halfL $nR 0)
-    arc 15 9 ($halfL 0 $R)
+    arc 4 5 ($nhalfL $Rdivsqrt2 $nRdivsqrt2)  // defining arc with interpolation point outside of arc does not work
+    arc 5 6 ($nhalfL $nRdivsqrt2 $nRdivsqrt2)
+    arc 6 7 ($nhalfL $nRdivsqrt2 $Rdivsqrt2)
+    arc 7 4 ($nhalfL $Rdivsqrt2 $Rdivsqrt2)
+
+    arc 12 13 ($halfL $Rdivsqrt2 $nRdivsqrt2)
+    arc 13 14 ($halfL $nRdivsqrt2 $nRdivsqrt2)
+    arc 14 15 ($halfL $nRdivsqrt2 $Rdivsqrt2)
+    arc 15 12 ($halfL $Rdivsqrt2 $Rdivsqrt2)
+);
+
+blocks
+(
+    hex (0 3 2 1 8 11 10 9)   ($N1 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (4 0 1 5 12 8 9 13)   ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (5 1 2 6 13 9 10 14)  ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (6 2 3 7 14 10 11 15) ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (7 3 0 4 15 11 8 12)  ($N2 $N1 $Ntop) simpleGrading (1 1 1)
 );
 
 boundary
@@ -84,11 +85,11 @@ boundary
         type patch;
         faces
         (
-		(0 3 4 5)
-		(0 8 10 3) 
-		(3 10 12 4) 
-		(5 4 12 14) 
-		(5 14 8 0) 
+        (0 1 2 3)
+        (4 5 1 0)
+        (5 6 2 1)
+        (6 7 3 2)
+        (7 4 0 3)
         );
     }
     outlet
@@ -96,23 +97,22 @@ boundary
         type patch;
         faces
         (
-		(1 6 7 2)
-		(1 2 11 9)
-		(2 7 13 11) 
-		(7 6 15 13) 
-		(1 9 15 6) 
+		(11 10 9 8)
+		(8 9 13 12)
+		(9 10 14 13)
+		(10 11 15 14)
+		(11 8 12 15)
         );
     }
-    
     mantle
     {
         type wall;
         faces
         (
-	    (8 9 11 10)
-	    (11 13 12 10)
-	    (12 13 15 14)
-	    (14 15 9 8)
+	    (4 12 13 5)
+	    (5 13 14 6)
+	    (6 14 15 7)
+	    (7 15 12 4)
         );
     }
 );

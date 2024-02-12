@@ -64,11 +64,32 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             self.parameters['settings']['parallel'] = True
             decompose_file_name = os.path.join(self.folder_path, 'system', 'decomposeParDict')
             with open(decompose_file_name, 'r') as f:
-                dct = f.read()
-            new_dict = re.sub(r'numberOfSubdomains[\s\n]+' + of_io.int_pattern, f'numberOfSubdomains   {cores}', dct)
-
+                old_dict = f.read()
+            new_dict = re.sub(r'numberOfSubdomains[\s\n]+' + of_io.int_pattern, f'numberOfSubdomains   {cores}',
+                              old_dict)
             with open(decompose_file_name, 'w') as f:
                 f.write(new_dict)
+
+    def set_tolerance(self, p_atol, U_atol):
+        solution_file_name = os.path.join(self.folder_path, 'system', 'fvSolution')
+        new_tol = f'outerCorrectorResidualControl\n' \
+                  f'    {{\n' \
+                  f'    p\n' \
+                  f'        {{\n' \
+                  f'            tolerance   {p_atol:g};\n' \
+                  f'            relTol      0;\n' \
+                  f'        }}\n' \
+                  f'    U\n' \
+                  f'        {{\n' \
+                  f'            tolerance   {U_atol:g};\n' \
+                  f'            relTol      0;\n' \
+                  f'        }}\n' \
+                  f'    }}'
+        with open(solution_file_name, 'r') as f:
+            old_dict = f.read()
+        new_dict = re.sub(of_io.get_nested_dict(old_dict, 'outerCorrectorResidualControl'), new_tol, old_dict)
+        with open(solution_file_name, 'w') as f:
+            f.write(new_dict)
 
     # noinspection PyMethodMayBeStatic
     def get_dy_dz(self, x, y, z):
@@ -130,6 +151,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             solver.initialize_solution_step()
             solver.solve_solution_step(interface_disp)
             solver.finalize_solution_step()
+            solver.output_solution_step()
             solver.finalize()
 
             if cores > 1:
@@ -162,6 +184,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             output_interface = solver.solve_solution_step(solver.get_interface_input())
             output_list.append(output_interface.get_interface_data())
             solver.finalize_solution_step()
+            solver.output_solution_step()
             solver.finalize()
 
             self.rm_time_dirs(solver)
@@ -199,6 +222,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             pressure.append(interface_output.get_variable_data(self.mp_name_out, 'pressure'))
             traction.append(interface_output.get_variable_data(self.mp_name_out, 'traction'))
         solver.finalize_solution_step()
+        solver.output_solution_step()
         solver.finalize()
 
         pr_amp = 0.5 * (np.max((pressure[0] + pressure[2]) / 2) - np.min((pressure[0] + pressure[2]) / 2))
@@ -237,12 +261,13 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
         nr_time_steps = 4
 
-        # run solver for 4 timesteps
+        # run solver for 4 time steps
         for i in range(nr_time_steps):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_1 = solver.get_interface_input()
         interface_y_1 = solver.get_interface_output()
 
@@ -258,18 +283,19 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         pressure_1 = interface_output.get_variable_data(self.mp_name_out, 'pressure')
         traction_1 = interface_output.get_variable_data(self.mp_name_out, 'traction')
 
-        # create solver which restarts at timestep 2
+        # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
 
-        # run solver for 2 more timesteps
+        # run solver for 2 more time steps
         for i in range(2, nr_time_steps):
             solver.initialize_solution_step()
             interface_input.set_variable_data(self.mp_name_in, 'displacement', i * displacement)
             solver.solve_solution_step(interface_input)
             solver.finalize_solution_step()
+            solver.output_solution_step()
         interface_x_2 = solver.get_interface_input()
         interface_y_2 = solver.get_interface_output()
         if cores > 1:
@@ -295,6 +321,53 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         # check if pressure and traction are equal
         np.testing.assert_allclose(pressure_1, pressure_2, rtol=1e-9)
         np.testing.assert_allclose(traction_1, traction_2, rtol=1e-9)
+
+    def test_coupling_convergence(self):
+        # test if check of coupling convergence works correctly
+
+        # change of tolerance is necessary since the test does not succeed with strict tolerances
+        # this is because the mesh deformation calculation is slightly nonlinear due to the explicit non-orthogonality
+        # correction in the Laplacian calculation, see documentation for more information
+        self.set_tolerance(1e-3, 1e-3)
+
+        for cores in (1, 4):
+            # adapt parameters, create solver
+            self.set_cores(cores)
+            self.parameters['settings']['cores'] = cores
+            solver = create_instance(self.parameters)
+            solver.check_coupling_convergence = True
+            solver.initialize()
+            interface_input = solver.get_interface_input()
+
+            # set displacement
+            model_part = interface_input.get_model_part(self.mp_name_in)
+            x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
+            dy, dz = self.get_dy_dz(x0, y0, z0)
+            dx = np.zeros(x0.shape)
+            displacement = np.column_stack((dx, dy, dz))
+
+            solver.initialize_solution_step()
+
+            # first coupling iteration
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
+            solver.solve_solution_step(interface_input)
+            self.assertFalse(solver.coupling_convergence)
+
+            # second coupling iteration
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+            solver.solve_solution_step(interface_input)
+            self.assertFalse(solver.coupling_convergence)
+
+            # third coupling iteration
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', 2 * displacement)
+            solver.solve_solution_step(interface_input)
+            self.assertTrue(solver.coupling_convergence)
+
+            solver.output_solution_step()
+            solver.finalize_solution_step()
+            solver.finalize()
+
+            self.rm_time_dirs(solver)
 
 
 if __name__ == '__main__':

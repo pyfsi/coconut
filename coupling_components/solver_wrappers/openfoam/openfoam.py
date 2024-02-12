@@ -18,7 +18,8 @@ def create(parameters):
 
 
 class SolverWrapperOpenFOAM(SolverWrapper):
-    version = None  # OpenFOAM version with dot, e.g. 4.1 , set in sub-class
+    version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -31,7 +32,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         # settings
         self.settings = parameters['settings']
         self.working_directory = self.settings['working_directory']
-        self.env = None  # environment in which correct version of OpenFOAM software is available, set in sub-class
+        self.env = None  # environment in which correct version of OpenFOAM software is available, set in subclass
 
         # adapted application from openfoam ('coconut_<application name>')
         self.application = self.settings['application']
@@ -287,6 +288,13 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
+        if self.check_coupling_convergence:
+            # check if OpenFOAM converged after 1 iteration
+            self.coco_messages.wait_message('check_ready')
+            self.coupling_convergence = self.coco_messages.check_message('solver_converged')
+            if self.print_coupling_convergence and self.coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
+
         # read data from OpenFOAM
         self.read_node_output()
 
@@ -306,6 +314,11 @@ class SolverWrapperOpenFOAM(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         if not self.debug:
             for boundary in self.boundary_names:
                 post_process_time_folder = os.path.join(self.working_directory,
@@ -559,14 +572,17 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         control_dict = re.sub(r'endTime' + of_io.delimiter + of_io.float_pattern, f'{"endTime":<16}1e15', control_dict)
 
         # delete previously defined coconut functions
-        coconut_start_string = '\n// CoCoNuT function objects'
+        coconut_start_string = '\n\n// CoCoNuT function objects'
         control_dict = re.sub(coconut_start_string + r'.*', '', control_dict, flags=re.S)
 
         with open(file_name, 'w') as control_dict_file:
             control_dict_file.write(control_dict)
             control_dict_file.write(coconut_start_string + '\n')
 
-            control_dict_file.write('boundaryNames (' + ' '.join(self.boundary_names) + ');\n\n')
+            control_dict_file.write('boundaryNames   (' + ' '.join(self.boundary_names) + ');\n\n')
+
+            if self.check_coupling_convergence:
+                control_dict_file.write(f'checkCouplingConvergence    true;\n\n')
 
             control_dict_file.write('functions\n{\n')
             dct, name = self.wall_shear_stress_dict()

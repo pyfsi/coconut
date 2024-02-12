@@ -13,7 +13,7 @@ Although the calculation is steady, a `delta_t` is still required. Its value is 
 ## Coupling algorithm
 
 The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
-The parameter `q` is not used no as there is only one time step. Note that in a steady calculation, the models `ls` (IQN-ILS) and `mv` (IQN-MVJ) are identical.
+The parameter `q` is not used as there is only one time step. Note that in a steady calculation, the models `ls` (IQN-ILS) and `mv` (IQN-MVJ) are identical.
 
 ## Predictor
 

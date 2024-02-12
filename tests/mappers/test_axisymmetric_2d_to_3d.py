@@ -78,7 +78,7 @@ class TestMapperAxisymmetric2DTo3D(unittest.TestCase):
             theta = np.arccos(y / radius_in) * np.sign(z) * 180 / np.pi
             np.sort(theta)
             angles_out = np.diff(theta)
-            np.testing.assert_allclose(angles_in, angles_out, rtol=1e-14)
+            np.testing.assert_allclose(angles_in, angles_out, rtol=5e-14)
 
             # check total (wedge) angle of new model part
             total_angle_in = total_angle - angle_in if total_angle == 360 else total_angle

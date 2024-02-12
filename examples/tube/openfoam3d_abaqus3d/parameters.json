@@ -9,6 +9,7 @@
       "delta_t": 0.0001,
       "omega": 0.01,
       "save_results": 1,
+      "save_restart": -10,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -42,7 +43,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.v41",
+        "type": "solver_wrappers.openfoam.v8",
         "settings": {
           "working_directory": "CFD",
           "application": "coconut_pimpleFoam",

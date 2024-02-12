@@ -31,7 +31,7 @@ class CoupledSolverIBQN(CoupledSolver):
         self.restart_models = [False, False]  # indicates if model_f and/or model_s have to be restarted
 
     def initialize(self):
-        super().initialize()
+        super().initialize(print_components=False)
 
         self.dxtemp = self.x.copy()
         self.dytemp = self.y.copy()
@@ -48,6 +48,9 @@ class CoupledSolverIBQN(CoupledSolver):
             if self.restart_models[i]:  # restart with the same model type
                 model.restart(self.restart_data[model_name])
             self.components += [model]
+
+        if self.solver_level == 0:
+            self.print_components_info(' ')
 
     def lop_f(self, dx):
         self.dxtemp.set_interface_data(dx.flatten())

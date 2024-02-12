@@ -1,5 +1,5 @@
 from coconut.tools import create_instance
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 
@@ -7,10 +7,12 @@ def create(parameters):
     return SolverWrapperCombined(parameters)
 
 
-class SolverWrapperCombined(Component):
+class SolverWrapperCombined(SolverWrapper):
+    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
+
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         # read parameters
         self.parameters = parameters
@@ -42,8 +44,6 @@ class SolverWrapperCombined(Component):
                 self.mapped_solver_wrappers.append(sol_wrapper)
 
         self.master_solver_wrapper = self.solver_wrappers[self.master_sol_index]
-
-        self.interface_output = None
 
     @tools.time_initialize
     def initialize(self):
@@ -101,12 +101,12 @@ class SolverWrapperCombined(Component):
 
     def get_time_allocation(self):
         time_allocation = {}
-        for time_type in ('init_time', 'run_time'):
+        for time_type in ('init_time', 'run_time', 'save_time'):
             time_allocation_sub = time_allocation[time_type] = {}
             time_allocation_sub['total'] = self.__getattribute__(time_type)
             for i, solver_wrapper in enumerate(self.solver_wrappers):
                 time_allocation_sub[f'solver_wrapper_{i}'] = solver_wrapper.get_time_allocation()[time_type]
-            time_allocation_sub['other'] = self.__getattribute__(time_type) - sum(
+            time_allocation_sub['coupling'] = self.__getattribute__(time_type) - sum(
                 [s.__getattribute__(time_type) for s in self.solver_wrappers])
         return time_allocation
 

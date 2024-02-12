@@ -20,7 +20,8 @@ def create(parameters):
 
 
 class SolverWrapperAbaqus(SolverWrapper):
-    version = None
+    version = None  # Abaqus version, e.g. 2022, set in subclass
+    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -418,6 +419,10 @@ class SolverWrapperAbaqus(SolverWrapper):
             self.remove_files(self.timestep + self.save_restart)
         for f in self.dir_vault.iterdir():
             f.unlink()  # empty vault
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
 
     def finalize(self):
         super().finalize()

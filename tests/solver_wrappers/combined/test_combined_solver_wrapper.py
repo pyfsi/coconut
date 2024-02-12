@@ -6,6 +6,8 @@ import json
 import numpy as np
 from unittest import mock
 
+from coconut import tools
+
 
 def mock_create_instance(settings):
     object_type = settings['type']
@@ -88,23 +90,23 @@ class TestSolverWrapperCombined(unittest.TestCase):
 
         pressure = output_interface.get_variable_data(self.mp_name_out, 'pressure')
         traction = output_interface.get_variable_data(self.mp_name_out, 'traction')
-        pres_ref, trac_ref = comb_solver.master_solver_wrapper.calculate_output(displacement.ravel(),
-                                                                                comb_solver.get_interface_output(),
-                                                                                self.mp_name_out)
+        pres_ref, trac_ref = \
+            comb_solver.master_solver_wrapper.calculate_output(displacement.ravel(), comb_solver.get_interface_output(),
+                                                               self.mp_name_out)
         for index, mapped_sol_wrapper in enumerate(comb_solver.mapped_solver_wrappers):
-            pres_other, trac_other = mapped_sol_wrapper.solver_wrapper.calculate_output(displacement.ravel(),
-                                                                                        comb_solver.get_interface_output(),
-                                                                                        self.mp_name_out)
+            pres_other, trac_other = \
+                mapped_sol_wrapper.solver_wrapper.calculate_output(displacement.ravel(),
+                                                                   comb_solver.get_interface_output(), self.mp_name_out)
             pres_ref += pres_other
             trac_ref += trac_other
 
         np.testing.assert_allclose(pressure, pres_ref, rtol=1e-12)
         np.testing.assert_allclose(traction, trac_ref, rtol=1e-12)
 
-        print('\n')
+        tools.print_info('\n')
         comb_solver.print_components_info('├─')
-        print('\n')
-        print(comb_solver.get_time_allocation())
+        tools.print_info('\n')
+        tools.print_info(comb_solver.get_time_allocation())
 
 
 if __name__ == '__main__':

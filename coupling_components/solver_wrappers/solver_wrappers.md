@@ -5,13 +5,14 @@ implement a way to communicate input to the solver (at the fluid-structure inter
 input and obtain the solution from the solver (at the fluid-structure interface).
 
 **Important**: To avoid conflicts, each solver is run in its own environment. These environments are established on
-runtime, but the actions required to do so can differ between systems. Therefore it is necessary to first check (and if
+runtime, but the actions required to do so can differ between systems. Therefore, it is necessary to first check (and if
 needed adapt) the file *`coconut/solver_modules.py`* after installing or updating CoCoNuT, as described
 in [the front documentation page](../../README.md#checking-the-solver-modules).
 
 As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from
 the `SolverWrapper` class, which inherits from the `Component` class, and must all implement the following
-methods: `initialize`, `initialize_solution_step`, `solve_solution_step`, `finalize_solution_step`, `finalize`.
+methods: `initialize`, `initialize_solution_step`, `solve_solution_step`, `finalize_solution_step`, 
+`output_solution_step` and `finalize`.
 
 Upon instantiation of the solver wrapper object, the solver wrapper has to create a `Model` containing one or
 more `ModelParts` which correspond to (a part of) the fluid-structure interface. The interface coordinates at time step
@@ -27,13 +28,13 @@ coupled solver as an `Interface` object.
 
 There are currently two solver wrappers for computational fluid dynamics (CFD) packages:
 
-- [ANSYS Fluent](fluent/fluent.md) (2019R1, 2019R2, 2019R3, 2020R1, 2021R1, 2021R2, 2022R1)
-- [OpenFOAM](openfoam/openfoam.md) (4.1, 8)
+- [ANSYS Fluent](fluent/fluent.md) (2019R3, 2021R1, 2023R1)
+- [OpenFOAM](openfoam/openfoam.md) (8)
 
 There are currently also two solver wrappers for computational structural mechanics (CSM) packages :
 
-- [Abaqus](abaqus/abaqus.md) (6.14, 2021, 2022)
-- [Kratos Multiphysics](kratos_structure/kratos_structure.md) (6.0, 7.0, 9.1)
+- [Abaqus](abaqus/abaqus.md) (2021, 2022)
+- [Kratos Multiphysics](kratos_structure/kratos_structure.md) (9.1)
 
 CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms
 and implementations. These are:

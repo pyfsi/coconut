@@ -39,8 +39,8 @@ class CocoMessages:
         cumul_time = 0
         file = join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
-            time.sleep(0.01)
-            cumul_time += 0.01
+            time.sleep(0.001)
+            cumul_time += 0.001
             if cumul_time > self.max_wait_time:
                 if self.timed_out_action is not None:
                     self.timed_out_action(message)
@@ -233,6 +233,20 @@ def time_solve_solution_step(solve_solution_step):
     return wrapper
 
 
+# save time measuring function
+def time_save(output_solution_step):
+    def wrapper(*args):
+        self = args[0]
+        if not hasattr(self, 'save_time'):
+            self.save_time = 0.0
+        start_time = time.time()
+        interface_output = output_solution_step(*args)
+        self.save_time += time.time() - start_time
+        return interface_output
+
+    return wrapper
+
+
 # pass on parameters
 def pass_on_parameters(settings_from, settings_to, keys):
     for key in keys:
@@ -335,8 +349,8 @@ def get_solver_env(solver_module_name, working_dir):
     pickle file. Finally, pickle file is loaded and returned as a python-dict.
 
     @param solver_module_name: module name of the solver wrapper,
-    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.
-    e.g. fluent.v2019R1
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2023R1.
+    e.g. fluent.v2023R1
     @type: str
 
     @param working_dir: working directory of the solver where the simulation is run.
@@ -375,8 +389,8 @@ def get_solver_env(solver_module_name, working_dir):
 def solver_available(solver_module_name):
     """
     @param solver_module_name: module name of the solver wrapper,
-    e.g. coconut.coupling_components.solver_wrappers.fluent.v2019R1.44650
-    e.g. fluent.v2019R1
+    e.g. coconut.coupling_components.solver_wrappers.fluent.v2023R1
+    e.g. fluent.v2023R1
     @type: str
 
     @return: presence of solver env

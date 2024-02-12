@@ -18,6 +18,7 @@ def create(parameters):
 class SolverWrapperTubeFlow(SolverWrapper):
     al = 4  # number of terms below diagonal in matrix
     au = 4  # number of terms above diagonal in matrix
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -178,11 +179,20 @@ class SolverWrapperTubeFlow(SolverWrapper):
 
         self.k += 1
 
-        # Newton iterations
-        converged = False
+        # initial residual
         f = self.get_residual()
         if self.k == 1:
             self.residual0 = np.linalg.norm(f)
+
+        # coupling convergence
+        residual = np.linalg.norm(f)
+        if self.check_coupling_convergence and residual / self.residual0 < self.newtontol:
+            self.coupling_convergence = True
+            if self.print_coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
+
+        # Newton iterations
+        converged = False
         if self.residual0:
             for s in range(self.newtonmax):
                 j = self.get_jacobian()
@@ -227,10 +237,10 @@ class SolverWrapperTubeFlow(SolverWrapper):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-    def finalize(self):
-        super().finalize()
-
+    @tools.time_save
     def output_solution_step(self):
+        super().output_solution_step()
+
         if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
             file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
             with open(file_name, 'wb') as file:
@@ -248,6 +258,9 @@ class SolverWrapperTubeFlow(SolverWrapper):
                 file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
                 for i in range(len(self.z)):
                     file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
+
+    def finalize(self):
+        super().finalize()
 
     def get_inlet_boundary(self):
         if self.inlet_type == 1:
