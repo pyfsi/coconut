@@ -22,6 +22,7 @@ class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
+    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):

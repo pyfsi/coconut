@@ -1,15 +1,21 @@
 {
   "settings": {
-    "number_of_timesteps": 60
+    "number_of_timesteps": 3
   },
   "coupled_solver": {
-    "type": "coupled_solvers.iqni",
+    "type": "coupled_solvers.test_single_solver",
+    "test_settings": {
+      "solver_index": 0,
+      "test_class": "SolidTest",
+      "delta_t": 1
+    },
     "settings": {
       "timestep_start": 0,
-      "delta_t": 10,
-      "omega": 0.05,
+      "delta_t": 0.1,
+      "omega": 0.3,
       "save_results": 1,
       "save_restart": 0,
+      "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -34,7 +40,7 @@
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-2,
+              "tolerance": 1e-3,
               "order": 2
             }
           }
@@ -46,12 +52,12 @@
         "type": "solver_wrappers.fluent.cht_v2023R1",
         "settings": {
           "working_directory": "CFD_1",
-          "case_file": "cht_hf_in.cas.h5",
+          "case_file": "cht_solid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
           "moving_boundary": false,
           "multiphase": false,
-          "ini_condition": 0,
+          "ini_condition": 293.15,
           "thread_names": [
             "boundary"
           ],
@@ -59,7 +65,7 @@
             {
               "model_part": "boundary_in_faces",
               "variables": [
-                "heat_flux"
+                "temperature"
               ]
             }
           ],
@@ -67,15 +73,15 @@
             {
               "model_part": "boundary_out_faces",
               "variables": [
-                "temperature"
+                "heat_flux"
               ]
             }
           ],
           "cores": 1,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 100,
-          "save_results": 20
+          "flow_iterations": 30,
+          "save_results": 1
         }
       },
       {
@@ -85,12 +91,12 @@
             "type": "solver_wrappers.fluent.cht_v2023R1",
             "settings": {
               "working_directory": "CFD_2",
-              "case_file": "cht_temp_in.cas.h5",
+              "case_file": "cht_fluid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
               "moving_boundary": false,
               "multiphase": false,
-              "ini_condition": 293.15,
+              "ini_condition": 0,
               "thread_names": [
                 "boundary"
               ],
@@ -98,7 +104,7 @@
                 {
                   "model_part": "boundary_in_faces",
                   "variables": [
-                    "temperature"
+                    "heat_flux"
                   ]
                 }
               ],
@@ -106,12 +112,12 @@
                 {
                   "model_part": "boundary_out_faces",
                   "variables": [
-                    "heat_flux"
+                    "temperature"
                   ]
                 }
               ],
-              "cores": 1,
-              "fluent_gui": false,
+              "cores": 2,
+              "fluent_gui": true,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
               "save_results": 20
