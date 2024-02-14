@@ -4,7 +4,10 @@ import os
 import matplotlib.pyplot as plt
 import pickle
 
-with open('case_results.pickle', 'rb') as file:
+path_1 = 'case_results.pickle'
+path_2 = 'test_single_solver/case_CFD_1_results.pickle'
+
+with open(path_1, 'rb') as file:
     results = pickle.load(file)
 
 print(results)

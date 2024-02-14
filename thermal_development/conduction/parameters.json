@@ -51,7 +51,7 @@
           "unsteady": true,
           "moving_boundary": false,
           "multiphase": false,
-          "ini_condition": 0,
+          "ini_condition": 293.15,
           "thread_names": [
             "boundary"
           ],
@@ -90,7 +90,7 @@
               "unsteady": true,
               "moving_boundary": false,
               "multiphase": false,
-              "ini_condition": 293.15,
+              "ini_condition": 0,
               "thread_names": [
                 "boundary"
               ],

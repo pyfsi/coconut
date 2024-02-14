@@ -52,7 +52,8 @@
           "unsteady": true,
           "moving_boundary": false,
           "multiphase": false,
-          "ini_condition": 293.15,
+          "debug": true,
+          "ini_condition": 0,
           "thread_names": [
             "boundary"
           ],
@@ -73,10 +74,10 @@
             }
           ],
           "cores": 1,
-          "fluent_gui": true,
+          "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 50,
-          "save_results": 20
+          "flow_iterations": 30,
+          "save_results": 1
         }
       },
       {
@@ -91,7 +92,8 @@
               "unsteady": true,
               "moving_boundary": false,
               "multiphase": false,
-              "ini_condition": 0,
+              "debug": true,
+              "ini_condition": 293.15,
               "thread_names": [
                 "boundary"
               ],
@@ -112,10 +114,10 @@
                 }
               ],
               "cores": 2,
-              "fluent_gui": true,
+              "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 100,
-              "save_results": 20
+              "flow_iterations": 80,
+              "save_results": 1
             }
           },
           "mapper_interface_input": {

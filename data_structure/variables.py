@@ -8,7 +8,8 @@ variables_dimensions = {
                         'temperature': 1
                         }
 
-accepted_variables = { # each variable key has a list as value containing a prefix for the corresponding file and an integer related to the dimensions of the file
+# each variable key has a list as value containing a prefix for the corresponding file and an integer related to the dimensions of the file
+accepted_variables = {
     'in': {
         'displacement': ['nodes_update', 3],
         'temperature': ['temperature', 1],

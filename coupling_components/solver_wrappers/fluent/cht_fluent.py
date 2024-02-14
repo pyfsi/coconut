@@ -71,8 +71,10 @@ class SolverWrapperFluent(SolverWrapper):
         self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
 
+        self.output_ini_cond = {}
         f = 0
         for mp in self.settings['interface_output']:
+            self.output_ini_cond[mp['model_part']] = 0
             if f == 0:
                 self.output_variables = mp['variables'] # NEW: list of variables to be stored for communication
                 f = 1
@@ -316,9 +318,10 @@ class SolverWrapperFluent(SolverWrapper):
                 coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
                 ids_tmp, self.dict_face_ids[mp_name] = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-                # define initial input profile if no restart
+                """ define initial input profile if no restart -> NOT USED
                 if self.timestep_start == 0:
                     self.initial_profile(thread_id, data[:, -self.mnpf:])
+                """
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -366,9 +369,22 @@ class SolverWrapperFluent(SolverWrapper):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
+            # create initial conditions at output interface
+            if self.ini_condition is not None:
+                self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
+
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
+
+        # set initial conditions at output interface
+        for key in self.output_ini_cond:
+            for var in self.output_variables:
+                if var == 'heat_flux' or var == 'temperature':
+                    if self.ini_condition is None:
+                        raise ValueError('Initial condition must be defined in JSON for temperature or heat flux')
+                    else:
+                        self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -577,6 +593,7 @@ class SolverWrapperFluent(SolverWrapper):
         return node_ids
 
     def initial_profile(self, thread_id, face_nodeIDs):
+        # Currently not in use
         n = np.shape(face_nodeIDs)[0]
         if "temperature" in self.input_variables_faces:
             T = np.ones((n, 1))*self.ini_condition

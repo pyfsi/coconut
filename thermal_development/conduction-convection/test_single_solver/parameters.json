@@ -5,9 +5,9 @@
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
-      "solver_index": 0,
-      "test_class": "SolidTest",
-      "delta_t": 1
+      "solver_index": 1,
+      "test_class": "FluidTest",
+      "delta_t": 0.1
     },
     "settings": {
       "timestep_start": 0,
@@ -57,7 +57,7 @@
           "unsteady": true,
           "moving_boundary": false,
           "multiphase": false,
-          "ini_condition": 293.15,
+          "ini_condition": 0,
           "thread_names": [
             "boundary"
           ],
@@ -96,7 +96,7 @@
               "unsteady": true,
               "moving_boundary": false,
               "multiphase": false,
-              "ini_condition": 0,
+              "ini_condition": 293.15,
               "thread_names": [
                 "boundary"
               ],
@@ -117,10 +117,10 @@
                 }
               ],
               "cores": 2,
-              "fluent_gui": true,
+              "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 20
+              "save_results": 1
             }
           },
           "mapper_interface_input": {
