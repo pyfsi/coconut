@@ -1,7 +1,7 @@
 file set-batch-options n y n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case mesh_nat_conv_test_1.msh
+file read-case mesh_conv_test_1.msh
 grid check
 grid modify-zones zone-type 2 solid
 
