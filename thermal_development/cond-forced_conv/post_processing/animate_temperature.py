@@ -13,7 +13,7 @@ flag = False
 T_ini = 20 # °C
 
 # different cases to be plotted
-common_path = '../../../thermal_development/conduction-convection/'
+common_path = '../../../thermal_development/cond-forced_conv/'
 case_paths = ['case_results.pickle']
 legend_entries = ['case']
 
