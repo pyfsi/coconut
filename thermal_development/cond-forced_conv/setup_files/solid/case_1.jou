@@ -1,0 +1,37 @@
+file set-batch-options n y n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case mesh_forced_conv_test_1.msh
+grid check
+grid modify-zones zone-type 2 solid
+
+define models unsteady-1st-order y
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow n
+
+define materials copy solid aluminum pcm pcm
+define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4
+
+define boundary-conditions solid , y pcm n n n n , n , n n yes
+define boundary-conditions wall adiabatic 0 n 0 n n n 0 n ,
+define boundary-conditions wall wall 0 n 0 n y temperature n 303.15 n ,
+define boundary-conditions wall boundary 0 n 0 n y temperature n 303.15 n ,
+
+;define operating-conditions operating-pressure 0
+;define operating-conditions gravity n
+
+solve monitors residual check-convergence y
+solve monitors residual convergence-criteria 1.0E-8
+
+solve set discretization-scheme temperature 0
+solve set gradient-scheme n y
+;solve set reporting-interval 10
+;solve set flow-warnings n
+
+solve initialize set-defaults temperature 303.15
+solve initialize initialize-flow
+
+file write-case-data cht_solid.cas.h5
+exit
