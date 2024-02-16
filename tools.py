@@ -451,3 +451,9 @@ def remove_recursively(key_to_remove, structure):
         return
     for value in structure:  # structure is either dict.values() or list
         remove_recursively(key_to_remove, value)
+
+def flatten_concatenation(matrix):
+    flat_list = []
+    for row in matrix:
+        flat_list += row
+    return flat_list
