@@ -34,6 +34,36 @@ solve set gradient-scheme n y
 ;solve set reporting-interval 10
 ;solve set flow-warnings n
 
+solve report-definitions add avg-temp volume-average
+field temperature
+zone-names 2 ,
+per-zone? no
+q
+
+solve report-definitions add itf-flux surface-areaavg
+field heat-flux
+surface-names boundary ,
+per-surface? no
+q
+
+solve report-definitions add wall-flux surface-areaavg
+field heat-flux
+surface-names wall ,
+per-surface? no
+q
+
+solve report-definitions add outlet-temp surface-areaavg
+field temperature
+surface-names outlet ,
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs avg-temp itf-flux wall-flux outlet-temp flow-time ,
+file-name "./report-file.out"
+active? yes
+q
+
 solve initialize set-defaults temperature 283.15
 solve initialize set-defaults pressure 0
 solve initialize set-defaults x-velocity 0

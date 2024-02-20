@@ -72,13 +72,14 @@ if flag:
         pass
 
     # Plot
-    line1, = plt.plot(time, avg_T, '*r', label="CoCoNuT")
+    line1, = plt.plot(time, avg_T, '--r', label="CoCoNuT")
     line2, = plt.plot(time_val_1, T_val_1, '--g', label="Fluent solid")
     line3, = plt.plot(time_val_2, T_val_2, '--b', label="Fluent liquid")
     plt.ylabel('Interface temperature [°C]')
     plt.xlabel('Time [s]')
     plt.ylim((np.min(avg_T)-1, np.max(avg_T)+1))
     plt.legend(handles=[line1, line2, line3])
+    plt.savefig('itf-temp-nat.svg')
     plt.show()
     plt.close()
 
