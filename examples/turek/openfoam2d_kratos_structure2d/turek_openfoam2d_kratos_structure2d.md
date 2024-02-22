@@ -15,15 +15,15 @@ For details on boundary conditions and parameters refer to the example with [Flu
 The accuracy of the simulation framework can be assessed by comparing with the results in Turek and Hron [[1](#1)].
 A script _`evaluate_benchmark.py`_ is provided to extract the necessary quantities, which are given below using the format "mean value +/- amplitude [frequency]".
 
-|                                  | x displacement                               | y displacement                              |
-|---------------------------------:|:---------------------------------------------|---------------------------------------------|
-| CoCoNuT with OpenFOAM and Kratos | <nobr>-1.4627e-02 +/-1.2248e-02 [3.9]</nobr> | <nobr>1.2494e-03 +/-8.0609e-02 [1.9]</nobr> |
-|                        Benchmark | -1.4580e-02 +/-1.2440e-02 [3.8]              | 1.2300e-03 +/-8.0600e-02 [2.0]              |
+|                                  | x displacement                             | y displacement                            |
+|---------------------------------:|:-------------------------------------------|-------------------------------------------|
+| CoCoNuT with OpenFOAM and Kratos | <nobr>-1.463e-02 +/-1.225e-02 [3.9]</nobr> | <nobr>1.250e-03 +/-8.061e-02 [1.9]</nobr> |
+|                        Benchmark | -1.458e-02 +/-1.244e-02 [3.8]              | 1.230e-03 +/-8.060e-02 [2.0]              |
 
-|                                  | drag                                        | lift                                         |
-|---------------------------------:|:--------------------------------------------|----------------------------------------------|
-| CoCoNuT with OpenFOAM and Kratos | <nobr>2.1493e+02 +/-7.4956e+01 [3.9]</nobr> | <nobr>-6.7446e-01 +/-2.3692e+02 [1.9]</nobr> |
-|                        Benchmark | 2.0883e+02 +/-7.3750e+01 [3.8]              | 8.8000e-01 +/-2.3420e+02 [2.0]               |
+|                                  | drag                                      | lift                                       |
+|---------------------------------:|:------------------------------------------|--------------------------------------------|
+| CoCoNuT with OpenFOAM and Kratos | <nobr>2.149e+02 +/-7.491e+01 [3.9]</nobr> | <nobr>-5.939e-01 +/-2.370e+02 [1.9]</nobr> |
+|                        Benchmark | 2.0883e+02 +/-7.375e+01 [3.8]             | 8.800e-01 +/-2.342e+02 [2.0]               |
 
 
 ## Coupling algorithm
@@ -37,12 +37,8 @@ The initial guess in every time step is done using the quadratic predictor.
 
 ## Convergence criterion
 
-Two convergence criteria have been specified:
-
--   The number of iterations in every time step is larger than 15.
--   The absolute norm of the displacement is lower than $10^{-7}$.
- 
-When either criterion is satisfied the simulation stops.
+The time step is considered converged when the solver coupling convergence criterion is satisfied for both solvers.
+This criterion checks whether the solver residual is below the solver tolerance at the start of the solver call (or after one iteration for OpenFOAM).
 
 ## Solvers
 
