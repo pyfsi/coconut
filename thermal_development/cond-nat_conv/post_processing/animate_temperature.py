@@ -5,11 +5,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import pickle
-
-flag = False
-
-# Initial interface temperature
-T_ini = 20 # °C
+from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../../thermal_development/cond-nat_conv/'
@@ -41,49 +37,47 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'temperature', 'K'), ('
 
         # Store interface data for temperature plot
         if var == "temperature":
-            flag = True
             avg_T = np.array([np.mean(solution[:,i]) for i in range(np.shape(solution)[1])])
-            avg_T[0] = T_ini
             time = time_step_start + dt*np.array(range(np.shape(solution)[1]))
 
-if flag:
-    # Plot avg interface temperature in time
-    # First, read Fluent validation files
-    # domain 1: solid
-    read_file_1 = pd.read_csv(r'itf-temp-1.out', delimiter='\s+', skiprows=[0, 1, 2]) # Path of Fluent out-file
-    read_file_1.to_csv(r'fluent_validation_solid.csv', index=None)
-    data_array_1 = np.loadtxt('fluent_validation_solid.csv', delimiter=',')
-    T_val_1 = data_array_1[:,1] - 273.15
-    time_val_1 = data_array_1[:,2]
-    try:
-        os.remove("fluent_validation_solid.csv")
-    except:
-        pass
+# Plot avg interface temperature in time
+# First, read Fluent validation files
+# domain 1: solid
+read_file_1 = pd.read_csv(r'itf-temp-1.out', delimiter='\s+', skiprows=[0, 1, 2]) # Path of Fluent out-file
+read_file_1.to_csv(r'fluent_validation_solid.csv', index=None)
+data_array_1 = np.loadtxt('fluent_validation_solid.csv', delimiter=',')
+T_val_1 = data_array_1[:,1] - 273.15
+time_val_1 = data_array_1[:,2]
+try:
+    os.remove("fluent_validation_solid.csv")
+except:
+    pass
 
-    # domain 2: liquid
-    read_file_2 = pd.read_csv(r'itf-temp-2.out', delimiter='\s+', skiprows=[0, 1, 2])  # Path of Fluent out-file
-    read_file_2.to_csv(r'fluent_validation_liquid.csv', index=None)
-    data_array_2 = np.loadtxt('fluent_validation_liquid.csv', delimiter=',')
-    T_val_2 = data_array_2[:, 1] - 273.15
-    time_val_2 = data_array_2[:, 2]
-    try:
-        os.remove("fluent_validation_liquid.csv")
-    except:
-        pass
+# domain 2: liquid
+read_file_2 = pd.read_csv(r'itf-temp-2.out', delimiter='\s+', skiprows=[0, 1, 2])  # Path of Fluent out-file
+read_file_2.to_csv(r'fluent_validation_liquid.csv', index=None)
+data_array_2 = np.loadtxt('fluent_validation_liquid.csv', delimiter=',')
+T_val_2 = data_array_2[:, 1] - 273.15
+time_val_2 = data_array_2[:, 2]
+try:
+    os.remove("fluent_validation_liquid.csv")
+except:
+    pass
 
-    # Plot
-    line1, = plt.plot(time, avg_T, '--r', label="CoCoNuT")
-    line2, = plt.plot(time_val_1, T_val_1, '--g', label="Fluent solid")
-    line3, = plt.plot(time_val_2, T_val_2, '--b', label="Fluent liquid")
-    plt.ylabel('Interface temperature [°C]')
-    plt.xlabel('Time [s]')
-    plt.ylim((np.min(avg_T)-1, np.max(avg_T)+1))
-    plt.legend(handles=[line1, line2, line3])
-    plt.savefig('itf-temp-nat.svg')
-    plt.show()
-    plt.close()
+# Plot
+line1, = plt.plot(time, avg_T, '--r', label="CoCoNuT")
+line2, = plt.plot(time_val_1, T_val_1, '--g', label="Fluent solid")
+line3, = plt.plot(time_val_2, T_val_2, '--b', label="Fluent liquid")
+plt.ylabel('Interface temperature [°C]')
+plt.xlabel('Time [s]')
+plt.ylim((np.min(avg_T)-1, np.max(avg_T)+1))
+plt.legend(handles=[line1, line2, line3])
+plt.savefig('itf-temp-nat.svg')
+plt.show()
+plt.close()
 
 # Plot residuals
+"""
 res = np.array(flatten_concatenation(results['case']['residual']))
 it = np.arange(res.size)
 line4, = plt.plot(it, res)
@@ -91,3 +85,68 @@ plt.ylabel('Residual')
 plt.xlabel('Nr. of iterations')
 plt.show()
 plt.close()
+"""
+
+# Energy balance
+read_file_sol = pd.read_csv(os.path.join(common_path, 'CFD_1/report-file.out'), delimiter='\s+', skiprows=[0, 1, 2])
+read_file_liq = pd.read_csv(os.path.join(common_path, 'CFD_2/report-file.out'), delimiter='\s+', skiprows=[0, 1, 2])
+read_file_sol.to_csv(os.path.join(common_path, 'CFD_1/report-file.csv'), index=None)
+read_file_liq.to_csv(os.path.join(common_path, 'CFD_2/report-file.csv'), index=None)
+
+data_sol = np.loadtxt(os.path.join(common_path, 'CFD_1/report-file.csv'), delimiter=',')
+data_liq = np.loadtxt(os.path.join(common_path, 'CFD_2/report-file.csv'), delimiter=',')
+
+# Exclude 1st second
+data_sol = data_sol[10:,:]
+data_liq = data_liq[10:,:]
+
+temp_sol = data_sol[:,1]
+itf_flux_sol = data_sol[:,2]
+wall_flux_sol = data_sol[:,3]
+time_s = data_sol[:,4]
+
+temp_liq = data_liq[:,1]
+itf_flux_liq = data_liq[:,2]
+wall_flux_liq = data_liq[:,3]
+time_l = data_liq[:,4]
+
+"""
+line5, = plt.plot(time_s, temp_sol, 'b', label='Solid')
+line6, = plt.plot(time_l, temp_liq, 'g', label='Liquid')
+plt.ylabel('Temperature [K]')
+plt.xlabel('Time [s]')
+plt.legend(handles=[line5, line6])
+plt.show()
+plt.close()
+"""
+
+# Properties and dimensions
+rho_l = 780 # kg/m^3
+rho_s = 870 # kg/m^3
+cp = 2500 # J/kgK
+V = 0.05*0.05*1 # m^3
+A = 0.05*1 # m^2
+T_ini_sol = 273.15 + 30 # °C
+T_ini_liq = 273.15 + 10 # °C
+
+# Calculation
+htr_wall_sol_int = integrate.trapezoid(wall_flux_sol*A, time_s)
+htr_wall_liq_int = integrate.trapezoid(wall_flux_liq*A, time_l)
+htr_itf_sol_int = integrate.trapezoid(itf_flux_sol*A, time_s)
+htr_itf_liq_int = integrate.trapezoid(itf_flux_liq*A, time_s)
+
+SH_sol = rho_s*V*cp*(temp_sol[-1]-temp_sol[0])
+SH_liq = rho_l*V*cp*(temp_liq[-1]-temp_liq[0])
+
+global_balance = (SH_liq+SH_sol)/(htr_wall_liq_int+htr_wall_sol_int)
+sol_balance = SH_sol/(htr_itf_sol_int+htr_wall_sol_int)
+liq_balance = SH_liq/(htr_itf_liq_int+htr_wall_liq_int)
+
+# Report
+print('Global balance is', global_balance*100, '%.')
+print('Solid balance is', sol_balance*100, '%.')
+print('Liquid balance is', liq_balance*100, '%.')
+
+# Cleanup
+os.remove(os.path.join(common_path, 'CFD_1/report-file.csv'))
+os.remove(os.path.join(common_path, 'CFD_2/report-file.csv'))

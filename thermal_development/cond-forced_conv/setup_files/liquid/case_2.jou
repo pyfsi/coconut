@@ -52,14 +52,16 @@ surface-names wall ,
 per-surface? no
 q
 
-solve report-definitions add outlet-temp surface-areaavg
-field temperature
-surface-names outlet ,
-per-surface? no
+define named-expressions add "outflow_integral"
+definition "AreaAve(Density*SpecificHeatCapacity,['outlet'])*AreaInt(StaticTemperature*Velocity.y,['outlet'])"
+q
+
+solve report-definitions add outlet-integral single-val-expression
+define "outflow_integral"
 q
 
 solve report-files add report-file
-report-defs avg-temp itf-flux wall-flux outlet-temp flow-time ,
+report-defs avg-temp itf-flux wall-flux outlet-integral flow-time ,
 file-name "./report-file.out"
 active? yes
 q
