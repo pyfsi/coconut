@@ -62,6 +62,7 @@ nav:
       - General: examples.md
       - Breaking dam:
           - Fluent 2D - Abaqus 2D: breaking_dam_fluent2d_abaqus2d.md
+          - Fluent 2D - KratosStructure 2D: breaking_dam_fluent2d_kratos_structure2d.md
       - Lid-driven cavity:
           - Fluent2D - KratosStructure 2D: lid_driven_cavity_fluent2d_kratos_structure2d.md
           - OpenFOAM2D - KratosStructure 2D: lid_driven_cavity_openfoam2d_kratos_structure2d.md
@@ -83,5 +84,6 @@ nav:
       - Turek benchmark:
           - Fluent 2D - Abaqus 2D: turek_fluent2d_abaqus2d.md
           - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
+          - OpenFOAM 2D - KratosStructure 2D: turek_openfoam2d_kratos_structure2d.md
       - Test single solver: test_single_solver.md
   - Tests: tests.md

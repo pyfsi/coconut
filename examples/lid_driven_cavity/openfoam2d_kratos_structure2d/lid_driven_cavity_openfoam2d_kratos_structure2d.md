@@ -15,7 +15,7 @@ The following figures show contour plots of the pressure and velocity for this e
 
 ## Coupling algorithm
 
-The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
+The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQN-ILS).
 No reuse is employed, so the reuse parameter `q` is set to 0.
 
 ## Predictor
@@ -36,16 +36,16 @@ When either criterion is satisfied the simulation stops.
 The flow solver is the OpenFOAM solver pimpleFOAM.
 A quadrilateral mesh is used with 32 cells on each side of the cavity, made with blockMesh.
 
-The structure solver is KratosMultiphysics StructuralMechanicsApplication (abbreviated KratosStructure).
+The structural solver is KratosMultiphysics StructuralMechanicsApplication (abbreviated KratosStructure).
 The deformable bottom is meshed with 2 layers of 32 _TotalLagrangianElement2D4N_ elements.
 The movement of the left and right side is constrained.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
 Because a two-dimensional calculation in OpenFOAM has one cell in the depth direction, the coordinates of the nodes are actually three-dimensional.
 Therefore, the displacement serving as input to the flow solver is first mapped using the mapper [MapperDepth2DTo3D](../../../coupling_components/mappers/mappers.md#mapperdepth2dto3d) and subsequently mapped using a radial basis mapper.
-The resulting pressure and traction forces are located on the face centers, which all lie in the same plane as where the forces are applied in the structure solver.
+The resulting pressure and traction forces are located on the face centers, which all lie in the same plane as where the forces are applied in the structural solver.
 This means no additional transformer is required and only a radial basis mapper has to be applied.
-Mapping the flow solver instead of the structure solver, means that the coupled solver will work with the interface containing the displacements stored in Kratos nodes and not the interface which has stored the displacements in twice as many OpenFOAM nodes.
+Mapping the flow solver instead of the structural solver, means that the coupled solver will work with the interface containing the displacements stored in Kratos nodes and not the interface which has stored the displacements in twice as many OpenFOAM nodes.
 
 
 ## References
