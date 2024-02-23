@@ -2,7 +2,6 @@
 SetFactory("OpenCASCADE");
 
 // parameters
-r = DefineNumber[ 0.01, Name "Parameters/r" ]; // radius of the roller
 L = DefineNumber[ 0.079, Name "Parameters/L" ]; // height of the elastic gate
 S = DefineNumber[ 0.005, Name "Parameters/S" ]; // thickness of the elastic gate
 G = DefineNumber[ 0.0025, Name "Parameters/G" ]; // clearance of the elastic gate

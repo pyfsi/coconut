@@ -14,24 +14,25 @@ These are used to stabilize and accelerate the convergence.
 
 ## Predictor
 
-The initial guess in every time step is done using the linear predictor.
+The initial guess at each time step is made using the linear predictor.
 
 ## Convergence criterion
 
 Two convergence criteria have been specified:
 
 -   The number of iterations in every time step is larger than 20.
--   The residual norm on the displacement is a factor $10^{-3}$ lower than the initial value.
+-   The residual norm of the displacement is a factor $10^{3}$ lower than the initial value.
 
-When either criterion is satisfied the simulation stops.
+The simulation stops as soon as one of the two criteria is met.
 
 ## Solvers
 
 Fluent is used as flow solver.
-The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
-A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
+The provided mesh is triangular. When the gate bends, remeshing is performed to preserve its quality.
+A script to regenerate it using Gambit is included. This script allows the resolution and geometric parameters to be
+changed.
 
-The structural solver is Kratos Multiphysics using first-order, quadrilateral, plane strain elements.
+The structural solver is Kratos Multiphysics. First-order, quadrilateral, plane strain elements are used.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
 In the structural solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.

@@ -9,7 +9,7 @@ A video made with ParaView is shown below.
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/YAe1HrT89k4" title="FSI simulation of Hron &amp; Turek benchmark" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
-With these solver, the run time is significantly smaller than that of the same test case with [Fluent and Abaqus](../fluent2d_abaqus2d/turek_fluent2d_abaqus2d.md).
+With these solvers, the run time is significantly smaller than that of the same test case with [Fluent and Abaqus](../fluent2d_abaqus2d/turek_fluent2d_abaqus2d.md).
 For details on boundary conditions and parameters refer to the example with [Fluent and Abaqus](../fluent2d_abaqus2d/turek_fluent2d_abaqus2d.md).
 
 The accuracy of the simulation framework can be assessed by comparing with the results in Turek and Hron [[1](#1)].
@@ -33,7 +33,7 @@ The reuse parameter `q` is set to 10, which means that data from the last ten ti
 
 ## Predictor
 
-The initial guess in every time step is done using the quadratic predictor.
+The initial guess in every time step is made using the quadratic predictor.
 
 ## Convergence criterion
 
@@ -46,7 +46,7 @@ OpenFOAM is used as flow solver.
 The provided mesh is quadrilateral.
 Some finer mesh settings are provided in the blockMeshDict.
 
-The structural solver is Kratos Multiphysics and uses first-order, quadrilateral, plane strain elements.
+The structural solver is Kratos Multiphysics. First-order, quadrilateral, plane strain elements are used.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
 In the structural solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
