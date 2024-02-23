@@ -1,0 +1,16 @@
+functions
+{
+    forces
+    {
+        type                forces;
+        functionObjectLibs  ("libforces.so");
+        writeControl        timeStep;
+        writeInterval       1;
+        patches             (plateEnd plateBottom plateTop cylinder);
+        log                 false;
+        rho                 rhoInf;
+        rhoInf              1000;
+        CofR                (0.5 0.1 0);
+    }
+}
+

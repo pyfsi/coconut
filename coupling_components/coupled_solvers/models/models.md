@@ -124,7 +124,7 @@ Once the actual calculation has converged, the surrogate can be _synchronized_ w
 Beside the four methods shared by all models, this one has two additional important methods:
 
 - The method `get_solution` starts the surrogate coupled calculation and returns the solution.
-- The method `set_solution` allows to provide an interface solution that is used to perform one iteration (flow solver calculation and using result for structure solver calculation). In this way the surrogate can be _synchronized_ with actual calculation. This method does not need to be implemented.
+- The method `set_solution` allows to provide an interface solution that is used to perform one iteration (flow solver calculation and using result for structural solver calculation). In this way the surrogate can be _synchronized_ with actual calculation. This method does not need to be implemented.
 
 The surrogate coupled calculation is performed with a `coupled_solver` that has its own `predictor`, `convergence_criterion`, `solver_wrappers` and coupling algorithm.
 The surrogate solver_wrappers should be cheaper to calculate, but still representative for the actual solver wrappers.

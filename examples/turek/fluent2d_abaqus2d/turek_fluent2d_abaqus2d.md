@@ -28,7 +28,7 @@ The total simulated time is 35 s in time steps of 0.002 s.
 
 ## Coupling algorithm
 
-The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
+The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQN-ILS).
 The reuse parameter `q` is set to 10, which means that data from the last ten time steps will be used to stabilize and accelerate the convergence.
 
 ## Predictor
@@ -50,14 +50,14 @@ Fluent is used as flow solver.
 The provided mesh is triangular. When the gate bends re-meshing is performed to preserve its quality.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
 
-The structure solver is Abaqus.
+The structural solver is Abaqus.
 The Abaqus case is built when setting up the case starting from the file *`mesh_turek.inp`* containing nodes and elements. 
 This is done by running Abaqus with the *`make_inp.py`* Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
 The result of the setup is a completed input file *`case_turek.inp`*.
 The Abaqus element type used is CPE8R.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
-In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
+In the structural solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.
 
 ## References
 <a id="1">[1]</a> 

@@ -1,12 +1,12 @@
 # Coupled solvers
 
-This documentation describes the different types of coupled solvers which are available. A coupled solver refers to a coupling algorithm used to couple two solvers, typically a flow and a structure solver.
+This documentation describes the different types of coupled solvers which are available. A coupled solver refers to a coupling algorithm used to couple two solvers, typically a flow and a structural solver.
 Some of these coupled solvers make use of one or more [models](models/models.md). An odd one out is `test_single_solver` which allows to test only one solver by coupling it to a dummy solver. 
 All coupled solvers inherit from the class `CoupledSolver`.
 
 In the parameter JSON file, the dictionary `coupled_solver` holds the `type` and the dictionary `settings`, but also the dictionary `predictor`, the dictionary `convergence_criterion` and the list `solver_wrappers` containing dictionaries (one for each solver wrapper, typically two). More information on these last three can be found in the [predictors](../predictors/predictors.md), [convergence criteria](../convergence_criteria/convergence_criteria.md) and the [solver wrappers](../solver_wrappers/solver_wrappers.md) documentation, respectively.
 
-In the following subsections, explanatory schematics will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\widetilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\widetilde{x}$. Typically, these solvers are a flow and structure solver, respectively.
+In the following subsections, explanatory schematics will be shown. In those schematics, $\mathcal{F}$ is the first solver with input $x$ and output $\widetilde{y}$ and $\mathcal{S}$ is the second solver with input $y$ and output $\widetilde{x}$. Typically, these solvers are a flow and structural solver, respectively.
 Note that the column vectors such as $x$ and $y$ typically contain different components of the same variables or even different variables.
 Often, the vectors $x$ and $\widetilde{x}$ contain the three components of displacement, whereas the vectors $y$ and $\widetilde{y}$ contain the pressure and the three components of traction. However, this has no importance for the coupled solver, as long as the in- and outputs of both solvers correspond to each other.
 Further, the superscript $k=0\dots$ denotes the iteration, where $k+1$ is the current iteration.

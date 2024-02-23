@@ -132,6 +132,11 @@ class TestBreakingDamFluent2DAbaqus2D(EvaluateExamples):
     number_of_timesteps = 2
 
 
+class TestBreakingDamFluent2DKratosStructure2D(EvaluateExamples):
+    example = 'breaking_dam/fluent2d_kratos_structure2d'
+    number_of_timesteps = 2
+
+
 class TestLidDrivenCavityFluent2DKratosStructure2D(EvaluateExamples):
     example = 'lid_driven_cavity/fluent2d_kratos_structure2d'
     number_of_timesteps = 2
@@ -256,9 +261,15 @@ class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
     number_of_timesteps = 1
 
 
+class TestTurekOpenFOAM2DKratosStructure2D(EvaluateExamples):
+    example = 'turek/openfoam2d_kratos_structure'
+    number_of_timesteps = 2
+
+
 # comment out examples that you do not want to evaluate
 test_cases = (
     TestBreakingDamFluent2DAbaqus2D,
+    TestBreakingDamFluent2DKratosStructure2D,
     TestLidDrivenCavityFluent2DKratosStructure2D,
     TestLidDrivenCavityOpenFOAM2DKratosStructure2D,
     TestTestSingleSolver,
@@ -278,6 +289,7 @@ test_cases = (
     TestTubeTubeFlowTubeStructureSurrogate,
     TestTurekFluent2DAbaqus2D,
     TestTurekFluent2DAbaqus2DSteady,
+    TestTurekOpenFOAM2DKratosStructure2D,
 )
 
 

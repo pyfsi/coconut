@@ -5,7 +5,7 @@ This done by using OpenFOAM and StructuralMechanicsApplication of Kratos, both w
 
 ## Coupling algorithm
 
-The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
+The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQN-ILS).
 
 ## Predictor
 
@@ -29,7 +29,7 @@ The displacements are applied in the nodes. In contrast, the loads (pressure and
 The axial direction is along the x-axis.
 When starting the simulation, the solver `coconut_pimpleFoam` is compiled automatically, if required.
 
-The structure solver is Kratos, used to solve a fully 3D tube,
+The structural solver is Kratos, used to solve a fully 3D tube,
 with 24 elements on the fluid-structure interface in the length direction and 8 in the circumferential direction. 
 The Kratos element type used is ShellThickElementCorotational3D4N. These are 4-node shell elements.
 The displacement and loads are calculated/applied on the nodes. There are 200 nodes on the fluid-structure interface.
