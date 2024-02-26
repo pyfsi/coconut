@@ -262,7 +262,7 @@ class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
 
 
 class TestTurekOpenFOAM2DKratosStructure2D(EvaluateExamples):
-    example = 'turek/openfoam2d_kratos_structure'
+    example = 'turek/openfoam2d_kratos_structure2d'
     number_of_timesteps = 2
 
 
