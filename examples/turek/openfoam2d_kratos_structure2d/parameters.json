@@ -167,7 +167,6 @@
             "settings": {
               "type": "mappers.linear",
               "settings": {
-                "check_bounding_box": false,
                 "directions": [
                   "x",
                   "y"
