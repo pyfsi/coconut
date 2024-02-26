@@ -10,8 +10,15 @@
       
       
       
+      
+        <link rel="prev" href="openfoam.html">
+      
+      
+        <link rel="next" href="data_structure.html">
+      
+      
       <link rel="icon" href="assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.11">
     
     
       
@@ -19,27 +26,33 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.edf004c2.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.7e359304.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
         
-      
-    
-    
-    
-      
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
     
-    <script>__md_scope=new URL(".",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
+    
     
     
   </head>
@@ -54,9 +67,6 @@
     
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -78,7 +88,7 @@
 
   
 
-<header class="md-header md-header--lifted" data-md-component="header">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="index.html" title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
       
@@ -86,7 +96,8 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -105,32 +116,40 @@
       </div>
     </div>
     
-      <form class="md-header__option" data-md-component="palette">
-        
-          
-          
-          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-          
-            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-            </label>
-          
-        
-          
-          
-          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
-          
-            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
-            </label>
-          
-        
-      </form>
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
       <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
@@ -138,13 +157,16 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
       
@@ -155,7 +177,7 @@
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -167,7 +189,7 @@
         <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pyfsi/coconut
@@ -180,19 +202,24 @@
     
       
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
+  <div class="md-grid">
     <ul class="md-tabs__list">
       
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Introduction
 
-
-  <li class="md-tabs__item">
-    <a href="index.html" class="md-tabs__link">
-      Introduction
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
         
@@ -200,14 +227,33 @@
   
     
   
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="coupling_components.html" class="md-tabs__link">
+          
+  
+  Coupling components
 
+        </a>
+      </li>
+    
+  
 
+      
+        
   
   
   
     <li class="md-tabs__item">
-      <a href="coupling_components.html" class="md-tabs__link md-tabs__link--active">
-        Coupling components
+      <a href="data_structure.html" class="md-tabs__link">
+        
+  
+    
+  
+  Data structure
+
       </a>
     </li>
   
@@ -216,38 +262,15 @@
         
   
   
-
-
-  <li class="md-tabs__item">
-    <a href="data_structure.html" class="md-tabs__link">
-      Data structure
-    </a>
-  </li>
-
-      
-        
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="docs.html" class="md-tabs__link">
-      Documentation
-    </a>
-  </li>
-
-      
-        
-  
-  
-
-
-  
-  
   
     <li class="md-tabs__item">
-      <a href="examples.html" class="md-tabs__link">
-        Examples
+      <a href="docs.html" class="md-tabs__link">
+        
+  
+    
+  
+  Documentation
+
       </a>
     </li>
   
@@ -256,13 +279,36 @@
         
   
   
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="examples.html" class="md-tabs__link">
+          
+  
+  Examples
 
+        </a>
+      </li>
+    
+  
 
-  <li class="md-tabs__item">
-    <a href="tests.html" class="md-tabs__link">
-      Tests
-    </a>
-  </li>
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="tests.html" class="md-tabs__link">
+        
+  
+    
+  
+  Tests
+
+      </a>
+    </li>
+  
 
       
     </ul>
@@ -287,6 +333,7 @@
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -306,7 +353,7 @@
       <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pyfsi/coconut
@@ -318,14 +365,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="index.html" class="md-nav__link">
-        Introduction
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
       </a>
     </li>
   
@@ -333,271 +385,401 @@
     
       
       
-      
-
   
   
     
   
   
+  
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    
+      
+        
+        
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2">
-          Coupling components
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Coupling components" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          Coupling components
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Coupling components
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Coupling components
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="coupling_components.html" class="md-nav__link">
-        General
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="convergence_criteria.html" class="md-nav__link">
-        Convergence criteria
+        
+  
+  <span class="md-ellipsis">
+    Convergence criteria
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" data-md-state="indeterminate" type="checkbox" id="__nav_2_3" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2_3">
-          Coupled solvers
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Coupled solvers" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_3">
-          <span class="md-nav__icon md-icon"></span>
-          Coupled solvers
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Coupled solvers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Coupled solvers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="coupled_solvers.html" class="md-nav__link">
-        Coupled solvers
+        
+  
+  <span class="md-ellipsis">
+    Coupled solvers
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="models.html" class="md-nav__link">
-        Models
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="mappers.html" class="md-nav__link">
-        Mappers
+        
+  
+  <span class="md-ellipsis">
+    Mappers
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="predictors.html" class="md-nav__link">
-        Predictors
+        
+  
+  <span class="md-ellipsis">
+    Predictors
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
+    
+    
+    
+      
+      
+    
     
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_6" type="checkbox" id="__nav_2_6" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2_6">
-          Solver wrappers
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Solver wrappers" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_6">
-          <span class="md-nav__icon md-icon"></span>
-          Solver wrappers
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" checked>
+        
           
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Solver wrappers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            Solver wrappers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="solver_wrappers.html" class="md-nav__link">
-        General
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="abaqus.html" class="md-nav__link">
-        Abaqus
+        
+  
+  <span class="md-ellipsis">
+    Abaqus
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
-        Fluent
+        
+  
+  <span class="md-ellipsis">
+    Fluent
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="kratos_structure.html" class="md-nav__link">
-        KratosStructure
+        
+  
+  <span class="md-ellipsis">
+    KratosStructure
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="openfoam.html" class="md-nav__link">
-        OpenFOAM
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Python
+          
+  
+  <span class="md-ellipsis">
+    Python
+  </span>
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="python.html" class="md-nav__link md-nav__link--active">
-        Python
+        
+  
+  <span class="md-ellipsis">
+    Python
+  </span>
+  
+
       </a>
       
         
@@ -617,7 +799,9 @@
       
         <li class="md-nav__item">
   <a href="#tube" class="md-nav__link">
-    Tube
+    <span class="md-ellipsis">
+      Tube
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Tube">
@@ -625,14 +809,18 @@
         
           <li class="md-nav__item">
   <a href="#settings" class="md-nav__link">
-    Settings
+    <span class="md-ellipsis">
+      Settings
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#tube-flow-solver" class="md-nav__link">
-    Tube flow solver
+    <span class="md-ellipsis">
+      Tube flow solver
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Tube flow solver">
@@ -640,7 +828,9 @@
         
           <li class="md-nav__item">
   <a href="#solver-parameters" class="md-nav__link">
-    Solver parameters
+    <span class="md-ellipsis">
+      Solver parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Solver parameters">
@@ -648,14 +838,18 @@
         
           <li class="md-nav__item">
   <a href="#inlet-boundary" class="md-nav__link">
-    Inlet boundary
+    <span class="md-ellipsis">
+      Inlet boundary
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#outlet-boundary" class="md-nav__link">
-    Outlet boundary
+    <span class="md-ellipsis">
+      Outlet boundary
+    </span>
   </a>
   
 </li>
@@ -672,7 +866,9 @@
         
           <li class="md-nav__item">
   <a href="#tube-ringmodel-solver" class="md-nav__link">
-    Tube ringmodel solver
+    <span class="md-ellipsis">
+      Tube ringmodel solver
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Tube ringmodel solver">
@@ -680,7 +876,9 @@
         
           <li class="md-nav__item">
   <a href="#solver-parameters_1" class="md-nav__link">
-    Solver parameters
+    <span class="md-ellipsis">
+      Solver parameters
+    </span>
   </a>
   
 </li>
@@ -691,16 +889,20 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tube-structure-solver" class="md-nav__link">
-    Tube structure solver
+  <a href="#tube-structural-solver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tube structural solver
+    </span>
   </a>
   
-    <nav class="md-nav" aria-label="Tube structure solver">
+    <nav class="md-nav" aria-label="Tube structural solver">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#solver-parameters_2" class="md-nav__link">
-    Solver parameters
+    <span class="md-ellipsis">
+      Solver parameters
+    </span>
   </a>
   
 </li>
@@ -712,7 +914,9 @@
         
           <li class="md-nav__item">
   <a href="#solver-coupling-convergence" class="md-nav__link">
-    Solver coupling convergence
+    <span class="md-ellipsis">
+      Solver coupling convergence
+    </span>
   </a>
   
 </li>
@@ -724,7 +928,9 @@
       
         <li class="md-nav__item">
   <a href="#references" class="md-nav__link">
-    References
+    <span class="md-ellipsis">
+      References
+    </span>
   </a>
   
 </li>
@@ -736,31 +942,38 @@
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="data_structure.html" class="md-nav__link">
-        Data structure
+        
+  
+  <span class="md-ellipsis">
+    Data structure
+  </span>
+  
+
       </a>
     </li>
   
@@ -768,14 +981,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="docs.html" class="md-nav__link">
-        Documentation
+        
+  
+  <span class="md-ellipsis">
+    Documentation
+  </span>
+  
+
       </a>
     </li>
   
@@ -783,474 +1001,741 @@
     
       
       
-      
-
+  
   
   
   
     
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" data-md-state="indeterminate" type="checkbox" id="__nav_5" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5">
-          Examples
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Examples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
-          <span class="md-nav__icon md-icon"></span>
-          Examples
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="examples.html" class="md-nav__link">
-        General
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" data-md-state="indeterminate" type="checkbox" id="__nav_5_2" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5_2">
-          Breaking dam
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Breaking dam" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_2">
-          <span class="md-nav__icon md-icon"></span>
-          Breaking dam
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Breaking dam
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Breaking dam
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
     </li>
   
 
+              
             
-          
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
             
               
+                
+  
   
   
   
     
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" data-md-state="indeterminate" type="checkbox" id="__nav_5_3" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5_3">
-          Lid-driven cavity
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Lid-driven cavity" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_3">
-          <span class="md-nav__icon md-icon"></span>
-          Lid-driven cavity
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lid-driven cavity
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Lid-driven cavity
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="lid_driven_cavity_fluent2d_kratos_structure2d.html" class="md-nav__link">
-        Fluent2D - KratosStructure 2D
+        
+  
+  <span class="md-ellipsis">
+    Fluent2D - KratosStructure 2D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.html" class="md-nav__link">
-        OpenFOAM2D - KratosStructure 2D
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM2D - KratosStructure 2D
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" data-md-state="indeterminate" type="checkbox" id="__nav_5_4" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5_4">
-          Tube
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Tube" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_4">
-          <span class="md-nav__icon md-icon"></span>
-          Tube
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tube
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Tube
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
-        Python TubeFlow - Python TubeRingmodel
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeRingmodel
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_structure.html" class="md-nav__link">
-        Python TubeFlow - Python TubeStructure
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link">
-        Python TubeFlow - Python TubeStructure - Analytical
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure - Analytical
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_tube_structure_surrogate.html" class="md-nav__link">
-        Python TubeFlow - Python TubeStructure - Surrogate
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure - Surrogate
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_tube_flow_abaqus2d.html" class="md-nav__link">
-        Python TubeFlow - Abaqus 2D
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Abaqus 2D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent2d_tube_structure.html" class="md-nav__link">
-        Fluent 2D - Python TubeStructure
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Python TubeStructure
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D - Steady
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Steady
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d_surrogate.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D - Surrogate
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Surrogate
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
-        Fluent 3D - Abaqus 2D
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - Abaqus 2D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
-        Fluent 3D - Abaqus 3D
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - Abaqus 3D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
-        Fluent 3D - KratosStructure 3D
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - KratosStructure 3D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_openfoam3d_abaqus3d.html" class="md-nav__link">
-        OpenFOAM 3D - Abaqus 3D
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D - Abaqus 3D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
-        OpenFOAM 3D - KratosStructure 3D
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D - KratosStructure 3D
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_5" data-md-state="indeterminate" type="checkbox" id="__nav_5_5" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5_5">
-          Turek benchmark
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Turek benchmark" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_5">
-          <span class="md-nav__icon md-icon"></span>
-          Turek benchmark
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Turek benchmark
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            Turek benchmark
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="turek_fluent2d_abaqus2d.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="turek_fluent2d_abaqus2d_steady.html" class="md-nav__link">
-        Fluent 2D - Abaqus 2D - Steady
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Steady
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
     </li>
   
 
+              
             
-          
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="test_single_solver.html" class="md-nav__link">
-        Test single solver
+        
+  
+  <span class="md-ellipsis">
+    Test single solver
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="tests.html" class="md-nav__link">
-        Tests
+        
+  
+  <span class="md-ellipsis">
+    Tests
+  </span>
+  
+
       </a>
     </li>
   
@@ -1264,10 +1749,12 @@
             
             
           
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
-              
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
                 
+                  
+
 
 <h1 id="python">Python</h1>
 <p>This is the documentation for all Python solver wrappers.
@@ -1280,7 +1767,7 @@ This means the tube is divided in <code>m</code> intervals in the axial z-direct
 and only variations in that direction are taken into account.
 In other words, all variables are uniform over a cross-section.
 They are calculated in the center of each of the <code>m</code> cells.</p>
-<p>There is one flow solver <code>SolverWrapperTubeFlow</code> and two structure solvers, one with inertia <code>SolverWrapperTubeStructure</code> and one without <code>SolverWrapperTubeRingmodel</code>.
+<p>There is one flow solver <code>SolverWrapperTubeFlow</code> and two structural solvers, one with inertia <code>SolverWrapperTubeStructure</code> and one without <code>SolverWrapperTubeRingmodel</code>.
 These solvers are very simple and provide insight in the physics, especially in the stability of fluid-structure interaction simulation.
 Nonetheless, they are not meant to provide an accurate representation of reality.
 Especially the pressure stabilization term in the flow solver smooths the pressure distribution.</p>
@@ -1289,67 +1776,67 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 <table>
 <thead>
 <tr>
-<th align="right">parameter</th>
-<th align="center">type</th>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>debug</code></td>
-<td align="center">bool</td>
+<td style="text-align: right;"><code>debug</code></td>
+<td style="text-align: center;">bool</td>
 <td>(optional) Default: <code>false</code>. For every iteration, text files are saved with the input and output data of the solver.</td>
 </tr>
 <tr>
-<td align="right"><code>delta_t</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">double</td>
 <td>Fixed time step size. This parameter is usually specified in a higher component.</td>
 </tr>
 <tr>
-<td align="right"><code>input_file</code></td>
-<td align="center">str</td>
+<td style="text-align: right;"><code>input_file</code></td>
+<td style="text-align: center;">str</td>
 <td>(optional) Name of the input file, which may be present in the folder given in <code>working_directory</code>. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.</td>
 </tr>
 <tr>
-<td align="right"><code>interface_input</code></td>
-<td align="center">list</td>
-<td>List of dictionaries; each dictionary requires two keys: <code>model_part</code> and <code>variables</code>. The former contains the name of the <code>ModelPart</code> as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: <code>['displacement']</code> for a flow solver and <code>['pressure','traction']</code> for a structure solver.</td>
+<td style="text-align: right;"><code>interface_input</code></td>
+<td style="text-align: center;">list</td>
+<td>List of dictionaries; each dictionary requires two keys: <code>model_part</code> and <code>variables</code>. The former contains the name of the <code>ModelPart</code> as a string. The value of the latter is a list of variables. Even if there is only one variable, a list is required. For the Python solver wrappers these variables are fixed: <code>['displacement']</code> for a flow solver and <code>['pressure','traction']</code> for a structural solver.</td>
 </tr>
 <tr>
-<td align="right"><code>interface_output</code></td>
-<td align="center">list</td>
-<td>Analogous to <code>interface_input</code>. However, the variables are different: <code>['pressure','traction']</code> for a flow solver and <code>['displacement']</code> for a structure solver.</td>
+<td style="text-align: right;"><code>interface_output</code></td>
+<td style="text-align: center;">list</td>
+<td>Analogous to <code>interface_input</code>. However, the variables are different: <code>['pressure','traction']</code> for a flow solver and <code>['displacement']</code> for a structural solver.</td>
 </tr>
 <tr>
-<td align="right"><nobr><code>print_coupling_convergence</code></nobr></td>
-<td align="center">bool</td>
+<td style="text-align: right;"><nobr><code>print_coupling_convergence</code></nobr></td>
+<td style="text-align: center;">bool</td>
 <td>(optional) Default <code>false</code>. If <code>true</code> and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.</td>
 </tr>
 <tr>
-<td align="right"><code>unsteady</code></td>
-<td align="center">bool</td>
+<td style="text-align: right;"><code>unsteady</code></td>
+<td style="text-align: center;">bool</td>
 <td>(optional) Default: <code>true</code>. Indicates if case is steady or unsteady.</td>
 </tr>
 <tr>
-<td align="right"><code>save_restart</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
 <td>(optional) Default: 0. Determines the time step interval upon which a pickle file <em><code>case_timestep&lt;time step&gt;.pickle</code></em> is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.</td>
 </tr>
 <tr>
-<td align="right"><code>time_step_start</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>time_step_start</code></td>
+<td style="text-align: center;">int</td>
 <td>(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file <em><code>case_timestep&lt;timestep_start&gt;.pickle</code></em> to start from the corresponding time step. For a steady simulation, the value should be <code>0</code>.</td>
 </tr>
 <tr>
-<td align="right"><code>working_directory</code></td>
-<td align="center">str</td>
+<td style="text-align: right;"><code>working_directory</code></td>
+<td style="text-align: center;">str</td>
 <td>Absolute path to the working directory or relative path with respect to the current directory.</td>
 </tr>
 </tbody>
 </table>
 <p><code>delta_t</code> is a necessary parameter, while <code>timestep_start</code> and <code>save_restart</code> are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.</p>
 <p>Because these solvers are simple, it is possible to omit the use of interpolation between two solver wrappers.
-In that case, the names of the <code>ModelParts</code> of both flow and structure solver need to be the same.</p>
+In that case, the names of the <code>ModelParts</code> of both flow and structural solver need to be the same.</p>
 <h3 id="tube-flow-solver">Tube flow solver</h3>
 <p>This flow solver calculates the flow inside a 1D straight and flexible tube.
 The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.tube_flow_solver</code>.
@@ -1383,80 +1870,80 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <table>
 <thead>
 <tr>
-<th align="right">parameter</th>
-<th align="center">type</th>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>axial_offset</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>axial_offset</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
-<td align="right"><code>d</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>d</code></td>
+<td style="text-align: center;">double</td>
 <td>Nominal diameter of the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>e</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>e</code></td>
+<td style="text-align: center;">double</td>
 <td>Modulus of elasticity of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>h</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>h</code></td>
+<td style="text-align: center;">double</td>
 <td>Thickness of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>inlet_boundary</code></td>
-<td align="center">dict</td>
+<td style="text-align: right;"><code>inlet_boundary</code></td>
+<td style="text-align: center;">dict</td>
 <td>Dictionary containing all information with respect to the inlet boundary condition.</td>
 </tr>
 <tr>
-<td align="right"><code>l</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>l</code></td>
+<td style="text-align: center;">double</td>
 <td>Length of the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>m</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>m</code></td>
+<td style="text-align: center;">int</td>
 <td>Number of cells for discretization. The values are calculated in the cell centers.</td>
 </tr>
 <tr>
-<td align="right"><code>newtonmax</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>newtonmax</code></td>
+<td style="text-align: center;">double</td>
 <td>Maximum number of Newton-Raphson iterations for the flow solver calculation.</td>
 </tr>
 <tr>
-<td align="right"><code>newtontol</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>newtontol</code></td>
+<td style="text-align: center;">double</td>
 <td>Relative tolerance for the Newton-Raphson iterations for the flow solver calculation.</td>
 </tr>
 <tr>
-<td align="right"><code>outlet_boundary</code></td>
-<td align="center">dict</td>
+<td style="text-align: right;"><code>outlet_boundary</code></td>
+<td style="text-align: center;">dict</td>
 <td>Dictionary containing all information with respect to the outlet boundary condition.</td>
 </tr>
 <tr>
-<td align="right"><code>preference</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>preference</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>0</code>. Reference pressure and initial pressure.</td>
 </tr>
 <tr>
-<td align="right"><code>u0</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>u0</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>ureference</code>. Initial velocity throughout the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>ureference</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>ureference</code></td>
+<td style="text-align: center;">double</td>
 <td>Reference velocity used for determination of pressure stabilization term.</td>
 </tr>
 <tr>
-<td align="right"><code>rhof</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>rhof</code></td>
+<td style="text-align: center;">double</td>
 <td>Density of the fluid.</td>
 </tr>
 </tbody>
@@ -1466,35 +1953,35 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <table>
 <thead>
 <tr>
-<th align="right">parameter</th>
-<th align="center">type</th>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>amplitude</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>amplitude</code></td>
+<td style="text-align: center;">double</td>
 <td>Amplitude of the inlet boundary condition.</td>
 </tr>
 <tr>
-<td align="right"><code>period</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>period</code></td>
+<td style="text-align: center;">double</td>
 <td>Period of the inlet boundary condition. Period of oscillation for a periodic boundary condition, duration for a non-periodic boundary condition. Not used for a fixed value boundary condition (type <code>4</code>).</td>
 </tr>
 <tr>
-<td align="right"><code>reference</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>reference</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Reference value of inlet boundary condition. If not provided, the value of this parameter is the corresponding reference value provided above, i.e. <code>ureference</code>, <code>preference</code> or <code>preference</code> + <code>rhof</code> * <code>ureference</code>^2 / 2.</td>
 </tr>
 <tr>
-<td align="right"><code>type</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>type</code></td>
+<td style="text-align: center;">int</td>
 <td>Type of inlet boundary condition. <br>If <code>1</code>, a sine wave is used with amplitude, reference and period as specified. <br>If <code>2</code>, a pulse is used with amplitude as specified and a duration equal to the parameter period. After the pulse the variable is equal to the reference value. <br>If <code>3</code>, a quadratic sine wave is used with amplitude, reference and period as specified. <br>If <code>4</code>, a fixed value equal to the sum of the reference value and the amplitude. Used for steady cases. <br>If other, a steady increase of the value at the inlet with slope of amplitude divided by period is used.</td>
 </tr>
 <tr>
-<td align="right"><code>variable</code></td>
-<td align="center">str</td>
+<td style="text-align: right;"><code>variable</code></td>
+<td style="text-align: center;">str</td>
 <td>Variable upon which the inlet boundary condition is defined, either <code>'pressure'</code>, <code>'velocity'</code> or <code>'total pressure'</code>.</td>
 </tr>
 </tbody>
@@ -1504,21 +1991,21 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <table>
 <thead>
 <tr>
-<th align="right">parameter</th>
-<th align="center">type</th>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>type</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>type</code></td>
+<td style="text-align: center;">int</td>
 <td>Type of outlet boundary condition. <br>If <code>1</code>, a non-reflecting boundary condition is applied. This type cannot be used for a steady calculation. <br>If other, a fixed value equal to the reference pressure is applied.</td>
 </tr>
 </tbody>
 </table>
 <h3 id="tube-ringmodel-solver">Tube ringmodel solver</h3>
-<p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
+<p>This structural solver calculates the deformation of the wall of a straight and flexible tube.
 The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.ring_model_solver</code>.
 The tube is regarded as made up of independent rings and no inertia is taken into account.
 Therefore, there is no dependence on previous time steps and the parameters <code>delta_t</code> and <code>timestep_start</code> are not used.
@@ -1548,61 +2035,61 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <table>
 <thead>
 <tr>
-<th align="right">parameter</th>
-<th align="center">type</th>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="right"><nobr><code>axial_offset</code></nobr></td>
-<td align="center">double</td>
+<td style="text-align: right;"><nobr><code>axial_offset</code></nobr></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
-<td align="right"><code>d</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>d</code></td>
+<td style="text-align: center;">double</td>
 <td>Nominal diameter of the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>e</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>e</code></td>
+<td style="text-align: center;">double</td>
 <td>Modulus of elasticity of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>h</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>h</code></td>
+<td style="text-align: center;">double</td>
 <td>Thickness of tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>l</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>l</code></td>
+<td style="text-align: center;">double</td>
 <td>Length of the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>m</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>m</code></td>
+<td style="text-align: center;">int</td>
 <td>Number of cells for discretization. The values are calculated in the cell centers.</td>
 </tr>
 <tr>
-<td align="right"><code>preference</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>preference</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>0</code>. Reference pressure.</td>
 </tr>
 <tr>
-<td align="right"><code>residual_atol</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>residual_atol</code></td>
+<td style="text-align: center;">double</td>
 <td>Absolute residual tolerance, only used and required for the <a href="#solver-coupling-convergence">solver coupling convergence</a> criterion.</td>
 </tr>
 <tr>
-<td align="right"><code>rhof</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>rhof</code></td>
+<td style="text-align: center;">double</td>
 <td>Density of the fluid.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="tube-structure-solver">Tube structure solver</h3>
-<p>This structure solver calculates the deformation of the wall of a straight and flexible tube.
+<h3 id="tube-structural-solver">Tube structural solver</h3>
+<p>This structural solver calculates the deformation of the wall of a straight and flexible tube.
 The <code>type</code> for this solver wrapper is <code>solver_wrappers.python.tube_structure_solver</code>.
 In this model inertia is taken into account, but still only radial displacement is considered.
 The required input is the pressure on the tube wall.
@@ -1645,7 +2132,7 @@ $$
 $$
 Typical values are <span class="arithmatex"><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span> equal to 1/2 and <span class="arithmatex"><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span> equal to 1/4.</p>
 <p>A different time discretization for flow and structure can lead to difficulties for strongly coupled problems, especially looking at the resulting pressure distributions.
-As most flow solvers are discretized using the backward Euler method, it is advised to choose the same method for the structure solver (the time discretization of <code>SolverWrapperTubeFlowSolver</code> is also backward Euler).
+As most flow solvers are discretized using the backward Euler method, it is advised to choose the same method for the structural solver (the time discretization of <code>SolverWrapperTubeFlowSolver</code> is also backward Euler).
 This avoids the occurrence of spurious oscillations of the pressure in time [<a href="#3">3</a>].</p>
 <p>Finally, this solver also provides a Jacobian of the change in radius with pressure, which can be used as surrogate Jacobian [<a href="#4">4</a>].</p>
 <h4 id="solver-parameters_2">Solver parameters</h4>
@@ -1654,85 +2141,85 @@ Care should be taken that the values of <code>d</code>, <code>e</code>, <code>h<
 <table>
 <thead>
 <tr>
-<th align="right">parameter</th>
-<th align="center">type</th>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="right"><code>axial_offset</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>axial_offset</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>0</code>. Distance over which tube is displaced axially in the coordinate system.</td>
 </tr>
 <tr>
-<td align="right"><code>beta</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>beta</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Newmark parameter <span class="arithmatex"><span class="MathJax_Preview">\beta</span><script type="math/tex">\beta</script></span>. Only required when the Newmark-beta time discretization is used.</td>
 </tr>
 <tr>
-<td align="right"><code>d</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>d</code></td>
+<td style="text-align: center;">double</td>
 <td>Nominal diameter of the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>e</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>e</code></td>
+<td style="text-align: center;">double</td>
 <td>Modulus of elasticity of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>h</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>h</code></td>
+<td style="text-align: center;">double</td>
 <td>Thickness of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>gamma</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>gamma</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Newmark parameter <span class="arithmatex"><span class="MathJax_Preview">\gamma</span><script type="math/tex">\gamma</script></span>. Only required when the Newmark-beta time discretization is used.</td>
 </tr>
 <tr>
-<td align="right"><code>l</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>l</code></td>
+<td style="text-align: center;">double</td>
 <td>Length of the tube.</td>
 </tr>
 <tr>
-<td align="right"><code>m</code></td>
-<td align="center">int</td>
+<td style="text-align: right;"><code>m</code></td>
+<td style="text-align: center;">int</td>
 <td>Number of cells for discretization. The values are calculated in the cell centers.</td>
 </tr>
 <tr>
-<td align="right"><code>nu</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>nu</code></td>
+<td style="text-align: center;">double</td>
 <td>Poisson's ratio.</td>
 </tr>
 <tr>
-<td align="right"><code>preference</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>preference</code></td>
+<td style="text-align: center;">double</td>
 <td>(optional) Default: <code>0</code>. Reference pressure.</td>
 </tr>
 <tr>
-<td align="right"><code>residual_atol</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>residual_atol</code></td>
+<td style="text-align: center;">double</td>
 <td>Absolute residual tolerance, only used and required for the <a href="#solver-coupling-convergence">solver coupling convergence</a> criterion.</td>
 </tr>
 <tr>
-<td align="right"><code>rhof</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>rhof</code></td>
+<td style="text-align: center;">double</td>
 <td>Density of the fluid.</td>
 </tr>
 <tr>
-<td align="right"><code>rhos</code></td>
-<td align="center">double</td>
+<td style="text-align: right;"><code>rhos</code></td>
+<td style="text-align: center;">double</td>
 <td>Density of the tube wall.</td>
 </tr>
 <tr>
-<td align="right"><code>solver</code></td>
-<td align="center">str</td>
+<td style="text-align: right;"><code>solver</code></td>
+<td style="text-align: center;">str</td>
 <td>(optional) Default: <code>solve_banded</code>. Either <code>solve_banded</code> or <code>direct</code>. Specifies the solution method for the linear system of equations.</td>
 </tr>
 <tr>
-<td align="right"><code>time_disretization</code></td>
-<td align="center">str</td>
+<td style="text-align: right;"><code>time_disretization</code></td>
+<td style="text-align: center;">str</td>
 <td>(optional) Default: <code>backward Euler</code>. Specifies the time discretization: either <code>Newmark</code> or <code>backward Euler</code>. Not case sensitive.</td>
 </tr>
 </tbody>
@@ -1754,54 +2241,34 @@ Therefore, a solver tolerance <code>residual_atol</code> has to be defined for t
 <p><a id="4">[4]</a>
 <a href="http://hdl.handle.net/1854/LU-8728347">Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers &amp; Structures, vol. 260, pp. 106720, 2022.</a></p>
 
-              
-            </article>
-          </div>
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
-          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
-            Back to top
-          </a>
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
         
       </main>
       
         <footer class="md-footer">
-  
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
-      
-        
-        <a href="openfoam.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: OpenFOAM" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              OpenFOAM
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="data_structure.html" class="md-footer__link md-footer__link--next" aria-label="Next: Data structure" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Data structure
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1823,10 +2290,12 @@ Therefore, a solver tolerance <code>residual_atol</code> has to be defined for t
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.0bbba5b5.min.js"}</script>
     
     
-      <script src="assets/javascripts/bundle.e1a181d9.min.js"></script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.8fd75fb4.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
