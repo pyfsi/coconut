@@ -3,7 +3,7 @@ repo_name: pyfsi/coconut
 repo_url: https://github.com/pyfsi/coconut
 edit_uri: ''
 site_url: https://pyfsi.github.io/coconut
-site_description: site_description
+site_description: Coupling Code for Numerical Tools - aka 🥥 CoCoNuT is a Python tool for partitioned multiphysics simulations with a focus on fluid-structure interaction.
 use_directory_urls: false
 theme:
   name: 'material'
@@ -31,6 +31,7 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+  custom_dir: overrides
 markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
