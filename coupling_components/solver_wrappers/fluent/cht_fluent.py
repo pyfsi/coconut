@@ -318,11 +318,6 @@ class SolverWrapperFluent(SolverWrapper):
                 coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
                 ids_tmp, self.dict_face_ids[mp_name] = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-                """ define initial input profile if no restart -> NOT USED
-                if self.timestep_start == 0:
-                    self.initial_profile(thread_id, data[:, -self.mnpf:])
-                """
-
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
             x0 = coords_tmp[args, 0]
@@ -591,34 +586,6 @@ class SolverWrapperFluent(SolverWrapper):
         int_strings = str_ids.split("-")
         node_ids = [int(x) for x in int_strings]
         return node_ids
-
-    def initial_profile(self, thread_id, face_nodeIDs):
-        # Currently not in use
-        n = np.shape(face_nodeIDs)[0]
-        if "temperature" in self.input_variables_faces:
-            T = np.ones((n, 1))*self.ini_condition
-            prof = np.append(T, face_nodeIDs, axis=1)
-            fmt = '%27.17e'
-            for i in range(self.mnpf):
-                fmt += '%27d'
-            tmp = f'temperature_timestep0_thread{thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
-            np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
-        elif "heat_flux" in self.input_variables_faces:
-            q = np.zeros((n, self.dimensions + 1))
-            q[:, -1] += self.ini_condition
-            prof = np.append(q, face_nodeIDs, axis=1)
-            if self.dimensions == 2:
-                fmt = '%27.17e%27.17e%27.17e'
-                header = 'x-flux y-flux flux-normal unique-ids'
-            else:
-                fmt = '%27.17e%27.17e%27.17e%27.17e'
-                header = 'x-flux y-flux z-flux flux-normal unique-ids'
-            for i in range(self.mnpf):
-                fmt += '%27d'
-            tmp = f'heat_flux_timestep0_thread{thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
-            np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def write_input_to_file(self, var):
         if var == 'displacement':
