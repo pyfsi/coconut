@@ -15,7 +15,7 @@ solver_load_cmd_dict = {
         'abaqus.v2021': 'ml intel/2021b && ml ABAQUS/2021 && export LM_LICENSE_FILE=27000@ea11serv03.private.ugent.be',
         'abaqus.v2022': 'ml intel/2022a && ml ABAQUS/2022 && export LM_LICENSE_FILE=27000@ea11serv03.private.ugent.be',
         'kratos_structure.v91': 'ml Anaconda3-python/2020.11',
-        'kratos_structure.v94': '',  # no action required
+        'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },
     'ugent_hpc': {
