@@ -72,38 +72,37 @@ class SolverWrapperFluent(SolverWrapper):
         self.model = None
 
         self.output_ini_cond = {}
-        f = 0
+        self.output_variables = []
+        f_n = 0
+        f_f = 0
         for mp in self.settings['interface_output']:
             self.output_ini_cond[mp['model_part']] = 0
-            if f == 0:
-                self.output_variables = mp['variables'] # NEW: list of variables to be stored for communication
-                f = 1
-            elif f == 1 and self.output_variables != mp['variables']:
-                raise ValueError('Stored variables at interface output are not equal for all model parts.')
+            if "nodes" in mp["model_part"]:
+                if f_n == 0:
+                    self.output_variables += mp['variables']  # NEW: list of output variables
+                    f_n = 1
+            if "faces" in mp["model_part"]:
+                if f_f == 0:
+                    self.output_variables += mp['variables']  # NEW: list of output variables
+                    f_f = 1
 
         f_n = 0
         f_f = 0
-        self.input_variables_nodes = []
-        self.input_variables_faces = []
+        self.input_variables = []
         for mp in self.settings['interface_input']:
             if "nodes" in mp["model_part"]:
                 if f_n == 0:
-                    self.input_variables_nodes = mp['variables']  # NEW: list of input variables
+                    self.input_variables += mp['variables']  # NEW: list of input variables
                     f_n = 1
-                elif f_n == 1 and self.input_variables_nodes != mp['variables']:
-                    raise ValueError('Input node variables at interface are not equal for all model parts.')
             if "faces" in mp["model_part"]:
                 if f_f == 0:
-                    self.input_variables_faces = mp['variables']  # NEW: list of input variables
+                    self.input_variables += mp['variables']  # NEW: list of input variables
                     f_f = 1
-                elif f_f == 1 and self.input_variables_faces != mp['variables']:
-                    raise ValueError('Input face variables at interface are not equal for all model parts.')
 
-        self.input_variables = np.concatenate((self.input_variables_nodes, self.input_variables_faces))
         self.thermal_bc = None
-        if "temperature" in self.input_variables_faces:
+        if "temperature" in self.input_variables:
             self.thermal_bc = "temperature"
-        elif "heat_flux" in self.input_variables_faces:
+        elif "heat_flux" in self.input_variables:
             self.thermal_bc = "heat_flux"
 
     @tools.time_initialize
@@ -178,15 +177,12 @@ class SolverWrapperFluent(SolverWrapper):
             self.cores = max_cores
 
         # check variables in parameter.json file
-        for var in self.input_variables_nodes:
-            if var != "displacement":
-                raise NameError("Only permitted input variable for nodes is displacement")
-        for var in self.input_variables_faces:
-            if var not in ["temperature", "heat_flux"]:
-                raise NameError("Only permitted input variables for faces are temperature and heat flux")
+        for var in self.input_variables:
+            if var not in accepted_variables['in']:
+                raise NameError("Only permitted input variables are displacement and temperature or heat flux")
         for var in self.output_variables:
             if var not in accepted_variables['out']:
-                raise NameError("Only permitted output variables for faces are temperature, heat flux, pressure and traction")
+                raise NameError("Only permitted output variables are displacement, temperature or heat flux and pressure and traction")
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
@@ -321,11 +317,6 @@ class SolverWrapperFluent(SolverWrapper):
                 coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
                 ids_tmp, self.dict_face_ids[mp_name] = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-                """ define initial input profile if no restart -> NOT USED
-                if self.timestep_start == 0:
-                    self.initial_profile(thread_id, data[:, -self.mnpf:])
-                """
-
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
             x0 = coords_tmp[args, 0]
@@ -338,7 +329,7 @@ class SolverWrapperFluent(SolverWrapper):
 
         self.coco_messages.send_message("initial_interface_profiles_written")
 
-        # create output ModelParts (faces)
+        # create output ModelParts (nodes or faces)
         for item in (self.settings['interface_output']):
             mp_name = item['model_part']
 
@@ -352,15 +343,25 @@ class SolverWrapperFluent(SolverWrapper):
 
             # read in datafile
             thread_id = self.model_part_thread_ids[mp_name]
-            file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
-            data = np.loadtxt(file_name, skiprows=1)
-            if data.shape[1] != self.dimensions + self.mnpf:
-                raise ValueError(f'Given dimension does not match coordinates')
+            if "nodes" in mp_name:
+                file_name = join(self.dir_cfd, f'nodes_timestep0_thread{thread_id}.dat')
+                data = np.loadtxt(file_name, skiprows=1)
+                if data.shape[1] != self.dimensions + 1:
+                    raise ValueError('Given dimension does not match coordinates')
+            elif "faces" in mp_name:
+                file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
+                data = np.loadtxt(file_name, skiprows=1)
+                if data.shape[1] != self.dimensions + self.mnpf:
+                    raise ValueError(f'Given dimension does not match coordinates')
 
-            # get face coordinates and ids
+            # get node or face coordinates and ids
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
-            coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
-            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+            if "nodes" in mp_name:
+                coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
+                ids_tmp = data[:, -1].astype(int)  # array is flattened
+            elif "faces" in mp_name:
+                coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
+                ids_tmp, self.dict_face_ids[mp_name] = self.get_unique_face_ids(data[:, -self.mnpf:])
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -374,7 +375,8 @@ class SolverWrapperFluent(SolverWrapper):
 
             # create initial conditions at output interface
             if self.ini_condition is not None:
-                self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
+                if "faces" in mp_name:
+                    self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
 
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
@@ -430,14 +432,16 @@ class SolverWrapperFluent(SolverWrapper):
             thread_id = self.model_part_thread_ids[mp_name]
 
             # read in datafile
-            for var in self.output_variables:
+            for var in dct['variables']:
                 prefix = accepted_variables['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'repeat' or self.flag:
                     data = self.read_output_file(prefix, thread_id)
                     if prefix == 'isothermal':
-                        data = self.calculate_displacement(data, mp_name)
-                    req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
+                        data = self.calculate_displacement(data, mp_name, thread_id)
+                        req_dim = accepted_variables['out'][var][1] + 1
+                    else:
+                        req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
                     if data.shape[1] != req_dim:
                         raise ValueError('Given dimension does not match coordinates')
 
@@ -454,7 +458,7 @@ class SolverWrapperFluent(SolverWrapper):
                         scalar = scalar_tmp[args]
                         ids = ids_tmp[args]
 
-                        # store vector and scalar values in Nodes
+                        # store vector and scalar values in interface
                         model_part = self.model.get_model_part(mp_name)
                         if ids.size != model_part.size:
                             raise ValueError('Size of data does not match size of ModelPart')
@@ -470,6 +474,26 @@ class SolverWrapperFluent(SolverWrapper):
                         elif var == 'heat_flux':
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
+                    if accepted_variables['out'][var][1] == 3:
+                        # get face coordinates and ids
+                        vector_tmp = data[:, self.dimensions]
+                        ids_tmp, _ = self.get_unique_face_ids(data[:, -1])
+
+                        # sort and remove doubles
+                        args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                        vector = vector_tmp[args, :]
+                        ids = ids_tmp[args]
+
+                        # store vector and scalar values in interface
+                        model_part = self.model.get_model_part(mp_name)
+                        if ids.size != model_part.size:
+                            raise ValueError('Size of data does not match size of ModelPart')
+                        if not np.all(ids == model_part.id):
+                            raise ValueError('IDs of data do not match ModelPart IDs')
+
+                        elif var == 'displacement':
+                            self.interface_output.set_variable_data(mp_name, var, vector)
+
                     if accepted_variables['out'][var][1] == 1:
                         # get face coordinates and ids
                         scalar_tmp = data[:, 0].reshape(-1, 1)
@@ -480,7 +504,7 @@ class SolverWrapperFluent(SolverWrapper):
                         scalar = scalar_tmp[args]
                         ids = ids_tmp[args]
 
-                        # store scalar values in Nodes
+                        # store scalar values in interface
                         model_part = self.model.get_model_part(mp_name)
                         if ids.size != model_part.size:
                             raise ValueError('Size of data does not match size of ModelPart')
@@ -698,24 +722,52 @@ class SolverWrapperFluent(SolverWrapper):
                 os.system(cmd)
         return data
 
-    def calculate_displacement(self, data, mp_name):
-        model_new = data_structure.Model()
-        x = data[:, 0]
-        y = data[:, 1]
-        z = data[:, 2]
-        ids = np.array(range(1, 1 + data.shape[0]))
+    def calculate_displacement(self, data, mp_name, thread_id):
+        if "nodes" in mp_name:
+            cnt = data.shape[0]
+            model_new = data_structure.Model()
+            x = data[:, 0]
+            y = data[:, 1]
+            z = data[:, 2]
+            ids = np.array(range(1, 1 + data.shape[0]))
 
-        # create ModelPart and Interface
-        model_new.create_model_part(mp_name, x, y, z, ids)
-        interface_new = data_structure.Interface(self.settings['interface_output'], model_new)
+            # create ModelPart and Interface
+            model_new.create_model_part(mp_name, x, y, z, ids)
+            interface_new = data_structure.Interface(self.settings['interface_output'], model_new)
 
-        # create, initialize and query mapper
-        mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"]}}}
-        mapper_itf = tools.create_instance(mapper_settings)
-        mapper_itf.initialize(self.interface_output, interface_new)
-        nearest_list = mapper_itf.query_nearest_itf()
+            # create, initialize and query mapper
+            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"]}}}
+            mapper_itf = tools.create_instance(mapper_settings)
+            mapper_itf.initialize(self.interface_output, interface_new)
+            nearest_list = mapper_itf.query_nearest_itf()
+            nearest = nearest_list[0][0]
+            arg = nearest.reshape((np.size(nearest),))
 
-        return data
+            # calculate displacement
+            model_part = self.model.get_model_part(mp_name)
+            dx = x - model_part.x0[arg]
+            dy = y - model_part.y0[arg]
+            dz = z - model_part.z0[arg]
+            id = model_part.id[arg]
+
+            # write to file
+            if self.dimensions == 2:
+                dat = np.rec.fromarrays([x, y, id])
+                fmt = '%27.17e%27.17e%27d'
+            else:
+                dat = np.rec.fromarrays([x, y, z, id])
+                fmt = '%27.17e%27.17e%27.17e%27d'
+            tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+            file_name = join(self.dir_cfd, tmp)
+            np.savetxt(file_name, dat, fmt=fmt, header=f'{model_part.size}', comments='')
+
+            # create data array for output interface
+            displacement = np.append(dx.reshape((cnt, 1)), dy.reshape((cnt, 1)), axis=1)
+            displacement = np.append(displacement, dz.reshape((cnt, 1)), axis=1)
+            displacement = np.append(displacement, id.reshape((cnt, 1)), axis=1)
+            return displacement
+        else:
+            raise ValueError('Model part must be node-based for the displacement variable')
 
     def get_coordinates(self):
         """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)
