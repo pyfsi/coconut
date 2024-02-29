@@ -13,6 +13,7 @@ solver_load_cmd_dict = {
         'fluent.v2021R1': 'ml ANSYS_CFD/2021R1',
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
         'fluent.cht_v2023R1': 'ml ANSYS_CFD/2023R1',
+        'fluent.pc_v2023R1': 'ml ANSYS_CFD/2023R1',
         'abaqus.v2021': 'ml intel/2020a && ml ABAQUS/2021 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'abaqus.v2022': 'ml intel/2020a && ml ABAQUS/2022 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:@bump.ugent.be',
         'kratos_structure.v91': 'ml Anaconda3-python/2020.11',
