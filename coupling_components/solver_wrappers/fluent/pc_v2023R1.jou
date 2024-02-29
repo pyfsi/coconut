@@ -10,6 +10,7 @@ file set-batch-options n n n
 (define timestep_start |TIMESTEP_START|)
 (define stored |STORED_VARIABLES|)
 (define moving_boundary |MOVING_BOUNDARY|)
+(define force_balance |FORCE_BALANCE|)
 (define thermal_bc |THERMAL_BC|)
 ;
 ;   FUNCTION DEFINITIONS
@@ -165,6 +166,13 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                 )
             )
             (if moving_boundary
+                (ti-menu-load-string "surface edit-surface isothermal temperature , () , () , ()")
+                (ti-menu-load-string (format #f "plot plot y "isothermal_x_timestep~a" n n n x-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
+                (ti-menu-load-string (format #f "plot file "isothermal_x_timestep~a" (%rpgetvar 'udf/timestep)))
+                (ti-menu-load-string (format #f "plot plot y "isothermal_y_timestep~a" n n n y-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
+                (ti-menu-load-string (format #f "plot file "isothermal_y_timestep~a"" (%rpgetvar 'udf/timestep)))
+            )
+            (if force_balance
                 (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::udf_thermal\"")
             )
             (cond ((= thermal_bc 0)

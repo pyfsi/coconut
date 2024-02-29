@@ -136,3 +136,6 @@ class MapperInterpolator(Component):
         if duplicate.any():
             raise Warning(f'{msg_1}{np.sum(duplicate)}{msg_2}' +
                           f'{self.coords_from[np.argmax(duplicate)]}.')
+
+    def query_nearest_mp(self):
+        return (self.nearest, self.distances)

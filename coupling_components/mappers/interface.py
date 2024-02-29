@@ -45,6 +45,12 @@ class MapperInterface(Component):
         for mapper in self.mappers.values():
             mapper.output_solution_step()
 
+    def query_nearest_itf(self):
+        nearest_list = []
+        for mapper_name in self.mappers:
+            nearest_list.append(self.mappers[mapper_name].query_nearest_mp())
+        return nearest_list
+
     def print_components_info(self, pre):
         tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following model parts:")
         pre = tools.update_pre(pre)
