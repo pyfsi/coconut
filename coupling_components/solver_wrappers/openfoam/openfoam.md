@@ -130,7 +130,7 @@ undertaken:
 ## Treatment of kinematic pressure and traction
 If the OpenFOAM application is intended for incompressible flows, e.g. pimpleFoam, it solves the incompressible Navier-Stokes equations.
 As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
-In order to couple these solvers to a structure solver, the pressure and traction are required to be expressed in Pa (kg/ms²).
+In order to couple these solvers to a structural solver, the pressure and traction are required to be expressed in Pa (kg/ms²).
 
 For these solvers, the `density` parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
 In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.

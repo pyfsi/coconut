@@ -29,6 +29,7 @@ benchmark = join(examples_path, 'benchmark_files')
 # comment out examples that you do not want to make benchmark files for
 examples = {
     'breaking_dam/fluent2d_abaqus2d': 2,
+    'breaking_dam/fluent2d_kratos_structure2d': 2,
     'lid_driven_cavity/fluent2d_kratos_structure2d': 2,
     'lid_driven_cavity/openfoam2d_kratos_structure2d': 2,
     'tube/fluent2d_abaqus2d': 2,
@@ -46,7 +47,8 @@ examples = {
     'tube/tube_flow_tube_structure_analytical': 10,
     'tube/tube_flow_tube_structure_surrogate': 10,
     'turek/fluent2d_abaqus2d': 2,
-    'turek/fluent2d_abaqus2d_steady': 1
+    'turek/fluent2d_abaqus2d_steady': 1,
+    'turek/openfoam2d_kratos_structure2d': 2,
 }
 
 

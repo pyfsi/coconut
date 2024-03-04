@@ -1,0 +1,34 @@
+{
+  "precision": 12,
+  "sub_model_parts": [
+    {
+      "physical_group_name": "Structure",
+      "element_name": "TotalLagrangianElement2D4N",
+      "property_id": 0,
+      "sub_model_part_name": "Parts_beam"
+    },
+    {
+      "physical_group_name": "BeamTop",
+      "property_id": 0,
+      "sub_model_part_name": "DISPLACEMENT_top"
+    },
+    {
+      "physical_group_name": "BeamLeft",
+      "condition_name": "LineLoadCondition2D2N",
+      "property_id": 0,
+      "sub_model_part_name": "LineLoad2D_left"
+    },
+    {
+      "physical_group_name": "BeamBottom",
+      "condition_name": "LineLoadCondition2D2N",
+      "property_id": 0,
+      "sub_model_part_name": "LineLoad2D_bottom"
+    },
+    {
+      "physical_group_name": "BeamRight",
+      "condition_name": "LineLoadCondition2D2N",
+      "property_id": 0,
+      "sub_model_part_name": "LineLoad2D_right"
+    }
+  ]
+}

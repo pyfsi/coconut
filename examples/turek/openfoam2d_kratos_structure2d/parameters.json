@@ -1,0 +1,193 @@
+{
+  "settings": {
+    "number_of_timesteps": 17500
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.002,
+      "omega": 0.1,
+      "save_results": 20,
+      "save_restart": 500,
+      "model": {
+        "type": "coupled_solvers.models.mvmf",
+        "settings": {
+          "min_significant": 1e-9,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.quadratic"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.and",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.solver_coupling_convergence",
+            "settings": {
+              "solver_index": 0
+            }
+          },
+          {
+            "type": "convergence_criteria.solver_coupling_convergence",
+            "settings": {
+              "solver_index": 1
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.openfoam.v8",
+        "settings": {
+          "working_directory": "CFD",
+          "application": "coconut_pimpleFoam",
+          "boundary_names": [
+            "plateTop",
+            "plateEnd",
+            "plateBottom"
+          ],
+          "interface_input": [
+            {
+              "model_part": "plateTop_input",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "plateEnd_input",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "plateBottom_input",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "plateTop_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "plateEnd_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "plateBottom_output",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "time_precision": 3,
+          "density": 1000,
+          "parallel": true
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.kratos_structure.v91",
+            "settings": {
+              "working_directory": "CSM",
+              "input_file": "ProjectParameters.json",
+              "kratos_interface_sub_model_parts_list": [
+                "FlagTop",
+                "FlagEnd",
+                "FlagBottom"
+              ],
+              "pressure_directions": [
+                -1,
+                -1,
+                -1
+              ],
+              "interface_input": [
+                {
+                  "model_part": "FlagTop_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                },
+                {
+                  "model_part": "FlagEnd_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                },
+                {
+                  "model_part": "FlagBottom_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "FlagTop_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "FlagEnd_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "FlagBottom_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

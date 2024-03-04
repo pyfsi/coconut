@@ -5,7 +5,7 @@ This done by using Fluent and StructuralMechanicsApplication of Kratos, both wit
 
 ## Coupling algorithm
 
-The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
+The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQN-ILS).
 
 ## Predictor
 
@@ -32,7 +32,7 @@ This case is written to the *`case_tube3d.cas`* file, which serves as input for 
 Additionally, a folder *`create_mesh`* is provided containing a script to create the mesh in Gambit using a journal file.
 The mesh can be created by running the script *`create_mesh.sh`*, given that Gambit v2.4.6 is available.
 
-The structure solver is Kratos, used to solve a fully 3D tube,
+The structural solver is Kratos, used to solve a fully 3D tube,
 with 24 elements on the fluid-structure interface in the length direction and 8 in the circumferential direction. 
 The Kratos element type used is ShellThickElementCorotational3D4N. These are 4-node shell elements.
 The displacement and loads are calculated/applied on the nodes. There are 200 nodes on the fluid-structure interface.

@@ -71,7 +71,7 @@ class MapperInterpolator(Component):
 
         # check bounding boxes
         if self.check_bounding_box:
-            tools.check_bounding_box(model_part_from, model_part_to)
+            tools.check_bounding_box(model_part_from, model_part_to, self.directions)
 
         # apply scaling to coordinates
         if self.scaling is not None:
