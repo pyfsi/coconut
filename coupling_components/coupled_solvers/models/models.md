@@ -124,7 +124,7 @@ Once the actual calculation has converged, the surrogate can be _synchronized_ w
 Beside the four methods shared by all models, this one has two additional important methods:
 
 - The method `get_solution` starts the surrogate coupled calculation and returns the solution.
-- The method `set_solution` allows to provide an interface solution that is used to perform one iteration (flow solver calculation and using result for structure solver calculation). In this way the surrogate can be _synchronized_ with actual calculation. This method does not need to be implemented.
+- The method `set_solution` allows to provide an interface solution that is used to perform one iteration (flow solver calculation and using result for structural solver calculation). In this way the surrogate can be _synchronized_ with actual calculation. This method does not need to be implemented.
 
 The surrogate coupled calculation is performed with a `coupled_solver` that has its own `predictor`, `convergence_criterion`, `solver_wrappers` and coupling algorithm.
 The surrogate solver_wrappers should be cheaper to calculate, but still representative for the actual solver wrappers.
@@ -212,4 +212,4 @@ If the use of a dummy model is allowed, the `type` (`coupled_solvers.models.dumm
 [Delaissé N., Demeester T., Fauconnier D. and Degroote J., "Surrogate-based acceleration of quasi-Newton techniques for fluid-structure interaction simulations", Computers & Structures, vol. 260, pp. 106720, 2022.](http://hdl.handle.net/1854/LU-8728347)
 
 <a id="8">[8]</a> 
-[Delaissé, N., Demeester, T., Haelterman, R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.](https://doi.org/10.1007/s11831-023-09907-y)
+[Delaissé N., Demeester T., Haelterman R. and Degroote J., "Quasi-Newton methods for partitioned simulation of fluid-structure interaction reviewed in the generalized Broyden framework", Archives of Computational Methods in Engineering, vol. 30, pp. 3271-3300, 2023.](https://doi.org/10.1007/s11831-023-09907-y)

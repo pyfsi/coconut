@@ -277,7 +277,8 @@ class SolverWrapperAbaqus(SolverWrapper):
 
         # check whether the input ModelParts and output ModelParts have proper overlap
         for item_in, item_out in zip(self.settings['interface_input'], self.settings['interface_output']):
-            tools.check_bounding_box(*map(self.model.get_model_part, [item_in['model_part'], item_out['model_part']]))
+            tools.check_bounding_box(*map(self.model.get_model_part, [item_in['model_part'], item_out['model_part']]),
+                                     ['x0', 'y0', 'z0'])
 
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)

@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    "plate.*"
+    {
+        type            movingWallVelocity;
+        value           uniform (0 0 0);
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    inlet
+    {
+        type            codedFixedValue;
+        value           uniform (0 0 0);
+        name            timeSpaceVarying;
+        code
+        #{
+            scalar t_ramp = 2.0;
+            scalar max_x_vel = 1.5;
+            const scalar t =  this->db().time().value();
+            scalar ramp_factor = (t < t_ramp) ? (1.0-cos(M_PI_2*t))/2: 1.0; // M_PI_2 == pi / 2
+            scalar u_t = ramp_factor*max_x_vel;
+            vectorField& field = *this;
+            forAll(this->patch().Cf(), face_i)
+            {
+                const scalar y = this->patch().Cf()[face_i].y();
+                field[face_i] = vector(u_t*y*(0.41-y)/pow((0.41/2.0),2.0), 0.0, 0.0);
+            }
+        #};
+    }
+
+    cylinder
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+
+    bottom
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+
+    top
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+
+    frontAndBackPlanes
+    {
+        type            empty;
+    }
+}
+
+
+// ************************************************************************* //
