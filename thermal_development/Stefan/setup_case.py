@@ -5,8 +5,8 @@ from os.path import join
 
 from coconut import tools
 
-solver_1 = 'fluent.v2023R1'
-solver_2 = 'fluent.v2023R1'
+solver_1 = 'fluent.pc_v2023R1'
+solver_2 = 'fluent.pc_v2023R1'
 cfd_dir_1 = './CFD_1'
 cfd_dir_2 = './CFD_2'
 
