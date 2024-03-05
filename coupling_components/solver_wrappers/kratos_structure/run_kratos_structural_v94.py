@@ -11,12 +11,12 @@ import numpy as np
 class StructuralMechanicsWrapper94(StructuralMechanicsAnalysis):
 
     def __init__(self, model, project_parameters):
-        self.interfaces = [elem.GetString() for elem in project_parameters['interface_sub_model_parts_list']]
+        self.interfaces = [elem.GetString() for elem in project_parameters['interface_sub_model_parts_list'].values()]
         super().__init__(model, project_parameters)
         self.dimensions = project_parameters['solver_settings']['domain_size'].GetInt()
         self.coupling_iteration = None
         self.max_iteration_number = None
-        self.pressure_directions = [direc.GetInt() for direc in project_parameters['pressure_directions']]
+        self.pressure_directions = [direc.GetInt() for direc in project_parameters['pressure_directions'].values()]
         self.check_coupling_convergence = project_parameters['check_coupling_convergence'].GetBool()
 
     def Initialize(self):
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     if len(argv) != 2:
         err_msg = 'Wrong number of input arguments!\n'
         err_msg += 'Use this script in the following way:\n'
-        err_msg += '    "python3 run_simulation.py <cosim-parameter-file>.json"\n'
+        err_msg += '    "python3 run_kratos_structural_v94.py <cosim-parameter-file>.json"\n'
         raise Exception(err_msg)
 
     # Import data structure

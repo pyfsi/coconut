@@ -64,7 +64,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
         self.model = Model()
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        run_script_file = os.path.join(dir_path, f'run_kratos_structural_{self.version}.py')
+        run_script_file = os.path.join(dir_path, f'run_kratos_structural_v{self.version}.py')
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> kratos.log',
                                     shell=True, cwd=self.working_directory, env=self.env)
@@ -131,10 +131,16 @@ class SolverWrapperKratosStructure(SolverWrapper):
         self.coco_messages.remove_all_messages()
         self.kratos_process.wait()
 
-    def write_input_data(self):
-        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
+        # remove unnecessary files
+        with tools.cd(self.working_directory):
+            for mp_name in self.interface_sub_model_parts_list:
+                os.remove(f'{mp_name}_displacement.csv')
+                os.remove(f'{mp_name}_pressure.csv')
+                os.remove(f'{mp_name}_traction.csv')
+                os.remove(f'{mp_name}_nodes.csv')
 
-        for mp_name in interface_sub_model_parts_list:
+    def write_input_data(self):
+        for mp_name in self.interface_sub_model_parts_list:
             input_mp_name = f'{mp_name}_input'
             input_mp = self.model.get_model_part(input_mp_name)
             node_ids = np.array([input_mp.id[i] for i in range(input_mp.size)])
@@ -156,9 +162,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
                 traction_df.to_csv(file_path_tr[:-4] + f'_ts{self.timestep}_it{self.iteration}.csv', index=False)
 
     def update_interface_output(self):
-        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
-
-        for mp_name in interface_sub_model_parts_list:
+        for mp_name in self.interface_sub_model_parts_list:
             output_mp_name = f'{mp_name}_output'
             file_path = os.path.join(self.working_directory, f'{mp_name}_displacement.csv')
             disp_data = pd.read_csv(file_path, skipinitialspace=True)
@@ -227,9 +231,8 @@ class SolverWrapperKratosStructure(SolverWrapper):
     def check_interface(self):
         input_interface_model_parts = [param['model_part'] for param in self.settings['interface_input']]
         output_interface_model_parts = [param['model_part'] for param in self.settings['interface_output']]
-        sub_mp_name_list = self.settings['kratos_interface_sub_model_parts_list']
 
-        for sub_mp_name in sub_mp_name_list:
+        for sub_mp_name in self.interface_sub_model_parts_list:
             if f'{sub_mp_name}_input' not in input_interface_model_parts:
                 raise RuntimeError(
                     f'Error in json file: {sub_mp_name}_input not listed in "interface_input": '

@@ -68,14 +68,13 @@ class BaseTestSolverWrapperKratosStructure(unittest.TestCase):
         output_3 = solver.solve_solution_step(load_interface).copy()
         solver.finalize_solution_step()
         solver.output_solution_step()
+        load_data_to_kratos = self.read_pressure_traction()
         solver.finalize()
 
         # obtain the  data and compare
         a1 = output_1.get_interface_data()
         a2 = output_2.get_interface_data()
         a3 = output_3.get_interface_data()
-
-        load_data_to_kratos = self.read_pressure_traction()
 
         np.testing.assert_allclose(load_data_to_kratos, load_data_1, rtol=1e-12)
         np.testing.assert_allclose(a1, a3, rtol=0, atol=1e-10)
