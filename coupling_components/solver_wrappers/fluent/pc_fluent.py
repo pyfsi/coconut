@@ -166,6 +166,14 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     outfile.write(line)
 
+        if self.moving_boundary:
+            # prepare Mass source UDF
+            udf = 'mass_source.c'  # old: f'v{self.version}.c'
+            with open(join(self.dir_src, udf)) as infile:
+                with open(join(self.dir_cfd, udf), 'w') as outfile:
+                    for line in infile:
+                        outfile.write(line)
+
         # check number of cores
         if self.hostfile is not None:
             with open(join(self.dir_cfd, self.hostfile)) as fp:
