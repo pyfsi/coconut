@@ -8,6 +8,8 @@ from os.path import join
 from subprocess import Popen, run, PIPE
 import pandas as pd
 import numpy as np
+import json
+import re
 
 
 def create(parameters):
@@ -62,7 +64,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
         self.model = Model()
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        run_script_file = os.path.join(dir_path, f'run_kratos_structural_{self.version}.py')
+        run_script_file = os.path.join(dir_path, f'run_kratos_structural_v{self.version}.py')
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> kratos.log',
                                     shell=True, cwd=self.working_directory, env=self.env)
@@ -129,10 +131,16 @@ class SolverWrapperKratosStructure(SolverWrapper):
         self.coco_messages.remove_all_messages()
         self.kratos_process.wait()
 
-    def write_input_data(self):
-        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
+        # remove unnecessary files
+        with tools.cd(self.working_directory):
+            for mp_name in self.interface_sub_model_parts_list:
+                os.remove(f'{mp_name}_displacement.csv')
+                os.remove(f'{mp_name}_pressure.csv')
+                os.remove(f'{mp_name}_traction.csv')
+                os.remove(f'{mp_name}_nodes.csv')
 
-        for mp_name in interface_sub_model_parts_list:
+    def write_input_data(self):
+        for mp_name in self.interface_sub_model_parts_list:
             input_mp_name = f'{mp_name}_input'
             input_mp = self.model.get_model_part(input_mp_name)
             node_ids = np.array([input_mp.id[i] for i in range(input_mp.size)])
@@ -154,9 +162,7 @@ class SolverWrapperKratosStructure(SolverWrapper):
                 traction_df.to_csv(file_path_tr[:-4] + f'_ts{self.timestep}_it{self.iteration}.csv', index=False)
 
     def update_interface_output(self):
-        interface_sub_model_parts_list = self.settings['kratos_interface_sub_model_parts_list']
-
-        for mp_name in interface_sub_model_parts_list:
+        for mp_name in self.interface_sub_model_parts_list:
             output_mp_name = f'{mp_name}_output'
             file_path = os.path.join(self.working_directory, f'{mp_name}_displacement.csv')
             disp_data = pd.read_csv(file_path, skipinitialspace=True)
@@ -170,7 +176,39 @@ class SolverWrapperKratosStructure(SolverWrapper):
                 shutil.copy(file_path, file_path[:-4] + f'_ts{self.timestep}_it{self.iteration}.csv')
 
     def update_kratos_parameter_file(self, input_file_name):
-        raise NotImplementedError('Base class method is called, should be implemented in subclass')
+
+        with open(input_file_name, 'r') as parameter_file:
+            kratos_parameters = json.load(parameter_file)
+
+        kratos_parameters['problem_data']['start_time'] = 0.0
+        kratos_parameters['solver_settings']['time_stepping']['time_step'] = self.delta_t
+        kratos_parameters['problem_data']['end_time'] = 1e15
+        if 'structure_iterations' in self.settings:
+            kratos_parameters['solver_settings']['max_iteration'] = self.settings['structure_iterations']
+        kratos_parameters['interface_sub_model_parts_list'] = self.interface_sub_model_parts_list
+        kratos_parameters['pressure_directions'] = self.check_pressure_directions()
+        kratos_parameters['check_coupling_convergence'] = self.check_coupling_convergence
+
+        if self.save_restart:
+            restart_save_dict = {'restart_processes': [{'python_module': 'save_restart_process',
+                                                        'kratos_module': 'KratosMultiphysics',
+                                                        'process_name': 'SaveRestartProcess',
+                                                        'Parameters': {
+                                                            'model_part_name': 'Structure',
+                                                            'restart_control_type': 'step',
+                                                            'restart_save_frequency': abs(self.save_restart)}}]}
+            if self.save_restart < 0:
+                restart_save_dict['restart_processes'][0]['Parameters']['max_files_to_keep'] = 1
+            kratos_parameters['output_processes'].update(restart_save_dict)
+
+        if self.timestep_start != 0:
+            restart_load_dict = {'restart_load_file_label': str(self.timestep_start),
+                                 'input_type': 'rest',
+                                 'input_filename': 'Structure'}
+            kratos_parameters['solver_settings']['model_import_settings'].update(restart_load_dict)
+
+        with open(os.path.join(self.working_directory, input_file_name), 'w') as f:
+            json.dump(kratos_parameters, f, indent=2)
 
     def check_software(self):
         with open('check_software.py', 'w') as f:
@@ -193,9 +231,8 @@ class SolverWrapperKratosStructure(SolverWrapper):
     def check_interface(self):
         input_interface_model_parts = [param['model_part'] for param in self.settings['interface_input']]
         output_interface_model_parts = [param['model_part'] for param in self.settings['interface_output']]
-        sub_mp_name_list = self.settings['kratos_interface_sub_model_parts_list']
 
-        for sub_mp_name in sub_mp_name_list:
+        for sub_mp_name in self.interface_sub_model_parts_list:
             if f'{sub_mp_name}_input' not in input_interface_model_parts:
                 raise RuntimeError(
                     f'Error in json file: {sub_mp_name}_input not listed in "interface_input": '
@@ -231,4 +268,35 @@ class SolverWrapperKratosStructure(SolverWrapper):
             f.write(header.strip(sep) + '\n')
 
     def write_residuals(self):
-        raise NotImplementedError('Base class method is called, should be implemented in subclass')
+        float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
+        log_filepath = os.path.join(self.working_directory, f'log')
+        if os.path.isfile(log_filepath):
+            with open(log_filepath, 'r') as f:
+                log_string = f.read()
+            time_start_string = r'STEP:\s+' + str(self.timestep - 1)
+            time_end_string = r'STEP:\s+' + str(self.timestep)
+            match = re.search(time_start_string + r'(.*)' + time_end_string, log_string, flags=re.S)
+            if match is not None:
+                time_block = match.group(1)
+                iteration_block_list = re.findall(
+                    r'Coupling iteration: \d(.*?)Coupling iteration \d+ end', time_block, flags=re.S)
+                for iteration_block in iteration_block_list:
+                    residual_array = np.empty(len(self.residual_variables))
+                    for i, variable in enumerate(self.residual_variables):
+                        search_string = r'\n.*' + variable + r' CRITERION.*[nN]orm = +' + r'(' + float_pattern + r')'
+                        var_residual_list_1 = re.findall(search_string, iteration_block)
+                        search_string = r'\n ' + variable + r'.*abs = ' + r'(' + float_pattern + r')'
+                        var_residual_list_2 = re.findall(search_string, iteration_block)
+                        if var_residual_list_1:
+                            # last initial residual of the non-linear iteration
+                            var_residual = float(var_residual_list_1[-1])
+                            residual_array[i] = var_residual
+                        elif var_residual_list_2:
+                            # last initial residual of the non-linear iteration
+                            var_residual = float(var_residual_list_2[-1])
+                            residual_array[i] = var_residual
+                        else:
+                            raise RuntimeError(f'{variable} or {variable} CRITERION not found in kratos log file')
+
+                    with open(self.res_filepath, 'a') as f:
+                        np.savetxt(f, [residual_array], delimiter=', ')

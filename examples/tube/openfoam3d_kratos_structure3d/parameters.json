@@ -82,7 +82,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.kratos_structure.v91",
+            "type": "solver_wrappers.kratos_structure.v94",
             "settings": {
               "working_directory": "CSM",
               "input_file": "ProjectParameters.json",

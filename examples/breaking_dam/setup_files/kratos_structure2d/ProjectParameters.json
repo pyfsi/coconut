@@ -22,7 +22,6 @@
     "material_import_settings": {
       "materials_filename": "StructuralMaterials.json"
     },
-    "line_search": false,
     "convergence_criterion": "residual_criterion",
     "residual_relative_tolerance": -1.0,
     "residual_absolute_tolerance": 1e-6,
