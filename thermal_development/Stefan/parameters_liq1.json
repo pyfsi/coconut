@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 10
+    "number_of_timesteps": 1
   },
   "coupled_solver": {
     "type": "coupled_solvers.gauss_seidel",
@@ -8,7 +8,7 @@
       "timestep_start": 0,
       "delta_t": 0.1,
       "omega": 0.3,
-      "save_results": 10,
+      "save_results": 1,
       "save_restart": 0,
       "debug": false,
       "model": {
@@ -46,8 +46,8 @@
       {
         "type": "solver_wrappers.fluent.pc_v2023R1",
         "settings": {
-          "working_directory": "CFD_1",
-          "case_file": "pc_solid.cas.h5",
+          "working_directory": "CFD_2",
+          "case_file": "pc_fluid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
           "moving_boundary": true,
@@ -59,21 +59,27 @@
           ],
           "interface_input": [
             {
+              "model_part": "boundary_in_nodes",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
               "model_part": "boundary_in_faces",
               "variables": [
-                "heat_flux"
+                "temperature"
               ]
             }
           ],
           "interface_output": [
             {
-              "model_part": "boundary_out_nodes",
+              "model_part": "boundary_out_faces",
               "variables": [
-                "displacement"
+                "heat_flux"
               ]
             }
           ],
-          "cores": 2,
+          "cores": 1,
           "fluent_gui": true,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
@@ -86,34 +92,40 @@
           "solver_wrapper": {
             "type": "solver_wrappers.fluent.pc_v2023R1",
             "settings": {
-              "working_directory": "CFD_2",
-              "case_file": "pc_fluid.cas.h5",
+              "working_directory": "CFD_1",
+              "case_file": "pc_solid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
               "moving_boundary": true,
               "multiphase": false,
               "debug": true,
-              "ini_condition": 0,
+              "ini_condition": 299.16,
               "thread_names": [
                 "boundary"
               ],
               "interface_input": [
                 {
-                  "model_part": "boundary_in_nodes",
-                  "variables": [
-                    "displacement"
-                  ]
-                }
-              ],
-              "interface_output": [
-                {
-                  "model_part": "boundary_out_faces",
+                  "model_part": "boundary_in_faces",
                   "variables": [
                     "heat_flux"
                   ]
                 }
               ],
-              "cores": 2,
+              "interface_output": [
+                {
+                  "model_part": "boundary_out_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "boundary_out_faces",
+                  "variables": [
+                    "temperature"
+                  ]
+                }
+              ],
+              "cores": 1,
               "fluent_gui": true,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,

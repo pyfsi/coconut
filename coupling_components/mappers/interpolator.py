@@ -116,26 +116,29 @@ class MapperInterpolator(Component):
         tol_warning = 1e-8  # TODO: create optional parameter for this?
         tol_error = 1e-12
 
-        # calculate reference distance (diagonal of bounding box)
-        d_ref = np.linalg.norm(self.coords_from.max(axis=0) - self.coords_from.min(axis=0))
-        if d_ref == 0.:
-            raise ValueError('All from-points coincide')
+        # check is self.coords_from contains more than 1 element
+        if self.coords_from.shape[0] > 1:
 
-        # check for duplicate points
-        dist, _ = self.tree.query(self.coords_from, k=2)
+            # calculate reference distance (diagonal of bounding box)
+            d_ref = np.linalg.norm(self.coords_from.max(axis=0) - self.coords_from.min(axis=0))
+            if d_ref == 0.:
+                raise ValueError('All from-points coincide')
 
-        msg_1 = f'ModelPart {model_part_from.name}: '
-        msg_2 = f' duplicate points found, first duplicate: '
+            # check for duplicate points
+            dist, _ = self.tree.query(self.coords_from, k=2)
 
-        duplicate = (dist[:, 1] / d_ref < tol_error)
-        if duplicate.any():
-            raise ValueError(f'{msg_1}{np.sum(duplicate)}{msg_2}' +
-                             f'{self.coords_from[np.argmax(duplicate)]}.')
+            msg_1 = f'ModelPart {model_part_from.name}: '
+            msg_2 = f' duplicate points found, first duplicate: '
 
-        duplicate = (dist[:, 1] / d_ref < tol_warning)
-        if duplicate.any():
-            raise Warning(f'{msg_1}{np.sum(duplicate)}{msg_2}' +
-                          f'{self.coords_from[np.argmax(duplicate)]}.')
+            duplicate = (dist[:, 1] / d_ref < tol_error)
+            if duplicate.any():
+                raise ValueError(f'{msg_1}{np.sum(duplicate)}{msg_2}' +
+                                 f'{self.coords_from[np.argmax(duplicate)]}.')
+
+            duplicate = (dist[:, 1] / d_ref < tol_warning)
+            if duplicate.any():
+                raise Warning(f'{msg_1}{np.sum(duplicate)}{msg_2}' +
+                              f'{self.coords_from[np.argmax(duplicate)]}.')
 
     def query_nearest_mp(self):
         return (self.nearest, self.distances)

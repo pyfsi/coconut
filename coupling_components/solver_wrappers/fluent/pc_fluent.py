@@ -110,7 +110,7 @@ class SolverWrapperFluent(SolverWrapper):
         super().initialize()
 
         # prepare Fluent journal
-        journal = f'cht_v{self.version}.jou'
+        journal = f'pc_v{self.version}.jou'
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
@@ -125,20 +125,8 @@ class SolverWrapperFluent(SolverWrapper):
             moving_boundary = '#f'
         if "pressure" in self.output_variables and "traction" in self.output_variables:
             force_balance = '#t'
-            if "temperature" in self.output_variables:
-                stored_variables = str(3)
-            elif "heat_flux" in self.output_variables:
-                stored_variables = str(4)
-            else:
-                stored_variables = str(2)
         else:
             force_balance = '#f'
-            if "temperature" in self.output_variables:
-                stored_variables = str(0)
-            elif "heat_flux" in self.output_variables:
-                stored_variables = str(1)
-            else:
-                raise ValueError('The FSI loop needs to store at least one variable.')
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -146,7 +134,6 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
                     line = line.replace('|MULTIPHASE|', multiphase)
-                    line = line.replace('|STORED_VARIABLES|', stored_variables)
                     line = line.replace('|MOVING_BOUNDARY|', moving_boundary)
                     line = line.replace('|FORCE_BALANCE|', force_balance)
                     line = line.replace('|THERMAL_BC|', str(1) if (self.thermal_bc == 'heat_flux') else str(0))
@@ -158,21 +145,14 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        udf = 'udf_thermal.c' # old: f'v{self.version}.c'
+        udf = 'udf_thermal.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
+                    line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     outfile.write(line)
-
-        if self.moving_boundary:
-            # prepare Mass source UDF
-            udf = 'mass_source.c'  # old: f'v{self.version}.c'
-            with open(join(self.dir_src, udf)) as infile:
-                with open(join(self.dir_cfd, udf), 'w') as outfile:
-                    for line in infile:
-                        outfile.write(line)
 
         # check number of cores
         if self.hostfile is not None:
@@ -312,7 +292,7 @@ class SolverWrapperFluent(SolverWrapper):
                     raise ValueError('Given dimension does not match coordinates')
             elif "faces" in mp_name:
                 file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
-                data = np.loadtxt(file_name, skiprows=1)
+                data = np.loadtxt(file_name, skiprows=1, ndmin=2)
                 if data.shape[1] != self.dimensions + self.mnpf:
                     raise ValueError(f'Given dimension does not match coordinates')
 
@@ -335,10 +315,8 @@ class SolverWrapperFluent(SolverWrapper):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
-        self.coco_messages.send_message("initial_interface_profiles_written")
-
         # create output ModelParts (nodes or faces)
-        for item in (self.settings['interface_output']):
+        for item in self.settings['interface_output']:
             mp_name = item['model_part']
 
             # get face thread ID that corresponds to ModelPart
@@ -358,7 +336,7 @@ class SolverWrapperFluent(SolverWrapper):
                     raise ValueError('Given dimension does not match coordinates')
             elif "faces" in mp_name:
                 file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
-                data = np.loadtxt(file_name, skiprows=1)
+                data = np.loadtxt(file_name, skiprows=1, ndmin=2)
                 if data.shape[1] != self.dimensions + self.mnpf:
                     raise ValueError(f'Given dimension does not match coordinates')
 
@@ -381,6 +359,10 @@ class SolverWrapperFluent(SolverWrapper):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
+            # write initial displacement profile for node model parts
+            if "displacement" in self.output_variables and "nodes" in mp_name:
+                self.initial_displacement(thread_id, x0, y0, z0, ids)
+
             # create initial conditions at output interface
             if self.ini_condition is not None:
                 if "faces" in mp_name:
@@ -392,12 +374,13 @@ class SolverWrapperFluent(SolverWrapper):
 
         # set initial conditions at output interface
         for key in self.output_ini_cond:
-            for var in self.output_variables:
-                if var == 'heat_flux' or var == 'temperature':
-                    if self.ini_condition is None:
-                        raise ValueError('Initial condition must be defined in JSON for temperature or heat flux')
-                    else:
-                        self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
+            if "faces" in key:
+                for var in self.output_variables:
+                    if var == 'heat_flux' or var == 'temperature':
+                        if self.ini_condition is None:
+                            raise ValueError('Initial condition must be defined in JSON for temperature or heat flux')
+                        else:
+                            self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -484,8 +467,8 @@ class SolverWrapperFluent(SolverWrapper):
 
                     if accepted_variables['out'][var][1] == 3:
                         # get face coordinates and ids
-                        vector_tmp = data[:, self.dimensions]
-                        ids_tmp, _ = self.get_unique_face_ids(data[:, -1])
+                        vector_tmp = data[:,:3]
+                        ids_tmp = data[:,-1]
 
                         # sort and remove doubles
                         args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -648,8 +631,8 @@ class SolverWrapperFluent(SolverWrapper):
                 if 'faces' in mp_name:
                     thread_id = self.model_part_thread_ids[mp_name]
                     model_part = self.model.get_model_part(mp_name)
-                    T = self.interface_input.get_variable_data(mp_name, 'temperature')
                     face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
+                    T = self.interface_input.get_variable_data(mp_name, 'temperature')
                     index = 0
                     for id in model_part.id:
                         list = self.reverse_face_ids(id, mp_name)
@@ -696,33 +679,40 @@ class SolverWrapperFluent(SolverWrapper):
                     np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def read_output_file(self, prefix, thread_id=None):
+        # Only 2D capability at the moment
         if prefix == 'isothermal':
-            self.flag = False
-            file_name = [0, 0]
-            data_list = [0, 0]
-            axis = ['x', 'y']
-            tmp = prefix + f'_x_timestep{self.timestep}.dat'
-            file_name[0] = join(self.dir_cfd, tmp)
-            tmp = prefix + f'_y_timestep{self.timestep}.dat'
-            file_name[1] = join(self.dir_cfd, tmp)
-            for i, name in enumerate(file_name):
-                with open(name, 'r') as f:
-                    content = f.readlines()[:-1]
-                with open(name, 'w') as f:
-                    f.writelines(content)
-                data_list[i] = np.loadtxt(name, skiprows=4, delimiter='\t', usecols=1)
-                # copy output data for debugging
-                if self.debug:
-                    dst = prefix + f'_{axis[i]}_timestep{self.timestep}_it{self.iteration}.dat'
-                    cmd = f'cp {name} {join(self.dir_cfd, dst)}'
-                    os.system(cmd)
-            cnt = np.size(data_list[0])
-            data = np.append(data_list[0].reshape((cnt, 1)), data_list[1].reshape((cnt, 1)), axis=1)
-            data = np.append(data, np.zeros((cnt, 1)), axis=1) # coordinates without ids!
+            if self.coco_messages.check_message('isothermal_is_empty'):
+                data = None
+            else:
+                self.flag = False
+                file_name = [0, 0]
+                data_list = [0, 0]
+                axis = ['x', 'y']
+                tmp = prefix + f'_x_timestep{self.timestep}'
+                file_name[0] = join(self.dir_cfd, tmp)
+                tmp = prefix + f'_y_timestep{self.timestep}'
+                file_name[1] = join(self.dir_cfd, tmp)
+                for i, name in enumerate(file_name):
+                    with open(name, 'r') as f:
+                        content = f.readlines()[:-1]
+                    with open(name, 'w') as f:
+                        f.writelines(content)
+                    data_list[i] = np.loadtxt(name, skiprows=4, delimiter='\t', usecols=1)
+                    # copy output data for debugging
+                    if self.debug:
+                        dst = prefix + f'_{axis[i]}_timestep{self.timestep}_it{self.iteration}.dat'
+                        cmd = f'cp {name} {join(self.dir_cfd, dst)}'
+                        os.system(cmd)
+                cnt = np.size(data_list[0])
+                data = np.append(data_list[0].reshape((cnt, 1)), data_list[1].reshape((cnt, 1)), axis=1)
+                data = np.append(data, np.zeros((cnt, 1)), axis=1) # coordinates without ids!
         else:
             tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
-            data = np.loadtxt(file_name, skiprows=1)
+            data = np.loadtxt(file_name, skiprows=1, ndmin=2)
+            # TODO: this is a quick fix for temperature -> write new udf for temperature at moving interface!
+            if prefix == "temperature" and "displacement" in self.output_variables:
+                data[:,0] = np.ones((np.shape(data)[0], 1)) * self.ini_condition
             # copy output data for debugging
             if self.debug:
                 dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
@@ -730,33 +720,72 @@ class SolverWrapperFluent(SolverWrapper):
                 os.system(cmd)
         return data
 
+    def initial_displacement(self, thread_id, x, y, z, nodeIDs):
+        # initialise previous displacement values
+        self.dx_prev = np.zeros((nodeIDs.size, 1))
+        self.dy_prev = np.zeros((nodeIDs.size, 1))
+        self.dz_prev = np.zeros((nodeIDs.size, 1))
+        self.id_prev = nodeIDs
+
+        if self.dimensions == 2:
+            data = np.rec.fromarrays([x, y, nodeIDs])
+            fmt = '%27.17e%27.17e%27d'
+        else:
+            data = np.rec.fromarrays([x, y, z, nodeIDs])
+            fmt = '%27.17e%27.17e%27.17e%27d'
+        tmp = f'nodes_update_timestep1_thread{thread_id}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        np.savetxt(file_name, data, fmt=fmt, header=f'{nodeIDs.size}', comments='')
+
     def calculate_displacement(self, data, mp_name, thread_id):
         if "nodes" in mp_name:
-            cnt = data.shape[0]
-            model_new = data_structure.Model()
-            x = data[:, 0]
-            y = data[:, 1]
-            z = data[:, 2]
-            ids = np.array(range(1, 1 + data.shape[0]))
+            if data is not None:
+                cnt = data.shape[0]
+                model_new = data_structure.Model()
+                x = data[:, 0]
+                y = data[:, 1]
+                z = data[:, 2]
+                ids = np.array(range(1, 1 + data.shape[0]))
 
-            # create ModelPart and Interface
-            model_new.create_model_part(mp_name, x, y, z, ids)
-            interface_new = data_structure.Interface(self.settings['interface_output'], model_new)
+                # create ModelPart and Interface
+                model_new.create_model_part(mp_name, x, y, z, ids)
+                settings = [{"model_part": mp_name, "variables": ["displacement"]}]
+                interface_new = data_structure.Interface(settings, model_new)
 
-            # create, initialize and query mapper
-            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"]}}}
-            mapper_itf = tools.create_instance(mapper_settings)
-            mapper_itf.initialize(self.interface_output, interface_new)
-            nearest_list = mapper_itf.query_nearest_itf()
-            nearest = nearest_list[0][0]
-            arg = nearest.reshape((np.size(nearest),))
+                # create, initialize and query mapper
+                mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
+                mapper_itf = tools.create_instance(mapper_settings)
+                mapper_itf.initialize(self.interface_output, interface_new)
+                nearest_list = mapper_itf.query_nearest_itf()
+                nearest = nearest_list[0][0]
+                arg = nearest.reshape((np.size(nearest),))
 
-            # calculate displacement
-            model_part = self.model.get_model_part(mp_name)
-            dx = x - model_part.x0[arg]
-            dy = y - model_part.y0[arg]
-            dz = z - model_part.z0[arg]
-            id = model_part.id[arg]
+                # calculate displacement
+                model_part = self.model.get_model_part(mp_name)
+                dx = x - model_part.x0[arg]
+                dy = y - model_part.y0[arg]
+                dz = z - model_part.z0[arg]
+                id = model_part.id[arg]
+                d_id = id
+
+                # update previous displacement values
+                self.dx_prev = dx
+                self.dy_prev = dy
+                self.dz_prev = dz
+                self.id_prev = id
+
+            elif data is None:
+                model_part = self.model.get_model_part(mp_name)
+                id = model_part.id
+                cnt = np.size(id)
+                x = model_part.x0
+                y = model_part.y0
+                z = model_part.z0
+
+                dx = self.dx_prev
+                dy = self.dy_prev
+                dz = self.dz_prev
+                d_id = self.id_prev
 
             # write to file
             if self.dimensions == 2:
@@ -772,7 +801,7 @@ class SolverWrapperFluent(SolverWrapper):
             # create data array for output interface
             displacement = np.append(dx.reshape((cnt, 1)), dy.reshape((cnt, 1)), axis=1)
             displacement = np.append(displacement, dz.reshape((cnt, 1)), axis=1)
-            displacement = np.append(displacement, id.reshape((cnt, 1)), axis=1)
+            displacement = np.append(displacement, d_id.reshape((cnt, 1)), axis=1)
             return displacement
         else:
             raise ValueError('Model part must be node-based for the displacement variable')
@@ -824,7 +853,7 @@ class SolverWrapperFluent(SolverWrapper):
 
             # read in datafile
             tmp = f'faces_timestep{self.timestep}_thread{thread_id}.dat'
-            data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
+            data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1, ndmin=2)
             if data.shape[1] != self.dimensions + self.mnpf:
                 raise ValueError(f'Given dimension does not match coordinates')
 

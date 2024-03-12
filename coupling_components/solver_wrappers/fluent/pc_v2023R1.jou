@@ -8,7 +8,6 @@ file set-batch-options n n n
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
-(define stored |STORED_VARIABLES|)
 (define moving_boundary |MOVING_BOUNDARY|)
 (define force_balance |FORCE_BALANCE|)
 (define thermal_bc |THERMAL_BC|)
@@ -104,22 +103,30 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     )
 )
 ;
+;   HOOK SOURCE UDFs TO CONSERVATION EQUATIONS AND SET ADJACENT FLAGS
+(if moving_boundary
+    (begin
+        (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+        (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 0 n n n , n , n y n")
+    )
+)
+;
 ;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS
 (if (= timestep_start 0)
     (begin
-        (wait_message "initial_interface_profiles_written")
         (if (= thermal_bc 0)
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no ,\n"(list-ref face_threads k)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_temperature::udf_thermal\" no ,\n"(list-ref face_threads k)))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_temperature::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
             )
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no ,\n"(list-ref face_threads k)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_heat_flux::udf_thermal\" no ,\n"(list-ref face_threads k)))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k)))
+                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k)))
             )
         )
     )
 )
+;
 ;   SET DELTA_T
 (if unsteady
     (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))
@@ -137,7 +144,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     (if (check_message "next")
         (begin
             (if moving_boundary
-                (ti-menu-load-string "define user-defined execute-on-demand \"update_volumes_ts::mass_source\""))
+                (ti-menu-load-string "define user-defined execute-on-demand \"update_volumes_ts::udf_thermal\"")
             )
             |END_OF_TIMESTEP_COMMANDS|
             (rpsetvar 'udf/iteration 0)
@@ -169,13 +176,18 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                 )
             )
             (if moving_boundary
-                (if ((= thermal_bc 1)
-                    (begin
-                        (ti-menu-load-string "surface edit-surface isothermal temperature , () , () , ()")
-                        (ti-menu-load-string (format #f "plot plot y "isothermal_x_timestep~a" n n n x-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
-                        (ti-menu-load-string (format #f "plot file "isothermal_x_timestep~a" (%rpgetvar 'udf/timestep)))
-                        (ti-menu-load-string (format #f "plot plot y "isothermal_y_timestep~a" n n n y-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
-                        (ti-menu-load-string (format #f "plot file "isothermal_y_timestep~a"" (%rpgetvar 'udf/timestep)))
+                (begin
+                    (if (= thermal_bc 1)
+                        (begin
+                            (ti-menu-load-string "surface edit-surface isothermal temperature , () , () , ()")
+                            (if (= (pick-a-real "report surface-integrals area isothermal () n") 0)
+                                (send_message "isothermal_is_empty")
+                                (begin
+                                    (ti-menu-load-string (format #f "plot plot y \"isothermal_x_timestep~a\" n n n x-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
+                                    (ti-menu-load-string (format #f "plot plot y \"isothermal_y_timestep~a\" n n n y-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
+                                )
+                            )
+                        )
                     )
                 )
             )
@@ -206,3 +218,4 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     )
 )
 exit y
+

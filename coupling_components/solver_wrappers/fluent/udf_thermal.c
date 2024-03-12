@@ -64,6 +64,7 @@ for (_d = 0; _d < dim; _d++) {                                      \
 
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
+#define dt |TIME_STEP_SIZE|
 int _d; /* don't use in UDFs! (overwritten by functions above) */
 int n_threads;
 DECLARE_MEMORY(thread_ids, int);
@@ -1204,4 +1205,69 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 #endif /* RP_NODE */
 
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
+}
+
+  /*--------------*/
+ /* set_adjacent */
+/*--------------*/
+
+/* User defined memory ------------------------------------------------------------------------------------------------
+index 0 = flags the cells adjacent to the interface
+index 1 = cell volume previous time step converged
+-------------------------------------------------------------------------------------------------------------------- */
+
+DEFINE_ON_DEMAND(set_adjacent) {
+/* Should be called during initialisation or whenever the grid is remeshed. Used in combination with mass_source UDFs.*/
+#if RP_NODE
+	Domain *domain;
+	Thread *cell_thread, *face_thread;
+	cell_t c;
+	int face_number, surface;
+
+	domain = Get_Domain(1);
+	thread_loop_c(cell_thread,domain) {
+		begin_c_loop(c,cell_thread) {
+			C_UDMI(c,cell_thread,0) = 0.0;
+			c_face_loop(c,cell_thread,face_number) {
+				face_thread = C_FACE_THREAD(c,cell_thread,face_number);
+				for (surface = 0; surface < n_threads; surface++) {
+					if (THREAD_ID(face_thread) == thread_ids[surface]) {
+						C_UDMI(c,cell_thread,0) = 1.0;
+					}
+				}
+			}
+		} end_c_loop(cell,cell_thread)
+	}
+#endif /* RP_NODE */
+}
+
+  /*-------------------*/
+ /* update_volumes_ts */
+/*-------------------*/
+
+DEFINE_ON_DEMAND(update_volumes_ts)
+{
+Domain *d;
+d = Get_Domain(1);
+Thread *t;
+cell_t c;
+thread_loop_c(t,d) {
+    begin_c_loop(c,t) //loop over all cells
+        C_UDMI(c,t,1) = C_VOLUME(c,t);
+    end_c_loop(c,t)
+    }
+printf("\nFinished UDF update_volumes_ts.\n");
+fflush(stdout);
+}
+
+  /*-----------------*/
+ /* udf_mass_source */
+/*-----------------*/
+
+/*Source term for energy equation, to include latent heat.*/
+DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
+{
+real source = -C_R(c,t)*C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt);
+dS[eqn] = -C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt);
+return source;
 }
