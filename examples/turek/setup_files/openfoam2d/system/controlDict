@@ -1,0 +1,52 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     coconut_pimpleFoam;
+
+startFrom       startTime;
+
+startTime       0.0;
+
+stopAt          endTime;
+
+endTime         6;
+
+deltaT          1e-3;
+
+writeControl    timeStep;
+
+writeInterval   20;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression uncompressed;
+
+timeFormat      fixed;
+
+timePrecision   6;
+
+runTimeModifiable false;
+
+adjustTimeStep  no;
+
+#include "./system/functions"
+
+// ************************************************************************* //

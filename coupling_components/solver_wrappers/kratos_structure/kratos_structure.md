@@ -112,6 +112,10 @@ The most important changes with respect to older versions include:
 
 Based on testing, restart works with the `MembraneElement`, `ShellThickElement` and `ShellThickElementCorotational`. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
 
+### v94 (9.4)
+
+No major changes.
+
 #### Kratos installation
 
 This version supports installation using `pip`. To install only StructuralMechanicsApplication of Kratos, use the following command:

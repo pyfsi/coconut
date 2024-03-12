@@ -44,7 +44,7 @@ Furthermore, the script _`animate_lid_driven_cavity.py`_ can be used to visualiz
 
 ## Coupling algorithm
 
-The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQNI-LS).
+The coupling technique used is the *interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model* (IQN-ILS).
 No reuse is employed, so the reuse parameter `q` is set to 0.
 
 ## Predictor
@@ -67,12 +67,12 @@ A quadrilateral mesh is used with 32 cells on each side of the cavity.
 A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.
 Dynamic mesh motion is achieved using a spring method.
 
-The structure solver is KratosMultiphysics StructuralMechanicsApplication (abbreviated KratosStructure).
+The structural solver is KratosMultiphysics StructuralMechanicsApplication (abbreviated KratosStructure).
 The deformable bottom is meshed with 2 layers of 32 _TotalLagrangianElement2D4N_ elements.
 The movement of the left and right side is constrained.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
-In the structure solver wrapper, a linear interpolation mapper is used to interpolate in the x-direction from and to the coupled solver.
+In the structural solver wrapper, a linear interpolation mapper is used to interpolate in the x-direction from and to the coupled solver.
 
 ## References
 <a id="1">[1]</a>

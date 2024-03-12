@@ -1,0 +1,74 @@
+{
+  "problem_data": {
+    "problem_name": "turek",
+    "parallel_type": "OpenMP",
+    "echo_level": 1,
+    "start_time": 0.0,
+    "end_time": 1.0
+  },
+  "solver_settings": {
+    "solver_type": "Dynamic",
+    "model_part_name": "Structure",
+    "domain_size": 2,
+    "echo_level": 1,
+    "analysis_type": "non_linear",
+    "time_integration_method": "implicit",
+    "scheme_type": "bossak",
+    "model_import_settings": {
+      "input_type": "mdpa",
+      "input_filename": "flag"
+    },
+    "material_import_settings": {
+      "materials_filename": "StructuralMaterials.json"
+    },
+    "time_stepping": {
+      "time_step": 0.002
+    },
+    "convergence_criterion": "residual_criterion",
+    "residual_relative_tolerance": -1,
+    "residual_absolute_tolerance": 1e-8,
+    "max_iteration": 10,
+    "rotation_dofs": false
+  },
+  "processes": {
+    "constraints_process_list": [
+      {
+        "python_module": "assign_vector_variable_process",
+        "kratos_module": "KratosMultiphysics",
+        "Parameters": {
+          "model_part_name": "Structure.DISPLACEMENT_FixedDisplacement",
+          "variable_name": "DISPLACEMENT",
+          "value": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    ]
+  },
+  "output_processes": {
+    "vtk_output": [
+      {
+        "python_module": "vtk_output_process",
+        "kratos_module": "KratosMultiphysics",
+        "process_name": "VTKOutputProcess",
+        "Parameters": {
+          "model_part_name": "Structure",
+          "file_format": "ascii",
+          "output_precision": 6,
+          "output_control_type": "step",
+          "output_interval": 20,
+          "output_sub_model_parts": false,
+          "nodal_solution_step_data_variables": [
+            "DISPLACEMENT",
+            "REACTION"
+          ],
+          "nodal_data_value_variables": [],
+          "element_data_value_variables": [],
+          "condition_data_value_variables": []
+        }
+      }
+    ]
+  }
+}

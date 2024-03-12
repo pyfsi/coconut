@@ -94,12 +94,12 @@ coconut = {u_name: determine_data(u[time <= stop], time[time <= stop]) for u_nam
 # summary
 for var1_str, var1_name, var2_str, var2_name in (('ux', 'displacement x', 'uy', 'displacement y'),
                                                  ('drag', 'drag', 'lift', 'lift')):
-    out = f"{fsi_case}\t\t{var1_name:30s}\t\t{var2_name:30s}\n" + '-' * 80 + '\n'
-    for dict_name, dict in (('benchmark', turek_benchmark[fsi_case]), ('coconut', coconut)):
-        out += f"{dict_name:12}"
+    out = f'{fsi_case:12s}{var1_name:34s}{var2_name:34s}\n' + '-' * 80 + '\n'
+    for dict_name, dct in (('benchmark', turek_benchmark[fsi_case]), ('coconut', coconut)):
+        out += f'{dict_name:12s}'
         for var in (var1_str, var2_str):
-            out += f"{dict[var]['mean']:11.4e} +/-{dict[var]['amplitude']:.4e} [{dict[var]['frequency']:.1f}]"
-            out += '\t\t' if var == var1_str else '\n'
+            out += f"{dct[var]['mean']:11.4e} +/-{dct[var]['amplitude']:.4e} [{dct[var]['frequency']:.1f}]"
+            out += '  ' if var == var1_str else '\n'
     print(out)
 
 # plots

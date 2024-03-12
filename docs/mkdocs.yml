@@ -2,8 +2,8 @@ site_name: CoCoNuT
 repo_name: pyfsi/coconut
 repo_url: https://github.com/pyfsi/coconut
 edit_uri: ''
-site_url: ''
-site_description: site_description
+site_url: https://pyfsi.github.io/coconut
+site_description: Coupling Code for Numerical Tools - aka 🥥 CoCoNuT is a Python tool for partitioned multiphysics simulations with a focus on fluid-structure interaction.
 use_directory_urls: false
 theme:
   name: 'material'
@@ -31,6 +31,7 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+  custom_dir: overrides
 markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
@@ -62,6 +63,7 @@ nav:
       - General: examples.md
       - Breaking dam:
           - Fluent 2D - Abaqus 2D: breaking_dam_fluent2d_abaqus2d.md
+          - Fluent 2D - KratosStructure 2D: breaking_dam_fluent2d_kratos_structure2d.md
       - Lid-driven cavity:
           - Fluent2D - KratosStructure 2D: lid_driven_cavity_fluent2d_kratos_structure2d.md
           - OpenFOAM2D - KratosStructure 2D: lid_driven_cavity_openfoam2d_kratos_structure2d.md
@@ -83,5 +85,6 @@ nav:
       - Turek benchmark:
           - Fluent 2D - Abaqus 2D: turek_fluent2d_abaqus2d.md
           - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
+          - OpenFOAM 2D - KratosStructure 2D: turek_openfoam2d_kratos_structure2d.md
       - Test single solver: test_single_solver.md
   - Tests: tests.md

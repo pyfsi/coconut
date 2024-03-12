@@ -1,0 +1,202 @@
+{
+  "settings": {
+    "number_of_timesteps": 400
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.001,
+      "omega": 0.1,
+      "save_results": 50,
+      "save_restart": 50,
+      "model": {
+        "type": "coupled_solvers.models.mvmf",
+        "settings": {
+          "min_significant": 1e-13,
+          "q": 50
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 20
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.fluent.v2023R1",
+        "settings": {
+          "working_directory": "CFD",
+          "case_file": "case_breaking_dam.cas.h5",
+          "dimensions": 2,
+          "unsteady": true,
+          "multiphase": true,
+          "print_coupling_convergence": true,
+          "thread_names": [
+            "beamleft",
+            "beambottom",
+            "beamright"
+          ],
+          "interface_input": [
+            {
+              "model_part": "beamleft_nodes",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "beambottom_nodes",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "beamright_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "beamleft_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "beambottom_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "beamright_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "cores": 1,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 500,
+          "save_results": 1
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.kratos_structure.v94",
+            "settings": {
+              "working_directory": "CSM",
+              "input_file": "ProjectParameters.json",
+              "print_coupling_convergence": true,
+              "structure_iterations": 10,
+              "kratos_interface_sub_model_parts_list": [
+                "LineLoad2D_left",
+                "LineLoad2D_bottom",
+                "LineLoad2D_right"
+              ],
+              "pressure_directions": [
+                1,
+                1,
+                1
+              ],
+              "interface_input": [
+                {
+                  "model_part": "LineLoad2D_left_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                },
+                {
+                  "model_part": "LineLoad2D_bottom_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                },
+                {
+                  "model_part": "LineLoad2D_right_input",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "LineLoad2D_left_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "LineLoad2D_bottom_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "LineLoad2D_right_output",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ]
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
