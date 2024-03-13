@@ -50,7 +50,7 @@ This case is written to the *`case_tube2d.cas`* file, which serves as input for 
 Additionally, a folder *`create_mesh`* is provided containing a script to create the mesh in Gambit using a journal file.
 The mesh can be created by running the script *`create_mesh.sh`*, given that Gambit v2.4.6 is available.
 
-The structure solver is Abaqus, used to solve an axisymmetric representation of the tube,
+The structural solver is Abaqus, used to solve an axisymmetric representation of the tube,
 with 50 elements on the fluid-structure interface.
 The Abaqus case is built when setting up the case starting from the file *`mesh_tube2d.inp`* containing nodes and elements. 
 This is done by running Abaqus with the *`make_inp.py`* Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
@@ -63,6 +63,6 @@ The displacement is calculated in the nodes. There are 101 nodes on the fluid-st
 The axial direction is along the y-axis, the radial direction along the x-axis.
 
 The difference in reference frames and number of cells on the fluid-structure interface requires the use of mappers.
-In the structure solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
+In the structural solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
 Thereafter, a linear interpolation mapper is used to interpolate in the x- and y-direction from the 100 cell centers of Fluent to the 150 load points in Abaqus.
 For the output the same is done in the opposite order: first interpolating and then flipping the axes.

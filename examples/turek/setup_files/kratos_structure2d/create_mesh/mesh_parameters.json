@@ -1,0 +1,35 @@
+{
+  "precision": 12,
+  "sub_model_parts": [
+    {
+      "physical_group_name": "FLAG",
+      "element_name": "TotalLagrangianElement2D4N",
+      "property_id": 0,
+      "sub_model_part_name": "Parts_Structure"
+    },
+    {
+      "physical_group_name": "FixedDisplacement",
+      "property_id": 0,
+      "sub_model_part_name": "DISPLACEMENT_FixedDisplacement"
+    },
+	{
+      "physical_group_name": "FlagTop",
+      "condition_name": "LineLoadCondition2D2N",
+      "property_id": 0,
+      "sub_model_part_name": "FlagTop"
+    },
+	{
+      "physical_group_name": "FlagEnd",
+      "condition_name": "LineLoadCondition2D2N",
+      "property_id": 0,
+      "sub_model_part_name": "FlagEnd"
+    },
+    {
+      "physical_group_name": "FlagBottom",
+      "condition_name": "LineLoadCondition2D2N",
+      "property_id": 0,
+      "sub_model_part_name": "FlagBottom"
+    }
+  ]
+}
+

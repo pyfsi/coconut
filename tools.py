@@ -157,7 +157,7 @@ def print_box(*args, layout=None, box_layout=None, **kwargs):
                        green, yellow, flue, magenta, cyan, white, black
     :param box_layout: The box layout to be used: plain, bold, underline, inverse, negative, warning, fail, grey, red,
                        green, yellow, flue, magenta, cyan, white, black
-    :param **kwargs:   The kwargs of print_info
+    :param kwargs:   The kwargs of print_info
     :return: str
     """
     text = "".join(map(str, args))
@@ -256,12 +256,13 @@ def pass_on_parameters(settings_from, settings_to, keys):
 
 
 # compare bounding box of ModelParts
-def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
+def check_bounding_box(mp_a, mp_b, directions, tol_center_warning=.02, tol_center_error=.1,
                        tol_minmax_warning=.1, tol_minmax_error=.3):
     """
     Use this function to compare the bounding boxes of 2 ModelParts.
 
-    mp_a and mp_b are the two ModelParts.
+    mp_a and mp_b are the two ModelParts
+    and directions is a list of the mapping direction, for example ['x0', 'y0', 'z0'].
 
     There are 4 keyword arguments, to overwrite the
     default tolerances:
@@ -272,15 +273,27 @@ def check_bounding_box(mp_a, mp_b, tol_center_warning=.02, tol_center_error=.1,
 
     Returns nothing.
     """
+
+    for d in directions:
+        if d not in ['x0', 'y0', 'z0']:
+            raise ValueError(f'"{d}" is not a valid direction')
+    if len(directions) > 3:
+        raise ValueError(f'Too many directions given')
+    if len(directions) == 0:
+        raise ValueError(f'No directions specified')
+
     # extract coordinate data
-    mp_a_coords = np.column_stack((mp_a.x0, mp_a.y0, mp_a.z0))
-    mp_b_coords = np.column_stack((mp_b.x0, mp_b.y0, mp_b.z0))
+    mp_a_coords = np.zeros(shape=(mp_a.size, len(directions)))
+    mp_b_coords = np.zeros(shape=(mp_b.size, len(directions)))
+    for i, d in enumerate(directions):
+        mp_a_coords[:, i] = getattr(mp_a, d)
+        mp_b_coords[:, i] = getattr(mp_b, d)
 
     # get bounding boxes
-    mp_a_min = mp_a_coords.min(axis=0)
-    mp_a_max = mp_a_coords.max(axis=0)
-    mp_b_min = mp_b_coords.min(axis=0)
-    mp_b_max = mp_b_coords.max(axis=0)
+    mp_a_min = np.min(mp_a_coords, axis=0)
+    mp_a_max = np.max(mp_a_coords, axis=0)
+    mp_b_min = np.min(mp_b_coords, axis=0)
+    mp_b_max = np.max(mp_b_coords, axis=0)
     mp_a_center = (mp_a_min + mp_a_max) / 2
     mp_b_center = (mp_b_min + mp_b_max) / 2
 
