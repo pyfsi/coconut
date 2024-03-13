@@ -6,6 +6,7 @@ file set-batch-options n n n
 (define unsteady |UNSTEADY|)
 (define multiphase |MULTIPHASE|)
 (define flow_iterations |FLOW_ITERATIONS|)
+(define check_coupling_convergence |CHECK_COUPLING_CONVERGENCE|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
 (define rigid_body_motion |RIGID_BODY_MOTION|)
@@ -63,6 +64,9 @@ file set-batch-options n n n
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
+;   STORE REPORTING INTERVAL
+;
+(define reporting_interval (%rpgetvar 'iteration-chunk))
 ;
 ;   SAVE CASE INFO TO TEXT FILE
 report summary y "report.sum"
@@ -75,11 +79,11 @@ define user-defined execute-on-demand "get_thread_ids::v2021R1"
 (define moving_zones (list|MOVING_ZONES|))
 ;
 ;   SETUP ZONE MOTION
-; COMPONENT
+; WING
 (if (and (= timestep_start 0) rigid_body_motion )
     (begin
          (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
-         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_component::v2021R1\" no no no no no\n" (list-ref moving_zones 0)))
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_wing::v2021R1\" no no no no no\n" (list-ref moving_zones 0)))
     )
 )
 ; ELEVATOR
@@ -124,10 +128,10 @@ define user-defined execute-on-demand "get_thread_ids::v2021R1"
 (if (= timestep_start 0)
     (begin
         (if unsteady
-           (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
+            (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-           (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a
                 user-defined \"move_nodes::v2021R1\"" (list-ref face_threads k)))
         )
         (if unsteady
@@ -176,23 +180,79 @@ define user-defined execute-on-demand "get_thread_ids::v2021R1"
         (begin
             (rpsetvar 'udf/iteration (+ (%rpgetvar 'udf/iteration) 1))
             (print-iter-info)
-            (if unsteady
-                (if (= (%rpgetvar 'udf/iteration) 1)
-                    (begin
-                        (ti-menu-load-string "solve dual-time-iterate 1 0")
-                        (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
-                    )
-                    (begin
-                        (ti-menu-load-string "solve dual-time-iterate 0 1")
-                        (ti-menu-load-string "solve iterate 1")
-                        (ti-menu-load-string "solve dual-time-iterate 0 0")
-                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+            (if check_coupling_convergence
+                (begin
+                    (ti-menu-load-string "solve set reporting-interval 1")
+                    (if unsteady
+                        (if (= (%rpgetvar 'udf/iteration) 1)
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                (ti-menu-load-string "solve iterate 1")
+                                (if (%rpgetvar 'solution/converged?)
+                                    (begin
+                                        (newline)(display "Check convergence :: converged")(newline)
+                                        (send_message "solver_converged")
+                                    )
+                                    (begin
+                                        (newline)(display "Check convergence :: not converged")(newline)
+                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                    )
+                                )
+                            )
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                (ti-menu-load-string "solve iterate 1")
+                                (if (%rpgetvar 'solution/converged?)
+                                    (begin
+                                        (newline)(display "Check convergence :: converged")(newline)
+                                        (send_message "solver_converged")
+                                    )
+                                    (begin
+                                        (newline)(display "Check convergence :: not converged")(newline)
+                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                        (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                    )
+                                )
+                            )
+                        )
+                        (begin
+                            (ti-menu-load-string "solve mesh-motion y")
+                            (ti-menu-load-string "solve iterate 1")
+                            (if (%rpgetvar 'solution/converged?)
+                                (begin
+                                    (newline)(display "Check convergence :: converged")(newline)
+                                    (send_message "solver_converged")
+                                )
+                                (begin
+                                    (newline)(display "Check convergence :: not converged")(newline)
+                                    (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                    (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                )
+                            )
+                        )
                     )
                 )
                 (begin
-                    (ti-menu-load-string "define dynamic-mesh controls smoothing-parameters smooth-from-reference-position? n")
-                    (ti-menu-load-string "solve mesh-motion y")
-                    (ti-menu-load-string "solve iterate flow_iterations")
+                    (if unsteady
+                        (if (= (%rpgetvar 'udf/iteration) 1)
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
+                            )
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                (ti-menu-load-string "solve iterate 1")
+                                (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                            )
+                        )
+                        (begin
+                            (ti-menu-load-string "solve mesh-motion y")
+                            (ti-menu-load-string "solve iterate flow_iterations")
+                        )
+                    )
                 )
             )
             (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::v2021R1\"")

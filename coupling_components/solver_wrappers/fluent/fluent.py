@@ -1,5 +1,5 @@
 from coconut import data_structure
-from coconut.coupling_components.component import Component
+from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
 
 import os
@@ -17,14 +17,15 @@ def create(parameters):
     return SolverWrapperFluent(parameters)
 
 
-class SolverWrapperFluent(Component):
+class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
-    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
-    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
+    version = None  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
+    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
+    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
     def __init__(self, parameters):
-        super().__init__()
+        super().__init__(parameters)
 
         if self.version is None or self.version_bis is None:
             raise NotImplementedError(
@@ -33,7 +34,7 @@ class SolverWrapperFluent(Component):
         # set parameters
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
+        self.env = None  # environment in which correct version of Fluent software is available, set in subclass
         self.coco_messages = tools.CocoMessages(self.dir_cfd)
         self.coco_messages.remove_all_messages()
         self.backup_fluent_log()
@@ -65,17 +66,8 @@ class SolverWrapperFluent(Component):
             self.thread_ids[thread_name] = None
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.model = None
-        self.interface_input = None
-        self.interface_output = None
         self.moving_zones = self.settings.get('moving_zones','moving_zone')
         self.rigid_body_motion_on = self.settings.get('rigid_body_motion',False)
-
-        # time
-        self.init_time = self.init_time
-        self.run_time = 0.0
-
-        # debug
-        self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
 
     @tools.time_initialize
     def initialize(self):
@@ -89,12 +81,9 @@ class SolverWrapperFluent(Component):
         moving_zones_str = ''
         for moving_zone in self.moving_zones:
             moving_zones_str += ' "' + moving_zone + '"'
-        unsteady = '#f'
-        if self.unsteady:
-            unsteady = '#t'
-        multiphase = '#f'
-        if self.multiphase:
-            multiphase = '#t'
+        unsteady = '#t' if self.unsteady else '#f'
+        multiphase = '#t' if self.multiphase else '#f'
+        check_coupling_convergence = '#t' if self.check_coupling_convergence else '#f'
         rigid_body_motion_on = '#f'
         if self.rigid_body_motion_on:
             rigid_body_motion_on = '#t' # '#t' --> move-zone is now off
@@ -109,6 +98,7 @@ class SolverWrapperFluent(Component):
                     line = line.replace('|UNSTEADY|', unsteady)
                     line = line.replace('|MULTIPHASE|', multiphase)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
+                    line = line.replace('|CHECK_COUPLING_CONVERGENCE|', check_coupling_convergence)
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
@@ -195,15 +185,20 @@ class SolverWrapperFluent(Component):
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
-        info = []
+        names_found = []
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
-                    name, thread_id, _ = line.strip().split()
-                    if name in self.thread_ids:
-                        info.append(' '.join((name, thread_id)))
+                    line_list = line.strip().split()
+                    if len(line_list) == 3:
+                        name, thread_id, _ = line_list
+                    elif len(line_list) == 4:
+                        name, _, thread_id, _ = line_list
+                    else:
+                        raise ValueError(f'Format of {report} not recognized')
+                    if name in self.thread_ids and name not in names_found:
                         self.thread_ids[name] = thread_id
-
+                        names_found.append(name)
                 if check == 3 and not line.islower():
                     break
                 if check == 2:  # skip 1 line
@@ -213,10 +208,14 @@ class SolverWrapperFluent(Component):
                 if 'Boundary Conditions' in line:
                     check = 1
         with open(join(self.dir_cfd, 'bcs.txt'), 'w') as file:
-            file.write(str(len(info)) + '\n')
-            for line in info:
-                file.write(line + '\n')
+            file.write(f'{len(names_found)}\n')
+            for name, id in self.thread_ids.items():
+                file.write(f'{name} {id}\n')
         self.coco_messages.send_message('thread_ids_written_to_file')
+
+        # remove "report.sum" because the batch options to overwrite report files and case files conflict in some
+        # versions of Fluent (2023R1)
+        os.unlink(report)
 
         # import node and face information if no restart
         if self.timestep_start == 0:
@@ -297,11 +296,11 @@ class SolverWrapperFluent(Component):
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
 
         # import rigid_body_motion
-        if self.rigid_body_motion_on:
-            if not os.path.isfile('rigid_body_motion.py'):
-                raise ModuleNotFoundError(f'No file named rigid_body_motion.py in {os.getcwd()}')
-            module = tools.import_module('rigid_body_motion', 'rigid_body_motion.py')
-            self.rigid_body_motion = getattr(module, 'RigidBodyMotion')()
+        # if self.rigid_body_motion_on:
+        #     if not os.path.isfile('rigid_body_motion.py'):
+        #         raise ModuleNotFoundError(f'No file named rigid_body_motion.py in {os.getcwd()}')
+        #     module = tools.import_module('rigid_body_motion', 'rigid_body_motion.py')
+        #     self.rigid_body_motion = getattr(module, 'RigidBodyMotion')()
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -320,8 +319,8 @@ class SolverWrapperFluent(Component):
         self.interface_input.set_interface_data(interface_input.get_interface_data())
 
         # write move_zone
-        if self.rigid_body_motion_on:
-            self.write_move_zone()
+        # if self.rigid_body_motion_on:
+        #     self.write_move_zone()
 
         # write interface data
         self.write_node_positions()
@@ -339,6 +338,12 @@ class SolverWrapperFluent(Component):
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
+
+        if self.check_coupling_convergence:
+            # check if Fluent converged after 1 iteration
+            self.coupling_convergence = self.coco_messages.check_message('solver_converged')
+            if self.print_coupling_convergence and self.coupling_convergence:
+                tools.print_info(f'{self.__class__.__name__} converged')
 
         # read data from Fluent
         for dct in self.interface_output.parameters:
@@ -386,6 +391,10 @@ class SolverWrapperFluent(Component):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         # save if required
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
@@ -429,7 +438,7 @@ class SolverWrapperFluent(Component):
                 try:
                     os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
                     os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
-                    os.remove(join(self.dir_cfd, f'move_zone_component_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'move_zone_wing_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'move_zone_elevator_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'move_zone_rudder_left_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'move_zone_rudder_right_update_timestep{timestep}.dat'))
@@ -437,12 +446,6 @@ class SolverWrapperFluent(Component):
                     os.remove(join(self.dir_cfd, f'move_zone_aileron_right_update_timestep{timestep}.dat'))
                 except OSError:
                     pass
-
-    def get_interface_input(self):
-        return self.interface_input.copy()
-
-    def get_interface_output(self):
-        return self.interface_output.copy()
 
     def check_software(self):
         # Fluent version: see set_fluent_version
@@ -478,63 +481,63 @@ class SolverWrapperFluent(Component):
             ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
         return ids
 
-    def write_move_zone(self):
-
-        # component (wing)
-        omega, axis_x, axis_y, axis_z, origin_x, origin_y, origin_z, velocity_x, velocity_y, velocity_z = \
-            self.rigid_body_motion.move_zone(self.timestep, self.delta_t)
-        data = np.array(
-            [[omega], [axis_x], [axis_y], [axis_z], [origin_x], [origin_y], [origin_z], [velocity_x], [velocity_y],
-             [velocity_z]])
-        fmt = '%27.17e'
-        tmp = f'move_zone_component_update_timestep{self.timestep}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
-
-        #elevator
-        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_elevator(self.timestep,self.delta_t)
-        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
-        fmt = '%27.17e'
-        tmp = f'move_zone_elevator_update_timestep{self.timestep}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
-
-        #rudder left
-        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_rudder_left(self.timestep,self.delta_t)
-        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
-        fmt = '%27.17e'
-        tmp = f'move_zone_rudder_left_update_timestep{self.timestep}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
-
-        #rudder right
-        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_rudder_right(self.timestep,self.delta_t)
-        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
-        fmt = '%27.17e'
-        tmp = f'move_zone_rudder_right_update_timestep{self.timestep}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
-
-        #aileron left
-        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_aileron_left(self.timestep,self.delta_t)
-        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
-        fmt = '%27.17e'
-        tmp = f'move_zone_aileron_left_update_timestep{self.timestep}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
-
-        #aileron right
-        omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
-            self.rigid_body_motion.move_zone_aileron_right(self.timestep,self.delta_t)
-        data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
-        fmt = '%27.17e'
-        tmp = f'move_zone_aileron_right_update_timestep{self.timestep}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+    # def write_move_zone(self):
+    #
+    #     # component (wing)
+    #     omega, axis_x, axis_y, axis_z, origin_x, origin_y, origin_z, velocity_x, velocity_y, velocity_z = \
+    #         self.rigid_body_motion.move_zone(self.timestep, self.delta_t)
+    #     data = np.array(
+    #         [[omega], [axis_x], [axis_y], [axis_z], [origin_x], [origin_y], [origin_z], [velocity_x], [velocity_y],
+    #          [velocity_z]])
+    #     fmt = '%27.17e'
+    #     tmp = f'move_zone_component_update_timestep{self.timestep}.dat'
+    #     file_name = join(self.dir_cfd, tmp)
+    #     np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+    #
+    #     #elevator
+    #     omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+    #         self.rigid_body_motion.move_zone_elevator(self.timestep,self.delta_t)
+    #     data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+    #     fmt = '%27.17e'
+    #     tmp = f'move_zone_elevator_update_timestep{self.timestep}.dat'
+    #     file_name = join(self.dir_cfd, tmp)
+    #     np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+    #
+    #     #rudder left
+    #     omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+    #         self.rigid_body_motion.move_zone_rudder_left(self.timestep,self.delta_t)
+    #     data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+    #     fmt = '%27.17e'
+    #     tmp = f'move_zone_rudder_left_update_timestep{self.timestep}.dat'
+    #     file_name = join(self.dir_cfd, tmp)
+    #     np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+    #
+    #     #rudder right
+    #     omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+    #         self.rigid_body_motion.move_zone_rudder_right(self.timestep,self.delta_t)
+    #     data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+    #     fmt = '%27.17e'
+    #     tmp = f'move_zone_rudder_right_update_timestep{self.timestep}.dat'
+    #     file_name = join(self.dir_cfd, tmp)
+    #     np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+    #
+    #     #aileron left
+    #     omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+    #         self.rigid_body_motion.move_zone_aileron_left(self.timestep,self.delta_t)
+    #     data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+    #     fmt = '%27.17e'
+    #     tmp = f'move_zone_aileron_left_update_timestep{self.timestep}.dat'
+    #     file_name = join(self.dir_cfd, tmp)
+    #     np.savetxt(file_name, data, fmt=fmt, header='', comments='')
+    #
+    #     #aileron right
+    #     omega,axis_x,axis_y,axis_z,origin_x,origin_y,origin_z,velocity_x,velocity_y,velocity_z = \
+    #         self.rigid_body_motion.move_zone_aileron_right(self.timestep,self.delta_t)
+    #     data = np.array([[omega],[axis_x],[axis_y],[axis_z],[origin_x],[origin_y],[origin_z],[velocity_x],[velocity_y],[velocity_z]])
+    #     fmt = '%27.17e'
+    #     tmp = f'move_zone_aileron_right_update_timestep{self.timestep}.dat'
+    #     file_name = join(self.dir_cfd, tmp)
+    #     np.savetxt(file_name, data, fmt=fmt, header='', comments='')
 
     def write_node_positions(self):
         for dct in self.interface_input.parameters:

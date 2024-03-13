@@ -606,12 +606,12 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 }
 
   /*--------------------*/
- /* move_zone component */
+ /* move_zone wing */
 /*--------------------*/
 
-DEFINE_ZONE_MOTION(move_zone_component,omega,axis,origin,velocity,time,dtime) {
+DEFINE_ZONE_MOTION(move_zone_wing,omega,axis,origin,velocity,time,dtime) {
 
-    Message0("\n\nRunning UDF 'move_zone_component.'\n");
+    Message0("\n\nRunning UDF 'move_zone_wing.'\n");
 
     char file_name_zone[256];
     real axis_x;
@@ -636,7 +636,7 @@ DEFINE_ZONE_MOTION(move_zone_component,omega,axis,origin,velocity,time,dtime) {
 
     host_to_node_int_1(timestep);
 #if !RP_NODE
-    sprintf(file_name_zone, "move_zone_component_update_timestep%i.dat",timestep
+    sprintf(file_name_zone, "move_zone_wing_update_timestep%i.dat",timestep
             );
 #else
     struct stat st = {0};
@@ -645,7 +645,7 @@ DEFINE_ZONE_MOTION(move_zone_component,omega,axis,origin,velocity,time,dtime) {
         mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
 
-    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_component_update_timestep%i.dat",timestep
+    sprintf(file_name_zone, "|TMP_DIRECTORY_NAME|/move_zone_wing_update_timestep%i.dat",timestep
             );
     host_to_node_sync_file("|TMP_DIRECTORY_NAME|");
 #endif /* !RP_NODE */
@@ -691,7 +691,7 @@ DEFINE_ZONE_MOTION(move_zone_component,omega,axis,origin,velocity,time,dtime) {
     N3V_D(origin,=,origin_x,origin_y,origin_z);
     N3V_D (velocity,=,velocity_x,velocity_y,velocity_z);
 
-Message0("\n\nFinished UDF 'move_zone_component.'\n");
+Message0("\n\nFinished UDF 'move_zone_wing.'\n");
 return;
 }
 
