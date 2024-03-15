@@ -393,9 +393,15 @@ The solver `test_single_solver` can be used to test new cases and solver setting
 
 ### Dummy solver
 
-To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file _`dummy_solver.py`_. Its path starts in the folder from where the simulation is performed, e.g. the same folder level as _`run_simulation.py`_. Upon run-time an instance of this class is made.
-The test class requires methods of the form `calculate_<variable>(x,y,z,n)`, with `<variable>` being a variable required by the tested solver, e.g. `displacement`, `pressure` or `traction`. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
-Some examples are given in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md). The test class name is provided in the JSON settings as a string. If no test class is provided or the value `None` is used, zero input will be used.
+To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file _`dummy_solver.py`_.
+Its path starts in the folder from where the simulation is performed, e.g. the same folder level as _`run_simulation.py`_. Upon run-time an instance of this class is made.
+The test class can be setup in two ways (in order of priority):
+
+1. Using a method named `get_input(interface_input_to, n)`, which sets the given `interface` to the desired value. This can, for example, be done using a pickle file from a previous calculation.
+2. Using methods of the form `calculate_<variable>(x, y, z, n)`, with `<variable>` being a variable required by the tested solver, e.g. `displacement`, `pressure` or `traction`. The coordinates are the coordinates of the data location in the undeformed state and `n` is the time step. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
+
+Optionally, the test class can also have an `initialize(interface_input_to, solver_index)` method. If so, it will be called at the start of the simulation, with as `interface_input_to` the input `interface` of the tested solver. This is especially useful when the first approach is followed.
+Some clarifying examples are given in the example [test_single_solver](../../examples/test_single_solver/test_single_solver.md). The test class name is provided in the JSON settings as a string. If no test class is provided or the value `None` is used, zero input will be used.
 
 The JSON file requirements for the class `CoupledSolverTestSingleSolver` are different from the other coupled solvers in the sense that they only require the `type`, which is `coupled_solvers.test_single_solver`, the dictionary `test_settings` and the list `solver_wrappers` containing at least one solver wrapper. The keys for the `test_settings` dictionary are listed in alphabetical order below.
 
@@ -415,7 +421,7 @@ An illustration can be found in the example [test_single_solver](../../examples/
 
 The optional pickle file, which saves some [results](#save-results), uses the name as specified by the JSON settings followed by an underscore and the solver working directory.
 
-During run time, the norm of $x$ and $y$ are printed. A residual does not exist here. The arrays $x$ and $y$ do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector $y$ will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.
+During run time, the norm of $x$ and $y$ are printed. A residual does not exist here. The arrays $x$ and $y$ do not necessarily have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector $y$ will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.
 
 The test environment `test_single_solver` tests only the `solver_wrapper` itself, no mapping is included.
 
