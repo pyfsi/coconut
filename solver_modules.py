@@ -29,7 +29,7 @@ solver_load_cmd_dict = {
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2022': 'ml intel/2022a && ml ABAQUS/2022-hotfix-2214 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
-        'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE ',
+        'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE ',  # needs to be FALSE in job script, but TRUE for Kratos
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     },
     'hortense': {
@@ -44,7 +44,7 @@ solver_load_cmd_dict = {
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
         'abaqus.v2022': 'ml intel/2021a && module load ABAQUS/2022 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
-        'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE ',
+        'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE ',  # needs to be FALSE in job script, but TRUE for Kratos
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
     }
 }
