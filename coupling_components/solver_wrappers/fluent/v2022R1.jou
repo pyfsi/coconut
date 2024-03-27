@@ -8,6 +8,9 @@ file set-batch-options n n n
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
+(define rigid_body_motion |RIGID_BODY_MOTION|)
+(define dimension_2D |DIMENSION_2D|)
+
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -69,7 +72,54 @@ report summary y "report.sum"
 (wait_message "thread_ids_written_to_file")
 define user-defined execute-on-demand "get_thread_ids::v2022R1"
 (define face_threads (list|THREAD_NAMES|))
+(define moving_zones (list|MOVING_ZONES|))
 ;
+;   SETUP ZONE MOTION
+; COMPONENT
+(if (and (= timestep_start 0) rigid_body_motion )
+    (begin
+         (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_component::v2022R1\" no no no no no\n" (list-ref moving_zones 0)))
+    )
+)
+; ELEVATOR
+(if (and (= timestep_start 0) rigid_body_motion )
+    (begin
+         (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_elevator::v2022R1\" no no no no no\n" (list-ref moving_zones 1)))
+    )
+)
+; RUDDER left
+(if (and (= timestep_start 0) rigid_body_motion )
+    (begin
+         (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_rudder_left::v2022R1\" no no no no no\n" (list-ref moving_zones 2)))
+    )
+)
+; RUDDER right
+(if (and (= timestep_start 0) rigid_body_motion )
+    (begin
+         (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_rudder_right::v2022R1\" no no no no no\n" (list-ref moving_zones 3)))
+    )
+)
+
+; AILERON left
+(if (and (= timestep_start 0) rigid_body_motion )
+    (begin
+         (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_aileron_left::v2022R1\" no no no no no\n" (list-ref moving_zones 4)))
+    )
+)
+
+; AILERON right
+(if (and (= timestep_start 0) rigid_body_motion )
+    (begin
+         (ti-menu-load-string (format #f "define boundary-condition fluid ~a no no no no no 0 no 0 no 0 no 0 no 0 no 1
+         yes -1 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 0 no 1 \"move_zone_aileron_right::v2022R1\" no no no no no\n" (list-ref moving_zones 5)))
+    )
+)
+
 ;   SETUP DYNAMIC MESH
 (if (= timestep_start 0)
     (begin
