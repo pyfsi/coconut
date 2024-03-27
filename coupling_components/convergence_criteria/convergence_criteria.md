@@ -131,5 +131,5 @@ Note that the key `convergence_criterion` is still required.
 ## References
 
 <a id="1">[1]</a> 
-[Spenke T., Delaissé N., Degroote J. and Hosters, N., "On the number of subproblem iterations per coupling step in partitioned fluid-structure interaction simulations", International Journal for Numerical Methods in Engineering, 2024.](
+[Spenke T., Delaissé N., Degroote J. and Hosters, N., "On the number of subproblem iterations per coupling step in partitioned fluid-structure interaction simulations", International Journal for Numerical Methods in Engineering, vol. 125, no. 7, e7420, 2024.](
 http://doi.org/10.1002/nme.7420)
