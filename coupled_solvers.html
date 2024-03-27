@@ -2234,9 +2234,15 @@ The keys <code>convergence_criteria</code> and <code>predictors</code> are still
 <h2 id="test-single-solver">Test single solver</h2>
 <p>The solver <code>test_single_solver</code> can be used to test new cases and solver settings. The idea behind this component is to only test one of the two solvers, while the other one is replaced by a dummy. This test environment inherits from the class <code>CoupledSolver</code>. The <code>type</code> for this coupled solver is <code>coupled_solvers.test_single_solver</code>.</p>
 <h3 id="dummy-solver">Dummy solver</h3>
-<p>To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file <em><code>dummy_solver.py</code></em>. Its path starts in the folder from where the simulation is performed, e.g. the same folder level as <em><code>run_simulation.py</code></em>. Upon run-time an instance of this class is made.
-The test class requires methods of the form <code>calculate_&lt;variable&gt;(x,y,z,n)</code>, with <code>&lt;variable&gt;</code> being a variable required by the tested solver, e.g. <code>displacement</code>, <code>pressure</code> or <code>traction</code>. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.
-Some examples are given in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>. The test class name is provided in the JSON settings as a string. If no test class is provided or the value <code>None</code> is used, zero input will be used.</p>
+<p>To test only one solver, a dummy solver must be used. Such a dummy solver is implemented by a test class in the file <em><code>dummy_solver.py</code></em>.
+Its path starts in the folder from where the simulation is performed, e.g. the same folder level as <em><code>run_simulation.py</code></em>. Upon run-time an instance of this class is made.
+The test class can be setup in two ways (in order of priority):</p>
+<ol>
+<li>Using a method named <code>get_input(interface_input_to, n)</code>, which sets the given <code>interface</code> to the desired value. This can, for example, be done using a pickle file from a previous calculation.</li>
+<li>Using methods of the form <code>calculate_&lt;variable&gt;(x, y, z, n)</code>, with <code>&lt;variable&gt;</code> being a variable required by the tested solver, e.g. <code>displacement</code>, <code>pressure</code> or <code>traction</code>. The coordinates are the coordinates of the data location in the undeformed state and <code>n</code> is the time step. How these variables are defined inside these methods, is up to the user. However, the methods need to return the right format: a 3-element list or numpy array for vector variables and a 1-element list or numpy array for scalar variables.</li>
+</ol>
+<p>Optionally, the test class can also have an <code>initialize(interface_input_to, solver_index)</code> method. If so, it will be called at the start of the simulation, with as <code>interface_input_to</code> the input <code>interface</code> of the tested solver. This is especially useful when the first approach is followed.
+Some clarifying examples are given in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>. The test class name is provided in the JSON settings as a string. If no test class is provided or the value <code>None</code> is used, zero input will be used.</p>
 <p>The JSON file requirements for the class <code>CoupledSolverTestSingleSolver</code> are different from the other coupled solvers in the sense that they only require the <code>type</code>, which is <code>coupled_solvers.test_single_solver</code>, the dictionary <code>test_settings</code> and the list <code>solver_wrappers</code> containing at least one solver wrapper. The keys for the <code>test_settings</code> dictionary are listed in alphabetical order below.</p>
 <table>
 <thead>
@@ -2275,7 +2281,7 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 <tr>
 <td style="text-align: right;"><code>test_class</code></td>
 <td style="text-align: center;">str</td>
-<td>(optional) Refers to the class to use in the <em><code>dummy_solver.py</code></em>. If not provided or <code>None</code>, zero input will be used.</td>
+<td>(optional) Refers to the class to use in the <em><code>dummy_solver.py</code></em>. If not provided or <code>null</code>, zero input will be used.</td>
 </tr>
 <tr>
 <td style="text-align: right;"><nobr><code>timestep_start</code></nobr></td>
@@ -2288,7 +2294,7 @@ Some examples are given in the example <a href="https://pyfsi.github.io/coconut/
 The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>case_name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
 An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>.</p>
 <p>The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver working directory.</p>
-<p>During run time, the norm of <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
+<p>During run time, the norm of <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not necessarily have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
 <p>In each coupled solver, a positive non-zero value can be assigned to the <code>save_results</code> parameter, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by <code>save_results</code>, but contains information for all time steps.
@@ -2340,7 +2346,7 @@ The pickle file may be used by the postprocessing files included with the exampl
 <td>Equals the total computation time, i.e. the time between initialization and finalization (excluding initialization).</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>time_allocation</code></td>
+<td style="text-align: right;"><nobr><code>time_allocation</code></nobr></td>
 <td style="text-align: center;">dict</td>
 <td>Dictionary containing a detailed overview of the time spent in the different components for the current simulation. Upon restart, the time allocation of previous runs are stored in sequence under the key <code>previous_calculations</code>.</td>
 </tr>
@@ -2350,7 +2356,7 @@ The pickle file may be used by the postprocessing files included with the exampl
 <td>Equals the used time step size.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><nobr><code>timestep_start</code></nobr></td>
+<td style="text-align: right;"><code>timestep_start</code></td>
 <td style="text-align: center;">int</td>
 <td>Equals the used start time step.</td>
 </tr>
