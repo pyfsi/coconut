@@ -3,10 +3,15 @@
     "number_of_timesteps": 1
   },
   "coupled_solver": {
-    "type": "coupled_solvers.gauss_seidel",
+    "type": "coupled_solvers.test_single_solver",
+    "test_settings": {
+      "solver_index": 1,
+      "test_class": "SolidTest",
+      "delta_t": 0.01
+    },
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.1,
+      "delta_t": 0.01,
       "omega": 0.3,
       "save_results": 1,
       "save_restart": 0,
@@ -30,6 +35,13 @@
             "type": "convergence_criteria.iteration_limit",
             "settings": {
               "maximum": 10
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-2,
+              "order": 2
             }
           }
         ]
