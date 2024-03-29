@@ -16,19 +16,26 @@ The name of the class to be used should be specified in the .json file containin
 
 class SolidTest:
     def calculate_temperature(self, x, y, z, n):
-        temp = [283.15]
+        temp = [299.16]
         return temp
 
     def calculate_heat_flux(self, x, y, z, n):
-        hf = [0]
+        hf = [-1000]
         return hf
 
+    def calculate_displacement(self, x, y, z, n):
+        disp = [0, 0, 0]
+        return disp
 
 class FluidTest:
     def calculate_temperature(self, x, y, z, n):
-        temp = [303.15]
+        temp = [299.16]
         return temp
 
     def calculate_heat_flux(self, x, y, z, n):
-        hf = [0]
+        hf = [-1000]
         return hf
+
+    def calculate_displacement(self, x, y, z, n):
+        disp = [0, 0, 0]
+        return disp

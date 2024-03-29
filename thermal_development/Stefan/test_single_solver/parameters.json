@@ -1,17 +1,17 @@
 {
   "settings": {
-    "number_of_timesteps": 1
+    "number_of_timesteps": 10
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
       "solver_index": 1,
       "test_class": "SolidTest",
-      "delta_t": 0.01
+      "delta_t": 0.1
     },
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.01,
+      "delta_t": 0.1,
       "omega": 0.3,
       "save_results": 1,
       "save_restart": 0,

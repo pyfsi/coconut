@@ -1,5 +1,7 @@
 ;   GENERAL SETTINGS
 file set-batch-options n n n
+file async-optimize? yes
+file cffio-options io-mode 1
 ;file start-transcript "transcript.txt"
 (enable-dynamic-mesh-node-ids #t)
 ;file binary-files n
@@ -177,6 +179,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             )
             (if moving_boundary
                 (begin
+                    (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
                     (if (= thermal_bc 1)
                         (begin
                             (ti-menu-load-string "surface edit-surface isothermal temperature , () , () , ()")

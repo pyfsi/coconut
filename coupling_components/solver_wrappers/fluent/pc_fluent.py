@@ -544,8 +544,9 @@ class SolverWrapperFluent(SolverWrapper):
         self.remove_dat_files(self.timestep)
 
         # delete .trn files
-        for path in glob.glob(join(self.dir_cfd, '*.trn')):
-            os.remove(path)
+        if not self.debug:
+            for path in glob.glob(join(self.dir_cfd, '*.trn')):
+                os.remove(path)
 
     def remove_dat_files(self, timestep):
         if not self.debug:
@@ -794,7 +795,7 @@ class SolverWrapperFluent(SolverWrapper):
             else:
                 dat = np.rec.fromarrays([x, y, z, id])
                 fmt = '%27.17e%27.17e%27.17e%27d'
-            tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+            tmp = f'nodes_update_timestep{self.timestep+1}_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
             np.savetxt(file_name, dat, fmt=fmt, header=f'{model_part.size}', comments='')
 

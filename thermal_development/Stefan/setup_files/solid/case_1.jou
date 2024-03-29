@@ -1,4 +1,6 @@
-file set-batch-options n y n
+file set-batch-options n n n
+file async-optimize? yes
+file cffio-options io-mode 1
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
 file read-case 1D_left.msh
@@ -17,6 +19,7 @@ solve set equations flow n
 define materials copy fluid air pcm
 define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.16 n
 
+define boundary-conditions fluid , y pcm n n n n , n , n y n
 define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
 ;Outer wall is adiabatic as well
 define boundary-conditions wall wall 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
@@ -37,7 +40,7 @@ define dynamic-mesh controls smoothing-parameters max-iter 20
 define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
-define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
+;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
 
 solve monitors residual check-convergence y
 solve monitors residual convergence-criteria 1.0E-10
