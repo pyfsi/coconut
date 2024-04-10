@@ -6,11 +6,11 @@ from os.path import join
 
 
 def create(parameters):
-    return SolverWrapperOpenFOAM8(parameters)
+    return SolverWrapperOpenFOAM11(parameters)
 
 
-class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
-    version = '8'
+class SolverWrapperOpenFOAM11(SolverWrapperOpenFOAM):
+    version = '11'
 
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -23,13 +23,19 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         self.check_software()
 
         # raw format
-        self.fext = '.raw'  # file extension
-        self.nheaderfooter = 2  # number of header and footer lines
+        self.fext = '.xy'  # file extension
+        self.nheaderfooter = 1  # number of header and footer lines
+
+        # get solver module
+        file_name = join(self.working_directory, 'system/controlDict')
+        with open(file_name, 'r') as control_dict_file:
+            control_dict = control_dict_file.read()
+        self.solver = of_io.get_string(control_dict, 'solver')
 
     def read_face_centres(self, boundary_name, nfaces):
-        filename_x = join(self.working_directory, '0/Cx')
-        filename_y = join(self.working_directory, '0/Cy')
-        filename_z = join(self.working_directory, '0/Cz')
+        filename_x = join(self.working_directory, '0/Ccx')
+        filename_y = join(self.working_directory, '0/Ccy')
+        filename_z = join(self.working_directory, '0/Ccz')
 
         x0 = of_io.get_boundary_field(file_name=filename_x, boundary_name=boundary_name, size=nfaces, is_scalar=True)
         y0 = of_io.get_boundary_field(file_name=filename_y, boundary_name=boundary_name, size=nfaces, is_scalar=True)
@@ -64,7 +70,7 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
                f'        \n'
                f'        surfaceFormat   raw;\n'
                f'        \n'
-               f'        regionType      patch;\n'
+               f'        select          patch;\n'
                f'        name            {boundary_name};\n'
                f'        \n'
                f'        operation       none;\n'
@@ -78,33 +84,23 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         # typically: incompressible solver, pressure and wallShearStress are kinematic -> multiply with fluid density
         #            compressible solver, pressure and wallShearStress are not kinematic -> do nothing
         kinematic_conversion_dict = {
-            'coconut_cavitatingFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress',
-                'density_correction_for_pressure': 1,
-                'density_correction_for_traction': 1
-            },
-            'coconut_interFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress',
-                'density_correction_for_pressure': 1,
-                'density_correction_for_traction': 1
-            },
-            'coconut_pimpleFoam': {
+            'incompressibleFluid': {
                 'wall_shear_stress_variable': 'wallShearStress',
                 'density_correction_for_pressure': self.settings['density'],
                 'density_correction_for_traction': self.settings['density']
             }
         }
 
-        if self.application not in kinematic_conversion_dict:
+        if self.solver not in kinematic_conversion_dict:
             available_applications = ''
             for key in kinematic_conversion_dict:
                 available_applications += f'\n\t{key}'
-            raise ValueError(f'{self.application} is not included in the kinematic_conversion_dict '
+            raise ValueError(f'{self.solver} is not included in the kinematic_conversion_dict '
                              f'used for treatment of (kinematic) pressure and traction\n'
                              f'Add the solver to this dictionary '
                              f'or use one of the existing solvers:{available_applications}')
         else:
-            kinematic_conversion = kinematic_conversion_dict[self.application]
+            kinematic_conversion = kinematic_conversion_dict[self.solver]
             self.density_for_pressure = kinematic_conversion['density_correction_for_pressure']
             self.density_for_traction = kinematic_conversion['density_correction_for_traction']
             self.wall_shear_stress_variable = kinematic_conversion['wall_shear_stress_variable']

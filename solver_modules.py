@@ -16,7 +16,8 @@ solver_load_cmd_dict = {
         'abaqus.v2022': 'ml intel/2022a && ml ABAQUS/2022 && export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'kratos_structure.v91': 'ml Anaconda3-python/2020.11',
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
-        'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH'
+        'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH',
+        'openfoam.v11': 'ml OpenFOAM/11-foss-2022a && source $FOAM_BASH',
     },
     'ugent_hpc': {
         'fluent.v2019R3': 'ml FLUENT/2019R3 && ml intel/2020a && unset SLURM_GTIDS '

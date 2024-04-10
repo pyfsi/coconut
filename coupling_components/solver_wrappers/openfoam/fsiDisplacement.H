@@ -1,6 +1,6 @@
 #include "fixedValuePointPatchField.H"
 
-void ApplyFSIPointDisplacement(dynamicFvMesh& mesh, word boundary_name)
+void ApplyFSIPointDisplacement(fvMesh& mesh, word boundary_name)
 {
     // Read input pointDisplacement
     Info<< "Reading pointDisplacement\n" << endl;

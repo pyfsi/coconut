@@ -2,23 +2,27 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  8
+    \\  /    A nd           | Version:  11
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
-    version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      decomposeParDict;
+    location    "constant";
+    object      dynamicMeshDict;
 }
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-numberOfSubdomains   4;
+mover
+{
+    type            motionSolver;
 
-method          scotch;
+    libs            ("libfvMeshMovers.so" "libfvMotionSolvers.so");
 
+    motionSolver    displacementLaplacian;
+
+    diffusivity     inverseDistance 1 (mantle);
+}
 
 // ************************************************************************* //
