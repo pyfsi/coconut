@@ -161,7 +161,7 @@ Finally, the method `read_node_output` is called in the solver wrapper, which re
 
 For OpenFOAM 8, the applications like `pimpleFoam` need to be adapted to accommodate the communications with the solver wrapper during the FSI-simulation.
 These adapted versions have the same name as the original OpenFOAM-solver but with the prefix `coconut_`.
-If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also []().
+If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself.
 This can be done in a rather straightforward way by taking a look at already implemented application, for example `coconut_pimpleFoam`.
 In brief, the following steps should be undertaken:
 
@@ -170,7 +170,7 @@ In brief, the following steps should be undertaken:
 - Except for these initial `include`-statements, the entire solver code should be put in an *infinite* loop that starts
   with `while (true)`. The code will stay in this loop and check with several conditional statements whether the solver wrapper in CoCoNuT has
   sent a message to the OpenFOAM-solver.
-  These messages are sent by creating an empty file with a specific name in the   OpenFOAM-directory.
+  These messages are sent by creating an empty file with a specific name in the OpenFOAM-directory.
   The following file names should be checked by the OpenFOAM-solver: *`next.coco`*, *`continue.coco`*, *`save.coco`*, *`stop.coco`*.
   To allow a pause of 1 ms between each loop the command usleep(1000) is used (which requires the line: `#include <unistd.h>` before the loop).
 - Once such a message is received, the OpenFOAM code first executes a command to sync all processors (only important in a parallel run), for example `waitForSync("next")`.
