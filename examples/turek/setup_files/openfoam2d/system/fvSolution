@@ -19,10 +19,10 @@ solvers
 {
     "p.*"
     {
-        solver           GAMG;
-        tolerance        1e-6;
-        relTol           0;
-        smoother         DICGaussSeidel;
+        solver          GAMG;
+        tolerance       1e-6;
+        relTol          0;
+        smoother        DICGaussSeidel;
     }
 
     "U.*"
@@ -31,7 +31,6 @@ solvers
         preconditioner  DILU;
         tolerance       1e-6;
         relTol          0;
-        minIter         1;
     }
 
     "cellDisplacement.*"
@@ -39,26 +38,26 @@ solvers
         solver          GAMG;
         smoother        GaussSeidel;
         tolerance       1e-6;
-        relTol          1e-0;
+        relTol          1;
     }
 }
 
 PIMPLE
 {
-    nOuterCorrectors     50;
-    nCorrectors          2;
+    nOuterCorrectors    50;
+    nCorrectors         2;
     nNonOrthogonalCorrectors 1;
     outerCorrectorResidualControl
     {
         p
         {
-             tolerance   1e-4;
-             relTol      0;
+             tolerance  1e-4;
+             relTol     0;
         }
         U
         {
-             tolerance   1e-4;
-             relTol      0;
+             tolerance  1e-4;
+             relTol     0;
         }
     }
 }

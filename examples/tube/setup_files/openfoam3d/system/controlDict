@@ -41,7 +41,7 @@ writeCompression uncompressed;
 
 timeFormat      fixed;
 
-timePrecision   5;
+timePrecision   4;
 
 runTimeModifiable false;
 

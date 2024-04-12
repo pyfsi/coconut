@@ -28,23 +28,23 @@ boundaryField
 
     top
     {
-        type  	        slip;
+        type            slip;
     }
 
     bottom
     {
-        type  	        slip;
+        type            slip;
     }
 
     plateTop
     {
-        type  	        fixedValue;
+        type            fixedValue;
         value           uniform (0 0 0);
     }
 
     plateEnd
     {
-        type  	        fixedValue;
+        type            fixedValue;
         value           uniform (0 0 0);
     }
 

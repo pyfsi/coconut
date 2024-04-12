@@ -1,3 +1,5 @@
+#include "OFstream.H"
+
 void sendMessage(word message)
 {
     if (Pstream::master())
