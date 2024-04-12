@@ -64,7 +64,7 @@ OpenFOAM-directory:
 - It is probably best to derive a new case from the directory containing an FSI simulation with OpenFOAM in *`coconut/examples/`* in order to copy its structure.
 - For OpenFOAM 8, the applications like `pimpleFoam` need to be adapted to accommodate the communication with the solver wrapper during the FSI-simulation.
   These adapted versions have the same name as the original OpenFOAM-solver but with the prefix `coconut_`.
-  If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also [this brief set of instructions](#adapting-a-new-application-to-be-used-in-coconut--openfoam-8-).
+  If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also [this brief set of instructions](#adapting-a-new-application-to-be-used-in-coconut-openfoam-8).
 - For OpenFOAM 11, only `foamRun` has been adapted but this solver can work with many solver modules (see [OpenFOAM 11 documentation](https://doc.cfd.direct/openfoam/user-guide-v11/solvers-modules)). 
 
 ## Treatment of kinematic pressure and traction
@@ -152,7 +152,7 @@ and that the user should take care to kill that OpenFOAM-loop manually (using `k
 This method is the core of the simulation passing on the interface displacement to OpenFOAM and receiving the resulting loads (pressure and traction).
 The interface displacement is converted into an OpenFOAM-readable format (with the method `write_node_input`),
 by storing it in a `pointDisplacementTmp` field, which is read in by OpenFOAM in every iteration 
-(this required some adaptation of the solver, see [next section](#adapting-a-new-application-to-be-used-in-coconut--openfoam-8-)). 
+(this required some adaptation of the solver, see [next section](#adapting-a-new-application-to-be-used-in-coconut-openfoam-8)). 
 Subsequently, the mesh is updated in OpenFOAM and the flow equations are solved.
 The dynamic mesh motion is handled by OpenFOAM itself.
 Finally, the method `read_node_output` is called in the solver wrapper, which reads the interface loads from the directory *`postProcessing`* (more precisely from the subdirectories *`coconut_<boundary_name>`*).
