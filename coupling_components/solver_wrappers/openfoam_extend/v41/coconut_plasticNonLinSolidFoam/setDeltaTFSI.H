@@ -34,7 +34,7 @@ Author
 
 \*---------------------------------------------------------------------------*/
 
-if (adjustTimeStep && runTime.timeIndex() > 5)
+if (adjustTimeStep && runTime.timeIndex() > 50)
 {
     Info<< "Adjusting the time step" << endl;
     const scalar minDeltaTHere = 1e-8;
@@ -48,9 +48,9 @@ if (adjustTimeStep && runTime.timeIndex() > 5)
             min
             (
                 mechanical.newDeltaT()/runTime.deltaTValue(),
-                0.5
+                0.08
             ),
-            0.5
+            0.08
         );
 
     // Set the time-step and limit it to the specified max and min values

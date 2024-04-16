@@ -31,12 +31,12 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-if (adjustTimeStep && runTime.timeIndex() > 5)
+if (adjustTimeStep && runTime.timeIndex() > 50)
 {
     Info<< "Adjusting the time step" <<endl;
 
     const scalar minDeltaT = 1e-8;
-    const scalar deltaTFact = 0.5;
+    const scalar deltaTFact = 0.08;
 
     scalar newDeltaT = deltaTFact*runTime.deltaTValue();
     

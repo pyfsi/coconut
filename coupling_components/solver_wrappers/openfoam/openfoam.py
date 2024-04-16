@@ -338,28 +338,47 @@ class SolverWrapperOpenFOAM(Component):
                                 displacement_increment[g] = -total_delta
 
                         for i in range(self.number_of_timeIncrements + self.number_of_timeIncrements//10):
-                           time = self.delta_t * (i + 1 + self.start_increment)
-                           timestamp = '{:.{}f}'.format(time, self.time_precision)
-                           new_path_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', rigid, timestamp)
-                           shutil.rmtree(new_path_rigidData, ignore_errors=True)
-                           shutil.copytree(path_new_rigidData, new_path_rigidData)
+                            # print("i")
+                            # print(i)
+                            if self.adjustFSITimeStep:
+                            #add variable j to achieve the correct time for adjustable timesteps in order to decrease the die gap on the correct timestep
+                                j = 0
+                                while j < self.start_increment:
+                                    j+=1
+                                    if j < 51:
+                                        t = self.delta_t * (j + 1)
+                                    else:
+                                        delta_time = self.delta_t * 0.08 ** (j - 50)
+                                        if delta_time < 1e-8:
+                                            delta_time = 1e-8
+                                        t += delta_time
+                                time = t + delta_time * i
+                            else:
+                                time = self.delta_t * (i + 1 + self.start_increment)
+                            # print("time")
+                            # print(time)
 
-                           deltaY = np.zeros(len(self.y_rigid))
-                           deltaZ = np.zeros(len(self.z_rigid))
+                            timestamp = '{:.{}f}'.format(time, self.time_precision)
+                            new_path_rigidData = os.path.join(self.working_directory, 'constant/boundaryData', rigid, timestamp)
+                            shutil.rmtree(new_path_rigidData, ignore_errors=True)
+                            shutil.copytree(path_new_rigidData, new_path_rigidData)
 
-                           for j in range(len(self.z_rigid)):
+                            deltaY = np.zeros(len(self.y_rigid))
+                            deltaZ = np.zeros(len(self.z_rigid))
+
+                            for j in range(len(self.z_rigid)):
                                deltaY[j] = displacement_increment[i] * np.cos(2.5 * np.pi / 180)
                                if self.z_rigid[j] < 0:
                                    deltaZ[j] = -displacement_increment[i] * np.sin(2.5 * np.pi / 180)
                                else:
                                    deltaZ[j] = displacement_increment[i] * np.sin(2.5 * np.pi / 180)
 
-                           with open(os.path.join(new_path_rigidData,'pointDisplacement'), 'w') as h:
-                              h.write(f'{self.x_rigid.size}\n')
-                              h.write('(\n')
-                              for k in range(self.x_rigid.size):
-                                  h.write(f'({0} {deltaY[k]} {deltaZ[k]})\n')
-                              h.write(')')
+                            with open(os.path.join(new_path_rigidData,'pointDisplacement'), 'w') as h:
+                                h.write(f'{self.x_rigid.size}\n')
+                                h.write('(\n')
+                                for k in range(self.x_rigid.size):
+                                    h.write(f'({0} {deltaY[k]} {deltaZ[k]})\n')
+                                h.write(')')
 
             # plt.plot(q, displacement_increment)
             # plt.show()
@@ -373,10 +392,10 @@ class SolverWrapperOpenFOAM(Component):
                     shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
                     for i in range(self.number_of_timesteps + 1):
                         if self.adjustFSITimeStep:
-                            if i < 6:
+                            if i < 51:
                                 time = self.delta_t * (i + 1)
                             else:
-                                delta_time = self.delta_t*0.5**(i-5)
+                                delta_time = self.delta_t*0.08**(i-50)
                                 if delta_time < 1e-8:
                                     delta_time = 1e-8
                                 time += delta_time
@@ -511,10 +530,10 @@ class SolverWrapperOpenFOAM(Component):
                         shutil.copytree(path_orig_boundaryData, path_new_boundaryData)
                         for i in range(self.number_of_timesteps + 1):
                             if self.adjustFSITimeStep:
-                                if i < 6:
+                                if i < 51:
                                     time = self.delta_t * (i + 1)
                                 else:
-                                    delta_time = self.delta_t * 0.5 ** (i - 5)
+                                    delta_time = self.delta_t * 0.08 ** (i - 50)
                                     if delta_time < 1e-8:
                                         delta_time = 1e-8
                                     time += delta_time
@@ -551,10 +570,10 @@ class SolverWrapperOpenFOAM(Component):
         self.iteration = 0
 
         if self.adjustFSITimeStep:
-            if self.timestep < 7:
+            if self.timestep < 52:
                 self.physical_time += self.delta_t
             else:
-                delta_time = self.delta_t * 0.5 ** (self.timestep - 6)
+                delta_time = self.delta_t * 0.08 ** (self.timestep - 51)
                 if delta_time < 1e-8:
                     delta_time = 1e-8
                 self.physical_time += delta_time

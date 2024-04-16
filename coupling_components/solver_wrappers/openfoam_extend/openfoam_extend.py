@@ -277,10 +277,10 @@ class SolverWrapperOpenFOAMExtend(Component):
                 # number_of_timesteps + 1 to avoid problems with hi label in timeVaryingMappedSolidTraction boundary condition @ the end the simulation. This has no influence on the result.
                 for i in range(self.number_of_timesteps + 1):
                     if self.adjustFSITimeStep:
-                        if i < 6:
+                        if i < 51:
                             timestamp_i = self.delta_t * (i + 1)
                         else:
-                            delta_time = self.delta_t * 0.5 ** (i - 5)
+                            delta_time = self.delta_t * 0.08 ** (i - 50)
                             if delta_time < 1e-8:
                                 delta_time = 1e-8
                             timestamp_i += delta_time
@@ -491,10 +491,10 @@ class SolverWrapperOpenFOAMExtend(Component):
         self.timestep += 1
         self.iteration = 0
         if self.adjustFSITimeStep:
-            if self.timestep < 7:
+            if self.timestep < 52:
                 self.physical_time += self.delta_t
             else:
-                delta_time = self.delta_t * 0.5 ** (self.timestep - 6)
+                delta_time = self.delta_t * 0.08 ** (self.timestep - 51)
                 if delta_time < 1e-8:
                     delta_time = 1e-8
                 self.physical_time += delta_time
