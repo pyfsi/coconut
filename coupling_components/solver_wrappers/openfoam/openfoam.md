@@ -1,7 +1,7 @@
 # OpenFOAM
 
-This is the documentation for all OpenFOAM solver wrappers. Currently, only FSI simulations are supported, no other
-multiphysics problems.
+This is the documentation for all OpenFOAM solver wrappers.
+Currently, the use as the flow solver in FSI simulations is supported, no other multiphysics problems.
 
 ## Parameters
 
@@ -9,12 +9,12 @@ This section describes the parameters in the JSON file, listed in alphabetical o
 
 |                                parameter |  type  | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |-----------------------------------------:|:------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|                            `application` |  str   | Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with `coconut_`.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|                            `application` |  str   | Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with `coconut_`. For OpenFOAM 11, only `coconut_foamRun` is possible.                                                                                                                                                                                                                                                                                                                                                                              |
 |                         `boundary_names` |  list  | List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.                                                                                                                                                                                                                                                                                                                                                                                                              |
 |                          `compile_clean` |  bool  | (optional) Default: `false`. If set to true, the adapted application will first clean and then compile.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |                                  `debug` |  bool  | (optional) Default: `false`. For every iteration, additional files are saved containing information on the input and output data of the solver.                                                                                                                                                                                                                                                                                                                                                                                                  |
 |                                `delta_t` | double | Fixed timestep size in flow solver.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-|                                `density` | double | (optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam.                                                                                                                                                                                                                                                                                                                                    |
+|                                `density` | double | (optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam. More information can be found [here](#treatment-of-kinematic-pressure-and-traction).                                                                                                                                                                                                                                               |
 |                        `interface_input` |  dict  | List of dictionaries that describes the input `Interface`. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: `model_part` and `variables`, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  `variables_dimensions` `dict` in  the file *`coconut/data_structure/variables.py`*. The model part name must be the concatenation of an entry from `boundary_names` and the string `_input`. |
 |                       `interface_output` |  dict  | Analogous to `interface_input`, but here the name must be the concatenation of an entry from `boundary_names` and the string `_output`. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.                                                                                                                                                                                                                                                                                    |
 |                               `parallel` |  bool  | Set it to `true` if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the *`<case_directory>/system/decomposeParDict`* file.                                                                                                                                                                                                                                                                                                                                           |
@@ -29,134 +29,14 @@ coupled solver. However, they can also be given directly as parameter of the sol
 testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used, and a
 warning is printed.
 
-## Overview of the OpenFOAM-wrapper
-
-The solver wrapper can be found in *`solver_wrappers/openfoam`* and consists of a Python-file named *`vX.py`*, with `X`
-the identifier of the OpenFOAM-version (e.g. *`v41.py`* for OpenFOAM 4.1). Finally, using an OpenFOAM-solver in CoCoNuT
-requires the adaptation of the solver to accommodate communications with the `coupled_solvers` during the
-FSI-simulation. Currently, only `pimpleFoam` and `interFoam` have been adapted; the solvers called by the solver wrapper
-have the same name as the original OpenFOAM-solver but with the prefix `coconut_`. Upon using the OpenFOAM-wrapper, the
-solver to be used upon execution needs to be compiled using the default OpenFOAM-compilation method (loading the
-OpenFOAM-module and using `wmake` in the directory *`solver_wrapper/coconut_<solver_name>`*).
-
-### The `__init__` method
-
-During initialization, the case settings as defined in the JSON-file are read into the corresponding Python-variables.
-Afterwards, the required OpenFOAM-files are modified, and some checks are in place to verify whether the correct modules
-are loaded. Next, the model-parts for the `interface_input/output` are created. Finally, the variables on each interface
-are stored in the data-structure of CoCoNuT.
-
-### The `initialize` method
-
-The OpenFOAM-solver, which should be adapted to work with CoCoNuT, is launched in a subprocess. Other variables, such as
-time step index and physical time, are initialized.
-
-### The `initialize_solution_step` method
-
-This function is called at the start of every time step. The time step index is increased by one, the iteration index is
-set to zero, and the OpenFOAM file directory is made in which the time step data needs to be stored.
-
-### The `solve_solution_step` method
-
-The interface displacement is converted into an OpenFOAM-readable format (with the function `write_node_input`), after
-which the OpenFOAM-loop is called in a subprocess. After completion of the OpenFOAM-loop, the
-function `read_node_output` is called, which reads the interface loads from the corresponding OpenFOAM-directory (in
-the *`postProcessing`* folder).
-
-### The `finalize_solution_step` method
-
-In this method, it is checked whether the other flow variables need to be written in an OpenFOAM-directory. This
-save-option is done in OpenFOAM.
-
-### The `finalize` method
-
-The OpenFOAM-subprocess, which was launched in the `Initialize` method, is killed.
-
-## Comments
-
-- Files with extension `.coco` are used to pass messages between Python-script and OpenFOAM. After sending a message
-  from Python to OpenFOAM, the Python-script is paused until it receives the corresponding message from OpenFOAM. The
-  OpenFOAM-solver is operating in an infinite `while`-loop until it receives a message from Python. Upon receipt of this
-  message, OpenFOAM executes the corresponding action after which it sends a response to Python and reverts into its
-  infinite loop (waiting mode).
-- The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the
-  CoCoNuT-simulation. It is closed by the Python-code only in the `Finalize` method, but if CoCoNuT crashes, the
-  OpenFOAM-programme keeps running. The user should take care to kill that OpenFOAM-loop manually (using `kill`
-  or `pkill` in the Linux-terminal, e.g. `pkill coconut_*`).
-- The interface displacement is stored in a `pointDisplacement` field, which is read in by OpenFOAM in every iteration (
-  this required some adaptation of the solver, see next section). The dynamic mesh motion is handled by OpenFOAM itself.
-- The interface loads are stored in the directory *`postProcessing`*, under the names *`coconut_<boundary_name>`*.
-  These are constructed from the file *`controlDict`*, defined in the `_init_` method
-  of the solver wrapper in Python.
-
-## Overview of an OpenFOAM-solver used in CoCoNuT
-
-Default OpenFOAM-solvers cannot be used in the CoCoNuT-framework, but need to be modified. The adapted solvers are
-stored in the *`coconut/coupling_components/solver_wrappers`* directory and receive the name *`coconut_<solver_name>`*,
-where `solver_name` is the name of the original solver, e.g. `pimpleFoam`. If a new solver needs to be adapted to work
-with CoCoNuT, one of the already established solvers can work as an example. In brief, the following steps should be
-undertaken:
-
-- Except for the initial `include`-statements, the entire solver code should be put in a loop that starts
-  with `while(true)`.
-- Just before this while-loop, add the statement `runTime.run();`! This is important as it creates and initializes the
-  functionObjects in the *`controlDict`* file which will be used for storing the interface loads.
-- Due to the fact that the infinite loop is driven by `while(true)` and not the default
-  OpenFOAM-expression `while(runTime.run())`, OpenFOAM does not check itself whether the final time step is reached. In
-  proper CoCoNuT-operation, OpenFOAM is killed when the solver wrapper reaches the final time step.
-- Inside the while-loop, a sleep-command is added such that the solver is not constantly checking the conditional
-  statements.
-- The while-loop contains several conditional statements, each of which check whether the Python-code in CoCoNuT has
-  sent a message to the OpenFOAM-solver. This message is sent by creating an empty file with a specific name in the
-  OpenFOAM-directory. The following file names should be checked by the OpenFOAM-solver: *`next.coco`*
-  , *`continue.coco`*, *`save.coco`*, *`stop.coco`*.
-- If the file *`next.coco`* exists, the runTime-object should be increased by one. OpenFOAM should create a
-  file *`next_ready.coco`* upon completion. Do not forget to delete the original *`next.coco`* file, which is advised to
-  do just before creating the *`next_ready.coco`*, so near the end of the `if`-clause.
-- If the file *`continue.coco`* exists, the flow equations need to be solved. This `if`-statement consequently contains
-  most of the original solver definition, in which the flow equations are called in the same order as in the original
-  CFD solver. OpenFOAM should create a file *`continue_ready.coco`* upon completion. Do not forget to delete the
-  original `continue.coco`-file, which is advised to do just before creating the `continue_ready.coco`, so near the end
-  of the `if`-clause.
-- If the file *`save.coco`* exists, OpenFOAM checks whether the flow variables should be stored in corresponding files,
-  according to the user-defined save interval. OpenFOAM should create a file *`save_ready.coco`* upon completion. Do not
-  forget to delete the original *`save.coco`* file, which is advised to do just before creating the *`save_ready.coco`*,
-  so near the end of the `if`-clause.
-- If the file *`stop.coco`* exists, a `break`-statement should end the infinite loop (the subprocess is also killed in
-  the Python-code). OpenFOAM should create a file *`stop_ready.coco`* before breaking the `while`-loop. Do not forget to
-  delete the original *`stop.coco`* file, which is advised to do just before creating the *`stop_ready.coco`*, so near
-  the end of the `if`-clause.
-
-## Treatment of kinematic pressure and traction
-If the OpenFOAM application is intended for incompressible flows, e.g. pimpleFoam, it solves the incompressible Navier-Stokes equations.
-As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
-In order to couple these solvers to a structural solver, the pressure and traction are required to be expressed in Pa (kg/ms²).
-
-For these solvers, the `density` parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
-In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.
-
-There is a third possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
-but the used momentumTransportModel is incompressible.
-It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or actual traction.
-In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
-Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
-and returns the actual traction, even if the momentumTransportModel is incompressible.
-Note that is this new functionObject is version specific, but common for all applications of one version.
-Upon compilation of the coconut application this functionObject is included in the binary.
-This is the case for, for example, coconut_interFoam and coconut_cavitatingFoam.
-
-The behaviour of CoCoNuT for these different applications is implemented in the solver wrapper itself, namely in the `kinematic_conversion_dict`.
-This means that when a new application is added, the behaviour for this new application should be specified in that location.
-
 ## Setting up a new case
 
 Following items should be present in the OpenFOAM-directory prior to launching CoCoNuT:
 
 - The entire framework of the CFD-case in OpenFOAM which is to be used in the CoCoNuT simulation (so it should contain
   the `constant` and `system` directory as well as the *`0`* directory). The working directory should be defined as if
-  you would like to run it as a CFD case. The working directory is defined in a JSON-file and therefore the
-  CoCoNuT-files do not need to be in the same folder as the OpenFOAM-case.
-- a JSON-file containing all the settings stipulated above.
+  you would like to run it as a CFD case. This `working directory` is defined in the JSON-file.
+- The necessary parameters in the JSON-file containing the settings stipulated above.
 
 Following files are modified or used as a reference to create files by CoCoNuT, and must be included in the original
 OpenFOAM-directory:
@@ -173,7 +53,7 @@ OpenFOAM-directory:
 | `runTimeModifiable` | `false`                                                                             |
 |    `adjustTimeStep` | `no`                                                                                |
 
-- *`constant/dynamicMeshDict`*which contains the settings for OpenFOAM's dynamic motion solver
+- *`constant/dynamicMeshDict`* which contains the settings for OpenFOAM's dynamic motion solver
 - *`system/decomposeParDict`* with the necessary decomposition of the fluid domain (if `cores`>1)
 - *`0/pointDisplacement`* with all the boundary conditions, including `fixedValue` boundary condition for the FSI
   boundaries. This is used as a template for the *`pointDisplacementTmp`* to supply displacement boundary condition (
@@ -181,10 +61,33 @@ OpenFOAM-directory:
 
 ### Comments
 
-- It is probably best to derive a new case from the directory containing FSI simulation with OpenFOAM
-  in *`coconut/examples/`* in order to copy its structure.
-- If you do not use an OpenFOAM-solver which is already converted for operation in CoCoNuT, you will need to adapt the
-  solver yourself. This can be done in a rather straightforward way by taking a look at already implemented solvers.
+- It is probably best to derive a new case from the directory containing an FSI simulation with OpenFOAM in *`coconut/examples/`* in order to copy its structure.
+- For OpenFOAM 8, the applications like `pimpleFoam` need to be adapted to accommodate the communication with the solver wrapper during the FSI-simulation.
+  These adapted versions have the same name as the original OpenFOAM-solver but with the prefix `coconut_`.
+  If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also [this brief set of instructions](#adapting-a-new-application-to-be-used-in-coconut-openfoam-8).
+- For OpenFOAM 11, only `foamRun` has been adapted but this solver can work with many solver modules (see [OpenFOAM 11 documentation](https://doc.cfd.direct/openfoam/user-guide-v11/solvers-modules)). 
+
+## Treatment of kinematic pressure and traction
+If the OpenFOAM application is intended for incompressible flows, e.g. `pimpleFoam` (v8) or `incompressibleFluid` (v11), it solves the incompressible Navier-Stokes equations.
+As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
+In order to couple these solvers to a structural solver, the pressure and traction are required to be expressed in Pa (kg/ms²).
+
+For these solvers, the `density` parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
+In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.
+
+There is a third possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
+but the used momentumTransportModel is incompressible.
+It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or actual traction.
+In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
+Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
+and returns the actual traction, even if the momentumTransportModel is incompressible.
+Note that is this new functionObject is version specific, but common for all applications of one version.
+Upon compilation of the coconut application this functionObject is included in the binary.
+This is the case for, for example, coconut_interFoam and coconut_cavitatingFoam.
+
+The behaviour of CoCoNuT for these different applications is implemented in the solver wrapper itself, namely in the `kinematic_conversion_dict`, located in the files *`vX.py`*, with `X`
+the identifier of the OpenFOAM-version (e.g. *`v8.py`* for OpenFOAM 8).
+This means that when a new application is added, the behaviour for this new application should be specified in that location.
 
 ## Solver coupling convergence
 
@@ -202,8 +105,6 @@ Attempts to use the option moveMeshOuterCorrectors (recalculating mesh motion in
 
 Base version.
 In this OpenFOAM version some changes were made with respect to older versions, for example, the name of some commands and classes are different.
-The required changes are visible in the version specific solver wrapper Python file _`v8.py`_.
-
 Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:
 
 - The interpolation point for `arc` definitions using `blockMesh` has to be on the arc and not just on its 'elongation'
@@ -214,3 +115,115 @@ Moreover, there are some changes in the case setup. The following list provides 
   keyword `residualControl` still exists, but has a different meaning and is used as in `SIMPLE`.
 - The file _`system/fvSolution`_ requires dictionaries `pcorr` and `pcorrFinal`, if the keyword `correctPhi` is `true`
   in _`system/fvSolution`_, which it is by default. The tolerance settings should be sufficiently low (similar to `p`).
+
+### v11 (OpenFOAM 11)
+
+In this OpenFOAM version some changes were made with respect to OpenFOAM 8.
+The most prominent is the replacement of separate applications like `pimpleFoam` by a single solver `foamRun` which works with solver modules.
+The required changes for the OpenFOAM wrapper are visible in the version specific solver wrapper Python file *`v11.py`*.
+
+Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:
+
+- The application in _`system/controlDict`_ is now foamRun and an additional keyword solver is required, such as `incompressibleFluid`.
+- The keyword `version` can be omitted from the header dictionary `FoamFile`.
+- The file _`constant/transportProperties`_ has been renamed to _`constant/physicalProperties`_.
+- The dynamicMeshDict has been restructured, defining a `fvMeshMover` and removing the `dynamicFvMesh` class, see also the [OpenFOAM documentation](https://cfd.direct/openfoam/free-software/dynamic-meshes/).
+
+## Details on the OpenFOAM solver wrapper
+
+### Communication with OpenFOAM
+
+As with most other solver wrappers, the communication between the OpenFOAM code and the solver wrapper occurs 
+through the use of (empty) files with extension `.coco`.
+The OpenFOAM code checks for these message files in an infinite loop.
+When such file is detected, for example _`continue.coco`_, 
+the OpenFOAM code performs a certain action and creates a file _`continue_ready.coco`_.
+The solver wrapper is paused until it detects such a corresponding file.
+
+### Clean-up after unexpected stop
+
+The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the CoCoNuT-simulation.
+Exiting of the loop and closing of the program only occurs when the _`stop.coco`_ is received.
+If an unexpected crash occurs, it can occasionally occur that the OpenFOAM processes are not ended properly 
+and that the user should take care to kill that OpenFOAM-loop manually (using `kill` or `pkill` in the Linux-terminal, e.g. `pkill coconut_*`).
+
+### The `solve_solution_step` method
+
+This method is the core of the simulation passing on the interface displacement to OpenFOAM and receiving the resulting loads (pressure and traction).
+The interface displacement is converted into an OpenFOAM-readable format (with the method `write_node_input`),
+by storing it in a `pointDisplacementTmp` field, which is read in by OpenFOAM in every iteration 
+(this required some adaptation of the solver, see [next section](#adapting-a-new-application-to-be-used-in-coconut-openfoam-8)). 
+Subsequently, the mesh is updated in OpenFOAM and the flow equations are solved.
+The dynamic mesh motion is handled by OpenFOAM itself.
+Finally, the method `read_node_output` is called in the solver wrapper, which reads the interface loads from the directory *`postProcessing`* (more precisely from the subdirectories *`coconut_<boundary_name>`*).
+
+## Adapting a new application to be used in CoCoNuT (OpenFOAM 8)
+
+For OpenFOAM 8, the applications like `pimpleFoam` need to be adapted to accommodate the communications with the solver wrapper during the FSI-simulation.
+These adapted versions have the same name as the original OpenFOAM-solver but with the prefix `coconut_`.
+If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself.
+This can be done in a rather straightforward way by taking a look at already implemented application, for example `coconut_pimpleFoam`.
+In brief, the following steps should be undertaken:
+
+- Some additional `include`-statements are needed: _`fsiDisplacement.H`_, _`waitForSync.H`_ and _`<unistd.h>`_.
+  Also include _`readCoconutControls.H`_ to create control variables used by CoCoNuT.
+- Except for these initial `include`-statements, the entire solver code should be put in an *infinite* loop that starts
+  with `while (true)`. The code will stay in this loop and check with several conditional statements whether the solver wrapper in CoCoNuT has
+  sent a message to the OpenFOAM-solver.
+  These messages are sent by creating an empty file with a specific name in the OpenFOAM-directory.
+  The following file names should be checked by the OpenFOAM-solver: *`next.coco`*, *`continue.coco`*, *`save.coco`*, *`stop.coco`*.
+  To allow a pause of 1 ms between each loop the command usleep(1000) is used (which requires the line: `#include <unistd.h>` before the loop).
+- Once such a message is received, the OpenFOAM code first executes a command to sync all processors (only important in a parallel run), for example `waitForSync("next")`.
+  Details on this function are given [here](#the-waitforsync-command).
+- If the file *`next.coco`* exists, a new time step is started.
+  Due to the fact that the infinite loop is driven by `while(true)` and not the default OpenFOAM-expression `while(runTime.run())`, 
+  the statement `runTime.run();` has to be added. 
+  This creates, initializes and calls the functionObjects in the *`controlDict`* file.
+  Furthermore, as in the original application, the runTime-object should be incremented, increasing the time step.
+- If the file *`continue.coco`* exists, the interface has to be moved first, using the following lines:
+  ``` cpp
+  forAll(boundaryNames, s)
+  {
+      word boundaryName = boundaryNames[s];
+      ApplyFSIPointDisplacement(mesh, boundaryName);
+  }
+  ```
+  Thereafter, the flow equations need to be solved. This `if`-statement consequently contains
+  most of the original solver definition, in which the flow equations are called in the same order as in the original
+  CFD solver. Additionally, at the end of the PIMPLE corrector loop, the coupling convergence is checked, see [solver coupling convergence](#solver-coupling-convergence).
+  Finally, at the end of this block the loads are written by calling the CoCoNuT functionObjects by including _`executeCoconutFunctionObjects.H`_.
+- If the file *`save.coco`* exists, it is checked whether the flow fields should be stored in corresponding files according to the user-defined save interval by calling _`runTime.write();`_.
+- If the file *`stop.coco`* exists, a `break`-statement should end the infinite loop and the OpenFOAM program terminates.
+
+The solver wrapper will automatically compile the adapted applications.
+This can also be done the default OpenFOAM-compilation method (loading the OpenFOAM-module and using `wmake` in the directory *`solver_wrapper/coconut_<solver_name>`*).
+To be able to compile the new application, the following files need to adapted.
+
+- Update the file _`Make/files`_ to have the correct application name and change the location of the executable to `$(FOAM_USER_APPBIN)`:
+  ``` cpp
+  coconut_pimpleFoam.C
+
+  EXE = $(FOAM_USER_APPBIN)/coconut_pimpleFoam
+  ```
+- Update the file _`Make/options`_ such that the CoCoNuT header files are found by adding the parent directory and its parent directory to the included files:
+  ``` cpp
+  EXE_INC = \
+    -I.. \
+    -I../.. \
+    -I<INSERT OTHER LOCATIONS>
+  ```
+
+### The waitForSync command
+
+This command, for example `waitForSync("next")`, is called at the start of every message block and is required to avoid that one processor goes through the block and already removes the message file before all others have seen it.
+This is achieved by gathering a label on all processors, effectively syncing them.
+After they are synced, the message file is removed and the corresponding _ready_ message is written, for example `next_ready.coco`.
+Thereafter, they are synced once more.
+This avoids that while removing the file, one processor has left and again entered the same block.
+Note that the solver wrapper already receives the return message, for example `next_ready.coco`, before the completion of the block.
+This results in a speed-up, but requires the solver wrapper to check if, for example, the loads have been fully written before reading them.
+
+## Disclaimer
+
+This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via www.openfoam.com, and owner of the OPENFOAM® and OpenCFD® trademarks,
+nor by OpenFOAM Foundation Limited, producer and distributor of the OpenFOAM software via www.openfoam.org.

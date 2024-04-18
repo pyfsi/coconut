@@ -67,7 +67,7 @@
               ]
             }
           ],
-          "time_precision": 5,
+          "time_precision": 4,
           "density": 1000,
           "parallel": true,
           "residual_variables": [

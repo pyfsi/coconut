@@ -1,0 +1,124 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  11
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+R 0.005;    // Radius of tube
+L 0.05;     // Length of tube
+
+Ntop 48;    // Number of intervals along axis
+N1 8;       // Number of intervals on the edges of the central block
+N2 8;       // Number of intervals on the diagonals connecting the central block to the outer cylinder
+
+nR          #calc "-$R";
+nL          #calc "-$L";
+halfR       #calc "${R}/2";
+halfL       #calc "${L}/2";
+nhalfR      #calc "-$halfR";
+nhalfL      #calc "-$halfL";
+Rdivsqrt2   #calc "${R}/sqrt(2.0)";
+nRdivsqrt2  #calc "-$Rdivsqrt2";
+
+
+vertices
+(
+    ($nhalfL $halfR 0)      //0
+    ($nhalfL 0 $nhalfR)
+    ($nhalfL $nhalfR 0)     //2
+    ($nhalfL 0 $halfR)
+
+    ($nhalfL $R 0)          //4
+    ($nhalfL 0 $nR)
+    ($nhalfL $nR 0)         //6
+    ($nhalfL 0 $R)
+
+    ($halfL $halfR 0)       //8
+    ($halfL 0 $nhalfR)
+    ($halfL $nhalfR 0)      //10
+    ($halfL 0 $halfR)
+
+    ($halfL $R 0)           //12
+    ($halfL 0 $nR)
+    ($halfL $nR 0)          //14
+    ($halfL 0 $R)
+);
+
+edges
+(
+    arc 4 5 ($nhalfL $Rdivsqrt2 $nRdivsqrt2)  // defining arc with interpolation point outside of arc does not work
+    arc 5 6 ($nhalfL $nRdivsqrt2 $nRdivsqrt2)
+    arc 6 7 ($nhalfL $nRdivsqrt2 $Rdivsqrt2)
+    arc 7 4 ($nhalfL $Rdivsqrt2 $Rdivsqrt2)
+
+    arc 12 13 ($halfL $Rdivsqrt2 $nRdivsqrt2)
+    arc 13 14 ($halfL $nRdivsqrt2 $nRdivsqrt2)
+    arc 14 15 ($halfL $nRdivsqrt2 $Rdivsqrt2)
+    arc 15 12 ($halfL $Rdivsqrt2 $Rdivsqrt2)
+);
+
+blocks
+(
+    hex (0 3 2 1 8 11 10 9)   ($N1 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (4 0 1 5 12 8 9 13)   ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (5 1 2 6 13 9 10 14)  ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (6 2 3 7 14 10 11 15) ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+    hex (7 3 0 4 15 11 8 12)  ($N2 $N1 $Ntop) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+        (0 1 2 3)
+        (4 5 1 0)
+        (5 6 2 1)
+        (6 7 3 2)
+        (7 4 0 3)
+        );
+    }
+    outlet
+    {
+        type patch;
+        faces
+        (
+        (11 10 9 8)
+        (8 9 13 12)
+        (9 10 14 13)
+        (10 11 15 14)
+        (11 8 12 15)
+        );
+    }
+    mantle
+    {
+        type wall;
+        faces
+        (
+        (4 12 13 5)
+        (5 13 14 6)
+        (6 14 15 7)
+        (7 15 12 4)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

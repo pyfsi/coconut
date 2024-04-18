@@ -19,11 +19,11 @@ solvers
 {
     p
     {
-        solver           GAMG;
-        tolerance        1e-10;
-        relTol           1e-5;
+        solver          GAMG;
+        tolerance       1e-10;
+        relTol          1e-5;
 
-        smoother         DICGaussSeidel;
+        smoother        DICGaussSeidel;
 
     }
 
@@ -72,15 +72,15 @@ PIMPLE
     {
         U
         {
-                tolerance   1e-8;
-                relTol      0;
+            tolerance   1e-8;
+            relTol      0;
         }
         p
         {
-                tolerance   1e-7;
-                relTol      0;
+            tolerance   1e-7;
+            relTol      0;
         }
-     }
+    }
 }
 
 
