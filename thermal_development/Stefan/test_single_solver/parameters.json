@@ -84,10 +84,10 @@
               ]
             }
           ],
-          "cores": 1,
-          "fluent_gui": true,
+          "cores": 2,
+          "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 100,
+          "flow_iterations": 40,
           "save_results": 1
         }
       },
@@ -130,10 +130,10 @@
                   ]
                 }
               ],
-              "cores": 1,
-              "fluent_gui": true,
+              "cores": 2,
+              "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 100,
+              "flow_iterations": 40,
               "save_results": 1
             }
           },

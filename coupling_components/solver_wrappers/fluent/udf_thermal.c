@@ -858,93 +858,110 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
     temperature profile from a file and set them as thermal boundary condition. As only the compute nodes have access
     to their own partition of the mesh, each one is responsible for reading the file containing the updated
     temperatures and selecting the correct row. */
+    if (myid == 0) {printf("\nStarted UDF set_temperature.\n"); fflush(stdout);}
     char file_name[256];
     int thread_id = THREAD_ID(face_thread);
+    int timestep;
+    bool skip_search; // Boolean to indicate whether loop should search for corresponding node id's
+    skip_search = false;
 
+// DEFINE_PROFILE UDF does not execute HOST processes -> only node associated with given face thread
+
+#if RP_NODE
     face_t face;
     Node *node;
     int i, d, n, node_number, id;
-    int timestep;
     DECLARE_MEMORY(temp, real);
     DECLARE_MEMORY(flag, bool);
     DECLARE_MEMORY_N(ids, int, mnpf);
     FILE *file = NULL;
+#endif /* RP_NODE */
 
     timestep = N_TIME;
-
-/*
-    struct stat st = {0};
-    create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved
-    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
-        mkdir("|TMP_DIRECTORY_NAME|", 0700);
-    }
-    sprintf(file_name, "|TMP_DIRECTORY_NAME|/temperature_timestep%i_thread%i.dat",
-            timestep, thread_id);
-*/
-
     sprintf(file_name, "temperature_timestep%i_thread%i.dat",
             timestep, thread_id);
 
+#if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
-        Error("\nUDF-error: Unable to open %s for reading\n", file_name);
-        exit(1);
-    }
-
-    char line[256];
-    n = 0;
-    while (fgets(line, sizeof(line), file) != NULL) {
-            n++;
-        }
-    n--;
-    char line_bis[64];
-    fseek(file, 0L, SEEK_SET);
-    fgets(line_bis, sizeof(line_bis), file); // Discard the header line
-
-    ASSIGN_MEMORY(temp, n, real);
-    ASSIGN_MEMORY(flag, n, bool);
-    ASSIGN_MEMORY_N(ids, n, int, mnpf);
-
-    for (i=0; i < n; i++) {
-        fscanf(file, "%lf", &temp[i]); /* read temperature from file */
-        flag[i] = false;
-        for (d = 0; d < mnpf; d++) {
-            fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
+        if (timestep == 0) {
+            skip_search = true;
+        } else {
+            Error("\nUDF-error: Unable to open %s for reading\n", file_name);
+            exit(1);
         }
     }
 
-    fclose(file);
+    if (!skip_search) {
+        char line[256];
+        n = 0;
+        while (fgets(line, sizeof(line), file) != NULL) {
+                n++;
+            }
+        n--;
+        char line_bis[64];
+        fseek(file, 0L, SEEK_SET);
+        fgets(line_bis, sizeof(line_bis), file); // Discard the header line
+
+        ASSIGN_MEMORY(temp, n, real);
+        ASSIGN_MEMORY(flag, n, bool);
+        ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+        for (i=0; i < n; i++) {
+            fscanf(file, "%lf", &temp[i]); /* read temperature from file */
+            flag[i] = false;
+            for (d = 0; d < mnpf; d++) {
+                fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
+            }
+        }
+
+        fclose(file);
+    }
 
     char error_msg[256] = "UDF-error: No match for face with node ids";
     bool isNodeFound;
     begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
-        for (i=0; i < n; i++) { /* loop over all faces in ids array */
-            if (flag[i]) { /* skip faces in ids array that have been assigned already */
-                continue;
-            } else {
-                isNodeFound = true;
-                f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
-                    if (!isNodeFound) { /* break loop if previous node was not found */
-                        break;
-                    }
-                    node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
-                    id = NODE_DM_ID(node);
-                    for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
-                        if (id == ids[d][i]) {
-                            isNodeFound = true;
+        if (!skip_search) {
+            for (i=0; i < n; i++) { /* loop over all faces in ids array */
+                if (flag[i]) { /* skip faces in ids array that have been assigned already */
+                    continue;
+                } else {
+                    isNodeFound = true;
+                    f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
+                        if (!isNodeFound) { /* break loop if previous node was not found */
                             break;
+                        }
+                        node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
+                        if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
+                            id = NODE_DM_ID(node);
                         } else {
+                            skip_search = true;
                             isNodeFound = false;
+                            break;
+                        }
+                        for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
+                            if (id == ids[d][i]) {
+                                isNodeFound = true;
+                                break;
+                            } else {
+                                isNodeFound = false;
+                            }
                         }
                     }
-                }
-                if (isNodeFound) { /* All nodes have been found, so the faces match */
-                    flag[i] = true;
-                    F_PROFILE(face, face_thread, var) = temp[i];
-                    break;
+                    if (skip_search) {
+                        break;
+                    }
+                    if (isNodeFound) { /* All nodes have been found, so the faces match */
+                        flag[i] = true;
+                        F_PROFILE(face, face_thread, var) = temp[i];
+                        break;
+                    }
                 }
             }
         }
-        if (!isNodeFound) {
+        if (skip_search) {
+            F_PROFILE(face, face_thread, var) = 300.0; // assign arbitrary value when faces cannot be identified by node id's
+        }
+        if (!isNodeFound && !skip_search) {
             for (d = 0; d < mnpf; d++) {
                 char nodeID[11];
                 sprintf(nodeID, " %d", ids[d][i]);
@@ -961,13 +978,7 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
     RELEASE_MEMORY(temp);
     RELEASE_MEMORY(flag);
     RELEASE_MEMORY_N(ids, mnpf);
-
-/*
-    if (myid == 0) {
-        sprintf(file_name, "temperature_timestep%i_thread%i.dat",
-                timestep-1, thread_id);
-        remove(file_name);}
-*/
+#endif /* RP_NODE */
 
     if (myid == 0) {printf("\nFinished UDF set_temperature.\n"); fflush(stdout);}
 }
@@ -982,97 +993,112 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
     It will read the updated heat flux profile from a file and set them as thermal boundary condition.
     As only the compute nodes have access to their own partition of the mesh, each one is responsible for reading
     the file containing the updated heat fluxes and selecting the correct row. */
+    if (myid == 0) {printf("\nStarted UDF set_heat_flux.\n"); fflush(stdout);}
     char file_name[256];
     int thread_id = THREAD_ID(face_thread);
+    int timestep;
+    bool skip_search; // Boolean to indicate whether loop should search for corresponding node id's
+    skip_search = false;
 
+#if RP_NODE
     face_t face;
     Node *node;
-    int i, d, n, node_number, id;
-    int timestep;
+    int i, d, n, node_number, id, id_bis;
     DECLARE_MEMORY(heat_flux, real);
     DECLARE_MEMORY(flag, bool);
     DECLARE_MEMORY_N(ids, int, mnpf);
     FILE *file = NULL;
+#endif /* RP_NODE */
 
-    timestep = N_TIME; /* Test if this works on the nodes */
-
-/*
-    struct stat st = {0};
-    create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved
-    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
-        mkdir("|TMP_DIRECTORY_NAME|", 0700);
-    }
-    sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
-            timestep, thread_id);
-*/
-
+    timestep = N_TIME;
     sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
             timestep, thread_id);
 
+#if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
+        if (timestep == 0) {
+            skip_search = true;
+        } else {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
         exit(1);
-    }
-
-    char line[256];
-    n = 0;
-    while (fgets(line, sizeof(line), file) != NULL) {
-            n++;
-        }
-    n--;
-    char line_bis[64];
-    fseek(file, 0L, SEEK_SET);
-    fgets(line_bis, sizeof(line_bis), file); // Discard the header line
-
-    ASSIGN_MEMORY(heat_flux, n, real);
-    ASSIGN_MEMORY(flag, n, bool);
-    ASSIGN_MEMORY_N(ids, n, int, mnpf);
-
-    double dummy;
-    for (i = 0; i < n; i++) {
-        for (d = 0; d < ND_ND; d++) {
-            fscanf(file, "%lf", &dummy); /* read and discard x-, y-, (z-) flux components */
-        }
-        fscanf(file, "%lf", &heat_flux[i]); /* read normal incoming heat flux from file */
-        flag[i] = false;
-        for (d = 0; d < mnpf; d++) {
-            fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
         }
     }
 
-    fclose(file);
+    if (!skip_search) {
+        char line[256];
+        n = 0;
+        while (fgets(line, sizeof(line), file) != NULL) {
+                n++;
+            }
+        n--;
+        char line_bis[64];
+        fseek(file, 0L, SEEK_SET);
+        fgets(line_bis, sizeof(line_bis), file); // Discard the header line
+
+        ASSIGN_MEMORY(heat_flux, n, real);
+        ASSIGN_MEMORY(flag, n, bool);
+        ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+        double dummy;
+        for (i = 0; i < n; i++) {
+            for (d = 0; d < ND_ND; d++) {
+                fscanf(file, "%lf", &dummy); /* read and discard x-, y-, (z-) flux components */
+            }
+            fscanf(file, "%lf", &heat_flux[i]); /* read normal incoming heat flux from file */
+            flag[i] = false;
+            for (d = 0; d < mnpf; d++) {
+                fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
+            }
+        }
+
+        fclose(file);
+    }
 
     char error_msg[256] = "UDF-error: No match for face with node ids";
     bool isNodeFound;
     begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
-        for (i=0; i < n; i++) { /* loop over all faces in ids array */
-            if (flag[i]) { /* skip faces in ids array that have been assigned already */
-                continue;
-            } else {
-                isNodeFound = true;
-                f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
-                    if (!isNodeFound) { /* break loop if previous node was not found */
-                        break;
-                    }
-                    node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
-                    id = NODE_DM_ID(node);
-                    for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
-                        if (id == ids[d][i]) {
-                            isNodeFound = true;
+        if (!skip_search) {
+            for (i=0; i < n; i++) { /* loop over all faces in ids array */
+                if (flag[i]) { /* skip faces in ids array that have been assigned already */
+                    continue;
+                } else {
+                    isNodeFound = true;
+                    f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
+                        if (!isNodeFound) { /* break loop if previous node was not found */
                             break;
+                        }
+                        node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
+                        if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
+                            id = NODE_DM_ID(node);
                         } else {
+                            skip_search = true;
                             isNodeFound = false;
+                            break;
+                        }
+                        for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
+                            if (id == ids[d][i]) {
+                                isNodeFound = true;
+                                break;
+                            } else {
+                                isNodeFound = false;
+                            }
                         }
                     }
-                }
-                if (isNodeFound) { /* All nodes have been found, so the faces match */
-                    flag[i] = true;
-                    F_PROFILE(face, face_thread, var) = -1*heat_flux[i];
-                    break;
+                    if (skip_search) {
+                        break;
+                    }
+                    if (isNodeFound) { /* All nodes have been found, so the faces match */
+                        flag[i] = true;
+                        F_PROFILE(face, face_thread, var) = -1*heat_flux[i];
+                        break;
+                    }
                 }
             }
         }
-        if (!isNodeFound) {
+        if (skip_search) {
+            F_PROFILE(face, face_thread, var) = 0.0; // assign zero value when faces cannot be identified by node id's
+        }
+        if (!isNodeFound && !skip_search) {
             for (d = 0; d < mnpf; d++) {
                 char nodeID[11];
                 sprintf(nodeID, " %d", ids[d][i]);
@@ -1089,28 +1115,11 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
     RELEASE_MEMORY(heat_flux);
     RELEASE_MEMORY(flag);
     RELEASE_MEMORY_N(ids, mnpf);
-
-/*
-    if (myid == 0) {
-        sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
-                timestep-1, thread_id);
-        remove(file_name);}
-*/
+#endif /* RP_NODE */
 
     if (myid == 0) {printf("\nFinished UDF set_heat_flux.\n"); fflush(stdout);}
 }
 
-  /*-------*/
- /* dummy */
-/*-------*/
-
-DEFINE_PROFILE(dummy, face_thread, var) {
-    face_t face;
-
-    begin_f_loop(face, face_thread) {
-        F_PROFILE(face, face_thread, var) = 0;
-    } end_f_loop(face, face_thread);
-}
 
   /*------------*/
  /* move_nodes */
@@ -1120,6 +1129,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     /* UDF that can be assigned to a deformable wall in Fluent. It will read the updated positions of the mesh nodes
     (vertices) and apply them. As only the compute nodes have access to their own partition of the mesh, each one is
     responsible for reading the file containing the updated coordinates and selecting the correct row. */
+    if (myid == 0) {printf("\nStarted UDF move_nodes.\n"); fflush(stdout);}
     char file_name[256];
     Thread *face_thread = DT_THREAD(dynamic_thread); /* face_thread to which UDF is assigned in Fluent */
     int thread_id = THREAD_ID(face_thread);
@@ -1231,7 +1241,7 @@ DEFINE_ON_DEMAND(set_adjacent) {
         begin_c_loop(c,cell_thread)
         {
             /* Initialize all UDMI's at zero value */
-            C_UDMI(c,cell_thread,0) = 0.0;
+            C_UDMI(c,cell_thread,0) = 1.0; // currently set to 1 to include all cells, change to zero when possible!!
             c_face_loop(c,cell_thread,face_number)
             {
                 face_thread = C_FACE_THREAD(c,cell_thread,face_number);
@@ -1246,7 +1256,6 @@ DEFINE_ON_DEMAND(set_adjacent) {
         } end_c_loop(c,cell_thread)
     }
 printf("\nFinished UDF set_adjacent.\n");
-/* fflush(stdout); */
 #endif /* RP_NODE */
 }
 
@@ -1256,19 +1265,20 @@ printf("\nFinished UDF set_adjacent.\n");
 
 DEFINE_ON_DEMAND(update_volumes_ts)
 {
-Domain *d;
-d = Get_Domain(1);
-Thread *t;
-cell_t c;
-thread_loop_c(t,d)
-{
-    begin_c_loop(c,t) //loop over all cells
+#if RP_NODE
+    Domain *d;
+    d = Get_Domain(1);
+    Thread *t;
+    cell_t c;
+    thread_loop_c(t,d)
     {
-        C_UDMI(c,t,1) = C_VOLUME(c,t);
-    } end_c_loop(c,t)
-}
-printf("\nFinished UDF update_volumes_ts.\n");
-/* fflush(stdout); */
+        begin_c_loop(c,t) //loop over all cells
+        {
+            C_UDMI(c,t,1) = C_VOLUME(c,t);
+        } end_c_loop(c,t)
+    }
+    printf("\nFinished UDF update_volumes_ts.\n");
+#endif /* RP_NODE */
 }
 
   /*-----------------*/
@@ -1280,6 +1290,6 @@ DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
 {
 real source;
 source = -C_R(c,t)*C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt);
-dS[eqn] = 0.0; /* -C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt); */
+dS[eqn] = -C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt);
 return source;
 }

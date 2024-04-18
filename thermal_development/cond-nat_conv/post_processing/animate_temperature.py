@@ -9,7 +9,7 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../../thermal_development/cond-nat_conv/'
-case_paths = ['case_results_GS.pickle']
+case_paths = ['case_results.pickle']
 legend_entries = ['case']
 
 # load cases

@@ -1,7 +1,5 @@
 ;   GENERAL SETTINGS
 file set-batch-options n n n
-file async-optimize? yes
-file cffio-options io-mode 1
 ;file start-transcript "transcript.txt"
 (enable-dynamic-mesh-node-ids #t)
 ;file binary-files n
@@ -109,6 +107,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 (if moving_boundary
     (begin
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"update_volumes_ts::udf_thermal\"")
         (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 0 n n n , n , n y n")
     )
 )
@@ -118,11 +117,9 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     (begin
         (if (= thermal_bc 0)
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
                 (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_temperature::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
             )
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"dummy::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k)))
                 (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k)))
             )
         )

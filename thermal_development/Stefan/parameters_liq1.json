@@ -1,12 +1,12 @@
 {
   "settings": {
-    "number_of_timesteps": 1
+    "number_of_timesteps": 2
   },
   "coupled_solver": {
     "type": "coupled_solvers.gauss_seidel",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.1,
+      "delta_t": 1,
       "omega": 0.3,
       "save_results": 1,
       "save_restart": 0,
@@ -23,13 +23,20 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.or",
+      "type": "convergence_criteria.and",
       "settings": {
         "criteria_list": [
           {
             "type": "convergence_criteria.iteration_limit",
             "settings": {
-              "maximum": 10
+              "maximum": 3
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+              "tolerance": 1e-2,
+              "order": 2
             }
           }
         ]
@@ -75,7 +82,7 @@
           "cores": 1,
           "fluent_gui": true,
           "max_nodes_per_face": 2,
-          "flow_iterations": 100,
+          "flow_iterations": 20,
           "save_results": 1
         }
       },
@@ -121,7 +128,7 @@
               "cores": 1,
               "fluent_gui": true,
               "max_nodes_per_face": 2,
-              "flow_iterations": 100,
+              "flow_iterations": 20,
               "save_results": 1
             }
           },

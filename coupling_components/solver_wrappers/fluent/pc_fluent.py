@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
-from coconut.data_structure.variables import accepted_variables
+from coconut.data_structure.variables import accepted_variables_pc
 
 import os
 from os.path import join
@@ -166,11 +166,11 @@ class SolverWrapperFluent(SolverWrapper):
 
         # check variables in parameter.json file
         for var in self.input_variables:
-            if var not in accepted_variables['in']:
-                raise NameError("Only permitted input variables are displacement and temperature or heat flux")
+            if var not in accepted_variables_pc['in']:
+                raise NameError("Only permitted input variables are displacement, temperature and heat flux")
         for var in self.output_variables:
-            if var not in accepted_variables['out']:
-                raise NameError("Only permitted output variables are displacement, temperature or heat flux and pressure and traction")
+            if var not in accepted_variables_pc['out']:
+                raise NameError("Only permitted output variables are displacement, temperature, heat flux, pressure and traction")
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
@@ -407,8 +407,8 @@ class SolverWrapperFluent(SolverWrapper):
                 for dct in self.interface_input.parameters:
                     mp_name = dct['model_part']
                     thread_id = self.model_part_thread_ids[mp_name]
-                    src = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
-                    dst = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                    src = accepted_variables_pc['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
+                    dst = accepted_variables_pc['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
                     cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                     os.system(cmd)
 
@@ -424,19 +424,19 @@ class SolverWrapperFluent(SolverWrapper):
 
             # read in datafile
             for var in dct['variables']:
-                prefix = accepted_variables['out'][var][0]
+                prefix = accepted_variables_pc['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'repeat' or self.flag:
                     data = self.read_output_file(prefix, thread_id)
                     if prefix == 'isothermal':
                         data = self.calculate_displacement(data, mp_name, thread_id)
-                        req_dim = accepted_variables['out'][var][1] + 1
+                        req_dim = accepted_variables_pc['out'][var][1] + 1
                     else:
-                        req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
+                        req_dim = self.dimensions + 1 + self.mnpf if accepted_variables_pc['out'][var][1] == 0 else accepted_variables_pc['out'][var][1] + self.mnpf
                     if data.shape[1] != req_dim:
                         raise ValueError('Given dimension does not match coordinates')
 
-                    if accepted_variables['out'][var][1] == 0:
+                    if accepted_variables_pc['out'][var][1] == 0:
                         # get face coordinates and ids
                         vector_tmp = np.zeros((data.shape[0], 3)) * 0.
                         vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
@@ -465,7 +465,7 @@ class SolverWrapperFluent(SolverWrapper):
                         elif var == 'heat_flux':
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
-                    if accepted_variables['out'][var][1] == 3:
+                    if accepted_variables_pc['out'][var][1] == 3:
                         # get face coordinates and ids
                         vector_tmp = data[:,:3]
                         ids_tmp = data[:,-1]
@@ -485,7 +485,7 @@ class SolverWrapperFluent(SolverWrapper):
                         elif var == 'displacement':
                             self.interface_output.set_variable_data(mp_name, var, vector)
 
-                    if accepted_variables['out'][var][1] == 1:
+                    if accepted_variables_pc['out'][var][1] == 1:
                         # get face coordinates and ids
                         scalar_tmp = data[:, 0].reshape(-1, 1)
                         ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
@@ -552,14 +552,14 @@ class SolverWrapperFluent(SolverWrapper):
         if not self.debug:
             for thread_id in self.thread_ids.values():
                 for var in self.output_variables:
-                    if accepted_variables['out'][var][0] != 'repeat':
+                    if accepted_variables_pc['out'][var][0] != 'repeat':
                         try:
-                            os.remove(join(self.dir_cfd, accepted_variables['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                            os.remove(join(self.dir_cfd, accepted_variables_pc['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:
                             pass
                 for var in self.input_variables:
                     try:
-                        os.remove(join(self.dir_cfd, accepted_variables['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                        os.remove(join(self.dir_cfd, accepted_variables_pc['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                     except OSError:
                         pass
 
@@ -632,8 +632,8 @@ class SolverWrapperFluent(SolverWrapper):
                 if 'faces' in mp_name:
                     thread_id = self.model_part_thread_ids[mp_name]
                     model_part = self.model.get_model_part(mp_name)
-                    face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
                     T = self.interface_input.get_variable_data(mp_name, 'temperature')
+                    face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
                     index = 0
                     for id in model_part.id:
                         list = self.reverse_face_ids(id, mp_name)

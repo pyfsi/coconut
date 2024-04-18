@@ -1,7 +1,7 @@
 from coconut import data_structure
 from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
 from coconut import tools
-from coconut.data_structure.variables import accepted_variables
+from coconut.data_structure.variables import accepted_variables_cht
 
 import os
 from os.path import join
@@ -72,38 +72,34 @@ class SolverWrapperFluent(SolverWrapper):
         self.model = None
 
         self.output_ini_cond = {}
+        self.output_variables = []
         f = 0
         for mp in self.settings['interface_output']:
             self.output_ini_cond[mp['model_part']] = 0
-            if f == 0:
-                self.output_variables = mp['variables'] # NEW: list of variables to be stored for communication
-                f = 1
-            elif f == 1 and self.output_variables != mp['variables']:
-                raise ValueError('Stored variables at interface output are not equal for all model parts.')
+            if "nodes" in mp["model_part"]:
+                raise NameError("Displacement cannot be an output for conjugate heat transfer simulations")
+            if "faces" in mp["model_part"]:
+                if f == 0:
+                    self.output_variables += mp['variables']  # NEW: list of output variables
+                    f = 1
 
         f_n = 0
         f_f = 0
-        self.input_variables_nodes = []
-        self.input_variables_faces = []
+        self.input_variables = []
         for mp in self.settings['interface_input']:
             if "nodes" in mp["model_part"]:
                 if f_n == 0:
-                    self.input_variables_nodes = mp['variables']  # NEW: list of input variables
+                    self.input_variables += mp['variables']  # NEW: list of input variables
                     f_n = 1
-                elif f_n == 1 and self.input_variables_nodes != mp['variables']:
-                    raise ValueError('Input node variables at interface are not equal for all model parts.')
             if "faces" in mp["model_part"]:
                 if f_f == 0:
-                    self.input_variables_faces = mp['variables']  # NEW: list of input variables
+                    self.input_variables += mp['variables']  # NEW: list of input variables
                     f_f = 1
-                elif f_f == 1 and self.input_variables_faces != mp['variables']:
-                    raise ValueError('Input face variables at interface are not equal for all model parts.')
 
-        self.input_variables = np.concatenate((self.input_variables_nodes, self.input_variables_faces))
         self.thermal_bc = None
-        if "temperature" in self.input_variables_faces:
+        if "temperature" in self.input_variables:
             self.thermal_bc = "temperature"
-        elif "heat_flux" in self.input_variables_faces:
+        elif "heat_flux" in self.input_variables:
             self.thermal_bc = "heat_flux"
 
     @tools.time_initialize
@@ -125,19 +121,9 @@ class SolverWrapperFluent(SolverWrapper):
         if not self.moving_boundary:
             moving_boundary = '#f'
         if "pressure" in self.output_variables and "traction" in self.output_variables:
-            if "temperature" in self.output_variables:
-                stored_variables = str(3)
-            elif "heat_flux" in self.output_variables:
-                stored_variables = str(4)
-            else:
-                stored_variables = str(2)
+            force_balance = '#t'
         else:
-            if "temperature" in self.output_variables:
-                stored_variables = str(0)
-            elif "heat_flux" in self.output_variables:
-                stored_variables = str(1)
-            else:
-                raise ValueError('The FSI loop needs to store at least one variable.')
+            force_balance = '#f'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -145,8 +131,8 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
                     line = line.replace('|MULTIPHASE|', multiphase)
-                    line = line.replace('|STORED_VARIABLES|', stored_variables)
                     line = line.replace('|MOVING_BOUNDARY|', moving_boundary)
+                    line = line.replace('|FORCE_BALANCE|', force_balance)
                     line = line.replace('|THERMAL_BC|', str(1) if (self.thermal_bc == 'heat_flux') else str(0))
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
@@ -156,12 +142,13 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        udf = 'udf_thermal.c' # old: f'v{self.version}.c'
+        udf = 'udf_thermal.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
+                    line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     outfile.write(line)
 
         # check number of cores
@@ -175,15 +162,12 @@ class SolverWrapperFluent(SolverWrapper):
             self.cores = max_cores
 
         # check variables in parameter.json file
-        for var in self.input_variables_nodes:
-            if var != "displacement":
-                raise NameError("Only permitted input variable for nodes is displacement")
-        for var in self.input_variables_faces:
-            if var not in ["temperature", "heat_flux"]:
-                raise NameError("Only permitted input variables for faces are temperature and heat flux")
+        for var in self.input_variables:
+            if var not in accepted_variables_cht['in']:
+                raise NameError("Only permitted input variables are displacement, temperature and heat flux")
         for var in self.output_variables:
-            if var not in accepted_variables['out']:
-                raise NameError("Only permitted output variables for faces are temperature, heat flux, pressure and traction")
+            if var not in accepted_variables_cht['out']:
+                raise NameError("Only permitted output variables are temperature, heat flux, pressure and traction")
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
@@ -328,10 +312,8 @@ class SolverWrapperFluent(SolverWrapper):
             # create ModelPart
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
-        self.coco_messages.send_message("initial_interface_profiles_written")
-
         # create output ModelParts (faces)
-        for item in (self.settings['interface_output']):
+        for item in self.settings['interface_output']:
             mp_name = item['model_part']
 
             # get face thread ID that corresponds to ModelPart
@@ -406,8 +388,8 @@ class SolverWrapperFluent(SolverWrapper):
                 for dct in self.interface_input.parameters:
                     mp_name = dct['model_part']
                     thread_id = self.model_part_thread_ids[mp_name]
-                    src = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
-                    dst = accepted_variables['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                    src = accepted_variables_cht['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}.dat'
+                    dst = accepted_variables_cht['in'][var][0] + f'_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
                     cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                     os.system(cmd)
 
@@ -422,13 +404,13 @@ class SolverWrapperFluent(SolverWrapper):
 
             # read in datafile
             for var in self.output_variables:
-                pre = accepted_variables['out'][var][0]
+                pre = accepted_variables_cht['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
                 if pre != 'repeat':
                     tmp = pre + f'_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     data = np.loadtxt(file_name, skiprows=1)
-                    req_dim = self.dimensions + 1 + self.mnpf if accepted_variables['out'][var][1] == 0 else accepted_variables['out'][var][1] + self.mnpf
+                    req_dim = self.dimensions + 1 + self.mnpf if accepted_variables_cht['out'][var][1] == 0 else accepted_variables_cht['out'][var][1] + self.mnpf
                     if data.shape[1] != req_dim:
                         raise ValueError('Given dimension does not match coordinates')
 
@@ -438,7 +420,7 @@ class SolverWrapperFluent(SolverWrapper):
                         cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                         os.system(cmd)
 
-                    if accepted_variables['out'][var][1] == 0:
+                    if accepted_variables_cht['out'][var][1] == 0:
                         # get face coordinates and ids
                         vector_tmp = np.zeros((data.shape[0], 3)) * 0.
                         vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
@@ -467,7 +449,7 @@ class SolverWrapperFluent(SolverWrapper):
                         elif var == 'heat_flux':
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
-                    if accepted_variables['out'][var][1] == 1:
+                    if accepted_variables_cht['out'][var][1] == 1:
                         # get face coordinates and ids
                         scalar_tmp = data[:, 0].reshape(-1, 1)
                         ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
@@ -526,21 +508,22 @@ class SolverWrapperFluent(SolverWrapper):
         self.remove_dat_files(self.timestep)
 
         # delete .trn files
-        for path in glob.glob(join(self.dir_cfd, '*.trn')):
-            os.remove(path)
+        if not self.debug:
+            for path in glob.glob(join(self.dir_cfd, '*.trn')):
+                os.remove(path)
 
     def remove_dat_files(self, timestep):
         if not self.debug:
             for thread_id in self.thread_ids.values():
                 for var in self.output_variables:
-                    if accepted_variables['out'][var][0] != 'repeat':
+                    if accepted_variables_cht['out'][var][0] != 'repeat':
                         try:
-                            os.remove(join(self.dir_cfd, accepted_variables['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                            os.remove(join(self.dir_cfd, accepted_variables_cht['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:
                             pass
                 for var in self.input_variables:
                     try:
-                        os.remove(join(self.dir_cfd, accepted_variables['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                        os.remove(join(self.dir_cfd, accepted_variables_cht['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                     except OSError:
                         pass
 
