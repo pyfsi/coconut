@@ -1121,6 +1121,18 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
 }
 
 
+/* User defined memory -- not available in 3D! */
+#define PR_1_X 0 // previous x-coordinate of first node in face
+#define PR_1_Y 1 // previous y-coordinate of first node in face
+#define PR_2_X 2 // previous x-coordinate of second node in face
+#define PR_2_Y 3 // previous y-coordinate of second node in face
+#define NEW_1_X 4 // new x-coordinate of first node in face
+#define NEW_1_Y 5 // new y-coordinate of first node in face
+#define NEW_2_X 6 // new x-coordinate of second node in face
+#define NEW_2_Y 7 // new y-coordinate of second node in face
+#define ADJ 8 // flag for cells adjacent to the interface
+#define D_VOL 9 // swept volume during move_nodes operation
+
   /*------------*/
  /* move_nodes */
 /*------------*/
@@ -1221,35 +1233,77 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
  /* set_adjacent */
 /*--------------*/
 
-/* User defined memory ------------------------------------------------------------------------------------------------
-index 0 = flags the cells adjacent to the interface
-index 1 = cell volume previous time step converged
--------------------------------------------------------------------------------------------------------------------- */
-
 DEFINE_ON_DEMAND(set_adjacent) {
-/* Should be called during initialisation or whenever the grid is remeshed. Used in combination with mass_source UDFs.*/
+/* Store previous and new interface node coordinates in UDM's and flags cells
+adjacent to the boundary.*/
+printf("\nStarted UDF set_adjacent.\n");
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+    iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
+#endif /* RP_HOST */
+
+    host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
 
 #if RP_NODE
     Domain *domain;
     Thread *cell_thread, *face_thread;
-    cell_t c;
-    int face_number, surface;
+    cell_t cell;
+    face_t face;
+    Node *node;
+    int face_number, node_number, surface, i;
 
     domain = Get_Domain(1);
     thread_loop_c(cell_thread,domain)
     {
-        begin_c_loop(c,cell_thread)
+        begin_c_loop(cell,cell_thread)
         {
             /* Initialize all UDMI's at zero value */
-            C_UDMI(c,cell_thread,0) = 1.0; // currently set to 1 to include all cells, change to zero when possible!!
-            c_face_loop(c,cell_thread,face_number)
+            C_UDMI(cell,cell_thread,ADJ) = 0.0;
+            c_face_loop(cell,cell_thread,face_number)
             {
-                face_thread = C_FACE_THREAD(c,cell_thread,face_number);
+                face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
                 for (surface = 0; surface < n_threads; surface++)
                 {
                     if (THREAD_ID(face_thread) == thread_ids[surface])
                     {
-                        C_UDMI(c,cell_thread,0) = 1.0;
+                        C_UDMI(cell,cell_thread,ADJ) = 1.0;
+                        face = C_FACE(cell,cell_thread,face_number);
+                        i = 0;
+                        f_node_loop(face, face_thread, node_number) {
+                            node = F_NODE(face, face_thread, node_number);
+                            if (iteration == 0) {
+                                if (i==0) {
+                                    C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
+                                    C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
+                                    C_UDMI(cell,cell_thread,PR_1_X) = NODE_X(node);
+                                    C_UDMI(cell,cell_thread,PR_1_Y) = NODE_Y(node);
+                                    i ++;
+                                }
+                                if (i==1) {
+                                    C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
+                                    C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
+                                    C_UDMI(cell,cell_thread,PR_2_X) = NODE_X(node);
+                                    C_UDMI(cell,cell_thread,PR_2_Y) = NODE_Y(node);
+                                    i --;
+                                }
+                            }
+                            else {
+                                if (i==0) {
+                                    C_UDMI(cell,cell_thread,PR_1_X) = C_UDMI(cell,cell_thread,NEW_1_X);
+                                    C_UDMI(cell,cell_thread,PR_1_Y) = C_UDMI(cell,cell_thread,NEW_1_Y);
+                                    C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
+                                    C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
+                                    i ++;
+                                }
+                                if (i==1) {
+                                    C_UDMI(cell,cell_thread,PR_2_X) = C_UDMI(cell,cell_thread,NEW_2_X);
+                                    C_UDMI(cell,cell_thread,PR_2_Y) = C_UDMI(cell,cell_thread,NEW_2_Y);
+                                    C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
+                                    C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
+                                    i --;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1259,37 +1313,112 @@ printf("\nFinished UDF set_adjacent.\n");
 #endif /* RP_NODE */
 }
 
-  /*-------------------*/
- /* update_volumes_ts */
-/*-------------------*/
 
-DEFINE_ON_DEMAND(update_volumes_ts)
+  /*--------------------*/
+ /* calc_volume_change */
+/*--------------------*/
+
+DEFINE_ON_DEMAND(calc_volume_change)
 {
+printf("\nStarted UDF calc_volume_change.\n");
+
 #if RP_NODE
-    Domain *d;
-    d = Get_Domain(1);
-    Thread *t;
-    cell_t c;
-    thread_loop_c(t,d)
+    Domain *domain;
+    domain = Get_Domain(1);
+    Thread *cell_thread;
+    cell_t cell;
+    real x_ref, y_ref, dummy;
+    int i, j, d, dum_i;
+    DECLARE_MEMORY(theta, real); // will be sorted
+    DECLARE_MEMORY_N(vertices, real, ND_ND); // NOT sorted
+    DECLARE_MEMORY_N(sort_vert, real, ND_ND); // sorted
+    DECLARE_MEMORY(index, int); // will be sorted
+
+    ASSIGN_MEMORY(theta, real);
+    ASSIGN_MEMORY_N(vertices, 4, real, ND_ND);
+    ASSIGN_MEMORY_N(sort_vert, 4, real, ND_ND);
+    ASSIGN_MEMORY(index, 4, int);
+
+    thread_loop_c(cell_thread,domain)
     {
-        begin_c_loop(c,t) //loop over all cells
+        begin_c_loop(cell,cell_thread) //loop over all cells
         {
-            C_UDMI(c,t,1) = C_VOLUME(c,t);
-        } end_c_loop(c,t)
+            if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
+                vertices[0][0] = (C_UDMI(cell,cell_thread,PR_1_X);
+                vertices[0][1] = (C_UDMI(cell,cell_thread,PR_2_X);
+                vertices[0][2] = (C_UDMI(cell,cell_thread,NEW_1_X);
+                vertices[0][3] = (C_UDMI(cell,cell_thread,NEW_2_X);
+                vertices[1][0] = (C_UDMI(cell,cell_thread,PR_1_Y);
+                vertices[1][1] = (C_UDMI(cell,cell_thread,PR_2_Y);
+                vertices[1][2] = (C_UDMI(cell,cell_thread,NEW_1_Y);
+                vertices[1][3] = (C_UDMI(cell,cell_thread,NEW_2_Y);
+                if ((vertices[0][0] == vertices[0][2] && vertices[1][0] == vertices[1][2])) || ((vertices[0][0] == vertices[0][3] && vertices[1][0] == vertices[1][3])) {
+                    (C_UDMI(cell,cell_thread,D_VOL) = 0.0; // Assume no volume change when the first node hasn't moved
+                }
+                else { // determine reference coordinates
+                    x_ref = (vertices[0][0]+vertices[0][1]+vertices[0][2]+vertices[0][3])/4;
+                    y_ref = (vertices[1][0]+vertices[1][1]+vertices[1][2]+vertices[1][3])/4;
+                    for (i=0; i < 4; i++) { // determine angles wrt reference point
+                        theta[i] = atan2((vertices[1][i]-y_ref),(vertices[0][i])-x_ref);
+                        index[i] = i;
+                    }
+                    for (i=0; i < 3; i++) { // bubble sort indices in counter-clockwise manner (necessary for shoelace theorem)
+                        for (j=0; j < 3-i; j++) {
+                            if (theta[j] > theta[j+1]) {
+                                dummy = theta[j];
+                                theta[j] = theta[j+1];
+                                theta[j+1] = dummy;
+                                dum_i = index[j];
+                                index[j+1] = index[j];
+                                index[j] = dum_i;
+                            }
+                        }
+                    }
+                    for (i=0; i < 3; i++) { // sort coordinates according sorted indices
+                        for (d = 0; d < ND_ND; d++) {
+                            sort_vert[d][i] = vertices[d][index[i]]
+                        }
+                    } // calculate swept area with shoelace theorem
+                    (C_UDMI(cell,cell_thread,D_VOL) = 0.5*((sort_vert[0][0]*sort_vert[1][1]+sort_vert[0][1]*sort_vert[1][2]+sort_vert[0][2]*sort_vert[1][3]+sort_vert[0][3]*sort_vert[1][0])-(sort_vert[0][1]*sort_vert[1][0]+sort_vert[0][2]*sort_vert[1][1]+sort_vert[0][3]*sort_vert[1][2]+sort_vert[0][0]*sort_vert[1][3]))
+                }
+            }
+        } end_c_loop(cell,cell_thread)
     }
-    printf("\nFinished UDF update_volumes_ts.\n");
+
+    RELEASE_MEMORY(theta);
+    RELEASE_MEMORY_N(vertices, ND_ND);
+    RELEASE_MEMORY_N(sort_vert, ND_ND);
+    RELEASE_MEMORY(sorted_index);
+    printf("\nFinished UDF calc_volume_change.\n");
 #endif /* RP_NODE */
 }
+
 
   /*-----------------*/
  /* udf_mass_source */
 /*-----------------*/
 
-/*Source term for energy equation, to include latent heat.*/
 DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
 {
+/*Source term for continuity equation, to compensate mass loss or mass gain.*/
+
 real source;
-source = -C_R(c,t)*C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt);
-dS[eqn] = -C_UDMI(c,t,0)*(C_VOLUME(c,t) - C_UDMI(c,t,1))/(C_VOLUME(c,t)*dt);
+source = -C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+dS[eqn] = -C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+return source;
+}
+
+
+  /*-------------------*/
+ /* udf_energy_source */
+/*-------------------*/
+
+DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
+{
+/*Source term for energy equation, to include latent heat.*/
+real source, latent;
+latent = FAST_C_STORAGE_R(c,t,SV_LATENT_HEAT);
+source = -C_R(c,t)*latent*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+dS[eqn] = 0.0;
 return source;
 }
