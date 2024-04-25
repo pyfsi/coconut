@@ -52,6 +52,9 @@ class SolverWrapperFluent(SolverWrapper):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
         self.ini_condition = self.settings.get('ini_condition', None) # NEW variable in json file
+        self.latent_heat = self.settings.get('latent', None)  # NEW variable in json file
+        if self.latent_heat is None:
+            raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
         self.dimensions = self.settings['dimensions']
         self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
@@ -152,6 +155,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
+                    line = line.replace('|LATENT_HEAT|', str(self.latent_heat))
                     outfile.write(line)
 
         # check number of cores

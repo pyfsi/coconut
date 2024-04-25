@@ -58,7 +58,7 @@ file set-batch-options n n n
         )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
-        (ti-menu-load-string "define user-defined compiled-functions compile \"udf_thermal\" y \"udf_isothermal.c\" \"\" \"\"")
+        (ti-menu-load-string "define user-defined compiled-functions compile \"udf_thermal\" y \"udf_thermal.c\" \"\" \"\"")
         (ti-menu-load-string "define user-defined compiled-functions load \"udf_thermal\"")
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
@@ -158,16 +158,20 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                     (begin
                         (ti-menu-load-string "solve dual-time-iterate 1 0")
                         (if moving_boundary
-                            (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-                            (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
+                            (begin
+                                (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
+                            )
                         )
                         (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
                     )
                     (begin
                         (ti-menu-load-string "solve dual-time-iterate 0 1")
                         (if moving_boundary
-                            (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-                            (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
+                            (begin
+                                (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
+                            )
                         )
                         (ti-menu-load-string "solve iterate 1")
                         (ti-menu-load-string "solve dual-time-iterate 0 0")
@@ -177,22 +181,6 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                 (begin
                     (ti-menu-load-string "solve mesh-motion y")
                     (ti-menu-load-string "solve iterate flow_iterations")
-                )
-            )
-            (if moving_boundary
-                (begin
-                    (if (= thermal_bc 1)
-                        (begin
-                            (ti-menu-load-string "surface edit-surface isothermal temperature , () , () , ()")
-                            (if (= (pick-a-real "report surface-integrals area isothermal () n") 0)
-                                (send_message "isothermal_is_empty")
-                                (begin
-                                    (ti-menu-load-string (format #f "plot plot y \"isothermal_x_timestep~a\" n n n x-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
-                                    (ti-menu-load-string (format #f "plot plot y \"isothermal_y_timestep~a\" n n n y-coordinate n y n isothermal ()" (%rpgetvar 'udf/timestep)))
-                                )
-                            )
-                        )
-                    )
                 )
             )
             (if force_balance

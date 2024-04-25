@@ -53,6 +53,7 @@ define dynamic-mesh controls smoothing-parameters max-iter 20
 define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
+define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
 ;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
 
 file write-case-data pc_fluid.cas.h5

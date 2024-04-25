@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 10
+    "number_of_timesteps": 20
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
@@ -58,6 +58,7 @@
           "moving_boundary": true,
           "multiphase": false,
           "debug": true,
+          "latent": 179000,
           "ini_condition": 0,
           "thread_names": [
             "boundary"
@@ -104,6 +105,7 @@
               "moving_boundary": true,
               "multiphase": false,
               "debug": true,
+              "latent": 179000,
               "ini_condition": 299.16,
               "thread_names": [
                 "boundary"
@@ -131,7 +133,7 @@
                 }
               ],
               "cores": 2,
-              "fluent_gui": false,
+              "fluent_gui": true,
               "max_nodes_per_face": 2,
               "flow_iterations": 40,
               "save_results": 1

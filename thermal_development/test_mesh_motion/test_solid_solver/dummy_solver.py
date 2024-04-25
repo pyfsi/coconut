@@ -24,7 +24,7 @@ class SolidTest:
         return hf
 
     def calculate_displacement(self, x, y, z, n):
-        disp = [-0.0002, 0, 0]
+        disp = [-0.0002*n, 0, 0]
         return disp
 
 class FluidTest:
