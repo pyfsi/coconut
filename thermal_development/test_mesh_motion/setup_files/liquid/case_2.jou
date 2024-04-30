@@ -5,7 +5,7 @@ file read-case 1D_right.msh
 grid check
 grid modify-zones zone-type 2 fluid
 
-define user-defined user-defined-memory 2
+define user-defined user-defined-memory 11
 
 define models viscous laminar y
 define models solver pressure-based y
@@ -25,7 +25,7 @@ define boundary-conditions wall boundary 0 n 0 n y temperature n 299.16 y motion
 define operating-conditions gravity n
 
 solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1.0E-10
+solve monitors residual convergence-criteria 1.0E-12
 
 solve set discretization-scheme temperature 0
 solve set gradient-scheme n y
@@ -53,7 +53,7 @@ define dynamic-mesh controls smoothing-parameters max-iter 20
 define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
-define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+define dynamic-mesh zones create adiabatic deforming faceted n y n n y n y
 ;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
 
 file write-case-data pc_fluid.cas.h5

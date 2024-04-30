@@ -45,7 +45,17 @@ class MapperInterface(Component):
         for mapper in self.mappers.values():
             mapper.output_solution_step()
 
+    def map_f2n(self, interface_from, interface_to):
+        # loop over ModelParts and variables
+        for pair_from in interface_from.model_part_variable_pairs:
+            for pair_to in interface_to.model_part_variable_pairs:
+                if pair_from[0] == pair_to[0]:
+                    if pair_from[1] == "displacement" and pair_to[0] == "displacement":
+                        mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
+                        mapper((interface_from, *pair_from), (interface_to, *pair_to))
+
     def query_nearest_itf(self):
+        # for use in outdated pc_fluent_iso.py
         nearest_list = []
         for mapper_name in self.mappers:
             nearest_list.append(self.mappers[mapper_name].query_nearest_mp())

@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 2
+    "number_of_timesteps": 10
   },
   "coupled_solver": {
     "type": "coupled_solvers.gauss_seidel",
@@ -23,19 +23,19 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.and",
+      "type": "convergence_criteria.or",
       "settings": {
         "criteria_list": [
           {
             "type": "convergence_criteria.iteration_limit",
             "settings": {
-              "maximum": 3
+              "maximum": 5
             }
           },
           {
-            "type": "convergence_criteria.absolute_norm",
+            "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-2,
+              "tolerance": 1e-10,
               "order": 2
             }
           }
@@ -53,6 +53,7 @@
           "moving_boundary": true,
           "multiphase": false,
           "debug": true,
+          "latent": 179000,
           "ini_condition": 0,
           "thread_names": [
             "boundary"
@@ -77,12 +78,18 @@
               "variables": [
                 "heat_flux"
               ]
+            },
+            {
+              "model_part": "boundary_out_nodes",
+              "variables": [
+                "displacement"
+              ]
             }
           ],
-          "cores": 1,
-          "fluent_gui": true,
+          "cores": 2,
+          "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 20,
+          "flow_iterations": 40,
           "save_results": 1
         }
       },
@@ -99,11 +106,18 @@
               "moving_boundary": true,
               "multiphase": false,
               "debug": true,
+              "latent": 179000,
               "ini_condition": 299.16,
               "thread_names": [
                 "boundary"
               ],
               "interface_input": [
+                {
+                  "model_part": "boundary_in_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
                 {
                   "model_part": "boundary_in_faces",
                   "variables": [
@@ -126,9 +140,9 @@
                 }
               ],
               "cores": 1,
-              "fluent_gui": true,
+              "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 20,
+              "flow_iterations": 40,
               "save_results": 1
             }
           },

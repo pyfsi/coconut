@@ -715,10 +715,10 @@ DEFINE_ON_DEMAND(store_heat_flux){
         }
 
 #if RP_2D
-        fprintf(file, "%27s %27s %27s  %10s\n",
+        fprintf(file, "%27s %27s %27s %10s\n",
             "x-flux", "y-flux", "flux-normal", "unique-ids");
 #else /* RP_2D */
-        fprintf(file, "%27s %27s %27s %27s  %10s\n",
+        fprintf(file, "%27s %27s %27s %27s %10s\n",
             "x-flux", "y-flux", "z-flux", "flux-normal", "unique-ids");
 
 #endif /* RP_2D */

@@ -20,11 +20,15 @@ class SolidTest:
         return temp
 
     def calculate_heat_flux(self, x, y, z, n):
-        hf = [-100]
+        hf = [-100000]
         return hf
 
     def calculate_displacement(self, x, y, z, n):
-        disp = [-0.0002*n, 0, 0]
+        rho = 870 # kg/m^3
+        LH = 179000 # J/kg
+        dt = 1 # s
+        flux = 100000 # W/m^2
+        disp = [-flux*dt*n/(rho*LH), 0, 0]
         return disp
 
 class FluidTest:

@@ -1,4 +1,5 @@
 #include "udf.h"
+#include "sg.h"
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1133,6 +1134,7 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
 #define NEW_2_Y 7 // new y-coordinate of second node in face
 #define ADJ 8 // flag for cells adjacent to the interface
 #define D_VOL 9 // swept volume during move_nodes operation
+#define PR_H 10 // Cell enthalpy in previous converged timestep
 
   /*------------*/
  /* move_nodes */
@@ -1383,7 +1385,6 @@ printf("\nStarted UDF calc_volume_change.\n");
                             }
                         }
                         for (i=0; i < 4; i++) { // sort coordinates according sorted indices
-                            printf("\nIndex %i: sorted index = %i, theta = %f.\n", i, index[i], theta[i]);
                             for (d = 0; d < ND_ND; d++) {
                                 sort_vert[d][i] = vertices[d][index[i]];
                             }
@@ -1403,6 +1404,232 @@ printf("\nStarted UDF calc_volume_change.\n");
 #endif /* RP_NODE */
 }
 
+
+  /*--------------------*/
+ /* write_displacement */
+/*--------------------*/
+
+DEFINE_ON_DEMAND(write_displacement) {
+/* Store previous and new interface node coordinates in UDM's and flags cells adjacent to the boundary.*/
+    if (myid == 0) {printf("\nStarted UDF write_displacement.\n"); fflush(stdout);}
+
+    /* declaring variables */
+    int thread, n, i, d, compute_node; /* Check if all variables necessary */
+    DECLARE_MEMORY_N(disp, real, ND_ND); // displacement vector
+    DECLARE_MEMORY_N(ids, int, mnpf);
+    int timestep;
+
+#if RP_NODE
+    Domain *domain;
+    Thread *cell_thread, *face_thread, *itf_thread;
+    cell_t cell;
+    face_t face;
+    Node *node;
+    int face_number, node_number, j;
+    real heat, vel, src, ds, A_by_es;
+    real normal[ND_ND], area[ND_ND], A[ND_ND], es[ND_ND], dr0[ND_ND], dr1[ND_ND], avg_flux[ND_ND], v0[ND_ND];
+#endif /* RP_NODE */
+    
+#if RP_HOST
+    char file_name[256];
+    FILE *file = NULL;
+    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
+#endif /* RP_HOST */
+    
+    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
+
+    for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+        sprintf(file_name, "displacement_timestep%i_thread%i.dat",
+                timestep, thread_ids[thread]);
+
+        if (NULLP(file = fopen(file_name, "w"))) {
+            Error("\nUDF-error: Unable to open %s for writing\n", file_name);
+            exit(1);
+        }
+
+#if RP_2D
+        fprintf(file, "%27s %27s %10s\n",
+            "x-disp", "y-disp", "unique-ids");
+#else /* RP_2D */
+        fprintf(file, "%27s %27s %27s %10s\n",
+            "x-disp", "y-disp", "z-disp", "unique-ids");
+
+#endif /* RP_2D */
+#endif /* RP_HOST */
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+        domain = Get_Domain(1);
+        itf_thread = Lookup_Thread(domain, thread_ids[thread]);
+
+        n = THREAD_N_ELEMENTS_INT(itf_thread); /* get number of faces in this partition of face_thread */
+
+        /* assign memory on compute node that accesses its partition of the face_thread */
+        ASSIGN_MEMORY_N(disp, n, real, ND_ND);
+        ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+        i = 0;
+        thread_loop_c(cell_thread,domain)
+        {
+            begin_c_loop(cell,cell_thread)
+            {
+                if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
+                    if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
+                    heat = 0;
+                    c_face_loop(cell,cell_thread,face_number)
+                    {
+                        face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
+                        face = C_FACE(cell,cell_thread,face_number);
+                        if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) { // for cell faces at coupling interface
+                            /* direction, node ids, flux */
+                            heat += BOUNDARY_HEAT_FLUX(face, face_thread);
+                            F_AREA(area, face, face_thread);
+                            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area));
+
+                            j = 0;
+                            /* loop over all nodes in the face, "node_number" is the local node index number that keeps track of the
+                            current node */
+                            f_node_loop(face, face_thread, node_number) {
+                                if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
+                                node = F_NODE(face, face_thread, node_number);
+                                ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                                j++;
+                            }
+                        } else { // for interior cell faces
+                            INTERIOR_FACE_GEOMETRY(face,face_thread,A,ds,es,A_by_es,dr0,dr1);
+                            if (F_C1(face, face_thread) != -1) {
+                                NV_VS_VS(avg_flux, =, C_T_RG(cell,cell_thread), *, 0.5, +, C_T_RG(F_C1(face, face_thread),F_C1_THREAD(face, face_thread)), *, 0.5);
+                                NV_VS(v0, =, es, *, A_by_es);
+                                /* Only itf flux counted in this stage */
+                                ;heat += C_K_L(cell,cell_thread)*(C_T(F_C1(face, face_thread),F_C1_THREAD(face, face_thread))-C_T(cell,cell_thread))*A_by_es/ds + C_K_L(cell,cell_thread)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
+                            }
+                        }
+                    }
+
+                    ;heat = C_R(cell,cell_thread)*C_VOLUME(cell,cell_thread)*(C_H(cell,cell_thread)-C_UDMI(cell,cell_thread,PR_H))/dt;
+                    src = C_R(cell,cell_thread)*LH*C_UDMI(cell,cell_thread,D_VOL)/dt;
+                    heat += src;
+
+                    ;printf("\nTemp. gradient = %f W\n", C_T_G(cell,cell_thread));
+                    ;printf("\nTemp. recon. gradient = %f W\n", C_T_RG(cell,cell_thread));
+
+                    vel = heat/(NV_MAG(area)*LH*C_R(cell,cell_thread)); // absolute velocity of interface at cell level
+                    j = 0;
+                    for (j = 0; j < ND_ND; j++) {
+                        disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
+                    }
+                    i ++;
+                }
+            } end_c_loop(c,cell_thread)
+        }
+        if (myid == 0) {printf("\nI'm here 6.\n"); fflush(stdout);}
+        /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
+        compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
+
+        /* send from node to either node_zero, or if the current process is node_zero, to node_host */
+        /* the tag argument myid is the ID of the sending node, as the convention is to have the tag argument the same
+        as the from argument (that is, the first argument) for receive messages */
+        PRF_CSEND_INT(compute_node, &n, 1, myid);
+
+        PRF_CSEND_REAL_N(compute_node, disp, n, myid, ND_ND);
+        PRF_CSEND_INT_N(compute_node, ids, n, myid, mnpf);
+
+        /* memory can be freed once the data is sent */
+        RELEASE_MEMORY_N(disp, ND_ND);
+        RELEASE_MEMORY_N(ids, mnpf);
+
+        /* node_zero is the only one that can communicate with host, so it first receives from the other nodes, then
+        sends to the host */
+        if(I_AM_NODE_ZERO_P){
+            compute_node_loop_not_zero(compute_node) { /* loop over all other nodes and receive from each */
+                /* the tag argument compute_node is the ID of the sending node, as the convention is to have the tag
+                argument the same as the from argument (that is, the first argument) for receive messages */
+                PRF_CRECV_INT(compute_node, &n, 1, compute_node);
+
+                /* Once n has been received, the correct amount of memory can be allocated on compute node 0. This
+                depends on the partition assigned to the sending compute node. */
+                ASSIGN_MEMORY_N(disp, n, real, ND_ND);
+                ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+                /* receive the 2D-arrays from the other nodes on node_zero */
+                PRF_CRECV_REAL_N(compute_node, disp, n, compute_node, ND_ND);
+                PRF_CRECV_INT_N(compute_node, ids, n, compute_node, mnpf);
+
+                /* Send the variables to the host. Deviating from the tag convention, the message tag is now the
+                original non-zero compute node on which the mesh data was stored, even though node 0 does the actual
+                communication */
+                PRF_CSEND_INT(node_host, &n, 1, compute_node);
+
+                PRF_CSEND_REAL_N(node_host, disp, n, compute_node, ND_ND);
+                PRF_CSEND_INT_N(node_host, ids, n, compute_node, mnpf);
+
+                /* once all data has been sent to host, memory on the node can be freed */
+                RELEASE_MEMORY_N(disp, ND_ND);
+                RELEASE_MEMORY_N(ids, mnpf);
+            }
+        }
+#endif /* RP_NODE */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+        /* loop over all compute nodes (corresponding to the message tags), receive data and append to file for each */
+        compute_node_loop(compute_node) {
+            PRF_CRECV_INT(node_zero, &n, 1, compute_node);
+
+            /* once n has been received, the correct amount of memory can be allocated on the host */
+            ASSIGN_MEMORY_N(disp, n, real, ND_ND);
+            ASSIGN_MEMORY_N(ids, n, int, mnpf);
+
+            /* receive the 2D-arrays from node_zero */
+            PRF_CRECV_REAL_N(node_zero,disp, n, compute_node, ND_ND);
+            PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
+
+            for (i = 0; i < n; i++) {
+                for (d = 0; d < ND_ND; d++) {
+                    fprintf(file, "%27.17e ", disp[d][i]);
+                }
+                for (d = 0; d < mnpf; d++) {
+                    fprintf(file, " %10d", ids[d][i]);
+                }
+                fprintf(file, "\n");
+            }
+            /* after files have been appended, the memory can be freed */
+            RELEASE_MEMORY_N(disp, ND_ND);
+            RELEASE_MEMORY_N(ids, mnpf);
+        } /* close compute_node_loop */
+
+        fclose(file);
+#endif /* RP_HOST */
+
+    } /* close loop over threads */
+
+    if (myid == 0) {printf("\nFinished UDF write_displacement.\n"); fflush(stdout);}
+}
+
+
+  /*----------------------*/
+ /* update_cell_enthalpy */
+/*----------------------*/
+
+DEFINE_ON_DEMAND(update_cell_enthalpy)
+{
+/* Currently not used */
+
+#if RP_NODE
+    Domain *d;
+    d = Get_Domain(1);
+    Thread *t;
+    cell_t c;
+    thread_loop_c(t,d)
+    {
+        begin_c_loop(c,t) // loop over all cells
+        {
+            C_UDMI(c,t,PR_H) = C_H(c,t);
+        } end_c_loop(c,t)
+    }
+    printf("\nFinished UDF update_cell_enthalpy.\n");
+#endif /* RP_NODE */
+}
 
   /*-----------------*/
  /* udf_mass_source */

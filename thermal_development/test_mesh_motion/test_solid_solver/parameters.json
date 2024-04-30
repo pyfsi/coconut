@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 20
+    "number_of_timesteps": 3
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
@@ -132,7 +132,7 @@
                   ]
                 }
               ],
-              "cores": 2,
+              "cores": 1,
               "fluent_gui": true,
               "max_nodes_per_face": 2,
               "flow_iterations": 40,

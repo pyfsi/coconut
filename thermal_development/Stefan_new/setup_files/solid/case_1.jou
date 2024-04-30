@@ -1,13 +1,11 @@
 file set-batch-options n n n
-file async-optimize? yes
-file cffio-options io-mode 1
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
 file read-case 1D_left.msh
 grid check
 grid modify-zones zone-type 2 fluid
 
-define user-defined user-defined-memory 2
+define user-defined user-defined-memory 11
 
 define models unsteady-1st-order y
 define models viscous laminar y
@@ -17,7 +15,7 @@ define models solidification-melting? yes , , ,
 solve set equations flow n
 
 define materials copy fluid air pcm
-define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.16 n
+define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
 
 define boundary-conditions fluid , y pcm n n n n , n , n y n
 define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
@@ -40,10 +38,11 @@ define dynamic-mesh controls smoothing-parameters max-iter 20
 define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
+define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
 ;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
 
 solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1.0E-10
+solve monitors residual convergence-criteria 1.0E-12
 
 solve set discretization-scheme temperature 0
 solve set gradient-scheme n y
@@ -52,14 +51,9 @@ solve set gradient-scheme n y
 ;solve set reporting-interval 10
 ;solve set flow-warnings n
 
-;Initialise solid at solidus temp.
+;Initialise solid at melting temp.
 solve initialize set-defaults temperature 299.15
 solve initialize initialize-flow
-
-;create iso-surface at liquidus temp. in setup file
-surface iso-surface temperature isothermal () 2 () 299.16 ()
-;plot plot y "isothermal_x_timestep0" n n n x-coordinate n y n isothermal ()
-;plot plot y "isothermal_y_timestep0" n n n y-coordinate n y n isothermal ()
 
 file write-case-data pc_solid.cas.h5
 exit
