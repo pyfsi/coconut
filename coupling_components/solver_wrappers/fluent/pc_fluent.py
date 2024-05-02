@@ -346,7 +346,7 @@ class SolverWrapperFluent(SolverWrapper):
                 raise ValueError(f'Given dimension does not match coordinates')
             if "nodes" in mp_name:
                 file_name = join(self.dir_cfd, f'nodes_timestep0_thread{thread_id}.dat')
-                data_nodes = np.loadtxt(file_name, skiprows=1)
+                data_nodes = np.loadtxt(file_name, skiprows=1, ndmin=2)
                 if data_nodes.shape[1] != self.dimensions + 1:
                     raise ValueError('Given dimension does not match coordinates')
 
@@ -355,9 +355,9 @@ class SolverWrapperFluent(SolverWrapper):
             coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
             ids_tmp, self.dict_face_ids[mp_name] = self.get_unique_face_ids(data[:, -self.mnpf:])
             if "nodes" in mp_name:
-                coords_nodes_tmp = np.zeros((data.shape[0], 3)) * 0.
+                coords_nodes_tmp = np.zeros((data_nodes.shape[0], 3)) * 0.
                 coords_nodes_tmp[:, :self.dimensions] = data_nodes[:, :-1]  # add column z if 2D
-                ids_nodes_tmp = data[:, -1].astype(int)  # array is flattened
+                ids_nodes_tmp = data_nodes[:, -1].astype(int)  # array is flattened
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
@@ -402,7 +402,8 @@ class SolverWrapperFluent(SolverWrapper):
                             self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
         # create, initialize and query face to node (f2n) displacement mapper
-        mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
+        #TODO: change to linear mapper if not Stefan problem
+        mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
         self.mapper_f2n = tools.create_instance(mapper_settings)
         self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
 
@@ -451,7 +452,13 @@ class SolverWrapperFluent(SolverWrapper):
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'repeat':
                     data = self.read_output_file(prefix, mp_name, thread_id)
-                    req_dim = self.dimensions + 1 + self.mnpf if accepted_variables_pc['out'][var][1] == 0 else accepted_variables_pc['out'][var][1] + self.mnpf
+                    if prefix == "displacement" and self.thermal_bc == "temperature":
+                        # Displacement is directly known at nodes in liquid solver
+                        req_dim = accepted_variables_pc['out'][var][1] + 1
+                    elif accepted_variables_pc['out'][var][1] == 0:
+                        req_dim = self.dimensions + 1 + self.mnpf
+                    else:
+                        req_dim = min([self.dimensions, accepted_variables_pc['out'][var][1]]) + self.mnpf
                     if data.shape[1] != req_dim:
                         raise ValueError('Given dimension does not match coordinates')
 
@@ -485,15 +492,20 @@ class SolverWrapperFluent(SolverWrapper):
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
-                        # get face coordinates and ids
-                        vector_tmp = np.zeros((data.shape[0], 3)) * 0.
-                        vector_tmp[:, :self.dimensions] = data[:, : -self.mnpf]
-                        ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+                        if var == 'displacement' and self.thermal_bc == "temperature":
+                            # get node coordinates and ids
+                            vector = data[:, :3]
+                            ids = data[:,-1]
+                        else:
+                            # get face coordinates and ids
+                            vector_tmp = np.zeros((data.shape[0], 3)) * 0.
+                            vector_tmp[:, :self.dimensions] = data[:, : -self.mnpf]
+                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-                        # sort and remove doubles
-                        args = np.unique(ids_tmp, return_index=True)[1].tolist()
-                        vector = vector_tmp[args, :]
-                        ids = ids_tmp[args]
+                            # sort and remove doubles
+                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                            vector = vector_tmp[args, :]
+                            ids = ids_tmp[args]
 
                         if var == 'displacement' and self.thermal_bc == "heat_flux":
                             if "nodes" not in mp_name:
@@ -508,7 +520,7 @@ class SolverWrapperFluent(SolverWrapper):
                             if not np.all(ids == model_part.id):
                                 raise ValueError('IDs of data do not match ModelPart IDs')
 
-                            self.interface_internal.set_variable_data(mp_name, 'displacement', displacement)
+                            self.interface_internal.set_variable_data(mp_name, var, displacement)
 
                             # map face displacement to node displacement
                             self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output)
@@ -522,16 +534,6 @@ class SolverWrapperFluent(SolverWrapper):
                                 raise ValueError('IDs of data do not match ModelPart IDs')
 
                             self.interface_output.set_variable_data(mp_name, var, vector)
-
-                        # store vector and scalar values in interface
-                        model_part = self.model.get_model_part(mp_name)
-                        if ids.size != model_part.size:
-                            raise ValueError('Size of data does not match size of ModelPart')
-                        if not np.all(ids == model_part.id):
-                            raise ValueError('IDs of data do not match ModelPart IDs')
-
-                        self.interface_output.set_variable_data(mp_name, var, vector)
-
 
                     if accepted_variables_pc['out'][var][1] == 1:
                         # get face coordinates and ids
@@ -728,20 +730,23 @@ class SolverWrapperFluent(SolverWrapper):
                     np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def read_output_file(self, prefix, mp_name, thread_id=None):
-        tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
-        file_name = join(self.dir_cfd, tmp)
-        data = np.loadtxt(file_name, skiprows=1, ndmin=2)
-        # TODO: this is a quick fix for temperature -> write new udf for temperature at moving interface!
-        if prefix == "temperature" and "displacement" in self.output_variables:
-            data[:,0] = np.ones((np.shape(data)[0], 1)) * self.ini_condition
         if prefix == "displacement" and self.thermal_bc == "temperature":
-            mp_name_new  = mp_name.replace("out", "in")
+            mp_name_new = mp_name.replace("out", "in")
+            model_part = self.model.get_model_part(mp_name_new)
             data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
-        # copy output data for debugging
-        if self.debug:
-            dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
-            cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
-            os.system(cmd)
+            data = np.append(data, model_part.id.reshape((np.size(model_part.id), 1)), axis=1)
+        else:
+            tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
+            file_name = join(self.dir_cfd, tmp)
+            data = np.loadtxt(file_name, skiprows=1, ndmin=2)
+            # TODO: this is a quick fix for temperature -> write new udf for temperature at moving interface!
+            if prefix == "temperature" and "displacement" in self.output_variables:
+                data[:, 0] = np.ones((np.shape(data)[0], 1)) * self.ini_condition
+            # copy output data for debugging
+            if self.debug:
+                dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
+                cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
+                os.system(cmd)
         return data
 
     def get_coordinates(self):

@@ -23,23 +23,9 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.or",
+      "type": "convergence_criteria.iteration_limit",
       "settings": {
-        "criteria_list": [
-          {
-            "type": "convergence_criteria.iteration_limit",
-            "settings": {
-              "maximum": 5
-            }
-          },
-          {
-            "type": "convergence_criteria.relative_norm",
-            "settings": {
-              "tolerance": 1e-10,
-              "order": 2
-            }
-          }
-        ]
+        "maximum": 5
       }
     },
     "solver_wrappers": [
@@ -74,15 +60,15 @@
           ],
           "interface_output": [
             {
-              "model_part": "boundary_out_faces",
-              "variables": [
-                "heat_flux"
-              ]
-            },
-            {
               "model_part": "boundary_out_nodes",
               "variables": [
                 "displacement"
+              ]
+            },
+            {
+              "model_part": "boundary_out_faces",
+              "variables": [
+                "heat_flux"
               ]
             }
           ],
