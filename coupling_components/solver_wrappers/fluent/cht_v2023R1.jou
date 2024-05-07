@@ -116,6 +116,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
         )
     )
 )
+;
 ;   SET DELTA_T
 (if unsteady
     (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))

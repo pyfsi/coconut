@@ -1,0 +1,49 @@
+file set-batch-options n y n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case M1_solid.msh
+grid check
+grid modify-zones zone-type 2 solid
+
+define models steady
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow n
+
+define materials change-create aluminum , no no yes constant 0.2876
+
+define boundary-conditions solid , y aluminum n n n n , n , n n yes
+define boundary-conditions wall adiabatic 0 n 0 n n n 0 n ,
+define boundary-conditions wall heated_wall 0 n 0 n y temperature n 600 n ,
+define boundary-conditions wall boundary 0 n 0 n y heat-flux n 1000 n ,
+
+solve monitors residual check-convergence y
+solve monitors residual convergence-criteria 1.0E-10
+
+solve set discretization-scheme temperature 1
+solve set gradient-scheme n y
+
+solve report-definitions add itf-flux surface-areaavg
+field heat-flux
+surface-names boundary ()
+per-surface? no
+q
+
+solve report-definitions add itf-temp surface-areaavg
+field temperature
+surface-names boundary ()
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs itf-flux itf-temp ()
+file-name "./report-file.out"
+active? yes
+q
+
+solve initialize set-defaults temperature 600
+solve initialize initialize-flow
+
+file write-case-data cht_solid_M1.cas.h5
+exit

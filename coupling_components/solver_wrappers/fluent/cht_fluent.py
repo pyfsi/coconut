@@ -149,6 +149,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|MAX_NODES_PER_FACE|', str(self.mnpf))
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
+                    line = line.replace('|LATENT_HEAT|', str(100000)) # placeholder
                     outfile.write(line)
 
         # check number of cores
