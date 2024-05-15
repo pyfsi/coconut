@@ -16,10 +16,10 @@ define materials change-create aluminum , no no yes constant 0.2876
 define boundary-conditions solid , y aluminum n n n n , n , n n yes
 define boundary-conditions wall adiabatic 0 n 0 n n n 0 n ,
 define boundary-conditions wall heated_wall 0 n 0 n y temperature n 600 n ,
-define boundary-conditions wall boundary 0 n 0 n y heat-flux n 1000 n ,
+define boundary-conditions wall boundary 0 n 0 n y temperature n 1000 n ,
 
 solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1.0E-10
+solve monitors residual convergence-criteria |CC_E|
 
 solve set discretization-scheme temperature 1
 solve set gradient-scheme n y

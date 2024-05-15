@@ -103,7 +103,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     )
 )
 ;
-;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS
+;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS -> assumes interface BC's has been set to the correct type in setup journals -> fix?
 (if (= timestep_start 0)
     (begin
         (if (= thermal_bc 0)
@@ -158,7 +158,9 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                     )
                 )
                 (begin
-                    (ti-menu-load-string "solve mesh-motion y")
+                    (if moving_boundary
+                        (ti-menu-load-string "solve mesh-motion y")
+                    )
                     (ti-menu-load-string "solve iterate flow_iterations")
                 )
             )

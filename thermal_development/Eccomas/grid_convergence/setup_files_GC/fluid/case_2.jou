@@ -14,7 +14,7 @@ solve set equations flow y
 define materials change-create air , yes constant 0.3525 yes constant 1142.6 yes constant 0.068083723 yes constant 3.95e-05 no no yes constant 619
 
 define operating-conditions operating-pressure 103000
-define operating-conditions reference-pressure-location 0.2 0.1
+define operating-conditions reference-pressure-location 0.2 0.2
 define operating-conditions gravity n
 
 define boundary-conditions fluid , y air n n n n , n , n y n
@@ -23,15 +23,18 @@ define boundary-conditions pressure-outlet outlet y n 0 n 300 n y y n n
 define boundary-conditions zone-type free_inlet wall
 define boundary-conditions wall free_inlet 0 n 0 n y heat-flux n 0 n y shear-bc-spec-shear n 0 n 0 n ,
 define boundary-conditions wall free_surface 0 n 0 n y heat-flux n 0 n y shear-bc-spec-shear n 0 n 0 n ,
-define boundary-conditions wall boundary 0 n 0 n y temperature n 600 n n n ,
+define boundary-conditions wall boundary 0 n 0 n y heat-flux n 0 n n n ,
 
 solve monitors residual check-convergence y y y y
-solve monitors residual convergence-criteria 1.0E-5 1.0E-5 1.0E-5 1.0E-10
+solve monitors residual convergence-criteria |CC_M| |CC_M| |CC_M| |CC_E|
 
 solve set discretization-scheme temperature 1
 solve set discretization-scheme mom 1
 solve set discretization-scheme pressure 12
-solve set p-v-coupling 20
+solve set p-v-coupling 24
+solve set pseudo-time-method relaxation-factors body-force 1
+solve set pseudo-time-method relaxation-factors density 0.9
+solve set pseudo-time-method relaxation-factors temperature 0.7
 solve set gradient-scheme n y
 
 solve report-definitions add itf-flux surface-areaavg

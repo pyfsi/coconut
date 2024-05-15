@@ -83,6 +83,10 @@ class Interface:
                 repr += f'\n\t\t{variable} with {variables_dimensions[variable]} components'
         return repr
 
+    def get_model_part_names(self):
+        # *** currently only used in postprocessing of thermal cases
+        return [model_part_dict['model_part'] for model_part_dict in self.parameters]
+
     def get_model_part(self, model_part_name):  # *** newly added
         return self.__model.get_model_part(model_part_name)
 

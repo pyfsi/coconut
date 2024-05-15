@@ -67,6 +67,7 @@ for (_d = 0; _d < dim; _d++) {                                      \
 #define mnpf |MAX_NODES_PER_FACE|
 #define dt |TIME_STEP_SIZE|
 #define LH |LATENT_HEAT|
+bool unsteady = |UNSTEADY|;
 int _d; /* don't use in UDFs! (overwritten by functions above) */
 int n_threads;
 DECLARE_MEMORY(thread_ids, int);
@@ -879,7 +880,15 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
     FILE *file = NULL;
 #endif /* RP_NODE */
 
-    timestep = N_TIME;
+    if (unsteady) {
+        timestep = N_TIME;
+    } else {
+        timestep = N_ITER;
+        if (timestep != 0) {
+            timestep = 1;
+        }
+    }
+
     sprintf(file_name, "temperature_timestep%i_thread%i.dat",
             timestep, thread_id);
 
@@ -1012,7 +1021,16 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
     FILE *file = NULL;
 #endif /* RP_NODE */
 
-    timestep = N_TIME;
+    if (unsteady) {
+        timestep = N_TIME;
+    } else {
+        timestep = N_ITER;
+        if (timestep != 0) {
+            timestep = 1;
+        }
+    }
+
+    if (myid == 0) {printf("\nTime step = %i\n", timestep); fflush(stdout);}
     sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
             timestep, thread_id);
 
