@@ -11,7 +11,7 @@ define models solver pressure-based y
 define models energy y n n n y
 solve set equations flow n
 
-define materials change-create aluminum , no no yes constant 0.2876
+define materials change-create aluminum , no no yes constant |COND|
 
 define boundary-conditions solid , y aluminum n n n n , n , n n yes
 define boundary-conditions wall adiabatic 0 n 0 n n n 0 n ,

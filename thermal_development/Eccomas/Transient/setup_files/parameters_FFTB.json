@@ -1,20 +1,21 @@
 {
   "settings": {
-    "number_of_timesteps": 600
+    "number_of_timesteps": 2000
   },
   "coupled_solver": {
-    "type": "coupled_solvers.gauss_seidel",
+    "type": "coupled_solvers.|METHOD|",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.1,
-      "omega": 0.3,
+      "delta_t": 0.01,
+      "omega": "|OMEGA|",
+      "omega_max": "|OMEGA_MAX|",
       "save_results": 10,
       "save_restart": 0,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
-          "min_significant": 1e-13,
+          "min_significant": 1e-3,
           "q": 10
         }
       }
@@ -29,11 +30,18 @@
           {
             "type": "convergence_criteria.iteration_limit",
             "settings": {
-              "maximum": 10
+              "maximum": 20
             }
           },
           {
             "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-2,
+              "order": 2
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
             "settings": {
               "tolerance": 1e-2,
               "order": 2
@@ -46,13 +54,14 @@
       {
         "type": "solver_wrappers.fluent.cht_v2023R1",
         "settings": {
-          "working_directory": "CFD_1",
-          "case_file": "cht_solid.cas.h5",
+          "working_directory": "CFD_2",
+          "case_file": "cht_fluid_|MESH|.cas.h5",
           "dimensions": 2,
           "unsteady": true,
           "moving_boundary": false,
           "multiphase": false,
           "debug": false,
+          "bc_from_case": true,
           "ini_condition": 0,
           "thread_names": [
             "boundary"
@@ -73,11 +82,11 @@
               ]
             }
           ],
-          "cores": 1,
+          "cores": "|FLUID_CORES|",
           "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 30,
-          "save_results": 60
+          "flow_iterations": 250,
+          "save_results": 100
         }
       },
       {
@@ -86,14 +95,15 @@
           "solver_wrapper": {
             "type": "solver_wrappers.fluent.cht_v2023R1",
             "settings": {
-              "working_directory": "CFD_2",
-              "case_file": "cht_fluid.cas.h5",
+              "working_directory": "CFD_1",
+              "case_file": "cht_solid_|MESH|.cas.h5",
               "dimensions": 2,
               "unsteady": true,
               "moving_boundary": false,
               "multiphase": false,
               "debug": false,
-              "ini_condition": 283.15,
+              "bc_from_case": true,
+              "ini_condition": 800,
               "thread_names": [
                 "boundary"
               ],
@@ -113,17 +123,17 @@
                   ]
                 }
               ],
-              "cores": 4,
+              "cores": "|SOLID_CORES|",
               "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 80,
-              "save_results": 60
+              "flow_iterations": 100,
+              "save_results": 100
             }
           },
           "mapper_interface_input": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.linear",
+              "type": "mappers.nearest",
               "settings": {
                 "directions": [
                   "x",
@@ -135,7 +145,7 @@
           "mapper_interface_output": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.linear",
+              "type": "mappers.nearest",
               "settings": {
                 "directions": [
                   "x",

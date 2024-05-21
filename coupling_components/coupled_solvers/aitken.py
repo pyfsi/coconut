@@ -12,7 +12,12 @@ class CoupledSolverAITKEN(CoupledSolver):
         super().__init__(parameters)
 
         self.settings = parameters['settings']
-        self.omega_max = self.settings['omega_max']
+        if isinstance(self.settings['omega_max'], float):
+            self.omega_max = self.settings['omega_max']
+        elif isinstance(self.settings['omega_max'], str):
+            self.omega_max = float(self.settings['omega_max'])
+        else:
+            raise TypeError("Value at omega_max should be float or string of float")
 
         self.omega = self.omega_max
         self.added = False

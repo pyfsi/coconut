@@ -894,6 +894,7 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
+        if (myid == 0) {printf("\nUnable to open %s for reading\n", file_name); fflush(stdout);}
         if (timestep == 0) {
             skip_search = true;
         } else {
@@ -1036,6 +1037,7 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
+        if (myid == 0) {printf("\nUnable to open %s for reading\n", file_name); fflush(stdout);}
         if (timestep == 0) {
             skip_search = true;
         } else {

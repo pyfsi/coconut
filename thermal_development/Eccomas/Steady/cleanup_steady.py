@@ -1,22 +1,36 @@
 import glob
 import shutil
 import subprocess
+import os
 from os.path import join
+
+debug = False
 
 solver_1 = 'fluent.v2023R1'
 solver_2 = 'fluent.v2023R1'
-mesh_list = ['M1', 'M2', 'M3', 'M4']
 
-for i, mesh in enumerate(mesh_list):
+velocity_list = [2.4, 12, 24, 36] # m/s
+velocity_names = ['2-4m_s', '12m_s', '24m_s', '36m_s']
+solver_order = ['TFFB', 'FFTB']
+methods = ['relaxation', 'aitken', 'iqni']
 
-    cfd_dir_1 = './' + mesh + '/CFD_1'
-    cfd_dir_2 = './' + mesh + '/CFD_2'
+if debug:
+    velocity_list = [2.4]
+    velocity_names = ['2-4m_s']
 
-    # clean up Fluent
-    if glob.glob(join(cfd_dir_1, 'cleanup-fluent*')):
-        subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir_1)
-    if glob.glob(join(cfd_dir_2, 'cleanup-fluent*')):
-        subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir_2)
+for v, velocity in enumerate(velocity_list):
+    for i, order in enumerate(solver_order):
+        for k, method in enumerate(methods):
 
-    # clean mesh directories
-    shutil.rmtree('./' + mesh, ignore_errors=True)
+            cfd_dir_1 = './' + velocity_names[v] + '/' + order + '_' + method + '/CFD_1'
+            cfd_dir_2 = './' + velocity_names[v] + '/' + order + '_' + method + '/CFD_2'
+
+            # clean up Fluent
+            if glob.glob(join(cfd_dir_1, 'cleanup-fluent*')):
+                subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir_1)
+            if glob.glob(join(cfd_dir_2, 'cleanup-fluent*')):
+                subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir_2)
+
+for v, velocity in enumerate(velocity_list):
+    # clean working directories and create new ones
+    shutil.rmtree('./' + velocity_names[v], ignore_errors=True)

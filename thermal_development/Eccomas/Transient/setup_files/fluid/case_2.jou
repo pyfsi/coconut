@@ -1,0 +1,111 @@
+(define fftb |ORDER|)
+(define rev |REVERSE|)
+
+file set-batch-options n y n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case |MESH|_fluid.msh
+grid check
+grid modify-zones zone-type 3 fluid
+
+define models steady
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow y
+
+define materials change-create air , yes constant 0.3525 yes constant 1142.6 yes constant 0.068083723 yes constant 3.95e-05 no no yes constant 619
+
+define operating-conditions operating-pressure 103000
+define operating-conditions reference-pressure-location 0.2 0.2
+define operating-conditions gravity n
+
+define boundary-conditions fluid , y air n n n n , n , n y n
+define boundary-conditions pressure-outlet outlet y n 0 n 300 n y y n n
+define boundary-conditions zone-type free_inlet wall
+define boundary-conditions wall free_inlet 0 n 0 n y heat-flux n 0 n y shear-bc-spec-shear n 0 n 0 n ,
+define boundary-conditions wall free_surface 0 n 0 n y heat-flux n 0 n y shear-bc-spec-shear n 0 n 0 n ,
+
+(if fftb
+    (begin
+        (if rev
+            (ti-menu-load-string "file read-profile \"T_2_rev\"")
+            (ti-menu-load-string "file read-profile \"T_2\"")
+        )
+        (ti-menu-load-string "define boundary-conditions wall boundary 0 n 0 n y temperature y n \"boundary\" \"temperature\" n ,")
+    )
+    (begin
+        (if rev
+            (ti-menu-load-string "file read-profile \"Q_2_rev\"")
+            (ti-menu-load-string "file read-profile \"Q_2\"")
+        )
+        (ti-menu-load-string "define boundary-conditions wall boundary 0 n 0 n y heat-flux y n \"boundary\" \"heat-flux\" n ,")
+    )
+)
+
+define named-expressions add "var_in_vel"
+definition "IF(t>10[s],36[m/s],16.8[m/s]*sin(PI*(t/10[s]-0.5))+19.2[m/s])"
+q q q
+
+define named-expressions add "var_in_vel_reverse"
+definition "IF(t>10[s],2.4[m/s],16.8[m/s]*sin(PI*(t/10[s]+0.5))+19.2[m/s])"
+q q q
+
+(if rev
+    (ti-menu-load-string "define boundary-conditions velocity-inlet inlet n n y y n \"var_in_vel_reverse\" n 0 n 1000")
+    (ti-menu-load-string "define boundary-conditions velocity-inlet inlet n n y y n \"var_in_vel\" n 0 n 1000")
+)
+
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1.0E-5 1.0E-5 1.0E-5 1.0E-10
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+solve set discretization-scheme pressure 12
+solve set p-v-coupling 24
+solve set pseudo-time-method relaxation-factors body-force 1
+solve set pseudo-time-method relaxation-factors density 0.9
+solve set pseudo-time-method relaxation-factors temperature 0.7
+solve set gradient-scheme n y
+
+solve initialize set-defaults temperature 1000
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0
+solve initialize set-defaults y-velocity 0
+solve initialize initialize-flow
+
+solve iterate 250
+define models unsteady-2nd-order y
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+solve set discretization-scheme pressure 14
+solve set p-v-coupling 20
+solve set under-relaxation body-force 1
+solve set under-relaxation density 0.9
+solve set under-relaxation temperature 0.7
+solve set gradient-scheme n y
+
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1.0E-5 1.0E-5 1.0E-5 1.0E-10
+
+solve report-definitions add itf-flux surface-areaavg
+field heat-flux
+surface-names boundary ()
+per-surface? no
+q
+
+solve report-definitions add itf-temp surface-areaavg
+field temperature
+surface-names boundary ,
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs itf-flux itf-temp ()
+file-name "./report-file.out"
+active? yes
+q
+
+file write-case-data cht_fluid_|MESH|.cas.h5
+exit

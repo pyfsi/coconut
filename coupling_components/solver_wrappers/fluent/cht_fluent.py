@@ -56,6 +56,7 @@ class SolverWrapperFluent(SolverWrapper):
         elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
+        self.bc_from_case = self.settings.get('bc_from_case', False)  # NEW variable in json file
         self.ini_condition = self.settings.get('ini_condition', None) # NEW variable in json file
         self.dimensions = self.settings['dimensions']
         self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
@@ -354,8 +355,20 @@ class SolverWrapperFluent(SolverWrapper):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
             # create initial conditions at output interface
-            if self.ini_condition is not None:
-                self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
+            if self.bc_from_case:
+                for var in self.output_variables:
+                    if var == 'heat_flux' or var == 'temperature':
+                        pre = accepted_variables_cht['out'][var][0]
+                        tmp = pre + f'_timestep0_thread{thread_id}.dat'
+                        file_name = join(self.dir_cfd, tmp)
+                        data = np.loadtxt(file_name, skiprows=1)
+                        req_dim = self.dimensions + 1 + self.mnpf if var == 'heat_flux' else 1 + self.mnpf
+                        if data.shape[1] != req_dim:
+                            raise ValueError('Given dimension does not match coordinates')
+                        self.output_ini_cond[mp_name] = data
+            else:
+                if self.ini_condition is not None:
+                    self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
 
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
@@ -365,10 +378,52 @@ class SolverWrapperFluent(SolverWrapper):
         for key in self.output_ini_cond:
             for var in self.output_variables:
                 if var == 'heat_flux' or var == 'temperature':
-                    if self.ini_condition is None:
-                        raise ValueError('Initial condition must be defined in JSON for temperature or heat flux')
+                    if self.bc_from_case:
+                        data = self.output_ini_cond[key]
+                        if var == 'heat_flux':
+                            # get face coordinates and ids
+                            vector_tmp = np.zeros((data.shape[0], 3)) * 0.
+                            vector_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
+                            scalar_tmp = data[:, self.dimensions].reshape(-1, 1)
+                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+
+                            # sort and remove doubles
+                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                            vector = vector_tmp[args, :]
+                            scalar = scalar_tmp[args]
+                            ids = ids_tmp[args]
+
+                            # store vector and scalar values in Nodes
+                            model_part = self.model.get_model_part(key)
+                            if ids.size != model_part.size:
+                                raise ValueError('Size of data does not match size of ModelPart')
+                            if not np.all(ids == model_part.id):
+                                raise ValueError('IDs of data do not match ModelPart IDs')
+
+                            self.interface_output.set_variable_data(key, var, scalar)
+                        elif var == 'temperature':
+                            # get face coordinates and ids
+                            scalar_tmp = data[:, 0].reshape(-1, 1)
+                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+
+                            # sort and remove doubles
+                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                            scalar = scalar_tmp[args]
+                            ids = ids_tmp[args]
+
+                            # store scalar values in Nodes
+                            model_part = self.model.get_model_part(key)
+                            if ids.size != model_part.size:
+                                raise ValueError('Size of data does not match size of ModelPart')
+                            if not np.all(ids == model_part.id):
+                                raise ValueError('IDs of data do not match ModelPart IDs')
+
+                            self.interface_output.set_variable_data(key, var, scalar)
                     else:
-                        self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
+                        if self.ini_condition is None:
+                            raise ValueError('Initial condition must be defined in JSON for temperature or heat flux')
+                        else:
+                            self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
     def initialize_solution_step(self):
         super().initialize_solution_step()

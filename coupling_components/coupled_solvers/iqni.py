@@ -14,7 +14,12 @@ class CoupledSolverIQNI(CoupledSolver):
                                  ('timestep_start', 'delta_t', 'save_restart'))
 
         self.model = tools.create_instance(self.parameters['settings']['model'])
-        self.omega = self.settings['omega']
+        if isinstance(self.settings['omega'], float):
+            self.omega = self.settings['omega']
+        elif isinstance(self.settings['omega'], str):
+            self.omega = float(self.settings['omega'])
+        else:
+            raise TypeError("Value at omega should be float or string of float")
 
         self.restart_model = False  # indicates if model has to be restarted
 

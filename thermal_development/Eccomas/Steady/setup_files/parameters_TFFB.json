@@ -3,18 +3,19 @@
     "number_of_timesteps": 1
   },
   "coupled_solver": {
-    "type": "coupled_solvers.relaxation",
+    "type": "coupled_solvers.|METHOD|",
     "settings": {
       "timestep_start": 0,
       "delta_t": 1.0,
-      "omega": 0.5,
+      "omega": "|OMEGA|",
+      "omega_max": "|OMEGA_MAX|",
       "save_results": 1,
       "save_restart": 0,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
-          "min_significant": 1e-13,
+          "min_significant": 1e-6,
           "q": 10
         }
       }

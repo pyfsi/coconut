@@ -18,7 +18,7 @@ define operating-conditions reference-pressure-location 0.2 0.2
 define operating-conditions gravity n
 
 define boundary-conditions fluid , y air n n n n , n , n y n
-define boundary-conditions velocity-inlet inlet n n y y n 12 n 0 n 1000
+define boundary-conditions velocity-inlet inlet n n y y n |VEL| n 0 n 1000
 define boundary-conditions pressure-outlet outlet y n 0 n 300 n y y n n
 define boundary-conditions zone-type free_inlet wall
 define boundary-conditions wall free_inlet 0 n 0 n y heat-flux n 0 n y shear-bc-spec-shear n 0 n 0 n ,

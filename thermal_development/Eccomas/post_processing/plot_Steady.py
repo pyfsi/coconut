@@ -4,15 +4,19 @@ import matplotlib.pyplot as plt
 import pickle
 
 debug = False
+v = 36
 
 # different cases to be plotted
-common_path = '../../../thermal_development/Eccomas/grid_convergence/'
+dict = {2.4: '2-4m_s', 12: '12m_s', 24: '24m_s', 36: '36m_s'}
+common_path = '../../../thermal_development/Eccomas/Steady/' + dict[2.4] + '/'
+f = '/case_results.pickle'
+
 if debug:
-    case_paths = ['M1/case_results.pickle', 'M2/case_results.pickle']
-    legend_entries = ['M1', 'M2']
+    case_paths = ['FFTB_relaxation' + f]
+    legend_entries = ['FFTB_relaxation']
 else:
-    case_paths = ['M1/case_results.pickle', 'M2/case_results.pickle', 'M3/case_results.pickle', 'M4/case_results.pickle']
-    legend_entries = ['M1', 'M2', 'M3', 'M4']
+    case_paths = ['TFFB_relaxation' + f, 'FFTB_relaxation' + f, 'TFFB_aitken' + f, 'FFTB_aitken' + f, 'TFFB_iqni' + f, 'FFTB_iqni' + f]
+    legend_entries = ['TFFB_relaxation', 'FFTB_relaxation', 'TFFB_aitken', 'FFTB_aitken', 'TFFB_iqni', 'FFTB_iqni']
 
 # load cases
 results = {}
@@ -25,7 +29,7 @@ for name in legend_entries:
     print('Run time:', results[name]['run_time']/60 ,'minutes')
 
 # make figures
-line_styles = ['b--', 'r--', 'g--', 'm--']
+line_styles = ['b--', 'b.-', 'g--', 'g.-', 'r--', 'r.-']
 lines_temperature = []
 lines_heat_flux = []
 for sol, itf, var, uni in (('solution_x', 'interface_x', 'temperature', 'K'), ('solution_y', 'interface_y', 'heat_flux', 'W/m^2')):
@@ -43,6 +47,8 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'temperature', 'K'), ('
             lines_temperature.append(line)
         else:
             solution = results[name][sol][args,-1]
+            if np.mean(solution) < 0:
+                solution = -1*solution
             line, = plt.plot(x, solution, line_styles[j], label=name)
             lines_heat_flux.append(line)
 
@@ -51,7 +57,8 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'temperature', 'K'), ('
         plt.ylabel('Interface temperature [K]')
         plt.xlabel('Location [m]')
         plt.legend(handles=lines_temperature)
-        plt.savefig('./figures/itf-temp-GC.svg')
+        plt.title(dict[v])
+        plt.savefig('./figures/itf-temp-steady-' + dict[v] + '.svg')
         plt.show()
         plt.close()
 
@@ -60,6 +67,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'temperature', 'K'), ('
         plt.ylabel('Interface heat flux [W/m^2]')
         plt.xlabel('Location [m]')
         plt.legend(handles=lines_heat_flux)
-        plt.savefig('./figures/itf-hf-GC.svg')
+        plt.title(dict[v])
+        plt.savefig('./figures/itf-hf-steady-' + dict[v] + '.svg')
         plt.show()
         plt.close()
