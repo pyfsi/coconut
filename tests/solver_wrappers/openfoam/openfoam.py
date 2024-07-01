@@ -172,16 +172,18 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
             self.set_cores(cores)
             solver = create_instance(self.parameters)
             solver.initialize()
-            model_part = solver.model.get_model_part(self.mp_name_in)
+            interface_input = solver.get_interface_input()
+
+            model_part = interface_input.get_model_part(self.mp_name_in)
             x0, y0, z0 = model_part.x0, model_part.y0, model_part.z0
             dx = np.zeros(x0.shape)
             dy, dz = self.get_dy_dz(x0, y0, z0)
             displacement = np.column_stack((dx, dy, dz))
-            solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+            interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
 
             # update position by iterating once in solver
             solver.initialize_solution_step()
-            output_interface = solver.solve_solution_step(solver.get_interface_input())
+            output_interface = solver.solve_solution_step(interface_input)
             output_list.append(output_interface.get_interface_data())
             solver.finalize_solution_step()
             solver.output_solution_step()
@@ -209,7 +211,6 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         dy, dz = self.get_dy_dz(x0, y0, z0)
         dydz = np.column_stack((dy, dz))
         dydz_list = [dydz, np.zeros_like(dydz), dydz]
-
         displacement = interface_input.get_variable_data(self.mp_name_in, 'displacement')
 
         # run solver for three displacements (first one = last one)
@@ -258,7 +259,7 @@ class TestSolverWrapperOpenFOAM(unittest.TestCase):
         dy, dz = self.get_dy_dz(x0, y0, z0)
         dx = np.zeros(x0.shape)
         displacement = np.column_stack((dx, dy, dz))
-        solver.get_interface_input().set_variable_data(self.mp_name_in, 'displacement', displacement)
+        interface_input.set_variable_data(self.mp_name_in, 'displacement', displacement)
         nr_time_steps = 4
 
         # run solver for 4 time steps

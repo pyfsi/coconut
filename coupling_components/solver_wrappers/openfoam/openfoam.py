@@ -96,7 +96,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                     decomposedict_string = file.read()
                 self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
 
-        # take density into account for solvers working with kinamtic pressure or traction
+        # take density into account for solvers working with kinematic pressure or traction
         self.kinematic_conversion()
 
         # modify controlDict file to add pressure and wall shear stress functionObjects for all the boundaries in
@@ -478,19 +478,18 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: {message}.coco')
 
     def check_software(self):
-        if subprocess.check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
+        try:
+            version_nr = subprocess.check_output('echo $WM_PROJECT_VERSION',
+                                                 shell=True, env=self.env).decode('utf-8').strip()  # output b'XX\n'
+        except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name"'
                 f' are correct in solver_modules.py.')
 
         # check version
-        with open('checkSoftware', 'r') as f:
-            last_line = f.readlines()[-2]  # second last line contains 'Build: XX' with XX the version number
-        os.remove('checkSoftware')
-        version_nr = last_line.split(' ')[-1]
-        if version_nr[:-1] != self.version:
+        if version_nr != self.version:
             raise RuntimeError(
-                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded.'
+                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr} is loaded.'
                 f' Check if the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
     def check_interfaces(self):
