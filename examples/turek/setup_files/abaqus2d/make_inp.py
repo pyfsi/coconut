@@ -10,12 +10,16 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
-import imp
+import importlib.util
+import sys
 
-coconut_path = imp.find_module('coconut')[1]
-fp, path_name, description = imp.find_module('make_surface',
-                                             [coconut_path + '/coupling_components/solver_wrappers/abaqus/extra/'])
-imp.load_module('make_surface', fp, path_name, description)
+coconut_path = importlib.util.find_spec('coconut').submodule_search_locations[0]
+spec = importlib.util.spec_from_file_location('make_surface',
+                                              coconut_path +
+                                              '/coupling_components/solver_wrappers/abaqus/extra/make_surface.py')
+module = importlib.util.module_from_spec(spec)
+sys.modules['make_surface'] = module
+spec.loader.exec_module(module)
 from make_surface import *
 
 e_modulus = 1.4e6
