@@ -69,7 +69,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.v2022",
+            "type": "solver_wrappers.abaqus.v2024",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,

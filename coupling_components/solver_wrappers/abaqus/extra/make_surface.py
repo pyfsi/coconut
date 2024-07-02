@@ -29,7 +29,7 @@ def SurfaceFromNodeSet(assembly, instance, nodeSetName, surfaceName):
                     nodesPerFace = GetNodesPerFace(instance.elements.getFromLabel(elemLabel))
                     faces[key] = (1, nodesPerFace)
     faceElements = [[] for face in range(6)]
-    for key, face in faces.iteritems():
+    for key, face in faces.items():
         if face[0] == face[1]:
             faceElements[key[1]].append(key[0])
     return assembly.Surface(name=surfaceName,

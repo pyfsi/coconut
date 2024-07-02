@@ -255,3 +255,6 @@ Base version.
 
 ### v2022
 No major changes. 
+
+### v2024
+No major changes. However, Abaqus is now using Python 3.10 instead of Python 2.7, this has a minor consequence on the syntax in the *`make_surface.py`*-script, which is used to set up the examples.
