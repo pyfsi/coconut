@@ -42,7 +42,12 @@ class SolverWrapperFluent(SolverWrapper):
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
-        self.cores = self.settings['cores']
+        if isinstance(self.settings['cores'], int):
+            self.cores = self.settings['cores']
+        elif isinstance(self.settings['cores'], str):
+            self.cores = int(self.settings['cores'])
+        else:
+            raise TypeError("Value at cores should be integer or string of integer")
         self.hostfile = self.settings.get('hostfile')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
@@ -156,6 +161,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     line = line.replace('|LATENT_HEAT|', str(self.latent_heat))
+                    line = line.replace('|UNSTEADY|', 'true' if self.unsteady else 'false')
                     outfile.write(line)
 
         # check number of cores

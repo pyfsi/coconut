@@ -1,0 +1,77 @@
+(define fftb |ORDER|)
+(define rev |REVERSE|)
+
+file set-batch-options n y n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case |MESH|_solid.msh
+grid check
+grid modify-zones zone-type 2 solid
+
+define models steady
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow n
+
+define materials change-create aluminum , no no yes constant |COND|
+
+define boundary-conditions solid , y aluminum n n n n , n , n n yes
+define boundary-conditions wall adiabatic 0 n 0 n n n 0 n ,
+define boundary-conditions wall heated_wall 0 n 0 n y temperature n 600 n ,
+
+(if fftb
+    (begin
+        (if rev
+            (ti-menu-load-string "file read-profile \"Q_1_rev\"")
+            (ti-menu-load-string "file read-profile \"Q_1\"")
+        )
+        (ti-menu-load-string "define boundary-conditions wall boundary 0 n 0 n y heat-flux y n \"boundary\" \"heat-flux\" n ,")
+    )
+    (begin
+        (if rev
+            (ti-menu-load-string "file read-profile \"T_1_rev\"")
+            (ti-menu-load-string "file read-profile \"T_1\"")
+        )
+        (ti-menu-load-string "define boundary-conditions wall boundary 0 n 0 n y temperature y n \"boundary\" \"temperature\" n ,")
+    )
+)
+
+solve monitors residual check-convergence y
+solve monitors residual convergence-criteria 1.0E-10
+
+solve set discretization-scheme temperature 1
+solve set gradient-scheme n y
+
+solve initialize set-defaults temperature 600
+solve initialize initialize-flow
+
+solve iterate 200
+define models unsteady-2nd-order y
+solve set discretization-scheme temperature 1
+solve set under-relaxation temperature 0.8
+solve set gradient-scheme n y
+
+solve monitors residual check-convergence y
+solve monitors residual convergence-criteria 1.0E-10
+
+solve report-definitions add itf-flux surface-areaavg
+field heat-flux
+surface-names boundary ()
+per-surface? no
+q
+
+solve report-definitions add itf-temp surface-areaavg
+field temperature
+surface-names boundary ()
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs itf-flux itf-temp ()
+file-name "./report-file.out"
+active? yes
+q
+
+file write-case-data cht_solid_|MESH|.cas.h5
+exit
