@@ -1346,7 +1346,10 @@ printf("\nFinished UDF set_adjacent.\n");
 
 DEFINE_ON_DEMAND(calc_volume_change)
 {
-printf("\nStarted UDF calc_volume_change.\n");
+/* WARNING: only 2D compatibility, no 3D */
+    printf("\nStarted UDF calc_volume_change.\n");
+    bool zero_vol; // Boolean to indicate whether swept volume is zero or not
+    zero_vol = false;
 
 #if RP_NODE
     Domain *domain;
@@ -1369,6 +1372,7 @@ printf("\nStarted UDF calc_volume_change.\n");
     {
         begin_c_loop(cell,cell_thread) //loop over all cells
         {
+            zero_vol = false;
             if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
                 vertices[0][0] = C_UDMI(cell,cell_thread,PR_1_X);
                 vertices[0][1] = C_UDMI(cell,cell_thread,PR_2_X);
@@ -1378,14 +1382,24 @@ printf("\nStarted UDF calc_volume_change.\n");
                 vertices[1][1] = C_UDMI(cell,cell_thread,PR_2_Y);
                 vertices[1][2] = C_UDMI(cell,cell_thread,NEW_1_Y);
                 vertices[1][3] = C_UDMI(cell,cell_thread,NEW_2_Y);
+
+                // No volume change when nodes don't move
                 if ((vertices[0][0] == vertices[0][2]) && (vertices[1][0] == vertices[1][2])) {
-                    C_UDMI(cell,cell_thread,D_VOL) = 0.0; // Assume no volume change when the first node hasn't moved
+                    if ((vertices[0][1] == vertices[0][3]) && (vertices[1][1] == vertices[1][3])) {
+                        zero_vol = true; // PR_1 == NEW_1 & PR_2 == NEW_2
+                    }
+                }
+                if ((vertices[0][0] == vertices[0][3]) && (vertices[1][0] == vertices[1][3])) {
+                    if ((vertices[0][1] == vertices[0][2]) && (vertices[1][1] == vertices[1][2])) {
+                        zero_vol = true; // PR_1 == NEW_2 & PR_2 == NEW_1
+                    }
+                }
+
+                if (zero_vol) {
+                    C_UDMI(cell,cell_thread,D_VOL) = 0.0;
                 }
                 else {
-                    if ((vertices[0][0] == vertices[0][3]) && (vertices[1][0] == vertices[1][3])) {
-                        C_UDMI(cell,cell_thread,D_VOL) = 0.0; // Assume no volume change when the first node hasn't moved
-                    }
-                    else { // determine reference coordinates
+                    // determine reference coordinates
                         x_ref = (vertices[0][0]+vertices[0][1]+vertices[0][2]+vertices[0][3])/4;
                         y_ref = (vertices[1][0]+vertices[1][1]+vertices[1][2]+vertices[1][3])/4;
                         for (i=0; i < 4; i++) { // determine angles wrt reference point

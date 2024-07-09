@@ -3,7 +3,7 @@
     "number_of_timesteps": 1
   },
   "coupled_solver": {
-    "type": "coupled_solvers.gauss_seidel",
+    "type": "coupled_solvers.relaxation",
     "settings": {
       "timestep_start": 0,
       "delta_t": 0.1,
@@ -53,7 +53,7 @@
           "moving_boundary": true,
           "multiphase": false,
           "debug": true,
-          "ini_condition": 299.16,
+          "ini_condition": 299.15,
           "thread_names": [
             "boundary"
           ],

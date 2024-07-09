@@ -53,8 +53,8 @@ file set-batch-options n n n
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
         (if multiphase
-            (ti-menu-load-string "solve set expert y y n y")
-            (ti-menu-load-string "solve set expert y n y")
+            (ti-menu-load-string "solve set expert y n y n y")
+            (ti-menu-load-string "solve set expert n y n y")
         )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)

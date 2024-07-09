@@ -690,14 +690,12 @@ class SolverWrapperFluent(SolverWrapper):
                     model_part = self.model.get_model_part(mp_name)
                     T = self.interface_input.get_variable_data(mp_name, 'temperature')
                     face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
-                    index = 0
-                    for id in model_part.id:
+                    for index, id in enumerate(model_part.id):
                         list = self.reverse_face_ids(id, mp_name)
                         if len(list) == self.mnpf:
                             face_nodeIDs[index,:] = np.array(list)
                         else:
                             raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
-                        index += 1
                     prof = np.append(T, face_nodeIDs, axis=1)
                     fmt = '%27.17e'
                     for i in range(self.mnpf):
@@ -714,14 +712,12 @@ class SolverWrapperFluent(SolverWrapper):
                     q_tmp = self.interface_input.get_variable_data(mp_name, 'heat_flux')
                     q = np.append(np.zeros((np.size(q_tmp), self.dimensions)), q_tmp, axis=1)
                     face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
-                    index = 0
-                    for id in model_part.id:
+                    for index, id in enumerate(model_part.id):
                         list = self.reverse_face_ids(id, mp_name)
                         if len(list) == self.mnpf:
                             face_nodeIDs[index,:] = np.array(list)
                         else:
                             raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
-                        index += 1
                     prof = np.append(q, face_nodeIDs, axis=1)
                     if self.dimensions == 2:
                         fmt = '%27.17e%27.17e%27.17e'

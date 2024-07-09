@@ -53,8 +53,8 @@ file set-batch-options n n n
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
         (if multiphase
-            (ti-menu-load-string "solve set expert y y n y")
-            (ti-menu-load-string "solve set expert y n y")
+            (ti-menu-load-string "solve set expert y n y n y")
+            (ti-menu-load-string "solve set expert n y n y")
         )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
@@ -163,8 +163,8 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                         (if moving_boundary
                             (begin
                                 (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
-                                ;(ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
+                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
+                                ;(ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"") ; Currently not used
                             )
                         )
                         (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
@@ -174,7 +174,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                         (if moving_boundary
                             (begin
                                 (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
+                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
                             )
                         )
                         (ti-menu-load-string "solve iterate 1")

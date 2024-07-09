@@ -19,13 +19,13 @@ define boundary-conditions fluid , y pcm n n n n , n , n y n
 define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n ,
 ;heated wall 10 °C above solidus temp.
 define boundary-conditions wall wall 0 n 0 n y temperature n 309.15 y motion-bc-stationary n n ,
-define boundary-conditions wall boundary 0 n 0 n y temperature n 299.16 y motion-bc-stationary n n ,
+define boundary-conditions wall boundary 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n ,
 
 ;define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
 solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1.0E-12
+solve monitors residual convergence-criteria 1.0E-10
 
 solve set discretization-scheme temperature 0
 solve set gradient-scheme n y
@@ -35,7 +35,7 @@ solve set gradient-scheme n y
 ;solve set flow-warnings n
 
 ;Initialise liquid at liquidus temp.
-solve initialize set-defaults temperature 299.16
+solve initialize set-defaults temperature 299.15
 solve initialize initialize-flow
 solve iterate 40
 
