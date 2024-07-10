@@ -1374,6 +1374,9 @@ DEFINE_ON_DEMAND(calc_volume_change)
         {
             zero_vol = false;
             if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
+                if (myid == 0) {printf("\nC_OLD_VOLUME = %lf\n", C_OLD_VOLUME(cell,cell_thread,dt)); fflush(stdout);}
+                if (myid == 0) {printf("\nC_VOLUME = %lf\n", C_VOLUME(cell,cell_thread)); fflush(stdout);}
+
                 vertices[0][0] = C_UDMI(cell,cell_thread,PR_1_X);
                 vertices[0][1] = C_UDMI(cell,cell_thread,PR_2_X);
                 vertices[0][2] = C_UDMI(cell,cell_thread,NEW_1_X);
@@ -1400,31 +1403,30 @@ DEFINE_ON_DEMAND(calc_volume_change)
                 }
                 else {
                     // determine reference coordinates
-                        x_ref = (vertices[0][0]+vertices[0][1]+vertices[0][2]+vertices[0][3])/4;
-                        y_ref = (vertices[1][0]+vertices[1][1]+vertices[1][2]+vertices[1][3])/4;
-                        for (i=0; i < 4; i++) { // determine angles wrt reference point
-                            theta[i] = atan2((vertices[1][i]-y_ref),(vertices[0][i])-x_ref);
-                            index[i] = i;
-                        }
-                        for (i=0; i < 3; i++) { // bubble sort indices in counter-clockwise manner (necessary for shoelace theorem)
-                            for (j=0; j < 3-i; j++) {
-                                if (theta[j] > theta[j+1]) {
-                                    dummy = theta[j];
-                                    theta[j] = theta[j+1];
-                                    theta[j+1] = dummy;
-                                    dum_i = index[j];
-                                    index[j] = index[j+1];
-                                    index[j+1] = dum_i;
-                                }
-                            }
-                        }
-                        for (i=0; i < 4; i++) { // sort coordinates according sorted indices
-                            for (d = 0; d < ND_ND; d++) {
-                                sort_vert[d][i] = vertices[d][index[i]];
-                            }
-                        } // calculate swept area with shoelace theorem
-                        C_UDMI(cell,cell_thread,D_VOL) = 0.5*((sort_vert[0][0]*sort_vert[1][1]+sort_vert[0][1]*sort_vert[1][2]+sort_vert[0][2]*sort_vert[1][3]+sort_vert[0][3]*sort_vert[1][0])-(sort_vert[0][1]*sort_vert[1][0]+sort_vert[0][2]*sort_vert[1][1]+sort_vert[0][3]*sort_vert[1][2]+sort_vert[0][0]*sort_vert[1][3]));
+                    x_ref = (vertices[0][0]+vertices[0][1]+vertices[0][2]+vertices[0][3])/4;
+                    y_ref = (vertices[1][0]+vertices[1][1]+vertices[1][2]+vertices[1][3])/4;
+                    for (i=0; i < 4; i++) { // determine angles wrt reference point
+                        theta[i] = atan2((vertices[1][i]-y_ref),(vertices[0][i])-x_ref);
+                        index[i] = i;
                     }
+                    for (i=0; i < 3; i++) { // bubble sort indices in counter-clockwise manner (necessary for shoelace theorem)
+                        for (j=0; j < 3-i; j++) {
+                            if (theta[j] > theta[j+1]) {
+                                dummy = theta[j];
+                                theta[j] = theta[j+1];
+                                theta[j+1] = dummy;
+                                dum_i = index[j];
+                                index[j] = index[j+1];
+                                index[j+1] = dum_i;
+                            }
+                        }
+                    }
+                    for (i=0; i < 4; i++) { // sort coordinates according sorted indices
+                        for (d = 0; d < ND_ND; d++) {
+                            sort_vert[d][i] = vertices[d][index[i]];
+                        }
+                    } // calculate swept area with shoelace theorem
+                    C_UDMI(cell,cell_thread,D_VOL) = 0.5*((sort_vert[0][0]*sort_vert[1][1]+sort_vert[0][1]*sort_vert[1][2]+sort_vert[0][2]*sort_vert[1][3]+sort_vert[0][3]*sort_vert[1][0])-(sort_vert[0][1]*sort_vert[1][0]+sort_vert[0][2]*sort_vert[1][1]+sort_vert[0][3]*sort_vert[1][2]+sort_vert[0][0]*sort_vert[1][3]));
                 }
             }
         } end_c_loop(cell,cell_thread)
@@ -1557,7 +1559,7 @@ DEFINE_ON_DEMAND(write_displacement) {
                 }
             } end_c_loop(c,cell_thread)
         }
-        if (myid == 0) {printf("\nI'm here 6.\n"); fflush(stdout);}
+
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
         compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
 
@@ -1674,8 +1676,16 @@ DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
 /*Source term for continuity equation, to compensate mass loss or mass gain.*/
 
 real source;
-source = -C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-dS[eqn] = -C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+real sign;
+
+if ((C_VOLUME(c,t) - C_OLD_VOLUME(c,t,dt)) >= 0.0) {
+    sign = 1.0;
+} else {
+    sign = -1.0;
+}
+
+source = sign*C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+dS[eqn] = sign*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
 return source;
 }
 
@@ -1688,7 +1698,15 @@ DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
 /*Source term for energy equation, to include latent heat.*/
 real source;
-source = -C_R(c,t)*LH*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+real sign;
+
+if ((C_VOLUME(c,t) - C_OLD_VOLUME(c,t,dt)) >= 0.0) {
+    sign = 1.0;
+} else {
+    sign = -1.0;
+}
+
+source = sign*C_R(c,t)*LH*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
 dS[eqn] = 0.0;
 return source;
 }

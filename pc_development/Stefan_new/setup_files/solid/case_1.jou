@@ -38,11 +38,11 @@ define dynamic-mesh controls smoothing-parameters max-iter 20
 define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
-define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+define dynamic-mesh zones create adiabatic deforming faceted n y n n y n y
 ;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
 
 solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1.0E-10
+solve monitors residual convergence-criteria 1e-12
 
 solve set discretization-scheme temperature 0
 solve set gradient-scheme n y

@@ -50,7 +50,7 @@ class MapperInterface(Component):
         for pair_from in interface_from.model_part_variable_pairs:
             for pair_to in interface_to.model_part_variable_pairs:
                 if pair_from[0] == pair_to[0]:
-                    if pair_from[1] == "displacement" and pair_to[0] == "displacement":
+                    if pair_from[1] == "displacement" and pair_to[1] == "displacement":
                         mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
                         mapper((interface_from, *pair_from), (interface_to, *pair_to))
 

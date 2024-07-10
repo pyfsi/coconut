@@ -732,7 +732,7 @@ class SolverWrapperFluent(SolverWrapper):
                     np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def read_output_file(self, prefix, mp_name, thread_id=None):
-        if prefix == "displacement" and self.thermal_bc == "temperature":
+        if prefix == "displacement" and self.thermal_bc == "temperature": # Fluid domain
             mp_name_new = mp_name.replace("out", "in")
             model_part = self.model.get_model_part(mp_name_new)
             data = self.interface_input.get_variable_data(mp_name_new, 'displacement')

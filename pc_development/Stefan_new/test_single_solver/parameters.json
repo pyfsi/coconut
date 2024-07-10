@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 10
+    "number_of_timesteps": 1
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
@@ -11,7 +11,7 @@
     },
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.1,
+      "delta_t": 1,
       "omega": 0.3,
       "save_results": 1,
       "save_restart": 0,
@@ -28,23 +28,9 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.and",
+      "type": "convergence_criteria.iteration_limit",
       "settings": {
-        "criteria_list": [
-          {
-            "type": "convergence_criteria.iteration_limit",
-            "settings": {
-              "maximum": 4
-            }
-          },
-          {
-            "type": "convergence_criteria.relative_norm",
-            "settings": {
-              "tolerance": 1e-2,
-              "order": 2
-            }
-          }
-        ]
+        "maximum": 10
       }
     },
     "solver_wrappers": [
@@ -58,6 +44,7 @@
           "moving_boundary": true,
           "multiphase": false,
           "debug": true,
+          "latent": 179000,
           "ini_condition": 0,
           "thread_names": [
             "boundary"
@@ -77,6 +64,12 @@
             }
           ],
           "interface_output": [
+            {
+              "model_part": "boundary_out_nodes",
+              "variables": [
+                "displacement"
+              ]
+            },
             {
               "model_part": "boundary_out_faces",
               "variables": [
@@ -104,11 +97,18 @@
               "moving_boundary": true,
               "multiphase": false,
               "debug": true,
-              "ini_condition": 299.16,
+              "latent": 179000,
+              "ini_condition": 299.15,
               "thread_names": [
                 "boundary"
               ],
               "interface_input": [
+                {
+                  "model_part": "boundary_in_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
                 {
                   "model_part": "boundary_in_faces",
                   "variables": [
