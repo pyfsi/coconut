@@ -1,0 +1,41 @@
+{
+  "type": "solver_wrappers.fluent.alm_v2023R1",
+  "settings": {
+    "working_directory": "this is changed upon running the test",
+    "case_file": "case_yarn3d.cas.h5",
+    "dimensions": 3,
+    "unsteady": true,
+    "delta_t": 0.0001,
+    "timestep_start": 0,
+    "save_restart": 1,
+    "debug": true,
+    "thread_names": [
+      "yarn"
+    ],
+    "interface_input": [
+      {
+        "model_part": "yarn_coordinate_points",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "yarn_load_points",
+        "variables": [
+          "traction"
+        ]
+      }
+    ],
+    "cores": 4,
+    "fluent_gui": false,
+    "flow_iterations": 200,
+    "save_results": 1,
+    "ALM": {
+      "yarn_diameter": 0.05,
+      "g_eps": 0.033,
+      "n_circ_s": 5
+    }
+  }
+}

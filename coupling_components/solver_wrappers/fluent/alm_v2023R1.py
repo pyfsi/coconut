@@ -1,12 +1,12 @@
-from coconut.coupling_components.solver_wrappers.fluent.alm_fluent import SolverWrapperFluent
+from coconut.coupling_components.solver_wrappers.fluent.alm_fluent import SolverWrapperALMFluent
 from coconut import tools
 
 
 def create(parameters):
-    return SolverWrapperFluent2023R1(parameters)
+    return SolverWrapperALMFluent2023R1(parameters)
 
 
-class SolverWrapperFluent2023R1(SolverWrapperFluent):
+class SolverWrapperALMFluent2023R1(SolverWrapperALMFluent):
     version = '2023R1'
     version_bis = '23.1.0'
 

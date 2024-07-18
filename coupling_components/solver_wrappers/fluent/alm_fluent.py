@@ -8,15 +8,14 @@ import glob
 import subprocess
 import multiprocessing
 import numpy as np
-import hashlib
-import shutil
+from scipy.interpolate import splprep, splev
 
 
 def create(parameters):
-    return SolverWrapperFluent(parameters)
+    return SolverWrapperALMFluent(parameters)
 
 
-class SolverWrapperFluent(SolverWrapper):
+class SolverWrapperALMFluent(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
@@ -56,16 +55,21 @@ class SolverWrapperFluent(SolverWrapper):
         self.save_restart = self.settings['save_restart']
         self.iteration = None
         self.fluent_process = None
+        if len(self.settings['thread_names']) != 1:
+            raise ValueError(f'Found {len(self.settings["thread_names"])} thread names, '
+                             f'but solver supports only 1 object')
         self.thread_ids = {}  # thread IDs corresponding to thread names
-        for thread_name in self.settings['thread_names']:  # not needed for Fluent, but nice to have some overview for the user?
-            self.thread_ids[thread_name] = None
+        # Since threads not physically present, give them custom id's
+        for i, thread_name in enumerate(self.settings['thread_names']):
+            self.thread_ids[thread_name] = i
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.model = None
-        
-        self.alm_settings = self.settings['ALM'] 
-        self.nyarnpoints = self.alm_settings['n_yarn_points']  # this should not be a parameter, but follows from coordinates file
+
+        self.alm_settings = self.settings['ALM']
+        self.nyarnpoints = None
         self.yarn_diameter = self.alm_settings['yarn_diameter']
-        self.g_eps = self.alm_settings['g_eps']
+        self.g_eps = self.alm_settings['g_eps']  # shape parameter of force smearing kernel (2D Gaussian)
+        self.n_circ_s = self.alm_settings.get('n_circ_s', 5)  # # circular sampling points for axial velocity sampling
 
     @tools.time_initialize
     def initialize(self):
@@ -88,6 +92,19 @@ class SolverWrapperFluent(SolverWrapper):
                                                                                         '\n'))
                     outfile.write(line)
 
+        # read in coordinate file to determine number of points in the yarn
+        # format of file: nyarnpoints+1 rows and self.dimensions columns with x-, y- (and z-) coordinates in m;
+        # first row: number of yarn points (nyarnpoints)
+        file_name = join(self.dir_cfd, f'coordinates_timestep0.dat')
+        with open(file_name, 'r') as f:
+            self.nyarnpoints = int(f.readline().strip())
+        data = np.loadtxt(file_name, skiprows=1)
+        if data.shape[1] != self.dimensions:
+            raise ValueError('Given dimension does not match coordinates')
+        if data.shape[0] != self.nyarnpoints:
+            raise ValueError(f'Declared number of points ({self.nyarnpoints}) does not match number of rows '
+                             f'({data.shape[0]})')
+
         # prepare Fluent UDF
         udf = f'alm_v{self.version}.c'
         with open(join(self.dir_src, udf)) as infile:
@@ -96,6 +113,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|NYARNPOINTS|', str(self.nyarnpoints))
                     line = line.replace('|YARN_DIAMETER|', str(self.yarn_diameter))
                     line = line.replace('|G_EPS|', str(self.g_eps))
+                    line = line.replace('|N_CIRC_S|', str(self.n_circ_s))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     outfile.write(line)
 
@@ -121,8 +139,7 @@ class SolverWrapperFluent(SolverWrapper):
             cmd = cmd1 + cmd2 + cmd3
         else:
             cmd = cmd1 + '-gu ' + cmd2 + cmd3
-        self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
-                                               shell=True, cwd=self.dir_cfd, env=self.env)
+        self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from  fluent.log and report.sum
         self.coco_messages.wait_message('case_info_exported')
@@ -159,7 +176,6 @@ class SolverWrapperFluent(SolverWrapper):
         # create Model
         self.model = data_structure.Model()
 
-# Will need two model parts: one for the coordinates and one for the tangent vectors; Do I want the tangent vectors from the structural solver or do I construct them here?
         # create input ModelParts (nodes)
         for item in (self.settings['interface_input']):
             mp_name = item['model_part']
@@ -172,19 +188,12 @@ class SolverWrapperFluent(SolverWrapper):
                 raise AttributeError('Could not find thread name corresponding ' +
                                      f'to ModelPart {mp_name}')
 
-            # read in datafile
-            thread_id = self.model_part_thread_ids[mp_name]
-            file_name = join(self.dir_cfd, f'nodes_timestep0_thread{thread_id}.dat')
-            data = np.loadtxt(file_name, skiprows=1)
-            if data.shape[1] != self.dimensions + 1:
-                raise ValueError('Given dimension does not match coordinates')
-
-            # get node coordinates and ids
+            # get node coordinates and ids (data file is still in memory), assume that nodes are sorted by connectivity
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
-            coords_tmp[:, :self.dimensions] = data[:, :-1]  # add column z if 2D
-            ids_tmp = data[:, -1].astype(int)  # array is flattened
+            coords_tmp[:, :self.dimensions] = data  # add column z if 2D
+            ids_tmp = np.arange(self.nyarnpoints).astype(int)  # create node id's
 
-            # sort and remove doubles
+            # sort and remove doubles (in fact obsolete)
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
             x0 = coords_tmp[args, 0]
             y0 = coords_tmp[args, 1]
@@ -205,19 +214,13 @@ class SolverWrapperFluent(SolverWrapper):
             if mp_name not in self.model_part_thread_ids:
                 raise AttributeError('Could not find thread name corresponding ' +
                                      f'to ModelPart {mp_name}')
-            # read in datafile
-            thread_id = self.model_part_thread_ids[mp_name]
-            file_name = join(self.dir_cfd, f'faces_timestep0_thread{thread_id}.dat')
-            data = np.loadtxt(file_name, skiprows=1)
-            if data.shape[1] != self.dimensions + self.mnpf:
-                raise ValueError(f'Given dimension does not match coordinates')
 
-            # get face coordinates and ids
+            # get node coordinates and ids (data file is still in memory), assume that nodes are sorted by connectivity
             coords_tmp = np.zeros((data.shape[0], 3)) * 0.
-            coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
-            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+            coords_tmp[:, :self.dimensions] = data  # add column z if 2D
+            ids_tmp = np.arange(self.nyarnpoints).astype(int)  # create node id's
 
-            # sort and remove doubles
+            # sort and remove doubles (in fact obsolete)
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
             x0 = coords_tmp[args, 0]
             y0 = coords_tmp[args, 1]
@@ -230,6 +233,14 @@ class SolverWrapperFluent(SolverWrapper):
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
+
+        # write node positions and let Fluent know that ModelParts are created
+        if self.timestep_start == 0:
+            self.write_node_positions()
+        else:  # restart: mandatory to keep last coordinates_update-file
+            if not os.path.exists(join(self.dir_cfd, f'coordinates_update_timestep{self.timestep_start}.dat')):
+                raise FileNotFoundError(f'Could not find file coordinates_update_timestep{self.timestep_start}.dat')
+        self.coco_messages.send_message('model_parts_created')
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -255,8 +266,8 @@ class SolverWrapperFluent(SolverWrapper):
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 thread_id = self.model_part_thread_ids[mp_name]
-                src = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
-                dst = f'nodes_update_timestep{self.timestep}_thread{thread_id}_Iter{self.iteration}.dat'
+                src = f'coordinates_update_timestep{self.timestep}.dat'
+                dst = f'coordinates_update_timestep{self.timestep}_Iter{self.iteration}.dat'
                 cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
@@ -275,29 +286,26 @@ class SolverWrapperFluent(SolverWrapper):
             mp_name = dct['model_part']
 
             # read in datafile
-            thread_id = self.model_part_thread_ids[mp_name]
-            tmp = f'pressure_traction_timestep{self.timestep}_thread{thread_id}.dat'
+            tmp = f'traction_timestep{self.timestep}.dat'
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1)
-            if data.shape[1] != self.dimensions + 1 + self.mnpf:
+            if data.shape[1] != self.dimensions + 1:
                 raise ValueError('Given dimension does not match coordinates')
 
             # copy output data for debugging
             if self.debug:
-                dst = f'pressure_traction_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
+                dst = f'traction_timestep{self.timestep}_it{self.iteration}.dat'
                 cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
-            pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
-            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
+            traction_tmp[:, :self.dimensions] = data[:, :-1]
+            ids_tmp = data[:, -1]
 
             # sort and remove doubles
             args = np.unique(ids_tmp, return_index=True)[1].tolist()
             traction = traction_tmp[args, :]
-            pressure = pressure_tmp[args]
             ids = ids_tmp[args]
 
             # store pressure and traction in Nodes
@@ -308,7 +316,6 @@ class SolverWrapperFluent(SolverWrapper):
                 raise ValueError('IDs of data do not match ModelPart IDs')
 
             self.interface_output.set_variable_data(mp_name, 'traction', traction)
-            self.interface_output.set_variable_data(mp_name, 'pressure', pressure)
 
         # return interface_output object
         return self.interface_output
@@ -342,10 +349,13 @@ class SolverWrapperFluent(SolverWrapper):
                         os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
                     except OSError:
                         continue
+                try:
+                    os.remove(join(self.dir_cfd, f'coordinates_update_timestep{self.timestep + self.save_restart}.dat'))
+                except OSError:
+                    pass
 
     def finalize(self):
         super().finalize()
-        shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
         self.coco_messages.send_message('stop')
         self.coco_messages.wait_message('stop_ready')
         self.fluent_process.wait()
@@ -359,12 +369,10 @@ class SolverWrapperFluent(SolverWrapper):
 
     def remove_dat_files(self, timestep):
         if not self.debug:
-            for thread_id in self.thread_ids.values():
-                try:
-                    os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
-                    os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
-                except OSError:
-                    pass
+            try:
+                os.remove(join(self.dir_cfd, f'traction_timestep{timestep}.dat'))
+            except OSError:
+                pass
 
     def check_software(self):
         # Fluent version: see set_fluent_version
@@ -373,49 +381,28 @@ class SolverWrapperFluent(SolverWrapper):
             raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required. Check if '
                                f'the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
-    # noinspection PyMethodMayBeStatic
-    def get_unique_face_ids(self, data):
-        """
-        Construct unique face IDs based on the face's node IDs.
-
-        Parameter data contains a 2D ndarray of node IDs.
-        Each row corresponds to the unique node IDs corresponding
-        to a certain face, supplemented with -1-values.
-        The row is sorted, the -1-values are removed, and then a
-        string is made by adding the unique node IDs together.
-            e.g. for a row [5, 9, 7, -1, -1]
-                 the face ID is "5-7-9"
-
-        # *** NEW: as we need integer IDs, the string is hashed and shortened
-        """
-        data = data.astype(int)
-        # ids = np.zeros(data.shape[0], dtype='U256')  # array is flattened
-        ids = np.zeros(data.shape[0], dtype=int)
-        for i in range(ids.size):
-            tmp = np.unique(data[i, :])
-            if tmp[0] == -1:
-                tmp = tmp[1:]
-            unique_string = '-'.join(tuple(tmp.astype(str)))
-            hash_id = hashlib.sha1(str.encode(unique_string))
-            ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
-        return ids
-
     def write_node_positions(self):
         for dct in self.interface_input.parameters:
             mp_name = dct['model_part']
-            thread_id = self.model_part_thread_ids[mp_name]
             model_part = self.model.get_model_part(mp_name)
-            displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
-            x = model_part.x0 + displacement[:, 0]
-            y = model_part.y0 + displacement[:, 1]
-            z = model_part.z0 + displacement[:, 2]
-            if self.dimensions == 2:
-                data = np.rec.fromarrays([x, y, model_part.id])
-                fmt = '%27.17e%27.17e%27d'
+            if self.timestep == 0:
+                x = model_part.x0
+                y = model_part.y0
+                z = model_part.z0
             else:
-                data = np.rec.fromarrays([x, y, z, model_part.id])
-                fmt = '%27.17e%27.17e%27.17e%27d'
-            tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+                x = model_part.x0 + displacement[:, 0]
+                y = model_part.y0 + displacement[:, 1]
+                z = model_part.z0 + displacement[:, 2]
+            tck_u = splprep([x, y, z], s=0, k=3)
+            t = np.array(splev(tck_u[1], tck_u[0], der=1)).T
+            if self.dimensions == 2:
+                data = np.rec.fromarrays([x, y, t[:, 0], t[:, 1]])
+                fmt = '%27.17e%27.17e%27.17e%27.17e'
+            else:
+                data = np.rec.fromarrays([x, y, z, t[:, 0], t[:, 1], t[:, 2]])
+                fmt = '%27.17e%27.17e%27.17e%27.17e%27.17e%27.17e'
+            tmp = f'coordinates_update_timestep{self.timestep}.dat'
             file_name = join(self.dir_cfd, tmp)
             np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
@@ -440,10 +427,9 @@ class SolverWrapperFluent(SolverWrapper):
         for dct in self.interface_input.parameters:
             mp_name = dct['model_part']
             coord_data[mp_name] = {}
-            thread_id = self.model_part_thread_ids[mp_name]
 
             # read in datafile
-            tmp = f'nodes_timestep{self.timestep}_thread{thread_id}.dat'
+            tmp = f'nodes_timestep{self.timestep}.dat'
             data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
             if data.shape[1] != self.dimensions + 1:
                 raise ValueError('Given dimension does not match coordinates')
@@ -458,27 +444,7 @@ class SolverWrapperFluent(SolverWrapper):
             coord_data[mp_name]['ids'] = ids_tmp[args]
             coord_data[mp_name]['coords'] = coords_tmp[args, :]
 
-        # update coordinates for output ModelParts (faces)
-        for dct in self.interface_output.parameters:
-            mp_name = dct['model_part']
-            coord_data[mp_name] = {}
-            thread_id = self.model_part_thread_ids[mp_name]
-
-            # read in datafile
-            tmp = f'faces_timestep{self.timestep}_thread{thread_id}.dat'
-            data = np.loadtxt(join(self.dir_cfd, tmp), skiprows=1)
-            if data.shape[1] != self.dimensions + self.mnpf:
-                raise ValueError(f'Given dimension does not match coordinates')
-
-            # get face coordinates and ids
-            coords_tmp = np.zeros((data.shape[0], 3)) * 0.
-            coords_tmp[:, :self.dimensions] = data[:, :-self.mnpf]  # add column z if 2D
-            ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
-
-            # sort and remove doubles
-            args = np.unique(ids_tmp, return_index=True)[1].tolist()
-            coord_data[mp_name]['ids'] = ids_tmp[args]
-            coord_data[mp_name]['coords'] = coords_tmp[args, :]
+        # no ids and coordinates for output ModelParts as this has by definition the same coordinates as the input MPs
 
         return coord_data
 

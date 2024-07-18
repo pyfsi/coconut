@@ -68,10 +68,18 @@ report summary y "report.sum"
     (begin
         (ti-menu-load-string "define user-defined function-hooks adjust \"set_source::v2023R1\"")
         ; !!! The number of sources changes when other turbulence models are used! (The following line works for the 2-eqn models). This makes everything very case-specific!
-        ; Additionally, the default value for fluid-zone is chosen, sort of prohibiting the use of multiple fluid zones.
-        (ti-menu-load-string "define boundary-conditions fluid , no yes 0 1 no yes \"xmom_source::v2023R1\" 1 no yes \"ymom_source::v2023R1\" 1 no yes \"zmom_source::v2023R1\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no")
+        ; Additionally, it is now mandatory that the fluid zone where the sources are defined is called "fluid"
+        (ti-menu-load-string "define boundary-conditions fluid fluid no yes 0 1 no yes \"xmom_source::v2023R1\" 1 no yes \"ymom_source::v2023R1\" 1 no yes \"zmom_source::v2023R1\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no")
+        (ti-menu-load-string "solve report-definitions add f_x volume-integral report-type volume-integral field udm-1 zone-names fluid () average-over 1 per-zone? no quit")
+        (ti-menu-load-string "solve report-definitions add f_y volume-integral report-type volume-integral field udm-2 zone-names fluid () average-over 1 per-zone? no quit")
+        (ti-menu-load-string "solve report-definitions add f_z volume-integral report-type volume-integral field udm-3 zone-names fluid () average-over 1 per-zone? no quit")
+        (ti-menu-load-string "solve report-files add report_coconut active? yes file-name \"./report-coconut.out\" frequency 1 frequency-of iteration name \"report_coconut\" print? yes report-defs f_x f_y f_z () write-instantaneous-values? yes quit")
     )
 )
+;
+;   READ COORDINATES
+(wait_message "model_parts_created")
+(ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::v2023R1\"")
 ;
 ;   SET DELTA_T
 (if unsteady
@@ -90,6 +98,7 @@ report summary y "report.sum"
     (if (check_message "next")
         (begin
             |END_OF_TIMESTEP_COMMANDS|
+            (ti-menu-load-string "define user-defined execute-on-demand \"increase_time::v2023R1\"")
             (rpsetvar 'udf/iteration 0)
             (rpsetvar 'udf/timestep (+ (%rpgetvar 'udf/timestep) 1))
             (print-iter-info)
@@ -99,6 +108,7 @@ report summary y "report.sum"
     (if (check_message "continue")
         (begin
             (rpsetvar 'udf/iteration (+ (%rpgetvar 'udf/iteration) 1))
+            (ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::v2023R1\"")
             (print-iter-info)
             (if check_coupling_convergence
                 (begin
@@ -138,7 +148,6 @@ report summary y "report.sum"
                             )
                         )
                         (begin
-                            (ti-menu-load-string "solve mesh-motion y")
                             (ti-menu-load-string "solve iterate 1")
                             (if (%rpgetvar 'solution/converged?)
                                 (begin
@@ -169,13 +178,12 @@ report summary y "report.sum"
                             )
                         )
                         (begin
-                            (ti-menu-load-string "solve mesh-motion y")
                             (ti-menu-load-string "solve iterate flow_iterations")
                         )
                     )
                 )
             )
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::v2023R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_traction::v2023R1\"")
             (send_message "continue_ready")
         )
     )

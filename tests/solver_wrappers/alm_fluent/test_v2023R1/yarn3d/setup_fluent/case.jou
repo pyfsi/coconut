@@ -1,0 +1,47 @@
+file/set-batch-options no yes no
+(enable-dynamic-mesh-node-ids #t)
+file/read-case/mesh_yarn3d.msh
+
+; boundary and materials settings for background
+/define/models/energy? yes no no no yes
+/define/materials/change-create air air yes ideal-gas no no no no no no
+/define/models/viscous/turb-compressibility? yes
+(rpsetvar 'kw-mt0 0.1)
+define/models/viscous/kw-sst yes
+/define/boundary-conditions/velocity-inlet inlet no no yes yes no 10 no 0 no 300 no no yes 5 10
+/define/boundary-conditions/pressure-outlet outlet yes no 0 no 300 no yes no no yes 5 10 yes no no no
+/define/operating-conditions/operating-pressure 100000
+/define/operating-conditions/gravity no
+
+; set discretization schemes
+/define/models/unsteady-1st-order? yes
+/define/models/solver/pressure-based yes
+/solve/set/expert no yes no no
+/solve/set/p-v-coupling 22
+/solve/set/p-v-controls 1 1 y
+/solve/set/gradient-scheme no yes
+/solve/set/discretization-scheme/density 0
+/solve/set/discretization-scheme/k 0
+/solve/set/discretization-scheme/omega 0
+/solve/set/discretization-scheme/temperature 0
+/solve/set/discretization-scheme/mom 0
+/solve/set/discretization-scheme/pressure 11
+/solve/set/flux-type no 0
+
+; set residual monitors
+/solve/monitors/residual/convergence-criteria 1e-09 1e-09 1e-09 1e-09 1e-09 1e-09 1e-09
+/solve/monitors/residual/monitor? yes yes yes yes yes yes yes
+/solve/monitors/residual/plot? yes
+/solve/monitors/residual/print? yes
+
+; initialize case
+/solve/initialize/compute-defaults/velocity-inlet inlet
+/solve/initialize/set-defaults pressure 0
+/solve/initialize/set-defaults x-velocity 10
+/solve/initialize/set-defaults y-velocity 0
+/solve/initialize/set-defaults z-velocity 0
+/solve/initialize/initialize-flow
+
+; save case and data and exit
+/file/write-case-data case_yarn3d.cas.h5
+exit

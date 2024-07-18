@@ -31,8 +31,7 @@ real c_moment[6];
 #define NYARNPOINTS |NYARNPOINTS|
 #define YARN_DIAMETER |YARN_DIAMETER|
 #define G_EPS |G_EPS|
-#define OMEGA 1.0  // Relaxation factor for yarn forces (hard-coded for now)
-#define N_CIRC_S 5  // Number of circumferential sampling points (hard-coded for now)
+#define N_CIRC_S |N_CIRC_S|
 #define DELTA_T |DELTA_T|
 
 typedef struct yarn_point_struct {
@@ -56,7 +55,6 @@ real yarn_coordinates_old[NYARNPOINTS][ND_ND];
 real yarn_tangent[NYARNPOINTS][ND_ND];
 real yarn_velocities[NYARNPOINTS][ND_ND];
 real yarn_forces[NYARNPOINTS][ND_ND];
-real yarn_forces_old[NYARNPOINTS][ND_ND];
 
 real local_theta[NYARNPOINTS];
 real sample_coordinates[NYARNPOINTS][N_CIRC_S+1][ND_ND];
@@ -66,6 +64,12 @@ real norm_factor;
 
 int timestep = 0;
 
+
+  /*------------------*/
+ /* helper_functions */
+/*------------------*/
+
+
 void read_yarn_points(char file_name[256])
 {
     int n_points;
@@ -74,7 +78,18 @@ void read_yarn_points(char file_name[256])
     FILE *input;
     int point, d;
 
-    input = fopen(file_name, "r");
+    if (NULLP(input = fopen(file_name, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name);
+        exit(1);
+    }
+
+    fscanf(input, "%i", &n_points);
+    if (NYARNPOINTS != n_points)
+    {
+        Error("UDF-error: Number of nodes (%i) not as expected (%i)\n", n_points, NYARNPOINTS);
+        exit(1);
+    }
+
     for (point = 0; point < NYARNPOINTS; point++)
     {
         for (d=0; d<2*ND_ND; d++)
@@ -144,11 +159,6 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
 
 void set_yarn_velocities()
 {
-#if RP_HOST
-    timestep = RP_Get_Integer("udf/timestep");
-#endif /* RP_HOST */
-    host_to_node_int_1(timestep);
-
 #if RP_NODE
     int point;
     if (timestep == 0)
@@ -547,7 +557,11 @@ void calculate_yarn_forces()
 }
 
 
-/* Write the forces on the yarn nodes */
+  /*----------------*/
+ /* store_traction */
+/*----------------*/
+
+
 DEFINE_ON_DEMAND(store_traction)
 {
 	/* Send coordinates from compute node 0 */
@@ -557,42 +571,51 @@ DEFINE_ON_DEMAND(store_traction)
 	/* Write coordinates on host */
 #if RP_HOST
 	int point, d;
-	real velocities[ND_ND];
     timestep = RP_Get_Integer("udf/timestep");
 	char output_file_name[256];
 	FILE *output;
 
 	sprintf(output_file_name, "traction_timestep%i.dat", timestep);
-
-	output = fopen(output_file_name, "w");
-	fprintf(output, "x-force y-force z-force\n");
-
-	for (point = 0; point < NYARNPOINTS; point++)
-		fprintf(output, "%27.17E\t%27.17E\t%27.17E\n", NV_LIST(yarn_forces[point]));
-
-	Message("\nUDF-message: Forces at %i nodes written\n", NYARNPOINTS);
+	if (NULLP(output = fopen(output_file_name, "w"))) {
+        Error("\nUDF-error: Unable to open %s for writing\n", output_file_name);
+        exit(1);
+    }
+    fprintf(output, "%27s %27s %27s  %10s\n","x-force [N/m]", "y-force [N/m]", "z-force [N/m]", "unique-ids");
+	for (point = 0; point < NYARNPOINTS; point++){
+	    for (d = 0; d < ND_ND; d++) {
+	        fprintf(output, "%27.17e ", yarn_forces[point][d]);
+	    }
+		fprintf(output, " %10d\n", point);
+	}
 	fclose(output);
 
 	sprintf(output_file_name, "air_values_timestep%i.dat", timestep);
-
-	output = fopen(output_file_name, "w");
-	fprintf(output, "v_x v_y v_z\n");
-
+	if (NULLP(output = fopen(output_file_name, "w"))) {
+        Error("\nUDF-error: Unable to open %s for writing\n", output_file_name);
+        exit(1);
+    }
+    fprintf(output, "%27s %27s %27s  %10s\n","x-velocity [m/s]", "y-velocity [m/s]", "z-velocity [m/s]", "unique-ids");
 	for (point = 0; point < NYARNPOINTS; point++)
 	{
 	    for (d = 0; d < ND_ND; d++)
 	    {
-		    velocities[d] = air_values[point][SCALAR_U+d];
+		    fprintf(output, "%27.17e ", air_values[point][SCALAR_U+d]);
 	    }
-		fprintf(output, "%27.17E\t%27.17E\t%27.17E\n", NV_LIST(velocities));
+		fprintf(output, " %10d\n", point);
 	}
-
-	Message("\nUDF-message: Relative flow velocities at %i nodes written\n", NYARNPOINTS);
 	fclose(output);
 #endif /* RP_HOST */
+
+    if (myid == 0) {printf("\nFinished UDF store_traction\n"); fflush(stdout);}
+
 }
 
-/* Calculate momentum source terms and store in UDMI */
+
+  /*-------------*/
+ /* set_sources */
+/*-------------*/
+
+
 DEFINE_ADJUST(set_source, domain)
 {
 #if RP_NODE
@@ -602,22 +625,11 @@ DEFINE_ADJUST(set_source, domain)
     real centroid[ND_ND], r[ND_ND], r_n[ND_ND], t[ND_ND], yt[ND_ND], yt_n[ND_ND], dist[ND_ND], force[ND_ND];
     real g, l_elem, p_s, p_n;
 
-    /* Store previous yarn forces */
-    for (point = 0; point < NYARNPOINTS; point ++)
-    {
-        NV_V(yarn_forces_old[point], =, yarn_forces[point]);
-    }
-
     /* Calculate new yarn forces */
     calculate_air_velocity_density_yarn_orientation();
     calculate_yarn_forces();
 
-    /* Relax yarn forces */
-    for (point = 0; point < NYARNPOINTS; point ++)
-    {
-        NV_VS_VS(yarn_forces[point], =, yarn_forces[point], *, OMEGA, +, yarn_forces_old[point], *, (1-OMEGA));
-    }
-
+    /* Calculate momentum sources and store in UDM's */
     thread_loop_c(cell_thread, domain)
     {
         begin_c_loop_int(cell, cell_thread)
@@ -692,7 +704,6 @@ DEFINE_ADJUST(set_source, domain)
 #endif /* RP_NODE */
 }
 
-/* Set the momentum sources */
 DEFINE_SOURCE(xmom_source, cell, cell_thread, dS, eqn)
 {
 	real source;
@@ -722,44 +733,29 @@ DEFINE_SOURCE(zmom_source, cell, cell_thread, dS, eqn)
 }
 #endif /* RP_3D */
 
-/* Read yarn coordinates and locate them in the fluid domain */
+
+  /*------------------*/
+ /* read_coordinates */
+/*------------------*/
+
+
 DEFINE_ON_DEMAND(read_coordinates)
 {
-
 #if RP_HOST
     timestep = RP_Get_Integer("udf/timestep");
 #endif /* RP_HOST */
     host_to_node_int_1(timestep);
-    
-    /* Initialize yarn forces, increase time */
-    int point;
-    for (point = 0; point < NYARNPOINTS; point++){
-        if (timestep == 0)
-        {
-            NV_S(yarn_forces_old[point], =, 0.); 
-        }
-        else
-        {
-/* I don't think this is good practice... I only want to transfer them to the old values if the timestep changes, 
-which is not the case between coupling iterations (where I still need to read in new positions). So get back to the "increase_time"-function?
-Also: get rid of relaxation as this can be selected in the coupling algorithm.
-*/
-            NV_V(yarn_coordinates_old[point], =, yarn_coordinates[point]);  
-            NV_V(yarn_forces_old[point], =, yarn_forces[point]);
-        }
-        NV_S(yarn_forces[point], =, 0.);
-    }
 
     /* Read yarn coordinates, find in domain, set yarn velocities */
     char filename[256];
-    sprintf(filename, "coordinates_timestep%i.dat", timestep);
+    sprintf(filename, "coordinates_update_timestep%i.dat", timestep);
     read_yarn_points(filename);
     find_cell_at_yarn_points(yarn_points, yarn_coordinates);
     set_yarn_velocities();
   
-/*#if RP_NODE
+//#if RP_NODE
     /* Calculate cell size at actuator points */
-    for (point = 0; point < NYARNPOINTS; point ++)
+/*    for (point = 0; point < NYARNPOINTS; point ++)
     {
         if ((yarn_points[point].found) && (myid == yarn_points[point].highest_partition))
         {
@@ -769,7 +765,72 @@ Also: get rid of relaxation as this can be selected in the coupling algorithm.
             printf("Point %i; coordinates [%10.5e, %10.5e, %10.5e]; cell centroid [%10.5e, %10.5e, %10.5e]; cell size %10.5e; epsilon/dh %10.5e \n", point, NV_LIST(yarn_coordinates[point]), NV_LIST(centroid), pow(C_VOLUME(cell, cell_thread), 1./3.), G_EPS/pow(C_VOLUME(cell, cell_thread), 1./3.));
             fflush(stdout);
         }
+    }*/
+//#endif /* RP_NODE */
+
+    if (myid == 0) {printf("\nFinished UDF read_coordinates\n"); fflush(stdout);}
+}
+
+
+  /*---------------*/
+ /* increase_time */
+/*---------------*/
+
+
+DEFINE_ON_DEMAND(increase_time)
+{
+/* Update yarn coordinates from the previous timestep before progressing to the new timestep */
+#if RP_NODE
+    int point;
+    for (point = 0; point < NYARNPOINTS; point++)
+    {
+        NV_V(yarn_coordinates_old[point], =, yarn_coordinates[point]);
     }
-#endif /* RP_NODE */ 
-*/
+#endif /* RP_NODE */
+
+    /* Send coordinates from compute node 0 */
+	node_to_host_real(&yarn_coordinates_old[0][0], NYARNPOINTS*ND_ND);
+
+    if (myid == 0) {printf("\nFinished UDF increase_time\n"); fflush(stdout);}
+}
+
+
+  /*----------------------*/
+ /* store_coordinates_id */
+/*----------------------*/
+
+DEFINE_ON_DEMAND(store_coordinates_id)
+{
+	/* Write coordinates and node id's on host */
+#if RP_HOST
+	int point, d;
+    timestep = RP_Get_Integer("udf/timestep");
+	char output_file_name[256];
+	FILE *output;
+
+	sprintf(output_file_name, "nodes_timestep%i.dat", timestep);
+
+	if (NULLP(output = fopen(output_file_name, "w"))) {
+        Error("\nUDF-error: Unable to open %s for writing\n", output_file_name);
+        exit(1);
+    }
+
+#if RP_2D
+	fprintf(output,  "%27s %27s  %10s\n", "x-coordinate", "y-coordinate", "unique-ids");
+#else /* RP_2D */
+	fprintf(output,  "%27s %27s %27s  %10s\n", "x-coordinate", "y-coordinate", "z-coordinate", "unique-ids");
+#endif /* RP_2D */
+
+	for (point = 0; point < NYARNPOINTS; point++)
+	{
+	    for (d = 0; d < ND_ND; d++)
+	    {
+                    fprintf(output, "%27.17e ", yarn_coordinates[point][d]);
+        }
+        fprintf(output, "%10d\n", point);
+	}
+	fclose(output);
+#endif /* RP_HOST */
+
+	if (myid == 0) {printf("\nFinished UDF store_coordinates_id\n"); fflush(stdout);}
 }
