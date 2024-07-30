@@ -65,9 +65,11 @@ for (_d = 0; _d < dim; _d++) {                                      \
 
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
-#define dt |TIME_STEP_SIZE|
-#define LH |LATENT_HEAT|
+real dt = |TIME_STEP_SIZE|;
+real LH = |LATENT_HEAT|;
+real TM = |MELT_TEMP|;
 bool unsteady = |UNSTEADY|;
+bool fluid = |FLUID|;
 int _d; /* don't use in UDFs! (overwritten by functions above) */
 int n_threads;
 DECLARE_MEMORY(thread_ids, int);
@@ -1374,9 +1376,6 @@ DEFINE_ON_DEMAND(calc_volume_change)
         {
             zero_vol = false;
             if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
-                if (myid == 0) {printf("\nC_OLD_VOLUME = %lf\n", C_OLD_VOLUME(cell,cell_thread,dt)); fflush(stdout);}
-                if (myid == 0) {printf("\nC_VOLUME = %lf\n", C_VOLUME(cell,cell_thread)); fflush(stdout);}
-
                 vertices[0][0] = C_UDMI(cell,cell_thread,PR_1_X);
                 vertices[0][1] = C_UDMI(cell,cell_thread,PR_2_X);
                 vertices[0][2] = C_UDMI(cell,cell_thread,NEW_1_X);
@@ -1462,7 +1461,7 @@ DEFINE_ON_DEMAND(write_displacement) {
     face_t face;
     Node *node;
     int face_number, node_number, j;
-    real heat, vel, src, ds, A_by_es;
+    real heat, vel, src, ds, A_by_es, test;
     real normal[ND_ND], area[ND_ND], A[ND_ND], es[ND_ND], dr0[ND_ND], dr1[ND_ND], avg_flux[ND_ND], v0[ND_ND];
 #endif /* RP_NODE */
     
@@ -1513,13 +1512,21 @@ DEFINE_ON_DEMAND(write_displacement) {
                 if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
                     if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
                     heat = 0;
+
+                    /* Allocates memory for gradient and reconstruction gradient macros */
+                    Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
+                    /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
+                    Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
+                    Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL);
+
                     c_face_loop(cell,cell_thread,face_number)
                     {
                         face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
                         face = C_FACE(cell,cell_thread,face_number);
                         if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) { // for cell faces at coupling interface
                             /* direction, node ids, flux */
-                            heat += BOUNDARY_HEAT_FLUX(face, face_thread);
+                            printf("\nBOUNDARY_HEAT_FLUX = %lf W\n", BOUNDARY_HEAT_FLUX(face, face_thread));
+                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // heat in W
                             F_AREA(area, face, face_thread);
                             NV_VS(normal, =, area, *, 1.0 / NV_MAG(area));
 
@@ -1537,25 +1544,28 @@ DEFINE_ON_DEMAND(write_displacement) {
                             if (F_C1(face, face_thread) != -1) {
                                 NV_VS_VS(avg_flux, =, C_T_RG(cell,cell_thread), *, 0.5, +, C_T_RG(F_C1(face, face_thread),F_C1_THREAD(face, face_thread)), *, 0.5);
                                 NV_VS(v0, =, es, *, A_by_es);
-                                /* Only itf flux counted in this stage */
-                                ;heat += C_K_L(cell,cell_thread)*(C_T(F_C1(face, face_thread),F_C1_THREAD(face, face_thread))-C_T(cell,cell_thread))*A_by_es/ds + C_K_L(cell,cell_thread)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
+                                // test = C_K_L(cell,cell_thread)*(C_T(F_C1(face, face_thread),F_C1_THREAD(face, face_thread))-C_T(cell,cell_thread))*A_by_es/ds + C_K_L(cell,cell_thread)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
+                                // printf("\nINTERIOR_HEAT_FLUX = %lf W\n", test);
+                                heat += C_K_L(cell,cell_thread)*(C_T(F_C1(face, face_thread),F_C1_THREAD(face, face_thread))-C_T(cell,cell_thread))*A_by_es/ds + C_K_L(cell,cell_thread)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
                             }
                         }
                     }
 
-                    ;heat = C_R(cell,cell_thread)*C_VOLUME(cell,cell_thread)*(C_H(cell,cell_thread)-C_UDMI(cell,cell_thread,PR_H))/dt;
+                    // heat = C_R(cell,cell_thread)*C_VOLUME(cell,cell_thread)*(C_H(cell,cell_thread)-C_UDMI(cell,cell_thread,PR_H))/dt;
                     src = C_R(cell,cell_thread)*LH*C_UDMI(cell,cell_thread,D_VOL)/dt;
-                    heat += src;
-
-                    ;printf("\nTemp. gradient = %f W\n", C_T_G(cell,cell_thread));
-                    ;printf("\nTemp. recon. gradient = %f W\n", C_T_RG(cell,cell_thread));
+                    printf("\nSource = %lf W\n", src);
+                    // heat += src;
 
                     vel = heat/(NV_MAG(area)*LH*C_R(cell,cell_thread)); // absolute velocity of interface at cell level
                     j = 0;
                     for (j = 0; j < ND_ND; j++) {
                         disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
+                        printf("\ndisp[%d][%d] = %lf m\n", j, i, disp[j][i]);
                     }
                     i ++;
+
+                    /* Free memory of reconstruction gradients and gradients */
+                    Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                 }
             } end_c_loop(c,cell_thread)
         }
@@ -1649,7 +1659,6 @@ DEFINE_ON_DEMAND(write_displacement) {
 
 DEFINE_ON_DEMAND(update_cell_enthalpy)
 {
-/* Currently not used */
 
 #if RP_NODE
     Domain *d;
@@ -1696,7 +1705,7 @@ return source;
 
 DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
-/*Source term for energy equation, to include latent heat.*/
+/*Source term for energy equation, to account for latent and sensible heat.*/
 real source;
 real sign;
 
@@ -1706,7 +1715,26 @@ if ((C_VOLUME(c,t) - C_OLD_VOLUME(c,t,dt)) >= 0.0) {
     sign = -1.0;
 }
 
-source = sign*C_R(c,t)*LH*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-dS[eqn] = 0.0;
+if (C_UDMI(c,t,ADJ) == 1.0) {
+    if (fluid) {
+        /* This definition is only valid for fluid during melting! */
+        if (myid == 0) {printf("\nC_H(c,t) = %lf\n", C_H(c,t)); fflush(stdout);}
+        if (myid == 0) {printf("\nC_UDMI(c,t,PR_H) = %lf\n", C_UDMI(c,t,PR_H)); fflush(stdout);}
+        if (myid == 0) {printf("\nC_UDMI(c,t,D_VOL) = %lf\n", C_UDMI(c,t,D_VOL)); fflush(stdout);}
+        if (myid == 0) {printf("\nC_VOLUME(c,t) = %lf/1000\n", (C_VOLUME(c,t)*1000.0)); fflush(stdout);}
+        // source = (-sign*C_R(c,t)*(C_UDMI(c,t,PR_H) - C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+        source = (sign*C_R(c,t)*(C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+        if (myid == 0) {printf("\nsource = %lf\n", source); fflush(stdout);}
+        dS[eqn] = 0.0;
+    } else {
+        /* This definition is only valid for solid during melting! */
+        source = sign*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+        dS[eqn] = 0.0;
+    }
+} else {
+    source = 0.0;
+    dS[eqn] = 0.0;
+}
+
 return source;
 }
