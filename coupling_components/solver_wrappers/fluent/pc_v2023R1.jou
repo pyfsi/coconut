@@ -53,8 +53,8 @@ file set-batch-options n n n
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
         (if multiphase
-            (ti-menu-load-string "solve set expert y n y n y")
-            (ti-menu-load-string "solve set expert n y n y")
+            (ti-menu-load-string "solve set expert y n y y y")
+            (ti-menu-load-string "solve set expert n y y y")
         )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
@@ -77,21 +77,21 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 (if (= timestep_start 0)
     (begin
         (if unsteady
-            (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
+            (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no no no\n") ; 4th: Enable Implicit Update? No
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (if moving_boundary
-                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
+                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; ; Option after UDF: exclude mesh motion in boundary conditions? yes
                 (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary , constant 0 no\n"(list-ref face_threads k))) ; in case the interface is stationary
             )
         )
-        (if unsteady
-            (begin
-                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")
-                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1\n")
-                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1\n")
-            )
-        )
+        ;(if unsteady
+        ;    (begin
+        ;        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")
+        ;        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1\n")
+        ;        (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1\n")
+        ;    )
+        ;)
     )
 )
 ;
@@ -108,7 +108,8 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     (begin
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
-        (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; temp. BC -> liquid
+        (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
+        ; (ti-menu-load-string "define boundary-conditions fluid , n y 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n")
         ; (if (= thermal_bc 0) ; Omit source terms for now!
         ;    (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; temp. BC -> liquid
         ;    (ti-menu-load-string "define boundary-conditions fluid , n y 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; heat flux BC -> solid
@@ -117,18 +118,18 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 )
 ;
 ;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS
-(if (= timestep_start 0)
-    (begin
-        (if (= thermal_bc 0)
-            (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_temperature::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
-            )
-            (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k)))
-            )
-        )
-    )
-)
+;(if (= timestep_start 0)
+;    (begin
+;        (if (= thermal_bc 0)
+;            (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
+;                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_temperature::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
+;            )
+;            (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
+;                (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no no yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k)))
+;            )
+;        )
+;    )
+;)
 ;
 ;   SET DELTA_T
 (if unsteady
@@ -165,7 +166,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                             (begin
                                 (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
                                 (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
-                                ;(ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"") ; Currently not used
+                                (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
                             )
                         )
                         (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
@@ -176,6 +177,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                             (begin
                                 (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
                                 (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
+                                (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
                             )
                         )
                         (ti-menu-load-string "solve iterate 1")

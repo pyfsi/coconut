@@ -1,16 +1,16 @@
 {
   "settings": {
-    "number_of_timesteps": 5
+    "number_of_timesteps": 1
   },
   "coupled_solver": {
     "type": "coupled_solvers.relaxation",
     "settings": {
       "timestep_start": 0,
       "delta_t": 1,
-      "omega": 0.3,
+      "omega": 0.2,
       "save_results": 1,
       "save_restart": 0,
-      "debug": false,
+      "debug": true,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -23,9 +23,23 @@
       "type": "predictors.linear"
     },
     "convergence_criterion": {
-      "type": "convergence_criteria.iteration_limit",
+      "type": "convergence_criteria.or",
       "settings": {
-        "maximum": 10
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 10
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-10,
+              "order": 2
+            }
+          }
+        ]
       }
     },
     "solver_wrappers": [

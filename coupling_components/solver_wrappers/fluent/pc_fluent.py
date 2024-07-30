@@ -60,6 +60,9 @@ class SolverWrapperFluent(SolverWrapper):
         self.latent_heat = self.settings.get('latent', None)  # NEW variable in json file
         if self.latent_heat is None:
             raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
+        self.melt_temp = self.settings.get('melt_temp', None)  # NEW variable in json file
+        if self.melt_temp is None:
+            raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
         self.dimensions = self.settings['dimensions']
         self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
@@ -161,7 +164,9 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     line = line.replace('|LATENT_HEAT|', str(self.latent_heat))
+                    line = line.replace('|MELT_TEMP|', str(self.melt_temp))
                     line = line.replace('|UNSTEADY|', 'true' if self.unsteady else 'false')
+                    line = line.replace('|FLUID|', 'true' if self.thermal_bc == "temperature" else 'false')
                     outfile.write(line)
 
         # check number of cores
@@ -412,6 +417,9 @@ class SolverWrapperFluent(SolverWrapper):
         mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
         self.mapper_f2n = tools.create_instance(mapper_settings)
         self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
+        # create, initialize and query node to face (n2f) displacement mapper
+        self.mapper_n2f = tools.create_instance(mapper_settings)
+        self.mapper_n2f.initialize(self.interface_input, self.interface_internal)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -429,6 +437,13 @@ class SolverWrapperFluent(SolverWrapper):
         # process input interface data
         # store incoming variables
         self.interface_input.set_interface_data(interface_input.get_interface_data())
+        #print("\nself.interface_input.get_interface_data():\n")
+        #print(self.interface_input.get_interface_data())
+
+        if self.thermal_bc == "heat_flux":
+            # map input node displacement to face displacement
+            self.mapper_n2f.map_n2f(self.interface_input, self.interface_internal)
+
         for var in self.input_variables:
             # write interface input data
             self.write_input_to_file(var)
@@ -498,7 +513,8 @@ class SolverWrapperFluent(SolverWrapper):
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
-                        if var == 'displacement' and self.thermal_bc == "temperature":
+                        if var == 'displacement': # and self.thermal_bc == "temperature":
+                            print("Warning! Function overruled to avoid bugs during test_single solver (line 517)")
                             # get node coordinates and ids
                             vector = data[:, :3]
                             ids = data[:,-1]
@@ -513,7 +529,7 @@ class SolverWrapperFluent(SolverWrapper):
                             vector = vector_tmp[args, :]
                             ids = ids_tmp[args]
 
-                        if var == 'displacement' and self.thermal_bc == "heat_flux":
+                        if False: # var == 'displacement' and self.thermal_bc == "heat_flux":
                             if "nodes" not in mp_name:
                                 raise ValueError('Model part must be node-based for the displacement variable')
 
@@ -561,6 +577,8 @@ class SolverWrapperFluent(SolverWrapper):
                         self.interface_output.set_variable_data(mp_name, var, scalar)
 
         # return interface_output object
+        #print("\nself.interface_output.get_interface_data():\n")
+        #print(self.interface_output.get_interface_data())
         return self.interface_output
 
     def finalize_solution_step(self):
@@ -737,13 +755,19 @@ class SolverWrapperFluent(SolverWrapper):
             model_part = self.model.get_model_part(mp_name_new)
             data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
             data = np.append(data, model_part.id.reshape((np.size(model_part.id), 1)), axis=1)
+        elif prefix == "displacement" and self.thermal_bc == "heat_flux":
+            print("Warning! Function overruled to avoid bugs during test_single solver (line 758)")
+            mp_name_new = mp_name.replace("out", "in")
+            model_part = self.model.get_model_part(mp_name_new)
+            data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
+            data = np.append(data, model_part.id.reshape((np.size(model_part.id), 1)), axis=1)
         else:
             tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1, ndmin=2)
             # TODO: this is a quick fix for temperature -> write new udf for temperature at moving interface!
             if prefix == "temperature" and "displacement" in self.output_variables:
-                data[:, 0] = np.ones((np.shape(data)[0], 1)) * self.ini_condition
+                data[:, 0] = np.ones((np.shape(data)[0],)) * self.ini_condition
             # copy output data for debugging
             if self.debug:
                 dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'

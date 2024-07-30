@@ -92,7 +92,7 @@
             "type": "solver_wrappers.fluent.pc_v2023R1",
             "settings": {
               "working_directory": "CFD_1",
-              "case_file": "pc_solid.cas.h5",
+              "case_file": "pc_air.cas.h5",
               "dimensions": 2,
               "unsteady": true,
               "moving_boundary": true,

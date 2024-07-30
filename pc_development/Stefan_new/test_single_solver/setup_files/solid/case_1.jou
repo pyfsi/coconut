@@ -1,7 +1,7 @@
 file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case 1D_left.msh
+file read-case 2D_left.msh
 grid check
 grid modify-zones zone-type 2 fluid
 
@@ -34,8 +34,7 @@ define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 0.5
 define dynamic-mesh controls smoothing-parameters max-iter 50
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
-; Last option below: exclude mesh motion in boundary conditions? n
-define dynamic-mesh zones create adiabatic deforming faceted n y n n , , , n n
+define dynamic-mesh zones create adiabatic deforming faceted n y n n , , , n y
 ;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
 
 solve monitors residual check-convergence y
