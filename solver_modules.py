@@ -10,6 +10,7 @@ machine_name = 'ugent_cluster_RHEL8'
 solver_load_cmd_dict = {
     'ugent_cluster_RHEL8': {
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
+        'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH',
         'openfoam.v11': 'ml OpenFOAM/11-foss-2023a && source $FOAM_BASH',
@@ -20,6 +21,7 @@ solver_load_cmd_dict = {
         'fluent.v2019R3': 'ml ANSYS_CFD/2019R3',
         'fluent.v2021R1': 'ml ANSYS_CFD/2021R1',
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
+        'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'abaqus.v2021': 'ml intel/2021b && ml ABAQUS/2021 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2022': 'ml intel/2022a && ml ABAQUS/2022 '
@@ -34,6 +36,9 @@ solver_load_cmd_dict = {
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
         'fluent.v2023R1': 'ml FLUENT/2023R1 && ml iimpi/2023a && unset SLURM_GTIDS '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'fluent.v2024R1': 'ml FLUENT/2024R1 && ml iimpi/2023a && unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
         'abaqus.v2021': 'ml intel/2021b && ml ABAQUS/2021-hotfix-2132 '
@@ -51,6 +56,9 @@ solver_load_cmd_dict = {
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
         'fluent.v2023R1': 'ml FLUENT/2023R1 && ml intel/2021a '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+        'fluent.v2024R1': 'ml FLUENT/2024R1 && ml intel/2021a '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
         'abaqus.v2022': 'ml intel/2021a && module load ABAQUS/2022 '
