@@ -1470,7 +1470,7 @@ DEFINE_ON_DEMAND(write_displacement) {
     FILE *file = NULL;
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
 #endif /* RP_HOST */
-    
+
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
 
     for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
@@ -1517,7 +1517,8 @@ DEFINE_ON_DEMAND(write_displacement) {
                     Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                     /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
                     Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
-                    Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL);
+                    if (myid == 0) {printf("\nSV_T_RG = %lf\n", C_T_RG(cell,cell_thread)); fflush(stdout);}
+                    // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does work multi-core... & not needed atm
 
                     c_face_loop(cell,cell_thread,face_number)
                     {

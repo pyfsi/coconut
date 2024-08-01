@@ -48,6 +48,9 @@ solve set under-relaxation density 0.5
 ;solve set reporting-interval 10
 ;solve set flow-warnings n
 
+define user-defined compiled-functions compile "libudf" y "1D_motion.c" "" ""
+define user-defined compiled-functions load "libudf"
+
 define dynamic-mesh dynamic-mesh y n n n n
 define dynamic-mesh controls smoothing y
 define dynamic-mesh controls smoothing-parameters smoothing-method diffusion
@@ -57,7 +60,8 @@ define dynamic-mesh controls smoothing-parameters max-iter 50
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
 ; Last option below: exclude mesh motion in boundary conditions? y
-define dynamic-mesh zones create adiabatic deforming faceted n y n y n n
+define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+define dynamic-mesh zones create boundary rigid-body "x_mov::libudf" y n 0.05 0.005 0 surface_body constant 0.001 y n
 
 solve initialize set-defaults temperature 298.15
 solve initialize set-defaults pressure 0

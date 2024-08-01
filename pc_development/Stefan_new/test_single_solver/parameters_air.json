@@ -1,17 +1,17 @@
 {
   "settings": {
-    "number_of_timesteps": 5
+    "number_of_timesteps": 1000
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
       "solver_index": 1,
       "test_class": "SolidTest",
-      "delta_t": 0.1
+      "delta_t": 0.001
     },
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.1,
+      "delta_t": 0.001,
       "omega": 0.3,
       "save_results": 1,
       "save_restart": 0,
@@ -43,7 +43,7 @@
           "unsteady": true,
           "moving_boundary": true,
           "multiphase": false,
-          "debug": true,
+          "debug": false,
           "latent": 179000,
           "melt_temp": 298.15,
           "ini_condition": 0,
@@ -126,11 +126,11 @@
                   ]
                 }
               ],
-              "cores": 1,
+              "cores": 2,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 100,
-              "save_results": 1
+              "flow_iterations": 150,
+              "save_results": 100
             }
           },
           "mapper_interface_input": {
