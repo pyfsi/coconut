@@ -5,9 +5,18 @@ uses the environment variables in all the spawned processes, used for executing 
 in the various stages of the simulation.
 """
 
-machine_name = 'ugent_cluster_CO7'
+machine_name = 'ugent_cluster_RHEL8'
 
 solver_load_cmd_dict = {
+    'ugent_cluster_RHEL8': {
+        'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
+        'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
+        'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
+        'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH',
+        'openfoam.v11': 'ml OpenFOAM/11-foss-2023a && source $FOAM_BASH',
+        'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024 '
+                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
+    },
     'ugent_cluster_CO7': {
         'fluent.v2019R3': 'ml ANSYS_CFD/2019R3',
         'fluent.v2021R1': 'ml ANSYS_CFD/2021R1',
