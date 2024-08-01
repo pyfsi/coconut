@@ -114,3 +114,7 @@ This issue is solved in v2023R1.
 ### v2023R1 (23.1.0)
 
 No major changes.
+
+### v2024R1 (24.1.0)
+
+No major changes.
