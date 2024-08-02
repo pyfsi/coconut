@@ -87,6 +87,16 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 -   dynamic mesh zones for the FSI interfaces (these are defined in `thread_names`),
 -   the time step (`delta_t`).
 
+## Running multinode
+
+To start a multinode simulation, a hostfile has to present in the working directory.
+This is a text file containing the machine names, each on a new line.
+The name of this file has to be communicated to CoCoNuT by providing it as the value of the parameter `"hostfile"` in the Fluent JSON settings.
+
+For example, on the HPC system of the UGent, such a file with name _`fluent.hosts`_ can be created with the command
+```bash
+cat $PBS_NODEFILE > fluent.hosts
+```
 
 ## Solver coupling convergence
 

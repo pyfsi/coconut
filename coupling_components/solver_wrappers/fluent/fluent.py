@@ -110,7 +110,16 @@ class SolverWrapperFluent(SolverWrapper):
         else:
             max_cores = multiprocessing.cpu_count()
         if self.cores < 1 or self.cores > max_cores:
-            tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
+            warning = f'Number of cores incorrect, changed from {self.cores} to {max_cores}'
+            if self.hostfile is None:
+                warning += f'\nAre you trying to run multinode?' \
+                           f'\n\tAdd host file to working directory ({self.dir_cfd})' \
+                           f'\n\tAdd "hostfile" parameter with name of host file to Fluent parameters in JSON file' \
+                           f'\nSee also https://pyfsi.github.io/coconut/fluent.html#running-multinode'
+            else:
+                warning += f'\nAre you trying to run multinode?' \
+                           f'\n\tThe used hostfile is {join(self.dir_cfd, self.hostfile)}'
+            tools.print_info(warning, layout='warning')
             self.cores = max_cores
 
         # start Fluent with journal
