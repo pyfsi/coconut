@@ -15,8 +15,7 @@ cd $HOME/Tools/coconut/coconut/examples/lid_driven_cavity/fluent2d_kratos_struct
 python3 setup_case.py
 
 # To run multinode: uncomment the line below and ...
-# ... make sure "hostfile": "fluent.hosts" is added to the Fluent settings in the JSON file
+# ... make sure "hosts_file": "fluent.hosts" is added to the Fluent settings in the JSON file
 # cat $PBS_NODEFILE > CFD/fluent.hosts
 
 python3 run_simulation.py
-
