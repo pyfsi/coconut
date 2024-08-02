@@ -38,7 +38,7 @@ class SolverWrapperALMFluent(SolverWrapper):
         self.backup_fluent_log()
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.cores = self.settings['cores']
-        self.hostfile = self.settings.get('hostfile')
+        self.hosts_file = self.settings.get('hosts_file')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -118,8 +118,8 @@ class SolverWrapperALMFluent(SolverWrapper):
                     outfile.write(line)
 
         # check number of cores
-        if self.hostfile is not None:
-            with open(join(self.dir_cfd, self.hostfile)) as fp:
+        if self.hosts_file is not None:
+            with open(join(self.dir_cfd, self.hosts_file)) as fp:
                 max_cores = len(fp.readlines())
         else:
             max_cores = multiprocessing.cpu_count()
@@ -133,8 +133,8 @@ class SolverWrapperALMFluent(SolverWrapper):
         cmd2 = f'-t{self.cores} -i {journal}'
         cmd3 = f' >> {log} 2>&1'
 
-        if self.hostfile is not None:
-            cmd1 += f' -cnf={self.hostfile} -ssh '
+        if self.hosts_file is not None:
+            cmd1 += f' -cnf={self.hosts_file} -ssh '
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2 + cmd3
         else:
