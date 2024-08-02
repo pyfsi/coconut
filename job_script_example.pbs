@@ -13,5 +13,9 @@ export OMP_PROC_BIND=FALSE # required on UGent-HPC for processes spawned from Py
 
 cd $HOME/Tools/coconut/coconut/examples/lid_driven_cavity/fluent2d_kratos_structure2d/
 python3 setup_case.py
-python3 run_simulation.py
 
+# To run multinode: uncomment the line below and ...
+# ... make sure "hosts_file": "fluent.hosts" is added to the Fluent settings in the JSON file
+# cat $PBS_NODEFILE > CFD/fluent.hosts
+
+python3 run_simulation.py

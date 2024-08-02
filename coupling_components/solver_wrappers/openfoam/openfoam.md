@@ -116,18 +116,24 @@ Moreover, there are some changes in the case setup. The following list provides 
 - The file _`system/fvSolution`_ requires dictionaries `pcorr` and `pcorrFinal`, if the keyword `correctPhi` is `true`
   in _`system/fvSolution`_, which it is by default. The tolerance settings should be sufficiently low (similar to `p`).
 
+### v10 (OpenFOAM 10)
+
+In this OpenFOAM version some changes were made with respect to OpenFOAM 8, and there are some changes in the case setup.
+The following list provides some but is not all extensive:
+
+- The file _`constant/transportProperties`_ has been renamed to _`constant/physicalProperties`_.
+- The keyword `version` can be omitted from the header dictionary `FoamFile`.
+- The dynamicMeshDict has been restructured, defining a `fvMeshMover` and removing the `dynamicFvMesh` class, see also the [OpenFOAM documentation](https://cfd.direct/openfoam/free-software/dynamic-meshes/).
+
 ### v11 (OpenFOAM 11)
 
-In this OpenFOAM version some changes were made with respect to OpenFOAM 8.
+In this OpenFOAM version some changes were made with respect to OpenFOAM 10.
 The most prominent is the replacement of separate applications like `pimpleFoam` by a single solver `foamRun` which works with solver modules.
 The required changes for the OpenFOAM wrapper are visible in the version specific solver wrapper Python file *`v11.py`*.
 
-Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:
+This is also reflected in the case setup:
 
 - The application in _`system/controlDict`_ is now foamRun and an additional keyword solver is required, such as `incompressibleFluid`.
-- The keyword `version` can be omitted from the header dictionary `FoamFile`.
-- The file _`constant/transportProperties`_ has been renamed to _`constant/physicalProperties`_.
-- The dynamicMeshDict has been restructured, defining a `fvMeshMover` and removing the `dynamicFvMesh` class, see also the [OpenFOAM documentation](https://cfd.direct/openfoam/free-software/dynamic-meshes/).
 
 ## Details on the OpenFOAM solver wrapper
 
