@@ -13,7 +13,10 @@ solver_load_cmd_dict = {
         'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
         'openfoam.v8': 'ml OpenFOAM/8-foss-2020b && source $FOAM_BASH',
+        'openfoam.v10': 'ml OpenFOAM/10-foss-2023a && source $FOAM_BASH',
         'openfoam.v11': 'ml OpenFOAM/11-foss-2023a && source $FOAM_BASH',
+        'abaqus.v2023': 'ml intel/2022b && ml ABAQUS/2023 '
+                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
     },
