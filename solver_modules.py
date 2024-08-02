@@ -36,13 +36,13 @@ solver_load_cmd_dict = {
     'ugent_hpc': {
         'fluent.v2019R3': 'ml FLUENT/2019R3 && ml intel/2020a && unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'fluent.v2023R1': 'ml FLUENT/2023R1 && ml iimpi/2023a && unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'fluent.v2024R1': 'ml FLUENT/2024R1 && unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'abaqus.v2021': 'ml intel/2021b && ml ABAQUS/2021-hotfix-2132 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2022': 'ml intel/2022a && ml ABAQUS/2022-hotfix-2214 '
@@ -53,13 +53,13 @@ solver_load_cmd_dict = {
     'hortense': {
         'fluent.v2019R3': 'ml FLUENT/2019R3 && ml intel/2021a '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'fluent.v2021R1': 'ml FLUENT/2021R1 && ml intel/2021a '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'fluent.v2023R1': 'ml FLUENT/2023R1 && ml intel/2021a '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
-                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be && cat $PBS_NODEFILE > fluent.hosts',
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'abaqus.v2022': 'ml intel/2021a && module load ABAQUS/2022 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE ',  # needs to be FALSE in job script, but TRUE for Kratos
