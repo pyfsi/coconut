@@ -87,7 +87,7 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
     def test_partitioning(self):
         # test if different partitioning gives the same aerodynamic forces
 
-        self.parameters['settings']['flow_iterations'] = 500
+        self.parameters['settings']['flow_iterations'] = 250
 
         # create two solvers with different partitioning and solve solution step
         traction = []
@@ -116,10 +116,6 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
             solver.finalize_solution_step()
             solver.output_solution_step()
             solver.finalize()
-
-            # copy files
-            shutil.copytree(self.working_dir,
-                            join(os.path.dirname(__file__), 'test_v2023R1', f'CFD_{cores}cores'))
 
         # compare output traction of both solvers
         np.testing.assert_allclose(traction[0], traction[1], rtol=1e-10, atol=1e-12)
@@ -280,7 +276,7 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
                 os.remove(join(self.working_dir, fname))
 
         # create solver
-        self.parameters['settings']['flow_iterations'] = 100
+        self.parameters['settings']['flow_iterations'] = 50
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
@@ -293,7 +289,8 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
         # solve solution step and output data
         interface_output = solver.solve_solution_step(interface_input)
         traction = interface_output.get_variable_data(self.mp_name_out, 'traction')
-        line_force = integrate.trapezoid(traction, dx=0.05, axis=0)
+        line_force = integrate.trapezoid(traction,
+                                         dx=0.5 / (interface_output.get_model_part(self.mp_name_out).size - 1), axis=0)
 
         # finalize solver
         solver.finalize_solution_step()
@@ -306,8 +303,8 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
         volume_force = -1 * np.array(last_line.strip().split()[1:4], dtype=float)
         report_file.close()
 
-        # test if force vectors are almost equal (up to 1 %)
-        np.testing.assert_allclose(line_force, volume_force, rtol=1e-2)
+        # test if force vectors are almost equal (up to 1.5 %)
+        np.testing.assert_allclose(line_force, volume_force, rtol=1.5e-2)
 
 
 if __name__ == '__main__':

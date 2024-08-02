@@ -1,0 +1,25 @@
+; This file is a useful tool to quickly define point surfaces of the actuator points at timestep X using the file 'coordinates_update_timestepX.dat'.
+; Adjust the timestep so it is in accordance with the timestep of the .dat.h5-file you open in Fluent.
+; Simply copy paste the following lines in the TUI and visualize the position of the yarn in the domain using display > mesh > point surfaces
+
+(define source (open-input-file "coordinates_update_timestep1.dat"))
+(define n_points (read source))
+
+(define x "0")
+(define y "0")
+(define z "0")
+
+(do ((k 1 (+ k 1))) ((> k n_points))
+    (set! x (read source))
+    (set! y (read source))
+    (set! z (read source))
+    (display x)
+    (display y)
+    (display z)
+    (ti-menu-load-string (format #f "/surface/point-surface point-~a ~a ~a ~a \n" k x y z))
+    (display (read source))
+    (display (read source))
+    (display (read source))
+)
+
+(close-input-port source)

@@ -116,6 +116,8 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
     CX_Cell_Id *cx_cell;
     static ND_Search *domain_table = NULL;
     int point, nwithforce;
+    cell_t cell;
+	Thread *cell_thread;
 
     /* initialize all yarn points as not found */
 	for (point = 0; point < NYARNPOINTS; point++)
@@ -124,18 +126,18 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
 	}
 
     /* search for points */
-    nwithforce = 0;
     domain_table = CX_Start_ND_Point_Search(domain_table, TRUE, -1);
     for (point = 0; point < NYARNPOINTS; point++)
     {
         cx_cell = CX_Find_Cell_With_Point(domain_table, coordinate_list[point], 0.0);
         if (cx_cell)
         {
-            point_struct[point].partition = myid;
-            point_struct[point].cell = RP_CELL(cx_cell);
-            point_struct[point].cell_thread = RP_THREAD(cx_cell);
+            cell = RP_CELL(cx_cell);
+            cell_thread = RP_THREAD(cx_cell);
+            point_struct[point].partition = C_PART(cell, cell_thread);  // Partition id of process that has 'cell' as internal cell
+            point_struct[point].cell = cell;
+            point_struct[point].cell_thread = cell_thread;
             point_struct[point].found = TRUE;
-            nwithforce++;
         }
     }
     domain_table = CX_End_ND_Point_Search(domain_table);
@@ -264,7 +266,8 @@ void calculate_air_velocity_density_yarn_orientation()
         }
         mag = NV_MAG(yarn_tangent[point]);
         NV_S(yarn_tangent[point], /=, mag);
-        r = G_EPS * sqrt(-log(0.01));  // Sample at radius where force influence reaches 1% of peak value
+//        r = G_EPS * sqrt(-log(0.01));  // Sample at radius where force influence reaches 1% of peak value
+        r = YARN_DIAMETER;  // Sample at radius equal to yarn diameter
         local_theta[point] = acos(NV_DOT(e_v, yarn_tangent[point]));
 
         /* Cross-flow component */
