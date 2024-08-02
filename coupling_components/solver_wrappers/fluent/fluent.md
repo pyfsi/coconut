@@ -89,7 +89,7 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Running multinode
 
-To start a multinode simulation, a hostfile has to present in the working directory.
+To start a multinode simulation, a hostfile has to be present in the working directory.
 This is a text file containing the machine names, each on a new line.
 The name of this file has to be communicated to CoCoNuT by providing it as the value of the parameter `"hostfile"` in the Fluent JSON settings.
 
