@@ -41,14 +41,12 @@ typedef struct yarn_point_struct {
 	Thread *cell_thread;
 	cxboolean found;
 	real vs_w[N_CIRC_S+1];  // velocity sampling: sum of weights
-	real fs_w;  // force sampling: sum of weights
 } Yarn_Point;
 
 /* Global variables */
 /* These global variables are not allocated in a dynamic manner, as it is hard to do so. 
 Moreover, they are needed during the entire timestep, so there is not much gain in allocating them dynamically.
-Since the number of yarns (for now only 1 yarn is possible, but by adding an extra dimension to these arrays, this can be changed rather easily. 
-Finally, the number of points per yarn is known beforehand, so it can be solved by using these global variables and parameters. */
+At the moment, only 1 yarn is defined, but by adding an extra dimension to these arrays, this can be changed rather easily. */
 Yarn_Point yarn_points[NYARNPOINTS];
 real yarn_coordinates[NYARNPOINTS][ND_ND];
 real yarn_coordinates_old[NYARNPOINTS][ND_ND];
@@ -60,7 +58,6 @@ real local_theta[NYARNPOINTS];
 real sample_coordinates[NYARNPOINTS][N_CIRC_S+1][ND_ND];
 real sampled_velocity[NYARNPOINTS][2][ND_ND];
 real air_values[NYARNPOINTS][NSCALARS];
-real norm_factor;
 
 int timestep = 0;
 
