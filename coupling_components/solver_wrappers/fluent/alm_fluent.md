@@ -3,7 +3,7 @@
 This is the documentation for the adaptation of the Actuator Line Method (ALM) for textile yarns in air-jet weaving, incorporated in ANSYS Fluent [[1](#1)].
 
 
-## Fluid-Structure Interaction with ALM_Fluent
+## Fluid-Structure Interaction with `alm_fluent`
 
 The functioning of this solver wrapper is entirely based on the original [Fluent solver wrapper](./fluent.md). Due to the nature of the ALM, there are some important changes, however.
 Most importantly, the deformable object is no longer physically present in the flow domain. This changes the workflow somewhat. 
@@ -35,7 +35,7 @@ However, this line of code is designed and tested specifically for the k-omega S
 The value of the momentum source terms then depend on the tangential and radial coordinates $\vec{t}$ and $\vec{r}$. This implies that the yarn ends are represented in a sharp manner in the computational domain, as also suggested by the figure.
 As a consequence, there is a possibility for a cell half-width error in the smearing of the forces in the flow domain: if a cell center is just within an actuator element, it will consider the complete cell as part of the actuator element, thus making the yarn artificially longer (conversely when a cell center is just not within an actuator element, the yarn will appear shorter than it actually is).  
 This error might become significant for short yarns (few actuator elements $E_i$) and a relatively coarse cell compared to the actuator element. Be cautious when simulating short yarns. 
-The magnitude of the error can be estimated by comparing the volume integral of the momentum sources in the file *`report-coconut.out`* to the line integral of the aerodynamic forces in the file *`traction_timestepX.dat`* (see e.g. the `test_forces`-method in [the unit tests](../../../tests/solver_wrappers/alm_fluent/alm_fluent.py)).
+The magnitude of the error can be estimated by comparing the volume integral of the momentum sources in the file *`report-coconut.out`* to the line integral of the aerodynamic forces in the file *`traction_timestepA.dat`* (see e.g. the `test_forces`-method in [the unit tests](../../../tests/solver_wrappers/alm_fluent/alm_fluent.py)).
 
 <img src="./extra/ACE_concept.png" alt="The concept of actuator curve embedding, see ref. [1] for more details" width="750"/>
 
@@ -88,7 +88,7 @@ Following items should be set up and saved in the Fluent case file (this list ma
 -   it is important that the fluid zone where the ALM momentum sources are to be applied, has the name `fluid`! This is assumed in the [journal file](./alm_v2023R1.jou) on line 72, where the momentum sources are hooked to the flow equations.
 
 A data file should also be present with the fields either initialized or containing the results of a previous calculation.
-The file *`coordinates_timestep0.dat`* containing the initial position of the yarn.
+Finally, the user should create the file *`coordinates_timestep0.dat`* containing the initial position of the yarn.
 
 In case of a restart, all files at the initial timestep should be present in the working directory, as well as `case_timestepA.cas.h5`, *`case_timestepA.dat.h5`* and *`coordinates_update_timestepA.dat`*, with A the timestep from which the calculation is restarted.
 
