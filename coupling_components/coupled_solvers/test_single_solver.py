@@ -85,7 +85,7 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
                              f'debug setting set to False', layout='warning')
         self.debug = False
 
-    def initialize(self):
+    def initialize(self, print_components=True):
         Component.initialize(self)
 
         self.solver_wrapper.initialize()
@@ -107,6 +107,9 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
             if not hasattr(module, self.test_class):
                 raise NameError(f'Module dummy_solver has no class {self.test_class}')
             self.dummy_solver = getattr(module, self.test_class)()
+            initialize_dummy_solver = getattr(self.dummy_solver, 'initialize', None)
+            if callable(initialize_dummy_solver):
+                initialize_dummy_solver(self.solver_wrapper.get_interface_input(), self.solver_index)
             tools.print_info(f'The functions from {self.test_class} will be used to calculate the following inputs:')
             for model_part_name, variable in interface_input.model_part_variable_pairs:
                 if data_structure.variables_dimensions[variable] == 1:
@@ -133,12 +136,17 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
         interface_input = self.solver_wrapper.interface_input
         # generation of the input data
         if self.dummy_solver is not None:
-            for model_part_name, variable in interface_input.model_part_variable_pairs:
-                model_part = interface_input.get_model_part(model_part_name)
-                data = [getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
-                                                                            model_part.z0[i], self.time_step)
-                        for i in range(model_part.size)]
-                interface_input.set_variable_data(model_part_name, variable, np.array(data))
+            get_input_dummy_solver = getattr(self.dummy_solver, 'get_input', None)
+            if callable(get_input_dummy_solver):
+                interface_input = self.solver_wrapper.get_interface_input()
+                get_input_dummy_solver(interface_input, self.time_step)
+            else:
+                for model_part_name, variable in interface_input.model_part_variable_pairs:
+                    model_part = interface_input.get_model_part(model_part_name)
+                    data = [getattr(self.dummy_solver, f'calculate_{variable}')(model_part.x0[i], model_part.y0[i],
+                                                                                model_part.z0[i], self.time_step)
+                            for i in range(model_part.size)]
+                    interface_input.set_variable_data(model_part_name, variable, np.array(data))
         # store data in self.x and self.y
         if self.solver_index == 1:
             self.y = interface_input

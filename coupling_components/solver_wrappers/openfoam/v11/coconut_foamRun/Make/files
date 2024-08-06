@@ -1,0 +1,4 @@
+setDeltaT.C
+coconut_foamRun.C
+
+EXE = $(FOAM_USER_APPBIN)/coconut_foamRun

@@ -11,6 +11,7 @@ import time
 import subprocess
 import re
 from glob import glob
+from subprocess import check_call
 
 
 def create(parameters):
@@ -44,6 +45,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         self.save_restart = self.settings['save_restart']
         self.openfoam_process = None
         self.write_interval = self.write_precision = None
+        self.fext = None
+        self.nheaderfooter = None
 
         # boundary_names is the set of boundaries in OpenFoam used for coupling
         self.boundary_names = self.settings['boundary_names']
@@ -93,37 +96,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                     decomposedict_string = file.read()
                 self.cores = of_io.get_int(input_string=decomposedict_string, keyword='numberOfSubdomains')
 
-        # based on solver application, set conversion settings from kinematic to static pressure/shear stress
-        # typically: incompressible solver, pressure and wallShearStress are kinematic -> multiply with fluid density
-        #            compressible solver, pressure and wallShearStress are not kinematic -> do nothing
-        kinematic_conversion_dict = {
-            'coconut_cavitatingFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress'
-            },
-            'coconut_interFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress'
-            },
-            'coconut_pimpleFoam': {
-                'density_for_pressure': 'look up',
-                'density_for_traction': 'look up',
-            }
-        }
-        if self.application not in kinematic_conversion_dict:
-            available_applications = ''
-            for key in kinematic_conversion_dict:
-                available_applications += f'\n\t{key}'
-            raise ValueError(f'{self.application} is not included in the kinematic_conversion_dict '
-                             f'used for treatment of (kinematic) pressure and traction\n'
-                             f'Add the solver to this dictionary '
-                             f'or use one of the existing solvers:{available_applications}')
-        else:
-            kinematic_conversion = kinematic_conversion_dict[self.application]
-            self.density_for_pressure = 1.0 if 'density_for_pressure' not in kinematic_conversion \
-                else self.settings['density']  # default density is 1
-            self.density_for_traction = 1.0 if 'density_for_traction' not in kinematic_conversion \
-                else self.settings['density']  # default density is 1
-            self.wall_shear_stress_variable = kinematic_conversion.get(
-                'wall_shear_stress_variable', 'wallShearStress')  # default shear stress variable is wallShearStress
+        # take density into account for solvers working with kinematic pressure or traction
+        self.kinematic_conversion()
 
         # modify controlDict file to add pressure and wall shear stress functionObjects for all the boundaries in
         # self.settings["boundary_names"]
@@ -304,9 +278,11 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                 post_process_time_folder = os.path.join(self.working_directory,
                                                         f'postProcessing/coconut_{boundary}/surface',
                                                         self.cur_timestamp)
-                for file in (f'{self.wall_shear_stress_variable}_patch_{boundary}.raw', f'p_patch_{boundary}.raw'):
+                for file in (f'{self.wall_shear_stress_variable}_patch_{boundary}{self.fext}',
+                             f'p_patch_{boundary}{self.fext}'):
                     path = os.path.join(post_process_time_folder, file)
-                    iter_path = os.path.join(post_process_time_folder, f'{file[:-4]}_{self.iteration}.raw')
+                    iter_path = os.path.join(post_process_time_folder,
+                                             f'{file[:-len(self.fext)]}_{self.iteration}{self.fext}')
                     shutil.copy(path, iter_path)
 
         # return interface_output object
@@ -364,7 +340,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                 f'Compilation of {self.application} failed. Check {os.path.join(self.working_directory, "log.wmake")}')
 
     def write_cell_centres(self):
-        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+        check_call('postProcess -func writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory,
+                   shell=True, env=self.env)
 
     def read_face_centres(self, boundary_name, nfaces):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
@@ -375,7 +352,8 @@ class SolverWrapperOpenFOAM(SolverWrapper):
             # specify location of pressure and traction
             post_process_time_folder = os.path.join(self.working_directory,
                                                     f'postProcessing/coconut_{boundary}/surface', self.cur_timestamp)
-            for file in (f'{self.wall_shear_stress_variable}_patch_{boundary}.raw', f'p_patch_{boundary}.raw'):
+            for file in (f'{self.wall_shear_stress_variable}_patch_{boundary}{self.fext}',
+                         f'p_patch_{boundary}{self.fext}'):
                 path = os.path.join(post_process_time_folder, file)
                 if os.path.isfile(path):
                     os.remove(path)
@@ -394,8 +372,9 @@ class SolverWrapperOpenFOAM(SolverWrapper):
             nfaces = mp.size
             post_process_time_folder = os.path.join(self.working_directory,
                                                     f'postProcessing/coconut_{boundary}/surface', self.cur_timestamp)
-            wss_filename = os.path.join(post_process_time_folder, f'{self.wall_shear_stress_variable}_patch_{boundary}.raw')
-            pres_filepath = os.path.join(post_process_time_folder, f'p_patch_{boundary}.raw')
+            wss_filename = os.path.join(post_process_time_folder,
+                                        f'{self.wall_shear_stress_variable}_patch_{boundary}{self.fext}')
+            pres_filepath = os.path.join(post_process_time_folder, f'p_patch_{boundary}{self.fext}')
 
             # check if the pressure and wall shear stress files completed by openfoam and read data
             self.check_output_file(wss_filename, nfaces)
@@ -411,7 +390,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
             wall_shear_stress = np.empty_like(wss_tmp)
             pressure = np.empty((pres_tmp.size, 1))
 
-            wall_shear_stress[pos_list,] = wss_tmp[:, ]
+            wall_shear_stress[pos_list] = wss_tmp[:, ]
             pressure[pos_list, 0] = pres_tmp
 
             self.interface_output.set_variable_data(mp_name, 'traction', -wall_shear_stress * self.density_for_traction)
@@ -425,7 +404,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
 
     def write_node_input(self):
         """
-        creates pointDisplacementNext for supplying the displacement field in the FSI coupling. This file is created
+        creates pointDisplacementTmp for supplying the displacement field in the FSI coupling. This file is created
         from 0/pointDisplacement. The boundary field for boundaries participating in the FSI coupling is modified to
         supply the boundary displacement field from structural solver. If the OpenFOAM solver is run in parallel,
         the field is subsequently decomposed using the command: decomposePar.
@@ -480,7 +459,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         nlines = 0
         lim = 10000
         sleep_time = 0.01
-        while (nlines < nfaces + 2) and counter < lim:
+        while (nlines < nfaces + self.nheaderfooter) and counter < lim:
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     nlines = sum(1 for _ in f)
@@ -499,19 +478,18 @@ class SolverWrapperOpenFOAM(SolverWrapper):
         raise RuntimeError(f'CoCoNuT timed out in the OpenFOAM solver_wrapper, waiting for message: {message}.coco')
 
     def check_software(self):
-        if subprocess.check_call(self.application + ' -help &> checkSoftware', shell=True, env=self.env) != 0:
+        try:
+            version_nr = subprocess.check_output('echo $WM_PROJECT_VERSION',
+                                                 shell=True, env=self.env).decode('utf-8').strip()  # output b'XX\n'
+        except subprocess.CalledProcessError:
             raise RuntimeError(
                 f'OpenFOAM not loaded properly. Check if the solver load commands for the "machine_name"'
                 f' are correct in solver_modules.py.')
 
         # check version
-        with open('checkSoftware', 'r') as f:
-            last_line = f.readlines()[-2]  # second last line contains 'Build: XX' with XX the version number
-        os.remove('checkSoftware')
-        version_nr = last_line.split(' ')[-1]
-        if version_nr[:-1] != self.version:
+        if version_nr != self.version:
             raise RuntimeError(
-                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr[:-1]} is loaded.'
+                f'OpenFOAM-{self.version} should be loaded! Currently, OpenFOAM-{version_nr} is loaded.'
                 f' Check if the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
     def check_interfaces(self):
@@ -604,6 +582,9 @@ class SolverWrapperOpenFOAM(SolverWrapper):
     def pressure_and_traction_dict(self, boundary_name):
         raise NotImplementedError('Base class method is called, should be implemented in derived class')
 
+    def kinematic_conversion(self):
+        raise NotImplementedError('Base class method is called, should be implemented in derived class')
+
     def write_residuals_fileheader(self):
         header = ''
         sep = ', '
@@ -641,7 +622,7 @@ class SolverWrapperOpenFOAM(SolverWrapper):
                             var_residual = float(var_residual_list[-1])
                             residual_array[i] = var_residual
                         else:
-                            raise RuntimeError(f'Variable: {variable} equation is not solved in {self.application}')
+                            raise RuntimeError(f'Variable: {variable} equation is not solved')
 
                     with open(self.res_filepath, 'a') as f:
                         np.savetxt(f, [residual_array], delimiter=', ')

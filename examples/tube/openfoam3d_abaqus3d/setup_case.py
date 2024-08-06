@@ -4,7 +4,7 @@ import subprocess
 from coconut import tools
 
 cfd_solver = 'openfoam.v8'
-csm_solver = 'abaqus.v2022'
+csm_solver = 'abaqus.v2024'
 cfd_dir = './CFD'
 csm_dir = './CSM'
 

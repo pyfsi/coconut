@@ -10,7 +10,7 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location	"constant";
+    location    "constant";
     object      dynamicMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -23,7 +23,7 @@ solver             displacementLaplacian;
 
 displacementLaplacianCoeffs
 {
-	diffusivity	   inverseDistance 1 (bottom);
+    diffusivity    inverseDistance 1 (bottom);
 }
 
 

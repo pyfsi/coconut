@@ -42,7 +42,7 @@ class SolverWrapperFluent(SolverWrapper):
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
         self.cores = self.settings['cores']
-        self.hostfile = self.settings.get('hostfile')
+        self.hosts_file = self.settings.get('hosts_file')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -118,13 +118,22 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # check number of cores
-        if self.hostfile is not None:
-            with open(join(self.dir_cfd, self.hostfile)) as fp:
-                max_cores = np.inf #len(fp.readlines())
+        if self.hosts_file is not None:
+            with open(join(self.dir_cfd, self.hosts_file)) as fp:
+                max_cores = len(fp.readlines())
         else:
             max_cores = multiprocessing.cpu_count()
         if self.cores < 1 or self.cores > max_cores:
-            tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
+            warning = f'Number of cores incorrect, changed from {self.cores} to {max_cores}'
+            if self.hosts_file is None:
+                warning += f'\nAre you trying to run multinode?' \
+                           f'\n\tAdd hosts file to working directory ({self.dir_cfd})' \
+                           f'\n\tAdd "hosts_file" parameter with name of hosts file to Fluent parameters in JSON file' \
+                           f'\nSee also https://pyfsi.github.io/coconut/fluent.html#running-multinode'
+            else:
+                warning += f'\nAre you trying to run multinode?' \
+                           f'\n\tThe used hosts_file is {join(self.dir_cfd, self.hosts_file)}'
+            tools.print_info(warning, layout='warning')
             self.cores = max_cores
 
         # start Fluent with journal
@@ -133,13 +142,12 @@ class SolverWrapperFluent(SolverWrapper):
         cmd2 = f'-t{self.cores} -i {journal}'
         cmd3 = f' >> {log} 2>&1'
 
-        if self.hostfile is not None:
-            cmd1 += f' -cnf={self.hostfile} -ssh '
+        if self.hosts_file is not None:
+            cmd1 += f' -cnf={self.hosts_file} -ssh '
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2 + cmd3
         else:
-            cmd = cmd1 + '-gu ' + cmd2 + cmd3 # TODO: does log work well?
-            # cmd = cmd1 + '-gu ' + cmd2 + f' 2> >(tee -a {log}) 1>> {log}'  # TODO: specify what this option does?
+            cmd = cmd1 + '-gu ' + cmd2 + cmd3
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 

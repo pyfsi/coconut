@@ -2,7 +2,6 @@ from coconut.coupling_components.solver_wrappers.openfoam.openfoam import Solver
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
 
-from subprocess import check_call
 from os.path import join
 
 
@@ -23,9 +22,9 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
         # check that the correct software is available
         self.check_software()
 
-    def write_cell_centres(self):
-        check_call('postProcess -func writeCellCentres -time 0 &> log.writeCellCentres;', cwd=self.working_directory,
-                   shell=True, env=self.env)
+        # raw format
+        self.fext = '.raw'  # file extension
+        self.nheaderfooter = 2  # number of header and footer lines
 
     def read_face_centres(self, boundary_name, nfaces):
         filename_x = join(self.working_directory, '0/Cx')
@@ -56,13 +55,56 @@ class SolverWrapperOpenFOAM8(SolverWrapperOpenFOAM):
                f'    {{\n'
                f'        type            surfaceFieldValue;\n'
                f'        libs            ("libfieldFunctionObjects.so");\n'
+               f'        \n'
+               f'        log             false;'
                f'        writeControl    timeStep;\n'
                f'        writeInterval   1;\n'
-               f'        operation       none;\n'
                f'        writeFields     true;\n'
+               f'        writeArea       false;\n'
+               f'        \n'
                f'        surfaceFormat   raw;\n'
+               f'        \n'
                f'        regionType      patch;\n'
                f'        name            {boundary_name};\n'
+               f'        \n'
+               f'        operation       none;\n'
+               f'        \n'
                f'        fields          (p {self.wall_shear_stress_variable});\n'
                f'    }}\n')
         return dct, name
+
+    def kinematic_conversion(self):
+        # based on solver application, set conversion settings from kinematic to static pressure/shear stress
+        # typically: incompressible solver, pressure and wallShearStress are kinematic -> multiply with fluid density
+        #            compressible solver, pressure and wallShearStress are not kinematic -> do nothing
+        kinematic_conversion_dict = {
+            'coconut_cavitatingFoam': {
+                'wall_shear_stress_variable': 'rhoWallShearStress',
+                'density_correction_for_pressure': 1,
+                'density_correction_for_traction': 1
+            },
+            'coconut_interFoam': {
+                'wall_shear_stress_variable': 'rhoWallShearStress',
+                'density_correction_for_pressure': 1,
+                'density_correction_for_traction': 1
+            },
+            'coconut_pimpleFoam': {
+                'wall_shear_stress_variable': 'wallShearStress',
+                'density_correction_for_pressure': self.settings['density'],
+                'density_correction_for_traction': self.settings['density']
+            }
+        }
+
+        if self.application not in kinematic_conversion_dict:
+            available_applications = ''
+            for key in kinematic_conversion_dict:
+                available_applications += f'\n\t{key}'
+            raise ValueError(f'{self.application} is not included in the kinematic_conversion_dict '
+                             f'used for treatment of (kinematic) pressure and traction\n'
+                             f'Add the solver to this dictionary '
+                             f'or use one of the existing solvers:{available_applications}')
+        else:
+            kinematic_conversion = kinematic_conversion_dict[self.application]
+            self.density_for_pressure = kinematic_conversion['density_correction_for_pressure']
+            self.density_for_traction = kinematic_conversion['density_correction_for_traction']
+            self.wall_shear_stress_variable = kinematic_conversion['wall_shear_stress_variable']
