@@ -221,7 +221,7 @@ __Two-dimensional animations__ show one variable on the ordinate (y-axis) in fun
 - `Animation2dTraction(subset, x_component)`: animates `y-component` of the traction in function of the `x-component` of the initial coordinates.
 
 Replacing the word _Animate_ with _Plot_, __Two-dimensional plots__ are completely analogous, but are typically used to only show one time instance.
-This can be selected when creating the subset, or on the fly with the keyword arguments `time_step` (time step number) or `time` (time in seconds).
+This can be selected when creating the `SubSet`, or on the fly with the keyword arguments `time_step` (time step number) or `time` (time in seconds).
 Only one of these parameters should be provided.
 In our example, the pressure can be plotted at time 0.001 s.
 ```python
@@ -434,10 +434,10 @@ line.set(color='green', linestyle='', marker='o', markersize=5)
 
 Finally, for animations, the Matplotlib Funcanimation object can be accessed through the method `get_animation()`.
 
-#### Adding multiple subsets
+#### Adding multiple SubSets
 
 Up to now, a figure was initialized with one or more `SubSets`.
-However, it is also possible to add a `SubSet` to an existing figure with the method ´add_subset(subset)´, which accepts analogous keyword arguments.
+However, it is also possible to add a `SubSet` to an existing figure with the method `add_subset(subset)`, which accepts analogous keyword arguments.
 
 Other useful methods are:
 
@@ -446,7 +446,7 @@ Other useful methods are:
 - `remove_subset(name)`: removes the `SubSet` with name `name` or if `name` is an int, the `SubSet` corresponding to that index,
 - `get_subset_names()`: returns a list of the names of the added `SubSets`,
 
-Also `SubSets` with different time step sizes can be added to a single figure.
+Also `SubSets` with __different time step sizes__ can be added to a single figure.
 The different time step sizes will automatically be taken into account by internally working with the smallest matching time step size.
 For example, when two `SubSets` with time step size 0.3 s and 0.2 s are added, the internal time step size will be 0.1 s.
 This is important when setting or changing the `time step` parameter for a plot or the `frames` or `skip` parameters for an animation.
