@@ -1033,7 +1033,6 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
         }
     }
 
-    if (myid == 0) {printf("\nTime step = %i\n", timestep); fflush(stdout);}
     sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
             timestep, thread_id);
 
@@ -1156,7 +1155,7 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
 #define NEW_2_Y 7 // new y-coordinate of second node in face
 #define ADJ 8 // flag for cells adjacent to the interface
 #define D_VOL 9 // swept volume during move_nodes operation
-#define PR_H 10 // Cell enthalpy in previous converged timestep
+#define PR_H 10 // Cell liquid fraction in previous converged timestep
 
   /*------------*/
  /* move_nodes */
@@ -1295,7 +1294,7 @@ DEFINE_ON_DEMAND(set_adjacent) {
                         i = 0;
                         f_node_loop(face, face_thread, node_number) {
                             node = F_NODE(face, face_thread, node_number);
-                            if (iteration == 0) {
+                            if (iteration == 0) { // only executed once at start of journal file
                                 if (i==0) {
                                     C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
                                     C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
@@ -1314,20 +1313,36 @@ DEFINE_ON_DEMAND(set_adjacent) {
                                 }
                             }
                             else { // iteration != 0
-                                if (i==0) {
-                                    C_UDMI(cell,cell_thread,PR_1_X) = C_UDMI(cell,cell_thread,NEW_1_X);
-                                    C_UDMI(cell,cell_thread,PR_1_Y) = C_UDMI(cell,cell_thread,NEW_1_Y);
-                                    C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
-                                    C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
-                                    i ++;
+                                if (iteration == 1) {
+                                    if (i==0) {
+                                        C_UDMI(cell,cell_thread,PR_1_X) = C_UDMI(cell,cell_thread,NEW_1_X);
+                                        C_UDMI(cell,cell_thread,PR_1_Y) = C_UDMI(cell,cell_thread,NEW_1_Y);
+                                        C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
+                                        C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
+                                        i ++;
+                                    }
+                                    else {
+                                        if (i==1) {
+                                            C_UDMI(cell,cell_thread,PR_2_X) = C_UDMI(cell,cell_thread,NEW_2_X);
+                                            C_UDMI(cell,cell_thread,PR_2_Y) = C_UDMI(cell,cell_thread,NEW_2_Y);
+                                            C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
+                                            C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
+                                            i --;
+                                        }
+                                    }
                                 }
-                                else {
-                                    if (i==1) {
-                                        C_UDMI(cell,cell_thread,PR_2_X) = C_UDMI(cell,cell_thread,NEW_2_X);
-                                        C_UDMI(cell,cell_thread,PR_2_Y) = C_UDMI(cell,cell_thread,NEW_2_Y);
-                                        C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
-                                        C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
-                                        i --;
+                                else { // iteration != 0 & 1
+                                    if (i==0) {
+                                        C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
+                                        C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
+                                        i ++;
+                                    }
+                                    else {
+                                        if (i==1) {
+                                            C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
+                                            C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
+                                            i --;
+                                        }
                                     }
                                 }
                             }
@@ -1517,8 +1532,7 @@ DEFINE_ON_DEMAND(write_displacement) {
                     Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                     /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
                     Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
-                    if (myid == 0) {printf("\nSV_T_RG = %lf\n", C_T_RG(cell,cell_thread)); fflush(stdout);}
-                    // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does work multi-core... & not needed atm
+                    // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
 
                     c_face_loop(cell,cell_thread,face_number)
                     {
@@ -1526,7 +1540,6 @@ DEFINE_ON_DEMAND(write_displacement) {
                         face = C_FACE(cell,cell_thread,face_number);
                         if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) { // for cell faces at coupling interface
                             /* direction, node ids, flux */
-                            printf("\nBOUNDARY_HEAT_FLUX = %lf W\n", BOUNDARY_HEAT_FLUX(face, face_thread));
                             heat += BOUNDARY_HEAT_FLUX(face, face_thread); // heat in W
                             F_AREA(area, face, face_thread);
                             NV_VS(normal, =, area, *, 1.0 / NV_MAG(area));
@@ -1552,16 +1565,10 @@ DEFINE_ON_DEMAND(write_displacement) {
                         }
                     }
 
-                    // heat = C_R(cell,cell_thread)*C_VOLUME(cell,cell_thread)*(C_H(cell,cell_thread)-C_UDMI(cell,cell_thread,PR_H))/dt;
-                    src = C_R(cell,cell_thread)*LH*C_UDMI(cell,cell_thread,D_VOL)/dt;
-                    printf("\nSource = %lf W\n", src);
-                    // heat += src;
-
                     vel = heat/(NV_MAG(area)*LH*C_R(cell,cell_thread)); // absolute velocity of interface at cell level
                     j = 0;
                     for (j = 0; j < ND_ND; j++) {
                         disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
-                        printf("\ndisp[%d][%d] = %lf m\n", j, i, disp[j][i]);
                     }
                     i ++;
 
@@ -1654,13 +1661,13 @@ DEFINE_ON_DEMAND(write_displacement) {
 }
 
 
-  /*----------------------*/
- /* update_cell_enthalpy */
-/*----------------------*/
+  /*----------------*/
+ /* update_cell_lf */
+/*----------------*/
 
 DEFINE_ON_DEMAND(update_cell_enthalpy)
 {
-
+/*Currently not used.*/
 #if RP_NODE
     Domain *d;
     d = Get_Domain(1);
@@ -1673,7 +1680,6 @@ DEFINE_ON_DEMAND(update_cell_enthalpy)
             C_UDMI(c,t,PR_H) = C_H(c,t);
         } end_c_loop(c,t)
     }
-    printf("\nFinished UDF update_cell_enthalpy.\n");
 #endif /* RP_NODE */
 }
 
@@ -1719,17 +1725,13 @@ if ((C_VOLUME(c,t) - C_OLD_VOLUME(c,t,dt)) >= 0.0) {
 if (C_UDMI(c,t,ADJ) == 1.0) {
     if (fluid) {
         /* This definition is only valid for fluid during melting! */
-        if (myid == 0) {printf("\nC_H(c,t) = %lf\n", C_H(c,t)); fflush(stdout);}
-        if (myid == 0) {printf("\nC_UDMI(c,t,PR_H) = %lf\n", C_UDMI(c,t,PR_H)); fflush(stdout);}
-        if (myid == 0) {printf("\nC_UDMI(c,t,D_VOL) = %lf\n", C_UDMI(c,t,D_VOL)); fflush(stdout);}
-        if (myid == 0) {printf("\nC_VOLUME(c,t) = %lf/1000\n", (C_VOLUME(c,t)*1000.0)); fflush(stdout);}
         // source = (-sign*C_R(c,t)*(C_UDMI(c,t,PR_H) - C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
         source = (sign*C_R(c,t)*(C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
-        if (myid == 0) {printf("\nsource = %lf\n", source); fflush(stdout);}
         dS[eqn] = 0.0;
     } else {
         /* This definition is only valid for solid during melting! */
-        source = sign*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+        // source = sign*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+        source = sign*C_R(c,t)*(C_UDMI(c,t,PR_H)-C_CP(c,t)*(TM - 298.15))/(dt);
         dS[eqn] = 0.0;
     }
 } else {

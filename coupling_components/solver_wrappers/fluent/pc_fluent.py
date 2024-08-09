@@ -427,6 +427,10 @@ class SolverWrapperFluent(SolverWrapper):
         self.iteration = 0
         self.timestep += 1
 
+        if self.thermal_bc == "heat_flux":
+            # map input node displacement to face displacement
+            self.mapper_n2f.map_n2f(self.interface_input, self.interface_internal)
+
         self.coco_messages.send_message('next')
         self.coco_messages.wait_message('next_ready')
 
@@ -437,12 +441,6 @@ class SolverWrapperFluent(SolverWrapper):
         # process input interface data
         # store incoming variables
         self.interface_input.set_interface_data(interface_input.get_interface_data())
-        #print("\nself.interface_input.get_interface_data():\n")
-        #print(self.interface_input.get_interface_data())
-
-        if self.thermal_bc == "heat_flux":
-            # map input node displacement to face displacement
-            self.mapper_n2f.map_n2f(self.interface_input, self.interface_internal)
 
         for var in self.input_variables:
             # write interface input data
@@ -513,8 +511,7 @@ class SolverWrapperFluent(SolverWrapper):
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
-                        if var == 'displacement': # and self.thermal_bc == "temperature":
-                            print("Warning! Function overruled to avoid bugs during test_single solver (line 517)")
+                        if var == 'displacement' and self.thermal_bc == "temperature":
                             # get node coordinates and ids
                             vector = data[:, :3]
                             ids = data[:,-1]
@@ -529,12 +526,12 @@ class SolverWrapperFluent(SolverWrapper):
                             vector = vector_tmp[args, :]
                             ids = ids_tmp[args]
 
-                        if False: # var == 'displacement' and self.thermal_bc == "heat_flux":
+                        if var == 'displacement' and self.thermal_bc == "heat_flux":
                             if "nodes" not in mp_name:
                                 raise ValueError('Model part must be node-based for the displacement variable')
 
                             displacement = self.interface_internal.get_variable_data(mp_name, 'displacement')
-                            displacement += vector
+                            displacement_new = displacement + vector
 
                             model_part = self.internal_model.get_model_part(mp_name)
                             if ids.size != model_part.size:
@@ -542,10 +539,13 @@ class SolverWrapperFluent(SolverWrapper):
                             if not np.all(ids == model_part.id):
                                 raise ValueError('IDs of data do not match ModelPart IDs')
 
-                            self.interface_internal.set_variable_data(mp_name, var, displacement)
+                            self.interface_internal.set_variable_data(mp_name, var, displacement_new)
 
                             # map face displacement to node displacement
                             self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output)
+
+                            # reset face displacement to converged position of previous time step (avoid accumulation)
+                            self.interface_internal.set_variable_data(mp_name, var, displacement)
 
                         else:
                             # store vector values in interface
@@ -577,8 +577,6 @@ class SolverWrapperFluent(SolverWrapper):
                         self.interface_output.set_variable_data(mp_name, var, scalar)
 
         # return interface_output object
-        #print("\nself.interface_output.get_interface_data():\n")
-        #print(self.interface_output.get_interface_data())
         return self.interface_output
 
     def finalize_solution_step(self):
@@ -601,6 +599,7 @@ class SolverWrapperFluent(SolverWrapper):
                 # - save_restart is negative
                 # - files from a previous calculation are not touched
                 # - files are not kept for save_results
+
                 for extension in ('cas.h5', 'cas', 'dat.h5', 'dat'):
                     try:
                         os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
@@ -755,18 +754,12 @@ class SolverWrapperFluent(SolverWrapper):
             model_part = self.model.get_model_part(mp_name_new)
             data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
             data = np.append(data, model_part.id.reshape((np.size(model_part.id), 1)), axis=1)
-        elif prefix == "displacement" and self.thermal_bc == "heat_flux":
-            print("Warning! Function overruled to avoid bugs during test_single solver (line 758)")
-            mp_name_new = mp_name.replace("out", "in")
-            model_part = self.model.get_model_part(mp_name_new)
-            data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
-            data = np.append(data, model_part.id.reshape((np.size(model_part.id), 1)), axis=1)
         else:
             tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1, ndmin=2)
-            # TODO: this is a quick fix for temperature -> write new udf for temperature at moving interface!
-            if prefix == "temperature" and "displacement" in self.output_variables:
+            # this is a quick fix for temperature -> write new udf for temperature at moving interface!
+            if prefix == "temperature" and self.thermal_bc == "heat_flux":
                 data[:, 0] = np.ones((np.shape(data)[0],)) * self.ini_condition
             # copy output data for debugging
             if self.debug:

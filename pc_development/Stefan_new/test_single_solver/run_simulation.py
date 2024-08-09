@@ -4,7 +4,7 @@ import json
 
 
 # import parameters
-parameter_file_name = "parameters_air.json"
+parameter_file_name = "parameters.json"
 with open(parameter_file_name, 'r') as parameter_file:
     parameters = json.load(parameter_file)
 

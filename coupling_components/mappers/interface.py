@@ -64,12 +64,6 @@ class MapperInterface(Component):
                         mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
                         mapper((interface_from, *pair_from), (interface_to, *pair_to))
 
-    def query_nearest_itf(self):
-        # for use in outdated pc_fluent_iso.py
-        nearest_list = []
-        for mapper_name in self.mappers:
-            nearest_list.append(self.mappers[mapper_name].query_nearest_mp())
-        return nearest_list
 
     def print_components_info(self, pre):
         tools.print_info(pre, "The component ", self.__class__.__name__, " maps the following model parts:")

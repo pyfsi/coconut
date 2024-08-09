@@ -1,16 +1,16 @@
 {
   "settings": {
-    "number_of_timesteps": 1
+    "number_of_timesteps": 360000
   },
   "coupled_solver": {
-    "type": "coupled_solvers.relaxation",
+    "type": "coupled_solvers.aitken",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 1,
-      "omega": 0.2,
+      "delta_t": 0.01,
+      "omega_max": 0.8,
       "save_results": 1,
       "save_restart": 0,
-      "debug": true,
+      "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -35,7 +35,7 @@
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-10,
+              "tolerance": 1e-3,
               "order": 2
             }
           }
@@ -52,8 +52,9 @@
           "unsteady": true,
           "moving_boundary": true,
           "multiphase": false,
-          "debug": true,
+          "debug": false,
           "latent": 179000,
+          "melt_temp": 299.15,
           "ini_condition": 0,
           "thread_names": [
             "boundary"
@@ -89,8 +90,8 @@
           "cores": 2,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 40,
-          "save_results": 1
+          "flow_iterations": 100,
+          "save_results": 600
         }
       },
       {
@@ -105,8 +106,9 @@
               "unsteady": true,
               "moving_boundary": true,
               "multiphase": false,
-              "debug": true,
+              "debug": false,
               "latent": 179000,
+              "melt_temp": 299.15,
               "ini_condition": 299.15,
               "thread_names": [
                 "boundary"
@@ -142,8 +144,8 @@
               "cores": 2,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 40,
-              "save_results": 1
+              "flow_iterations": 100,
+              "save_results": 600
             }
           },
           "mapper_interface_input": {

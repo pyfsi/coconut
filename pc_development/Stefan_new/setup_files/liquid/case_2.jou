@@ -1,7 +1,7 @@
 file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case 1D_right.msh
+file read-case 2D_right.msh ; 2D mesh!
 grid check
 grid modify-zones zone-type 2 fluid
 
@@ -10,7 +10,7 @@ define user-defined user-defined-memory 11
 define models viscous laminar y
 define models solver pressure-based y
 define models energy y n n n y
-solve set equations flow n
+solve set equations flow y
 
 define materials copy fluid air pcm
 define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 1.5 yes constant 0.004 no yes 8.61e-4 n
@@ -24,10 +24,12 @@ define boundary-conditions wall boundary 0 n 0 n y temperature n 299.15 y motion
 ;define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
-solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1e-12
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-12
 
 solve set discretization-scheme temperature 0
+solve set discretization-scheme mom 0
+solve set discretization-scheme pressure 12
 solve set gradient-scheme n y
 ;solve set under-relaxation temperature 0.3
 
@@ -36,22 +38,25 @@ solve set gradient-scheme n y
 
 ;Initialise liquid at liquidus temp.
 solve initialize set-defaults temperature 299.15
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0
+solve initialize set-defaults y-velocity 0
 solve initialize initialize-flow
-;solve iterate 40
+solve iterate 40
 
 define models unsteady-1st-order y
+solve set p-v-coupling 24
 
 define dynamic-mesh dynamic-mesh y n n n n
 define dynamic-mesh controls smoothing y
 define dynamic-mesh controls smoothing-parameters smoothing-method diffusion
 define dynamic-mesh controls smoothing-parameters diffusion-coeff-function boundary-distance
-define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 0.5
+define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 1.0
 define dynamic-mesh controls smoothing-parameters max-iter 50
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
-; Last option below: exclude mesh motion in boundary conditions? n
-define dynamic-mesh zones create adiabatic deforming faceted n y n n , , , n n
-;define dynamic-mesh zones create 2 deforming y all n n 0.0006 0.0100 0.5
+; Last option below: exclude mesh motion in boundary conditions? y
+define dynamic-mesh zones create adiabatic deforming faceted n y n n , , , n y
 
 file write-case-data pc_fluid.cas.h5
 exit
