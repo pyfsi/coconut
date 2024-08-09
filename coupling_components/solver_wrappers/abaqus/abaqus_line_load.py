@@ -63,6 +63,10 @@ class SolverWrapperAbaqusLineLoad(SolverWrapper):
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
             self.mp_out.append(item['model_part'][:idx])
+        if not (len(self.settings['interface_input']) == 1 and len(self.settings['interface_output']) == 1):
+            raise ValueError('For line loads on beam elements, only 1 model part can be created. Instead, received'
+                             f'{len(self.settings["interface_input"])} input and '
+                             f'{len(self.settings["interface_output"])} model parts')
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
