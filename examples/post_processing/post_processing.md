@@ -275,9 +275,9 @@ in which several parameters are pre-set.
 
 The required positional argument is `subset`.
 
-| argument |                                                   type | description                            |
-|----------|-------------------------------------------------------:|:---------------------------------------|
-| `subset` | A `SubSet` or collection (list, tuple, ...) of SubSets | `Subset(s)` to be shown in the figure. |
+| argument |                                                 type | description                            |
+|----------|-----------------------------------------------------:|:---------------------------------------|
+| `subset` | `SubSet` or collection (list, tuple, ...) of SubSets | `Subset(s)` to be shown in the figure. |
 
 For two-dimensional figures (`Figure2d`), there are two additional required positional arguments.
 
@@ -290,14 +290,14 @@ These variables are the calculation variables specified in the JSON file, plus t
 
 Furthermore, there are several optional keyword arguments that apply to all `Figures`.
 
-| keyword argument |               type/value | description                                                                                                                                                                                                                                                                                                                                            |
-|------------------|-------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `figure_name`    |                      str | (optional) Name of the figure, shown as title of the plot window. Default is the class name.                                                                                                                                                                                                                                                           |
-| `aspect`         |   `'auto'` or `'aspect'` | (optional) If `'auto'` (default for 2d), the axis scaling of the axes is chosen to fill the plot window. If `'aspect' (default for 3d), alle axes are scaled in the same way.                                                                                                                                                                          |
-| `print_function` |      `False` or function | (optional) If not provided, the time is printed. Use `False` to disable or provide a custom function which receives time as single argument and returns a string.                                                                                                                                                                                      |
-| `text_box_style` |                     dict | (optional) Dictionary with settings determining the text box style. Default: `dict(facecolor='silver', edgecolor='black', pad=5.0, alpha=0.5)`                                                                                                                                                                                                         |
-| `text_location`  |      tuple of two floats | (optional) Window coordinates of the text box. Default: for 2d `(0.1, 0.1)`, for 3d `(0, 0)`.                                                                                                                                                                                                                                                          |
-| `name`           | str or collection of str | (optional) Name(s) of the `SubSet(s)` used in the legend and to identify the `SubSet`. If not provided, the `case_name` of the simulation appended by the model part name is used. If a collection of `SubSets` is provided: the value can be a single string, which will be appended with a number, or a collections of strings with the same length. |
+| keyword argument |               type/value | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|------------------|-------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `figure_name`    |                      str | (optional) Name of the figure, shown as title of the plot window. Default is the class name. This name has to be unique. If a figure with the provided name exists, a number will automatically be appended.                                                                                                                                                                                                                                                                  |
+| `aspect`         |   `'auto'` or `'aspect'` | (optional) If `'auto'` (default for 2d), the axis scaling of the axes is chosen to fill the plot window. If `'aspect' (default for 3d), alle axes are scaled in the same way.                                                                                                                                                                                                                                                                                                 |
+| `print_function` |      `False` or function | (optional) If not provided, the time is printed. Use `False` to disable or provide a custom function which receives time as single argument and returns a string.                                                                                                                                                                                                                                                                                                             |
+| `text_box_style` |                     dict | (optional) Dictionary with settings determining the text box style. Default: `dict(facecolor='silver', edgecolor='black', pad=5.0, alpha=0.5)`                                                                                                                                                                                                                                                                                                                                |
+| `text_location`  |      tuple of two floats | (optional) Window coordinates of the text box. Default: for 2d `(0.1, 0.1)`, for 3d `(0, 0)`.                                                                                                                                                                                                                                                                                                                                                                                 |
+| `name`           | str or collection of str | (optional) Name(s) of the `SubSet(s)` used in the legend and to identify the `SubSet`. If not provided, the `case_name` of the simulation appended by the model part name is used. If a collection of `SubSets` is provided: the value can be a single string, which will be appended with a number, or a collections of strings with the same length. This name is used to identify SubSets and has to be unique. Therefore, a number will appended if this is not the case. |
 
 Finally, there are keyword arguments that are specific to a type of class.
 
@@ -362,11 +362,6 @@ Animation2d(sx, 'initial_coordinates', 'displacement', x_component='x', y_compon
 ```
 
 ![Animation2dDisplacement](images/pp_2d_disp_2.gif)
-
-!!! warning "The `figure_name` is unique to a figure."
-
-	In the above examples, the `figure_name` is different because the class is diferent.
-    There cannot be two figures with the same `figure_name`. If one is created with the same name, the older one is deleted.
 
 !!! tip
 
@@ -459,6 +454,26 @@ The values that have to be used are the ones corresponding to the smallest match
 	```
 	print(coordinates_animation)
 	```
+
+## Time evolution
+
+To plot the time evolution of a variable, a special class `TimeEvolution` exists.
+This class is different from the ones previously mentioned since it has time on the abscissa (x-axis).
+It requires both a `SubSet` with a single point and a variable to be initialized.
+
+| argument   |                                                 type | description                                                                                                                                                                                                               |
+|------------|-----------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `subset`   | `SubSet` or collection (list, tuple, ...) of SubSets | `Subset(s)` to be shown in the figure, which must contain one point.                                                                                                                                                      |
+| `variable` |                                                  str | The variable to be shown on the ordinate (y-axis). These variables are the calculation variables specified in the JSON file, plus the variable `'coordinates'`. For example `'displacement'`, `'pressure'`, `'traction'`. |
+
+With the optional keyword argument `component`, a component can be selected.
+
+| argument     |                                 type | description                                                                                                       |
+|--------------|-------------------------------------:|:------------------------------------------------------------------------------------------------------------------|
+| `component`  | `'x'`, `'y'`, `'z'`, `0`, `1` or `2` | (optional) Selects the component of the variable that needs to be shown. If not provided, the magnitude is shown. |
+
+The keyword arguments `figure_name`, `aspect` and `name` can also be used, in the same way as for [visualizations](#complete-guide-to-visualizations).
+[Saving](#saving-figures), [chagnig the figure layout](#changing-the-figure-layout) and [adding multiple SubSets](#adding-multiple-subsets) are done in the same way, as well.
 
 !!! example "Experimental"
 

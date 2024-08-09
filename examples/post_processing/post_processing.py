@@ -179,7 +179,7 @@ class SubSet:
         # get time steps
         self.dt = self.run.dt
         self.complete_num_steps = self.solution_data.shape[0] - 1  # number of times steps
-        self.steps = np.arange(self.run.time_step_start, (self.complete_num_steps + 1))
+        self.steps = np.arange(self.run.time_step_start, (self.run.time_step_start + self.complete_num_steps + 1))
         self.times = self.steps * self.dt
 
         # get coordinates
@@ -345,38 +345,34 @@ class SubSet:
                f'time step{"" if self.num_steps == 1 else "s"} of {self.run}'
 
 
-class Figure:
-    def __init__(self, figure_name=None, aspect='auto', print_function=None, text_box_style=None):
+class BaseFigure:
+    def __init__(self, figure_name=None, aspect='auto'):
+        # check figure name, unique to figure
+        if figure_name is not None:
+            if not plt.fignum_exists(figure_name):
+                self.figure_name = figure_name
+            else:
+                self.figure_name = self._check_figure_name(figure_name)
+                tools.print_info(f'Figure_name "{figure_name}" already exists, changed to "{self.figure_name}"',
+                                 layout='warning')
+        else:
+            figure_name = f'{self.__class__.__name__}'
+            self.figure_name = self._check_figure_name(figure_name)
+
         self.subsets = []
-        self.figure_name = figure_name if figure_name is not None else self.__class__.__name__
         self.aspect = aspect
-
-        self.print_text = (print_function is not False)
-        if self.print_text:
-            self.text = None
-            self.print_function = self.print_time if print_function is None else print_function
-            self.text_box_style = text_box_style if text_box_style is not None else \
-                dict(facecolor='silver', edgecolor='black', pad=5.0, alpha=0.5)
-
         self.figure = plt.figure(self.figure_name)
         self.figure_number = self.figure.number
         self.ax = None
 
-        self.base_time_step = None  # potentially only used for initialization
-        self.time = None  # potentially only used for initialization
-        self.base_dt = None  # common minimal time step size
-        self.base_ts_start = None  # first base time step
-        self.base_ts_end = None  # final base time step
-
         super().__init__()
 
-    def _add_first_subset(self, subset, *args, **kwargs):
-        if self.base_dt is None:  # first subset
-            self.base_dt = subset.run.dt
-
-        # set time and time step for initialization
-        self.base_time_step = subset.get_steps_selection()[0]
-        self.time = self.base_time_step * self.base_dt
+    @staticmethod
+    def _check_figure_name(figure_name):
+        i = 1
+        while plt.fignum_exists(f'{figure_name} {i}'):
+            i += 1
+        return f'{figure_name} {i}'
 
     def _check_subset_name(self, subset, name):
         if name is None:
@@ -392,35 +388,6 @@ class Figure:
     def add_subset(self, subset, name=None):
         name = self._check_subset_name(subset, name)
         self.subsets.append((dict(name=name, subset=subset)))
-        self._update_time_step(subset)
-
-    def _update_time_step(self, subset):
-        old_base_dt = self.base_dt
-
-        # update base dt
-        lcm = self.lcm_of_denominator(self.base_dt, subset.run.dt)
-        if lcm > 1:
-            self.base_dt = 1 / self.lcm_of_denominator(self.base_dt, subset.run.dt)
-        else:
-            self.base_dt = np.gcd(self.base_dt, subset.run.dt)
-
-        if old_base_dt != self.base_dt:
-            tools.print_info(f'{self.figure_name}: SubSets with different time steps detected'
-                             f'\n\tUsed time step size is {self.base_dt}')
-
-        # update dt_ratio, base_ts_start and base_ts_end
-        for ss in self.subsets:
-            ss['dt_ratio'] = dt_ratio = int(ss['subset'].run.dt / self.base_dt)  # ratio of subset dt to base dt
-            ss['base_ts_start'] = ss['subset'].get_steps_selection()[0] * dt_ratio
-            ss['base_ts_end'] = (ss['subset'].get_steps_selection()[0]
-                                 + ss['subset'].get_num_steps() + 1) * dt_ratio - 1
-
-        # update global base time step start and end
-        self.base_ts_start = min([ss['base_ts_start'] for ss in self.subsets])
-        self.base_ts_end = max([ss['base_ts_end'] for ss in self.subsets])
-
-        # update base time step
-        self.base_time_step = self._convert_to_time_step(self.time)
 
     def remove_subset(self, name):
         names = self.get_subset_names()
@@ -452,49 +419,11 @@ class Figure:
     def get_subset_names(self):
         return [subset['name'] for subset in self.subsets]
 
-    @staticmethod
-    # find common denominator for updating time step sizes
-    def lcm_of_denominator(a, b, max_denominator=1e9):
-        """
-        Finds the least common multiple of denominators of two floats that have been converted to fractions.
-        :param a: First float.
-        :param b: Second float.
-        :param max_denominator: Max denominator allowed for conversion to fraction.
-        :return: Least common divider of the denominators.
-        """
-        fraction_a = Fraction(a).limit_denominator(int(max_denominator))
-        fraction_b = Fraction(b).limit_denominator(int(max_denominator))
-        multiple = np.lcm(fraction_a.denominator, fraction_b.denominator)
-        return multiple
-
-    def _convert_to_time_step(self, time, dt=None, max_denominator=1e9):
-        if dt is None:
-            dt = self.base_dt
-        return int(Fraction(time).limit_denominator(int(max_denominator)) / dt)
-
-    @staticmethod
-    def print_time(time):
-        if time is None:
-            # tools.print_info('{self.figure_name}: time has not been set', layout='warning')
-            return f"time = - s"
-        elif time >= 1e-4:
-            return f'time = {time:.4f} s'
-        else:
-            return f'time = {time * 1e6:.3f} µs'
-
-    def initialize(self):
-        pass
-
-    def update(self, base_time_step):
-        pass
-
     def update_figure_layout(self):
         if self.ax is not None:
             self.ax.set_aspect(self.aspect, adjustable='datalim')
             if len(self.subsets) > 1:
                 self.ax.legend()
-        if self.print_text:
-            self.text.set_text(self.print_time(self.base_time_step * self.base_dt))
         self.figure.tight_layout()
 
     def get_figure(self):
@@ -513,6 +442,105 @@ class Figure:
         if file_path is None:
             file_path = f'{self.figure_name}.png'
         self.figure.savefig(file_path)
+
+
+class Figure(BaseFigure):
+    def __init__(self, figure_name=None, aspect='auto', print_function=None, text_box_style=None):
+        self.print_text = (print_function is not False)
+        if self.print_text:
+            self.text = None
+            self.print_function = self.print_time if print_function is None else print_function
+            self.text_box_style = text_box_style if text_box_style is not None else \
+                dict(facecolor='silver', edgecolor='black', pad=5.0, alpha=0.5)
+
+        self.base_time_step = None  # potentially only used for initialization
+        self.time = None  # potentially only used for initialization
+        self.base_dt = None  # common minimal time step size
+        self.base_ts_start = None  # first base time step
+        self.base_ts_end = None  # final base time step
+
+        super().__init__(figure_name=figure_name, aspect=aspect)
+
+    def _add_first_subset(self, subset, *args, **kwargs):
+        if self.base_dt is None:  # first subset
+            self.base_dt = subset.run.dt
+
+        # set time and time step for initialization
+        self.base_time_step = subset.get_steps_selection()[0]
+        self.time = self.base_time_step * self.base_dt
+
+    def add_subset(self, subset, name=None):
+        super().add_subset(subset, name=name)
+        self._update_time_step(subset)
+
+    def _update_time_step(self, subset):
+        old_base_dt = self.base_dt
+
+        # update base dt
+        lcm = self.lcm_of_denominator(self.base_dt, subset.run.dt)
+        if lcm > 1:
+            self.base_dt = 1 / self.lcm_of_denominator(self.base_dt, subset.run.dt)
+        else:
+            self.base_dt = np.gcd(self.base_dt, subset.run.dt)
+
+        if old_base_dt != self.base_dt:
+            tools.print_info(f'{self.figure_name}: SubSets with different time steps detected'
+                             f'\n\tUsed time step size is {self.base_dt}')
+
+        # update dt_ratio, base_ts_start and base_ts_end
+        for ss in self.subsets:
+            ss['dt_ratio'] = dt_ratio = int(ss['subset'].run.dt / self.base_dt)  # ratio of subset dt to base dt
+            ss['base_ts_start'] = ss['subset'].get_steps_selection()[0] * dt_ratio
+            ss['base_ts_end'] = (ss['subset'].get_steps_selection()[0]
+                                 + ss['subset'].get_num_steps() + 1) * dt_ratio - 1
+
+        # update global base time step start and end
+        self.base_ts_start = min([ss['base_ts_start'] for ss in self.subsets])
+        self.base_ts_end = max([ss['base_ts_end'] for ss in self.subsets])
+
+        # update base time step
+        self.base_time_step = self._convert_to_time_step(self.time)
+
+    @staticmethod
+    # find common denominator for updating time step sizes
+    def lcm_of_denominator(a, b, max_denominator=1e9):
+        """
+        Finds the least common multiple of denominators of two floats that have been converted to fractions.
+        :param a: First float.
+        :param b: Second float.
+        :param max_denominator: Max denominator allowed for conversion to fraction.
+        :return: Least common divider of the denominators.
+        """
+        fraction_a = Fraction(a).limit_denominator(int(max_denominator))
+        fraction_b = Fraction(b).limit_denominator(int(max_denominator))
+        multiple = np.lcm(fraction_a.denominator, fraction_b.denominator)
+        return multiple
+
+    def _convert_to_time_step(self, time, dt=None, max_denominator=1e9):
+        if dt is None:
+            dt = self.base_dt
+        return round(Fraction(time).limit_denominator(int(max_denominator)) / dt)
+
+    @staticmethod
+    def print_time(time):
+        if time is None:
+            return f"time = - s"
+        elif time >= 1e-4 or time == 0:
+            return f'time = {time:.4f} s'
+        else:
+            return f'time = {time * 1e6:.3f} µs'
+
+    def initialize(self):
+        pass
+
+    def update(self, base_time_step):
+        pass
+
+    def update_figure_layout(self):
+        super().update_figure_layout()
+        if self.print_text:
+            self.text.set_text(self.print_time(self.base_time_step * self.base_dt))
+        self.figure.tight_layout()
 
 
 class Figure2d(Figure):
@@ -660,13 +688,15 @@ class Figure2d(Figure):
 
     def update_x_limits(self):
         min_value, max_value = self._update_limits('x_limits')
-        margin = (max_value - min_value) * 0.05
-        self.ax.set_xlim([min_value - margin, max_value + margin])
+        if min_value < max_value:
+            margin = (max_value - min_value) * 0.05
+            self.ax.set_xlim([min_value - margin, max_value + margin])
 
     def update_y_limits(self):
         min_value, max_value = self._update_limits('y_limits')
-        margin = (max_value - min_value) * 0.05
-        self.ax.set_ylim([min_value - margin, max_value + margin])
+        if min_value < max_value:
+            margin = (max_value - min_value) * 0.05
+            self.ax.set_ylim([min_value - margin, max_value + margin])
 
     def get_lines(self):
         return [subset['line'] for subset in self.subsets]
@@ -755,19 +785,16 @@ class Figure3d(Figure):
             raise ValueError('Provided argument(s) should be of type SubSet or iterator of SubSets')
 
     def _add_first_subset(self, subset, variable=None, color_by=None, component=None, time_step=None, time=None):
-
         super()._add_first_subset(subset, time_step=time_step, time=time)
 
         # check variable
-        if self.variable is None:
-            # check variable
-            if variable is None:
-                self.variable = 'coordinates' if 'displacement' in subset.available_vars else 'initial_coordinates'
-            elif variable in ('coordinates', 'initial_coordinates'):
-                self.variable = variable
-            else:
-                available_vars = subset.get_available_variables() + ['initial_coordinates']
-                raise ValueError(f'Variable "{variable}"s unknown, choose from {", ".join(available_vars)}')
+        if variable is None:
+            self.variable = 'coordinates' if 'displacement' in subset.available_vars else 'initial_coordinates'
+        elif variable in ('coordinates', 'initial_coordinates'):
+            self.variable = variable
+        else:
+            available_vars = subset.get_available_variables() + ['initial_coordinates']
+            raise ValueError(f'Variable "{variable}"s unknown, choose from {", ".join(available_vars)}')
 
         # check color_by
         if self.color_by is None:
@@ -971,6 +998,8 @@ class Animation(Figure):
 
         if func_animation_settings is None:
             func_animation_settings = {}
+        else:
+            func_animation_settings = dict(func_animation_settings)
         # frames: iterable, int, generator function, or None, optional
         #     (None) Plots all non-empty frames.
         #     (int) Number of frames (<= number of time steps + 1).
@@ -1086,8 +1115,112 @@ class Animation3d(Animation, Figure3d):
     pass
 
 
-class TimeEvolution:
-    pass
+class TimeEvolution(BaseFigure):
+    def __init__(self, subset, variable, component=None, name=None, **kwargs):
+        super().__init__(**kwargs)
+
+        self.variable = None
+
+        self.ax = self.figure.add_subplot()
+        self.lines = []
+
+        # add subsets if provided
+        settings = dict(component=component)
+        if isinstance(subset, SubSet):
+            self.add_subset(subset, variable, name=name, **settings)
+        elif isinstance(subset, collections.abc.Sequence) and all(isinstance(ss, SubSet) for ss in subset):
+            if name is None:
+                names = (None,) * len(subset)
+            elif isinstance(name, str) or name is None:
+                names = (f'{name} {i}' for i in range(len(subset)))
+            elif isinstance(name, collections.abc.Sequence) and all(isinstance(n, str) for n in name):
+                names = name
+                if len(name) != len(subset):
+                    raise ValueError('"name" should have the same length as the number of arguments provided')
+            else:
+                raise ValueError('"name" should be None, string or iterator of strings')
+            for subset, name in zip(subset, names):
+                if isinstance(subset, SubSet):
+                    self.add_subset(subset, variable, name=name, **settings)
+        else:
+            raise ValueError('Provided argument(s) should be of type SubSet or iterator of SubSets')
+
+    def _add_first_subset(self, subset, variable):
+        # check variable
+        if variable not in subset.get_available_variables():
+            raise ValueError(f'x_variable "{variable}" is unknown, choose from '
+                             f'{", ".join(subset.get_available_variables())}')
+        self.variable = variable
+
+        self.ax.set_xlabel('time')
+        self.ax.set_ylabel(self.variable.replace('_', ' '))
+
+    def add_subset(self, subset, *args, component=None, name=None, **kwargs):
+        # check if first subset
+        if len(self.subsets) == 0:
+            self._add_first_subset(subset, *args)
+
+        # check if provided instance is SubSet
+        if not isinstance(subset, SubSet):
+            raise ValueError('Provided argument should be of type SubSet')
+
+        # check if variables are present in subset
+        if self.variable not in subset.get_available_variables():
+            raise ValueError(f'Cannot add subset: "{self.variable}" not present in provided SubSet: \n{subset}')
+
+        # check number of points in subset
+        if subset.size > 1:
+            raise ValueError(f'More than one point in SubSet')
+
+        # check component
+        if component not in (0, 1, 2, None):
+            if component in ('x', 'y', 'z'):
+                component = ('x', 'y', 'z').index(component)
+            else:
+                raise ValueError(f'component "{component}" invalid, choose from 0, 1, 2 or "x", "y", "z" or None')
+
+        # add subset
+        name = self._check_subset_name(subset, name)
+        if self.variable == 'coordinates' or variables_dimensions[self.variable] == 3:
+            if component is not None:
+                name += f' {("x", "y", "z")[component]}-component'
+            else:
+                name += ' magnitude '
+
+        def min_max(a):
+            return np.min(a), np.max(a)
+
+        x = subset.get_times_selection()
+        x_min, x_max = min_max(x)
+
+        y = subset.get_values(self.variable, component=component)
+
+        if len(y.shape) == 3:  # calculate magnitude
+            y = np.linalg.norm(y, axis=-1)
+        y_min, y_max = min_max(y)
+
+        line, = self.ax.plot(x, y, label=name)
+
+        self.subsets.append(dict(name=name, subset=subset, line=line, x_limits=[x_min, x_max], y_limits=[y_min, y_max],
+                                 component=component))
+
+        self.update_figure_layout()
+
+    def _repr_component(self, component):
+        if self.variable is not None and \
+                (self.variable == 'coordinates' or variables_dimensions[self.variable] == 3):
+            if component is not None:
+                return f'{("x", "y", "z")[component]}-component of '
+            else:
+                return 'magnitude of '
+        else:
+            return ''
+
+    def __repr__(self):
+        ss = [f'{self._repr_component(ss["component"])}{self.variable.replace("_", " ")} '
+              f'in function of time for \n{ss["subset"]}' for ss in self.subsets]
+        return f'{self.figure_name} named {self.figure_name} showing:\n' \
+               f'{", ".join(ss)}'
 
 
 def accept_post_process(subset, interface_name, kwargs):
