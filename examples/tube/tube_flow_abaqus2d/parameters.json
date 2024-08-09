@@ -92,7 +92,6 @@
                   ]
                 }
               ],
-              "mp_mode": "THREADS",
               "input_file": "case_tube2d.inp"
             }
           },

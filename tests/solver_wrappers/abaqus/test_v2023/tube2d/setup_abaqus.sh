@@ -6,4 +6,4 @@
 rm -rf ./CSM
 
 # create new folder
-cp -r ../../test_v2021/tube2d/setup_abaqus CSM
+cp -r ../../test_v2024/tube2d/setup_abaqus CSM
