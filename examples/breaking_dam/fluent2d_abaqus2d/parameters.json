@@ -158,7 +158,6 @@
                   ]
                 }
               ],
-              "mp_mode": "THREADS",
               "input_file": "case_breaking_dam.inp",
               "save_results": 1
             }

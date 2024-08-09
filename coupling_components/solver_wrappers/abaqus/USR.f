@@ -20,68 +20,23 @@ C==============================================================================
       DOUBLE PRECISION LOADOLD(D+1,N,S)
 #endif
       INTEGER FILLED,
-#ifdef MPI
-     &        K(S),L(S),
-#endif
      &        M(S)
       COMMON /TABLE/ LOADNEW,
 #if RAMP
      &               LOADOLD,
 #endif
      &               FILLED,
-#ifdef MPI
-     &               K,L,
-#endif
      &               M
       SAVE /TABLE/
 
-#ifdef MPI
-      INTEGER ID,IDENTIFIED
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-#else
       INTEGER OP(2,S),ELS(2,N,S)
       COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
-#endif
 
       DATA FILLED/-1/
-#ifdef MPI
-      DATA IDENTIFIED/-1/
-      DATA K/S*1/
-      DATA L/S*1/
-#endif
 
       END
 
-#ifdef MPI
-C==============================================================================
-C======================== IDENTIFY SUBROUTINE =================================
-C==============================================================================
-      SUBROUTINE IDENTIFY
-      
-      IMPLICIT NONE
-      
-      INCLUDE 'mpif.h'
-
-      INTEGER ID,IDENTIFIED,IERROR
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-      
-      IF (|cpus| > 1) THEN
-         CALL MPI_COMM_RANK(MPI_COMM_WORLD,ID,IERROR)
-         IF (IERROR < 0) THEN
-            CALL STDB_ABQERR(-3,'USR-error: problem while identifying')
-         END IF
-      ELSE
-         ID = 0
-      END IF
-       
-      IDENTIFIED = 1
-      
-      RETURN
-      END
-#else
 C==============================================================================
 C======================== LOOKUP SUBROUTINE ===================================
 C==============================================================================
@@ -117,7 +72,6 @@ C==============================================================================
 
       RETURN
       END
-#endif
      
 C==============================================================================
 C======================== READDATA SUBROUTINE =================================
@@ -136,26 +90,15 @@ C==============================================================================
       DOUBLE PRECISION LOADOLD(D+1,N,S)
 #endif
       INTEGER FILLED,
-#ifdef MPI
-     &        K(S),L(S),
-#endif
      &        M(S)
       COMMON /TABLE/ LOADNEW,
 #if RAMP
      &               LOADOLD,
 #endif
      &               FILLED,
-#ifdef MPI
-     &               K,L,
-#endif
      &               M
       SAVE /TABLE/
 
-#ifdef MPI
-      INTEGER ID,IDENTIFIED
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-#else
       INTEGER ID
       INTEGER OP(2,S),ELS(2,N,S)
       COMMON /OPELS/ OP,ELS
@@ -163,25 +106,17 @@ C==============================================================================
 
       CHARACTER(LEN=40) :: FMT_ELEM
       INTEGER UNIT_ELEM
-#endif
 
       CHARACTER(LEN=40) :: FMT_LOAD
       CHARACTER(LEN=200) :: FILENAME
       INTEGER I,R,UNIT_LOAD,IOS,KSTEP
 
-#ifndef MPI
 !$OMP CRITICAL
       IF (FILLED < 0) THEN
-#endif
 
       FMT_LOAD = '(ES27.17E2,|dimension|ES27.17E2)'
       UNIT_LOAD = 100
-     
-#ifdef MPI
-      IF (IDENTIFIED < 0) THEN
-         CALL IDENTIFY
-      END IF
-#else
+
       ID = 0
 
       FMT_ELEM = '(I10,BN,I11)'
@@ -210,7 +145,6 @@ C==============================================================================
          END DO
          CLOSE(UNIT_ELEM)
       END DO
-#endif
       
       DO R = 1,S
          WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)') 
@@ -264,10 +198,8 @@ C==============================================================================
 
       FILLED = 1
 
-#ifndef MPI
       END IF
 !$OMP END CRITICAL
-#endif
 
       RETURN
       END
@@ -295,18 +227,12 @@ C==============================================================================
       DOUBLE PRECISION LOADOLD(D+1,N,S),DT
 #endif
       INTEGER FILLED,
-#ifdef MPI
-     &        K(S),L(S),
-#endif
      &        M(S)
       COMMON /TABLE/ LOADNEW,
 #if RAMP
      &               LOADOLD,
 #endif
      &               FILLED,
-#ifdef MPI
-     &               K,L,
-#endif
      &               M
       SAVE /TABLE/
 
@@ -315,13 +241,10 @@ C==============================================================================
       INTEGER KSTEP,KINC,NOEL,NPT,LAYER,KSPT,JLTYP,R
       LOGICAL :: FOUND
 
-#ifndef MPI
       INTEGER K
       INTEGER OP(2,S),ELS(2,N,S)
       COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
-#endif
-
       IF (FILLED < 0) THEN
          CALL READDATA(KSTEP)
       END IF
@@ -353,19 +276,6 @@ C==============================================================================
       ELSE
          R = 1
       END IF
-#ifdef MPI
-#if RAMP
-      F = LOADNEW(1,K(R),R)*(TIME(1)/DT)
-     &   +LOADOLD(1,K(R),R)*(1.0-TIME(1)/DT)
-#else
-      F = LOADNEW(1,K(R),R)
-#endif
-
-      K(R) = K(R)+1
-      IF (K(R) == (M(R)+1)) THEN
-         K(R) = 1
-      END IF
-#else
       CALL LOOKUP(NOEL,R,K)
       K = ELS(2,K,R)+NPT
 
@@ -374,7 +284,6 @@ C==============================================================================
      &   +LOADOLD(1,K,R)*(1.0-TIME(1)/DT)
 #else
       F = LOADNEW(1,K,R)
-#endif
 #endif
 
       RETURN
@@ -403,18 +312,12 @@ C==============================================================================
       DOUBLE PRECISION LOADOLD(D+1,N,S)
 #endif
       INTEGER FILLED,
-#ifdef MPI
-     &        K(S),L(S),
-#endif
      &        M(S)
       COMMON /TABLE/ LOADNEW,
 #if RAMP
      &               LOADOLD,
 #endif
      &               FILLED,
-#ifdef MPI
-     &               K,L,
-#endif
      &               M
       SAVE /TABLE/
 
@@ -423,12 +326,10 @@ C==============================================================================
       INTEGER KSTEP,KINC,NOEL,NPT,JLTYP,R
       LOGICAL :: FOUND
 
-#ifndef MPI
       INTEGER L
       INTEGER OP(2,S),ELS(2,N,S)
       COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
-#endif
 
       IF (FILLED < 0) THEN
          CALL READDATA(KSTEP)
@@ -454,19 +355,10 @@ C==============================================================================
          R = 1
       END IF
 
-#ifdef MPI
-      T_USER = LOADNEW(2:D+1,L(R),R)
-
-      L(R) = L(R)+1
-      IF (L(R) == (M(R)+1)) THEN
-         L(R) = 1
-      END IF
-#else
       CALL LOOKUP(NOEL,R,L)
       L = ELS(2,L,R)+NPT
 
       T_USER = LOADNEW(2:D+1,L,R)
-#endif
 
       ALPHA = SQRT(SUM(T_USER**2))
       IF (ALPHA /= 0.0) THEN
