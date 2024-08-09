@@ -20,6 +20,8 @@ solver_load_cmd_dict = {
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
+        'abaqus.line_load_v2024': 'ml intel/2022b && ml ABAQUS/2024 '
+                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
     },
     'ugent_cluster_CO7': {
         'fluent.v2019R3': 'ml ANSYS_CFD/2019R3',

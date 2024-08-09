@@ -87,6 +87,14 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
     def test_partitioning(self):
         # test if different partitioning gives the same aerodynamic forces
 
+        """
+        NOTE: for the partitioning test, it is important that the actuator points do NOT coincide with mesh points.
+        If this happens, the find_cell_at_yarn_points-function in the UDF can/will assign different cells as 'owner'
+        for this yarn points, for different partitioning. This then causes a slight change in sampled density (as this
+        is a cell-centered sampling), leading to a change in aerodynamic forces and eventually velocities as well.
+        I noticed for this unit test that the relative difference is then in the order of 1e-4, causing the test to fail.
+        """
+
         self.parameters['settings']['flow_iterations'] = 250
 
         # create two solvers with different partitioning and solve solution step

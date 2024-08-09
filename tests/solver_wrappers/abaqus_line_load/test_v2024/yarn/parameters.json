@@ -1,0 +1,30 @@
+{
+  "type": "solver_wrappers.abaqus.line_load_v2024",
+  "settings": {
+    "working_directory": "solver_wrappers/abaqus_line_load/test_v2024/yarn/CSM",
+    "cores": 1,
+    "dimensions": 3,
+    "arraysize": 1e5,
+    "delta_t": 1e-3,
+    "timestep_start": 0,
+    "save_restart": 1,
+    "interface_input": [
+      {
+        "model_part": "YARN_load_points",
+        "variables": [
+          "traction"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "YARN_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "mp_mode": "THREADS",
+    "input_file": "yarn.inp"
+  }
+}
