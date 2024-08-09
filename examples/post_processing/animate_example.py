@@ -38,7 +38,7 @@ for i, animation in enumerate(animations):
     # add units to the labels
     ax.set_xlabel(f'{ax.xaxis.get_label().get_text()} (m)')
     y_label = ax.yaxis.get_label().get_text()
-    ax.set_ylabel(f'{y_label} ({"Pa" if "pressure" in y_label else "m"})')
+    ax.set_ylabel(f'{y_label} ({"Pa" if "pressure" in y_label or "traction" in y_label else "m"})')
 
 # save animations
 save = False

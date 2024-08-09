@@ -1,4 +1,4 @@
-from coconut.examples.post_processing.animate import AnimationFigure
+from coconut.examples.post_processing.post_processing import *
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,44 +11,22 @@ case_paths = ['case_results.pickle']
 legend_entries = ['CoCoNuT']
 data = {}
 
-for name, path in zip(legend_entries, case_paths):
-    # case to be plotted
-    case_path = os.path.join(common_path, path)
+pps = [None] * len(case_paths)
+sxs = [None] * len(case_paths)
+for i, path in enumerate(case_paths):
+    pps[i] = pp = PostProcess(path)
+    sxs[i] = sx = pp.add_subset(interface='interface_x')
 
-    # load case
-    results = pickle.load(open(case_path, 'rb'))
-
-    # make figure and create animation for each case
-    animation_figure = AnimationFigure()  # figure for coordinate animations
-
-    solution = results['solution_x']
-    interface = results['interface_x']
-    dt = results['delta_t']
-    time_step_start = results['timestep_start']
-    # create animate object
-    try:
-        animation = animation_figure.add_animation(solution, interface, dt, time_step_start, variable='displacement',
-                                                   model_part_name='cavitybottom_nodes')
-    except Exception:
-        animation = animation_figure.add_animation(solution, interface, dt, time_step_start, variable='displacement',
-                                                   model_part_name='StructureInterface2D_StructureInterface_output')
-
-    # select points and component of variable to plot
-    coordinates = animation.coordinates
-    mask_x = (abs(coordinates[:, 0] - 0.5) < 1e-16)
-    mask_y = (coordinates[:, 1] > -np.inf)
-    mask_z = (coordinates[:, 2] > -np.inf)
-    abscissa = 0  # x-axis
-    component = 1  # y-component
-
-    animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
+    # select point to plot
+    coordinates = sx.get_all_initial_coordinates()
+    sx.select_points(abs(coordinates[:, 0] - 0.5) < 1e-16)
 
     # variables
-    uy = np.mean(np.array(animation.solution), axis=1)  # y displacement of center
-    ux = np.mean(np.array(animation.displacement), axis=1)  # x displacement of center
-    time = animation.time_step_start + np.arange(animation.time_steps + 1) * animation.dt
+    ux = np.mean(sx.get_values('displacement', 'x'), axis=1)  # x displacement of center
+    uy = np.mean(sx.get_values('displacement', 'y'), axis=1)  # y displacement of center
+    time = sx.get_all_times()
 
-    data.update({name: (time, ux, uy)})
+    data.update({legend_entries[i]: (time, ux, uy)})
 
 # plot
 save = False
@@ -66,7 +44,7 @@ for reference in ('Mok', 'Valdes'):
 
 for i, name in enumerate(legend_entries):
     time, ux, uy = data[name]
-    # plt.plot(time, ux, label=name + ' displacement x', color=colors[j + i], linewidth=1.5, linestyle='--')
+    plt.plot(time, ux, label=name + ' displacement x', color=colors[j + i], linewidth=1.5, linestyle='--')
     plt.plot(time, uy, label=name + ' displacement y', color=colors[j + i], linewidth=1.5, linestyle='-')
 
 plt.xlabel('time (s)')
