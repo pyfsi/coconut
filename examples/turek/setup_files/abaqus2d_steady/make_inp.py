@@ -10,17 +10,21 @@ from job import *
 from sketch import *
 from visualization import *
 from connectorBehavior import *
-import importlib.util
-import sys
 
-coconut_path = importlib.util.find_spec('coconut').submodule_search_locations[0]
-spec = importlib.util.spec_from_file_location('make_surface',
-                                              coconut_path +
-                                              '/coupling_components/solver_wrappers/abaqus/extra/make_surface.py')
-module = importlib.util.module_from_spec(spec)
-sys.modules['make_surface'] = module
-spec.loader.exec_module(module)
-from make_surface import *
+import sys
+if sys.version_info[0] == 2:
+    # Abaqus 2023 and older work with Python 2.7; this version can't work with the symbols in the CoCoNuT logo
+    # Therefore, make_surface has to be imported as a stand-alone module
+    import imp
+
+    coconut_path = imp.find_module('coconut')[1]
+    fp, path_name, description = imp.find_module('make_surface',
+                                                 [coconut_path + '/coupling_components/solver_wrappers/abaqus/extra/'])
+    imp.load_module('make_surface', fp, path_name, description)
+    from make_surface import *
+else:
+    # Abaqus 2024 and newer work with Python 3.10; a normal import is possible
+    from coconut.coupling_components.solver_wrappers.abaqus.extra.make_surface import *
 
 e_modulus = 1.4e6
 poisson_coefficient = 0.4
