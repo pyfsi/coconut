@@ -50,8 +50,8 @@ file set-batch-options n n n
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
         (ti-menu-load-string "define user-defined user-defined-memory 4")
-        (ti-menu-load-string "define user-defined compiled-functions compile \"v2023R1\" y \"alm_v2023R1.c\" \"\" \"\"")
-        (ti-menu-load-string "define user-defined compiled-functions load \"v2023R1\"")
+        (ti-menu-load-string "define user-defined compiled-functions compile \"alm\" y \"alm.c\" \"\" \"\"")
+        (ti-menu-load-string "define user-defined compiled-functions load \"alm\"")
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
@@ -66,10 +66,10 @@ report summary y "report.sum"
 ;   SETUP ALM FUNCTION HOOKS
 (if (= timestep_start 0)
     (begin
-        (ti-menu-load-string "define user-defined function-hooks adjust \"set_source::v2023R1\"")
+        (ti-menu-load-string "define user-defined function-hooks adjust \"set_source::alm\"")
         ; !!! The number of sources changes when other turbulence models are used! (The following line works for the 2-eqn models). This makes everything very case-specific!
         ; Additionally, it is now mandatory that the fluid zone where the sources are defined is called "fluid"
-        (ti-menu-load-string "define boundary-conditions fluid fluid no yes 0 1 no yes \"xmom_source::v2023R1\" 1 no yes \"ymom_source::v2023R1\" 1 no yes \"zmom_source::v2023R1\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no")
+        (ti-menu-load-string "define boundary-conditions fluid fluid no yes 0 1 no yes \"xmom_source::alm\" 1 no yes \"ymom_source::alm\" 1 no yes \"zmom_source::alm\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no")
         (ti-menu-load-string "solve report-definitions add f_x volume-integral report-type volume-integral field udm-1 zone-names fluid () average-over 1 per-zone? no quit")
         (ti-menu-load-string "solve report-definitions add f_y volume-integral report-type volume-integral field udm-2 zone-names fluid () average-over 1 per-zone? no quit")
         (ti-menu-load-string "solve report-definitions add f_z volume-integral report-type volume-integral field udm-3 zone-names fluid () average-over 1 per-zone? no quit")
@@ -79,7 +79,7 @@ report summary y "report.sum"
 ;
 ;   READ COORDINATES
 (wait_message "model_parts_created")
-(ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::v2023R1\"")
+(ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::alm\"")
 ;
 ;   SET DELTA_T
 (if unsteady
@@ -98,7 +98,7 @@ report summary y "report.sum"
     (if (check_message "next")
         (begin
             |END_OF_TIMESTEP_COMMANDS|
-            (ti-menu-load-string "define user-defined execute-on-demand \"increase_time::v2023R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"increase_time::alm\"")
             (rpsetvar 'udf/iteration 0)
             (rpsetvar 'udf/timestep (+ (%rpgetvar 'udf/timestep) 1))
             (print-iter-info)
@@ -108,7 +108,7 @@ report summary y "report.sum"
     (if (check_message "continue")
         (begin
             (rpsetvar 'udf/iteration (+ (%rpgetvar 'udf/iteration) 1))
-            (ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::v2023R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::alm\"")
             (print-iter-info)
             (if check_coupling_convergence
                 (begin
@@ -183,13 +183,13 @@ report summary y "report.sum"
                     )
                 )
             )
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_traction::v2023R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_traction::alm\"")
             (send_message "continue_ready")
         )
     )
     (if (check_message "store_grid")
         (begin
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2023R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::alm\"")
             (send_message "store_grid_ready")
         )
     )

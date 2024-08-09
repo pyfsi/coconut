@@ -12,10 +12,10 @@ from scipy.interpolate import splprep, splev
 
 
 def create(parameters):
-    return SolverWrapperALMFluent(parameters)
+    return SolverWrapperFluentALM(parameters)
 
 
-class SolverWrapperALMFluent(SolverWrapper):
+class SolverWrapperFluentALM(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
@@ -76,7 +76,7 @@ class SolverWrapperALMFluent(SolverWrapper):
         super().initialize()
 
         # prepare Fluent journal
-        journal = f'alm_v{self.version}.jou'
+        journal = f'alm.jou'
         unsteady = '#t' if self.unsteady else '#f'
         check_coupling_convergence = '#t' if self.check_coupling_convergence else '#f'
         with open(join(self.dir_src, journal)) as infile:
@@ -106,7 +106,7 @@ class SolverWrapperALMFluent(SolverWrapper):
                              f'({data.shape[0]})')
 
         # prepare Fluent UDF
-        udf = f'alm_v{self.version}.c'
+        udf = f'alm.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:

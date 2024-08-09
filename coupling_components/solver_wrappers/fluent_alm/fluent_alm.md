@@ -3,12 +3,12 @@
 This is the documentation for the adaptation of the Actuator Line Method (ALM) for textile yarns in air-jet weaving, incorporated in ANSYS Fluent [[1](#1)].
 
 
-## Fluid-Structure Interaction with `alm_fluent`
+## Fluid-Structure Interaction with `fluent_alm`
 
-The functioning of this solver wrapper is entirely based on the original [Fluent solver wrapper](./fluent.md). Due to the nature of the ALM, there are some important changes, however.
+The functioning of this solver wrapper is entirely based on the original [Fluent solver wrapper](../fluent/fluent.md). Due to the nature of the ALM, there are some important changes, however.
 Most importantly, the deformable object is no longer physically present in the flow domain. This changes the workflow somewhat. 
 The user should provide a file *`coordinates_timestep0.dat`* containing the initial position of the yarn. The first line should consist of the number of actuator points, 
-the other lines declare the position of the actuator points: each line contains the x, y, z coordinates of an actuator point in columns (units of [m]), see e.g. [this unit test file](../../../tests/solver_wrappers/alm_fluent/test_v2023R1/yarn3d/setup_fluent/coordinates_timestep0.dat).
+the other lines declare the position of the actuator points: each line contains the x, y, z coordinates of an actuator point in columns (units of [m]), see e.g. [this unit test file](../../../tests/solver_wrappers/fluent_alm/test_v2023R1/yarn3d/setup_fluent/coordinates_timestep0.dat).
 The solver wrapper assumes that the actuator points are sorted by increasing arc length, meaning that the physical neighbours of an actuator point are also neighbours in the coordinates file, leading to a certain connectivity.
 
 In the regular Fluent solver wrapper, both pressure and traction are exchanged with the coupled solver. In contrast, the current ALM framework stores the aerodynamic forces in the traction variable, and as such the pressure variable is not used.
@@ -16,15 +16,15 @@ In the regular Fluent solver wrapper, both pressure and traction are exchanged w
 
 ## Known limitations
 
-* Currently, the solver wrapper supports only one yarn in a case. To allow for more actuator line objects in a single simulation, the UDF (*`alm_v2023R1.c`*) should be adapted (adding a dimension to the global variables in lines 50-60 and an additional outer for-loop around each walk through the actuator line object)
-as well as the removal of the check at lines 58-60 in the [solver wrapper](./alm_fluent.py).
+* Currently, the solver wrapper supports only one yarn in a case. To allow for more actuator line objects in a single simulation, the UDF (*`alm.c`*) should be adapted (adding a dimension to the global variables in lines 50-60 and an additional outer for-loop around each walk through the actuator line object)
+as well as the removal of the check at lines 58-60 in the [solver wrapper](./fluent_alm.py).
 
-* Only 3D cases are supported, even though a majority of the [UDF](./alm_v2023R1.c) uses the built-in `ND_ND` to allow for both 2D and 3D cases, the velocity sampling currently relies on the assumption of a fully 3D case.
+* Only 3D cases are supported, even though a majority of the [UDF](./alm.c) uses the built-in `ND_ND` to allow for both 2D and 3D cases, the velocity sampling currently relies on the assumption of a fully 3D case.
 
-* The correlation between local relative Reynolds number, yarn orientation and aerodynamic forces is hardcoded in the [UDF](./alm_v2023R1.c) (function `initialize_force_coefficients` and lines 521 and 526 in the function `calculate_yarn_forces`) based on the correlations derived in Bral et al. [[2](#2)].
+* The correlation between local relative Reynolds number, yarn orientation and aerodynamic forces is hardcoded in the [UDF](./alm.c) (function `initialize_force_coefficients` and lines 521 and 526 in the function `calculate_yarn_forces`) based on the correlations derived in Bral et al. [[2](#2)].
 If one desires alternative relations, because e.g. another type of yarn is investigated, these lines of code should be adapted.
 
-* The aerodynamic forces that the yarn exerts on the flow are introduced in the flow domain by means of momentum source terms. These are defined automatically by CoCoNuT by means of the [journal file](./alm_v2023R1.jou), see line 72. 
+* The aerodynamic forces that the yarn exerts on the flow are introduced in the flow domain by means of momentum source terms. These are defined automatically by CoCoNuT by means of the [journal file](./alm.jou), see line 72. 
 However, this line of code is designed and tested specifically for the k-omega SST turbulence model. It is expected (but not tested) that this works for other two-equation turbulence models as well, but it definitely needs adaptation when using other turbulence models such as Spalart-Allmaras or the Reynolds Stress equation Model.
 
 ```scheme
@@ -35,7 +35,7 @@ However, this line of code is designed and tested specifically for the k-omega S
 The value of the momentum source terms then depend on the tangential and radial coordinates $\vec{t}$ and $\vec{r}$. This implies that the yarn ends are represented in a sharp manner in the computational domain, as also suggested by the figure.
 As a consequence, there is a possibility for a cell half-width error in the smearing of the forces in the flow domain: if a cell center is just within an actuator element, it will consider the complete cell as part of the actuator element, thus making the yarn artificially longer (conversely when a cell center is just not within an actuator element, the yarn will appear shorter than it actually is).  
 This error might become significant for short yarns (few actuator elements $E_i$) and a relatively coarse cell compared to the actuator element. Be cautious when simulating short yarns. 
-The magnitude of the error can be estimated by comparing the volume integral of the momentum sources in the file *`report-coconut.out`* to the line integral of the aerodynamic forces in the file *`traction_timestepA.dat`* (see e.g. the `test_forces`-method in [the unit tests](../../../tests/solver_wrappers/alm_fluent/alm_fluent.py)).
+The magnitude of the error can be estimated by comparing the volume integral of the momentum sources in the file *`report-coconut.out`* to the line integral of the aerodynamic forces in the file *`traction_timestepA.dat`* (see e.g. the `test_forces`-method in [the unit tests](../../../tests/solver_wrappers/fluent_alm/fluent_alm.py)).
 
 <img src="./extra/ACE_concept.png" alt="The concept of actuator curve embedding, see ref. [1] for more details" width="750"/>
 
@@ -44,7 +44,7 @@ The magnitude of the error can be estimated by comparing the volume integral of 
 
 ## Parameters
 
-The parameters don't differ much from the ones described in the [Fluent solver wrapper documentation](./fluent.md#parameters), with the following exceptions:
+The parameters don't differ much from the ones described in the [Fluent solver wrapper documentation](../fluent/fluent.md#parameters), with the following exceptions:
 
 * The keywords `max_nodes_per_face` and `multiphase` are removed. The fromer as no physical yarn surface mesh is present and thus this parameter becomes obsolete, the latter as multiphase is not allowed/supported.
 * The keyword `dimensions` is ignored and hardcoded to 3 as only 3D-cases are supported for the moment.
@@ -62,9 +62,9 @@ The parameters don't differ much from the ones described in the [Fluent solver w
 
 The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
 
--   *`alm_X.py`*: defines the `SolverWrapperALMFluentX` class, 
--   *`alm_X.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
--   *`alm_X.c`*: Fluent UDF file that calculates the aerodynamic forces, defines the momentum source terms and implements additional functionality (I/O) used in Fluent, written in C.
+-   *`X.py`*: defines the `SolverWrapperALMFluentX` class, 
+-   *`alm.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
+-   *`alm.c`*: Fluent UDF file that calculates the aerodynamic forces, defines the momentum source terms and implements additional functionality (I/O) used in Fluent, written in C.
 
 ### Files created during simulation
 
@@ -85,7 +85,7 @@ Following items should be set up and saved in the Fluent case file (this list ma
 -   additional UDFs must be configured, 
 -   steady/unsteady (should match with the `unsteady` parameter),
 -   boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria.
--   it is important that the fluid zone where the ALM momentum sources are to be applied, has the name `fluid`! This is assumed in the [journal file](./alm_v2023R1.jou) on line 72, where the momentum sources are hooked to the flow equations.
+-   it is important that the fluid zone where the ALM momentum sources are to be applied, has the name `fluid`! This is assumed in the [journal file](./alm.jou) on line 72, where the momentum sources are hooked to the flow equations.
 
 A data file should also be present with the fields either initialized or containing the results of a previous calculation.
 Finally, the user should create the file *`coordinates_timestep0.dat`* containing the initial position of the yarn.
@@ -103,6 +103,10 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 ### v2023R1 (23.1.0)
 
 Base version.
+
+### v2024R1 (24.1.0)
+
+No changes.
 
 
 ## References

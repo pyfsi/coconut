@@ -1,5 +1,5 @@
 {
-  "type": "solver_wrappers.fluent.alm_v2023R1",
+  "type": "solver_wrappers.fluent_alm.v2023R1",
   "settings": {
     "working_directory": "this is changed upon running the test",
     "case_file": "case_yarn3d.cas.h5",

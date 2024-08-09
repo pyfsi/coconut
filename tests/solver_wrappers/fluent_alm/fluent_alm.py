@@ -11,7 +11,7 @@ import shutil
 from scipy import integrate
 
 
-class TestSolverWrapperALMFluentYarn(unittest.TestCase):
+class TestSolverWrapperFluentALMYarn(unittest.TestCase):
     version = 'xxxxRx'  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     setup_case = True
 
@@ -24,7 +24,7 @@ class TestSolverWrapperALMFluentYarn(unittest.TestCase):
         if cls.setup_case:
             shutil.rmtree(cls.working_dir, ignore_errors=True)
             dir_tmp = join(dir_name, f'test_v{cls.version}/yarn3d')
-            fluent_solver_module = f'fluent.alm_v{cls.version}'
+            fluent_solver_module = f'fluent_alm.v{cls.version}'
             env = get_solver_env(fluent_solver_module, dir_tmp)
             p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
             p.wait()
