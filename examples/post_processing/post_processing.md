@@ -380,10 +380,10 @@ To change aspects related to the whole figure such as labels, titles, the legend
 
 1.  By using the object-oriented style
 
-	```python
-	pressure_animation.get_ax().set_title('Pressure animation')
+    ```python
+    pressure_animation.get_ax().set_title('Pressure animation')
     pressure_animation.get_figure().tight_layout()
-	```
+    ```
 
 2. or the pyplot-style, where the figure has to be made active first.
 
@@ -473,7 +473,7 @@ With the optional keyword argument `component`, a component can be selected.
 | `component`  | `'x'`, `'y'`, `'z'`, `0`, `1` or `2` | (optional) Selects the component of the variable that needs to be shown. If not provided, the magnitude is shown. |
 
 The keyword arguments `figure_name`, `aspect` and `name` can also be used, in the same way as for [visualizations](#complete-guide-to-visualizations).
-[Saving](#saving-figures), [chagnig the figure layout](#changing-the-figure-layout) and [adding multiple SubSets](#adding-multiple-subsets) are done in the same way, as well.
+[Saving](#saving-figures), [changing the figure layout](#changing-the-figure-layout) and [adding multiple SubSets](#adding-multiple-subsets) are done in the same way, as well.
 
 !!! example "Experimental"
 
