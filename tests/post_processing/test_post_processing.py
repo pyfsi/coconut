@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 
 
 class TestPostProcessing(unittest.TestCase):
-    gui = True
+    gui = False
 
     def setUp(self):
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to fluent directory
@@ -110,7 +110,6 @@ class TestPostProcessing(unittest.TestCase):
 
         sx2 = pp.add_subset(interface='interface_x')
         coordinates_animation = Animation2dCoordinates(sx2, x_component='z', y_component='y', name='yz')
-        coordinates_animation.remove_subset(0)
 
         line = coordinates_animation.get_line('yz')
         line.set(color='green', linestyle='', marker='o', markersize=5)
