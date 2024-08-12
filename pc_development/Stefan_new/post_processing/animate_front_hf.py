@@ -9,7 +9,7 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../../pc_development/Stefan_new/'
-case_paths = ['case_results_ts770.pickle']
+case_paths = ['case_results.pickle']
 legend_entries = ['case']
 
 itf_faces = 10
@@ -85,12 +85,13 @@ rho = 870 # kg/m^3, PCM density
 LH = 179000 # J/kg, latent heat
 B = (k*dT)/(rho*LH) # m^2/s
 
-dx = -0.5*L + 0.5*np.sqrt(L**2 + 4*B*time)
+time_ana = np.linspace(0, 3600, 3601)
+dx = -0.5*L + 0.5*np.sqrt(L**2 + 4*B*time_val_1)
 LF_ana = 0.5 + dx/L
 
 line1, = plt.plot(time, LF.flatten(), '-k', label="CoCoNuT")
 line2, = plt.plot(time_val_1, LF_val_1, '--r', label="Fluent")
-line3, = plt.plot(time, LF_ana, '--b', label="Ana - steady")
+line3, = plt.plot(time_val_1, LF_ana, '--b', label="Ana - steady")
 plt.ylabel('Liquid fraction')
 plt.xlabel('Time [s]')
 plt.legend(handles=[line1, line2, line3])
