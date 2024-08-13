@@ -1,0 +1,2470 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Coupling Code for Numerical Tools - aka 🥥 CoCoNuT is a Python tool for partitioned multiphysics simulations with a focus on fluid-structure interaction.">
+      
+      
+      
+        <link rel="canonical" href="https://pyfsi.github.io/coconut/post_processing.html">
+      
+      
+        <link rel="prev" href="examples.html">
+      
+      
+        <link rel="next" href="breaking_dam_fluent2d_abaqus2d.html">
+      
+      
+      <link rel="icon" href="assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+    
+    
+      
+        <title>Post-processing - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#post-processing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoCoNuT
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Post-processing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pyfsi/coconut
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Introduction
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="coupling_components.html" class="md-tabs__link">
+          
+  
+  Coupling components
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="data_structure.html" class="md-tabs__link">
+        
+  
+    
+  
+  Data structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="docs.html" class="md-tabs__link">
+        
+  
+    
+  
+  Documentation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="examples.html" class="md-tabs__link">
+          
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="tests.html" class="md-tabs__link">
+        
+  
+    
+  
+  Tests
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pyfsi/coconut
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Coupling components
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Coupling components
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupling_components.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="convergence_criteria.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Convergence criteria
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Coupled solvers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Coupled solvers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupled_solvers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Coupled solvers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mappers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mappers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="predictors.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Predictors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Solver wrappers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            Solver wrappers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="solver_wrappers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="abaqus.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abaqus
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fluent.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kratos_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    KratosStructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="openfoam.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="data_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="docs.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Post-processing
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="post_processing.html" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Post-processing
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-class-postprocess" class="md-nav__link">
+    <span class="md-ellipsis">
+      The class PostProcess
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-class-subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      The class SubSet
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The class SubSet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#selecting-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Selecting points
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selecting-times" class="md-nav__link">
+    <span class="md-ellipsis">
+      Selecting times
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-solution-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting solution data
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-guide-to-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick guide to visualizations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick guide to visualizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#saving-figures" class="md-nav__link">
+    <span class="md-ellipsis">
+      Saving figures
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-guide-to-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complete guide to visualizations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete guide to visualizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changing-the-figure-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changing the figure layout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-multiple-subsets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding multiple SubSets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time evolution
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Breaking dam
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Breaking dam
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lid-driven cavity
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Lid-driven cavity
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_fluent2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tube
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            Tube
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeRingmodel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure - Analytical
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure_surrogate.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure - Surrogate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_tube_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Python TubeStructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Steady
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_surrogate.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Surrogate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - Abaqus 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - KratosStructure 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_abaqus3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D - Abaqus 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D - KratosStructure 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Turek benchmark
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_6">
+            <span class="md-nav__icon md-icon"></span>
+            Turek benchmark
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Steady
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="test_single_solver.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Test single solver
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tests.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tests
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="post-processing">Post-processing</h1>
+<p>As described in the <a href="https://pyfsi.github.io/coconut/coupled_solvers#save-results">coupled solver documentation</a>, a pickle file can be saved to store details on the computation.
+This includes</p>
+<ul>
+<li>solution data on the interface, </li>
+<li>position of the data points on the interface, </li>
+<li>details on the convergence behaviour, such as number of coupling iterations and coupling residuals,</li>
+<li>distribution of the elapsed simulation time,</li>
+<li>and history of the simulation, such as restarts.</li>
+</ul>
+<p>This information can be accessed by loading the pickle file, for example for a file <em><code>case_results.pickle</code></em>:
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;case_results.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Nevertheless, CoCoNuT also provides a more user-friendly tool to visualize and inspect this information.</p>
+<h2 id="the-class-postprocess">The class PostProcess</h2>
+<p>Instead of loading the pickle file directly, its path can be used to create an instance of the <code>PostProcess</code> class.
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">coconut.examples.post_processing.post_process</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">pp</span> <span class="o">=</span> <span class="n">PostProcess</span><span class="p">(</span><span class="s1">&#39;case_results.pickle&#39;</span><span class="p">)</span>
+</code></pre></div></p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>The example code in this document has been created for the <em><code>tube/openfoam3d_kratos_structure3d</code></em> example.</p>
+</div>
+<p>Printing this class provides an overview of the simulation, for example
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">pp</span><span class="p">)</span>
+</code></pre></div>
+will output a statement analogous to
+<div class="highlight"><pre><span></span><code>PostProcess of pickle file case_results.pickle
+Containing 100 time steps with size 0.0001s
+Coupling
+    interface &quot;interface_x&quot; consisting of
+        model part &quot;mantle_input&quot; with variables
+            displacement (vector)
+    interface &quot;interface_y&quot; consisting of
+        model part &quot;mantle_output&quot; with variables
+            pressure (scalar)
+            traction (vector)
+</code></pre></div></p>
+<p>Among the methods of this class are:</p>
+<ul>
+<li>
+<p>The method <code>print_summary()</code> prints a summary of the elapsed simulation time and its distribution over the different components, similar to the summary outputted at the end of a simulation.</p>
+<div class="highlight"><pre><span></span><code><span class="n">pp</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
+</code></pre></div>
+</li>
+<li>
+<p>The method <code>print_info()</code> prints information on when the simulation was started and if it was restarted as well as on which machine it has been run.</p>
+<div class="highlight"><pre><span></span><code><span class="n">pp</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span>
+</code></pre></div>
+</li>
+<li>
+<p>The method  <code>add_subset(**kwargs)</code> allows to create and add a subset of selected points and/or time steps.
+    This will prove useful for extracting data and making plots or animations.
+    It requires several keyword arguments as detailed by the <a href="#the-class-subset"><code>SubSet</code> documentation</a>.
+    Multiple <code>SubSets</code> can be added.
+    A list containing the added <code>SubSets</code> can be accessed through the <code>get_subsets()</code> method.</p>
+</li>
+</ul>
+<h2 id="the-class-subset">The class SubSet</h2>
+<p>A <code>SubSet</code> is always added to a <code>PostProcess</code> instance and is used to select particular points and/or time steps.
+A <code>SubSet</code> needs to be defined on a single <a href="https://pyfsi.github.io/coconut/data_structure#interface">interface</a> and <a href="https://pyfsi.github.io/coconut/data_structure#modelpart">model part</a>.
+The selection of points thus needs to be within a single model part. If points from multiple model parts are required, multiple <code>SubSets</code> have to be added.</p>
+<p>If our example above only has one model part for both the x- and y-interface, this might be done as follows.
+<div class="highlight"><pre><span></span><code><span class="n">sx</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">add_subset</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s1">&#39;interface_x&#39;</span><span class="p">)</span>
+<span class="n">sy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">add_subset</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s1">&#39;interface_y&#39;</span><span class="p">)</span>
+</code></pre></div>
+<code>'interface_x'</code> and <code>'interface_y'</code> refer to the input and output interface of the first solver, respectively.
+The first solver is typically the flow solver such that <code>'interface_x'</code> contains displacement values 
+and <code>'interface_y'</code> contains pressure and traction values.</p>
+<div class="admonition info">
+<p class="admonition-title">The interfaces of the second solver are not accessible, since they are not stored!</p>
+</div>
+<p>If in our examples, there would have been multiple model parts, an error would have been raised when adding the subset, because the declaration is ambiguous.
+In that case, the model part would also have to be specified.
+The full set of possible arguments is given below.</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type/value</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>interface</code></td>
+<td style="text-align: right;"><code>'interface_x'</code> or <code>'interface_y'</code></td>
+<td style="text-align: left;">(optional) Indicates whether the <code>SubSet</code> is created on the input interface of the first solver (<code>'interface_x'</code>) or the output interface of the first solver (<code>'interface_y'</code>). Note that a <code>SubSet</code> cannot be defined with multiple interfaces!</td>
+</tr>
+<tr>
+<td><code>model_part</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">(optional) Chooses the model part from which the <code>SubSet</code> is created. Note that a <code>SubSet</code> cannot be defined with multiple model parts! The model part names of a <code>PostProcess</code> instance can be accessed with the method ´get_model_part_names()´.</td>
+</tr>
+<tr>
+<td><code>variable</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">(optional) Selects the variable of which data needs to be outputted for the selected points and time step. These are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code>. For example <code>'displacement'</code>, <code>'pressure'</code>, <code>'traction'</code>.</td>
+</tr>
+<tr>
+<td><code>component</code></td>
+<td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
+<td style="text-align: left;">(optional) Selects the component of the variable that needs ot be outputted in case of a vector variable. <code>0</code>, <code>1</code> and <code>2</code> correspond to  <code>'x'</code>, <code>'y'</code>and <code>'z'</code>, respectively.</td>
+</tr>
+<tr>
+<td><code>sort</code></td>
+<td style="text-align: right;">tuple</td>
+<td style="text-align: left;">(optional) Default: <code>(0, 1, 2)</code>. Priority for ordering points. By default, the points are ordered first by x-coordinate, then y-coordinate and finally z-coordinate.</td>
+</tr>
+</tbody>
+</table>
+<p>While the interface and model part cannot be changed once the <code>SubSet</code> is created, the variable and component can be modified on the fly.</p>
+<h3 id="selecting-points">Selecting points</h3>
+<p>To make a selection of points the method <code>select_points(p_mask)</code> is used, where <code>p_mask</code> is a one-dimensional numpy-array containing boolean values and with a length equal to the number of points in the model part.
+A <code>True</code> value selects the corresponding point, whereas a <code>False</code> value deselects it.</p>
+<p>The recommended approach is using inequalities on the output of <code>get_initial_coordinates()</code>, which returns a two-dimensional array, where the rows are the points and the three columns correspond to the three components, x, y and z, respectively.
+The following example selects points with a z-coordinate close to zero and a positive y-component.
+<div class="highlight"><pre><span></span><code><span class="n">initial_coordinates</span> <span class="o">=</span> <span class="n">sx</span><span class="o">.</span><span class="n">get_all_initial_coordinates</span><span class="p">()</span>
+<span class="n">mask1</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">initial_coordinates</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.0005</span>
+<span class="n">mask2</span> <span class="o">=</span> <span class="n">initial_coordinates</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="n">sx</span><span class="o">.</span><span class="n">select_points</span><span class="p">(</span><span class="n">mask1</span> <span class="o">&amp;</span> <span class="n">mask2</span><span class="p">)</span>
+
+<span class="n">initial_coordinates</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">get_all_initial_coordinates</span><span class="p">()</span>
+<span class="n">mask1</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial_coordinates</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">initial_coordinates</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0005</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<span class="n">mask2</span> <span class="o">=</span> <span class="n">initial_coordinates</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="n">sy</span><span class="o">.</span><span class="n">select_points</span><span class="p">(</span><span class="n">mask1</span> <span class="o">&amp;</span> <span class="n">mask2</span><span class="p">)</span>
+</code></pre></div></p>
+<ol>
+<li>The specific inequalities in which the points are selected is case specific. Here for example, the points on the <code>y-interface</code> are not located exactly on the xy-plane, but just next to it. The points with a positive z-coordinate close to zero are selected.</li>
+</ol>
+<p>These methods are also useful:</p>
+<ul>
+<li><code>get_size()</code> returns the size of the selection,</li>
+<li><code>get_initial_coordinates_selection()</code> returns the initial coordinates of the selection,</li>
+<li><code>reset_points_selection()</code> undoes point selection, in other words, selects all points.</li>
+</ul>
+<h3 id="selecting-times">Selecting times</h3>
+<p>The selection time steps occurs analogously to selection of points.
+The following methods are available:</p>
+<ul>
+<li><code>select_times(t_mask)</code> selects time step based on a boolean mask with length equal to the number of time steps <strong>plus one</strong> to account for the initial time value,</li>
+<li><code>get_all_times()</code> returns a one-dimensional array with all time instances,</li>
+<li><code>get_all_steps()</code> returns a one-dimensional array with all time steps numbers (for example <code>[0, 1, 2, ...]</code>),</li>
+<li><code>get_num_steps()</code> returns the size of the selection,</li>
+<li><code>get_times_selection()</code> returns the time instances of the selection,</li>
+<li><code>get_steps_selection()</code> returns the time step numbers of the selection,</li>
+<li><code>reset_times_selection()</code> undoes time selection, in other words, selects all time instances.</li>
+</ul>
+<h3 id="getting-solution-data">Getting solution data</h3>
+<p>Once the desired points and time steps have been selected, the solution data can be accessed with the method <code>get_values(**kwargs)</code>.
+The possible arguments are:</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type/value</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variable</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">(optional) Selects the variable of which data needs to be outputted for the selected points and time step. These are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code>. For example <code>'displacement'</code>, <code>'pressure'</code>, <code>'traction'</code>.</td>
+</tr>
+<tr>
+<td><code>component</code></td>
+<td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
+<td style="text-align: left;">(optional) If not present, all available components are returned. Selects the component of the variable that needs ot be outputted in case of a vector variable. <code>0</code>, <code>1</code> and <code>2</code> correspond to  <code>'x'</code>, <code>'y'</code>and <code>'z'</code>, respectively.</td>
+</tr>
+</tbody>
+</table>
+<p>If no variable argument is provided, the previously set value is used.
+If there was no variable set earlier and more than one is available, an error is raised to point the user to the ambiguity.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The available variables can be accessed through the method <code>get_available_variables()</code>.</p>
+</div>
+<p>For vector variables, without specifying a component, the output of this method is a three-dimensional numpy array, where</p>
+<ul>
+<li>the first axis corresponds to the time step,</li>
+<li>the second axis to the points,</li>
+<li>and the third to the component.</li>
+</ul>
+<p>For scalar variables or when a component is specified, the output is a two-dimensional numpy array, where</p>
+<ul>
+<li>the first axis corresponds to the time step,</li>
+<li>the second axis to the points.</li>
+</ul>
+<p>In our example, we can get the x- and y- coordinates of the selected points as follows
+<div class="highlight"><pre><span></span><code><span class="n">x_coordinates</span> <span class="o">=</span> <span class="n">sx</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">y_coordinates</span> <span class="o">=</span> <span class="n">sx</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+</code></pre></div>
+or get the pressure values with
+<div class="highlight"><pre><span></span><code><span class="n">pressure</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="s1">&#39;pressure&#39;</span><span class="p">)</span>
+</code></pre></div></p>
+<h2 id="visualization">Visualization</h2>
+<p>With the classes above, custom data analyses or visualizations are possible.
+However, CoCoNuT also offers built-in tools for the most common visualizations.</p>
+<p>For different types of visualization, different classes are available in ´post_process.py´.
+A distinction is made between, on the one hand,</p>
+<ul>
+<li>an Animation (moving in time),</li>
+<li>or a Plot (static),</li>
+</ul>
+<p>and, on the other hand,</p>
+<ul>
+<li>2d (for example, y-displacement in function of x-coordinate)</li>
+<li>or 3d (plotting points in 3d space).</li>
+</ul>
+<h3 id="quick-guide-to-visualizations">Quick guide to visualizations</h3>
+<p>The quickest way to create a visualization is through the pre-made classes.
+These require a (collection of) <code>SubSet</code> and in some cases the components of the variables to show.
+In our example, the y-displacement of the selected points can be animated in function of the initial x-coordinate as follows
+<div class="highlight"><pre><span></span><code><span class="n">Animation2dDisplacement</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+</code></pre></div></p>
+<p><img alt="Animation2dDisplacement" src="images/pp_2d_disp_1.gif" /></p>
+<div class="admonition success">
+<p class="admonition-title">Success</p>
+<p>Don't forget to add <code>plt.show()</code> at the end to show the plot(s) or animation(s).</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>In these pre-made classes, a <code>PostProcess</code> instance can be provided directly as subset.
+All model parts of this <code>PostProcess</code> instance will be automatically added to the visualization.</p>
+</div>
+<p><strong>Two-dimensional animations</strong> show one variable on the ordinate (y-axis) in function of a variable on the abscissa (x-axis).</p>
+<ul>
+<li><code>Animation2dDisplacement(subset, x_component, y_component)</code>: animates <code>y-component</code> of the displacement in function of the <code>x-component</code> of the initial coordinates.</li>
+<li><code>Animation2dCoordinates(subset, x_component, y_component)</code>: animates <code>y-component</code> of the instantaneous coordinates in function of the <code>x-component</code> of the instantaneous coordinates.</li>
+<li><code>Animation2dPressure(subset, x_component)</code>: animates pressure in function of the <code>x-component</code> of the initial coordinates.</li>
+<li><code>Animation2dTraction(subset, x_component)</code>: animates <code>y-component</code> of the traction in function of the <code>x-component</code> of the initial coordinates.</li>
+</ul>
+<p>Replacing the word <em>Animate</em> with <em>Plot</em>, <strong>Two-dimensional plots</strong> are completely analogous, but are typically used to only show one time instance.
+This can be selected when creating the <code>SubSet</code>, or on the fly with the keyword arguments <code>time_step</code> (time step number) or <code>time</code> (time in seconds).
+Only one of these parameters should be provided.
+In our example, the pressure can be plotted at time 0.001 s.
+<div class="highlight"><pre><span></span><code><span class="n">Plot2dPressure</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> <span class="c1"># (1)!</span>
+</code></pre></div></p>
+<ol>
+<li>If the time step is 0.0001 s, for example, this is identical to the argument <code>time_step=10</code>.</li>
+</ol>
+<p><img alt="Plot2dPressure" src="images/pp_2d_pres.png" /></p>
+<p><strong>Three-dimensional animations</strong> show the coordinates of points and possibly color them by a variable.
+Instantaneous coordinates are used when available colors, otherwise initial coordinates are used.</p>
+<details class="info">
+<summary>When are instantaneous coordinates available?</summary>
+<p>Instantaneous coordinates are only available for interfaces that have the displacement variables.
+This is typically <code>interface_x</code>. For other interfaces, only the initial coordinates are available.</p>
+</details>
+<ul>
+<li><code>Animation3dDisplacement(subset, x_component, y_component)</code>: animates the instantaneous coordinates and colors the points by magnitude of displacement.</li>
+<li><code>Animation3dCoordinates(subset, x_component, y_component)</code>: animates the instantaneous coordinates without coloring.</li>
+<li><code>Animation3dPressure(subset, x_component)</code>: animates the initial coordinates and colors the points by pressure values.</li>
+<li><code>Animation3dTraction(subset, x_component)</code>: animates the instantaneous coordinates and colors the points by magnitude of traction.</li>
+</ul>
+<p>If the variable by which the points are colored is a vector, also one of the components can be used instead of the magnitude by including the keyword argument <code>component</code>.
+For example to animate the z-component of displacement:
+<div class="highlight"><pre><span></span><code><span class="n">Animation3dDisplacement</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+</code></pre></div></p>
+<ol>
+<li>Here a <code>PostProcess</code> instance is used, instead of a <code>SubSet</code>. This is only possible for the pre-made classes presented in this section.</li>
+</ol>
+<p><img alt="Animation3dDisplacement" src="images/pp_3d_disp.gif" /></p>
+<p>Again <strong>Three-dimensional plots</strong> are analogous replacing the word <em>Animate</em> with <em>Plot</em> and optionally adding the keyword argument <code>time_step</code> or <code>time</code>.s</p>
+<h4 id="saving-figures">Saving figures</h4>
+<p>The method <code>save(file_path)</code> can be used to store the plot or animations.
+If no <code>file_path</code> is provided, the <code>figure_name</code> is used with extension <code>.png</code> for plots and <code>.gif</code> for animations.</p>
+<p>By default, for saving animations, the Matplotlib writer PillowWriter is used:
+<div class="highlight"><pre><span></span><code><span class="n">writer</span> <span class="o">=</span> <span class="n">ani</span><span class="o">.</span><span class="n">PillowWriter</span><span class="p">(</span><span class="n">fps</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">artist</span><span class="o">=</span><span class="s1">&#39;CoCoNuT&#39;</span><span class="p">),</span> <span class="n">bitrate</span><span class="o">=</span><span class="mi">1800</span><span class="p">)</span>
+</code></pre></div>
+This can be overwritten with the method <code>set_writer(writer)</code>.</p>
+<h3 id="complete-guide-to-visualizations">Complete guide to visualizations</h3>
+<p>The pre-made classes discussed above are in fact child classes of the classes <code>Animation</code>, <code>Plot</code>, <code>Figure2d</code> and <code>Figure3d</code>,
+in which several parameters are pre-set.</p>
+<p>The required positional argument is <code>subset</code>.</p>
+<table>
+<thead>
+<tr>
+<th>argument</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>subset</code></td>
+<td style="text-align: right;"><code>SubSet</code> or collection (list, tuple, ...) of SubSets</td>
+<td style="text-align: left;"><code>Subset(s)</code> to be shown in the figure.</td>
+</tr>
+</tbody>
+</table>
+<p>For two-dimensional figures (<code>Figure2d</code>), there are two additional required positional arguments.</p>
+<table>
+<thead>
+<tr>
+<th>argument</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x_variable</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">The variable to be shown on the abscissa (x-axis).</td>
+</tr>
+<tr>
+<td><code>y_variable</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">The variable to be shown on the ordinate (y-axis).</td>
+</tr>
+</tbody>
+</table>
+<p>These variables are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code> and <code>'initial_coordinates'</code>. For example <code>'displacement'</code>, <code>'pressure'</code>, <code>'traction'</code>.</p>
+<p>Furthermore, there are several optional keyword arguments that apply to all <code>Figures</code>.</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type/value</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>figure_name</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">(optional) Name of the figure, shown as title of the plot window. Default is the class name. This name has to be unique. If a figure with the provided name exists, a number will automatically be appended.</td>
+</tr>
+<tr>
+<td><code>aspect</code></td>
+<td style="text-align: right;"><code>'auto'</code> or <code>'aspect'</code></td>
+<td style="text-align: left;">(optional) If <code>'auto'</code> (default for 2d), the axis scaling of the axes is chosen to fill the plot window. If `'aspect' (default for 3d), alle axes are scaled in the same way.</td>
+</tr>
+<tr>
+<td><code>print_function</code></td>
+<td style="text-align: right;"><code>False</code> or function</td>
+<td style="text-align: left;">(optional) If not provided, the time is printed. Use <code>False</code> to disable or provide a custom function which receives time as single argument and returns a string.</td>
+</tr>
+<tr>
+<td><code>text_box_style</code></td>
+<td style="text-align: right;">dict</td>
+<td style="text-align: left;">(optional) Dictionary with settings determining the text box style. Default: <code>dict(facecolor='silver', edgecolor='black', pad=5.0, alpha=0.5)</code></td>
+</tr>
+<tr>
+<td><code>text_location</code></td>
+<td style="text-align: right;">tuple of two floats</td>
+<td style="text-align: left;">(optional) Window coordinates of the text box. Default: for 2d <code>(0.1, 0.1)</code>, for 3d <code>(0, 0)</code>.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td style="text-align: right;">str or collection of str</td>
+<td style="text-align: left;">(optional) Name(s) of the <code>SubSet(s)</code> used in the legend and to identify the <code>SubSet</code>. If not provided, the <code>case_name</code> of the simulation appended by the model part name is used. If a collection of <code>SubSets</code> is provided: the value can be a single string, which will be appended with a number, or a collections of strings with the same length. This name is used to identify SubSets and has to be unique. Therefore, a number will appended if this is not the case.</td>
+</tr>
+</tbody>
+</table>
+<p>Finally, there are keyword arguments that are specific to a type of class.</p>
+<p>For two-dimensional figures (<code>Figure2d</code>), there are two optional keyword arguments.</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type/value</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x_component</code></td>
+<td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
+<td style="text-align: left;">Required if <code>x_variable</code> is not scalar. Selects the component of the variable that needs to be shown on the abscissa (x-axis).</td>
+</tr>
+<tr>
+<td><code>y_component</code></td>
+<td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
+<td style="text-align: left;">Required if <code>y_variable</code> is not scalar. Selects the component of the variable that needs to be shown on the ordinate (y-axis).</td>
+</tr>
+</tbody>
+</table>
+<p><code>0</code>, <code>1</code> and <code>2</code> correspond to  <code>'x'</code>, <code>'y'</code>and <code>'z'</code>, respectively.</p>
+<p>For three-dimensional figures (<code>Figure3d</code>), there are three optional keyword arguments.</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type/value</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variable</code></td>
+<td style="text-align: right;"><code>'coordinates'</code> or <code>'initial_coordinates'</code></td>
+<td style="text-align: left;">(optional) Determines whether instantaneous or initial coordinates are shown. Default: instantaneous coordinates when available, otherwise initial coordinates.</td>
+</tr>
+<tr>
+<td><code>color_by</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">(optional) Variable by which the points are colored. These variables are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code>. If not provided, no coloring is done.</td>
+</tr>
+<tr>
+<td><code>component</code></td>
+<td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
+<td style="text-align: left;">(optional) Component of the <code>color_by</code> variable used for coloring the points. If not provided while <code>color_by</code> is a vector variable, the magnitude is used for coloring.</td>
+</tr>
+</tbody>
+</table>
+<p>For plots (<code>Plot</code>), there are two optional keyword arguments.</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>time_step</code></td>
+<td style="text-align: right;">int</td>
+<td style="text-align: left;">(optional) Time step number of the data to be shown. If not provided, while the <code>SubSet</code> contains more than one time instance, the initial time step is used.</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td style="text-align: right;">float</td>
+<td style="text-align: left;">(optional) Time (in seconds) of the data to be shown. If not provided, while the <code>SubSet</code> contains more than one time instance, the initial time step is used.</td>
+</tr>
+</tbody>
+</table>
+<p>Either <code>time_step</code> or <code>time</code> should be provided. If both are present, <code>time</code> is ignored.
+The <code>time_step</code> or <code>time</code> can be set using the methods <code>set_time_step(time_step)</code> or <code>set_time(time)</code>.
+For the former, also see <a href="#adding-multiple-subsets">Adding multiple subsets</a> when subsets are added with multiple time step sizes. </p>
+<p>For animations (<code>Animation</code>), there is one optional keyword argument.</p>
+<table>
+<thead>
+<tr>
+<th>keyword argument</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>func_animation_setting</code></td>
+<td style="text-align: right;">dict</td>
+<td style="text-align: left;">(optional) Dictionary with settings relating to the animation. For details see the <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.animation.FuncAnimation.html">Matplotlib documentation</a>.</td>
+</tr>
+</tbody>
+</table>
+<p>A non-extensive overview is shown below:</p>
+<table>
+<thead>
+<tr>
+<th>setting</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: center;">default</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>frames</code></td>
+<td style="text-align: right;">int or range</td>
+<td style="text-align: center;">all available time steps skipping according to <code>skip</code></td>
+<td>Determines which time steps are shown. Also see <a href="https://pyfsi.github.io/coconut/post_processing#adding-multiple-subsets">Adding multiple subsets</a> when subsets are added with multiple time step sizes. If range, the sequence of time steps to be shown. If int, the number of time steps to be shown starting from the initial time step, skipping according to <code>skip</code>. If not provided all time steps are shown,skipping according to <code>skip</code></td>
+</tr>
+<tr>
+<td><code>skip</code></td>
+<td style="text-align: right;">int</td>
+<td style="text-align: center;"><code>0</code></td>
+<td>Determines how many time steps are skipped between each shown frame, for example to show 1 time step every 10, use 9. Also see <a href="https://pyfsi.github.io/coconut/post_processing#adding-multiple-subsets">Adding multiple subsets</a> when subsets are added with multiple time step sizes.  Only used if <code>frames</code> is not provided or if <code>frames</code> is an int. This useful to speed up the animation.</td>
+</tr>
+<tr>
+<td><code>save_count</code></td>
+<td style="text-align: right;">int</td>
+<td style="text-align: center;">number of frames</td>
+<td>Numbers of frames to cache.</td>
+</tr>
+<tr>
+<td><code>interval</code></td>
+<td style="text-align: right;">int</td>
+<td style="text-align: center;"><code>200</code></td>
+<td>Delay between frames in milliseconds. Increase to obtain a slower playing speed.</td>
+</tr>
+<tr>
+<td><code>repeat</code></td>
+<td style="text-align: right;">bool</td>
+<td style="text-align: center;"><code>True</code></td>
+<td>Whether the animation repeats when the sequence of frames is completed.</td>
+</tr>
+</tbody>
+</table>
+<details class="failure">
+<summary>Blitting is not supported.</summary>
+<p>Blitting is an approach to optimize drawing by rendering all non-changing graphic elements into a background image once.</p>
+</details>
+<p>For example, to animate the displacement as before, but only show one time step every five, for the first 50:
+<div class="highlight"><pre><span></span><code><span class="n">Animation2dDisplacement</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>  <span class="n">func_animation_settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">frames</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+</code></pre></div></p>
+<p>or equivalently</p>
+<div class="highlight"><pre><span></span><code><span class="n">Animation2d</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="s1">&#39;initial_coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;displacement&#39;</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>  <span class="n">func_animation_settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">frames</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+</code></pre></div>
+<p><img alt="Animation2dDisplacement" src="images/pp_2d_disp_2.gif" /></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If the warning is raised that animations are deleted before rendering. Assigning the animations to a variable:
+<div class="highlight"><pre><span></span><code><span class="n">pressure_animation</span> <span class="o">=</span> <span class="n">Animation3dPressure</span><span class="p">(</span><span class="n">pp</span><span class="p">)</span>
+</code></pre></div></p>
+</div>
+<h4 id="changing-the-figure-layout">Changing the figure layout</h4>
+<p>The plots and animations shown above use default coloring, markers, line thickness, ...
+Different options to customize these can be found in <a href="https://matplotlib.org/stable/users/explain/quick_start.html">Matplotlib documentation</a>.
+Here it is explained how these methods can be used together with CoCoNuT visualizations.</p>
+<p>To change aspects related to the whole figure such as labels, titles, the legend, ticks or the grid, there are two ways in Matplotlib.</p>
+<ol>
+<li>
+<p>By using the object-oriented style</p>
+<div class="highlight"><pre><span></span><code><span class="n">pressure_animation</span><span class="o">.</span><span class="n">get_ax</span><span class="p">()</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Pressure animation&#39;</span><span class="p">)</span>
+<span class="n">pressure_animation</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</code></pre></div>
+</li>
+<li>
+<p>or the pyplot-style, where the figure has to be made active first.</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">pressure_animation</span><span class="o">.</span><span class="n">make_active</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Pressure animation&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Animation3dPressure" src="images/pp_3d_pres.gif" /></p>
+<p>The methods that can be used towards this end are:</p>
+<ul>
+<li><code>get_figure()</code>: returns the Matplotlib Figure,</li>
+<li><code>get_figure_name()</code>: returns the figure name,</li>
+<li><code>get_ax()</code>: returns the Matplotlib Axes,</li>
+<li><code>make_active()</code>: makes the figure active to use the pyplot-style approach.</li>
+</ul>
+<p>To style artists, the <code>line</code> objects need to be accessed in 2d and the <code>scatter</code> objects in 3d.
+This way, color, linewidth, linestyle, marker, markersize and more can be adjusted.</p>
+<p>The method that can be used for this are, for 2d:</p>
+<ul>
+<li><code>get_lines()</code>: returns a list of the lines that have been added,</li>
+<li><code>get_line(name)</code>: returns the line corresponding to the <code>SubSet</code> with name <code>name</code> or if <code>name</code> is an int, the <code>SubSet</code> corresponding to that index,</li>
+</ul>
+<p>and for 3d:</p>
+<ul>
+<li><code>get_scatters()</code>: returns a list of the scatters that have been added,</li>
+<li><code>get_scatter(name)</code>: returns the scatter corresponding to the <code>SubSet</code> with name <code>name</code> or if <code>name</code> is an int, the <code>SubSet</code> corresponding to that index.</li>
+</ul>
+<p>In the example below, a cross-section on the yz-plane is shown, without line but with circular green markers.
+<div class="highlight"><pre><span></span><code><span class="n">sx2</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">add_subset</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s1">&#39;interface_x&#39;</span><span class="p">)</span>
+<span class="n">sx2</span><span class="o">.</span><span class="n">select_points</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">sx2</span><span class="o">.</span><span class="n">get_all_initial_coordinates</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.0005</span><span class="p">)</span>
+<span class="n">coordinates_animation</span> <span class="o">=</span> <span class="n">Animation2dCoordinates</span><span class="p">(</span><span class="n">sx2</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yz&#39;</span><span class="p">)</span>
+
+<span class="n">line</span> <span class="o">=</span> <span class="n">coordinates_animation</span><span class="o">.</span><span class="n">get_line</span><span class="p">(</span><span class="s1">&#39;yz&#39;</span><span class="p">)</span>
+<span class="n">line</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></p>
+<p><img alt="Animation2dCoordinates" src="images/pp_2d_coord.gif" /></p>
+<p>Finally, for animations, the Matplotlib Funcanimation object can be accessed through the method <code>get_animation()</code>.</p>
+<h4 id="adding-multiple-subsets">Adding multiple SubSets</h4>
+<p>Up to now, a figure was initialized with one or more <code>SubSets</code>.
+However, it is also possible to add a <code>SubSet</code> to an existing figure with the method <code>add_subset(subset)</code>, which accepts analogous keyword arguments.</p>
+<p>Other useful methods are:</p>
+<ul>
+<li><code>get_subsets()</code>: returns a list of the <code>SubSets</code> that have been added,</li>
+<li><code>get_subset(name)</code>: returns the <code>SubSet</code> with name <code>name</code> or if <code>name</code> is an int, the <code>SubSet</code> corresponding to that index,</li>
+<li><code>remove_subset(name)</code>: removes the <code>SubSet</code> with name <code>name</code> or if <code>name</code> is an int, the <code>SubSet</code> corresponding to that index,</li>
+<li><code>get_subset_names()</code>: returns a list of the names of the added <code>SubSets</code>,</li>
+</ul>
+<p>Also <code>SubSets</code> with <strong>different time step sizes</strong> can be added to a single figure.
+The different time step sizes will automatically be taken into account by internally working with the smallest matching time step size.
+For example, when two <code>SubSets</code> with time step size 0.3 s and 0.2 s are added, the internal time step size will be 0.1 s.
+This is important when setting or changing the <code>time step</code> parameter for a plot or the <code>frames</code> or <code>skip</code> parameters for an animation.
+The values that have to be used are the ones corresponding to the smallest matching time step size at that moment.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>By printing an instance of the classes described here, a summary is provided of what is shown.
+For example:
+<div class="highlight"><pre><span></span><code>print(coordinates_animation)
+</code></pre></div></p>
+</div>
+<h2 id="time-evolution">Time evolution</h2>
+<p>To plot the time evolution of a variable, a special class <code>TimeEvolution</code> exists.
+This class is different from the ones previously mentioned since it has time on the abscissa (x-axis).
+It requires both a <code>SubSet</code> with a single point and a variable to be initialized.</p>
+<table>
+<thead>
+<tr>
+<th>argument</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>subset</code></td>
+<td style="text-align: right;"><code>SubSet</code> or collection (list, tuple, ...) of SubSets</td>
+<td style="text-align: left;"><code>Subset(s)</code> to be shown in the figure, which must contain one point.</td>
+</tr>
+<tr>
+<td><code>variable</code></td>
+<td style="text-align: right;">str</td>
+<td style="text-align: left;">The variable to be shown on the ordinate (y-axis). These variables are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code>. For example <code>'displacement'</code>, <code>'pressure'</code>, <code>'traction'</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>With the optional keyword argument <code>component</code>, a component can be selected.</p>
+<table>
+<thead>
+<tr>
+<th>argument</th>
+<th style="text-align: right;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>component</code></td>
+<td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
+<td style="text-align: left;">(optional) Selects the component of the variable that needs to be shown. If not provided, the magnitude is shown.</td>
+</tr>
+</tbody>
+</table>
+<p>The keyword arguments <code>figure_name</code>, <code>aspect</code> and <code>name</code> can also be used, in the same way as for <a href="#complete-guide-to-visualizations">visualizations</a>.
+<a href="#saving-figures">Saving</a>, <a href="#changing-the-figure-layout">changing the figure layout</a> and <a href="#adding-multiple-subsets">adding multiple SubSets</a> are done in the same way, as well.</p>
+<div class="admonition example">
+<p class="admonition-title">Experimental</p>
+<p>When the debug mode is activated in the coupled_solver, the solution data is stored every coupling iteration and also interface residual data is stored.
+The post-processing is not (yet) compatible with this mode.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.dd8806f2.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>
