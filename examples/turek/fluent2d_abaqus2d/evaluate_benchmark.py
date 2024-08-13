@@ -1,39 +1,26 @@
-from coconut.examples.post_processing.animate import AnimationFigure
+from coconut.examples.post_processing.post_processing import *
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
 
 # case to be plotted
 case_path = 'case_results.pickle'
 fsi_case = 'fsi2'
 
-# load case
-results = pickle.load(open(case_path, 'rb'))
+# create PostProcess object
+pp = PostProcess(case_path)
 
-# make figure and create animation for each case
-animation_figure = AnimationFigure()  # figure for coordinate animations
+# create SubSet of correct point(s)
+sx = pp.add_subset(interface='interface_x', model_part='beamrightoutside_nodes')
+mask = (abs(sx.get_all_initial_coordinates()[:, 1] - 0.2) < 1e-16)
+sx.select_points(mask)
 
-solution = results['solution_x']
-interface = results['interface_x']
-dt = results['delta_t']
-time_step_start = results['timestep_start']
-# create animate object
-animation = animation_figure.add_animation(solution, interface, dt, time_step_start, variable='displacement',
-                                           name=fsi_case, model_part_name='beamrightoutside_nodes')
-# select points and component of variable to plot
-coordinates = animation.coordinates
-mask_x = (coordinates[:, 0] > -np.inf)
-mask_y = (abs(coordinates[:, 1] - 0.2) < 1e-16)
-mask_z = (coordinates[:, 2] > -np.inf)
-abscissa = 0  # x-axis
-component = 1  # y-component
+# get displacement values
+ux = np.mean(sx.get_values('displacement', component='x'), axis=1)  # y displacement of tip
+uy = np.mean(sx.get_values('displacement', component='y'), axis=1)  # x displacement of tip
 
-animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
+time = sx.get_all_times()
 
-# variables
-uy = np.mean(np.array(animation.solution), axis=1)  # y displacement of tip
-ux = np.mean(np.array(animation.displacement), axis=1)  # x displacement of tip
 drag = []
 lift = []
 with open(f'CFD/forces.frp', 'r') as f:
@@ -43,11 +30,14 @@ with open(f'CFD/forces.frp', 'r') as f:
             if forces[1].startswith('('):
                 drag.append(float(forces[7].strip('()')))
                 lift.append(float(forces[8].strip('()')))
-drag = [np.nan] * (17501 - len(drag)) + drag
-lift = [np.nan] * (17501 - len(lift)) + lift
-drag = np.array(drag)
-lift = np.array(lift)
-time = animation.time_step_start + np.arange(animation.time_steps + 1) * animation.dt
+if len(drag) > time.size:
+    drag = drag[:time.size]
+    lift = lift[:time.size]
+elif len(drag) < time.size:
+    drag = [np.nan] * (time.size - len(drag)) + drag
+    lift = [np.nan] * (time.size - len(lift)) + lift
+drag = np.array(drag) * 100  # mesh depth (z-direction) is 0.01 m
+lift = np.array(lift) * 100  # mesh depth (z-direction) is 0.01 m
 
 # benchmark data
 turek_benchmark = {

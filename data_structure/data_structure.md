@@ -59,7 +59,7 @@ is defined in the `variable_dimensions` `dict` in the file
 The nested `dict` in the `Interface` is constructed during the instantiation of the class using a parameters `dict` given as an input argument.
 For the schematic shown above, the parameters dict would be:<br>
  
- ```json
+```json
 [
   {
     "model_part": "mp_1_name",
@@ -80,7 +80,7 @@ For the schematic shown above, the parameters dict would be:<br>
   .
   .
 ]
- ```
+```
  
 The data in the interface can be accessed, added, or replaced by the various 
 methods implemented in the `Interface` class, which can be looked in the file 

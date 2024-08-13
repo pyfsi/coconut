@@ -1,86 +1,56 @@
-from coconut.examples.post_processing.animate import AnimationFigure
-
-import numpy as np
 import os
-import matplotlib.pyplot as plt
-import matplotlib.animation as ani
-import pickle
+
+from coconut.examples.post_processing.post_processing import *
 
 # different cases to be plotted
 common_path = '../../examples/'
 case_paths = ['tube/tube_flow_tube_structure/case_results.pickle']
-legend_entries = ['case']
+legend_entries = ['tube case']
 
-# load cases
-results = {}
-for name, path in zip(legend_entries, case_paths):
-    with open(os.path.join(common_path, path), 'rb') as file:
-        results.update({name: pickle.load(file)})
+# create PostProcess instances
+pps = []
+for path in case_paths:
+    pps.append(PostProcess(os.path.join(common_path, path)))
 
-# make figure and create animation for each case
-animation_figure_displacement = AnimationFigure()  # figure for displacement animations
-animation_figure_pressure = AnimationFigure()  # figure for pressure animations
-animation_figure_coordinates = AnimationFigure()  # figure for coordinate animations
+# create SubSets for each case
+sxs = []
+sys = []
+for pp in pps:
+    sxs.append(pp.add_subset(interface='interface_x'))
+    sys.append(pp.add_subset(interface='interface_y'))
+
+# select points
+# not necessary for this case since we want to show all points
+
+# make animations
+animations = [Animation2dDisplacement(sxs, 'z', 'y', name=legend_entries),
+              Animation2dCoordinates(sxs, 'z', 'y', name=legend_entries),
+              Animation2dPressure(sys, 'z', name=legend_entries)]
+
+# change figure layout
 colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
 line_styles = ['-', '--', ':', '-.']
-for sol, itf, var, uni, ani_fig in (('solution_x', 'interface_x', 'displacement', 'm', animation_figure_displacement),
-                                    ('solution_y', 'interface_y', 'pressure', 'Pa', animation_figure_pressure),
-                                    ('solution_x', 'interface_x', 'coordinates', 'm', animation_figure_coordinates)):
-    for j, name in enumerate(legend_entries):
-        solution = results[name][sol]
-        interface = results[name][itf]
-        dt = results[name]['delta_t']
-        time_step_start = results[name]['timestep_start']
-        # create animate object
-        animation = ani_fig.add_animation(solution, interface, dt, time_step_start, variable=var, name=name)
-        # select points and component of variable to plot
-        coordinates = animation.coordinates
+for i, animation in enumerate(animations):
+    for j, line in enumerate(animation.get_lines()):
+        line.set(color=colors[j % len(colors)], linestyle=line_styles[j % len(colors)], marker='o', markersize=2)
+    ax = animation.get_ax()
+    ax.legend()  # update legend
+    # add units to the labels
+    ax.set_xlabel(f'{ax.xaxis.get_label().get_text()} (m)')
+    y_label = ax.yaxis.get_label().get_text()
+    ax.set_ylabel(f'{y_label} ({"Pa" if "pressure" in y_label or "traction" in y_label else "m"})')
 
-        # example 1: python solver (YZ-plane)
-        python_solver = True
-        if python_solver:
-            mask_x = (coordinates[:, 0] > -np.inf)
-            mask_y = (abs(coordinates[:, 1]) > 0)
-            mask_z = (coordinates[:, 2] > -np.inf)
-            abscissa = 2  # z-axis
-            component = 1  # y-component
-
-        # example 2: fluent solver (XY-plane)
-        fluent = False
-        if fluent:
-            mask_x = (coordinates[:, 0] > -np.inf)
-            mask_y = (coordinates[:, 1] > 0)
-            # mask_z = (abs(coordinates[:, 2]) < 1e-16)  # for nodes (displacement)
-            # mask_z = (coordinates[:, 2] > 0) & (coordinates[:, 2] < 0.0005)  # for face centers (pressure, traction)
-            mask_z = (coordinates[:, 2] >= 1e-16) & (coordinates[:, 2] < 0.0005)  # for both
-            abscissa = 0  # x-axis
-            component = 1  # y-component
-
-        animation.initialize(mask_x, mask_y, mask_z, abscissa, component)
-        animation.line.set_color(colors[j % len(colors)])
-        animation.line.set_linestyle(line_styles[0])
-        animation.line.set_marker('o')
-        animation.line.set_markersize(2)
-
-    ani_fig.figure.axes[0].set_ylabel(f'{var} ({uni})')
-    ani_fig.figure.axes[0].set_xlabel('axial coordinate (m)')
-    ani_fig.figure.axes[0].legend()
-    ani_fig.figure.tight_layout()
-    # or make figure active using plt.figure(ani_fig.number) and use plt.xlabel('') type commands etc.
-
-animation_figure_displacement.make_animation()
-animation_figure_pressure.make_animation()
-animation_figure_coordinates.make_animation()
-# animation_figure_pressure.make_plot(50)
-
+# save animations
 save = False
-animation_figure = animation_figure_displacement
-movie_name = 'displacement.mp4'
 if save:
-    # set up formatting for the movie files: mp4-file
-    plt.rcParams['animation.ffmpeg_path'] = u'/apps/SL6.3/FFmpeg/3.1.3/bin/ffmpeg'  # path to ffmpeg conversion tool
-    writer = ani.FFMpegFileWriter(codec='mpeg1video', metadata=dict(artist='CoCoNuT'), fps=24, bitrate=2000)
+    # save the animations as mp4; make sure FFmpeg is available (UGent cluster: ml FFmpeg
+    # writer = ani.FFMpegFileWriter(metadata=dict(artist='CoCoNuT'), fps=24, bitrate=2000)
+    # for animation in animations:
+    #     animation.set_writer(writer)
+    #     animation.save(f'{animation.figure_name}.mp4')
 
-    animation_figure.animation.save(movie_name, writer=writer)
+    # save the animations as gif
+    for animation in animations:
+        animation.save()
 
 plt.show()
