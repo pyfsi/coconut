@@ -361,6 +361,14 @@ or equivalently
 Animation2d(sx, 'initial_coordinates', 'displacement', x_component='x', y_component='y',  func_animation_settings=dict(frames=50, skip=4))
 ```
 
+!!! tip
+
+    To change these animations settings after initialization, you case use the method `set_func_animation_settings()`:
+    ```python
+    displacement_animation = Animation2dDisplacement(sx, x_component='x', y_component='y')
+	displacement_animation.set_func_animation_settings(repeat=False, frames=10)
+	```
+
 ![Animation2dDisplacement](images/pp_2d_disp_2.gif)
 
 !!! tip
