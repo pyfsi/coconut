@@ -2,12 +2,11 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  8
+    \\  /    A nd           | Version:  11
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
-    version     2.0;
     format      ascii;
     class       dictionary;
     location    "system";
@@ -15,25 +14,32 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+
 solvers
 {
-    "p.*"
+    "p|pFinal"
     {
         solver          GAMG;
+        smoother        DICGaussSeidel;
         tolerance       1e-6;
         relTol          0;
-        smoother        DICGaussSeidel;
     }
 
-    "U.*"
+    "pcorr|pcorrFinal"
     {
-        solver          PBiCG;
+        $p;
+        tolerance       1e-2;
+    }
+
+    "U|UFinal"
+    {
+        solver          PBiCGStab;
         preconditioner  DILU;
         tolerance       1e-6;
         relTol          0;
     }
 
-    "cellDisplacement.*"
+    cellDisplacement
     {
         solver          GAMG;
         smoother        GaussSeidel;
