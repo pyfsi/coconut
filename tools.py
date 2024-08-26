@@ -104,9 +104,9 @@ layout_style = LayoutStyles()
 #                       red, green, yellow, blue, magenta, cyan, white, black
 def print_info(*args, layout=None, **kwargs):
     if layout is None:
-        print("".join(map(str, args)), **kwargs)
+        print(''.join(map(str, args)), **kwargs)
     else:
-        print(layout_style.get(layout), "".join(map(str, args)), layout_style.get('plain'), **kwargs)
+        print(layout_style.get(layout), ''.join(map(str, args)), layout_style.get('plain'), **kwargs)
 
 
 # updatePre: update preceding text, used in structure printing

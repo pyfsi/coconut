@@ -56,7 +56,7 @@ class SolverWrapperOpenFOAM10(SolverWrapperOpenFOAM):
                f'        type            surfaceFieldValue;\n'
                f'        libs            ("libfieldFunctionObjects.so");\n'
                f'        \n'
-               f'        log             false;'
+               f'        log             false;\n'
                f'        writeControl    timeStep;\n'
                f'        writeInterval   1;\n'
                f'        writeFields     true;\n'
