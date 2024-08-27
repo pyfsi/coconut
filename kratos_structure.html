@@ -852,15 +852,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v91-91" class="md-nav__link">
-    <span class="md-ellipsis">
-      v91 (9.1)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#v94-94" class="md-nav__link">
     <span class="md-ellipsis">
       v94 (9.4)
@@ -1908,17 +1899,8 @@ This criterion combines the displacement and residual criteria and declares the 
 <span class="p">}</span>
 </code></pre></div></p>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="v91-91">v91 (9.1)</h3>
-<p>The <em><code>ProjectParameters.json</code></em> required by Kratos is slightly different in the version 9.1. The user can refer to the <a href="https://github.com/KratosMultiphysics/Kratos/tree/v9.1">source code</a> for the changes.
-Alternatively, the user can use the file in <em><code>tests/solver_wrappers/kratos_structure/test_v91/setup_kratos</code></em> as a reference.
-The most important changes with respect to older versions include:</p>
-<ul>
-<li>The adaptation of model part names to include parents, e.g. from <code>Parts_tube</code> to <code>Structure.Parts_tube</code></li>
-<li>The removal of the keys <code>problem_domain_sub_model_part_list</code> and <code>processes_sub_model_part_list</code> in <code>solver_settings</code></li>
-</ul>
-<p>Based on testing, restart works with the <code>MembraneElement</code>, <code>ShellThickElement</code> and <code>ShellThickElementCorotational</code>. More testing is required to ascertain if the restart works with the other<code>elements</code> in Kratos.</p>
 <h3 id="v94-94">v94 (9.4)</h3>
-<p>No major changes.</p>
+<p>Base version.</p>
 <h4 id="kratos-installation">Kratos installation</h4>
 <p>This version supports installation using <code>pip</code>. To install only StructuralMechanicsApplication of Kratos, use the following command:
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>KratosMultiphysics<span class="w"> </span>KratosStructuralMechanicsApplication<span class="w"> </span>KratosLinearSolversApplication

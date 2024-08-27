@@ -1791,7 +1791,7 @@ This includes</p>
 <p>Nevertheless, CoCoNuT also provides a more user-friendly tool to visualize and inspect this information.</p>
 <h2 id="the-class-postprocess">The class PostProcess</h2>
 <p>Instead of loading the pickle file directly, its path can be used to create an instance of the <code>PostProcess</code> class.
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">coconut.examples.post_processing.post_process</span> <span class="kn">import</span> <span class="o">*</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">coconut.examples.post_processing.post_processing</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="n">pp</span> <span class="o">=</span> <span class="n">PostProcess</span><span class="p">(</span><span class="s1">&#39;case_results.pickle&#39;</span><span class="p">)</span>
 </code></pre></div></p>
 <div class="admonition info">
@@ -2278,6 +2278,13 @@ For the former, also see <a href="#adding-multiple-subsets">Adding multiple subs
 <p>or equivalently</p>
 <div class="highlight"><pre><span></span><code><span class="n">Animation2d</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="s1">&#39;initial_coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;displacement&#39;</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>  <span class="n">func_animation_settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">frames</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 </code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>To change these animations settings after initialization, you case use the method <code>set_func_animation_settings()</code>:
+<div class="highlight"><pre><span></span><code><span class="n">displacement_animation</span> <span class="o">=</span> <span class="n">Animation2dDisplacement</span><span class="p">(</span><span class="n">sx</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+<span class="n">displacement_animation</span><span class="o">.</span><span class="n">set_func_animation_settings</span><span class="p">(</span><span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></p>
+</div>
 <p><img alt="Animation2dDisplacement" src="images/pp_2d_disp_2.gif" /></p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>

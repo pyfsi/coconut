@@ -840,15 +840,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#v8-openfoam-8" class="md-nav__link">
-    <span class="md-ellipsis">
-      v8 (OpenFOAM 8)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#v10-openfoam-10" class="md-nav__link">
     <span class="md-ellipsis">
       v10 (OpenFOAM 10)
@@ -914,13 +905,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-8" class="md-nav__link">
+  <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-10" class="md-nav__link">
     <span class="md-ellipsis">
-      Adapting a new application to be used in CoCoNuT (OpenFOAM 8)
+      Adapting a new application to be used in CoCoNuT (OpenFOAM 10)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Adapting a new application to be used in CoCoNuT (OpenFOAM 8)">
+    <nav class="md-nav" aria-label="Adapting a new application to be used in CoCoNuT (OpenFOAM 10)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1962,7 +1953,7 @@ OpenFOAM-directory:</p>
 <li>It is probably best to derive a new case from the directory containing an FSI simulation with OpenFOAM in <em><code>coconut/examples/</code></em> in order to copy its structure.</li>
 <li>For OpenFOAM 8, the applications like <code>pimpleFoam</code> need to be adapted to accommodate the communication with the solver wrapper during the FSI-simulation.
   These adapted versions have the same name as the original OpenFOAM-solver but with the prefix <code>coconut_</code>.
-  If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-8">this brief set of instructions</a>.</li>
+  If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-10">this brief set of instructions</a>.</li>
 <li>For OpenFOAM 11, only <code>foamRun</code> has been adapted but this solver can work with many solver modules (see <a href="https://doc.cfd.direct/openfoam/user-guide-v11/solvers-modules">OpenFOAM 11 documentation</a>). </li>
 </ul>
 <h2 id="treatment-of-kinematic-pressure-and-traction">Treatment of kinematic pressure and traction</h2>
@@ -1979,9 +1970,9 @@ Therefore, a new functionObject, rhoWallShearStress, is available, which is a mo
 and returns the actual traction, even if the momentumTransportModel is incompressible.
 Note that is this new functionObject is version specific, but common for all applications of one version.
 Upon compilation of the coconut application this functionObject is included in the binary.
-This is the case for, for example, coconut_interFoam and coconut_cavitatingFoam.</p>
+This was the case for, for example, coconut_interFoam and coconut_cavitatingFoam (OpenFOAM 8).</p>
 <p>The behaviour of CoCoNuT for these different applications is implemented in the solver wrapper itself, namely in the <code>kinematic_conversion_dict</code>, located in the files <em><code>vX.py</code></em>, with <code>X</code>
-the identifier of the OpenFOAM-version (e.g. <em><code>v8.py</code></em> for OpenFOAM 8).
+the identifier of the OpenFOAM-version (e.g. <em><code>v10.py</code></em> for OpenFOAM 10).
 This means that when a new application is added, the behaviour for this new application should be specified in that location.</p>
 <h2 id="solver-coupling-convergence">Solver coupling convergence</h2>
 <p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> has been implemented for the OpenFOAM solver wrapper.
@@ -1992,22 +1983,9 @@ Calling the solver twice with the same interface displacement, will not necessar
 This is due to a (weak) nonlinearity in the calculation of the mesh deformation as a result of the explicit non-orthogonality correction in the normal gradient calculation used in the Laplacian equation.
 Attempts to use the option moveMeshOuterCorrectors (recalculating mesh motion in every solver iteration) showed that there exist problems with this feature: it disturbs the convergence checks and, when used in parallel, even causes the code to crash.</p>
 <h2 id="version-specific-documentation">Version specific documentation</h2>
-<h3 id="v8-openfoam-8">v8 (OpenFOAM 8)</h3>
-<p>Base version.
-In this OpenFOAM version some changes were made with respect to older versions, for example, the name of some commands and classes are different.
-Moreover, there are some changes in the case setup. The following list provides some but is not all extensive:</p>
-<ul>
-<li>The interpolation point for <code>arc</code> definitions using <code>blockMesh</code> has to be on the arc and not just on its 'elongation'</li>
-<li>Using a macro expansion, such as <code>$R</code>, in combination with <code>#calc</code>, where an operator follows the macro expansion,
-  requires using protection: use <code>#calc "${R}/2</code> instead of <code>#calc "$R/2</code></li>
-<li>The file <em><code>constant/turbulenceProperties</code></em> has been renamed to <em><code>constant/momentumTransport</code></em></li>
-<li>The keyword <code>residualControl</code> in the <code>PIMPLE</code> dictionary is now called <code>outerCorrectorResidualControl</code>. The
-  keyword <code>residualControl</code> still exists, but has a different meaning and is used as in <code>SIMPLE</code>.</li>
-<li>The file <em><code>system/fvSolution</code></em> requires dictionaries <code>pcorr</code> and <code>pcorrFinal</code>, if the keyword <code>correctPhi</code> is <code>true</code>
-  in <em><code>system/fvSolution</code></em>, which it is by default. The tolerance settings should be sufficiently low (similar to <code>p</code>).</li>
-</ul>
 <h3 id="v10-openfoam-10">v10 (OpenFOAM 10)</h3>
-<p>In this OpenFOAM version some changes were made with respect to OpenFOAM 8, and there are some changes in the case setup.
+<p>Base version.
+In this OpenFOAM version some changes were made with respect to OpenFOAM 8, and there are some changes in the case setup.
 The following list provides some but is not all extensive:</p>
 <ul>
 <li>The file <em><code>constant/transportProperties</code></em> has been renamed to <em><code>constant/physicalProperties</code></em>.</li>
@@ -2039,12 +2017,12 @@ and that the user should take care to kill that OpenFOAM-loop manually (using <c
 <p>This method is the core of the simulation passing on the interface displacement to OpenFOAM and receiving the resulting loads (pressure and traction).
 The interface displacement is converted into an OpenFOAM-readable format (with the method <code>write_node_input</code>),
 by storing it in a <code>pointDisplacementTmp</code> field, which is read in by OpenFOAM in every iteration 
-(this required some adaptation of the solver, see <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-8">next section</a>). 
+(this required some adaptation of the solver, see <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-10">next section</a>). 
 Subsequently, the mesh is updated in OpenFOAM and the flow equations are solved.
 The dynamic mesh motion is handled by OpenFOAM itself.
 Finally, the method <code>read_node_output</code> is called in the solver wrapper, which reads the interface loads from the directory <em><code>postProcessing</code></em> (more precisely from the subdirectories <em><code>coconut_&lt;boundary_name&gt;</code></em>).</p>
-<h2 id="adapting-a-new-application-to-be-used-in-coconut-openfoam-8">Adapting a new application to be used in CoCoNuT (OpenFOAM 8)</h2>
-<p>For OpenFOAM 8, the applications like <code>pimpleFoam</code> need to be adapted to accommodate the communications with the solver wrapper during the FSI-simulation.
+<h2 id="adapting-a-new-application-to-be-used-in-coconut-openfoam-10">Adapting a new application to be used in CoCoNuT (OpenFOAM 10)</h2>
+<p>For OpenFOAM 10, the applications like <code>pimpleFoam</code> need to be adapted to accommodate the communications with the solver wrapper during the FSI-simulation.
 These adapted versions have the same name as the original OpenFOAM-solver but with the prefix <code>coconut_</code>.
 If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself.
 This can be done in a rather straightforward way by taking a look at already implemented application, for example <code>coconut_pimpleFoam</code>.
