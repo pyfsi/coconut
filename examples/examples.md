@@ -23,7 +23,7 @@ the first is `settings` in which the number of time steps for which the calculat
 Besides the case folders, such as *`tube`*, the *`examples`* folder contains other directories:
 
 - *`test_single_solver`* particular example of the coupled solver `test_single_solver` that can be used to test the setup of case by only running one solver and replacing the other solver with a dummy solver that outputs prescribed data,
-- *`post_processing`* containing scripts to visualize your results; in particular, the *`animate_example.py`* script provides the means to animate the variables stored in the interface (pressure, traction, displacement), given that your results are stored in a pickle file, see the [documentation on save results](../coupling_components/coupled_solvers/coupled_solvers.md#save-results).
+- *`post_processing`* containing the code to inspect and visualize your results, see also the [post-processing documentation](post_processing/post_processing.md), given that your results are stored in a pickle file, see the [documentation on save results](../coupling_components/coupled_solvers/coupled_solvers.md#save-results).
 - *`run_simulation.py`* the script used to start the actual simulation,
 - *`images`* folder containing images used in the description of the examples,
 - *`evaluate_examples`* Python script to compare the results of the example simulation with benchmark data,
