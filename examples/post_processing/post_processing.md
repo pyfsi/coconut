@@ -21,7 +21,7 @@ Nevertheless, CoCoNuT also provides a more user-friendly tool to visualize and i
 ## The class PostProcess
 Instead of loading the pickle file directly, its path can be used to create an instance of the `PostProcess` class.
 ```python
-from coconut.examples.post_processing.post_process import *
+from coconut.examples.post_processing.post_processing import *
 pp = PostProcess('case_results.pickle')
 ```
 
