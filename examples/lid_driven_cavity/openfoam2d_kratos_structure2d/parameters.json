@@ -46,10 +46,10 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.openfoam.v8",
+            "type": "solver_wrappers.openfoam.v11",
             "settings": {
               "working_directory": "CFD",
-              "application": "coconut_pimpleFoam",
+              "application": "coconut_foamRun",
               "boundary_names": [
                 "bottom"
               ],

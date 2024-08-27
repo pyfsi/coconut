@@ -10,10 +10,12 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      momentumTransport;
+    object      physicalProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-simulationType  laminar;
+transportModel  Newtonian;
+
+nu              [0 2 -1 0 0 0 0] 3e-06;
 
 // ************************************************************************* //

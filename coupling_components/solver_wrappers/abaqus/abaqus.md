@@ -250,12 +250,6 @@ The convergence criterion [solver coupling convergence](../../convergence_criter
 
 ## Version specific documentation
 
-### v2021
-Base version.
-
-### v2022
-No major changes.
-
 ### v2023
 No major changes.
 

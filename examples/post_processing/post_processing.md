@@ -21,7 +21,7 @@ Nevertheless, CoCoNuT also provides a more user-friendly tool to visualize and i
 ## The class PostProcess
 Instead of loading the pickle file directly, its path can be used to create an instance of the `PostProcess` class.
 ```python
-from coconut.examples.post_processing.post_process import *
+from coconut.examples.post_processing.post_processing import *
 pp = PostProcess('case_results.pickle')
 ```
 
@@ -360,6 +360,14 @@ or equivalently
 ```python
 Animation2d(sx, 'initial_coordinates', 'displacement', x_component='x', y_component='y',  func_animation_settings=dict(frames=50, skip=4))
 ```
+
+!!! tip
+
+    To change these animations settings after initialization, you case use the method `set_func_animation_settings()`:
+    ```python
+    displacement_animation = Animation2dDisplacement(sx, x_component='x', y_component='y')
+	displacement_animation.set_func_animation_settings(repeat=False, frames=10)
+	```
 
 ![Animation2dDisplacement](images/pp_2d_disp_2.gif)
 
