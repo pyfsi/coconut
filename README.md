@@ -177,21 +177,23 @@ The concept of the mapped solver wrapper illustrates the modularity of CoCoNuT. 
 
 Now try to change some settings in the JSON file, such as the mappers, the time step or the maximum number of coupling iterations, and rerun the coupled simulation.
 
-After a simulation is finished, it can be useful to visualize the output quantities (i.e. displacement, pressure and in general also shear). For the FSI-simulation we have just performed, post-processing has already been implemented in the file *`$COCO/coconut/examples/post_processing/`*. It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on `true`, which is for all examples done by default. As an example, we will generate an animation by running the *`animate_example.py`* file:
+After a simulation is finished, it can be useful to inspect or visualize the output quantities (i.e. displacement, pressure and in general also shear).
+CoCoNuT has some built-in tools to do just that described in the [post-processing documentation](examples/post_processing/post_processing.md).
+For the FSI-simulation we have just performed, an example script is present in *`$COCO/coconut/examples/post_processing/`*.
+It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
+By running this example script *`animate_example.py`*, we will generate several animations:
 
 ```bash
 python3 $COCO/coconut/examples/post_processing/animate_example.py
 ```
 
-Animations of the displacement and pressure will be shown.
+Animations of the displacement, pressure and coordinates (with equally scaled axes) will be shown.
+The first two are shown below.
 
 <p align="center">
-  <img alt="Pressure animation" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif" width="49%">
   <img alt="Displacement animation" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/displacement.gif" width="49%">
+  <img alt="Pressure animation" src="https://raw.githubusercontent.com/pyfsi/coconut/master/docs/images/pressure.gif" width="49%">
 </p>
-
-
-[//]: # (TODO: also refer to explanation of animate class once that documentation has been finished)
 
 
 ## Overview of the code

@@ -3,7 +3,7 @@ import subprocess
 
 from coconut import tools
 
-cfd_solver = 'openfoam.v8'
+cfd_solver = 'openfoam.v11'
 csm_solver = 'kratos.structure_v94'
 cfd_dir = './CFD'
 csm_dir = './CSM'
