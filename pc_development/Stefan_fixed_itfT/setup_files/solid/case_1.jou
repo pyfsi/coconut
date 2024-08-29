@@ -43,15 +43,16 @@ solve set under-relaxation temperature 0.9
 solve initialize initialize-flow
 
 define dynamic-mesh dynamic-mesh y n n n n
-define dynamic-mesh controls smoothing y
-define dynamic-mesh controls smoothing-parameters smoothing-method diffusion
-define dynamic-mesh controls smoothing-parameters diffusion-coeff-function boundary-distance
-define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 1.0
-define dynamic-mesh controls smoothing-parameters max-iter 50
-define dynamic-mesh controls layering n
+define dynamic-mesh controls smoothing n
+define dynamic-mesh controls layering y
 define dynamic-mesh controls remeshing n
+define dynamic-mesh controls layering-parameters constant-height y
+define dynamic-mesh controls layering-parameters collapse-factor 0.2
+define dynamic-mesh controls layering-parameters split-factor 0.4
 ; Last option below: exclude mesh motion in boundary conditions? y
 define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+; Include end of setup command in json file for layering! Non-zero cell height for layering
+
 
 file write-case-data pc_solid.cas.h5
 exit

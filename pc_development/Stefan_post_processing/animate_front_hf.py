@@ -9,7 +9,7 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../pc_development/'
-case_paths = ['Stefan_new/case_results.pickle', 'Stefan_new/fine/case_results.pickle', 'Stefan_fixed_itfT/case_results_backup.pickle', 'Stefan_fixed_itfT/fine/case_results.pickle']
+case_paths = ['Stefan_new/case_results.pickle', 'Stefan_new/fine/case_results.pickle', 'Stefan_fixed_itfT/case_results.pickle', 'Stefan_fixed_itfT/fine/case_results.pickle']
 legend_entries = ['VarT - coarse', 'VarT - fine', 'CstT - coarse', 'CstT - fine']
 
 itf_faces = [10, 100, 10, 100]
