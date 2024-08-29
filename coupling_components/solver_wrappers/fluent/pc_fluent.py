@@ -125,34 +125,31 @@ class SolverWrapperFluent(SolverWrapper):
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
-        unsteady = '#f'
-        if self.unsteady:
-            unsteady = '#t'
-        multiphase = '#f'
-        if self.multiphase:
-            multiphase = '#t'
-        moving_boundary = '#t'
-        if not self.moving_boundary:
-            moving_boundary = '#f'
         if "pressure" in self.output_variables and "traction" in self.output_variables:
             force_balance = '#t'
         else:
             force_balance = '#f'
+        thermal_bc = str(2)
+        if self.thermal_bc == 'heat_flux':
+            thermal_bc = str(1)
+        elif self.thermal_bc == 'temperature':
+            thermal_bc = str(0)
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
-                    line = line.replace('|UNSTEADY|', unsteady)
-                    line = line.replace('|MULTIPHASE|', multiphase)
-                    line = line.replace('|MOVING_BOUNDARY|', moving_boundary)
+                    line = line.replace('|UNSTEADY|', '#t' if self.unsteady else '#f')
+                    line = line.replace('|MULTIPHASE|', '#t' if self.multiphase else '#f')
+                    line = line.replace('|MOVING_BOUNDARY|', '#t' if self.moving_boundary else '#f')
                     line = line.replace('|FORCE_BALANCE|', force_balance)
-                    line = line.replace('|THERMAL_BC|', str(1) if (self.thermal_bc == 'heat_flux') else str(0))
+                    line = line.replace('|THERMAL_BC|', thermal_bc)
+                    line = line.replace('|TEMP_STORED|', '#t' if "temperature" in self.output_variables else '#f')
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
-                    line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
-                                                                                        '\n'))
+                    line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands','\n'))
+                    line = line.replace('|END_OF_SETUP_COMMANDS|', self.settings.get('end_of_setup_commands','\n'))
                     outfile.write(line)
 
         # prepare Fluent UDF
@@ -166,7 +163,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|LATENT_HEAT|', str(self.latent_heat))
                     line = line.replace('|MELT_TEMP|', str(self.melt_temp))
                     line = line.replace('|UNSTEADY|', 'true' if self.unsteady else 'false')
-                    line = line.replace('|FLUID|', 'true' if self.thermal_bc == "temperature" else 'false')
+                    line = line.replace('|FLUID|', 'false' if self.thermal_bc == "heat_flux" else 'true')
                     outfile.write(line)
 
         # check number of cores
@@ -471,7 +468,7 @@ class SolverWrapperFluent(SolverWrapper):
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'repeat':
                     data = self.read_output_file(prefix, mp_name, thread_id)
-                    if prefix == "displacement" and self.thermal_bc == "temperature":
+                    if prefix == "displacement" and self.thermal_bc != "heat_flux":
                         # Displacement is directly known at nodes in liquid solver
                         req_dim = accepted_variables_pc['out'][var][1] + 1
                     elif accepted_variables_pc['out'][var][1] == 0:
@@ -511,7 +508,7 @@ class SolverWrapperFluent(SolverWrapper):
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
-                        if var == 'displacement' and self.thermal_bc == "temperature":
+                        if var == 'displacement' and self.thermal_bc != "heat_flux":
                             # get node coordinates and ids
                             vector = data[:, :3]
                             ids = data[:,-1]
@@ -749,7 +746,7 @@ class SolverWrapperFluent(SolverWrapper):
                     np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def read_output_file(self, prefix, mp_name, thread_id=None):
-        if prefix == "displacement" and self.thermal_bc == "temperature": # Fluid domain
+        if prefix == "displacement" and self.thermal_bc != "heat_flux": # Fluid domain
             mp_name_new = mp_name.replace("out", "in")
             model_part = self.model.get_model_part(mp_name_new)
             data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
@@ -759,8 +756,10 @@ class SolverWrapperFluent(SolverWrapper):
             file_name = join(self.dir_cfd, tmp)
             data = np.loadtxt(file_name, skiprows=1, ndmin=2)
             # this is a quick fix for temperature -> write new udf for temperature at moving interface!
-            if prefix == "temperature" and self.thermal_bc == "heat_flux":
+            if False: # prefix == "temperature" and self.thermal_bc == "heat_flux":
+                print(data)
                 data[:, 0] = np.ones((np.shape(data)[0],)) * self.ini_condition
+                print(data)
             # copy output data for debugging
             if self.debug:
                 dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'

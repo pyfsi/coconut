@@ -7,11 +7,8 @@ from coconut import tools
 
 solver_1 = 'fluent.pc_v2023R1'
 solver_2 = 'fluent.pc_v2023R1'
-cfd_dir_1 = './CFD_1'
-cfd_dir_2 = './CFD_2'
-
-# copy run_simulation.py script to main directory (NOT NECESSARY HERE)
-# shutil.copy('../../run_simulation.py', './')
+cfd_dir_1 = 'CFD_1'
+cfd_dir_2 = 'CFD_2'
 
 # clean up Fluent
 if glob.glob(join(cfd_dir_1, 'cleanup-fluent*')):

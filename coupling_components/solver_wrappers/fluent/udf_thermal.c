@@ -63,6 +63,20 @@ for (_d = 0; _d < dim; _d++) {                                      \
     PRF_CRECV_REAL(from, name[_d], n, tag);                         \
 }
 
+/* User defined memory -- not available in 3D! */
+#define PR_1_X 0 // previous x-coordinate of first node in face
+#define PR_1_Y 1 // previous y-coordinate of first node in face
+#define PR_2_X 2 // previous x-coordinate of second node in face
+#define PR_2_Y 3 // previous y-coordinate of second node in face
+#define NEW_1_X 4 // new x-coordinate of first node in face
+#define NEW_1_Y 5 // new y-coordinate of first node in face
+#define NEW_2_X 6 // new x-coordinate of second node in face
+#define NEW_2_Y 7 // new y-coordinate of second node in face
+#define ADJ 8 // flag for cells adjacent to the interface
+#define D_VOL 9 // swept volume during move_nodes operation
+#define PR_H 10 // Cell liquid fraction in previous converged timestep
+#define SIGN 11 // defines wether the cell is on the growing or shrinking side during phase change
+
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
 real dt = |TIME_STEP_SIZE|;
@@ -754,6 +768,9 @@ DEFINE_ON_DEMAND(store_heat_flux){
             // flux[ND_ND][i] = NV_DOT(normal, vector);
             flux[ND_ND][i] = heat/NV_MAG(area);
 
+            /* Code currently only for melting: store_heat_flux udf only used in liquid domain & liquid domain will grow */
+            C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = 1.0;
+
             for (j = 0; j < mnpf; j++) {
                 /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
                 ids[j][i] = -1;
@@ -1113,6 +1130,8 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
                     if (isNodeFound) { /* All nodes have been found, so the faces match */
                         flag[i] = true;
                         F_PROFILE(face, face_thread, var) = -1*heat_flux[i];
+                        /* Code currently only for melting: set_heat_flux udf only used in solid domain & solid domain will shrink */
+                        C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = -1.0;
                         break;
                     }
                 }
@@ -1143,19 +1162,6 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
     if (myid == 0) {printf("\nFinished UDF set_heat_flux.\n"); fflush(stdout);}
 }
 
-
-/* User defined memory -- not available in 3D! */
-#define PR_1_X 0 // previous x-coordinate of first node in face
-#define PR_1_Y 1 // previous y-coordinate of first node in face
-#define PR_2_X 2 // previous x-coordinate of second node in face
-#define PR_2_Y 3 // previous y-coordinate of second node in face
-#define NEW_1_X 4 // new x-coordinate of first node in face
-#define NEW_1_Y 5 // new y-coordinate of first node in face
-#define NEW_2_X 6 // new x-coordinate of second node in face
-#define NEW_2_Y 7 // new y-coordinate of second node in face
-#define ADJ 8 // flag for cells adjacent to the interface
-#define D_VOL 9 // swept volume during move_nodes operation
-#define PR_H 10 // Cell liquid fraction in previous converged timestep
 
   /*------------*/
  /* move_nodes */
@@ -1667,7 +1673,6 @@ DEFINE_ON_DEMAND(write_displacement) {
 
 DEFINE_ON_DEMAND(update_cell_enthalpy)
 {
-/*Currently not used.*/
 #if RP_NODE
     Domain *d;
     d = Get_Domain(1);
@@ -1683,6 +1688,29 @@ DEFINE_ON_DEMAND(update_cell_enthalpy)
 #endif /* RP_NODE */
 }
 
+
+  /*----------*/
+ /* ini_sign */
+/*----------*/
+
+DEFINE_ON_DEMAND(ini_sign)
+{
+#if RP_NODE
+    Domain *d;
+    d = Get_Domain(1);
+    Thread *t;
+    cell_t c;
+    thread_loop_c(t,d)
+    {
+        begin_c_loop(c,t) // loop over all cells
+        {
+            C_UDMI(c,t,SIGN) = 0.0;
+        } end_c_loop(c,t)
+    }
+#endif /* RP_NODE */
+}
+
+
   /*-----------------*/
  /* udf_mass_source */
 /*-----------------*/
@@ -1692,16 +1720,9 @@ DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
 /*Source term for continuity equation, to compensate mass loss or mass gain.*/
 
 real source;
-real sign;
 
-if ((C_VOLUME(c,t) - C_OLD_VOLUME(c,t,dt)) >= 0.0) {
-    sign = 1.0;
-} else {
-    sign = -1.0;
-}
-
-source = sign*C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-dS[eqn] = sign*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
 return source;
 }
 
@@ -1714,24 +1735,21 @@ DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
 /*Source term for energy equation, to account for latent and sensible heat.*/
 real source;
-real sign;
-
-if ((C_VOLUME(c,t) - C_OLD_VOLUME(c,t,dt)) >= 0.0) {
-    sign = 1.0;
-} else {
-    sign = -1.0;
-}
+real test;
 
 if (C_UDMI(c,t,ADJ) == 1.0) {
     if (fluid) {
         /* This definition is only valid for fluid during melting! */
         // source = (-sign*C_R(c,t)*(C_UDMI(c,t,PR_H) - C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
-        source = (sign*C_R(c,t)*(C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+        source = (C_UDMI(c,t,SIGN)*C_R(c,t)*(C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
         dS[eqn] = 0.0;
     } else {
         /* This definition is only valid for solid during melting! */
         // source = sign*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-        source = sign*C_R(c,t)*(C_UDMI(c,t,PR_H)-C_CP(c,t)*(TM - 298.15))/(dt);
+        test = C_UDMI(c,t,SIGN)*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+        if (myid == 0) {printf("\nTest = %lf W/m^3\n", test); fflush(stdout);}
+        source = C_UDMI(c,t,SIGN)*C_R(c,t)*(C_UDMI(c,t,PR_H)-C_CP(c,t)*(TM - 298.15))/(dt);
+        if (myid == 0) {printf("\nSource = %lf W/m^3\n", source); fflush(stdout);}
         dS[eqn] = 0.0;
     }
 } else {
