@@ -101,20 +101,9 @@ This criterion combines the displacement and residual criteria and declares the 
 
 ## Version specific documentation
 
-### v91 (9.1)
-
-The *`ProjectParameters.json`* required by Kratos is slightly different in the version 9.1. The user can refer to the [source code](https://github.com/KratosMultiphysics/Kratos/tree/v9.1) for the changes.
-Alternatively, the user can use the file in *`tests/solver_wrappers/kratos_structure/test_v91/setup_kratos`* as a reference.
-The most important changes with respect to older versions include:
-
-- The adaptation of model part names to include parents, e.g. from `Parts_tube` to `Structure.Parts_tube`
-- The removal of the keys `problem_domain_sub_model_part_list` and `processes_sub_model_part_list` in `solver_settings`
-
-Based on testing, restart works with the `MembraneElement`, `ShellThickElement` and `ShellThickElementCorotational`. More testing is required to ascertain if the restart works with the other`elements` in Kratos.
-
 ### v94 (9.4)
 
-No major changes.
+Base version.
 
 #### Kratos installation
 
