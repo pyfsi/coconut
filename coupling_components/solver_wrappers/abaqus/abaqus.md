@@ -44,6 +44,7 @@ This section describes the parameter settings in the JSON file. A distinction is
 |                   parameter | type | description                                                                                                                                                                                                                                           |
 |----------------------------:|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |                     `debug` | bool | Default: `false`. For every iteration, text files are saved with the input and output data of the solver.                                                                                                                                             |
+|                 `line_load` | bool | Default: `false`. Indicates whether the applied loads are line loads on a 1D beamlike elements structure, see [the dedicated section](#line-loads-on-beamlike-elements).                                                                              |
 |                      `ramp` | bool | Default: `false`. Only used when automatic time incrementation (subcycling) is enabled in Abaqus. <br> `false`: Load is considered to be constant throughout the time step. <br>`true`: Load is applied in a ramped fashion throughout the time step. |
 | <nobr>`save_results`</nobr> | int  | Default: `1`. Determines what output files are kept by Abaqus. Only the *`.odb`* files corresponding to (i.e. of which the time step is a multiple of) `save_results` are kept at the end of a time step.                                             |
 
@@ -92,7 +93,6 @@ In the file conventions *`A`* is the index of the corresponding element in the `
  Additionally, the `save_results` parameter defines the rate at which the output database files (*`.odb`*) are kept.
 
 ## Setting up a case: Abaqus input file (.inp)
-The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation. This file should be located in the main directory. Its name should be specified in the JSON file via the parameter `input_file`. For the remainder of this section this file will be referred to as "base-file".
 
 Creation of the base-file is not considered a part of the solver wrapper functionality as it is case-specific. However, in order for the solver wrapper to work, the base-file has to comply with certain general conditions. This section aims at informing the user about the requirements for the base-file.
 
@@ -109,7 +109,7 @@ The base-file has to contain all necessary information about the structural mode
  - Per surface a pressure load and traction load should be defined (see [below](#setup-for-abaqus-input-loads)).
  - Node sets where displacement data will be extracted.
     - Here *"Set"* refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree. Also element sets exist, but for CoCoNuT the demanded sets need to be a collection of geometrical nodes, hence "node set".
-- A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).
+ - A Field Output Request requesting output at the node sets (see [below](#setup-for-abaqus-output-displacements)).
  - A *Step* definition, which contains solver settings. Currently, the following type of analyses are supported (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default):
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
@@ -122,7 +122,6 @@ Abaqus models contain parts and those parts are used to create assemblies. The b
  Abaqus has a GUI as well as a Python 2 interface (which is also accessible) via the GUI. References to both the Python interface and GUI will be made below.
  
 ### Setup for Abaqus input (loads)
-Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created **in the assembly**. There are multiple possibilities to create these surfaces:
 
  - From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.
  - From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.
@@ -184,7 +183,6 @@ The name of the surface has to be put as value for the `"model_part"` key in the
 ```
 
 ### Setup for Abaqus output (displacements)
-After creation of the step, Abaqus needs to be instructed about what to output at the end of a calculation. A "Field Output" has to be generated covering all locations involved in the fluid-structure interface. To do so one must create node sets in the assembly (if this had not been done before) containing all structural nodes of the surfaces, then create a Field Output Request for at least the coordinates and the displacements. This Field Output Request can in the GUI be found as part of the model tree, but below also an example for the Python interface is given. A Field Output Request requests field output (as the name says) to be written to the output database file (.odb).
 
 In the previous section an example was given of how a surface can be created from a node set, but the other way around is also possible, creating a node set from a surface (presuming that this surface was already created):
 
@@ -246,6 +244,49 @@ Saving data files is as such seen as inherent to solving the solution step.
 ## Solver coupling convergence
 
 The convergence criterion [solver coupling convergence](../../convergence_criteria/convergence_criteria.md#solver-coupling-convergence) can not be used for the Abaqus solver wrapper.
+
+## Line loads on beamlike elements
+
+In some cases with long and slender structures, e.g. textile yarns, it is desirable to represent the moving structure by its centerline only, as a chain of beamlike elements. 
+For these structures, the fluid force should be applied using line loads rather than surface loads. 
+
+The user now has to create a line load on an **element set** rather than on a surface for pressure and traction. 
+Below is a Python example on how to create such line load (unit: N/m) object given that the element set `inputElementSetA` was defined earlier.
+```python
+from step import *
+step1 = my_model.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=1, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=1, minInc=1, maxInc=1, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
+step1.Restart(frequency = 99999, overlay = ON)
+my_model.LineLoad(name = 'DistributedLineLoad', createStepName = 'Step-1', region = inputElementSetA, distributionType = USER_DEFINED, system = GLOBAL)
+```
+In the base-file (.inp), the entries could look as follows (where `YARN` is the name of the element set):
+```
+** Name: LINELOAD-1	 Type: Line load
+*Dload, op=NEW
+YARN, PXNU, 1.
+** Name: LINELOAD-2	 Type: Line load
+*Dload, op=NEW
+YARN, PYNU, 1.
+** Name: LINELOAD-3	 Type: Line load
+*Dload, op=NEW
+YARN, PZNU, 1.
+```
+
+The fact that the loads are defined on an element set has as a consequence that only **one** `ModelPart` should be created. Since no surface name is passed to the DLOAD subroutine, it is impossible to trace multiple `ModelParts`. 
+This is checked when the JSON-parameter `line_load` is set to `True`.
+
+Lastly, only the variable `traction` should be attributed to the `interface_input` in the parameter file:
+```json
+{
+  "interface_input": [
+    {
+      "model_part": "YARN_load_points",
+      "variables": ["traction"]
+    }
+  ]
+}
+```
+
+Other than this, the operation of the Abaqus solver wrapper for line loads is identical to when surface-based are considered. Currently, only 3D Timoshenko beam elements have been tested.
 
 ## Version specific documentation
 

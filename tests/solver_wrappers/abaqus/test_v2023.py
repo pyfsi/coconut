@@ -18,5 +18,11 @@ class TestSolverWrapperAbaqus2023Tube3D(abaqus.TestSolverWrapperAbaqusTube3D):
     setup_case = True
 
 
+@unittest.skipUnless(solver_available(f'abaqus.v{version}'), f'abaqus.v{version} not available')
+class TestSolverWrapperAbaqus2023Yarn3D(abaqus.TestSolverWrapperAbaqusYarn3D):
+    version = version
+    setup_case = True
+
+
 if __name__ == '__main__':
     unittest.main()

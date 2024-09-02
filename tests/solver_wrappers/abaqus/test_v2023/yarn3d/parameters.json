@@ -1,5 +1,5 @@
 {
-  "type": "solver_wrappers.abaqus.line_load_v2024",
+  "type": "solver_wrappers.abaqus.v2023",
   "settings": {
     "working_directory": "solver_wrappers/abaqus_line_load/test_v2024/yarn/CSM",
     "cores": 1,
@@ -24,7 +24,7 @@
         ]
       }
     ],
-    "mp_mode": "THREADS",
+    "line_load": true,
     "input_file": "yarn.inp"
   }
 }

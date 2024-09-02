@@ -62,6 +62,12 @@ class SolverWrapperAbaqus(SolverWrapper):
         for item in self.settings['interface_output']:
             idx = item['model_part'].rindex('_nodes')
             self.mp_out.append(item['model_part'][:idx])
+        self.line_load = self.settings.get('line_load', False)  # Boolean for line load calculations, optional
+        if self.line_load:
+            if not (len(self.settings['interface_input']) == 1 and len(self.settings['interface_output']) == 1):
+                raise ValueError('For line loads on beam elements, only 1 model part can be created. Instead, received'
+                                 f'{len(self.settings["interface_input"])} input and '
+                                 f'{len(self.settings["interface_output"])} model parts')
         self.ramp = int(self.settings.get('ramp', 0))  # 0 or 1 required to substitute in user-subroutines (FORTRAN)
 
         # environment file parameters
@@ -599,7 +605,10 @@ class SolverWrapperAbaqus(SolverWrapper):
             mp_name = item['model_part']
             model_part = self.model.get_model_part(mp_name)
 
-            pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
+            if not self.line_load:
+                pressure = self.interface_input.get_variable_data(mp_name, 'pressure')
+            else:
+                pressure = np.zeros(model_part.size).reshape(-1, 1)
             traction = self.interface_input.get_variable_data(mp_name, 'traction')
             data = np.hstack((pressure, traction[:, :self.dimensions]))
             fmt = (self.dimensions + 1) * '%27.17e'  # format of load input file should be exactly this for USR.f

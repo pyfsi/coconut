@@ -20,8 +20,6 @@ solver_load_cmd_dict = {
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
-        'abaqus.line_load_v2024': 'ml intel/2022b && ml ABAQUS/2024 '
-                        '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
     },
     'ugent_hpc': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 && ml iimpi/2023a && unset SLURM_GTIDS '

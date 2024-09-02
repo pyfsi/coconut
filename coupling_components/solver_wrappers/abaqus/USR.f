@@ -241,7 +241,7 @@ C==============================================================================
       INTEGER KSTEP,KINC,NOEL,NPT,LAYER,KSPT,JLTYP,R
       LOGICAL :: FOUND
 
-      INTEGER K
+      INTEGER K, AXIS
       INTEGER OP(2,S),ELS(2,N,S)
       COMMON /OPELS/ OP,ELS
       SAVE /OPELS/
@@ -279,11 +279,16 @@ C==============================================================================
       CALL LOOKUP(NOEL,R,K)
       K = ELS(2,K,R)+NPT
 
+      IF (JLTYP == 0) THEN
+         AXIS = 1
+      ELSE
+         AXIS = JLTYP - 39
+      END IF
 #if RAMP
-      F = LOADNEW(1,K,R)*(TIME(1)/DT)
-     &   +LOADOLD(1,K,R)*(1.0-TIME(1)/DT)
+      F = LOADNEW(AXIS,K,R)*(TIME(1)/DT)
+     &   +LOADOLD(AXIS,K,R)*(1.0-TIME(1)/DT)
 #else
-      F = LOADNEW(1,K,R)
+      F = LOADNEW(AXIS,K,R)
 #endif
 
       RETURN

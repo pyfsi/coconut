@@ -71,20 +71,22 @@ C==============================================================================
          R = 1
       END IF
 
-      IF (NOEL >= NOEL_PREV(R)) THEN
-         WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
-     &      '|PWD|',
-     &      '/|CSM_dir|/CSM_Time',
-     &      (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
-         OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
-         WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
-         CLOSE(UNIT_FACES(R))
-         NOEL_PREV(R) = NOEL
-      ELSE IF (NOEL < NOEL_PREV(R)) THEN
-         PRINT *, 'USR-abort: end of faces file reached. Normal term
-     &ination'
-         CALL FLUSH(6)
-         CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
+      IF ((JLTYP == 41) .OR. (JLTYP == 0)) THEN
+         IF (NOEL >= NOEL_PREV(R)) THEN
+            WRITE(FILENAME,'(A,A,I0,A,I0,A,I0,A)')
+     &         '|PWD|',
+     &         '/|CSM_dir|/CSM_Time',
+     &         (KSTEP-1),'Surface',(R-1),'Cpu',ID,'Faces.dat'
+            OPEN(UNIT=UNIT_FACES(R),FILE=FILENAME,POSITION='APPEND')
+            WRITE(UNIT_FACES(R),FMT_FACES) NOEL,NPT,COORDS
+            CLOSE(UNIT_FACES(R))
+            NOEL_PREV(R) = NOEL
+         ELSE IF (NOEL < NOEL_PREV(R)) THEN
+            PRINT *, 'USR-abort: end of faces file reached. Normal
+     & termination'
+            CALL FLUSH(6)
+            CALL STDB_ABQERR(-3,'USR-abort: end of faces file.')
+         END IF
       END IF
 
       F = 0
