@@ -115,6 +115,7 @@ class SolverWrapperFluentALM(SolverWrapper):
                     line = line.replace('|G_EPS|', str(self.g_eps))
                     line = line.replace('|N_CIRC_S|', str(self.n_circ_s))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
+                    line = line.replace('|UNSTEADY|', str(int(self.unsteady)))
                     outfile.write(line)
 
         # check number of cores

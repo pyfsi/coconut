@@ -33,6 +33,7 @@ real c_moment[6];
 #define G_EPS |G_EPS|
 #define N_CIRC_S |N_CIRC_S|
 #define DELTA_T |DELTA_T|
+#define UNSTEADY |UNSTEADY|
 
 typedef struct yarn_point_struct {
 	int partition;
@@ -69,11 +70,9 @@ int timestep = 0;
 
 void read_yarn_points(char file_name[256])
 {
-    int n_points;
-
 #if RP_HOST
     FILE *input;
-    int point, d;
+    int n_points, point, d;
 
     if (NULLP(input = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
@@ -160,19 +159,19 @@ void set_yarn_velocities()
 {
 #if RP_NODE
     int point;
-    if (timestep == 0)
+    if ((UNSTEADY) && (timestep > 0))
     {
         for (point = 0; point < NYARNPOINTS; point++)
         {
-            NV_S(yarn_velocities[point], =, 0.0);
-            NV_V(yarn_coordinates_old[point], =, yarn_coordinates[point]);
+            NV_VS_VS(yarn_velocities[point], =, yarn_coordinates[point], /, DELTA_T, -, yarn_coordinates_old[point], /, DELTA_T);
         }
     }
     else
     {
         for (point = 0; point < NYARNPOINTS; point++)
         {
-            NV_VS_VS(yarn_velocities[point], =, yarn_coordinates[point], /, DELTA_T, -, yarn_coordinates_old[point], /, DELTA_T);
+            NV_S(yarn_velocities[point], =, 0.0);
+            NV_V(yarn_coordinates_old[point], =, yarn_coordinates[point]);
         }
     }
 #endif /* RP_NODE */
