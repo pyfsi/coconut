@@ -1,7 +1,7 @@
 file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case 2D_left.msh ; 2D mesh!
+file read-case 1mm_left_fine.msh ; 2D mesh!
 grid check
 grid modify-zones zone-type 2 fluid
 

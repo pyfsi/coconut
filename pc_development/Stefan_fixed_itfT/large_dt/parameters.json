@@ -1,12 +1,12 @@
 {
   "settings": {
-    "number_of_timesteps": 60000
+    "number_of_timesteps": 6000
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
     "settings": {
       "timestep_start": 0,
-      "delta_t": 0.01,
+      "delta_t": 0.1,
       "omega_max": 0.8,
       "save_results": 1,
       "save_restart": 0,
