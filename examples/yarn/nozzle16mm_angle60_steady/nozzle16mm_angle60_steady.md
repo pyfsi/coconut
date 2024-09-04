@@ -2,7 +2,7 @@
 
 Example calculates the static yarn deformation under the action of an air jet using the ALM formulation in the flow solver and line loads in the structural solver, see the Figure below.
 
-<img src=".velocity_xy_deformed_yarn.png" alt="Velocity contour and deformed yarn at the end of the simulation." width="750"/>
+<img src="velocity_xy_deformed_yarn.png" alt="Velocity contour and deformed yarn at the end of the simulation." width="750"/>
 
 ## Solvers
 

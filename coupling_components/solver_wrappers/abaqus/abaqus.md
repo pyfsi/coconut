@@ -5,7 +5,7 @@ Currently, this wrapper only supports FSI simulations, no other multi-physics pr
 Subcycling within the structural solver is possible.
 
 ## Fluid-structure interaction with Abaqus
-Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied, and corresponding node *sets*, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points (Gauss points, quadrature points), the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts` of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
+Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations. The FSI interface consist of a *surfaces* in the Abaqus model, where pressure and surface traction loads are applied (with the sole exception when line loads on beam elements are considered, see [this section](#line-loads-on-beamlike-elements), and corresponding node *sets*, where the resulting computed displacements are returned to the solver wrapper. The loads are applied in so-called load points (Gauss points, quadrature points), the displacements are exported in the elements' nodes. The input loads are collected in one or more `ModelParts` in the *input* `Interface`, the output nodes are collected in one or more `ModelParts` of the *output* `Interface`. Each `ModelPart` on the input `Interface` has a counterpart on the output `Interface`. More information about `ModelParts` and `Interface` can be found in the [data structure documentation](../../../data_structure/data_structure.md).
 
 ## Terminology
  - Main directory: Directory where the analysis is started.
@@ -251,30 +251,31 @@ The convergence criterion [solver coupling convergence](../../convergence_criter
 ## Line loads on beamlike elements
 
 In some cases with long and slender structures, e.g. textile yarns, it is desirable to represent the moving structure by its centerline only, as a chain of beamlike elements. 
-For these structures, the fluid force should be applied using line loads rather than surface loads. 
+For these structures, the fluid force should be applied using line loads rather than surface loads. As a consequence, the FSI interface does no longer consist of *surfaces* in the Abaqus model, but rather of *element sets*.
+The *node sets* for the output interface remain the same as explained earlier.
 
-The user now has to create a line load on an **element set** rather than on a surface for pressure and traction. 
-Below is a Python example on how to create such line load (unit: N/m) object given that the element set `inputElementSetA` was defined earlier.
+The user now has to create a line load on an *element set* rather than on a surface for pressure and traction. As a consequence, it is no longer needed to create *surfaces* in the Abaqus model for the FSI coupling.
+Below is a Python example on how to create such line load (unit: N/m) object given that the element set `inputElementSetA` was defined earlier in your model.
 ```python
 from step import *
 step1 = my_model.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=1, nlgeom=ON, maxNumInc=1, haftol=1, initialInc=1, minInc=1, maxInc=1, amplitude=RAMP, noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED, application=QUASI_STATIC)
 step1.Restart(frequency = 99999, overlay = ON)
 my_model.LineLoad(name = 'DistributedLineLoad', createStepName = 'Step-1', region = inputElementSetA, distributionType = USER_DEFINED, system = GLOBAL)
 ```
-In the base-file (.inp), the entries could look as follows (where `YARN` is the name of the element set):
+In the base-file (.inp), the entries could look as follows (where `YARN_ELEMENTS` is the name of the element set):
 ```
 ** Name: LINELOAD-1	 Type: Line load
 *Dload, op=NEW
-YARN, PXNU, 1.
+YARN_ELEMENTS, PXNU, 1.
 ** Name: LINELOAD-2	 Type: Line load
 *Dload, op=NEW
-YARN, PYNU, 1.
+YARN_ELEMENTS, PYNU, 1.
 ** Name: LINELOAD-3	 Type: Line load
 *Dload, op=NEW
-YARN, PZNU, 1.
+YARN_ELEMENTS, PZNU, 1.
 ```
 
-The fact that the loads are defined on an element set has as a consequence that only **one** `ModelPart` should be created. Since no surface name is passed to the DLOAD subroutine, it is impossible to trace multiple `ModelParts`. 
+The fact that the loads are defined on an element set has as a consequence that only *one* `ModelPart` should be created. Since no surface name is passed to the DLOAD subroutine, it is currently not possible to trace multiple `ModelParts`. 
 This is checked when the JSON-parameter `line_load` is set to `True`.
 
 Lastly, only the variable `traction` should be attributed to the `interface_input` in the parameter file:
@@ -289,7 +290,7 @@ Lastly, only the variable `traction` should be attributed to the `interface_inpu
 }
 ```
 
-Other than this, the operation of the Abaqus solver wrapper for line loads is identical to when surface-based are considered. Currently, only 3D Timoshenko beam elements have been tested.
+Other than this, the operation of the Abaqus solver wrapper for line loads is identical to when surface-based loads are considered. Currently, only 3D (quadratic) Timoshenko beam elements have been tested, though no significant changes are expected for other beamlike elements in the Abaqus library.
 
 ## Version specific documentation
 
