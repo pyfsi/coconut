@@ -1,0 +1,141 @@
+{
+  "settings": {
+    "number_of_timesteps": 1
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "delta_t": 1.0,
+      "timestep_start": 0,
+      "save_results": 1,
+      "omega": 0.05,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 0,
+          "q": 0
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 20
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+              "tolerance": 1e-9,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.fluent_alm.v2024R1",
+        "settings": {
+          "working_directory": "CFD",
+          "case_file": "normal_load_angle60.cas.h5",
+          "unsteady": false,
+          "thread_names": [
+            "yarn"
+          ],
+          "interface_input": [
+            {
+              "model_part": "yarn_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "yarn_load_points",
+              "variables": [
+                "traction"
+              ]
+            }
+          ],
+          "cores": 39,
+          "fluent_gui": false,
+          "flow_iterations": 200,
+          "save_results": 1,
+	  "ALM": {
+	    "yarn_diameter": 0.00035462,
+	    "g_eps": 0.00070924,
+	    "n_circ_s": 5
+	  }
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.abaqus.v2024",
+            "settings": {
+              "working_directory": "CSM",
+              "cores": 1,
+              "dimensions": 3,
+              "arraysize": 1e5,
+              "ramp": true,
+              "interface_input": [
+                {
+                  "model_part": "YARN_ELEMENTS_load_points",
+                  "variables": [
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "YARN_NODES_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+	      "line_load": true,
+              "input_file": "yarn.inp"
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+		"directions": [
+		  "x",
+		  "y",
+		  "z"
+		]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+		"directions": [
+		  "x",
+		  "y",
+		  "z"
+		]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

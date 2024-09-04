@@ -1,0 +1,113 @@
+/file/set-batch-options n n n
+/file/async-optimize? yes
+/file/cffio-options/io-mode 4
+(enable-dynamic-mesh-node-ids #t)
+(define yarn-length 0.640)
+(define pressure-inlet 21062)
+(define pressure-ambient 101325.00)
+(define temperature-ambient 293.15)
+(define turb-intensity 1)
+(define turb-visc-ratio 10)
+(define case-name "normal_load_angle60")
+(define n-1sto-iter 250)
+(define n-2ndo-iter 500)
+
+
+; read mesh
+/file/read-case nozzle_16mm.msh
+/mesh/size-info
+
+
+; boundary and materials settings for background
+/define/models/energy? yes no no no yes
+/define/materials/change-create air air yes ideal-gas no no yes constant 1.813e-5 no no no
+define/models/viscous/kw-sst yes
+/define/models/viscous/turb-compressibility? yes
+(rpsetvar 'kw-mt0 0.1)
+/define/boundary-conditions/zone-type inlet pressure-inlet
+(ti-menu-load-string (format #f "/define/boundary-conditions/pressure-inlet inlet yes no ~a no ~a no ~a no yes yes no 10000 no 10\n" pressure-inlet pressure-inlet temperature-ambient))
+(ti-menu-load-string (format #f "/define/boundary-conditions/pressure-outlet outlet yes no 0 no ~a no yes no no yes ~a ~a yes no no no\n" temperature-ambient turb-intensity turb-visc-ratio))
+(ti-menu-load-string (format #f "/define/operating-conditions/operating-pressure ~a\n" pressure-ambient))
+/define/materials/list-properties air
+
+
+; solution settings
+/define/materials/list-properties air
+/define/materials/change-create air air yes ideal-gas no no no no no no
+/define/models/solver/pressure-based yes
+/solve/set/expert no yes no no
+/solve/set/p-v-coupling 24
+/solve/set/p-v-controls 0.5 0.5
+/solve/set/gradient-scheme no yes
+/solve/set/discretization-scheme/density 0
+/solve/set/discretization-scheme/k 0
+/solve/set/discretization-scheme/omega 0
+/solve/set/discretization-scheme/temperature 0
+/solve/set/discretization-scheme/mom 0
+/solve/set/discretization-scheme/pressure 11
+/solve/set/flux-type no 0
+/solve/set/limits _ _ _ _ _ _ 1e10
+/solve/set/pseudo-time-method/formulation 1
+/solve/set/pseudo-time-method/global-time-step-settings yes 0 1
+/define/materials/list-properties air
+
+
+; solution monitors
+/solve/monitors/residual/convergence-criteria 1e-06 1e-06 1e-06 1e-06 1e-06 1e-06 1e-06
+/solve/monitors/residual/monitor? yes yes yes yes yes yes yes
+/solve/monitors/residual/plot? yes
+/solve/monitors/residual/print? yes
+/solve/monitors/residual/normalize? yes
+/solve/report-definitions/add mass-in surface-massflowrate report-type surface-massflowrate surface-names inlet () average-over 1 per-surface? no quit
+/solve/report-definitions/add mass-out surface-massflowrate report-type surface-massflowrate surface-names outlet () average-over 1 per-surface? no quit
+/solve/report-files/add report_steady active? yes file-name "./report-steady.out" frequency 1 frequency-of iteration itr-index "1" name "report_steady" print? yes report-defs mass-in mass-out () run-index "0" write-instantaneous-values? yes quit
+
+
+; surfaces for post-processing
+/surface/plane-surface zx zx-plane 0
+/surface/plane-surface xy xy-plane 0
+/surface/plane-surface yz yz-plane 0
+
+
+; intialize case
+(ti-menu-load-string (format #f "/file/write-case ~a\n" case-name))
+/solve/initialize/compute-defaults/pressure-inlet inlet
+/solve/initialize/set-defaults/x-velocity 0
+/solve/initialize/set-defaults/y-velocity 0
+/solve/initialize/set-defaults/z-velocity 0
+/solve/initialize/list-defaults
+!date
+/solve/initialize/initialize-flow
+!date
+
+
+; solve case
+(ti-menu-load-string (format #f "/solve/set/number-of-iterations ~a\n" n-1sto-iter))
+(ti-menu-load-string (format #f "/solve/iterate ~a\n" n-1sto-iter))
+!date
+
+
+; write data
+(ti-menu-load-string (format #f "/file/write-case-data ~a\n" case-name))
+
+
+; set to second order
+/solve/set/gradient-scheme no yes
+/solve/set/discretization-scheme/density 1
+;/solve/set/discretization-scheme/k 1
+;/solve/set/discretization-scheme/omega 1
+/solve/set/discretization-scheme/temperature 1
+/solve/set/discretization-scheme/mom 1
+/solve/set/discretization-scheme/pressure 12
+(ti-menu-load-string (format #f "/solve/set/number-of-iterations ~a\n" n-2ndo-iter))
+(ti-menu-load-string (format #f "/solve/iterate ~a\n" n-2ndo-iter))
+!date
+
+
+; write data
+(ti-menu-load-string (format #f "/file/write-case-data ~a\n" case-name))
+
+
+; print time and exit
+!date
+/exit yes
