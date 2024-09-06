@@ -15,6 +15,9 @@ from scipy import integrate
 common_path = '../../pc_development/'
 case_paths = ['Stefan_full/case_results.pickle']
 legend_entries = ['Coconut - 0.1 s']
+fluent_dir = 'Stefan_post_processing/fluent_val_files/1_to_99/'
+fluent_cases = ['lf_full.out', 'lf_full_coarse.out', 'lf_1_to_99.out']
+fluent_legend = ['Fluent - full', 'Fluent - full, coarse', 'Fluent - 1 to 99']
 
 itf_faces = [10]
 
@@ -36,6 +39,28 @@ lines_heat_flux = []
 line_styles = ['k--', 'g--', 'r--', 'b--', 'y--', 'k-.', 'c--']
 for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), ('solution_y', 'interface_y', 'heat_flux', 'W/m^2')):
     if var == "displacement":
+        if not disp_plots:
+            # Analytical Stefan solution (part 1)
+            k_l = 1.5  # W/mK, conduction coefficient of liquid
+            cp = 2500  # J/kgK, heat capacity
+            T_L = 309.15  # K, boundary temperature
+            T_m = 299.15  # K, melting temperature
+            dT = T_L - T_m  # K, the maintained temperature difference over the liquid domain
+            rho = 870  # kg/m^3, PCM density
+            LH = 179000  # J/kg, latent heat
+
+            alpha_l = k_l / (rho * cp)
+            St_l = (cp * dT) / LH  # Stefan number
+
+            # First: find lambda 'la'
+            eq_la = lambda x: x * M.exp(x ** 2) * M.erf(x) - St_l / M.sqrt(M.pi)
+            la = fsolve(eq_la, 0.2)[0]
+
+            x_ini = 0.001  # m
+            x_end = 0.1  # m, total domain length
+            t_ini = x_ini ** 2 / (4 * la ** 2 * alpha_l)
+            # t_end = x_end ** 2 / (4 * la ** 2 * alpha_l)
+
         for j, name in enumerate(legend_entries):
             solution = results[name][sol]
             interface = results[name][itf]
@@ -57,7 +82,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
                 line, = plt.plot(time, disp_x.flatten(), line_styles[j], label=name)
                 lines_disp.append(line)
             else:
-                line, = plt.plot(time, LF.flatten(), line_styles[j], label=name)
+                line, = plt.plot(time + t_ini, LF.flatten(), line_styles[j], label=name)
                 lines_lf.append(line)
 
         # Plot interface displacement in time
@@ -71,68 +96,68 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
         else:
             # Read Fluent validation files
             if fluent_val:
-                read_file_1 = pd.read_csv(r'fluent_val_files/1_to_99/lf_1_to_99.out', delimiter='\s+', skiprows=[0, 1, 2])  # Path of Fluent out-file
-                read_file_2 = pd.read_csv(r'fluent_val_files/1_to_99/lf_full.out', delimiter='\s+', skiprows=[0, 1, 2])
-                read_file_1.to_csv(r'fluent_val_files/report_file_1.csv', index=None)
-                read_file_2.to_csv(r'fluent_val_files/report_file_2.csv', index=None)
-                data_array_1 = np.loadtxt('fluent_val_files/report_file_1.csv', delimiter=',')
-                data_array_2 = np.loadtxt('fluent_val_files/report_file_2.csv', delimiter=',')
+                for j, name in enumerate(fluent_legend):
+                    file = common_path + fluent_dir + fluent_cases[j] # Path of Fluent out-file
+                    read_file = pd.read_csv(file, delimiter='\s+', skiprows=[0, 1, 2])
+                    read_file.to_csv(common_path + fluent_dir + 'report_file.csv', index=None)
+                    data_array = np.loadtxt(common_path + fluent_dir + 'report_file.csv', delimiter=',')
 
-                LF_val_1 = data_array_1[:, 1]
-                time_val_1 = data_array_1[:, 2]
-                LF_val_2 = data_array_2[:, 1]
-                time_val_2 = data_array_2[:, 2]
+                    LF_val = data_array[:, 1]
+                    time_val = data_array[:, 2]
 
-                # Arrays for energy balance
-                q_in_1 = data_array_1[1:, 3]  # W
-                h_avg_1 = data_array_1[1:, 4]  # (J/kg)(kg) = J
-                q_in_2 = data_array_2[1:, 3]  # W
-                h_avg_2 = data_array_2[1:, 4]  # (J/kg)(kg) = J
+                    # Arrays for energy balance
+                    q_in = data_array[1:, 3]  # W
+                    h_avg = data_array[1:, 4]  # (J/kg)(kg) = J
 
-                try:
-                    os.remove("fluent_val_files/report_file_1.csv")
-                    os.remove("fluent_val_files/report_file_2.csv")
-                except:
-                    pass
+                    try:
+                        os.remove(common_path + fluent_dir + 'report_file.csv')
+                    except:
+                        pass
 
-                time_val_1[0] = 0.0
-                time_val_2[0] = 0.0
+                    # determine max time reached by Fluent simulations
+                    if j == 0:
+                        t_max = time_val[-1]
+                    else:
+                        if time_val[-1] > t_max:
+                            t_max = time_val[-1]
 
-                line, = plt.plot(time_val_1, LF_val_1, line_styles[len(legend_entries)], label="Fluent - 1 to 99")
-                lines_lf.append(line)
-                line, = plt.plot(time_val_2, LF_val_2, line_styles[len(legend_entries) + 1], label="Fluent - full")
-                lines_lf.append(line)
+                    # set correct initial conditions
+                    time_val[0] = 0.0
+                    if 'full' in name:
+                        LF_val[0] = 0.0
+                    else:
+                        time_val += t_ini
 
-            # Analytical Stefan solution
-            k_l = 1.5  # W/mK, conduction coefficient of liquid
-            cp = 2500 # J/kgK, heat capacity
-            T_L = 309.15  # K, boundary temperature
-            T_m = 299.15  # K, melting temperature
-            dT = T_L - T_m  # K, the maintained temperature difference over the liquid domain
-            rho = 870  # kg/m^3, PCM density
-            LH = 179000  # J/kg, latent heat
+                    # plot fluent results
+                    line, = plt.plot(time_val, LF_val, line_styles[len(legend_entries)+j], label=fluent_legend[j])
+                    lines_lf.append(line)
 
-            alpha_l = k_l / (rho * cp)
-            St_l = (cp * dT) / LH  # Stefan number
+                    # Check energy balance
+                    vol = 0.1 * 0.01 * 1  # m^3
+                    h_tot = h_avg * rho * vol
+                    int_flux = integrate.trapezoid(q_in, time_val[1:])
+                    delta_h = h_tot[-1] - h_tot[0]
+                    diff = int_flux - delta_h
+                    proc = diff / delta_h * 100
 
-            # First: find lambda 'la'
-            eq_la = lambda x: x * M.exp(x ** 2) * M.erf(x) - St_l / M.sqrt(M.pi)
-            la = fsolve(eq_la, 0.2)[0]
+                    print(name + ":")
+                    print('Integrated heat flux is', int_flux, 'J.')
+                    print('Enthalpy difference is', delta_h, 'J.')
+                    print('Difference is', diff, 'J, or', proc, '%.')
+                    print("\n")
 
-            x_ini = 0.001  # m
-            x_end = 0.1  # m, total domain length
-            t_ini = x_ini ** 2 / (4 * la ** 2 * alpha_l)
-            # t_end = x_end ** 2 / (4 * la ** 2 * alpha_l)
-            t_end = t_ini + max(time[-1], time_val_1[-1], time_val_2[-1]) # solution time
+            # Stefan solution (part 2)
+            t_end = t_ini + max(time[-1], t_max)  # solution time
 
             dt = 0.01
-            m = M.ceil((t_end - t_ini)/dt)
-            time_ana = np.linspace(t_ini, t_end, m+1)
+            m = M.ceil(t_end / dt)
+            time_ana = np.linspace(0.0, t_end, m + 1)
             x_front_ana = 2 * la * np.sqrt(alpha_l * time_ana)
-            LF_ana = x_front_ana/x_end
-            q_ana = rho*LH*la*M.sqrt(alpha_l)*time_ana**(-1/2)
+            LF_ana = x_front_ana / x_end
+            q_ana = rho * LH * la * M.sqrt(alpha_l) * time_ana ** (-1 / 2)
 
-            line, = plt.plot(time_ana-t_ini, LF_ana, line_styles[len(legend_entries)+2], label="Ana - stefan")
+            # plot analytical
+            line, = plt.plot(time_ana, LF_ana, line_styles[len(legend_entries) + len(fluent_legend)], label="Ana - stefan")
             lines_lf.append(line)
 
             # Plot liquid fraction
@@ -155,7 +180,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             line, = plt.plot(time[1:-1], -heat_flux.flatten()[1:-1], line_styles[j], label=name)
             lines_heat_flux.append(line)
 
-        line, = plt.plot(time_ana - t_ini, q_ana, line_styles[len(legend_entries)], label="Ana - stefan")
+        line, = plt.plot(time_ana[M.floor(t_ini / dt):], q_ana[M.floor(t_ini / dt):], line_styles[len(legend_entries)], label="Ana - stefan")
         lines_heat_flux.append(line)
 
         # Plot interface heat flux in time
@@ -165,23 +190,3 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
         plt.savefig('figures/1_to_99/itf-hf-Stefan.png')
         plt.show()
         plt.close()
-
-# Check energy balance of Fluent simulations
-if not disp_plots and fluent_val:
-    vol = 0.1*0.01*1 # m^3
-    sims = ["Coarse", "Fine"]
-    q_in = [q_in_1, q_in_2]
-    time_val = [time_val_1, time_val_2]
-    h_tot = [h_avg_1*rho*vol, h_avg_2*rho*vol]
-
-    for j, sim in enumerate(sims):
-        int_flux = integrate.trapezoid(q_in[j], time_val[j][1:])
-        delta_h = h_tot[j][-1] - h_tot[j][0]
-        diff = int_flux - delta_h
-        proc = diff/delta_h*100
-
-        print(sim + ":")
-        print('Integrated heat flux is', int_flux, 'J.')
-        print('Enthalpy difference is', delta_h, 'J.')
-        print('Difference is', diff, 'J, or', proc, '%.')
-        print("\n")
