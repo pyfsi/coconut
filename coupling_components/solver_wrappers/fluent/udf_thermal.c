@@ -1735,21 +1735,16 @@ DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
 /*Source term for energy equation, to account for latent and sensible heat.*/
 real source;
-real test;
 
 if (C_UDMI(c,t,ADJ) == 1.0) {
     if (fluid) {
         /* This definition is only valid for fluid during melting! */
-        // source = (-sign*C_R(c,t)*(C_UDMI(c,t,PR_H) - C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
         source = (C_UDMI(c,t,SIGN)*C_R(c,t)*(C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
         dS[eqn] = 0.0;
     } else {
         /* This definition is only valid for solid during melting! */
-        // source = sign*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-        test = C_UDMI(c,t,SIGN)*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-        if (myid == 0) {printf("\nTest = %lf W/m^3\n", test); fflush(stdout);}
+        // source = C_UDMI(c,t,SIGN)*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
         source = C_UDMI(c,t,SIGN)*C_R(c,t)*(C_UDMI(c,t,PR_H)-C_CP(c,t)*(TM - 298.15))/(dt);
-        if (myid == 0) {printf("\nSource = %lf W/m^3\n", source); fflush(stdout);}
         dS[eqn] = 0.0;
     }
 } else {

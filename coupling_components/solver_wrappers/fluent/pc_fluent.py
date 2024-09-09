@@ -42,12 +42,7 @@ class SolverWrapperFluent(SolverWrapper):
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
-        if isinstance(self.settings['cores'], int):
-            self.cores = self.settings['cores']
-        elif isinstance(self.settings['cores'], str):
-            self.cores = int(self.settings['cores'])
-        else:
-            raise TypeError("Value at cores should be integer or string of integer")
+        self.cores = self.settings['cores']
         self.hostfile = self.settings.get('hostfile')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
@@ -67,7 +62,7 @@ class SolverWrapperFluent(SolverWrapper):
         self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
-        self.flow_iterations = self.settings['flow_iterations'] # Flow solver iterations -> also in case of no flow
+        self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
@@ -397,7 +392,8 @@ class SolverWrapperFluent(SolverWrapper):
         # create Interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
-        self.interface_internal = data_structure.Interface(self.internal_settings, self.internal_model)
+        if "displacement" in self.output_variables:
+            self.interface_internal = data_structure.Interface(self.internal_settings, self.internal_model)
 
         # set initial conditions at output interface
         for key in self.output_ini_cond:
@@ -409,14 +405,15 @@ class SolverWrapperFluent(SolverWrapper):
                         else:
                             self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
-        # create, initialize and query face to node (f2n) displacement mapper
-        #TODO: change to linear mapper if not Stefan problem
-        mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
-        self.mapper_f2n = tools.create_instance(mapper_settings)
-        self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
-        # create, initialize and query node to face (n2f) displacement mapper
-        self.mapper_n2f = tools.create_instance(mapper_settings)
-        self.mapper_n2f.initialize(self.interface_input, self.interface_internal)
+        if "displacement" in self.output_variables:
+            # create, initialize and query face to node (f2n) displacement mapper
+            #TODO: change to linear mapper if not Stefan problem
+            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
+            self.mapper_f2n = tools.create_instance(mapper_settings)
+            self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
+            # create, initialize and query node to face (n2f) displacement mapper
+            self.mapper_n2f = tools.create_instance(mapper_settings)
+            self.mapper_n2f.initialize(self.interface_output, self.interface_internal)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -424,9 +421,11 @@ class SolverWrapperFluent(SolverWrapper):
         self.iteration = 0
         self.timestep += 1
 
-        if self.thermal_bc == "heat_flux":
-            # map input node displacement to face displacement
-            self.mapper_n2f.map_n2f(self.interface_input, self.interface_internal)
+        if "displacement" in self.output_variables:
+            # map output node displacement to face displacement
+            self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal)
+            # write interface output data at new time step
+            self.write_output_to_file("displacement")
 
         self.coco_messages.send_message('next')
         self.coco_messages.wait_message('next_ready')
@@ -508,20 +507,15 @@ class SolverWrapperFluent(SolverWrapper):
                             self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
-                        if var == 'displacement' and self.thermal_bc != "heat_flux":
-                            # get node coordinates and ids
-                            vector = data[:, :3]
-                            ids = data[:,-1]
-                        else:
-                            # get face coordinates and ids
-                            vector_tmp = np.zeros((data.shape[0], 3)) * 0.
-                            vector_tmp[:, :self.dimensions] = data[:, : -self.mnpf]
-                            ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
+                        # get face coordinates and ids
+                        vector_tmp = np.zeros((data.shape[0], 3)) * 0.
+                        vector_tmp[:, :self.dimensions] = data[:, : -self.mnpf]
+                        ids_tmp, _ = self.get_unique_face_ids(data[:, -self.mnpf:])
 
-                            # sort and remove doubles
-                            args = np.unique(ids_tmp, return_index=True)[1].tolist()
-                            vector = vector_tmp[args, :]
-                            ids = ids_tmp[args]
+                        # sort and remove doubles
+                        args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                        vector = vector_tmp[args, :]
+                        ids = ids_tmp[args]
 
                         if var == 'displacement' and self.thermal_bc == "heat_flux":
                             if "nodes" not in mp_name:
@@ -540,6 +534,9 @@ class SolverWrapperFluent(SolverWrapper):
 
                             # map face displacement to node displacement
                             self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output)
+
+                            # write nodes_update file for move nodes udf in solid domain
+                            self.write_output_to_file(var)
 
                             # reset face displacement to converged position of previous time step (avoid accumulation)
                             self.interface_internal.set_variable_data(mp_name, var, displacement)
@@ -745,26 +742,36 @@ class SolverWrapperFluent(SolverWrapper):
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
+    def write_output_to_file(self, var):
+        if var == 'displacement':
+            for dct in self.interface_output.parameters:
+                mp_name = dct['model_part']
+                if 'nodes' in mp_name:
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    model_part = self.model.get_model_part(mp_name)
+                    displacement = self.interface_output.get_variable_data(mp_name, 'displacement')
+                    x = model_part.x0 + displacement[:, 0]
+                    y = model_part.y0 + displacement[:, 1]
+                    z = model_part.z0 + displacement[:, 2]
+                    if self.dimensions == 2:
+                        data = np.rec.fromarrays([x, y, model_part.id])
+                        fmt = '%27.17e%27.17e%27d'
+                    else:
+                        data = np.rec.fromarrays([x, y, z, model_part.id])
+                        fmt = '%27.17e%27.17e%27.17e%27d'
+                    tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
+
     def read_output_file(self, prefix, mp_name, thread_id=None):
-        if prefix == "displacement" and self.thermal_bc != "heat_flux": # Fluid domain
-            mp_name_new = mp_name.replace("out", "in")
-            model_part = self.model.get_model_part(mp_name_new)
-            data = self.interface_input.get_variable_data(mp_name_new, 'displacement')
-            data = np.append(data, model_part.id.reshape((np.size(model_part.id), 1)), axis=1)
-        else:
-            tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
-            file_name = join(self.dir_cfd, tmp)
-            data = np.loadtxt(file_name, skiprows=1, ndmin=2)
-            # this is a quick fix for temperature -> write new udf for temperature at moving interface!
-            if False: # prefix == "temperature" and self.thermal_bc == "heat_flux":
-                print(data)
-                data[:, 0] = np.ones((np.shape(data)[0],)) * self.ini_condition
-                print(data)
-            # copy output data for debugging
-            if self.debug:
-                dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
-                cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
-                os.system(cmd)
+        tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
+        file_name = join(self.dir_cfd, tmp)
+        data = np.loadtxt(file_name, skiprows=1, ndmin=2)
+        # copy output data for debugging
+        if self.debug:
+            dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
+            cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
+            os.system(cmd)
         return data
 
     def get_coordinates(self):

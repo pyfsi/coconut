@@ -42,6 +42,7 @@ class SolverWrapperFluent(SolverWrapper):
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
+        # for parameter study ECCOMAS
         if isinstance(self.settings['cores'], int):
             self.cores = self.settings['cores']
         elif isinstance(self.settings['cores'], str):
