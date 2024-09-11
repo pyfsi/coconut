@@ -1903,7 +1903,7 @@ The following example selects points with a z-coordinate close to zero and a pos
 <span class="n">sy</span><span class="o">.</span><span class="n">select_points</span><span class="p">(</span><span class="n">mask1</span> <span class="o">&amp;</span> <span class="n">mask2</span><span class="p">)</span>
 </code></pre></div></p>
 <ol>
-<li>The specific inequalities in which the points are selected is case specific. Here for example, the points on the <code>y-interface</code> are not located exactly on the xy-plane, but just next to it. The points with a positive z-coordinate close to zero are selected.</li>
+<li>The specific inequalities in which the points are selected are case specific. Here for example, the points on the <code>y-interface</code> are not located exactly on the xy-plane, but just next to it. The points with a positive z-coordinate close to zero are selected.</li>
 </ol>
 <p>These methods are also useful:</p>
 <ul>
@@ -1974,7 +1974,7 @@ or get the pressure values with
 <h2 id="visualization">Visualization</h2>
 <p>With the classes above, custom data analyses or visualizations are possible.
 However, CoCoNuT also offers built-in tools for the most common visualizations.</p>
-<p>For different types of visualization, different classes are available in ´post_process.py´.
+<p>For different types of visualization, different classes are available in ´post_processing.py´.
 A distinction is made between, on the one hand,</p>
 <ul>
 <li>an Animation (moving in time),</li>
@@ -2006,7 +2006,7 @@ All model parts of this <code>PostProcess</code> instance will be automatically 
 <li><code>Animation2dDisplacement(subset, x_component, y_component)</code>: animates <code>y-component</code> of the displacement in function of the <code>x-component</code> of the initial coordinates.</li>
 <li><code>Animation2dCoordinates(subset, x_component, y_component)</code>: animates <code>y-component</code> of the instantaneous coordinates in function of the <code>x-component</code> of the instantaneous coordinates.</li>
 <li><code>Animation2dPressure(subset, x_component)</code>: animates pressure in function of the <code>x-component</code> of the initial coordinates.</li>
-<li><code>Animation2dTraction(subset, x_component)</code>: animates <code>y-component</code> of the traction in function of the <code>x-component</code> of the initial coordinates.</li>
+<li><code>Animation2dTraction(subset, x_component, y_component)</code>: animates <code>y-component</code> of the traction in function of the <code>x-component</code> of the initial coordinates.</li>
 </ul>
 <p>Replacing the word <em>Animate</em> with <em>Plot</em>, <strong>Two-dimensional plots</strong> are completely analogous, but are typically used to only show one time instance.
 This can be selected when creating the <code>SubSet</code>, or on the fly with the keyword arguments <code>time_step</code> (time step number) or <code>time</code> (time in seconds).
@@ -2026,10 +2026,10 @@ Instantaneous coordinates are used when available colors, otherwise initial coor
 This is typically <code>interface_x</code>. For other interfaces, only the initial coordinates are available.</p>
 </details>
 <ul>
-<li><code>Animation3dDisplacement(subset, x_component, y_component)</code>: animates the instantaneous coordinates and colors the points by magnitude of displacement.</li>
-<li><code>Animation3dCoordinates(subset, x_component, y_component)</code>: animates the instantaneous coordinates without coloring.</li>
-<li><code>Animation3dPressure(subset, x_component)</code>: animates the initial coordinates and colors the points by pressure values.</li>
-<li><code>Animation3dTraction(subset, x_component)</code>: animates the instantaneous coordinates and colors the points by magnitude of traction.</li>
+<li><code>Animation3dDisplacement(subset)</code>: animates the instantaneous coordinates and colors the points by magnitude of displacement.</li>
+<li><code>Animation3dCoordinates(subset)</code>: animates the instantaneous coordinates without coloring.</li>
+<li><code>Animation3dPressure(subset)</code>: animates the initial coordinates and colors the points by pressure values.</li>
+<li><code>Animation3dTraction(subset)</code>: animates the instantaneous coordinates and colors the points by magnitude of traction.</li>
 </ul>
 <p>If the variable by which the points are colored is a vector, also one of the components can be used instead of the magnitude by including the keyword argument <code>component</code>.
 For example to animate the z-component of displacement:
@@ -2333,12 +2333,16 @@ This way, color, linewidth, linestyle, marker, markersize and more can be adjust
 <li><code>get_scatter(name)</code>: returns the scatter corresponding to the <code>SubSet</code> with name <code>name</code> or if <code>name</code> is an int, the <code>SubSet</code> corresponding to that index.</li>
 </ul>
 <p>In the example below, a cross-section on the yz-plane is shown, without line but with circular green markers.
+Moreover, the axis labels are updated to include units.
 <div class="highlight"><pre><span></span><code><span class="n">sx2</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">add_subset</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s1">&#39;interface_x&#39;</span><span class="p">)</span>
 <span class="n">sx2</span><span class="o">.</span><span class="n">select_points</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">sx2</span><span class="o">.</span><span class="n">get_all_initial_coordinates</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.0005</span><span class="p">)</span>
 <span class="n">coordinates_animation</span> <span class="o">=</span> <span class="n">Animation2dCoordinates</span><span class="p">(</span><span class="n">sx2</span><span class="p">,</span> <span class="n">x_component</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">y_component</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;yz&#39;</span><span class="p">)</span>
 
 <span class="n">line</span> <span class="o">=</span> <span class="n">coordinates_animation</span><span class="o">.</span><span class="n">get_line</span><span class="p">(</span><span class="s1">&#39;yz&#39;</span><span class="p">)</span>
 <span class="n">line</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">coordinates_animation</span><span class="o">.</span><span class="n">get_ax</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;z coordinates (m)&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y coordinates (m)&#39;</span><span class="p">)</span>
 </code></pre></div></p>
 <p><img alt="Animation2dCoordinates" src="images/pp_2d_coord.gif" /></p>
 <p>Finally, for animations, the Matplotlib Funcanimation object can be accessed through the method <code>get_animation()</code>.</p>
