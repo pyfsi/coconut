@@ -78,7 +78,7 @@ class PostProcess:
     def get_summary(self, pre=''):
         time_allocation = self.data['time_allocation']
         previous_calculations = time_allocation['previous_calculations']
-        restart = len(previous_calculations) == 0
+        restart = len(previous_calculations) != 0
         out = f'{pre}Summary\n'
         out += f'{pre}Total calculation time{" (after restart)" if restart else ""}: ' \
                f'{time_allocation["total"]:.3f}s\n'
@@ -104,6 +104,15 @@ class PostProcess:
 
     def print_info(self):
         tools.print_info(self.data['info'])
+
+    def get_data(self):
+        return dict(self.data)  # return copy
+
+    def get_residual_history(self):
+        return self.data['residual'].copy()  # return copy
+
+    def get_coupling_iterations(self):
+        return self.data['iterations'].copy()  # return copy
 
     def add_subset(self, **kwargs):
         self.subsets.append(SubSet(self, **kwargs))
@@ -149,7 +158,7 @@ class SubSet:
                                      f'Options:\n{options}')
                 else:
                     self.model_part_name = model_part
-                    self.interface_name = mp_names['model_part'][0]
+                    self.interface_name = mp_names[model_part][0]
             self.interface = self.run.data[self.interface_name]
         else:
             if interface not in self.run.interface_names:
@@ -424,7 +433,8 @@ class BaseFigure:
                 self.ax.set_aspect(self.aspect, adjustable='datalim')
             except NotImplementedError:
                 self.ax.set_box_aspect([1, 1, 1])
-            self.ax.legend()
+            if len(self.subsets) > 1:
+                self.ax.legend()
         self.figure.tight_layout()
 
     def get_figure(self):
@@ -922,7 +932,7 @@ class Figure3d(Figure):
         return [subset['scatter'] for subset in self.subsets]
 
     def get_scatter(self, name_or_index):
-        return self._get_subset_property(name, 'scatter')
+        return self._get_subset_property(name_or_index, 'scatter')
 
     def initialize(self):
         for subset in self.subsets:
