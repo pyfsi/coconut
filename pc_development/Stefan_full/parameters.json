@@ -35,7 +35,7 @@
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-3,
+              "tolerance": 1e-4,
               "order": 2
             }
           }
@@ -70,12 +70,6 @@
           ],
           "interface_output": [
             {
-              "model_part": "boundary_out_nodes",
-              "variables": [
-                "displacement"
-              ]
-            },
-            {
               "model_part": "boundary_out_faces",
               "variables": [
                 "heat_flux"
@@ -109,12 +103,6 @@
                 "boundary"
               ],
               "interface_input": [
-                {
-                  "model_part": "boundary_in_nodes",
-                  "variables": [
-                    "displacement"
-                  ]
-                },
                 {
                   "model_part": "boundary_in_faces",
                   "variables": [

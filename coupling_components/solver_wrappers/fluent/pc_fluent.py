@@ -424,6 +424,7 @@ class SolverWrapperFluent(SolverWrapper):
         if "displacement" in self.output_variables:
             # map output node displacement to face displacement
             self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal)
+
             # write interface output data at new time step
             self.write_output_to_file("displacement")
 
@@ -622,6 +623,12 @@ class SolverWrapperFluent(SolverWrapper):
                     if accepted_variables_pc['out'][var][0] != 'repeat':
                         try:
                             os.remove(join(self.dir_cfd, accepted_variables_pc['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
+                        except OSError:
+                            pass
+                    if var == 'displacement':
+                        # solid zone outputs displacement and creates input file for itself at the same time
+                        try:
+                            os.remove(join(self.dir_cfd, accepted_variables_pc['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:
                             pass
                 for var in self.input_variables:

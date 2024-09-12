@@ -588,7 +588,16 @@ DEFINE_ON_DEMAND(store_temperature){
         begin_f_loop(face, face_thread) {
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
-            temp[i] = F_T(face, face_thread);
+            /* Strategy to allow subcooling of the solid domain */
+            if (fluid) {
+                temp[i] = F_T(face, face_thread);
+            } else {
+                if (F_T(face, face_thread) >= TM) {
+                    temp[i] = TM;
+                } else {
+                    temp[i] = F_T(face, face_thread);
+                }
+            }
 
             for (j = 0; j < mnpf; j++) {
                 /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
@@ -913,7 +922,6 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
-        if (myid == 0) {printf("\nUnable to open %s for reading\n", file_name); fflush(stdout);}
         if (timestep == 0) {
             skip_search = true;
         } else {
@@ -1055,12 +1063,11 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
-        if (myid == 0) {printf("\nUnable to open %s for reading\n", file_name); fflush(stdout);}
         if (timestep == 0) {
             skip_search = true;
         } else {
-        Error("\nUDF-error: Unable to open %s for reading\n", file_name);
-        exit(1);
+            Error("\nUDF-error: Unable to open %s for reading\n", file_name);
+            exit(1);
         }
     }
 
@@ -1265,7 +1272,6 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 
 DEFINE_ON_DEMAND(set_adjacent) {
 /* Store previous and new interface node coordinates in UDM's and flags cells adjacent to the boundary.*/
-    printf("\nStarted UDF set_adjacent.\n");
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
     iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
@@ -1358,7 +1364,6 @@ DEFINE_ON_DEMAND(set_adjacent) {
             }
         } end_c_loop(c,cell_thread)
     }
-printf("\nFinished UDF set_adjacent.\n");
 #endif /* RP_NODE */
 }
 
@@ -1370,7 +1375,6 @@ printf("\nFinished UDF set_adjacent.\n");
 DEFINE_ON_DEMAND(calc_volume_change)
 {
 /* WARNING: only 2D compatibility, no 3D */
-    printf("\nStarted UDF calc_volume_change.\n");
     bool zero_vol; // Boolean to indicate whether swept volume is zero or not
     zero_vol = false;
 
@@ -1456,7 +1460,6 @@ DEFINE_ON_DEMAND(calc_volume_change)
     RELEASE_MEMORY_N(vertices, ND_ND);
     RELEASE_MEMORY_N(sort_vert, ND_ND);
     RELEASE_MEMORY(index);
-    printf("\nFinished UDF calc_volume_change.\n");
 #endif /* RP_NODE */
 }
 
@@ -1544,22 +1547,22 @@ DEFINE_ON_DEMAND(write_displacement) {
                     {
                         face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
                         face = C_FACE(cell,cell_thread,face_number);
-                        if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) { // for cell faces at coupling interface
-                            /* direction, node ids, flux */
-                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // heat in W
+                        if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
+                            // for cell faces at coupling interface
+                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // incoming heat in W
                             F_AREA(area, face, face_thread);
-                            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area));
+                            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
 
+                            /* loop over all nodes in the face, "node_number" is the local node index number that keeps track of the current node */
                             j = 0;
-                            /* loop over all nodes in the face, "node_number" is the local node index number that keeps track of the
-                            current node */
                             f_node_loop(face, face_thread, node_number) {
                                 if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
                                 node = F_NODE(face, face_thread, node_number);
                                 ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
                                 j++;
                             }
-                        } else { // for interior cell faces
+                        } else {
+                            // for interior cell faces
                             INTERIOR_FACE_GEOMETRY(face,face_thread,A,ds,es,A_by_es,dr0,dr1);
                             if (F_C1(face, face_thread) != -1) {
                                 NV_VS_VS(avg_flux, =, C_T_RG(cell,cell_thread), *, 0.5, +, C_T_RG(F_C1(face, face_thread),F_C1_THREAD(face, face_thread)), *, 0.5);
@@ -1570,6 +1573,10 @@ DEFINE_ON_DEMAND(write_displacement) {
                             }
                         }
                     }
+
+                    // printf("\nheat = %lf W\n", heat);
+                    // printf("\nderived enthalpy = %lf J/kg\n", 2500.0 + heat*dt/(C_VOLUME(cell,cell_thread)*C_R(cell,cell_thread))); // based on newest cell volume!
+                    // printf("\nenthalpy = %lf J/kg\n", C_H(cell,cell_thread)); // based on the initial cell volume of the time step
 
                     vel = heat/(NV_MAG(area)*LH*C_R(cell,cell_thread)); // absolute velocity of interface at cell level
                     j = 0;
@@ -1667,9 +1674,9 @@ DEFINE_ON_DEMAND(write_displacement) {
 }
 
 
-  /*----------------*/
- /* update_cell_lf */
-/*----------------*/
+  /*----------------------*/
+ /* update_cell_enthalpy */
+/*----------------------*/
 
 DEFINE_ON_DEMAND(update_cell_enthalpy)
 {
@@ -1678,11 +1685,17 @@ DEFINE_ON_DEMAND(update_cell_enthalpy)
     d = Get_Domain(1);
     Thread *t;
     cell_t c;
-    thread_loop_c(t,d)
-    {
-        begin_c_loop(c,t) // loop over all cells
-        {
-            C_UDMI(c,t,PR_H) = C_H(c,t);
+    real H;
+
+    // loop over all cells
+    thread_loop_c(t,d) {
+        begin_c_loop(c,t) {
+            H = C_H(c,t) - C_CP(c,t)*(TM - 298.15);
+            if (H > 0.0) {
+                C_UDMI(c,t,PR_H) = H;
+            } else {
+                C_UDMI(c,t,PR_H) = 0.0;
+            }
         } end_c_loop(c,t)
     }
 #endif /* RP_NODE */
@@ -1718,7 +1731,6 @@ DEFINE_ON_DEMAND(ini_sign)
 DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
 {
 /*Source term for continuity equation, to compensate mass loss or mass gain.*/
-
 real source;
 
 source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
@@ -1734,7 +1746,7 @@ return source;
 DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
 /*Source term for energy equation, to account for latent and sensible heat.*/
-real source;
+real source, test;
 
 if (C_UDMI(c,t,ADJ) == 1.0) {
     if (fluid) {
@@ -1743,8 +1755,9 @@ if (C_UDMI(c,t,ADJ) == 1.0) {
         dS[eqn] = 0.0;
     } else {
         /* This definition is only valid for solid during melting! */
-        // source = C_UDMI(c,t,SIGN)*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-        source = C_UDMI(c,t,SIGN)*C_R(c,t)*(C_UDMI(c,t,PR_H)-C_CP(c,t)*(TM - 298.15))/(dt);
+        // source = C_UDMI(c,t,SIGN)*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME_M1(c,t)*dt);
+        source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,PR_H)/dt;
+        // Maybe need to correct with correct cell volumes
         dS[eqn] = 0.0;
     }
 } else {
