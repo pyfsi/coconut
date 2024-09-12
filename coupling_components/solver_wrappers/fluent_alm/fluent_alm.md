@@ -108,6 +108,10 @@ Base version.
 
 No changes.
 
+### v2024R2 (24.2.0)
+
+No changes.
+
 
 ## References
 <a id="1">[1]</a> 

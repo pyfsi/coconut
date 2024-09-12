@@ -11,6 +11,7 @@ solver_load_cmd_dict = {
     'ugent_cluster_RHEL8': {
         'fluent_alm.v2023R1': 'ml ANSYS_CFD/2023R1',
         'fluent_alm.v2024R1': 'ml ANSYS_CFD/2024R1',
+        'fluent_alm.v2024R2': 'ml ANSYS_CFD/2024R2',
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
         'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
