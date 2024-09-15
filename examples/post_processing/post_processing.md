@@ -118,7 +118,7 @@ mask2 = initial_coordinates[:, 1] > 0
 sy.select_points(mask1 & mask2)
 ```
 
-1.  The specific inequalities in which the points are selected is case specific. Here for example, the points on the `y-interface` are not located exactly on the xy-plane, but just next to it. The points with a positive z-coordinate close to zero are selected.
+1.  The specific inequalities in which the points are selected are case specific. Here for example, the points on the `y-interface` are not located exactly on the xy-plane, but just next to it. The points with a positive z-coordinate close to zero are selected.
 
 These methods are also useful:
 
@@ -182,7 +182,7 @@ pressure = sy.get_values('pressure')
 With the classes above, custom data analyses or visualizations are possible.
 However, CoCoNuT also offers built-in tools for the most common visualizations.
 
-For different types of visualization, different classes are available in ´post_process.py´.
+For different types of visualization, different classes are available in ´post_processing.py´.
 A distinction is made between, on the one hand,
 
 - an Animation (moving in time),
@@ -218,7 +218,7 @@ __Two-dimensional animations__ show one variable on the ordinate (y-axis) in fun
 - `Animation2dDisplacement(subset, x_component, y_component)`: animates `y-component` of the displacement in function of the `x-component` of the initial coordinates.
 - `Animation2dCoordinates(subset, x_component, y_component)`: animates `y-component` of the instantaneous coordinates in function of the `x-component` of the instantaneous coordinates.
 - `Animation2dPressure(subset, x_component)`: animates pressure in function of the `x-component` of the initial coordinates.
-- `Animation2dTraction(subset, x_component)`: animates `y-component` of the traction in function of the `x-component` of the initial coordinates.
+- `Animation2dTraction(subset, x_component, y_component)`: animates `y-component` of the traction in function of the `x-component` of the initial coordinates.
 
 Replacing the word _Animate_ with _Plot_, __Two-dimensional plots__ are completely analogous, but are typically used to only show one time instance.
 This can be selected when creating the `SubSet`, or on the fly with the keyword arguments `time_step` (time step number) or `time` (time in seconds).
@@ -240,10 +240,10 @@ Instantaneous coordinates are used when available colors, otherwise initial coor
 	Instantaneous coordinates are only available for interfaces that have the displacement variables.
 	This is typically `interface_x`. For other interfaces, only the initial coordinates are available.
 
-- `Animation3dDisplacement(subset, x_component, y_component)`: animates the instantaneous coordinates and colors the points by magnitude of displacement.
-- `Animation3dCoordinates(subset, x_component, y_component)`: animates the instantaneous coordinates without coloring.
-- `Animation3dPressure(subset, x_component)`: animates the initial coordinates and colors the points by pressure values.
-- `Animation3dTraction(subset, x_component)`: animates the instantaneous coordinates and colors the points by magnitude of traction.
+- `Animation3dDisplacement(subset)`: animates the instantaneous coordinates and colors the points by magnitude of displacement.
+- `Animation3dCoordinates(subset)`: animates the instantaneous coordinates without coloring.
+- `Animation3dPressure(subset)`: animates the initial coordinates and colors the points by pressure values.
+- `Animation3dTraction(subset)`: animates the instantaneous coordinates and colors the points by magnitude of traction.
 
 If the variable by which the points are colored is a vector, also one of the components can be used instead of the magnitude by including the keyword argument `component`.
 For example to animate the z-component of displacement:
@@ -424,6 +424,7 @@ and for 3d:
 - `get_scatter(name)`: returns the scatter corresponding to the `SubSet` with name `name` or if `name` is an int, the `SubSet` corresponding to that index.
 
 In the example below, a cross-section on the yz-plane is shown, without line but with circular green markers.
+Moreover, the axis labels are updated to include units.
 ```python
 sx2 = pp.add_subset(interface='interface_x')
 sx2.select_points(abs(sx2.get_all_initial_coordinates()[:, 0]) < 0.0005)
@@ -431,6 +432,9 @@ coordinates_animation = Animation2dCoordinates(sx2, x_component='z', y_component
 
 line = coordinates_animation.get_line('yz')
 line.set(color='green', linestyle='', marker='o', markersize=5)
+ax = coordinates_animation.get_ax()
+ax.set_xlabel('z coordinates (m)')
+ax.set_ylabel('y coordinates (m)')
 ```
 
 ![Animation2dCoordinates](images/pp_2d_coord.gif)
