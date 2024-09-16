@@ -1826,6 +1826,15 @@ Coupling
 </code></pre></div>
 </li>
 <li>
+<p>The method <code>get_data()</code> returns a copy of the data in the pickle file.</p>
+</li>
+<li>
+<p>The method <code>get_residual_history()</code> returns a copy of the list of coupling residuals (nested list, which contains for each time step a list of the coupling residuals of that time step).</p>
+</li>
+<li>
+<p>The method <code>get_coupling_iterations()</code> returns a copy of the list of the number of coupling iterations per time step.</p>
+</li>
+<li>
 <p>The method  <code>add_subset(**kwargs)</code> allows to create and add a subset of selected points and/or time steps.
     This will prove useful for extracting data and making plots or animations.
     It requires several keyword arguments as detailed by the <a href="#the-class-subset"><code>SubSet</code> documentation</a>.
@@ -1865,7 +1874,7 @@ The full set of possible arguments is given below.</p>
 <td style="text-align: left;">(optional) Indicates whether the <code>SubSet</code> is created on the input interface of the first solver (<code>'interface_x'</code>) or the output interface of the first solver (<code>'interface_y'</code>). Note that a <code>SubSet</code> cannot be defined with multiple interfaces!</td>
 </tr>
 <tr>
-<td><code>model_part</code></td>
+<td><nobr><code>model_part</code></nobr></td>
 <td style="text-align: right;">str</td>
 <td style="text-align: left;">(optional) Chooses the model part from which the <code>SubSet</code> is created. Note that a <code>SubSet</code> cannot be defined with multiple model parts! The model part names of a <code>PostProcess</code> instance can be accessed with the method ´get_model_part_names()´.</td>
 </tr>
@@ -1941,7 +1950,7 @@ The possible arguments are:</p>
 <td style="text-align: left;">(optional) Selects the variable of which data needs to be outputted for the selected points and time step. These are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code>. For example <code>'displacement'</code>, <code>'pressure'</code>, <code>'traction'</code>.</td>
 </tr>
 <tr>
-<td><code>component</code></td>
+<td><nobr><code>component</code></nobr></td>
 <td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
 <td style="text-align: left;">(optional) If not present, all available components are returned. Selects the component of the variable that needs ot be outputted in case of a vector variable. <code>0</code>, <code>1</code> and <code>2</code> correspond to  <code>'x'</code>, <code>'y'</code>and <code>'z'</code>, respectively.</td>
 </tr>
@@ -2078,7 +2087,7 @@ in which several parameters are pre-set.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>x_variable</code></td>
+<td><nobr><code>x_variable</code></nobr></td>
 <td style="text-align: right;">str</td>
 <td style="text-align: left;">The variable to be shown on the abscissa (x-axis).</td>
 </tr>
@@ -2111,7 +2120,7 @@ in which several parameters are pre-set.</p>
 <td style="text-align: left;">(optional) If <code>'auto'</code> (default for 2d), the axis scaling of the axes is chosen to fill the plot window. If `'aspect' (default for 3d), alle axes are scaled in the same way.</td>
 </tr>
 <tr>
-<td><code>print_function</code></td>
+<td><nobr><code>print_function</code></nobr></td>
 <td style="text-align: right;"><code>False</code> or function</td>
 <td style="text-align: left;">(optional) If not provided, the time is printed. Use <code>False</code> to disable or provide a custom function which receives time as single argument and returns a string.</td>
 </tr>
@@ -2144,7 +2153,7 @@ in which several parameters are pre-set.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>x_component</code></td>
+<td><nobr><code>x_component</code></nobr></td>
 <td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
 <td style="text-align: left;">Required if <code>x_variable</code> is not scalar. Selects the component of the variable that needs to be shown on the abscissa (x-axis).</td>
 </tr>
@@ -2177,7 +2186,7 @@ in which several parameters are pre-set.</p>
 <td style="text-align: left;">(optional) Variable by which the points are colored. These variables are the calculation variables specified in the JSON file, plus the variable <code>'coordinates'</code>. If not provided, no coloring is done.</td>
 </tr>
 <tr>
-<td><code>component</code></td>
+<td><nobr><code>component</code></nobr></td>
 <td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
 <td style="text-align: left;">(optional) Component of the <code>color_by</code> variable used for coloring the points. If not provided while <code>color_by</code> is a vector variable, the magnitude is used for coloring.</td>
 </tr>
@@ -2194,7 +2203,7 @@ in which several parameters are pre-set.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>time_step</code></td>
+<td><nobr><code>time_step</code></nobr></td>
 <td style="text-align: right;">int</td>
 <td style="text-align: left;">(optional) Time step number of the data to be shown. If not provided, while the <code>SubSet</code> contains more than one time instance, the initial time step is used.</td>
 </tr>
@@ -2219,7 +2228,7 @@ For the former, also see <a href="#adding-multiple-subsets">Adding multiple subs
 </thead>
 <tbody>
 <tr>
-<td><code>func_animation_setting</code></td>
+<td><nobr><code>func_animation_setting</code></nobr></td>
 <td style="text-align: right;">dict</td>
 <td style="text-align: left;">(optional) Dictionary with settings relating to the animation. For details see the <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.animation.FuncAnimation.html">Matplotlib documentation</a>.</td>
 </tr>
@@ -2249,7 +2258,7 @@ For the former, also see <a href="#adding-multiple-subsets">Adding multiple subs
 <td>Determines how many time steps are skipped between each shown frame, for example to show 1 time step every 10, use 9. Also see <a href="https://pyfsi.github.io/coconut/post_processing#adding-multiple-subsets">Adding multiple subsets</a> when subsets are added with multiple time step sizes.  Only used if <code>frames</code> is not provided or if <code>frames</code> is an int. This useful to speed up the animation.</td>
 </tr>
 <tr>
-<td><code>save_count</code></td>
+<td><nobr><code>save_count</code></nobr></td>
 <td style="text-align: right;">int</td>
 <td style="text-align: center;">number of frames</td>
 <td>Numbers of frames to cache.</td>
@@ -2306,12 +2315,12 @@ Here it is explained how these methods can be used together with CoCoNuT visuali
 </li>
 <li>
 <p>or the pyplot-style, where the figure has to be made active first.</p>
-</li>
-</ol>
 <div class="highlight"><pre><span></span><code><span class="n">pressure_animation</span><span class="o">.</span><span class="n">make_active</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Pressure animation&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </code></pre></div>
+</li>
+</ol>
 <p><img alt="Animation3dPressure" src="images/pp_3d_pres.gif" /></p>
 <p>The methods that can be used towards this end are:</p>
 <ul>
@@ -2404,7 +2413,7 @@ It requires both a <code>SubSet</code> with a single point and a variable to be 
 </thead>
 <tbody>
 <tr>
-<td><code>component</code></td>
+<td><nobr><code>component</code></nobr></td>
 <td style="text-align: right;"><code>'x'</code>, <code>'y'</code>, <code>'z'</code>, <code>0</code>, <code>1</code> or <code>2</code></td>
 <td style="text-align: left;">(optional) Selects the component of the variable that needs to be shown. If not provided, the magnitude is shown.</td>
 </tr>

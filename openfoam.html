@@ -1860,7 +1860,7 @@ Currently, the use as the flow solver in FSI simulations is supported, no other 
 <td>Set it to <code>true</code> if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the <em><code>&lt;case_directory&gt;/system/decomposeParDict</code></em> file.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><nobr><code>print_coupling_convergence</code><nobr></td>
+<td style="text-align: right;"><nobr><code>print_coupling_convergence</code></nobr></td>
 <td style="text-align: center;">bool</td>
 <td>(optional) Default <code>false</code>. If <code>true</code> and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.</td>
 </tr>
@@ -1932,7 +1932,7 @@ OpenFOAM-directory:</p>
 <td>required time precision based on <code>delta_t</code> (used in the names of time step folders)</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>runTimeModifiable</code></td>
+<td style="text-align: right;"><nobr><code>runTimeModifiable</code></nobr></td>
 <td><code>false</code></td>
 </tr>
 <tr>
