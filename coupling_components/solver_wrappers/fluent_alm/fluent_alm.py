@@ -372,8 +372,14 @@ class SolverWrapperFluentALM(SolverWrapper):
         if not self.debug:
             try:
                 os.remove(join(self.dir_cfd, f'traction_timestep{timestep}.dat'))
+                os.remove(join(self.dir_cfd, f'air_values_timestep{timestep}.dat'))
             except OSError:
                 pass
+            if self.save_restart == 0 or timestep % self.save_restart != 0:
+                try:
+                    os.remove(join(self.dir_cfd, f'coordinates_update_timestep{timestep}.dat'))
+                except OSError:
+                    pass
 
     def check_software(self):
         # Fluent version: see set_fluent_version
