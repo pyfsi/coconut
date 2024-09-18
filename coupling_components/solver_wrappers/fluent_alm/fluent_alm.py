@@ -372,7 +372,8 @@ class SolverWrapperFluentALM(SolverWrapper):
 
     def remove_dat_files(self, timestep):
         if not self.debug:
-            if self.save_restart == 0 or timestep % self.save_restart != 0:
+            if (self.save_restart == 0 or timestep % self.save_restart != 0) and \
+                    (self.save_results == 0 or timestep % self.save_results != 0):
                 try:
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{timestep}.dat'))
                 except OSError:
