@@ -351,6 +351,8 @@ class SolverWrapperFluentALM(SolverWrapper):
                     except OSError:
                         continue
                 try:
+                    os.remove(join(self.dir_cfd, f'traction_timestep{self.timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'air_values_timestep{self.timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{self.timestep + self.save_restart}.dat'))
                 except OSError:
                     pass
@@ -370,11 +372,6 @@ class SolverWrapperFluentALM(SolverWrapper):
 
     def remove_dat_files(self, timestep):
         if not self.debug:
-            try:
-                os.remove(join(self.dir_cfd, f'traction_timestep{timestep}.dat'))
-                os.remove(join(self.dir_cfd, f'air_values_timestep{timestep}.dat'))
-            except OSError:
-                pass
             if self.save_restart == 0 or timestep % self.save_restart != 0:
                 try:
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{timestep}.dat'))

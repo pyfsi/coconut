@@ -92,6 +92,7 @@ report summary y "report.sum"
     (if (check_message "save")
         (begin
             (ti-menu-load-string (format #f "file write-case-data \"case_timestep~a.cas\"" (%rpgetvar 'udf/timestep)))
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_velocities::alm\"")
             (send_message "save_ready")
         )
     )

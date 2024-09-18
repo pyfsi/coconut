@@ -565,7 +565,6 @@ DEFINE_ON_DEMAND(store_traction)
 {
 	/* Send coordinates from compute node 0 */
 	node_to_host_real(&yarn_forces[0][0], NYARNPOINTS*ND_ND);
-	node_to_host_real(&air_values[0][0], NYARNPOINTS*NSCALARS);
 
 	/* Write coordinates on host */
 #if RP_HOST
@@ -587,6 +586,30 @@ DEFINE_ON_DEMAND(store_traction)
 		fprintf(output, " %10d\n", point);
 	}
 	fclose(output);
+#endif /* RP_HOST */
+
+    if (myid == 0) {printf("\nFinished UDF store_traction\n"); fflush(stdout);}
+
+}
+
+
+  /*------------------*/
+ /* store_velocities */
+/*------------------*/
+
+
+DEFINE_ON_DEMAND(store_velocities)
+{
+	/* Send velocities from compute node 0 */
+	node_to_host_real(&air_values[0][0], NYARNPOINTS*NSCALARS);
+	node_to_host_real(&yarn_velocities[0][0], NYARNPOINTS*ND_ND);
+
+	/* Write velocities on host */
+#if RP_HOST
+	int point, d;
+    timestep = RP_Get_Integer("udf/timestep");
+	char output_file_name[256];
+	FILE *output;
 
 	sprintf(output_file_name, "air_values_timestep%i.dat", timestep);
 	if (NULLP(output = fopen(output_file_name, "w"))) {
@@ -603,10 +626,25 @@ DEFINE_ON_DEMAND(store_traction)
 		fprintf(output, " %10d\n", point);
 	}
 	fclose(output);
+
+	sprintf(output_file_name, "yarn_velocities_timestep%i.dat", timestep);
+	if (NULLP(output = fopen(output_file_name, "w"))) {
+        Error("\nUDF-error: Unable to open %s for writing\n", output_file_name);
+        exit(1);
+    }
+    fprintf(output, "%27s %27s %27s  %10s\n","x-velocity [m/s]", "y-velocity [m/s]", "z-velocity [m/s]", "unique-ids");
+	for (point = 0; point < NYARNPOINTS; point++)
+	{
+	    for (d = 0; d < ND_ND; d++)
+	    {
+		    fprintf(output, "%27.17e ", yarn_velocities[point][d]);
+	    }
+		fprintf(output, " %10d\n", point);
+	}
+	fclose(output);
 #endif /* RP_HOST */
 
-    if (myid == 0) {printf("\nFinished UDF store_traction\n"); fflush(stdout);}
-
+    if (myid == 0) {printf("\nFinished UDF store_velocities\n"); fflush(stdout);}
 }
 
 
