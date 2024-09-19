@@ -351,8 +351,9 @@ class SolverWrapperFluentALM(SolverWrapper):
                     except OSError:
                         continue
                 try:
-                    os.remove(join(self.dir_cfd, f'traction_timestep{self.timestep}.dat'))
-                    os.remove(join(self.dir_cfd, f'air_values_timestep{self.timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'traction_timestep{self.timestep + self.save_restart}.dat'))
+                    os.remove(join(self.dir_cfd, f'air_values_timestep{self.timestep + self.save_restart}.dat'))
+                    os.remove(join(self.dir_cfd, f'yarn_velocities_timestep{self.timestep + self.save_restart}.dat'))
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{self.timestep + self.save_restart}.dat'))
                 except OSError:
                     pass
