@@ -376,6 +376,7 @@ class SolverWrapperFluentALM(SolverWrapper):
                     (self.save_results == 0 or timestep % self.save_results != 0):
                 try:
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{timestep}.dat'))
+                    os.remove(join(self.dir_cfd, f'traction_timestep{timestep}.dat'))
                 except OSError:
                     pass
 
