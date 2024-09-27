@@ -95,7 +95,7 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        udf = f'v{self.version}.c'
+        udf = 'fluent.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
