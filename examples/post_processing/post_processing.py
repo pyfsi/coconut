@@ -430,7 +430,7 @@ class BaseFigure:
     def update_figure_layout(self):
         if self.ax is not None:
             try:  # 'auto' is not implemented for Axes3D for earlier Python versions
-                self.ax.set_aspect(self.aspect, adjustable='datalim')
+                self.ax.set_aspect(self.aspect, adjustable='box')
             except NotImplementedError:
                 self.ax.set_box_aspect([1, 1, 1])
             if len(self.subsets) > 1:

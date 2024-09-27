@@ -48,7 +48,6 @@ class SolverWrapperAbaqus(SolverWrapper):
         self.array_size = self.settings['arraysize']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
-        self.mp_mode = self.settings['mp_mode']
         self.input_file = self.settings['input_file']
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
@@ -75,16 +74,9 @@ class SolverWrapperAbaqus(SolverWrapper):
 
         # prepare abaqus_v6.env
         hostname_replace = ''
-        if self.mp_mode == 'MPI' and 'AbaqusHosts.txt' in os.listdir(self.dir_csm):
-            with open(join(self.dir_csm, 'AbaqusHosts.txt'), 'r') as host_file:
-                host_names = host_file.read().split()
-            hostname_replace = str([[hostname, host_names.count(hostname)] for hostname in set(host_names)])
         with open(join(self.path_src, 'abaqus_v6.env'), 'r') as infile:
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
-                    line = line.replace('|HOSTNAME|', hostname_replace) if self.mp_mode == 'MPI' \
-                        else (line, '')['|HOSTNAME|' in line]  # replace |HOSTNAME| if MPI else remove line
-                    line = line.replace('|MP_MODE|', self.mp_mode)
                     line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
