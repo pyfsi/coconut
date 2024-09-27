@@ -101,7 +101,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.ylabel('Interface displacement (x) [m]')
             plt.xlabel('Time [s]')
             plt.legend(handles=lines_disp)
-            plt.savefig('figures/1_to_99/itf-disp-x-Stefan.png')
+            plt.savefig('figures/subcooled/itf-disp-x-Stefan.png')
             plt.show()
             plt.close()
         else:
@@ -177,7 +177,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.ylabel('Liquid fraction')
             plt.xlabel('Time [s]')
             plt.legend(handles=lines_lf)
-            plt.savefig('figures/1_to_99/liq-frac-Stefan.png')
+            plt.savefig('figures/subcooled/liq-frac-Stefan.png')
             plt.show()
             plt.close()
 
@@ -190,16 +190,16 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
             heat_flux = solution[-1,:]
             time = time_step_start + dt * np.array(range(np.shape(solution)[1]))
-            line, = plt.plot(time[1:-1], -heat_flux.flatten()[1:-1], line_styles[j], label=name)
+            line, = plt.plot(t_ini + time[1:-1], -heat_flux.flatten()[1:-1], line_styles[j], label=name)
             lines_heat_flux.append(line)
 
-        line, = plt.plot(time_ana[M.floor(t_ini / dt):], q_ana[M.floor(t_ini / dt):], line_styles[len(legend_entries)], label="Ana - stefan")
+        line, = plt.plot(time_ana, q_ana, line_styles[len(legend_entries)], label="Ana - stefan")
         lines_heat_flux.append(line)
 
         # Plot interface heat flux in time
         plt.ylabel('Heat flux [W/m^2]')
         plt.xlabel('Time [s]')
         plt.legend(handles=lines_heat_flux)
-        plt.savefig('figures/1_to_99/itf-hf-Stefan.png')
+        plt.savefig('figures/subcooled/itf-hf-Stefan.png')
         plt.show()
         plt.close()

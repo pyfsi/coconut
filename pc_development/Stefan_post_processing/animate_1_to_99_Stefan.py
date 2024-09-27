@@ -13,13 +13,13 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../pc_development/'
-case_paths = ['Stefan_full/case_results_190s.pickle', 'Stefan_full/case_results.pickle']
-legend_entries = ['Coconut - 0.1 s', 'Coconut - new']
+case_paths = ['Stefan_full/case_results.pickle']
+legend_entries = ['Coconut - 0.1 s']
 fluent_dir = 'Stefan_post_processing/fluent_val_files/1_to_99/'
 fluent_cases = ['lf_full.out', 'lf_full_coarse.out', 'lf_1_to_99.out']
 fluent_legend = ['Fluent - full', 'Fluent - full, coarse', 'Fluent - 1 to 99']
 
-itf_faces = [10, 10]
+itf_faces = [10]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction

@@ -14,20 +14,8 @@ class ModelLS(Component):
         super().__init__()
 
         self.settings = parameters['settings']
-
-        if isinstance(self.settings['min_significant'], float):
-            self.min_significant = self.settings['min_significant']
-        elif isinstance(self.settings['min_significant'], str):
-            self.min_significant = float(self.settings['min_significant'])
-        else:
-            raise TypeError("Value at min_significant should be float or string of float")
-
-        if isinstance(self.settings['q'], int):
-            self.q = self.settings['q']
-        elif isinstance(self.settings['q'], str):
-            self.q = int(self.settings['q'])
-        else:
-            raise TypeError("Value at q should be integer or string of integer")
+        self.min_significant = self.settings['min_significant']
+        self.q = self.settings['q']
 
         self.size_in = None  # set by coupled solver
         self.size_out = None  # set by coupled solver

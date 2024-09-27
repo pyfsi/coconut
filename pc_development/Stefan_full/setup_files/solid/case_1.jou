@@ -2,7 +2,6 @@ file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
 file read-case 99mm_right_coarse.msh ; 2D mesh!
-grid check
 grid modify-zones zone-type 2 fluid
 
 define user-defined user-defined-memory 12
@@ -18,17 +17,17 @@ define materials copy fluid air pcm
 define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
 
 define boundary-conditions fluid , y pcm n n n n , n , n y n
-define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
-;define boundary-conditions zone-type adiabatic symmetry
+;define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
+define boundary-conditions zone-type adiabatic symmetry
 ;Outer wall is adiabatic as well
 define boundary-conditions wall wall 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
-define boundary-conditions wall boundary 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
+define boundary-conditions wall boundary 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n 0 n ,
 
 ;define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
 solve monitors residual check-convergence y
-solve monitors residual convergence-criteria 1e-15
+solve monitors residual convergence-criteria 1e-14
 
 solve set discretization-scheme temperature 0
 solve set gradient-scheme n y

@@ -2,7 +2,6 @@ file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
 file read-case 1mm_left_fine.msh ; 2D mesh!
-grid check
 grid modify-zones zone-type 2 fluid
 
 define user-defined user-defined-memory 12
@@ -40,6 +39,7 @@ solve set p-v-coupling 24
 ;solve set flow-warnings n
 
 ;Initialise liquid according to Stefan solution
+solve initialize set-defaults temperature 309.15
 define user-defined compiled-functions compile "stefan" y "stefan.c" "" ""
 define user-defined compiled-functions load "stefan"
 define user-defined function-hooks initialization "temp_ini::stefan" ""
@@ -59,6 +59,8 @@ define dynamic-mesh controls layering-parameters split-factor 0.4
 ; Last option below: exclude mesh motion in boundary conditions? y
 define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
 ; Include end of setup command in json file for layering! Non-zero cell height for layering
+
+solve initialize initialize-flow
 
 file write-case-data pc_fluid.cas.h5
 exit

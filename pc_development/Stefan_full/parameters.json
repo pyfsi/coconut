@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 532036
+    "number_of_timesteps": 1000
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
@@ -8,7 +8,7 @@
       "timestep_start": 0,
       "delta_t": 0.1,
       "omega_max": 0.8,
-      "save_results": 10,
+      "save_results": 1,
       "save_restart": 0,
       "debug": false,
       "model": {
@@ -56,7 +56,7 @@
           "latent": 179000,
           "melt_temp": 299.15,
           "ini_condition": 0,
-          "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
+          "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
           "thread_names": [
             "boundary"
           ],
@@ -80,7 +80,7 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 6000
+          "save_results": 10
         }
       },
       {
@@ -122,7 +122,7 @@
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 6000
+              "save_results": 10
             }
           },
           "mapper_interface_input": {

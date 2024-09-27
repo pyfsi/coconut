@@ -9,12 +9,7 @@ class CoupledSolverRelaxation(CoupledSolver):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        if isinstance(self.settings['omega'], float):
-            self.omega = self.settings['omega']
-        elif isinstance(self.settings['omega'], str):
-            self.omega = float(self.settings['omega'])
-        else:
-            raise TypeError("Value at omega should be float or string of float")
+        self.omega = self.settings['omega']
 
     def solve_solution_step(self):
         # initial value
