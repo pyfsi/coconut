@@ -20,8 +20,8 @@ def create(parameters):
 
 class SolverWrapperFluent(SolverWrapper):
     # version specific parameters
-    version = None  # Fluent product version, as from 2019R1 typically of the form 'xxxRx', set in sub-class
-    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in sub-class
+    version = None  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
+    version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     @tools.time_initialize
@@ -43,7 +43,7 @@ class SolverWrapperFluent(SolverWrapper):
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
         self.cores = self.settings['cores']
-        self.hostfile = self.settings.get('hostfile')
+        self.hosts_file = self.settings.get('hosts_file')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
@@ -162,13 +162,22 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # check number of cores
-        if self.hostfile is not None:
-            with open(join(self.dir_cfd, self.hostfile)) as fp:
+        if self.hosts_file is not None:
+            with open(join(self.dir_cfd, self.hosts_file)) as fp:
                 max_cores = len(fp.readlines())
         else:
             max_cores = multiprocessing.cpu_count()
         if self.cores < 1 or self.cores > max_cores:
-            tools.print_info(f'Number of cores incorrect, changed from {self.cores} to {max_cores}', layout='warning')
+            warning = f'Number of cores incorrect, changed from {self.cores} to {max_cores}'
+            if self.hosts_file is None:
+                warning += f'\nAre you trying to run multinode?' \
+                           f'\n\tAdd hosts file to working directory ({self.dir_cfd})' \
+                           f'\n\tAdd "hosts_file" parameter with name of hosts file to Fluent parameters in JSON file' \
+                           f'\nSee also https://pyfsi.github.io/coconut/fluent.html#running-multinode'
+            else:
+                warning += f'\nAre you trying to run multinode?' \
+                           f'\n\tThe used hosts_file is {join(self.dir_cfd, self.hosts_file)}'
+            tools.print_info(warning, layout='warning')
             self.cores = max_cores
 
         # check variables in parameter.json file
@@ -185,8 +194,8 @@ class SolverWrapperFluent(SolverWrapper):
         cmd2 = f'-t{self.cores} -i {journal}'
         cmd3 = f' >> {log} 2>&1'
 
-        if self.hostfile is not None:
-            cmd1 += f' -cnf={self.hostfile} -ssh '
+        if self.hosts_file is not None:
+            cmd1 += f' -cnf={self.hosts_file} -ssh '
         if self.settings['fluent_gui']:
             cmd = cmd1 + cmd2 + cmd3
         else:
@@ -226,13 +235,10 @@ class SolverWrapperFluent(SolverWrapper):
                         if not self.multiphase:
                             raise ValueError('Singlephase in JSON does not match multiphase Fluent')
                         break
-                        #check = 5
                     elif 'Numerics' in line:
                         if self.multiphase:
                             raise ValueError('Multiphase in JSON does not match singlephase Fluent')
                         break
-                        #check = 5
-                #elif check == 5 and ... -> implement check for flow and heat equations
 
         if os.path.isfile(join(self.dir_cfd, 'log')):
             os.unlink(join(self.dir_cfd, 'log'))  # delete log file (fluent.log is sufficient)

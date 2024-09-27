@@ -7,6 +7,7 @@ class SolverWrapper(Component):
         super().__init__()
 
         self.settings = parameters['settings']
+        self.type = parameters["type"]
 
         if not self.mapped:
             self.interface_input = None
@@ -25,6 +26,37 @@ class SolverWrapper(Component):
 
         # debug
         self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
+
+    def initialize(self):
+        super().initialize()
+
+        # check variables in parameter.json file
+        warning = None
+        if "fluent" in self.type or "openfoam" in self.type:
+            accepted_out_var = ["pressure", "traction"]
+            accepted_in_var = ["displacement"]
+            error_out = "Only permitted output variables are pressure and traction."
+            error_in = "Only permitted input variable is displacement."
+        elif "abaqus" in self.type or "kratos_structure" in self.type:
+            accepted_out_var = ["displacement"]
+            accepted_in_var = ["pressure", "traction"]
+            error_out = "Only permitted output variable is displacement."
+            error_in = "Only permitted input variables are pressure and traction."
+        else:
+            warning = "Variables could not be checked as solver_wrapper was not recognized."
+
+        if warning is None:
+            for mp in self.settings['interface_output']:
+                for var in mp['variables']:
+                    if var not in accepted_out_var:
+                        raise NameError(error_out)
+
+            for mp in self.settings['interface_input']:
+                for var in mp['variables']:
+                    if var not in accepted_in_var:
+                        raise NameError(error_in)
+        else:
+            tools.print_info(warning, layout='warning')
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
