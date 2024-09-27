@@ -1480,12 +1480,12 @@ DEFINE_ON_DEMAND(write_displacement) {
 
 #if RP_NODE
     Domain *domain;
-    Thread *cell_thread, *face_thread, *itf_thread;
-    cell_t cell;
+    Thread *t, *face_thread, *itf_thread;
+    cell_t c;
     face_t face;
     Node *node;
     int face_number, node_number, j;
-    real heat, vel, src, ds, A_by_es, test;
+    real heat, vel, src, ds, A_by_es;
     real normal[ND_ND], area[ND_ND], A[ND_ND], es[ND_ND], dr0[ND_ND], dr1[ND_ND], avg_flux[ND_ND], v0[ND_ND];
 #endif /* RP_NODE */
     
@@ -1529,11 +1529,12 @@ DEFINE_ON_DEMAND(write_displacement) {
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
         i = 0;
-        thread_loop_c(cell_thread,domain)
+        thread_loop_c(t,domain)
         {
-            begin_c_loop(cell,cell_thread)
+            begin_c_loop(c,t)
             {
-                if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
+
+                if (C_UDMI(c,t,ADJ) == 1.0) {
                     if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
                     heat = 0;
 
@@ -1543,17 +1544,20 @@ DEFINE_ON_DEMAND(write_displacement) {
                     Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
                     // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
 
-                    c_face_loop(cell,cell_thread,face_number)
+                    c_face_loop(c,t,face_number)
                     {
-                        face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
-                        face = C_FACE(cell,cell_thread,face_number);
+                        face_thread = C_FACE_THREAD(c,t,face_number);
+                        face = C_FACE(c,t,face_number);
+
+                        /* for cell faces at coupling interface */
                         if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
-                            // for cell faces at coupling interface
-                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // incoming heat in W
+
+                            /* Incoming heat from liquid side */
+                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // [W]
                             F_AREA(area, face, face_thread);
                             NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
 
-                            /* loop over all nodes in the face, "node_number" is the local node index number that keeps track of the current node */
+                            /* loop over all nodes in the face */
                             j = 0;
                             f_node_loop(face, face_thread, node_number) {
                                 if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
@@ -1561,24 +1565,28 @@ DEFINE_ON_DEMAND(write_displacement) {
                                 ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
                                 j++;
                             }
-                        } else {
-                            // for interior cell faces
+                        }
+                        else {
+                            // Outgoing heat at interior cell faces -- currently not used!
                             INTERIOR_FACE_GEOMETRY(face,face_thread,A,ds,es,A_by_es,dr0,dr1);
                             if (F_C1(face, face_thread) != -1) {
-                                NV_VS_VS(avg_flux, =, C_T_RG(cell,cell_thread), *, 0.5, +, C_T_RG(F_C1(face, face_thread),F_C1_THREAD(face, face_thread)), *, 0.5);
+                                NV_VS_VS(avg_flux, =, C_T_RG(c,t), *, 0.5, +, C_T_RG(F_C0(face, face_thread),F_C0_THREAD(face, face_thread)), *, 0.5);
                                 NV_VS(v0, =, es, *, A_by_es);
-                                // test = C_K_L(cell,cell_thread)*(C_T(F_C1(face, face_thread),F_C1_THREAD(face, face_thread))-C_T(cell,cell_thread))*A_by_es/ds + C_K_L(cell,cell_thread)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
-                                // printf("\nINTERIOR_HEAT_FLUX = %lf W\n", test);
-                                heat += C_K_L(cell,cell_thread)*(C_T(F_C1(face, face_thread),F_C1_THREAD(face, face_thread))-C_T(cell,cell_thread))*A_by_es/ds + C_K_L(cell,cell_thread)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
+                                heat += C_K_L(c,t)*(C_T(F_C0(face, face_thread),F_C0_THREAD(face, face_thread))-C_T(c,t))*A_by_es/ds + C_K_L(c,t)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
                             }
                         }
                     }
 
-                    // printf("\nheat = %lf W\n", heat);
-                    // printf("\nderived enthalpy = %lf J/kg\n", 2500.0 + heat*dt/(C_VOLUME(cell,cell_thread)*C_R(cell,cell_thread))); // based on newest cell volume!
-                    // printf("\nenthalpy = %lf J/kg\n", C_H(cell,cell_thread)); // based on the initial cell volume of the time step
+                    if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
+                        vel = heat/(NV_MAG(area)*LH*C_R(c,t));
+                    } else {
+                        if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
+                            vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1(c,t) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
+                        } else { // subcooled --> no interface velocity
+                            vel = 0.0;
+                        }
+                    }
 
-                    vel = heat/(NV_MAG(area)*LH*C_R(cell,cell_thread)); // absolute velocity of interface at cell level
                     j = 0;
                     for (j = 0; j < ND_ND; j++) {
                         disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
@@ -1588,7 +1596,7 @@ DEFINE_ON_DEMAND(write_displacement) {
                     /* Free memory of reconstruction gradients and gradients */
                     Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                 }
-            } end_c_loop(c,cell_thread)
+            } end_c_loop(c,t)
         }
 
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
@@ -1690,12 +1698,7 @@ DEFINE_ON_DEMAND(update_cell_enthalpy)
     // loop over all cells
     thread_loop_c(t,d) {
         begin_c_loop(c,t) {
-            H = C_H(c,t) - C_CP(c,t)*(TM - 298.15);
-            if (H > 0.0) {
-                C_UDMI(c,t,PR_H) = H;
-            } else {
-                C_UDMI(c,t,PR_H) = 0.0;
-            }
+            C_UDMI(c,t,PR_H) = C_H(c,t) - C_CP(c,t)*(TM - 298.15);
         } end_c_loop(c,t)
     }
 #endif /* RP_NODE */
@@ -1755,8 +1758,11 @@ if (C_UDMI(c,t,ADJ) == 1.0) {
         dS[eqn] = 0.0;
     } else {
         /* This definition is only valid for solid during melting! */
-        // source = C_UDMI(c,t,SIGN)*C_R(c,t)*LH*C_UDMI(c,t,D_VOL)/(C_VOLUME_M1(c,t)*dt);
-        source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,PR_H)/dt;
+        if (C_UDMI(c,t,PR_H) >= 0.0) {
+            source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,PR_H)/dt;
+        } else {
+            source = 0.0;
+        }
         // Maybe need to correct with correct cell volumes
         dS[eqn] = 0.0;
     }

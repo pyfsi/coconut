@@ -13,13 +13,13 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../pc_development/'
-case_paths = ['Stefan_full/case_results_190s.pickle']
-legend_entries = ['Coconut - 0.1 s']
+case_paths = ['Stefan_full/case_results_190s.pickle', 'Stefan_full/case_results.pickle']
+legend_entries = ['Coconut - 0.1 s', 'Coconut - new']
 fluent_dir = 'Stefan_post_processing/fluent_val_files/1_to_99/'
 fluent_cases = ['lf_full.out', 'lf_full_coarse.out', 'lf_1_to_99.out']
 fluent_legend = ['Fluent - full', 'Fluent - full, coarse', 'Fluent - 1 to 99']
 
-itf_faces = [10]
+itf_faces = [10, 10]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction
@@ -36,7 +36,7 @@ lines_lf = []
 lines_heat_flux = []
 
 # make figures
-line_styles = ['k--', 'g--', 'r--', 'b--', 'y--', 'k-.', 'c--']
+line_styles = ['k--', 'g--', 'r--', 'b--', 'y--', 'c--', 'k-.']
 for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), ('solution_y', 'interface_y', 'heat_flux', 'W/m^2')):
     if var == "displacement":
         if not disp_plots:
@@ -78,6 +78,13 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             L = 0.1  # m, length of initial solid domain
             LF = 0.01 + disp_x/L
 
+            # determine max time reached by Coconut simulations
+            if j == 0:
+                t_max_co = time[-1]
+            else:
+                if time[-1] > t_max_co:
+                    t_max_co = time[-1]
+
             if disp_plots:
                 line, = plt.plot(time, disp_x.flatten(), line_styles[j], label=name)
                 lines_disp.append(line)
@@ -116,10 +123,10 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
                     # determine max time reached by Fluent simulations
                     if j == 0:
-                        t_max = time_val[-1]
+                        t_max_fl = time_val[-1]
                     else:
-                        if time_val[-1] > t_max:
-                            t_max = time_val[-1]
+                        if time_val[-1] > t_max_fl:
+                            t_max_fl = time_val[-1]
 
                     # set correct initial conditions
                     time_val[0] = 0.0
@@ -145,9 +152,11 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
                     print('Enthalpy difference is', delta_h, 'J.')
                     print('Difference is', diff, 'J, or', proc, '%.')
                     print("\n")
+            else:
+                t_max_fl = 0
 
             # Stefan solution (part 2)
-            t_end = t_ini + max(time[-1], t_max)  # solution time
+            t_end = t_ini + max(t_max_co, t_max_fl)  # solution time
 
             dt = 0.01
             m = M.ceil(t_end / dt)
