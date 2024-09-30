@@ -1,4 +1,5 @@
 from coconut.coupling_components.component import Component
+from coconut import tools
 
 
 class SolverWrapper(Component):
@@ -32,20 +33,24 @@ class SolverWrapper(Component):
 
         # check variables in parameter.json file
         warning = None
+        skip = False
+        print(self.type)
         if "fluent" in self.type or "openfoam" in self.type:
             accepted_out_var = ["pressure", "traction"]
             accepted_in_var = ["displacement"]
-            error_out = "Only permitted output variables are pressure and traction."
-            error_in = "Only permitted input variable is displacement."
+            error_out = f"Only permitted output variables are pressure and traction for {self.type}."
+            error_in = f"Only permitted input variable is displacement for {self.type}."
         elif "abaqus" in self.type or "kratos_structure" in self.type:
             accepted_out_var = ["displacement"]
             accepted_in_var = ["pressure", "traction"]
-            error_out = "Only permitted output variable is displacement."
-            error_in = "Only permitted input variables are pressure and traction."
+            error_out = f"Only permitted output variable is displacement for {self.type}."
+            error_in = f"Only permitted input variables are pressure and traction for {self.type}."
+        elif "mapped" in self.type:
+            skip = True
         else:
             warning = "Variables could not be checked as solver_wrapper was not recognized."
 
-        if warning is None:
+        if warning is None and skip is False:
             for mp in self.settings['interface_output']:
                 for var in mp['variables']:
                     if var not in accepted_out_var:
@@ -55,7 +60,7 @@ class SolverWrapper(Component):
                 for var in mp['variables']:
                     if var not in accepted_in_var:
                         raise NameError(error_in)
-        else:
+        elif warning is not None and skip is False:
             tools.print_info(warning, layout='warning')
 
     def initialize_solution_step(self):
