@@ -34,7 +34,6 @@ class SolverWrapper(Component):
         # check variables in parameter.json file
         warning = None
         skip = False
-        print(self.type)
         if "fluent" in self.type or "openfoam" in self.type:
             accepted_out_var = ["pressure", "traction"]
             accepted_in_var = ["displacement"]

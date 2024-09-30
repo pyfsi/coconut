@@ -224,7 +224,7 @@ class SolverWrapperFluent(SolverWrapper):
 
             # get face thread ID that corresponds to ModelPart
             for thread_name in self.thread_ids:
-                if thread_name in mp_name:
+                if (thread_name + "_nodes") == mp_name:
                     self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
             if mp_name not in self.model_part_thread_ids:
                 raise AttributeError('Could not find thread name corresponding ' +
@@ -258,7 +258,7 @@ class SolverWrapperFluent(SolverWrapper):
 
             # get face thread ID that corresponds to ModelPart
             for thread_name in self.thread_ids:
-                if thread_name in mp_name:
+                if (thread_name + "_faces") == mp_name:
                     self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
             if mp_name not in self.model_part_thread_ids:
                 raise AttributeError('Could not find thread name corresponding ' +
