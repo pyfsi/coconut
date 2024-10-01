@@ -10,8 +10,8 @@ from coconut import tools
 round_two = True
 pre = './qn_test/'
 
-solver_1 = 'fluent.v2023R1'
-solver_2 = 'fluent.v2023R1'
+solver_1 = 'cht_fluent.cht_v2023R1'
+solver_2 = 'cht_fluent.cht_v2023R1'
 
 if round_two:
     solver_order = ['TFFB', 'FFTB']

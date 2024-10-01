@@ -1,0 +1,3 @@
+The parameter studies present in the ECCOMAS directory changes variables in the cht_fluent solver wrapper that are normally non-changable outside the file.
+As a result, the parameter study will not work right outside the box, but requires some changes to the code in the Coconut coupling components.
+The coconut version used for the parameter studies in the ECCOMAS paper is available in the corresponding final folder in the home directory of user victor.
