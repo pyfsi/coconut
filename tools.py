@@ -43,6 +43,7 @@ class CocoMessages:
         while not os.path.isfile(file):
             time.sleep(0.001)
             cumul_time += 0.001
+            # check if solver process is not terminated
             if (cumul_time // self.poll_time) > polled:
                 polled = cumul_time // self.poll_time
                 if process.poll() is not None:
