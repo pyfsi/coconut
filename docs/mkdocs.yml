@@ -92,4 +92,10 @@ nav:
           - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
           - OpenFOAM 2D - KratosStructure 2D: turek_openfoam2d_kratos_structure2d.md
       - Test single solver: test_single_solver.md
+      - Phase change:
+          - One-phase Stefan problem: stefan_one_phase.md
+          - Two-phase Stefan problem: stefan_two_phase.md
+      - Conjugate heat transfer:
+          - Steady-state heated plate: heated_plate_steady.md
+          - Transient heated plate: heated_plate_transient.md
   - Tests: tests.md
