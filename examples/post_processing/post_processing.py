@@ -495,6 +495,8 @@ class Figure(BaseFigure):
         lcm = self.lcm_of_denominator(self.base_dt, subset.run.dt)
         if lcm > 1:
             self.base_dt = 1 / self.lcm_of_denominator(self.base_dt, subset.run.dt)
+        elif lcm == 1.0:
+            self.base_dt = subset.run.dt
         else:
             self.base_dt = np.gcd(self.base_dt, subset.run.dt)
 
