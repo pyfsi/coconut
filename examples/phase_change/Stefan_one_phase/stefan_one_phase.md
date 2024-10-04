@@ -9,7 +9,7 @@ while the solid phase is at constant temperature.
 The problem has been accomodated for numerical purposes by using a finite domain, where the wall at the opposite side is at the phase change temperature $T_m$.
 The challenge of the problem lies in the tracking of the moving interface.
 A script _`validate_one_phase_Stefan.py`_ is provided to compare the results with the analytical solution [[1](#1)] and the
-results from simulations in Fluent using the enthalpy-method for phase change.
+results from simulations in Fluent using the enthalpy method for phase change.
 
 The PCM (phase change material) parameters are:
 
@@ -20,14 +20,17 @@ The PCM (phase change material) parameters are:
 
 The domain parameters are:
 - domain length = 0.1 m
-- boundary temperature: 309.15 K
-- phase change temperature: 299.15 K
+- boundary temperature $T_L$: 309.15 K
+- phase change temperature $T_m$: 299.15 K
 
 The total simulated time is 36000 s (10 h) in time steps of 0.1 s.
 Due to the slow physics of the problem, the example requires a lot of time steps and takes a very long time to run.
 
 The problem is initialized with the temperature profile of the analytical solution at a liquid fraction of 1 % and wil run
 to a liquid fraction of approximately 81 % in a simulation time of 10 h.
+
+The figure below shows the liquid fraction as function of time. The numerical results agrees nearly perfectly with the analytical solution.
+![PC1](images/stefan_one_phase_liq_frac.png "Liquid fraction as a function of time for the one-phase Stefan problem.")
 
 ## Solvers
 
@@ -39,6 +42,7 @@ The interface is assumed at phase change temperature.
 
 The grids are provided in the setup_files directory. They represent respectively 1 % (liquid) and 99 % (solid) of the domain.
 As a result, thay are rectangularly shaped and contain quadrilateral cells in a structured grid.
+The "end_of_setup_command" present in the _`parameters.json`_ file is necessary for the layering approach used for the dynamic mesh.
 
 ## Coupling algorithm
 
@@ -60,4 +64,4 @@ When either criterion is satisfied the simulation stops.
  
 ## References
 <a id="1">[1]</a>
-[Alexiades V., Solomon, A. D., "The one-phase Stefan problem", in "Mathematical modeling of melting and freezing processes", London, Taylor & Francis, 1993, pp. 33-46]
+[Alexiades V., Solomon, A. D., "2.1. The one-phase Stefan problem", in "Mathematical modeling of melting and freezing processes", London, Taylor & Francis, 1993, pp. 33-46]

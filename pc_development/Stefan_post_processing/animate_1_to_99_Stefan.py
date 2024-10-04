@@ -13,7 +13,7 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = '../../pc_development/'
-case_paths = ['Stefan_full/case_results.pickle']
+case_paths = ['Stefan_full/long_run/case_results.pickle']
 legend_entries = ['Coconut - 0.1 s']
 fluent_dir = 'Stefan_post_processing/fluent_val_files/1_to_99/'
 fluent_cases = ['lf_full.out', 'lf_full_coarse.out', 'lf_1_to_99.out']

@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 5
+    "number_of_timesteps": 72000
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
