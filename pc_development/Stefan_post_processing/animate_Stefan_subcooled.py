@@ -15,15 +15,15 @@ from scipy import integrate
 common_path = '../../pc_development/'
 case_paths = ['Stefan_subcooled/case_results.pickle']
 legend_entries = ['Coconut - 0.1 s']
-fluent_dir = 'Stefan_post_processing/fluent_val_files/1_to_99/'
-fluent_cases = ['lf_full.out', 'lf_full_coarse.out', 'lf_1_to_99.out']
-fluent_legend = ['Fluent - full', 'Fluent - full, coarse', 'Fluent - 1 to 99']
+fluent_dir = 'Stefan_post_processing/fluent_val_files/subcooled/'
+fluent_cases = ['lf_fine.out', 'lf_coarse.out']
+fluent_legend = ['Fluent - fine', 'Fluent - coarse']
 
 itf_faces = [100]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction
-fluent_val = False # Is Fluent validation data available?
+fluent_val = True # Is Fluent validation data available?
 
 # load cases
 results = {}
@@ -118,7 +118,8 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
                     # Arrays for energy balance
                     q_in = data_array[1:, 3]  # W
-                    h_avg = data_array[1:, 4]  # (J/kg)(kg) = J
+                    q_out = data_array[1:, 4]  # W
+                    h_avg = data_array[1:, 5]  # (J/kg)(kg) = J
 
                     try:
                         os.remove(common_path + fluent_dir + 'report_file.csv')
@@ -146,7 +147,8 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
                     # Check energy balance
                     vol = 0.1 * 0.01 * 1  # m^3
                     h_tot = h_avg * rho * vol
-                    int_flux = integrate.trapezoid(q_in, time_val[1:])
+                    q_tot = q_in + q_out
+                    int_flux = integrate.trapezoid(q_tot, time_val[1:])
                     delta_h = h_tot[-1] - h_tot[0]
                     diff = int_flux - delta_h
                     proc = diff / delta_h * 100
