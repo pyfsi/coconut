@@ -51,10 +51,7 @@ class SolverWrapperFluent(SolverWrapper):
         elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
-        self.bc_from_case = self.settings.get('bc_from_case', False)  # NEW variable in json file
-        self.ini_condition = self.settings.get('ini_condition', None) # NEW variable in json file
         self.dimensions = self.settings['dimensions']
-        self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
         self.flow_iterations = self.settings['flow_iterations']
@@ -71,6 +68,12 @@ class SolverWrapperFluent(SolverWrapper):
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
+
+        # Conjugate heat transfer specific settings
+        self.cht_settings = self.settings['CHT']
+        self.bc_from_case = self.cht_settings.get('bc_from_case', False)
+        self.ini_condition = self.cht_settings.get('ini_condition', None)
+        self.moving_boundary = self.cht_settings.get('moving_boundary', False)
 
         self.output_ini_cond = {}
         self.output_variables = []

@@ -55,9 +55,11 @@
           "case_file": "cht_solid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
-          "moving_boundary": false,
           "multiphase": false,
-          "ini_condition": 0,
+          "CHT": {
+            "moving_boundary": false,
+            "ini_condition": 0
+          },
           "thread_names": [
             "boundary"
           ],
@@ -94,9 +96,11 @@
               "case_file": "cht_fluid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
-              "moving_boundary": false,
               "multiphase": false,
-              "ini_condition": 293.15,
+              "CHT": {
+                "moving_boundary": false,
+                "ini_condition": 293.15
+              },
               "thread_names": [
                 "boundary"
               ],

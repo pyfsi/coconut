@@ -57,9 +57,9 @@
           "case_file": "cht_fluid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
-          "moving_boundary": false,
-          "multiphase": false,
           "debug": false,
+          "multiphase": false,
+          "moving_boundary": false,
           "bc_from_case": true,
           "ini_condition": 0,
           "thread_names": [
