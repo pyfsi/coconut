@@ -51,15 +51,7 @@ class SolverWrapperFluent(SolverWrapper):
         elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
         self.mnpf = self.settings['max_nodes_per_face']
-        self.ini_condition = self.settings.get('ini_condition', None) # NEW variable in json file
-        self.latent_heat = self.settings.get('latent', None)  # NEW variable in json file
-        if self.latent_heat is None:
-            raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
-        self.melt_temp = self.settings.get('melt_temp', None)  # NEW variable in json file
-        if self.melt_temp is None:
-            raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
         self.dimensions = self.settings['dimensions']
-        self.moving_boundary = self.settings.get('moving_boundary', True) # NEW variable in json file
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
         self.flow_iterations = self.settings['flow_iterations']
@@ -76,6 +68,17 @@ class SolverWrapperFluent(SolverWrapper):
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
+
+        # Phase change specific settings
+        self.pc_settings = self.settings['PC']
+        self.ini_condition = self.pc_settings.get('ini_condition', None) # initial condition for outgoing variables
+        self.latent_heat = self.pc_settings.get('latent', None)
+        if self.latent_heat is None:
+            raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
+        self.melt_temp = self.pc_settings.get('melt_temp', None)
+        if self.melt_temp is None:
+            raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
+        self.moving_boundary = self.pc_settings.get('moving_boundary', True)
 
         self.output_ini_cond = {}
         self.output_variables = []
@@ -144,7 +147,7 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands','\n'))
-                    line = line.replace('|END_OF_SETUP_COMMANDS|', self.settings.get('end_of_setup_commands','\n'))
+                    line = line.replace('|END_OF_SETUP_COMMANDS|', self.pc_settings.get('end_of_setup_commands','\n'))
                     outfile.write(line)
 
         # prepare Fluent UDF

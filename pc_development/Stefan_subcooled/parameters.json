@@ -50,13 +50,15 @@
           "case_file": "pc_fluid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
-          "moving_boundary": true,
           "multiphase": false,
           "debug": false,
-          "latent": 179000,
-          "melt_temp": 299.15,
-          "ini_condition": 0,
-          "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
+          "PC": {
+            "moving_boundary": true,
+            "latent": 179000,
+            "melt_temp": 299.15,
+            "ini_condition": 0,
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")"
+          },
           "thread_names": [
             "boundary"
           ],
@@ -99,13 +101,15 @@
               "case_file": "pc_solid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
-              "moving_boundary": true,
               "multiphase": false,
               "debug": false,
-              "latent": 179000,
-              "melt_temp": 299.15,
-              "ini_condition": 299.15,
-              "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
+              "PC": {
+                "moving_boundary": true,
+                "latent": 179000,
+                "melt_temp": 299.15,
+                "ini_condition": 299.15,
+                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")"
+              },
               "thread_names": [
                 "boundary"
               ],

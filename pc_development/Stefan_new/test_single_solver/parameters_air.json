@@ -41,12 +41,14 @@
           "case_file": "pc_fluid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
-          "moving_boundary": true,
           "multiphase": false,
           "debug": false,
-          "latent": 179000,
-          "melt_temp": 298.15,
-          "ini_condition": 0,
+          "PC": {
+            "moving_boundary": true,
+            "latent": 179000,
+            "melt_temp": 298.15,
+            "ini_condition": 0
+          },
           "thread_names": [
             "boundary"
           ],

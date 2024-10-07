@@ -55,11 +55,13 @@
           "case_file": "pc_fluid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
-          "moving_boundary": true,
           "multiphase": false,
           "debug": true,
-          "latent": 179000,
-          "ini_condition": 0,
+          "PC": {
+            "moving_boundary": true,
+            "latent": 179000,
+            "ini_condition": 0
+          },
           "thread_names": [
             "boundary"
           ],
@@ -102,11 +104,13 @@
               "case_file": "pc_solid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
-              "moving_boundary": true,
               "multiphase": false,
               "debug": true,
-              "latent": 179000,
-              "ini_condition": 299.16,
+              "PC": {
+                "moving_boundary": true,
+                "latent": 179000,
+                "ini_condition": 299.16
+              },
               "thread_names": [
                 "boundary"
               ],
