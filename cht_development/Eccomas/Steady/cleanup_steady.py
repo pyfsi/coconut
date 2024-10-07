@@ -6,8 +6,8 @@ from os.path import join
 
 debug = False
 
-solver_1 = 'cht_fluent.cht_v2023R1'
-solver_2 = 'cht_fluent.cht_v2023R1'
+solver_1 = 'cht_fluent.v2023R1'
+solver_2 = 'cht_fluent.v2023R1'
 
 velocity_list = [2.4, 12, 24, 36] # m/s
 velocity_names = ['2-4m_s', '12m_s', '24m_s', '36m_s']

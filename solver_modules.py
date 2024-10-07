@@ -10,8 +10,8 @@ machine_name = 'ugent_cluster_RHEL8'
 solver_load_cmd_dict = {
     'ugent_cluster_RHEL8': {
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
-        'cht_fluent.cht_v2023R1': 'ml ANSYS_CFD/2023R1',
-        'pc_fluent.pc_v2023R1': 'ml ANSYS_CFD/2023R1',
+        'cht_fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
+        'pc_fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
         'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
         'openfoam.v10': 'ml OpenFOAM/10-foss-2023a && source $FOAM_BASH',

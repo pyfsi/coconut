@@ -13,8 +13,8 @@ fast = False
 
 pre = './qn_test/'
 
-solver_1 = 'cht_fluent.cht_v2023R1'
-solver_2 = 'cht_fluent.cht_v2023R1'
+solver_1 = 'cht_fluent.v2023R1'
+solver_2 = 'cht_fluent.v2023R1'
 
 # settings
 mesh = 'M3'

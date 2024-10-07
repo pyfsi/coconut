@@ -3,8 +3,8 @@ import shutil
 import subprocess
 from os.path import join
 
-solver_1 = 'cht_fluent.cht_v2023R1'
-solver_2 = 'cht_fluent.cht_v2023R1'
+solver_1 = 'cht_fluent.v2023R1'
+solver_2 = 'cht_fluent.v2023R1'
 mesh_list = ['M1', 'M2', 'M3', 'M4']
 
 for i, mesh in enumerate(mesh_list):

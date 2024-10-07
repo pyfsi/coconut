@@ -21,8 +21,8 @@ else:
     else:
         pre = './slow/'
 
-solver_1 = 'cht_fluent.cht_v2023R1'
-solver_2 = 'cht_fluent.cht_v2023R1'
+solver_1 = 'cht_fluent.v2023R1'
+solver_2 = 'cht_fluent.v2023R1'
 
 solver_order = ['TFFB', 'FFTB']
 methods = ['relaxation', 'aitken', 'iqni']

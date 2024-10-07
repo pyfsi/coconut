@@ -1,4 +1,4 @@
-from coconut.coupling_components.solver_wrappers.cht_fluent.cht_fluent import SolverWrapperFluent
+from coconut.coupling_components.solver_wrappers.cht_fluent.fluent import SolverWrapperFluent
 from coconut import tools
 
 
