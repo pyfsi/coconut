@@ -59,9 +59,11 @@
           "unsteady": true,
           "debug": false,
           "multiphase": false,
-          "moving_boundary": false,
-          "bc_from_case": true,
-          "ini_condition": 0,
+          "CHT": {
+            "moving_boundary": false,
+            "bc_from_case": true,
+            "ini_condition": 0
+          },
           "thread_names": [
             "boundary"
           ],
@@ -98,11 +100,13 @@
               "case_file": "cht_solid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
-              "moving_boundary": false,
               "multiphase": false,
               "debug": false,
-              "bc_from_case": true,
-              "ini_condition": 800,
+              "CHT": {
+                "moving_boundary": false,
+                "bc_from_case": true,
+                "ini_condition": 800
+              },
               "thread_names": [
                 "boundary"
               ],

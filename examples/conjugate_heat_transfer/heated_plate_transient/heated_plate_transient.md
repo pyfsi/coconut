@@ -1,6 +1,6 @@
 # Transient heated flat plate
 
-This is a transient analysis of a heated flat plate, similar to the steady-state case discussed in [Steady heated plate](conjugate_heat_transfer/heated_plate_steady/heated_plate_steady.md).
+This is a transient analysis of a heated flat plate, similar to the steady-state case discussed in [Steady heated plate](../heated_plate_steady/heated_plate_steady.md).
 The only difference is that the inlet velocity varies with time. Please refer to the documentation of the steady-state case for more details on the problem.
 
 The problem is initialized at the steady-state solution for an inlet velocity of $u_0 = 2.4 m/s$.
@@ -8,6 +8,14 @@ The inlet velocity will then sinusoidally increase from 2.4 m/s to 36 m/s in a t
 This fast transient behaviour will challenge the coupling algorithm as the Biot number along the interface will quickly increase from values predominantly below 1
 to values much larger than 1.
 The increasing velocity of the hot fluid flow will improve the heat transfer between both domains and is expected to increase the interface temperature.
+
+A script _`animate_interface.py`_ is provided to create animations of the varying temperature and heat flux distribution along the interface.
+The surface-averaged temperature and heat flux are also plotted as a function of time.
+The figures below show the time evolution of the average interface temperature and heat flux.
+
+![CHT2](images/cht_transient_avg_temp.png "Average interface temperature as a function of time.")
+
+![CHT3](images/cht_transient_avg_hf.png "Average interface heat flux as a function of time.")
 
 ## Solvers
 

@@ -5,12 +5,12 @@ A plate of certain thickness and length has a fixed temperature boundary conditi
 The fluid flow has a fixed temperature at its vertical inlet and a constant inlet velocity in the steady-state case.
 The figure below depicts the situation, the relevant parameters and some of their values.
 
-![luikov_setup](images/cht_setup.svg "Geometry and boundary conditions of the flat plate solid and fluid domain [[2](#2)].")
+![luikov_setup](images/cht_setup.png "Geometry and boundary conditions of the flat plate solid and fluid domain [[2](#2)].")
 
 The boundary conditions and geometry parameters are:
 
-- thickness b: 0.01 m
-- length L: 0.2 m
+- thickness $b$: 0.01 m
+- length $L$: 0.2 m
 - bottom temperature $T_b$: 600 K
 - inlet temperature: 1000 K
 - inlet velocity $u_0$: 12 m/s
@@ -30,7 +30,7 @@ The challenge in this problem follows from the evolution of the Biot number $Bi$
 $Bi < 1$. This leads to conflicting requirements in the solver coupling to provide stability and challenges the coupling algorithm.
 For more details, the reader is referred to Van Riet et al. [[2](#2)].
 
-A script _`validate_one_phase_Stefan.py`_ is provided to plot the steady-state temperature and heat flux distribution along the interface.
+A script _`plot_interface.py`_ is provided to plot the steady-state temperature and heat flux distribution along the interface.
 The figure below shows the steady-state temperature distribution in the y-direction through the middle of the plate (x = 0.1 m)
 as achieved by the simulation and two analytical approximations.
 
