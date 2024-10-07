@@ -50,13 +50,9 @@ file set-batch-options n n n
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
-        (if multiphase
-            (ti-menu-load-string "solve set expert y y n y")
-            (ti-menu-load-string "solve set expert y n y")
-        )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
-        (ti-menu-load-string "define user-defined compiled-functions compile \"v2023R1\" y \"v2023R1.c\" \"\" \"\"")
+        (ti-menu-load-string "define user-defined compiled-functions compile \"v2023R1\" y \"fluent.c\" \"\" \"\"")
         (ti-menu-load-string "define user-defined compiled-functions load \"v2023R1\"")
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
