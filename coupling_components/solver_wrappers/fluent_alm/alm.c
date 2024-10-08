@@ -7,12 +7,16 @@
 #define SCALAR_R 0
 #define SCALAR_THETA 1
 #define SCALAR_MU 2
-#define SCALAR_U 3
-#define SCALAR_V 4
+#define SCALAR_PX 3
+#define SCALAR_PY 4
+#define SCALAR_U 5
+#define SCALAR_V 6
 #if RP_3D
-#define SCALAR_W 5
+#define SCALAR_W 7
+#define SCALAR_PZ 8
 #endif /* RP_3D */
-#define NSCALARS (SCALAR_U+ND_ND)
+#define NSCALARS (SCALAR_V+1+2*(ND_ND-2))
+
 
 /* User-defined memory */
 #define UDMI_FMAG 0
@@ -34,6 +38,9 @@ real c_moment[6];
 #define N_CIRC_S |N_CIRC_S|
 #define DELTA_T |DELTA_T|
 #define UNSTEADY |UNSTEADY|
+#define P_ATM |P_ATM|
+#define T_ATM |T_ATM|
+#define R 287.05
 
 typedef struct yarn_point_struct {
 	int partition;
@@ -397,6 +404,12 @@ void calculate_air_velocity_density_yarn_orientation()
             cell_thread = yarn_points[point].cell_thread;
             air_values[point][SCALAR_R] = C_R(cell, cell_thread);
             air_values[point][SCALAR_MU] = C_MU_L(cell, cell_thread);
+            air_values[point][SCALAR_PX] = C_P_G(cell, cell_thread)[0];
+            air_values[point][SCALAR_PY] = C_P_G(cell, cell_thread)[1];
+#if RP_3D
+            air_values[point][SCALAR_PZ] = C_P_G(cell, cell_thread)[2];
+#endif /* RP_3D */
+
 
             /* Use blending function to distinguish between cross-flow sampling and axial flow sampling and make velocity relative to yarn velocity*/
             omega = pow(cos(local_theta[point]), 10);
@@ -404,28 +417,40 @@ void calculate_air_velocity_density_yarn_orientation()
             {
                 air_values[point][SCALAR_U+d] = (1 - omega) * sampled_velocity[point][0][d] + omega * sampled_velocity[point][1][d] - yarn_velocities[point][d];
             }
-
-            /* Compute the orientation of the thread with respect to the flow */
-            /* For now: yarn is stationary, so don't take into account yarn velocity yet */
-            dot_prod = 0.0;
-            norm_tan = 0.0;
-            norm_vel = 0.0;
-            for (n = 0; n < ND_ND; n++)
-            {
-                dot_prod += yarn_tangent[point][n] * air_values[point][SCALAR_U+n];
-                norm_tan += pow(yarn_tangent[point][n], 2);
-                norm_vel += pow(air_values[point][SCALAR_U+n], 2);
-            }
-            if ((sqrt(norm_tan) < DBL_EPSILON) || (sqrt(norm_vel) < DBL_EPSILON))
-            {
-                dot_prod = 0.0;
-            }
-            else
-            {
-                dot_prod = dot_prod / (sqrt(norm_tan) * sqrt(norm_vel));
-            }
-            air_values[point][SCALAR_THETA] = acos(dot_prod);
         }
+        else if (!yarn_points[point].found)  // If yarn is out of domain: set atmospheric values and zero flow velocity
+        {
+            air_values[point][SCALAR_R] = P_ATM / (R * T_ATM);
+            air_values[point][SCALAR_MU] = 0.000001458 * pow(T_ATM, 1.5)/ (T_ATM + 110.4);  // Sutherland's law for air
+            air_values[point][SCALAR_PX] = 0.0;
+            air_values[point][SCALAR_PY] = 0.0;
+#if RP_3D
+            air_values[point][SCALAR_PZ] = 0.0;
+#endif /* RP_3D */
+            for (d = 0; d < ND_ND; d ++)
+            {
+                air_values[point][SCALAR_U+d] = - yarn_velocities[point][d];
+            }
+        }
+        /* Compute the orientation of the thread with respect to the flow */
+        dot_prod = 0.0;
+        norm_tan = 0.0;
+        norm_vel = 0.0;
+        for (d = 0; d < ND_ND; d++)
+        {
+            dot_prod += yarn_tangent[point][d] * air_values[point][SCALAR_U+d];
+            norm_tan += pow(yarn_tangent[point][d], 2);
+            norm_vel += pow(air_values[point][SCALAR_U+d], 2);
+        }
+        if ((sqrt(norm_tan) < DBL_EPSILON) || (sqrt(norm_vel) < DBL_EPSILON))
+        {
+            dot_prod = 0.0;
+        }
+        else
+        {
+            dot_prod = dot_prod / (sqrt(norm_tan) * sqrt(norm_vel));
+        }
+        air_values[point][SCALAR_THETA] = acos(dot_prod);
     }
 
     /* Synchronize flow variables */
@@ -477,66 +502,76 @@ void calculate_yarn_forces()
         /* Initialize with zero force */
         NV_S(yarn_forces[point], =, 0.0);
 
-        if (yarn_points[point].found)  // Only calculate yarn force if yarn point is actually in domain
+        /* Calculate local reference frame */
+        for (d = 0; d < ND_ND; d++)
         {
-            /* Calculate local reference frame */
-            for (d = 0; d < ND_ND; d++)
+            velocity[d] = air_values[point][SCALAR_U+d];
+        }
+        /* Avoid NaN values at zero velocity */
+        mag = NV_MAG(velocity);
+        if (mag > DBL_EPSILON)
+        {
+            NV_V(e_v, =, velocity);
+            NV_S(e_v, /=, mag);
+            NV_V_VS(e_drag, =, e_v, -, yarn_tangent[point], *, NV_DOT(e_v, yarn_tangent[point]));
+            mag = NV_MAG(e_drag);
+            if (mag < DBL_EPSILON)
             {
-                velocity[d] = air_values[point][SCALAR_U+d];
-            }
-            /* Avoid NaN values at zero velocity */
-            mag = NV_MAG(velocity);
-            if (mag > DBL_EPSILON)
-            {
-                NV_V(e_v, =, velocity);
-                NV_S(e_v, /=, mag);
-                NV_V_VS(e_drag, =, e_v, -, yarn_tangent[point], *, NV_DOT(e_v, yarn_tangent[point]));
-                mag = NV_MAG(e_drag);
-                if (mag < DBL_EPSILON)
-                {
-                    NV_S(e_drag, *=, 0.);
-                }
-                else
-                {
-                    NV_S(e_drag, /=, mag);
-                }
-
-                /* Check orientation of flow w.r.t. yarn tangent vector */
-                if (NV_DOT(e_v, yarn_tangent[point]) >= 0.)
-                {
-                    multiplier = 1.;
-                }
-                else
-                {
-                    multiplier = -1.;
-                }
-
-                /* Calculate flow values */
-                Re = air_values[point][SCALAR_R] * NV_MAG(velocity) * YARN_DIAMETER / air_values[point][SCALAR_MU];
-                p_dyn = 0.5 * air_values[point][SCALAR_R] * pow(NV_MAG(velocity), 2) * YARN_DIAMETER;
-
-                /* Calculate axial force on yarn */
-                c_a = c_axial[0] * pow(Re, -c_axial[1]) * pow(fabs(cos(air_values[point][SCALAR_THETA])), c_axial[2]) + c_axial[3] * pow(fabs(sin(2*air_values[point][SCALAR_THETA])), c_axial[4]);
-                NV_V(f_a, =, yarn_tangent[point]);
-                NV_S(f_a, *=, (c_a * p_dyn * multiplier));
-
-                /* Calculate transversal drag force on yarn */
-                c_td = c_drag[0] * pow(fabs(sin(air_values[point][SCALAR_THETA])), c_drag[1]) + c_drag[2] * pow(Re, -c_drag[3]) * pow(fabs(sin(air_values[point][SCALAR_THETA])), (c_drag[1]-0.5));
-                NV_V(f_drag, =, e_drag);
-                NV_S(f_drag, *=, (c_td * p_dyn));
-
-                /* Store forces acting on the yarn in a global variable */
-                NV_VV(yarn_forces[point], =, f_a, +, f_drag);
+                NV_S(e_drag, *=, 0.);
             }
             else
             {
-                NV_S(e_v, =, 0.0);
-                NV_S(e_drag, =, 0.0);
-                NV_S(f_a, =, 0.0);
-                NV_S(f_drag, =, 0.0);
-                c_a = 0.0;
-                c_td = 0.0;
+                NV_S(e_drag, /=, mag);
             }
+
+            /* Check orientation of flow w.r.t. yarn tangent vector */
+            if (NV_DOT(e_v, yarn_tangent[point]) >= 0.)
+            {
+                multiplier = 1.;
+            }
+            else
+            {
+                multiplier = -1.;
+            }
+
+            /* Calculate flow values */
+            Re = air_values[point][SCALAR_R] * NV_MAG(velocity) * YARN_DIAMETER / air_values[point][SCALAR_MU];
+            p_dyn = 0.5 * air_values[point][SCALAR_R] * pow(NV_MAG(velocity), 2) * YARN_DIAMETER;
+
+            /* Calculate axial force on yarn */
+            c_a = c_axial[0] * pow(Re, -c_axial[1]) * pow(fabs(cos(air_values[point][SCALAR_THETA])), c_axial[2]) + c_axial[3] * pow(fabs(sin(2*air_values[point][SCALAR_THETA])), c_axial[4]);
+            NV_V(f_a, =, yarn_tangent[point]);
+            NV_S(f_a, *=, (c_a * p_dyn * multiplier));
+
+            /* Calculate transversal drag force on yarn */
+            c_td = c_drag[0] * pow(fabs(sin(air_values[point][SCALAR_THETA])), c_drag[1]) + c_drag[2] * pow(Re, -c_drag[3]) * pow(fabs(sin(air_values[point][SCALAR_THETA])), (c_drag[1]-0.5));
+            NV_V(f_drag, =, e_drag);
+            NV_S(f_drag, *=, (c_td * p_dyn));
+
+             /* Calculate normal pressure force on yarn */
+            grad_p[0] = air_values[point][SCALAR_PX];
+            grad_p[1] = air_values[point][SCALAR_PY];
+#if RP_3D
+            grad_p[2] = air_values[point][SCALAR_PZ];
+#endif /* RP_3D */
+
+            NV_V_VS(f_pres, =, grad_p, -, yarn_tangent[point], *, NV_DOT(yarn_tangent[point], grad_p));
+            vol = M_PI * pow(YARN_DIAMETER, 2)/4.0;
+            NV_S(f_pres, *=, vol);
+
+            /* Store forces acting on the yarn in a global variable */
+            NV_VV(yarn_forces[point], =, f_a, +, f_drag);
+            NV_V(yarn_forces[point], +=, f_pres);
+        }
+        else
+        {
+            NV_S(e_v, =, 0.0);
+            NV_S(e_drag, =, 0.0);
+            NV_S(f_a, =, 0.0);
+            NV_S(f_drag, =, 0.0);
+            NV_S(f_pres, =, 0.0);
+            c_a = 0.0;
+            c_td = 0.0;
         }
 
         /* Print to console */
@@ -547,7 +582,7 @@ void calculate_yarn_forces()
             printf("Reynolds number: %10.5f, dynamic pressure: %10.5f, theta: %10.5f\n", Re, p_dyn, air_values[point][SCALAR_THETA]);
             printf("e_a: [%10.5f, %10.5f, %10.5f], magnitude: %10.5f\n", NV_LIST(yarn_tangent[point]), NV_MAG(yarn_tangent[point]));
             printf("e_td: [%10.5f, %10.5f, %10.5f], magnitude: %10.5f\n", NV_LIST(e_drag), NV_MAG(e_drag));
-            printf("f_drag: %10.5f; f_a : %10.5f\n", NV_MAG(f_drag), NV_MAG(f_a));
+            printf("f_drag: %10.5f; f_a : %10.5f; f_pres: %10.5f\n", NV_MAG(f_drag), NV_MAG(f_a), NV_MAG(f_pres));
             printf("Force on yarn: [%10.5f, %10.5f, %10.5f] N/m\n", NV_LIST(yarn_forces[point]));
             fflush(stdout);
         }*/

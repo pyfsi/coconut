@@ -70,6 +70,8 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.yarn_diameter = self.alm_settings['yarn_diameter']
         self.g_eps = self.alm_settings['g_eps']  # shape parameter of force smearing kernel (2D Gaussian)
         self.n_circ_s = self.alm_settings.get('n_circ_s', 5)  # # circular sampling points for axial velocity sampling
+        self.p_atm = self.alm_settings.get('p_atm', 1e5)
+        self.T_atm = self.alm_settings.get('T_atm', 300.)
 
     @tools.time_initialize
     def initialize(self):
@@ -116,6 +118,8 @@ class SolverWrapperFluentALM(SolverWrapper):
                     line = line.replace('|N_CIRC_S|', str(self.n_circ_s))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|UNSTEADY|', str(int(self.unsteady)))
+                    line = line.replace('|P_ATM|', str(self.p_atm))
+                    line = line.replace('|T_ATM|', str(self.T_atm))
                     outfile.write(line)
 
         # check number of cores
