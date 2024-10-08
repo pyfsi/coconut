@@ -44,7 +44,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.pc_fluent.v2023R1",
+        "type": "solver_wrappers.pc_fluent.v2024R1",
         "settings": {
           "working_directory": "CFD_2",
           "case_file": "pc_fluid.cas.h5",
@@ -95,7 +95,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.pc_fluent.v2023R1",
+            "type": "solver_wrappers.pc_fluent.v2024R1",
             "settings": {
               "working_directory": "CFD_1",
               "case_file": "pc_solid.cas.h5",
