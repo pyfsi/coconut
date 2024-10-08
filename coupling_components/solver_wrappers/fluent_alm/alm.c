@@ -492,8 +492,8 @@ void calculate_yarn_forces()
 {
 #if RP_NODE
     int point, d;
-    real e_drag[ND_ND], e_v[ND_ND], velocity[ND_ND], f_a[ND_ND], f_drag[ND_ND];
-    real Re, p_dyn, c_a, c_td, multiplier, mag;
+    real e_drag[ND_ND], e_v[ND_ND], velocity[ND_ND], f_a[ND_ND], f_drag[ND_ND], f_pres[ND_ND], grad_p[ND_ND];
+    real Re, p_dyn, c_a, c_td, multiplier, mag, vol;
 
     initialize_force_coefficients();
 
