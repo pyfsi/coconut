@@ -16,7 +16,7 @@ As a result, it makes sense to use the existing CoCoNuT framework for the coupli
 
 ## Limitations and untested conditions
 
-* Only cases in 2D have been tested so far. Even though the code is written with 3D cases in mind and no issues are expected, trouble-free operation is not guaranteed.
+* Only cases in 2D have been tested so far. Even though the code is written with axisymmetric or 3D cases in mind and no issues are expected, trouble-free operation is not guaranteed.
 * The restart functionality in CoCoNuT has not been tested yet and is not guaranteed to work.
 * Only temperature - heat flux exchanging coupling schemes for conjugate heat transfer are possible. Coupling schemes with virtual heat transfer coefficients, as in [[2](#2)], are not provided.
 * FSI functionality of the solver wrapper is still intact, but combined CHT - FSI problems will need additional programming to run.
@@ -39,7 +39,7 @@ A new subdictionary with keyword `CHT` should be provided, however, containing t
 The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
 
 -   *`X.py`*: defines the `SolverWrapperCHTFluentX` class, 
--   *`X.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
+-   *`X.jou`*: Fluent journal file to interactively run the CHT simulation, written in Scheme, 
 -   *`udf_thermal.c`*: Fluent UDF file that implements additional functionality (I/O) used in Fluent, written in C.
 
 
