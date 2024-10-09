@@ -25,22 +25,30 @@ def create_instance(settings, if_not_defined=None):
 
 class CocoMessages:
 
-    def __init__(self, working_directory, max_wait_time=9e4, timed_out_action=None):
+    def __init__(self, working_directory, max_wait_time=9e4, timed_out_action=None, poll_time=60):
         self.working_directory = working_directory
         self.max_wait_time = max_wait_time  # in seconds
         self.timed_out_action = timed_out_action  # receives message as argument
+        self.poll_time = poll_time  # in seconds
 
     def send_message(self, message):
         file = join(self.working_directory, message + '.coco')
         open(file, 'w').close()
         return
 
-    def wait_message(self, message):
+    def wait_message(self, message, process=None):
         cumul_time = 0
+        polled = 0
         file = join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
             time.sleep(0.001)
             cumul_time += 0.001
+            # check if solver process is not terminated
+            if (cumul_time // self.poll_time) > polled:
+                polled = cumul_time // self.poll_time
+                if process.poll() is not None:
+                    process_name = str(process.args).split(' ')[0]
+                    raise RuntimeError(f'CoCoNuT timed out, {process_name} process has terminated')
             if cumul_time > self.max_wait_time:
                 if self.timed_out_action is not None:
                     self.timed_out_action(message)
