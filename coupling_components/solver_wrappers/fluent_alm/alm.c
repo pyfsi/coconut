@@ -410,16 +410,36 @@ void calculate_air_velocity_density_yarn_orientation()
             air_values[point][SCALAR_PZ] = C_P_G(cell, cell_thread)[2];
 #endif /* RP_3D */
 
-
             /* Use blending function to distinguish between cross-flow sampling and axial flow sampling and make velocity relative to yarn velocity*/
             omega = pow(cos(local_theta[point]), 10);
             for (d = 0; d < ND_ND; d ++)
             {
                 air_values[point][SCALAR_U+d] = (1 - omega) * sampled_velocity[point][0][d] + omega * sampled_velocity[point][1][d] - yarn_velocities[point][d];
             }
+
+            /* Compute the orientation of the thread with respect to the flow */
+            dot_prod = 0.0;
+            norm_tan = 0.0;
+            norm_vel = 0.0;
+            for (d = 0; d < ND_ND; d++)
+            {
+                dot_prod += yarn_tangent[point][d] * air_values[point][SCALAR_U+d];
+                norm_tan += pow(yarn_tangent[point][d], 2);
+                norm_vel += pow(air_values[point][SCALAR_U+d], 2);
+            }
+            if ((sqrt(norm_tan) < DBL_EPSILON) || (sqrt(norm_vel) < DBL_EPSILON))
+            {
+                dot_prod = 0.0;
+            }
+            else
+            {
+                dot_prod = dot_prod / (sqrt(norm_tan) * sqrt(norm_vel));
+            }
+            air_values[point][SCALAR_THETA] = acos(dot_prod);
         }
-        else if (!yarn_points[point].found)  // If yarn is out of domain: set atmospheric values and zero flow velocity
+        else if ((!yarn_points[point].found) && (myid == 0))
         {
+            /* If yarn is out of domain: set atmospheric values and zero flow velocity, but compute on one core only */
             air_values[point][SCALAR_R] = P_ATM / (R * T_ATM);
             air_values[point][SCALAR_MU] = 0.000001458 * pow(T_ATM, 1.5)/ (T_ATM + 110.4);  // Sutherland's law for air
             air_values[point][SCALAR_PX] = 0.0;
@@ -431,26 +451,27 @@ void calculate_air_velocity_density_yarn_orientation()
             {
                 air_values[point][SCALAR_U+d] = - yarn_velocities[point][d];
             }
-        }
-        /* Compute the orientation of the thread with respect to the flow */
-        dot_prod = 0.0;
-        norm_tan = 0.0;
-        norm_vel = 0.0;
-        for (d = 0; d < ND_ND; d++)
-        {
-            dot_prod += yarn_tangent[point][d] * air_values[point][SCALAR_U+d];
-            norm_tan += pow(yarn_tangent[point][d], 2);
-            norm_vel += pow(air_values[point][SCALAR_U+d], 2);
-        }
-        if ((sqrt(norm_tan) < DBL_EPSILON) || (sqrt(norm_vel) < DBL_EPSILON))
-        {
+
+            /* Compute the orientation of the thread with respect to the flow */
             dot_prod = 0.0;
+            norm_tan = 0.0;
+            norm_vel = 0.0;
+            for (d = 0; d < ND_ND; d++)
+            {
+                dot_prod += yarn_tangent[point][d] * air_values[point][SCALAR_U+d];
+                norm_tan += pow(yarn_tangent[point][d], 2);
+                norm_vel += pow(air_values[point][SCALAR_U+d], 2);
+            }
+            if ((sqrt(norm_tan) < DBL_EPSILON) || (sqrt(norm_vel) < DBL_EPSILON))
+            {
+                dot_prod = 0.0;
+            }
+            else
+            {
+                dot_prod = dot_prod / (sqrt(norm_tan) * sqrt(norm_vel));
+            }
+            air_values[point][SCALAR_THETA] = acos(dot_prod);
         }
-        else
-        {
-            dot_prod = dot_prod / (sqrt(norm_tan) * sqrt(norm_vel));
-        }
-        air_values[point][SCALAR_THETA] = acos(dot_prod);
     }
 
     /* Synchronize flow variables */
