@@ -58,6 +58,8 @@ nav:
           - General: solver_wrappers.md
           - abaqus.md
           - fluent.md
+          - cht_fluent.md
+          - pc_fluent.md
           - kratos_structure.md
           - openfoam.md
           - python.md

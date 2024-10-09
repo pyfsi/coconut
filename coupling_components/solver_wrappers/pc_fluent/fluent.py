@@ -15,10 +15,10 @@ import shutil
 
 
 def create(parameters):
-    return SolverWrapperFluent(parameters)
+    return SolverWrapperPCFluent(parameters)
 
 
-class SolverWrapperFluent(SolverWrapper):
+class SolverWrapperPCFluent(SolverWrapper):
     # version specific parameters
     version = None  # Fluent product version, as from 2023R1 typically of the form 'xxxRx', set in subclass
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass

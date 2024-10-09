@@ -1,12 +1,12 @@
-from coconut.coupling_components.solver_wrappers.cht_fluent.fluent import SolverWrapperFluent
+from coconut.coupling_components.solver_wrappers.cht_fluent.fluent import SolverWrapperCHTFluent
 from coconut import tools
 
 
 def create(parameters):
-    return SolverWrapperFluent2023R1(parameters)
+    return SolverWrapperCHTFluent2023R1(parameters)
 
 
-class SolverWrapperFluent2023R1(SolverWrapperFluent):
+class SolverWrapperCHTFluent2023R1(SolverWrapperCHTFluent):
     version = '2023R1'
     version_bis = '23.1.0'
 
