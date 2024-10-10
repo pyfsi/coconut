@@ -28,7 +28,7 @@ coupled solver as an `Interface` object.
 
 There are currently two solver wrappers for computational fluid dynamics (CFD) packages:
 
-- [ANSYS Fluent](fluent/fluent.md) (2019R3, 2021R1, 2023R1)
+- [ANSYS Fluent](fluent/fluent.md) (2023R1, 2024R1)
 - [OpenFOAM](openfoam/openfoam.md) (8)
 
 There are currently also two solver wrappers for computational structural mechanics (CSM) packages :
@@ -42,3 +42,8 @@ and implementations. These are:
 - [Tube flow solver](python/python.md#tube-flow-solver)
 - [Tube structure solver](python/python.md#tube-structure-solver)
 - [Tube ringmodel solver](python/python.md#tube-ringmodel-solver)
+
+Furthermore, several problem specific solver wrappers are under development in CoCoNuT. These are:
+
+- [Conjugate heat transfer with ANSYS Fluent](cht_fluent/cht_fluent.md) (2023R1, 2024R1)
+- [Solid-liquid phase change with ANSYS Fluent](pc_fluent/pc_fluent.md) (2023R1, 2024R1)
