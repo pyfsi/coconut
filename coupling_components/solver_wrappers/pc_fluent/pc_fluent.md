@@ -2,7 +2,7 @@
 
 This is the documentation for the Fluent solver wrapper adapted for phase change simulations within CoCoNuT.
 The functioning of this solver wrapper is entirely based on the original [Fluent solver wrapper](../fluent/fluent.md)
-and builds further on the (thermal) features 
+and builds further on the (thermal) features introduced in the [Conjugate heat transfer solver wrapper for Fluent](../cht_fluent/cht_fluent.md).
 
 ## How solid-liquid phase change is simulated with a partitioned approach
 
@@ -35,8 +35,8 @@ A new subdictionary with keyword `PC` should be provided, however, containing th
 |------------------------:|:-----:|---------------------------------------------------------------------------------------------------------------------------------------------|
 |       `moving_boundary` | bool  | (optional) Default: `true`. Should normally be always `true`, as phase change problems are moving boundary problems.                        |
 |         `ini_condition` | float | Scalar value as initial condition for the output thermal boundary condition: temperature (in K) or heat flux (in W/m$\cdot$K).              |
-|                `latent` | float | Latent heat of the phase change material.                                                                                                   |
-|             `melt_temp` | float | Melting temperature of the phase change material.                                                                                           |
+|                `latent` | float | Latent heat of the phase change material (PCM).                                                                                             |
+|             `melt_temp` | float | Melting temperature of the phase change material (PCM).                                                                                     |
 | `end_of_setup_commands` |  str  | (optional) Fluent journal command(s) to be executed after the setup is finished, can be used to indicate the cell height for mesh layering. |
 
 
@@ -51,34 +51,79 @@ The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1
 
 ### Added functionality
 
-The primary goal of the added functionality is to be able to exchange heat flux and interface displacement between the solvers.
-In this, the heat flux is calculated at the liquid side and enters the solid side during melting.
-As such, the incoming heat flux causes the solid domain to shrink and the interface to move inwards towards the solid domain.
-The two largest challenges are how to calculate the interface displacement and how to accommodate the volume change in the two separate domains.
-Fluent udf's have been developed to handle these challenges for both the liquid and solid domain.
+The primary objective of the added functionality is to facilitate the exchange of heat flux and interface displacement between the solvers.
+In this context, heat flux is calculated at the liquid side of the interface, inducing a shrinkage of the solid domain and an inward movement of the interface during melting.
 
-The liquid side receives the interface displacement as input during phase change. The mesh is deformed accordingly with the existing *`move_nodes`* udf.
-The *`set_adjacent`* udf then flags the cells at the interface and stores the new coordinates of the face nodes at the coupling interface.
-These new node positions are compared to the node positions of the previous mesh update in the *`calc_volume_change`* udf to determine the swept volume of each face at the coupling interface.
-The swept volume is apointed the according cells at the interface and are used for the determination of the mass and energy source terms in the flagged cells at the interface.
-The flow and energy equations with the correct source terms are subsequently solved in the liquid domain and the resulting heat flux at the interface is written to a file by the *`store_heat_flux`* udf.
+The two primary challenges lie in accurately calculating interface displacement and accommodating volume changes in the two separate domains.
+Fluent UDFs have been developed to address these issues within both the liquid and solid domains.
 
-In the solid domai, only the energy equation with a source term for the enthalpy method is solved.
-Using the enthalpy method guarantees a correct temperature field (and derived heat fluxes) in the solid phase.
-Consequently, the solid solver requires an additional energy source term to remove the *'excess'* cell enthalpy in the cells adjacent to the interface from the previous time step.
-This *'excess'* enthalpy is the latent part of the cell enthalpy which adds to the sensible enthalpy at melting temperature.
-If not removed by a source term (which acts as a sink during melting), the cell enthalpy of the boundary cells keeps increasing due to the incoming heat flux.
-This would cause the liquid fraction in the solid domain to increase despite the mesh updates, which should remove all molten material.
+During phase change, the liquid domain receives the interface displacement as input coming from the solid solver.
+The mesh is deformed accordingly using the existing *`move_nodes`* UDF.
+The *`set_adjacent`* UDF then flags the cells at the interface and stores the new coordinates of face nodes at the coupling interface.
+These new node positions are compared to those of the previous mesh update in the *`calc_volume_change`* UDF to determine the swept volume of each face  at the coupling interface.
+The swept volume is assigned to the corresponding interface cells and used to calculate the mass and energy source terms within these cells.
+The flow and energy equations, incorporating these source terms, are then solved in the liquid domain, and the resulting interface heat flux is recorded by the *`store_heat_flux`* UDF.
 
-The heat flux profile returned by the liquid solver is used as input for the solid solver through the *`set_heat_flux`* udf.
-The cell enthalpy of the cells adjacent to the interface, necessary for the energy source term, are stored by the *`update_cell_enthalpy`* udf.
-The energy equation with correct source term is once again solved, which allows the new interface displacement to be calculated.
+Within the solid domain, only the energy equation is solved with a source term corresponding to the enthalpy method for phase change [[1](#1)].
+The enthalpy method ensures a correct temperature field and derived heat fluxes in the solid phase.
+Consequently, an additional energy source term is required to account for the *'excess'* cell enthalpy in the interface cells inherited from the previous time step.
+This *'excess'* enthalpy represents the latent part of the cell enthalpy, which is added to the cell's sensible enthalpy at melting temperature.
+If not removed by a source term (which acts as a sink during melting), the cell enthalpy of boundary cells would continue to increase due to the incoming
+heat flux across multiple time steps. This would lead to an increase in the liquid fraction despite the mesh updates, which should remove all molten material each time step.
 
-This is done through the *`write_displacement`* udf where the Stefan condition is applied to each cell face at the interface.
-The face displacement, written to a file, are converted to node displacement in the fluent script of the solver wrapper.
-An instance of the built-in mappers in CoCoNuT is used for this. These node displacements are then returned to the liquid solver for the next iteration.
+The heat flux profile returned by the liquid solver serves as input for the solid solver through the *`set_heat_flux`* UDF.
+The *`update_cell_enthalpy`* UDF stores the cell enthalpy of cells adjacent to the interface, which is necessary for the energy source term.
+The energy equation with the correct source term is then solved, enabling the calculation of the new interface displacement.
+
+This is done through the *`write_displacement`* UDF, where the Stefan condition is applied to each cell face at the interface.
+The displacement follows from the interface velocity $v_{itf}$, which can be determined by enforcing the Stefan condition:
+$$
+\rho \cdot L \cdot v_{itf} = -k_L \nabla T |^L + k_S \nabla T |^S
+$$
+with $\rho$ the density of the PCM, $L$ the latent heat, $-k_L \nabla T|^L$ the interface heat flux at the liquid side and $-k_S \nabla T|^S$ the same at the solid side.
+The face displacement is written to a file and the fluent script of the solver wrapper subsequently converts this to node displacement before it is passed on as output.
+A built-in mapper in CoCoNuT facilitates the face-to-node mapping. These node displacements are then returned to the liquid solver for the next coupling iteration.
+
+If the solid is at the melting temperature, the interface temperature is assumed to be at the melting temperature as well, eliminating the need to exchange interface temperature as a variable.
+However, when the solid is subcooled below the melting temperature, it may require initial sensible heating before phase change occurs.
+In such cases, the problem initially becomes a conjugate heat transfer problem, necessitating the exchange of temperature from the solid domain to the liquid domain.
+The transition from sensible heating to latent heating also requires special treatment.
+
+In summary, the coupling strategy is illustrated in the figure below.
 
 ![](images/pc_coupling.png "Coupling strategy between liquid and solid domain for phase change problems")
+
+
+### Files created during simulation
+
+In these file conventions, A is the time step number and B the Fluent thread ID.
+
+-   Fluent case and data files are saved as files of the form *`case_timestepA.cas`* and *`case_timestepA.dat`*.
+-   Current node and face coordinates are passed from Fluent to CoCoNuT with files of the form *`nodes_timestepA_threadB.dat`* and *`faces_timestepA_threadB.dat`*.
+-   Face displacement is passed from Fluent to CoCoNuT with files of the form *`displacement_timestepA_threadB.dat`*.
+-   The new node coordinates are passed from CoCoNuT to Fluent with files of the form *`nodes_update_timestepA_threadB.dat`*.
+-   Heat flux is passed from Fluent to CoCoNuT with files of the form *`heat_flux_timestepA_threadB.dat`*.
+-   Temperature is passed from Fluent to CoCoNuT with files of the form *`temperature_timestepA_threadB.dat`*.
+-   Files with extension *`.coco`* are used to exchange messages between CoCoNuT and Fluent. 
+
+
+## Setting up a new case
+
+Following items should be set up and saved in the Fluent case file (this list may be non-exhaustive):
+
+-   additional UDFs must be configured, 
+-   steady/unsteady (should match with the `unsteady` parameter),
+-   2D, 3D or axisymmetric (should match with the `dimensions` parameter), currently only 2D is supported,
+-   dynamic mesh zones for all deforming surfaces, except for the coupling interfaces,
+-   dynamic mesh smoothing parameters,
+-   boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria.
+
+A data file should also be present with the fields either initialized or containing the results of a previous calculation.
+
+Following items are taken care of by CoCoNuT, and must therefore not be included in the Fluent case file:
+
+-   dynamic mesh zones for the FSI interfaces (these are defined in `thread_names`),
+-   the time step (`delta_t`).
 
 ## Version specific documentation
 
@@ -90,4 +135,8 @@ Base version.
 
 No changes.
 
+## References
+
+<a id="1">[1]</a>
+[Voller V. R. and Prakash C., "A fixed grid numerical modelling methodology for convection-diffusion mushy region phase-change problems", Int. J. Heat Mass Transfer., vol. 30(8), pp. 1709-1719, 1987.]
 

@@ -46,9 +46,9 @@ The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1
 ### Added functionality
 
 The most important feature of the CHT Fluent solver wrapper compared to the original is the ability to exchange temperature and heat flux as interface variables between the solvers.
-To that end, the necessary udf's have been added.
+To that end, the necessary UDFs have been added.
 *`store_temperature`* and *`store_heat_flux`* write the temperature and heat flux at the cell faces on the coupling interface, very similar to *`store_pressure_traction`* for pressure and traction.
-Furthermore, *`set_temperature`* and *`set_heat_flux`* are *DEFINE_PROFILE* udf's used to read the input files and set either the temperature or heat flux profiles as boundary conditions at the coupling interface.
+Furthermore, *`set_temperature`* and *`set_heat_flux`* are *DEFINE_PROFILE* UDFs used to read the input files and set either the temperature or heat flux profiles as boundary conditions at the coupling interface.
 To accommodate these new variables, the solver wrapper journal file and python script are adapted as well.
 The python script is now suited for input variables stored at the faces, such as temperature and heat flux, and not only at the face nodes, such as displacement.
 Furthermore, the thermal interface variables can be initialized with a constant value or profile.
