@@ -416,8 +416,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         if "displacement" in self.output_variables:
             # create, initialize and query face to node (f2n) displacement mapper
-            #TODO: change to linear mapper if not Stefan problem
-            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
+            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
             self.mapper_f2n = tools.create_instance(mapper_settings)
             self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
             # create, initialize and query node to face (n2f) displacement mapper
