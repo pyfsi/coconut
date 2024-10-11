@@ -5,6 +5,7 @@ from coconut.examples.post_processing.post_processing import *
 pp = PostProcess('case_results.pickle')
 print(pp)
 print("\n")
+#pp.print_summary()
 
 sx = pp.add_subset(interface='interface_x', model_part='boundary_in_nodes')
 sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
@@ -14,8 +15,10 @@ sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 #print(sy.get_values('heat_flux'))
 
 # Animate interface displacement & heat flux
-Animation2dDisplacement(sx, x_component='y', y_component='x')
-plt.show()
+ani_front = Animation2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto')
+ani_front.save('figs_ani/ani_front_1s.gif')
+
+#ani_disp = Animation2dDisplacement(sx, x_component='y', y_component='x')
 
 Animation2d(sy, 'initial_coordinates', 'heat_flux', x_component='y')
 plt.show()

@@ -47,7 +47,7 @@ solve iterate 150
 define models unsteady-1st-order y
 ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 20
-solve monitors residual convergence-criteria 1e-3 1e-3 1e-3 1e-6
+solve monitors residual convergence-criteria 1e-4 1e-4 1e-4 1e-8
 
 define dynamic-mesh dynamic-mesh y n n n n
 define dynamic-mesh controls smoothing y
