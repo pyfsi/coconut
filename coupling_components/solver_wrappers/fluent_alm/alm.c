@@ -441,7 +441,7 @@ void calculate_air_velocity_density_yarn_orientation()
         {
             /* If yarn is out of domain: set atmospheric values and zero flow velocity, but compute on one core only */
             air_values[point][SCALAR_R] = P_ATM / (R * T_ATM);
-            air_values[point][SCALAR_MU] = 0.000001458 * pow(T_ATM, 1.5)/ (T_ATM + 110.4);  // Sutherland's law for air
+            air_values[point][SCALAR_MU] = 0.000001458 * pow(T_ATM, 1.5)/ (T_ATM + 110.56);  // Sutherland's law for air
             air_values[point][SCALAR_PX] = 0.0;
             air_values[point][SCALAR_PY] = 0.0;
 #if RP_3D
@@ -577,7 +577,7 @@ void calculate_yarn_forces()
 #endif /* RP_3D */
 
             NV_V_VS(f_pres, =, grad_p, -, yarn_tangent[point], *, NV_DOT(yarn_tangent[point], grad_p));
-            vol = M_PI * pow(YARN_DIAMETER, 2)/4.0;
+            vol = -M_PI * pow(YARN_DIAMETER, 2)/4.0;
             NV_S(f_pres, *=, vol);
 
             /* Store forces acting on the yarn in a global variable */
