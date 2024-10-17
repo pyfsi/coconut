@@ -79,6 +79,8 @@ class SolverWrapperPCFluent(SolverWrapper):
         if self.melt_temp is None:
             raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
         self.moving_boundary = self.pc_settings.get('moving_boundary', True)
+        self.mapping_domain = self.pc_settings.get('mapping_domain', None)
+        self.mapping_limits = self.pc_settings.get('mapping_limits', None)
 
         self.output_ini_cond = {}
         self.output_variables = []
@@ -416,7 +418,11 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         if "displacement" in self.output_variables:
             # create, initialize and query face to node (f2n) displacement mapper
-            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear", "settings": {"directions": ["x", "y"], "check_bounding_box": False}}}
+            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
+                                                                         "settings": {"directions": ["x", "y"],
+                                                                                      "check_bounding_box": False,
+                                                                                      "domain": self.mapping_domain,
+                                                                                      "limits": self.mapping_limits}}}
             self.mapper_f2n = tools.create_instance(mapper_settings)
             self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
             # create, initialize and query node to face (n2f) displacement mapper

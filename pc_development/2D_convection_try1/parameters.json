@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 60000
+    "number_of_timesteps": 1
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
@@ -56,7 +56,9 @@
             "moving_boundary": true,
             "latent": 179000,
             "melt_temp": 299.15,
-            "ini_condition": 0
+            "ini_condition": 0,
+            "mapping_domain": "rectangular",
+              "mapping_limits": [0, 0, 0.1, 0.1]
           },
           "thread_names": [
             "boundary"
@@ -100,7 +102,9 @@
                 "moving_boundary": true,
                 "latent": 179000,
                 "melt_temp": 299.15,
-                "ini_condition": 299.15
+                "ini_condition": 299.15,
+                "mapping_domain": "rectangular",
+                "mapping_limits": [0, 0, 0.1, 0.1]
               },
               "thread_names": [
                 "boundary"

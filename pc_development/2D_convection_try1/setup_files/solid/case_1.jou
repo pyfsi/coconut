@@ -45,8 +45,8 @@ define dynamic-mesh controls smoothing-parameters max-iter 50
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
 ; Last option below: exclude mesh motion in boundary conditions? y
-define dynamic-mesh zones create top deforming faceted n y n y n y
-define dynamic-mesh zones create bottom deforming faceted n y n y n y
+define dynamic-mesh zones create top deforming plane 0.05 0.1 0 1 n y n y n y
+define dynamic-mesh zones create bottom deforming plane 0.05 0 0 1 n y n y n y
 
 file write-case-data 2D_solid.cas.h5
 exit
