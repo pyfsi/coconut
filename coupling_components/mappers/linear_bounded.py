@@ -56,10 +56,6 @@ class MapperLinearBounded(MapperInterpolatorBounded):
     def initialize(self, model_part_from, model_part_to):
         super().initialize(model_part_from, model_part_to)
 
-        print(self.coords_from)
-        print('\n')
-        print(self.coords_to)
-
     def __call__(self, args_from, args_to):
         # unpack arguments
         interface_from, mp_name_from, var_from = args_from

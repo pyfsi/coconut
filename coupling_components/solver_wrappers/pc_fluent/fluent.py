@@ -418,7 +418,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         if "displacement" in self.output_variables:
             # create, initialize and query face to node (f2n) displacement mapper
-            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
+            mapper_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear_bounded",
                                                                          "settings": {"directions": ["x", "y"],
                                                                                       "check_bounding_box": False,
                                                                                       "domain": self.mapping_domain,

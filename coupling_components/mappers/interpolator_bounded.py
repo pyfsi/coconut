@@ -62,6 +62,10 @@ class MapperInterpolatorBounded(Component):
         for j, direction in enumerate(self.directions):
             self.coords_to[:, j] = getattr(model_part_to, direction)
 
+        print(self.coords_from)
+        print('\n')
+        print(self.coords_to)
+
         # check if n_from is large enough
         if self.n_from < self.n_nearest:
             tools.print_info(f'Model part {model_part_from} has not enough from-points:'
