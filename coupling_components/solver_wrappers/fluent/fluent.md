@@ -50,7 +50,7 @@ If different parameters are used with different Fluent versions, this should be 
 The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
 
 -   *`X.py`*: defines the `SolverWrapperFluentX` class, 
--   *`X.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
+-   *`fluent.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
 -   *`fluent.c`*: Fluent UDF file that implements additional functionality used in Fluent, written in C.
 
 ### The `initialize` method

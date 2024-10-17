@@ -27,6 +27,9 @@ solver_load_cmd_dict = {
         'fluent.v2024R1': 'ml FLUENT/2024R1 && unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
+        'fluent.v2024R2': 'ml FLUENT/2024R2 && unset SLURM_GTIDS '
+                          '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
+                          '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
         'abaqus.v2023': 'ml intel/2022b && ml ABAQUS/2023 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024-hotfix-2405 '
