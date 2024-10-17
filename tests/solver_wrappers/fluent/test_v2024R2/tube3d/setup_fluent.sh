@@ -9,7 +9,7 @@ then
 fi
 
 # create new CFD folder
-cp -r setup_fluent/ CFD
+cp -r ../../test_v2024R1/tube3d/setup_fluent/ CFD
 cd CFD
 
 # make fluent case
