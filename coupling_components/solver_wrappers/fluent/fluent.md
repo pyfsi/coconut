@@ -116,3 +116,7 @@ No major changes.
 ### v2024R1 (24.1.0)
 
 No major changes.
+
+### v2024R2 (24.2.0)
+
+No major changes.
