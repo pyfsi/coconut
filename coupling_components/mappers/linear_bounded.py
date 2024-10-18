@@ -126,7 +126,6 @@ class MapperLinearBounded(MapperInterpolatorBounded):
                                         (moved_boundary_nodes[i, 1], moved_neighbour_nodes[i,1]),
                                         deg=1)
                 coord = intersect(params, self.boundary_name[i], self.vertices)
-                print(coord)
 
                 if self.boundary_name[i] == 'top' or self.boundary_name[i] == 'bottom':
                     disp_x = coord[0] - self.boundary_nodes_3D[i, 0]
@@ -135,10 +134,6 @@ class MapperLinearBounded(MapperInterpolatorBounded):
                     disp_x = 0
                     disp_y = coord[1] - self.boundary_nodes_3D[i, 1]
 
-                print('disp_x:')
-                print(disp_x)
-                print('disp_y:')
-                print(disp_y)
                 data_to[int(self.boundary_ind[i]), 0] = disp_x
                 data_to[int(self.boundary_ind[i]), 1] = disp_y
 
