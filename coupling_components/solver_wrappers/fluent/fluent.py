@@ -72,7 +72,7 @@ class SolverWrapperFluent(SolverWrapper):
         super().initialize()
 
         # prepare Fluent journal
-        journal = f'v{self.version}.jou'
+        journal = f'fluent.jou'
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
