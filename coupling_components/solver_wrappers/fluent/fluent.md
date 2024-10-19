@@ -50,8 +50,8 @@ If different parameters are used with different Fluent versions, this should be 
 The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
 
 -   *`X.py`*: defines the `SolverWrapperFluentX` class, 
--   *`X.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
--   *`X.c`*: Fluent UDF file that implements additional functionality used in Fluent, written in C.
+-   *`fluent.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
+-   *`fluent.c`*: Fluent UDF file that implements additional functionality used in Fluent, written in C.
 
 ### The `initialize` method
 
@@ -114,5 +114,9 @@ After a restart, the partitioning can be different and hence the mesh deformatio
 No major changes.
 
 ### v2024R1 (24.1.0)
+
+No major changes.
+
+### v2024R2 (24.2.0)
 
 No major changes.

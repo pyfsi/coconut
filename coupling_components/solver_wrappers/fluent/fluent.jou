@@ -50,14 +50,10 @@ file set-batch-options n n n
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
-        (if multiphase
-            (ti-menu-load-string "solve set expert y y n y")
-            (ti-menu-load-string "solve set expert y n y")
-        )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
-        (ti-menu-load-string "define user-defined compiled-functions compile \"v2024R1\" y \"v2024R1.c\" \"\" \"\"")
-        (ti-menu-load-string "define user-defined compiled-functions load \"v2024R1\"")
+        (ti-menu-load-string "define user-defined compiled-functions compile \"coconut_udf\" y \"fluent.c\" \"\" \"\"")
+        (ti-menu-load-string "define user-defined compiled-functions load \"coconut_udf\"")
     )
     (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
 )
@@ -71,7 +67,7 @@ report summary y "report.sum"
 ;
 ;   GET_THREAD_IDS IN UDF AND JOURNAL
 (wait_message "thread_ids_written_to_file")
-define user-defined execute-on-demand "get_thread_ids::v2024R1"
+define user-defined execute-on-demand "get_thread_ids::coconut_udf"
 (define face_threads (list|THREAD_NAMES|))
 ;
 ;   SETUP DYNAMIC MESH
@@ -81,7 +77,7 @@ define user-defined execute-on-demand "get_thread_ids::v2024R1"
             (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::v2024R1\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::coconut_udf\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
         )
         (if unsteady
             (begin
@@ -96,7 +92,7 @@ define user-defined execute-on-demand "get_thread_ids::v2024R1"
 ;   STORE COORDINATES AND IDS
 (if (= timestep_start 0)
     (begin
-        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2024R1\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::coconut_udf\"")
         (send_message "nodes_and_faces_stored")
     )
 )
@@ -203,13 +199,13 @@ define user-defined execute-on-demand "get_thread_ids::v2024R1"
                     )
                 )
             )
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::v2024R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::coconut_udf\"")
             (send_message "continue_ready")
         )
     )
     (if (check_message "store_grid")
         (begin
-            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::v2024R1\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::coconut_udf\"")
             (send_message "store_grid_ready")
         )
     )
