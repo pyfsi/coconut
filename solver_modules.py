@@ -10,11 +10,7 @@ machine_name = 'ugent_cluster_RHEL8'
 solver_load_cmd_dict = {
     'ugent_cluster_RHEL8': {
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
-        'cht_fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
-        'pc_fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
         'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
-        'cht_fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
-        'pc_fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'fluent.v2024R2': 'ml ANSYS_CFD/2024R2',
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
         'openfoam.v10': 'ml OpenFOAM/10-foss-2023a && source $FOAM_BASH',
@@ -52,4 +48,8 @@ solver_load_cmd_dict = {
 
 
 def get_solver_cmd(solver_name):
+    if 'pc' in solver_name:
+        solver_name = solver_name.replace('pc_fluent', 'fluent')
+    elif 'cht' in solver_name:
+        solver_name = solver_name.replace('cht_fluent', 'fluent')
     return solver_load_cmd_dict[machine_name][solver_name]
