@@ -116,6 +116,12 @@ class SolverWrapperPCFluent(SolverWrapper):
         elif "heat_flux" in self.input_variables:
             self.thermal_bc = "heat_flux"
 
+        # Check if solid solver is running single core
+        if self.thermal_bc == "heat_flux" and self.cores != 1:
+            self.cores = 1
+            warning_text = 'Number of cores has been reset to 1 because the write_displacement udf used in the solid solver has not yet been parallelised.'
+            tools.print_info(warning_text, layout='warning')
+
     @tools.time_initialize
     def initialize(self):
         super().initialize()
@@ -153,7 +159,10 @@ class SolverWrapperPCFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        udf = 'udf_thermal.c'
+        if self.version == '2024R2':
+            udf = f'udf_v{self.version}.c'
+        else:
+            udf = 'udf_thermal.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
@@ -209,7 +218,7 @@ class SolverWrapperPCFluent(SolverWrapper):
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from  fluent.log and report.sum
-        self.coco_messages.wait_message('case_info_exported')
+        self.coco_messages.wait_message('case_info_exported', self.fluent_process)
 
         with open(log, 'r') as file:
             for line in file:
@@ -284,7 +293,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         # import node and face information if no restart
         if self.timestep_start == 0:
-            self.coco_messages.wait_message('nodes_and_faces_stored')
+            self.coco_messages.wait_message('nodes_and_faces_stored', self.fluent_process)
 
         # create Model used for coupling
         self.model = data_structure.Model()
@@ -446,7 +455,7 @@ class SolverWrapperPCFluent(SolverWrapper):
             self.write_output_to_file("displacement")
 
         self.coco_messages.send_message('next')
-        self.coco_messages.wait_message('next_ready')
+        self.coco_messages.wait_message('next_ready', self.fluent_process)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -472,7 +481,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
-        self.coco_messages.wait_message('continue_ready')
+        self.coco_messages.wait_message('continue_ready', self.fluent_process)
 
         # process output interface data
         for dct in self.interface_output.parameters:
@@ -598,7 +607,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready')
+            self.coco_messages.wait_message('save_ready', self.fluent_process)
 
         # remove unnecessary files
         if self.timestep - 1 > self.timestep_start:
@@ -622,7 +631,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         super().finalize()
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
         self.coco_messages.send_message('stop')
-        self.coco_messages.wait_message('stop_ready')
+        self.coco_messages.wait_message('stop_ready', self.fluent_process)
         self.fluent_process.wait()
 
         # remove unnecessary files
@@ -811,7 +820,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         # make Fluent store coordinates and ids
         self.coco_messages.send_message('store_grid')
-        self.coco_messages.wait_message('store_grid_ready')
+        self.coco_messages.wait_message('store_grid_ready', self.fluent_process)
 
         coord_data = {}
 

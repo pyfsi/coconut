@@ -1542,8 +1542,8 @@ DEFINE_ON_DEMAND(write_displacement) {
                     /* Allocates memory for gradient and reconstruction gradient macros */
                     Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                     /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
-                    Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
-                    // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
+                    Scalar_Reconstruction(domain, "rp-global", SV_T, -1, SV_T_RG, NULL);
+                    // Scalar_Derivatives(domain, "rp-global", SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
 
                     c_face_loop(c,t,face_number)
                     {

@@ -51,7 +51,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.pc_fluent.v2024R1",
+        "type": "solver_wrappers.pc_fluent.v2024R2",
         "settings": {
           "working_directory": "CFD_2",
           "case_file": "2D_fluid.cas.h5",
@@ -64,7 +64,7 @@
             "latent": 179000,
             "melt_temp": 299.15,
             "ini_condition": 0,
-            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
             "mapping_domain": "rectangular",
             "mapping_limits": [0, 0, 0.1, 0.1]
           },
@@ -91,14 +91,14 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 3000
+          "save_results": 6000
         }
       },
       {
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.pc_fluent.v2024R1",
+            "type": "solver_wrappers.pc_fluent.v2024R2",
             "settings": {
               "working_directory": "CFD_1",
               "case_file": "2D_solid.cas.h5",
@@ -111,7 +111,7 @@
                 "latent": 179000,
                 "melt_temp": 299.15,
                 "ini_condition": 299.15,
-                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
+                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
                 "mapping_domain": "rectangular",
                 "mapping_limits": [0, 0, 0.1, 0.1]
               },
@@ -138,7 +138,7 @@
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 3000
+              "save_results": 6000
             }
           },
           "mapper_interface_input": {
