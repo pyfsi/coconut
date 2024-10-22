@@ -135,6 +135,10 @@ Base version.
 
 No changes.
 
+### v2024R2 (24.2.0)
+
+No changes in operation. The Scalar_Reconstruction macro required an additional argument in the write_displacement udf.
+
 ## References
 
 <a id="1">[1]</a>
