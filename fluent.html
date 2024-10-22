@@ -842,6 +842,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#v2024r2-2420" class="md-nav__link">
+    <span class="md-ellipsis">
+      v2024R2 (24.2.0)
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1876,8 +1885,8 @@ More information about <code>ModelParts</code> and <code>Interfaces</code> can b
 <p>The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):</p>
 <ul>
 <li><em><code>X.py</code></em>: defines the <code>SolverWrapperFluentX</code> class, </li>
-<li><em><code>X.jou</code></em>: Fluent journal file to interactively run the FSI simulation, written in Scheme, </li>
-<li><em><code>X.c</code></em>: Fluent UDF file that implements additional functionality used in Fluent, written in C.</li>
+<li><em><code>fluent.jou</code></em>: Fluent journal file to interactively run the FSI simulation, written in Scheme, </li>
+<li><em><code>fluent.c</code></em>: Fluent UDF file that implements additional functionality used in Fluent, written in C.</li>
 </ul>
 <h3 id="the-initialize-method">The <code>initialize</code> method</h3>
 <p>During initialization, the journal and UDF files are adapted (parameter values are filled in) and copied to the <code>working_directory</code>. Fluent is then started in that directory using the parameters <code>cores</code>, <code>dimensions</code> and <code>fluent_gui</code>. Fluent then writes a case summary, so that the solver wrapper can link the interface thread names (specified in <code>thread_names</code>) to Fluent thread IDs, for use in the UDFs. Then the <code>Model</code> and <code>ModelParts</code> are created, based on data written by Fluent in time step 0. After a restart, this same data must be found, i.e. if those data files are removed from the <code>working_directory</code> folder, the simulation cannot be restarted. Finally, the <code>Interfaces</code> are created. </p>
@@ -1922,6 +1931,8 @@ After a restart, the partitioning can be different and hence the mesh deformatio
 <h3 id="v2023r1-2310">v2023R1 (23.1.0)</h3>
 <p>No major changes.</p>
 <h3 id="v2024r1-2410">v2024R1 (24.1.0)</h3>
+<p>No major changes.</p>
+<h3 id="v2024r2-2420">v2024R2 (24.2.0)</h3>
 <p>No major changes.</p>
 
 

@@ -1985,11 +1985,6 @@ Subcycling within the structural solver is possible.</p>
 <td>Name of the Abaqus input file (.inp) provided by the user. <br> <br> <strong>Example:</strong> <code>"case.inp"</code></td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>mp_mode</code></td>
-<td style="text-align: center;">str</td>
-<td>Determines how Abaqus is executed in parallel. It is recommended to use <code>"THREADS"</code>. <code>"MPI"</code> works as well but requires a host-file called <em><code>AbaqusHosts.txt</code></em>. This host-file lists the machines on which Abaqus is allowed to run. One line per requested core, but excessive lines cause no harm. The extra directory contains a script <em><code>make_host_file.sh</code></em> which can be used to generate a hosts file (Ghent University system). Note that multi-node computations are currently not supported.</td>
-</tr>
-<tr>
 <td style="text-align: right;"><code>timestep_start</code></td>
 <td style="text-align: center;">int</td>
 <td>Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0. This parameter should be synchronized with the flow solver. This parameter is usually specified in a higher <code>Component</code> in which case it is not mandatory to specify.</td>
@@ -1997,7 +1992,7 @@ Subcycling within the structural solver is possible.</p>
 <tr>
 <td style="text-align: right;"><nobr><code>working_directory</code></nobr></td>
 <td style="text-align: center;">str</td>
-<td>Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain a file <em><code>AbaqusHosts.txt</code></em>, see the <a href="#environment">environment section</a>.</td>
+<td>Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution, see the <a href="#environment">environment section</a>.</td>
 </tr>
 </tbody>
 </table>
