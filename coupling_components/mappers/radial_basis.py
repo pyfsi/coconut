@@ -23,6 +23,7 @@ class MapperRadialBasis(MapperInterpolator):
         self.shape_parameter = self.settings.get('shape_parameter', 200)
         if self.shape_parameter < 2:
             tools.print_info(f'Shape parameter is {self.shape_parameter} < 2\n', layout='warning')
+        self.include_polynomial = self.settings.get('include_polynomial', True)
 
         # determine number of nearest neighbours
         n_nearest = 81 if len(self.directions) == 3 else 9
@@ -36,9 +37,9 @@ class MapperRadialBasis(MapperInterpolator):
         cond = []
         for i_to in range(self.n_to):
             nearest = self.nearest[i_to, :]
-            iterable.append((self.distances[i_to, :],
-                             self.coords_from[nearest, :],
-                             self.shape_parameter))
+            iterable.append((self.coords_to[i_to, :], self.distances[i_to, :], self.coords_from[nearest, :],
+                            self.shape_parameter, self.include_polynomial))  # it is faster to include the arguments ..
+            # than to make get_coeffs a method of the MapperRadialBasis class
 
         if self.parallel:
             processes = cpu_count()
@@ -62,7 +63,7 @@ class MapperRadialBasis(MapperInterpolator):
                              f' to decrease the condition number', layout='warning')
 
 
-def get_coeffs(distances, coords_from, shape_parameter):
+def get_coeffs(coords_to, distances, coords_from, shape_parameter, include_polynomial):
     def phi(r):
         return (1 - r) ** 4 * (1 + 4 * r) * np.heaviside(1 - r, 0)
 
@@ -76,10 +77,24 @@ def get_coeffs(distances, coords_from, shape_parameter):
     d = distance.squareform(distance.pdist(coords_from))
     Phi = phi(d / d_ref)
 
-    # calculate condition number
-    cond = np.linalg.cond(Phi)
+    if include_polynomial:
+        # create column p_to
+        p_to = np.concatenate((np.array([1]), coords_to)).reshape(-1, 1)
 
-    # solve system Phi^T c = Phi_t for c (Phi is symmetric)
-    coeffs = solve(Phi, Phi_to, assume_a='gen')
+        # create matrix p
+        p = np.hstack((np.ones((coords_from.shape[0], 1)), coords_from))
+
+        # stack matrices
+        A = np.block([[Phi, p], [p.T, np.zeros((p.shape[1], p.shape[1]))]])
+        B = np.block([[Phi_to], [p_to]])
+    else:
+        A = Phi
+        B = Phi_to
+
+    # calculate condition number
+    cond = np.linalg.cond(A)
+
+    # solve system A^T c = B for c (A is symmetric) and truncate
+    coeffs = solve(A, B, assume_a='sym')[:Phi_to.shape[0]]
 
     return coeffs.reshape(1, -1), cond

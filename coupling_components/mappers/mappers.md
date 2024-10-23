@@ -217,6 +217,7 @@ Additional settings:
 
 |                      parameter | type | description                                                                                                                                                                                                                                   |
 |-------------------------------:|:----:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|           `include_polynomial` | bool | (optional) Default: `true`. If `true` a polynomial is included in the radial basis function as described below.                                                                                                                               |
 |                    `n_nearest` | int  | (optional) Default: `81`, if mapping in 3 `directions`, else `9`. Number of nearest neighbours used to perform mapping.                                                                                                                       |
 |        <nobr>`parallel`</nobr> | bool | (optional) Default: `false`. If `true` the package `multiprocessing` is used to parallellize the loop that the calculates the interpolation coefficients. This is only useful for `ModelParts` with a very high number of degrees of freedom. |
 | <nobr>`shape_parameter`</nobr> | int  | (optional) Default: `200`. Should be chosen as large as possible without rendering the interpolation matrix ill-conditioned.                                                                                                                  |
@@ -225,7 +226,6 @@ Radial basis function interpolation is relatively straightforward: implementatio
 
 Normal radial basis interpolation is done as follows.
 $\phi(r)$ is a radial basis function defined as  
-
 
 $$
 \phi(r) = 
@@ -259,9 +259,9 @@ $$
 
 with $\boldsymbol{f}, \boldsymbol{\alpha} \in \mathbb{R}^{n \times 1}$, and $\boldsymbol{\Phi} \in \mathbb{R}^{n \times n}$. This system can be solved for the weights-vector $\boldsymbol{\alpha}$.
 
-However, in our case, the *from*-point values vector $\boldsymbol{f}$ is not known in advance: it contains the values of the `Variable` that will be interpolated. 
+However, in our case, the *from*-point values vector $\boldsymbol{f}$ is not known in advance: it contains the values of the `variable` that will be interpolated. 
 
-Therefore, the approximation to calculate the interpolatoin in the *to*-point is rewritten as follows:
+Therefore, the approximation to calculate the interpolation in the *to*-point is rewritten as follows:
 
 $$
 f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
@@ -275,6 +275,8 @@ $$
 
 As every to-point has different nearest neighbours in the *from*-points, the coefficient vector $\boldsymbol{c}$ must be calculated for each *to*-point independently. The matrix $\boldsymbol{\Phi}$ and vector $\boldsymbol{\Phi}_{to}$ must also be calculated for every *to*-point independently.
 
+**The shape parameter**
+
 For every *to*-point, the reference distance $d_{ref}$ is determined as the product of the `shape_parameter` and the distance between the *to*-point and the furthest *from*-point.
 
 In order to ensure that the basis function of each of the nearest *from*-points covers every *from*-point, the `shape_parameter` should be larger than two.
@@ -286,4 +288,107 @@ In this case the interpolation matrix approaches the identity matrix.
 Choosing a higher value improves the interpolation as the basis functions become wider, but the interpolation matrix becomes less stable, i.e. the condition number increases.
 The default value is 200.
 In practice, the `shape_parameter` is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (for example, with a condition number of roughly $10^{13}$ for double-precision floating point).
-A warning is printed when the condition number of an interpolation matrix becomes higher than $10^{13}$.
+A warning is printed when the condition number of an interpolation matrix becomes higher than $10^{13}$. Refer also to Lombardi et al. [[1](#1)].
+
+**Adding a polynomial**
+
+Adding a linear polynomial $p(\boldsymbol{x})$
+
+$$
+p(\boldsymbol{x}) = \beta_0 + \beta_1 x_1 + \dots + \beta_d x_d.
+$$
+
+to the radial basis interpolant allows to exactly capture linear variations in *from*-point values:
+
+$$
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||) + p(\boldsymbol{x}).
+$$
+
+To determine the coefficients $\alpha_j$ and $\beta_j$, additional conditions are required next to matching the exact function values at the $n$ *from*-points.
+Therefore, we impose that
+
+$$
+\sum_j \alpha_j q(\boldsymbol{x}_j) = 0
+$$
+
+for all $q$ with a degree lower than the degree of p.
+These conditions can be written in matrix form as 
+
+$$
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{\Phi} & \boldsymbol{P} \\
+    \boldsymbol{P}^T & \boldsymbol{0} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{\alpha} \\
+    \boldsymbol{\beta} \\
+    \end{bmatrix}.
+$$
+
+with $\boldsymbol{P} \in \mathbb{R}^{n \times (d+1)}$, and $\boldsymbol{\beta} \in \mathbb{R}^{(d+1) \times 1}$.
+
+As before, this system can be solved for the vectors $\boldsymbol{\alpha}$ and $\boldsymbol{\beta}$ with the *from*-point values (each time the mapper is used), but it is less expensive to construct the vector $\boldsymbol{c} \in \mathbb{R}^{n \times 1}$ (once, when the mapper is initialized), as follows:
+
+$$
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) + p(\boldsymbol{x}_{to}) = {\boldsymbol{\Phi}_{to}}^T \boldsymbol{\alpha} + {\boldsymbol{P}_{to}}^T \boldsymbol{\beta} 
+%=
+%    \begin{bmatrix}
+%    {\boldsymbol{\Phi}_{to}}^T & {\boldsymbol{P}_{to}}^T \\
+%    \end{bmatrix}
+%    \begin{bmatrix}
+%    \boldsymbol{\alpha} \\
+%    \boldsymbol{\beta} \\
+%    \end{bmatrix}
+=
+    \begin{bmatrix}
+	{\boldsymbol{\Phi}_{to}}^T & {\boldsymbol{P}_{to}}^T \\
+    \end{bmatrix}
+    {\begin{bmatrix}
+    \boldsymbol{\Phi} & \boldsymbol{P} \\
+    \boldsymbol{P}^T & \boldsymbol{0} \\
+    \end{bmatrix}}^{-1}
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{c}^T & \dots \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+= \boldsymbol{c}^T \boldsymbol{f}.
+$$
+
+As before, the coefficients vector $\boldsymbol{c}$ can now be calculated based only on the coordinates by solving the system
+
+$$
+    \begin{bmatrix}
+    \boldsymbol{\Phi} & \boldsymbol{P} \\
+    \boldsymbol{P}^T & \boldsymbol{0} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{c} \\
+    \dots \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{\Phi}_{to} \\
+    \boldsymbol{P}_{to} \\
+    \end{bmatrix}.
+$$
+
+For details refer to Degroote and Vierendeels [[2](#2)].
+
+<a id="1">[1]</a>
+[Lombardi M., Parolini N. and Quarteroni A., "Radial basis functions for inter-grid interpolation and mesh motion in FSI problems", Computer Methods in Applied Mechanics and Engineering, vol. 256, pp. 117-131, 2013.](https://doi.org/10.1016/j.cma.2012.12.019)
+
+<a id="2">[2]</a>
+[Degroote J. and Vierendeels J., "Multi-level quasi-Newton coupling algorithms for the partitioned simulation of fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 225-228, pp. 14-27, 2012.](http://doi.org/10.1016/j.cma.2012.03.010)

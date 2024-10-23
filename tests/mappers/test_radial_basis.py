@@ -10,7 +10,8 @@ class TestMapperRadialBasis(unittest.TestCase):
         self.parameters = {'type': 'mappers.radial_basis',
                            'settings': {
                                'directions': ['x', 'y', 'z'], 
-                               'parallel': True
+                               'parallel': True,
+                               'include_polynomial': True
                            }}
 
     def test_mapping_one_dimension(self):
@@ -20,15 +21,27 @@ class TestMapperRadialBasis(unittest.TestCase):
         """
         1D case: square-root grid + linear function
         
-        n_from = 14, n_to = 5 
+        n_from = 14, n_to = 5
+        with linear polynomial
+            => max error = 5.6e-17
+        without linear polynomial
             => max error = 6.1e-7 (sh_par 2: 5.8e-5, sh_par 1000: 1.2e-7)
         """
 
         case = Case1D(n_from, n_to)
+
+        # with polynomial
+        case.map(self.parameters)
+        self.assertTrue(case.check(tolerance=1e-16))
+        if self.gui:
+            case.plot(add_text='with polynomial')
+
+        # without polynomial
+        self.parameters['settings']['include_polynomial'] = False
         case.map(self.parameters)
         self.assertTrue(case.check(tolerance=7e-7))
         if self.gui:
-            case.plot()
+            case.plot(add_text='without polynomial')
 
     def test_mapping_circle(self):
         n_from, n_to = 33, 22
@@ -37,15 +50,27 @@ class TestMapperRadialBasis(unittest.TestCase):
         """
         2D case: circle + linear function
         
-        n_from = 33, n_to = 22 
+        n_from = 33, n_to = 22
+        with linear polynomial
+            => max error = 1.8e-15
+        without linear polynomial
             => max error = 1.4e-5 (sh_par 2: 0.003, sh_par 1000: 2.7e-6)
         """
 
         case = Case2D(n_from, n_to)
+
+        # with polynomial
+        case.map(self.parameters)
+        self.assertTrue(case.check(tolerance=2e-15))
+        if self.gui:
+            case.plot(add_text='with polynomial')
+
+        # without polynomial
+        self.parameters['settings']['include_polynomial'] = False
         case.map(self.parameters)
         self.assertTrue(case.check(tolerance=2e-5))
         if self.gui:
-            case.plot()
+            case.plot(add_text='without polynomial')
 
     def test_mapping_sphere(self):
         n_theta_from, n_phi_from = 50, 30
@@ -87,7 +112,6 @@ class TestMapperRadialBasis(unittest.TestCase):
         self.assertTrue(case.check(tolerance=3e-4))
         if self.gui:
             case.plot()
-        self.parameters['settings'].pop('scaling')
 
     def test_mapping_sinc(self):
         n_x_from, n_y_from = 20, 20
@@ -99,6 +123,9 @@ class TestMapperRadialBasis(unittest.TestCase):
         
         n_x_from, n_y_from = 20, 20
         n_x_to, n_y_to = 13, 13
+        with polynomial
+            => max error = 6.7e-16
+        without polynomial
             => max error = 0.0024 (sh_par 2: 0.05, sh_par 1000: 4.8e-5)
             
         n_x_from, n_y_from = 50, 50
@@ -107,11 +134,21 @@ class TestMapperRadialBasis(unittest.TestCase):
         """
 
         case = Case3DSinc(n_x_from, n_y_from, n_x_to, n_y_to)
+
+        # with polynomial
         case.map(self.parameters)
-        for tmp in case.check(tolerance=0.003):
-            self.assertTrue(tmp)
+        for comp in case.check(tolerance=1e-15):
+            self.assertTrue(comp)
         if self.gui:
-            case.plot()
+            case.plot(add_text='with polynomial')
+
+        # without polynomial
+        self.parameters['settings']['include_polynomial'] = False
+        case.map(self.parameters)
+        for comp in case.check(tolerance=0.003):
+            self.assertTrue(comp)
+        if self.gui:
+            case.plot(add_text='without polynomial')
 
 
 if __name__ == '__main__':
