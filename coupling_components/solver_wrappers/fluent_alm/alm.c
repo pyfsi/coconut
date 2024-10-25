@@ -17,7 +17,6 @@
 #endif /* RP_3D */
 #define NSCALARS (SCALAR_V+1+2*(ND_ND-2))
 
-
 /* User-defined memory */
 #define UDMI_FMAG 0
 #define UDMI_SX 1
@@ -80,6 +79,7 @@ void read_yarn_points(char file_name[256])
 #if RP_HOST
     FILE *input;
     int n_points, point, d;
+    real mag;
 
     if (NULLP(input = fopen(file_name, "r"))) {
         Error("\nUDF-error: Unable to open %s for reading\n", file_name);
@@ -104,6 +104,8 @@ void read_yarn_points(char file_name[256])
                 fscanf(input, "%lf", &yarn_tangent[point][d-ND_ND]);
             }
         }
+        mag = NV_MAG(yarn_tangent[point]);
+        NV_S(yarn_tangent[point], /=, mag);
     }
     fclose(input);
 
@@ -153,6 +155,11 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
         if (point_struct[point].found && (myid == point_struct[point].highest_partition))
         {
             nwithforce++;
+        }
+        else if (!point_struct[point].found)
+        {
+            /* Assign a processor to this yarn point, so that all the points get a processor. Divise equally. */
+            point_struct[point].highest_partition = point % compute_node_count;
         }
     }
 
@@ -253,77 +260,77 @@ void calculate_air_velocity_density_yarn_orientation()
     /* Synchronize velocities over different processors, as this is needed to compute the new sampling point */
     PRF_GRSUM(&sampled_velocity[0][0][0], NYARNPOINTS*2*ND_ND, work);
 
-    /* Get sampling point from velocity at actuator point*/
+    /* Get sampling point from velocity at actuator point */
     for (point = 0; point < NYARNPOINTS; point++)
     {
-        NV_VV(e_v, =, sampled_velocity[point][0], -, yarn_velocities[point]);  // Compute relative velocity
-        NV_S(sampled_velocity[point][0], =, 0.0);   // Clear stored velocity
-        mag = NV_MAG(e_v);
-        if (mag > DBL_EPSILON)
+        if (yarn_points[point].found)
         {
-            NV_S(e_v, /=, mag);
-        }
-        else
-        {
-            NV_S(e_v, *=, 0.0);
-        }
-        mag = NV_MAG(yarn_tangent[point]);
-        NV_S(yarn_tangent[point], /=, mag);
-//        r = G_EPS * sqrt(-log(0.01));  // Sample at radius where force influence reaches 1% of peak value
-        r = YARN_DIAMETER;  // Sample at radius equal to yarn diameter
-        local_theta[point] = acos(NV_DOT(e_v, yarn_tangent[point]));
-
-        /* Cross-flow component */
-        NV_V_VS(e_drag, =, e_v, -, yarn_tangent[point], *, NV_DOT(e_v, yarn_tangent[point]));
-        mag = NV_MAG(e_drag);
-        if (mag > DBL_EPSILON)
-        {
-            NV_S(e_drag, /=, mag);
-        }
-        else
-        {
-            NV_S(e_drag, *=, 0.0);
-        }
-        NV_V_VS(sample_coordinates[point][0], =, yarn_coordinates[point], -, e_drag, *, r);
-
-        /* Axial flow component, only implemented for 3D! */
-        real base_vec[3], u[3], e_z[3];
-        real alpha_inc, beta;
-
-        NV_S(e_z, =, 0.0);
-        e_z[2] = 1.0;
-        alpha_inc = 2*M_PI/N_CIRC_S;
-
-        /* Construct rotation vector */
-        NV_CROSS(u, e_z, yarn_tangent[point]);
-        mag = NV_MAG(u);
-        beta = asin(mag);
-        if (mag > DBL_EPSILON)
-        {
-            NV_S(u, /=, mag);
-        }
-        else
-        {
-            NV_S(u, *=, 0.0);
-        }
-
-        for (n = 0; n < N_CIRC_S; n++)
-        {
-            /* Construct circle points in xy-plane around origin */
-            base_vec[0] = r*cos(alpha_inc*n);
-            base_vec[1] = r*sin(alpha_inc*n);
-            base_vec[2] = 0.0;
-
-            /* Construct rotated circle points */
-            if (abs(beta) > DBL_EPSILON)
+            NV_VV(e_v, =, sampled_velocity[point][0], -, yarn_velocities[point]);  // Compute relative velocity
+            NV_S(sampled_velocity[point][0], =, 0.0);   // Clear stored velocity
+            mag = NV_MAG(e_v);
+            if (mag > DBL_EPSILON)
             {
-                sample_coordinates[point][n+1][0] = yarn_coordinates[point][0] + (cos(beta)+u[0]*u[0]*(1-cos(beta)))*base_vec[0] + (u[0]*u[1]*(1-cos(beta))-u[2]*sin(beta))*base_vec[1];
-                sample_coordinates[point][n+1][1] = yarn_coordinates[point][1] + (u[1]*u[0]*(1-cos(beta))+u[2]*sin(beta))*base_vec[0] + (cos(beta)+u[1]*u[1]*(1-cos(beta)))*base_vec[1];
-                sample_coordinates[point][n+1][2] = yarn_coordinates[point][2] + (u[2]*u[0]*(1-cos(beta))-u[1]*sin(beta))*base_vec[0] + (u[2]*u[1]*(1-cos(beta))+u[0]*sin(beta))*base_vec[1];
+                NV_S(e_v, /=, mag);
             }
-            else  // yarn_tangent is already aligned with e_z: no rotation possible/needed
+            else
             {
-                NV_VV(sample_coordinates[point][n+1], =, yarn_coordinates[point], +, base_vec);
+                NV_S(e_v, *=, 0.0);
+            }
+            r = YARN_DIAMETER;  // Sample at radius equal to yarn diameter
+            local_theta[point] = acos(NV_DOT(e_v, yarn_tangent[point]));
+
+            /* Cross-flow component */
+            NV_V_VS(e_drag, =, e_v, -, yarn_tangent[point], *, NV_DOT(e_v, yarn_tangent[point]));
+            mag = NV_MAG(e_drag);
+            if (mag > DBL_EPSILON)
+            {
+                NV_S(e_drag, /=, mag);
+            }
+            else
+            {
+                NV_S(e_drag, *=, 0.0);
+            }
+            NV_V_VS(sample_coordinates[point][0], =, yarn_coordinates[point], -, e_drag, *, r);
+
+            /* Axial flow component, only implemented for 3D! */
+            real base_vec[3], u[3], e_z[3];
+            real alpha_inc, beta;
+
+            NV_S(e_z, =, 0.0);
+            e_z[2] = 1.0;
+            alpha_inc = 2*M_PI/N_CIRC_S;
+
+            /* Construct rotation vector */
+            NV_CROSS(u, e_z, yarn_tangent[point]);
+            mag = NV_MAG(u);
+            beta = asin(mag);
+            if (mag > DBL_EPSILON)
+            {
+                NV_S(u, /=, mag);
+            }
+            else
+            {
+                NV_S(u, *=, 0.0);
+            }
+
+            for (n = 0; n < N_CIRC_S; n++)
+            {
+                /* Construct circle points in xy-plane around origin */
+                base_vec[0] = r*cos(alpha_inc*n);
+                base_vec[1] = r*sin(alpha_inc*n);
+                base_vec[2] = 0.0;
+
+                /* Construct rotated circle points */
+                if (abs(beta) > DBL_EPSILON)
+                {
+                    sample_coordinates[point][n+1][0] = yarn_coordinates[point][0] + (cos(beta)+u[0]*u[0]*(1-cos(beta)))*base_vec[0] + (u[0]*u[1]*(1-cos(beta))-u[2]*sin(beta))*base_vec[1];
+                    sample_coordinates[point][n+1][1] = yarn_coordinates[point][1] + (u[1]*u[0]*(1-cos(beta))+u[2]*sin(beta))*base_vec[0] + (cos(beta)+u[1]*u[1]*(1-cos(beta)))*base_vec[1];
+                    sample_coordinates[point][n+1][2] = yarn_coordinates[point][2] + (u[2]*u[0]*(1-cos(beta))-u[1]*sin(beta))*base_vec[0] + (u[2]*u[1]*(1-cos(beta))+u[0]*sin(beta))*base_vec[1];
+                }
+                else  // yarn_tangent is already aligned with e_z: no rotation possible/needed
+                {
+                    NV_VV(sample_coordinates[point][n+1], =, yarn_coordinates[point], +, base_vec);
+                }
             }
         }
     }
@@ -352,7 +359,10 @@ void calculate_air_velocity_density_yarn_orientation()
     /* Synchronize sum of weights across processors */
     for (point = 0; point < NYARNPOINTS; point ++)
     {
-        PRF_GRSUM(&yarn_points[point].vs_w[0], N_CIRC_S+1, iwork);
+        if (yarn_points[point].found)
+        {
+            PRF_GRSUM(&yarn_points[point].vs_w[0], N_CIRC_S+1, iwork);
+        }
     }
 
     /* Integral velocity sampling at new sample points */
@@ -437,7 +447,7 @@ void calculate_air_velocity_density_yarn_orientation()
             }
             air_values[point][SCALAR_THETA] = acos(dot_prod);
         }
-        else if ((!yarn_points[point].found) && (myid == 0))
+        else if ((!yarn_points[point].found) && (myid == yarn_points[point].highest_partition))
         {
             /* If yarn is out of domain: set atmospheric values and zero flow velocity, but compute on one core only */
             air_values[point][SCALAR_R] = P_ATM / (R * T_ATM);
@@ -672,13 +682,21 @@ DEFINE_ON_DEMAND(store_velocities)
         Error("\nUDF-error: Unable to open %s for writing\n", output_file_name);
         exit(1);
     }
-    fprintf(output, "%27s %27s %27s  %10s\n","x-velocity [m/s]", "y-velocity [m/s]", "z-velocity [m/s]", "unique-ids");
+    fprintf(output, "%27s %27s %27s %27s %27s %27s %27s %27s %27s  %10s\n","x-velocity [m/s]", "y-velocity [m/s]", "z-velocity [m/s]", "theta [rad]", "dp/dx [Pa/m]", "dp/dy [Pa/m]", "dp/dz [Pa/m]", "rho [kg/m³]", "µ [Pa s]",  "unique-ids");
 	for (point = 0; point < NYARNPOINTS; point++)
 	{
 	    for (d = 0; d < ND_ND; d++)
 	    {
 		    fprintf(output, "%27.17e ", air_values[point][SCALAR_U+d]);
 	    }
+	    fprintf(output, "%27.17e ", air_values[point][SCALAR_THETA]);
+	    fprintf(output, "%27.17e ", air_values[point][SCALAR_PX]);
+	    fprintf(output, "%27.17e ", air_values[point][SCALAR_PY]);
+#if RP_3D
+	    fprintf(output, "%27.17e ", air_values[point][SCALAR_PZ]);
+#endif /* RP_3D */
+	    fprintf(output, "%27.17e ", air_values[point][SCALAR_R]);
+	    fprintf(output, "%27.17e ", air_values[point][SCALAR_MU]);
 		fprintf(output, " %10d\n", point);
 	}
 	fclose(output);
@@ -774,7 +792,7 @@ DEFINE_ADJUST(set_source, domain)
                         p_s = 0.0;
                         p_n = NV_MAG(r);
                     }
-                    else if (p_s > 1.0)
+                    else // if (p_s > 1.0)
                     {
                         p_s = 1.0;
                         p_n = NV_MAG(r_n);
