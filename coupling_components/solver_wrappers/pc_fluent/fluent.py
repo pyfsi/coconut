@@ -408,7 +408,8 @@ class SolverWrapperPCFluent(SolverWrapper):
             if "nodes" in mp_name and "displacement" in item["variables"]:
                 if self.conservative:
                     self.internal_settings.append({"model_part": mp_name, "variables": ["displacement", "prev_disp", "area"]})
-                    self.settings['interface_input'][j]["variables"].append("prev_disp")
+                    self.settings['interface_output'][j]["variables"].append("prev_disp")
+                    self.settings['interface_output'][j]["variables"].append("1ts_disp")
                 else:
                     self.internal_settings.append({"model_part": mp_name, "variables": ["displacement"]})
 
@@ -464,7 +465,12 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         if "displacement" in self.output_variables:
             # map output node displacement to face displacement
-            self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal)
+            #TODO: converged node displacement should be mapped to prev. face displacement
+            self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal, conservative=self.conservative)
+            if self.conservative:
+                for item in self.settings['interface_output']:
+                    mp_name = item['model_part']
+                    self.interface_output.set_variable_data(mp_name, "prev_disp", self.interface_output.get_variable_data(mp_name, "displacement"))
 
             # write interface output data at new time step
             self.write_output_to_file("displacement")
@@ -532,21 +538,56 @@ class SolverWrapperPCFluent(SolverWrapper):
                         scalar = scalar_tmp[args]
                         ids = ids_tmp[args]
 
-                        # store vector and scalar values in interface
-                        model_part = self.model.get_model_part(mp_name)
-                        if ids.size != model_part.size:
-                            raise ValueError('Size of data does not match size of ModelPart')
-                        if not np.all(ids == model_part.id):
-                            raise ValueError('IDs of data do not match ModelPart IDs')
+                        if var == 'displacement' and self.thermal_bc == "heat_flux":
+                            if "nodes" not in mp_name:
+                                raise ValueError('Model part must be node-based for the displacement variable')
 
-                        if var == 'pressure':
-                            self.interface_output.set_variable_data(mp_name, 'traction', vector)
-                            self.interface_output.set_variable_data(mp_name, var, scalar)
-                        elif var == 'traction':
-                            self.interface_output.set_variable_data(mp_name, var, vector)
-                            self.interface_output.set_variable_data(mp_name, 'pressure', scalar)
-                        elif var == 'heat_flux':
-                            self.interface_output.set_variable_data(mp_name, var, scalar)
+                            model_part = self.internal_model.get_model_part(mp_name)
+                            if ids.size != model_part.size:
+                                raise ValueError('Size of data does not match size of ModelPart')
+                            if not np.all(ids == model_part.id):
+                                raise ValueError('IDs of data do not match ModelPart IDs')
+
+                            if self.conservative:
+                                self.interface_internal.set_variable_data(mp_name, var, vector)
+                                self.interface_internal.set_variable_data(mp_name, "area", scalar)
+                            else:
+                                # fetch face displacement of previous time step & update to new time step
+                                prev_disp = self.interface_internal.get_variable_data(mp_name, 'displacement')
+                                displacement_new = prev_disp + vector
+                                self.interface_internal.set_variable_data(mp_name, var, displacement_new)
+
+                            # map face displacement to node displacement
+                            self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output, conservative=self.conservative)
+
+                            # calculate full node displacement in case of the conservative mapper
+                            if self.conservative:
+                                full_disp = self.interface_output.get_variable_data(mp_name, "prev_disp") + self.interface_output.get_variable_data(mp_name, "1ts_disp")
+                                self.interface_output.set_variable_data(mp_name, var, full_disp)
+
+                            # write nodes_update file for move nodes udf in solid domain
+                            self.write_output_to_file(var)
+
+                            # reset face displacement to converged position of previous time step (avoid accumulation)
+                            if not self.conservative:
+                                self.interface_internal.set_variable_data(mp_name, var, displacement)
+
+                        else:
+                            # store vector and scalar values in interface
+                            model_part = self.model.get_model_part(mp_name)
+                            if ids.size != model_part.size:
+                                raise ValueError('Size of data does not match size of ModelPart')
+                            if not np.all(ids == model_part.id):
+                                raise ValueError('IDs of data do not match ModelPart IDs')
+
+                            if var == 'pressure':
+                                self.interface_output.set_variable_data(mp_name, 'traction', vector)
+                                self.interface_output.set_variable_data(mp_name, var, scalar)
+                            elif var == 'traction':
+                                self.interface_output.set_variable_data(mp_name, var, vector)
+                                self.interface_output.set_variable_data(mp_name, 'pressure', scalar)
+                            elif var == 'heat_flux':
+                                self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
                         # get face coordinates and ids
@@ -559,39 +600,14 @@ class SolverWrapperPCFluent(SolverWrapper):
                         vector = vector_tmp[args, :]
                         ids = ids_tmp[args]
 
-                        if var == 'displacement' and self.thermal_bc == "heat_flux":
-                            if "nodes" not in mp_name:
-                                raise ValueError('Model part must be node-based for the displacement variable')
+                        # store vector values in interface
+                        model_part = self.model.get_model_part(mp_name)
+                        if ids.size != model_part.size:
+                            raise ValueError('Size of data does not match size of ModelPart')
+                        if not np.all(ids == model_part.id):
+                            raise ValueError('IDs of data do not match ModelPart IDs')
 
-                            displacement = self.interface_internal.get_variable_data(mp_name, 'displacement')
-                            displacement_new = displacement + vector
-
-                            model_part = self.internal_model.get_model_part(mp_name)
-                            if ids.size != model_part.size:
-                                raise ValueError('Size of data does not match size of ModelPart')
-                            if not np.all(ids == model_part.id):
-                                raise ValueError('IDs of data do not match ModelPart IDs')
-
-                            self.interface_internal.set_variable_data(mp_name, var, displacement_new)
-
-                            # map face displacement to node displacement
-                            self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output)
-
-                            # write nodes_update file for move nodes udf in solid domain
-                            self.write_output_to_file(var)
-
-                            # reset face displacement to converged position of previous time step (avoid accumulation)
-                            self.interface_internal.set_variable_data(mp_name, var, displacement)
-
-                        else:
-                            # store vector values in interface
-                            model_part = self.model.get_model_part(mp_name)
-                            if ids.size != model_part.size:
-                                raise ValueError('Size of data does not match size of ModelPart')
-                            if not np.all(ids == model_part.id):
-                                raise ValueError('IDs of data do not match ModelPart IDs')
-
-                            self.interface_output.set_variable_data(mp_name, var, vector)
+                        self.interface_output.set_variable_data(mp_name, var, vector)
 
                     if accepted_variables_pc['out'][var][1] == 1:
                         # get face coordinates and ids

@@ -3,6 +3,7 @@ variables_dimensions = {
                         'traction': 3,
                         'displacement': 3,
                         'prev_disp': 3,
+                        '1ts_disp': 3,
                         'density': 1,
                         'area': 1,
                         'heat_flux': 1,
@@ -25,7 +26,7 @@ accepted_variables_pc = {
         'traction': ['repeat', 0], # catch variable stored in the same file to avoid double reading of the same file
         'temperature': ['temperature', 1],
         'heat_flux': ['heat_flux', 0],
-        'displacement': ['displacement', 3]
+        'displacement': ['displacement', 0]
     }
 }
 

@@ -706,6 +706,8 @@ DEFINE_ON_DEMAND(store_temperature){
 DEFINE_ON_DEMAND(store_heat_flux){
     /* Similar as the function store_temperature, but now the heat flux and its magnitude projected on the normal
     direction outwards of the faces is stored in a file heat_flux_timestep%i_thread%i.dat. */
+    // TODO: remove vector array, only scalar value of heat flux
+
     if (myid == 0) {printf("\nStarted UDF store_heat_flux.\n"); fflush(stdout);}
 
     /* declaring variables */
@@ -1476,6 +1478,7 @@ DEFINE_ON_DEMAND(write_displacement) {
     int thread, n, i, d, compute_node; /* Check if all variables necessary */
     DECLARE_MEMORY_N(disp, real, ND_ND); // displacement vector
     DECLARE_MEMORY_N(ids, int, mnpf);
+    DECLARE_MEMORY(face_area, real);
     int timestep;
 
 #if RP_NODE
@@ -1510,10 +1513,10 @@ DEFINE_ON_DEMAND(write_displacement) {
 
 #if RP_2D
         fprintf(file, "%27s %27s %10s\n",
-            "x-disp", "y-disp", "unique-ids");
+            "x-disp", "y-disp", "area", "unique-ids");
 #else /* RP_2D */
         fprintf(file, "%27s %27s %27s %10s\n",
-            "x-disp", "y-disp", "z-disp", "unique-ids");
+            "x-disp", "y-disp", "z-disp", "area", "unique-ids");
 
 #endif /* RP_2D */
 #endif /* RP_HOST */
@@ -1528,6 +1531,7 @@ DEFINE_ON_DEMAND(write_displacement) {
         /* assign memory on compute node that accesses its partition of the face_thread */
         ASSIGN_MEMORY_N(disp, n, real, ND_ND);
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
+        ASSIGN_MEMORY_N(face_area, n, real);
 
         i = 0;
         thread_loop_c(t,domain)
@@ -1557,6 +1561,9 @@ DEFINE_ON_DEMAND(write_displacement) {
                             heat += BOUNDARY_HEAT_FLUX(face, face_thread); // [W]
                             F_AREA(area, face, face_thread);
                             NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
+
+                            /* store face area of cell */
+                            face_area[i] = NV_MAG(area) // [m^2]
 
                             /* loop over all nodes in the face */
                             j = 0;
@@ -1610,10 +1617,12 @@ DEFINE_ON_DEMAND(write_displacement) {
 
         PRF_CSEND_REAL_N(compute_node, disp, n, myid, ND_ND);
         PRF_CSEND_INT_N(compute_node, ids, n, myid, mnpf);
+        PRF_CSEND_REAL(compute_node, face_area, n, myid);
 
         /* memory can be freed once the data is sent */
         RELEASE_MEMORY_N(disp, ND_ND);
         RELEASE_MEMORY_N(ids, mnpf);
+        RELEASE_MEMORY(face_area);
 
         /* node_zero is the only one that can communicate with host, so it first receives from the other nodes, then
         sends to the host */
@@ -1627,10 +1636,12 @@ DEFINE_ON_DEMAND(write_displacement) {
                 depends on the partition assigned to the sending compute node. */
                 ASSIGN_MEMORY_N(disp, n, real, ND_ND);
                 ASSIGN_MEMORY_N(ids, n, int, mnpf);
+                ASSIGN_MEMORY(face_area, n, real);
 
                 /* receive the 2D-arrays from the other nodes on node_zero */
                 PRF_CRECV_REAL_N(compute_node, disp, n, compute_node, ND_ND);
                 PRF_CRECV_INT_N(compute_node, ids, n, compute_node, mnpf);
+                PRF_CRECV_REAL(compute_node, face_area, n, compute_node);
 
                 /* Send the variables to the host. Deviating from the tag convention, the message tag is now the
                 original non-zero compute node on which the mesh data was stored, even though node 0 does the actual
@@ -1639,10 +1650,12 @@ DEFINE_ON_DEMAND(write_displacement) {
 
                 PRF_CSEND_REAL_N(node_host, disp, n, compute_node, ND_ND);
                 PRF_CSEND_INT_N(node_host, ids, n, compute_node, mnpf);
+                PRF_CSEND_REAL(node_host, face_area, n, compute_node);
 
                 /* once all data has been sent to host, memory on the node can be freed */
                 RELEASE_MEMORY_N(disp, ND_ND);
                 RELEASE_MEMORY_N(ids, mnpf);
+                RELEASE_MEMORY(face_area);
             }
         }
 #endif /* RP_NODE */
@@ -1655,15 +1668,18 @@ DEFINE_ON_DEMAND(write_displacement) {
             /* once n has been received, the correct amount of memory can be allocated on the host */
             ASSIGN_MEMORY_N(disp, n, real, ND_ND);
             ASSIGN_MEMORY_N(ids, n, int, mnpf);
+            ASSIGN_MEMORY(face_area, n, real);
 
             /* receive the 2D-arrays from node_zero */
-            PRF_CRECV_REAL_N(node_zero,disp, n, compute_node, ND_ND);
+            PRF_CRECV_REAL_N(node_zero, disp, n, compute_node, ND_ND);
             PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
+            PRF_CRECV_REAL(node_zero, face_area, n, compute_node);
 
             for (i = 0; i < n; i++) {
                 for (d = 0; d < ND_ND; d++) {
                     fprintf(file, "%27.17e ", disp[d][i]);
                 }
+                fprintf(file, "%27.17e ", face_area[i]);
                 for (d = 0; d < mnpf; d++) {
                     fprintf(file, " %10d", ids[d][i]);
                 }
@@ -1672,6 +1688,7 @@ DEFINE_ON_DEMAND(write_displacement) {
             /* after files have been appended, the memory can be freed */
             RELEASE_MEMORY_N(disp, ND_ND);
             RELEASE_MEMORY_N(ids, mnpf);
+            RELEASE_MEMORY(face_area);
         } /* close compute_node_loop */
 
         fclose(file);
