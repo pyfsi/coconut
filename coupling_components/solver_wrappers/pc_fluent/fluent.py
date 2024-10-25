@@ -81,6 +81,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         self.moving_boundary = self.pc_settings.get('moving_boundary', True)
         self.mapping_domain = self.pc_settings.get('mapping_domain', None)
         self.mapping_limits = self.pc_settings.get('mapping_limits', None)
+        self.conservative = self.pc_settings.get('mapping_conservative', False)
 
         self.output_ini_cond = {}
         self.output_variables = []
@@ -348,7 +349,7 @@ class SolverWrapperPCFluent(SolverWrapper):
             self.model.create_model_part(mp_name, x0, y0, z0, ids)
 
         # create output ModelParts (nodes or faces)
-        for item in self.settings['interface_output']:
+        for j, item in enumerate(self.settings['interface_output']):
             mp_name = item['model_part']
 
             # get face thread ID that corresponds to ModelPart
@@ -401,8 +402,15 @@ class SolverWrapperPCFluent(SolverWrapper):
             elif "nodes" in mp_name:
                 self.model.create_model_part(mp_name, x0_n, y0_n, z0_n, ids_n)
                 # mp in internal_model has "nodes" in name, but has coordinates and ids of faces
-                self.internal_settings.append({"model_part": mp_name, "variables": ["displacement"]})
                 self.internal_model.create_model_part(mp_name, x0, y0, z0, ids)
+
+            # create or append interface settings
+            if "nodes" in mp_name and "displacement" in item["variables"]:
+                if self.conservative:
+                    self.internal_settings.append({"model_part": mp_name, "variables": ["displacement", "prev_disp", "area"]})
+                    self.settings['interface_input'][j]["variables"].append("prev_disp")
+                else:
+                    self.internal_settings.append({"model_part": mp_name, "variables": ["displacement"]})
 
             # create initial conditions at output interface
             if self.ini_condition is not None:
@@ -426,14 +434,21 @@ class SolverWrapperPCFluent(SolverWrapper):
                             self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
         if "displacement" in self.output_variables:
+            mapper = "mappers."
+            if self.conservative:
+                mapper += "linear_conservative"
+            else:
+                mapper += "linear_bounded"
+
             # create, initialize and query face to node (f2n) displacement mapper
-            f2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear_bounded",
+            f2n_settings = {"type": "mappers.interface", "settings": {"type": mapper,
                                                                          "settings": {"directions": ["x", "y"],
                                                                                       "check_bounding_box": False,
                                                                                       "domain": self.mapping_domain,
                                                                                       "limits": self.mapping_limits}}}
             self.mapper_f2n = tools.create_instance(f2n_settings)
             self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
+
             # create, initialize and query node to face (n2f) displacement mapper
             n2f_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
                                                                       "settings": {"directions": ["x", "y"],

@@ -7,10 +7,10 @@ from scipy.spatial import cKDTree
 from multiprocessing import Pool, cpu_count
 
 def create(parameters):
-    return MapperLinearBounded(parameters)
+    return MapperLinearConservative(parameters)
 
-# Class MapperLinearBounded: linear interpolation with projection of nodes at boundaries.
-class MapperLinearBounded(Component):
+# Class MapperLinearConservative: linear interpolation with projection of nodes at boundaries + volume conservation at cell level.
+class MapperLinearConservative(Component):
     def __init__(self, parameters):
         """
         geometrical calculations:
