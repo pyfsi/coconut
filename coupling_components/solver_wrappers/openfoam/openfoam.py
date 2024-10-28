@@ -22,6 +22,12 @@ class SolverWrapperOpenFOAM(SolverWrapper):
     version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input & output variables for OpenFOAM solver wrapper
+    accepted_out_var = ['pressure', 'traction']
+    accepted_in_var = ['displacement']
+    error_out = f'Only permitted output variables are pressure and traction for OpenFOAM.'
+    error_in = f'Only permitted input variable is displacement for OpenFOAM'
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)

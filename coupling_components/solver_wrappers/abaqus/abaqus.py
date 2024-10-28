@@ -23,6 +23,12 @@ class SolverWrapperAbaqus(SolverWrapper):
     version = None  # Abaqus version, e.g. 2022, set in subclass
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
+    # define input & output variables for Abaqus solver wrapper
+    accepted_out_var = ['displacement']
+    accepted_in_var = ['pressure', 'traction']
+    error_out = f'Only permitted output variable is displacement for Abaqus'
+    error_in = f'Only permitted input variables are pressure and traction for Abaqus.'
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
