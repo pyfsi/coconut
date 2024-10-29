@@ -23,7 +23,7 @@ accepted_variables_pc = {
     },
     'out':{
         'pressure': ['pressure_traction', 0],
-        'traction': ['repeat', 0], # catch variable stored in the same file to avoid double reading of the same file
+        'traction': ['skip', 0], # catch variable stored in the same file to avoid double reading of the same file
         'temperature': ['temperature', 1],
         'heat_flux': ['heat_flux', 0],
         'displacement': ['displacement', 0]
@@ -38,7 +38,7 @@ accepted_variables_cht = {
     },
     'out':{
         'pressure': ['pressure_traction', 0],
-        'traction': ['repeat', 0], # catch variable stored in the same file to avoid double reading of the same file
+        'traction': ['skip', 0], # catch variable stored in the same file to avoid double reading of the same file
         'temperature': ['temperature', 1],
         'heat_flux': ['heat_flux', 0]
     }

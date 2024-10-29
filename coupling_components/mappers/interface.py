@@ -45,7 +45,6 @@ class MapperInterface(Component):
         for mapper in self.mappers.values():
             mapper.output_solution_step()
 
-    #TODO: bundle both f2n and n2f functions together in a later stage
     def map_f2n(self, interface_from, interface_to, conservative=False):
         # loop over ModelParts and variables
         for pair_from in interface_from.model_part_variable_pairs:

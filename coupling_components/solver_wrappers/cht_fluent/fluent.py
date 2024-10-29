@@ -461,7 +461,7 @@ class SolverWrapperCHTFluent(SolverWrapper):
             for var in self.output_variables:
                 pre = accepted_variables_cht['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
-                if pre != 'repeat':
+                if pre != 'skip':
                     tmp = pre + f'_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     data = np.loadtxt(file_name, skiprows=1)
@@ -572,7 +572,7 @@ class SolverWrapperCHTFluent(SolverWrapper):
         if not self.debug:
             for thread_id in self.thread_ids.values():
                 for var in self.output_variables:
-                    if accepted_variables_cht['out'][var][0] != 'repeat':
+                    if accepted_variables_cht['out'][var][0] != 'skip':
                         try:
                             os.remove(join(self.dir_cfd, accepted_variables_cht['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:

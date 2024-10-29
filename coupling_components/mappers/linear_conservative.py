@@ -134,23 +134,6 @@ class MapperLinearConservative(Component):
         # check for duplicate points
         self.check_duplicate_points(model_part_from)
 
-        # calculate coefficients
-        iterable = []
-        for i_to in range(self.n_to):
-            nearest = self.nearest[i_to, :]
-            iterable.append((self.coords_from[nearest, :], self.coords_to[i_to, :]))
-
-        if self.parallel:
-            processes = cpu_count()
-            with Pool(processes=processes) as pool:
-                # optimal chunksize automatically calculated
-                out = pool.starmap(get_coeffs, iterable)
-            self.coeffs = np.vstack(tuple(out))
-        else:
-            self.coeffs = np.zeros(self.nearest.shape)
-            for i_to, tup in enumerate(iterable):
-                self.coeffs[i_to, :] = get_coeffs(*tup).flatten()
-
         # Find indices of nodes on domain boundaries
         self.boundary_ind, self.boundary_name = find_boundary_nodes(self.coords_to, self.vertices)
         self.boundary_nodes = self.coords_to[self.boundary_ind]
@@ -186,17 +169,60 @@ class MapperLinearConservative(Component):
         # check variables
         if var_from not in variables_dimensions:
             raise NameError(f'Variable "{var_from}" does not exist')
-        if var_from != var_to:
-            raise TypeError('Variables must be equal')
+        if var_to not in variables_dimensions:
+            raise NameError(f'Variable "{var_to}" does not exist')
 
-        # interpolation
+        # recalculate coefficients based on new face position
+        iterable = []
+        for i_to in range(self.n_to):
+            nearest = self.nearest[i_to, :]
+            iterable.append((self.coords_from[nearest, :], self.coords_to[i_to, :]))
+
+        if self.parallel:
+            processes = cpu_count()
+            with Pool(processes=processes) as pool:
+                # optimal chunksize automatically calculated
+                out = pool.starmap(get_coeffs, iterable)
+            self.coeffs = np.vstack(tuple(out))
+        else:
+            self.coeffs = np.zeros(self.nearest.shape)
+            for i_to, tup in enumerate(iterable):
+                self.coeffs[i_to, :] = get_coeffs(*tup).flatten()
+
+        # interpolate and project shifted boundary nodes on domain boundary
         data_from = interface_from.get_variable_data(mp_name_from, var_from)
         data_to = interface_to.get_variable_data(mp_name_to, var_to)
+
+        data_itp = self.interpolate(data_from, data_to)
+
+        # print for debugging
+        area = interface_from.get_variable_data(mp_name_from, 'area')
+        print('area:')
+        print(np.shape(area))
+        print('\n')
+        dx = np.linalg.norm(data_from, axis=1)
+        print('dx:')
+        print(np.shape(dx))
+        print('\n')
+        prev_disp = interface_to.get_variable_data(mp_name_to, 'prev_disp')
+        new_disp = prev_disp + data_itp
+        print('previous node position:')
+        print(np.shape(prev_disp))
+        print('\n')
+        print('new node position:')
+        print(np.shape(new_disp))
+        print('\n')
+
+        # Set mapped varaible data
+        interface_to.set_variable_data(mp_name_to, var_to, data_itp)
+
+    def interpolate(self, data_from, data_to):
+        # interpolation
         for i in range(data_to.shape[0]):
             for j in range(data_to.shape[1]):
                 data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest[i, :], j])
 
-        # project shifted boundary nodes on domain boundary
+        # boundary projection
         if np.size(self.boundary_ind) >= 1:
             moved_boundary_nodes = self.boundary_nodes_3D + data_to[self.boundary_ind]
             moved_neighbour_nodes = self.neighbour_nodes_3D + data_to[self.neighbour][0]
@@ -216,8 +242,7 @@ class MapperLinearConservative(Component):
                 data_to[int(self.boundary_ind[i]), 0] = disp_x
                 data_to[int(self.boundary_ind[i]), 1] = disp_y
 
-        # Set mapped varaible data
-        interface_to.set_variable_data(mp_name_to, var_to, data_to)
+        return data_to
 
     def check_duplicate_points(self, model_part_from):
         # checks only from-points
@@ -324,6 +349,7 @@ def find_boundary_nodes(coords, rect_vertices):
 
     return boundary_indices, boundary_names
 
+#TODO: check if pprojection still valid
 def intersect(param, boundary_name, vertices):
     """
     Finds the intersection point of two lines:

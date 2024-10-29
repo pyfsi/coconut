@@ -1531,7 +1531,7 @@ DEFINE_ON_DEMAND(write_displacement) {
         /* assign memory on compute node that accesses its partition of the face_thread */
         ASSIGN_MEMORY_N(disp, n, real, ND_ND);
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
-        ASSIGN_MEMORY_N(face_area, n, real);
+        ASSIGN_MEMORY(face_area, n, real);
 
         i = 0;
         thread_loop_c(t,domain)

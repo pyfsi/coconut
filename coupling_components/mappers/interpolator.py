@@ -101,7 +101,8 @@ class MapperInterpolator(Component):
         if var_from not in variables_dimensions:
             raise NameError(f'Variable "{var_from}" does not exist')
         if var_from != var_to:
-            raise TypeError('Variables must be equal')
+            if var_from != 'displacement' or var_to != 'prev_disp':
+                raise TypeError('Variables must be equal')
 
         # interpolation
         data_from = interface_from.get_variable_data(mp_name_from, var_from)

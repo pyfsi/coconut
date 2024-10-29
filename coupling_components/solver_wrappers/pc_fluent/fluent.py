@@ -299,10 +299,12 @@ class SolverWrapperPCFluent(SolverWrapper):
         # create Model used for coupling
         self.model = data_structure.Model()
 
-        # create Model used internally for face displacements
+        # create Model used internally for face (and node) displacements
         if "displacement" in self.output_variables:
             self.internal_model = data_structure.Model()
-            self.internal_settings = []
+            self.internal_face_settings = []
+            if self.conservative:
+                self.internal_node_settings = []
 
         # create input ModelParts (nodes for displacement, faces for temperature or heat flux)
         for item in (self.settings['interface_input']):
@@ -407,9 +409,8 @@ class SolverWrapperPCFluent(SolverWrapper):
             # create or append interface settings
             if "nodes" in mp_name and "displacement" in item["variables"]:
                 if self.conservative:
-                    self.internal_settings.append({"model_part": mp_name, "variables": ["displacement", "prev_disp", "area"]})
-                    self.settings['interface_output'][j]["variables"].append("prev_disp")
-                    self.settings['interface_output'][j]["variables"].append("1ts_disp")
+                    self.internal_face_settings.append({"model_part": mp_name, "variables": ["1ts_disp", "prev_disp", "area"]})
+                    self.internal_node_settings.append({"model_part": mp_name, "variables": ["displacement", "1ts_disp", "prev_disp"]})
                 else:
                     self.internal_settings.append({"model_part": mp_name, "variables": ["displacement"]})
 
@@ -422,7 +423,12 @@ class SolverWrapperPCFluent(SolverWrapper):
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
         if "displacement" in self.output_variables:
-            self.interface_internal = data_structure.Interface(self.internal_settings, self.internal_model)
+            if self.conservative:
+                self.interface_internal = data_structure.Interface(self.internal_face_settings, self.internal_model)
+                # create an output interface with additional variables to enable conservative mapping
+                self.interface_internal_nodes = data_structure.Interface(self.internal_node_settings, self.model)
+            else:
+                self.interface_internal = data_structure.Interface(self.internal_settings, self.internal_model)
 
         # set initial conditions at output interface
         for key in self.output_ini_cond:
@@ -441,21 +447,29 @@ class SolverWrapperPCFluent(SolverWrapper):
             else:
                 mapper += "linear_bounded"
 
-            # create, initialize and query face to node (f2n) displacement mapper
+            # create and initialize face to node (f2n) displacement mapper
             f2n_settings = {"type": "mappers.interface", "settings": {"type": mapper,
                                                                          "settings": {"directions": ["x", "y"],
                                                                                       "check_bounding_box": False,
                                                                                       "domain": self.mapping_domain,
                                                                                       "limits": self.mapping_limits}}}
             self.mapper_f2n = tools.create_instance(f2n_settings)
-            self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
+            self.mapper_f2n.initialize(self.interface_internal, self.interface_internal_nodes)
 
-            # create, initialize and query node to face (n2f) displacement mapper
+            # create and initialize node to face (n2f) displacement mapper
             n2f_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
                                                                       "settings": {"directions": ["x", "y"],
                                                                                    "check_bounding_box": False}}}
             self.mapper_n2f = tools.create_instance(n2f_settings)
-            self.mapper_n2f.initialize(self.interface_output, self.interface_internal)
+            self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
+
+            if self.conservative:
+                # create and initialize node to node (n2n) displacement mapper for output purposes
+                n2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest",
+                                                                          "settings": {"directions": ["x", "y"],
+                                                                                       "check_bounding_box": False}}}
+                self.mapper_n2n = tools.create_instance(n2n_settings)
+                self.mapper_n2n.initialize(self.interface_internal_nodes, self.interface_output)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -466,11 +480,11 @@ class SolverWrapperPCFluent(SolverWrapper):
         if "displacement" in self.output_variables:
             # map output node displacement to face displacement
             #TODO: converged node displacement should be mapped to prev. face displacement
-            self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal, conservative=self.conservative)
+            self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal, conservative=self.conservative)
             if self.conservative:
                 for item in self.settings['interface_output']:
                     mp_name = item['model_part']
-                    self.interface_output.set_variable_data(mp_name, "prev_disp", self.interface_output.get_variable_data(mp_name, "displacement"))
+                    self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
 
             # write interface output data at new time step
             self.write_output_to_file("displacement")
@@ -513,12 +527,9 @@ class SolverWrapperPCFluent(SolverWrapper):
             for var in dct['variables']:
                 prefix = accepted_variables_pc['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
-                if prefix != 'repeat':
+                if prefix != 'skip':
                     data = self.read_output_file(prefix, mp_name, thread_id)
-                    if prefix == "displacement" and self.thermal_bc != "heat_flux":
-                        # Displacement is directly known at nodes in liquid solver
-                        req_dim = accepted_variables_pc['out'][var][1] + 1
-                    elif accepted_variables_pc['out'][var][1] == 0:
+                    if accepted_variables_pc['out'][var][1] == 0:
                         req_dim = self.dimensions + 1 + self.mnpf
                     else:
                         req_dim = min([self.dimensions, accepted_variables_pc['out'][var][1]]) + self.mnpf
@@ -549,21 +560,25 @@ class SolverWrapperPCFluent(SolverWrapper):
                                 raise ValueError('IDs of data do not match ModelPart IDs')
 
                             if self.conservative:
-                                self.interface_internal.set_variable_data(mp_name, var, vector)
+                                self.interface_internal.set_variable_data(mp_name, "1ts_disp", vector)
                                 self.interface_internal.set_variable_data(mp_name, "area", scalar)
+
+                                # map face displacement to node displacement
+                                self.mapper_f2n.map_f2n(self.interface_internal, self.interface_internal_nodes, conservative=self.conservative)
                             else:
                                 # fetch face displacement of previous time step & update to new time step
                                 prev_disp = self.interface_internal.get_variable_data(mp_name, 'displacement')
                                 displacement_new = prev_disp + vector
                                 self.interface_internal.set_variable_data(mp_name, var, displacement_new)
 
-                            # map face displacement to node displacement
-                            self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output, conservative=self.conservative)
+                                # map face displacement to node displacement
+                                self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output, conservative=self.conservative)
 
                             # calculate full node displacement in case of the conservative mapper
                             if self.conservative:
-                                full_disp = self.interface_output.get_variable_data(mp_name, "prev_disp") + self.interface_output.get_variable_data(mp_name, "1ts_disp")
+                                full_disp = self.interface_internal_nodes.get_variable_data(mp_name, "prev_disp") + self.interface_internal_nodes.get_variable_data(mp_name, "1ts_disp")
                                 self.interface_output.set_variable_data(mp_name, var, full_disp)
+                                self.interface_internal_nodes.set_variable_data(mp_name, var, full_disp)
 
                             # write nodes_update file for move nodes udf in solid domain
                             self.write_output_to_file(var)
@@ -677,7 +692,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         if not self.debug:
             for thread_id in self.thread_ids.values():
                 for var in self.output_variables:
-                    if accepted_variables_pc['out'][var][0] != 'repeat':
+                    if accepted_variables_pc['out'][var][0] != 'skip':
                         try:
                             os.remove(join(self.dir_cfd, accepted_variables_pc['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:
