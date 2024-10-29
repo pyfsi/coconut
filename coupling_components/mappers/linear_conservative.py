@@ -3,6 +3,7 @@ from coconut import tools
 from coconut.data_structure.variables import variables_dimensions
 
 import numpy as np
+import math
 from scipy.spatial import cKDTree
 from multiprocessing import Pool, cpu_count
 
@@ -32,13 +33,15 @@ class MapperLinearConservative(Component):
         self.balanced_tree = self.settings.get('balanced_tree', False)
         self.check_bounding_box = self.settings.get('check_bounding_box', True)
         self.n_nearest = 0  # must be set in subclass!
+        self.tolerance = 1e-3 # include as setting?
+        self.max_iterations = 10
 
         # initialization
         self.n_from, self.n_to = None, None
         self.coords_from, self.coords_to = None, None
         self.tree = None
-        self.distances = None
-        self.nearest = None
+        self.nearest_faces = None
+        self.nearest_nodes = None
         self.coeffs = None
 
         # get list with directions
@@ -128,21 +131,15 @@ class MapperLinearConservative(Component):
         else:  # less stable
             self.tree = cKDTree(self.coords_from, balanced_tree=False)
 
-        self.distances, self.nearest = self.tree.query(self.coords_to, k=self.n_nearest)
-        self.nearest = self.nearest.reshape(-1, self.n_nearest)
+        _, self.nearest_faces = self.tree.query(self.coords_to, k=self.n_nearest)
+        self.nearest_faces = self.nearest_faces.reshape(-1, self.n_nearest)
 
-        # check for duplicate points
         self.check_duplicate_points(model_part_from)
 
+        # check for duplicate points
         # Find indices of nodes on domain boundaries
         self.boundary_ind, self.boundary_name = find_boundary_nodes(self.coords_to, self.vertices)
         self.boundary_nodes = self.coords_to[self.boundary_ind]
-
-        if np.shape(self.boundary_nodes)[1] == 2:
-            self.boundary_nodes_3D = np.append(self.boundary_nodes, np.zeros((np.shape(self.boundary_nodes)[0], 1)),
-                                               axis=1)
-        elif np.shape(self.boundary_nodes)[1] == 3:
-            self.boundary_nodes_3D = self.boundary_nodes
 
         # build and query TO (nodes) tree
         if self.balanced_tree:  # time-intensive
@@ -150,16 +147,13 @@ class MapperLinearConservative(Component):
         else:  # less stable
             self.node_tree = cKDTree(self.coords_to, balanced_tree=False)
 
+        _, self.nearest_nodes = self.node_tree.query(self.coords_from, k=self.n_nearest)
+        self.nearest_nodes = self.nearest_nodes.reshape(-1, self.n_nearest)
+
         if np.size(self.boundary_ind) >= 1:
             _, self.neighbour = self.node_tree.query(self.boundary_nodes, k=[2])
             self.neighbour = self.neighbour.reshape(-1, self.n_nearest)
             self.neighbour_nodes = self.coords_to[self.neighbour][0]
-
-            if np.shape(self.neighbour_nodes)[1] == 2:
-                self.neighbour_nodes_3D = np.append(self.neighbour_nodes,
-                                                    np.zeros((np.shape(self.neighbour_nodes)[0], 1)), axis=1)
-            elif np.shape(self.neighbour_nodes)[1] == 3:
-                self.neighbour_nodes_3D = self.neighbour_nodes
 
     def __call__(self, args_from, args_to):
         # unpack arguments
@@ -172,11 +166,21 @@ class MapperLinearConservative(Component):
         if var_to not in variables_dimensions:
             raise NameError(f'Variable "{var_to}" does not exist')
 
+        # find face & node displacement & position of previous time step
+        self.prev_disp_from = interface_from.get_variable_data(mp_name_from, 'prev_disp')[:, 0:len(self.directions)]
+        self.prev_coord_from = self.coords_from + self.prev_disp_from
+        self.prev_disp_to = interface_to.get_variable_data(mp_name_to, 'prev_disp')[:, 0:len(self.directions)]
+        self.prev_coord_to = self.coords_to + self.prev_disp_to
+
+        # update boundary & neighbour nodes
+        self.boundary_nodes = self.prev_coord_to[self.boundary_ind]
+        self.neighbour_nodes = self.prev_coord_to[self.neighbour][0]
+
         # recalculate coefficients based on new face position
         iterable = []
         for i_to in range(self.n_to):
-            nearest = self.nearest[i_to, :]
-            iterable.append((self.coords_from[nearest, :], self.coords_to[i_to, :]))
+            nearest = self.nearest_faces[i_to, :]
+            iterable.append((self.prev_coord_from[nearest, :], self.prev_coord_to[i_to, :]))
 
         if self.parallel:
             processes = cpu_count()
@@ -185,47 +189,67 @@ class MapperLinearConservative(Component):
                 out = pool.starmap(get_coeffs, iterable)
             self.coeffs = np.vstack(tuple(out))
         else:
-            self.coeffs = np.zeros(self.nearest.shape)
+            self.coeffs = np.zeros(self.nearest_faces.shape)
             for i_to, tup in enumerate(iterable):
                 self.coeffs[i_to, :] = get_coeffs(*tup).flatten()
 
-        # interpolate and project shifted boundary nodes on domain boundary
-        data_from = interface_from.get_variable_data(mp_name_from, var_from)
-        data_to = interface_to.get_variable_data(mp_name_to, var_to)
+        # get single time step displacements
+        data_from = interface_from.get_variable_data(mp_name_from, var_from)[:, 0:len(self.directions)]
+        data_to = interface_to.get_variable_data(mp_name_to, var_to)[:, 0:len(self.directions)]
 
-        data_itp = self.interpolate(data_from, data_to)
+        # initialise multiplication coefficients for face displacements
+        C = np.ones((self.n_from, 1))
+        C_prev = np.zeros((self.n_from, 1))
+        it = 0
+        # don't forget previous time step coefficients! Store somewhere (or don't overwrite with zeros)
 
-        # print for debugging
+        # calculate cell-based volume
         area = interface_from.get_variable_data(mp_name_from, 'area')
-        print('area:')
-        print(np.shape(area))
-        print('\n')
         dx = np.linalg.norm(data_from, axis=1)
-        print('dx:')
-        print(np.shape(dx))
-        print('\n')
-        prev_disp = interface_to.get_variable_data(mp_name_to, 'prev_disp')
-        new_disp = prev_disp + data_itp
-        print('previous node position:')
-        print(np.shape(prev_disp))
-        print('\n')
-        print('new node position:')
-        print(np.shape(new_disp))
-        print('\n')
+        dx = dx.reshape(self.n_from, 1)
+        cell_vol = area * dx
+        node_vol = np.zeros(np.shape(cell_vol))
 
-        # Set mapped varaible data
+        while np.linalg.norm(C - C_prev) > self.tolerance and it < self.max_iterations:
+            print('Residual: ', np.linalg.norm(C - C_prev))
+            C_prev = C
+            it += 1
+
+            # interpolate and project shifted boundary nodes on domain boundary
+            data_itp = self.interpolate(C * data_from, data_to)
+
+            # compare cell-based volume to node-based volume
+            for i, c_vol in enumerate(cell_vol):
+                nearest = self.nearest_nodes[i, :]
+                prev_coord = self.prev_coord_to[nearest, :]
+                new_coord = prev_coord + data_itp[nearest, :]
+                x = np.array([prev_coord[0][0], prev_coord[1][0], new_coord[0][0], new_coord[1][0]])
+                y = np.array([prev_coord[0][1], prev_coord[1][1], new_coord[0][1], new_coord[1][1]])
+                node_vol[i] = PolyArea(x, y)
+
+            C = cell_vol/node_vol
+
+            # relaxation?
+            # Newton-Raphson!
+
+        # add z-coordinate to data_itp
+        if np.shape(data_itp)[1] == 2:
+            data_itp = np.append(data_itp, np.zeros((np.shape(data_itp)[0], 1)), axis=1)
+
+        # Set mapped variable data
         interface_to.set_variable_data(mp_name_to, var_to, data_itp)
 
     def interpolate(self, data_from, data_to):
+
         # interpolation
         for i in range(data_to.shape[0]):
             for j in range(data_to.shape[1]):
-                data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest[i, :], j])
+                data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest_faces[i, :], j])
 
         # boundary projection
         if np.size(self.boundary_ind) >= 1:
-            moved_boundary_nodes = self.boundary_nodes_3D + data_to[self.boundary_ind]
-            moved_neighbour_nodes = self.neighbour_nodes_3D + data_to[self.neighbour][0]
+            moved_boundary_nodes = self.boundary_nodes + data_to[self.boundary_ind]
+            moved_neighbour_nodes = self.neighbour_nodes + data_to[self.neighbour][0]
             for i in range(np.shape(moved_boundary_nodes)[0]):
                 params = np.polyfit((moved_boundary_nodes[i, 0], moved_neighbour_nodes[i, 0]),
                                     (moved_boundary_nodes[i, 1], moved_neighbour_nodes[i, 1]),
@@ -233,11 +257,11 @@ class MapperLinearConservative(Component):
                 coord = intersect(params, self.boundary_name[i], self.vertices)
 
                 if self.boundary_name[i] == 'top' or self.boundary_name[i] == 'bottom':
-                    disp_x = coord[0] - self.boundary_nodes_3D[i, 0]
+                    disp_x = coord[0] - self.boundary_nodes[i, 0]
                     disp_y = 0
                 elif self.boundary_name[i] == 'left' or self.boundary_name[i] == 'right':
                     disp_x = 0
-                    disp_y = coord[1] - self.boundary_nodes_3D[i, 1]
+                    disp_y = coord[1] - self.boundary_nodes[i, 1]
 
                 data_to[int(self.boundary_ind[i]), 0] = disp_x
                 data_to[int(self.boundary_ind[i]), 1] = disp_y
@@ -386,3 +410,24 @@ def intersect(param, boundary_name, vertices):
     y = param[0] * x + param[1]
 
     return (x, y)
+
+def PolyArea(x, y):
+    # sort points counter-clockwise
+    theta = np.arctan2(y - np.mean(y), x - np.mean(x))
+    sorted_index = np.argsort(theta)
+    x_sorted = x[sorted_index]
+    y_sorted = y[sorted_index]
+
+    """
+    print('theta:')
+    print(theta)
+    print('sorted_index:')
+    print(sorted_index)
+    print('x_sorted:')
+    print(x_sorted)
+    print('y_sorted:')
+    print(y_sorted)
+    """
+
+    # calculate area
+    return 0.5 * np.abs(np.dot(x_sorted, np.roll(y_sorted, -1)) - np.dot(y_sorted, np.roll(x_sorted, -1)))
