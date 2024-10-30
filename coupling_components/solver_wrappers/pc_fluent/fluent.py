@@ -302,8 +302,9 @@ class SolverWrapperPCFluent(SolverWrapper):
         # create Model used internally for face (and node) displacements
         if "displacement" in self.output_variables:
             self.internal_model = data_structure.Model()
-            self.internal_face_settings = []
+            self.internal_settings = []
             if self.conservative:
+                self.internal_face_settings = []
                 self.internal_node_settings = []
 
         # create input ModelParts (nodes for displacement, faces for temperature or heat flux)
@@ -454,14 +455,20 @@ class SolverWrapperPCFluent(SolverWrapper):
                                                                                       "domain": self.mapping_domain,
                                                                                       "limits": self.mapping_limits}}}
             self.mapper_f2n = tools.create_instance(f2n_settings)
-            self.mapper_f2n.initialize(self.interface_internal, self.interface_internal_nodes)
+            if self.conservative:
+                self.mapper_f2n.initialize(self.interface_internal, self.interface_internal_nodes)
+            else:
+                self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
 
             # create and initialize node to face (n2f) displacement mapper
             n2f_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
                                                                       "settings": {"directions": ["x", "y"],
                                                                                    "check_bounding_box": False}}}
             self.mapper_n2f = tools.create_instance(n2f_settings)
-            self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
+            if self.conservative:
+                self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
+            else:
+                self.mapper_n2f.initialize(self.interface_output, self.interface_internal)
 
             if self.conservative:
                 # create and initialize node to node (n2n) displacement mapper for output purposes
@@ -479,12 +486,14 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         if "displacement" in self.output_variables:
             # map output node displacement to face displacement
-            #TODO: converged node displacement should be mapped to prev. face displacement
-            self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal, conservative=self.conservative)
+
             if self.conservative:
+                self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal, conservative=self.conservative)
                 for item in self.settings['interface_output']:
                     mp_name = item['model_part']
                     self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
+            else:
+                self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal, conservative=self.conservative)
 
             # write interface output data at new time step
             self.write_output_to_file("displacement")
@@ -585,7 +594,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
                             # reset face displacement to converged position of previous time step (avoid accumulation)
                             if not self.conservative:
-                                self.interface_internal.set_variable_data(mp_name, var, displacement)
+                                self.interface_internal.set_variable_data(mp_name, var, prev_disp)
 
                         else:
                             # store vector and scalar values in interface

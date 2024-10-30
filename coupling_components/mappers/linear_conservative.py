@@ -203,10 +203,8 @@ class MapperLinearConservative(Component):
 
         # initialise multiplication coefficients for face displacements
         if self.C is None:
-            print('self.C is None')
             C = np.ones((self.n_from, 1))
         else:
-            print('self.C is not None')
             C = self.C
         C_prev = np.zeros((self.n_from, 1))
         it = 0
@@ -222,7 +220,6 @@ class MapperLinearConservative(Component):
         # perform loop to determine multiplication factor C to compensate for lost or falsely created volume
         while np.linalg.norm(C - C_prev) > self.tolerance and it < self.max_iterations:
             it += 1
-            print('Residual it. ', it, ':', np.linalg.norm(C - C_prev))
             C_prev = C
 
             # interpolate and project shifted boundary nodes on domain boundary
@@ -239,6 +236,11 @@ class MapperLinearConservative(Component):
 
             C = cell_vol/node_vol
             C = (1 - self.relax) * C + self.relax * C_prev
+
+        # print warning if C did not converge fast enough
+        if it >= self.max_iterations and np.linalg.norm(C - C_prev) > self.tolerance:
+            warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(C - C_prev)} > {self.tolerance}.'
+            tools.print_info(warning_text, layout='warning')
 
         # store and interpolate with converged C
         self.C = C
