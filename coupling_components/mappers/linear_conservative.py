@@ -33,8 +33,12 @@ class MapperLinearConservative(Component):
         self.balanced_tree = self.settings.get('balanced_tree', False)
         self.check_bounding_box = self.settings.get('check_bounding_box', True)
         self.n_nearest = 0  # must be set in subclass!
-        self.tolerance = 1e-3 # include as setting?
-        self.max_iterations = 10
+
+        # volume-conserving iterations
+        self.C = None
+        self.tolerance = 1e-6 # include as setting?
+        self.max_iterations = 20 # include as setting?
+        self.relax = 0.4 # include as setting?
 
         # initialization
         self.n_from, self.n_to = None, None
@@ -198,7 +202,12 @@ class MapperLinearConservative(Component):
         data_to = interface_to.get_variable_data(mp_name_to, var_to)[:, 0:len(self.directions)]
 
         # initialise multiplication coefficients for face displacements
-        C = np.ones((self.n_from, 1))
+        if self.C is None:
+            print('self.C is None')
+            C = np.ones((self.n_from, 1))
+        else:
+            print('self.C is not None')
+            C = self.C
         C_prev = np.zeros((self.n_from, 1))
         it = 0
         # don't forget previous time step coefficients! Store somewhere (or don't overwrite with zeros)
@@ -210,10 +219,11 @@ class MapperLinearConservative(Component):
         cell_vol = area * dx
         node_vol = np.zeros(np.shape(cell_vol))
 
+        # perform loop to determine multiplication factor C to compensate for lost or falsely created volume
         while np.linalg.norm(C - C_prev) > self.tolerance and it < self.max_iterations:
-            print('Residual: ', np.linalg.norm(C - C_prev))
-            C_prev = C
             it += 1
+            print('Residual it. ', it, ':', np.linalg.norm(C - C_prev))
+            C_prev = C
 
             # interpolate and project shifted boundary nodes on domain boundary
             data_itp = self.interpolate(C * data_from, data_to)
@@ -228,9 +238,11 @@ class MapperLinearConservative(Component):
                 node_vol[i] = PolyArea(x, y)
 
             C = cell_vol/node_vol
+            C = (1 - self.relax) * C + self.relax * C_prev
 
-            # relaxation?
-            # Newton-Raphson!
+        # store and interpolate with converged C
+        self.C = C
+        data_itp = self.interpolate(self.C * data_from, data_to)
 
         # add z-coordinate to data_itp
         if np.shape(data_itp)[1] == 2:
@@ -417,17 +429,6 @@ def PolyArea(x, y):
     sorted_index = np.argsort(theta)
     x_sorted = x[sorted_index]
     y_sorted = y[sorted_index]
-
-    """
-    print('theta:')
-    print(theta)
-    print('sorted_index:')
-    print(sorted_index)
-    print('x_sorted:')
-    print(x_sorted)
-    print('y_sorted:')
-    print(y_sorted)
-    """
 
     # calculate area
     return 0.5 * np.abs(np.dot(x_sorted, np.roll(y_sorted, -1)) - np.dot(y_sorted, np.roll(x_sorted, -1)))
