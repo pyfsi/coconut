@@ -610,8 +610,6 @@ class SolverWrapperPCFluent(SolverWrapper):
                             elif var == 'traction':
                                 self.interface_output.set_variable_data(mp_name, var, vector)
                                 self.interface_output.set_variable_data(mp_name, 'pressure', scalar)
-                            elif var == 'heat_flux':
-                                self.interface_output.set_variable_data(mp_name, var, scalar)
 
                     if accepted_variables_pc['out'][var][1] == 3:
                         # get face coordinates and ids
@@ -781,13 +779,13 @@ class SolverWrapperPCFluent(SolverWrapper):
                     tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
-        if var == 'temperature':
+        if var == 'temperature' or var == 'heat_flux':
             for dct in self.interface_input.parameters:
                 mp_name = dct['model_part']
                 if 'faces' in mp_name:
                     thread_id = self.model_part_thread_ids[mp_name]
                     model_part = self.model.get_model_part(mp_name)
-                    T = self.interface_input.get_variable_data(mp_name, 'temperature')
+                    scalar = self.interface_input.get_variable_data(mp_name, var)
                     face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
                     for index, id in enumerate(model_part.id):
                         list = self.reverse_face_ids(id, mp_name)
@@ -795,40 +793,14 @@ class SolverWrapperPCFluent(SolverWrapper):
                             face_nodeIDs[index,:] = np.array(list)
                         else:
                             raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
-                    prof = np.append(T, face_nodeIDs, axis=1)
+                    prof = np.append(scalar, face_nodeIDs, axis=1)
                     fmt = '%27.17e'
                     for i in range(self.mnpf):
                         fmt += '%27d'
-                    tmp = f'temperature_timestep{self.timestep}_thread{thread_id}.dat'
+                    prefix = accepted_variables_pc['in'][var][0]
+                    tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
-        if var == 'heat_flux':
-            for dct in self.interface_input.parameters:
-                mp_name = dct['model_part']
-                if 'faces' in mp_name:
-                    thread_id = self.model_part_thread_ids[mp_name]
-                    model_part = self.model.get_model_part(mp_name)
-                    q_tmp = self.interface_input.get_variable_data(mp_name, 'heat_flux')
-                    q = np.append(np.zeros((np.size(q_tmp), self.dimensions)), q_tmp, axis=1)
-                    face_nodeIDs = np.zeros((np.size(model_part.id), self.mnpf))
-                    for index, id in enumerate(model_part.id):
-                        list = self.reverse_face_ids(id, mp_name)
-                        if len(list) == self.mnpf:
-                            face_nodeIDs[index,:] = np.array(list)
-                        else:
-                            raise ValueError("Nr. of nodes returned from reverse_face_ids function does not correspond to mnpf")
-                    prof = np.append(q, face_nodeIDs, axis=1)
-                    if self.dimensions == 2:
-                        fmt = '%27.17e%27.17e%27.17e'
-                        header = 'x-flux y-flux flux-normal unique-ids'
-                    else:
-                        fmt = '%27.17e%27.17e%27.17e%27.17e'
-                        header = 'x-flux y-flux z-flux flux-normal unique-ids'
-                    for i in range(self.mnpf):
-                        fmt += '%27d'
-                    tmp = f'heat_flux_timestep{self.timestep}_thread{thread_id}.dat'
-                    file_name = join(self.dir_cfd, tmp)
-                    np.savetxt(file_name, prof, fmt=fmt, header=header, comments='')
 
     def write_output_to_file(self, var):
         if var == 'displacement':

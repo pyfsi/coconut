@@ -519,7 +519,7 @@ DEFINE_ON_DEMAND(store_temperature){
     if (myid == 0) {printf("\nStarted UDF store_temperature.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n, i, d, compute_node; /* Check if all variables necessary */
+    int thread, n, i, d, compute_node;
     DECLARE_MEMORY(temp, real);
     DECLARE_MEMORY_N(ids, int, mnpf);
 
@@ -646,7 +646,7 @@ DEFINE_ON_DEMAND(store_temperature){
             ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
             /* receive the 2D-arrays from node_zero */
-            PRF_CRECV_REAL(node_zero,temp, n, compute_node);
+            PRF_CRECV_REAL(node_zero, temp, n, compute_node);
             PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
 
             for (i = 0; i < n; i++) {
@@ -682,7 +682,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
     if (myid == 0) {printf("\nStarted UDF store_heat_flux.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n, i, d, compute_node; /* Check if all variables necessary */
+    int thread, n, i, d, compute_node;
     DECLARE_MEMORY_N(flux, real, ND_ND + 1); /* 2 or 3 components of the heat flux vector + the normal component outwards of the faces */
     DECLARE_MEMORY_N(ids, int, mnpf);
 
