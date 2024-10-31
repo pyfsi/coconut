@@ -537,7 +537,7 @@ DEFINE_ON_DEMAND(store_temperature){
     if (myid == 0) {printf("\nStarted UDF store_temperature.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n, i, d, compute_node; /* Check if all variables necessary */
+    int thread, n, i, d, compute_node;
     DECLARE_MEMORY(temp, real);
     DECLARE_MEMORY_N(ids, int, mnpf);
 
@@ -704,15 +704,13 @@ DEFINE_ON_DEMAND(store_temperature){
 /*-----------------*/
 
 DEFINE_ON_DEMAND(store_heat_flux){
-    /* Similar as the function store_temperature, but now the heat flux and its magnitude projected on the normal
+    /* Similar as the function store_temperature, but now the heat flux magnitude projected on the normal
     direction outwards of the faces is stored in a file heat_flux_timestep%i_thread%i.dat. */
-    // TODO: remove vector array, only scalar value of heat flux
-
     if (myid == 0) {printf("\nStarted UDF store_heat_flux.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n, i, d, compute_node; /* Check if all variables necessary */
-    DECLARE_MEMORY_N(flux, real, ND_ND + 1); /* 2 or 3 components of the heat flux vector + the normal component outwards of the faces */
+    int thread, n, i, d, compute_node;
+    DECLARE_MEMORY(flux, real); /* heat flux magnitude outwards of the faces */
     DECLARE_MEMORY_N(ids, int, mnpf);
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
@@ -721,7 +719,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
     face_t face;
     Node *node;
     int node_number, j;
-    real vector[ND_ND], area[ND_ND], normal[ND_ND]; /* store 2 or 3D heat flux and up-to-date face area in arrays */
+    real area[ND_ND]; /* store 2 or 3D face area vector in arrays */
     real heat;
 #endif /* RP_NODE */
 
@@ -744,14 +742,9 @@ DEFINE_ON_DEMAND(store_heat_flux){
             exit(1);
         }
 
-#if RP_2D
-        fprintf(file, "%27s %27s %27s  %10s\n",
-            "x-flux", "y-flux", "flux-normal", "unique-ids");
-#else /* RP_2D */
-        fprintf(file, "%27s %27s %27s %27s  %10s\n",
-            "x-flux", "y-flux", "z-flux", "flux-normal", "unique-ids");
+        fprintf(file, "%27s %10s\n",
+            "flux-normal", "unique-ids");
 
-#endif /* RP_2D */
 #endif /* RP_HOST */
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
@@ -761,7 +754,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
         n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
 
         /* assign memory on compute node that accesses its partition of the face_thread */
-        ASSIGN_MEMORY_N(flux, n, real, ND_ND + 1);
+        ASSIGN_MEMORY(flux, n, real);
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
         i = 0;
@@ -770,14 +763,8 @@ DEFINE_ON_DEMAND(store_heat_flux){
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
             F_AREA(area, face, face_thread);
-            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area));
-            NV_VS(vector, =, F_STORAGE_R_N3V(face, face_thread, SV_HEAT_FLUX), *, 1.0);
-            for (d = 0; d < ND_ND; d++) {
-                flux[d][i] = vector[d];
-            }
             heat = BOUNDARY_HEAT_FLUX(face, face_thread);
-            // flux[ND_ND][i] = NV_DOT(normal, vector);
-            flux[ND_ND][i] = heat/NV_MAG(area);
+            flux[i] = heat/NV_MAG(area);
 
             /* Code currently only for melting: store_heat_flux udf only used in liquid domain & liquid domain will grow */
             C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = 1.0;
@@ -807,11 +794,11 @@ DEFINE_ON_DEMAND(store_heat_flux){
         as the from argument (that is, the first argument) for receive messages */
         PRF_CSEND_INT(compute_node, &n, 1, myid);
 
-        PRF_CSEND_REAL_N(compute_node, flux, n, myid, ND_ND + 1);
+        PRF_CSEND_REAL(compute_node, flux, n, myid);
         PRF_CSEND_INT_N(compute_node, ids, n, myid, mnpf);
 
         /* memory can be freed once the data is sent */
-        RELEASE_MEMORY_N(flux, ND_ND + 1);
+        RELEASE_MEMORY(flux);
         RELEASE_MEMORY_N(ids, mnpf);
 
         /* node_zero is the only one that can communicate with host, so it first receives from the other nodes, then
@@ -824,11 +811,11 @@ DEFINE_ON_DEMAND(store_heat_flux){
 
                 /* Once n has been received, the correct amount of memory can be allocated on compute node 0. This
                 depends on the partition assigned to the sending compute node. */
-                ASSIGN_MEMORY_N(flux, n, real, ND_ND + 1);
+                ASSIGN_MEMORY(flux, n, real);
                 ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
                 /* receive the 2D-arrays from the other nodes on node_zero */
-                PRF_CRECV_REAL_N(compute_node, flux, n, compute_node, ND_ND + 1);
+                PRF_CRECV_REAL(compute_node, flux, n, compute_node);
                 PRF_CRECV_INT_N(compute_node, ids, n, compute_node, mnpf);
 
                 /* Send the variables to the host. Deviating from the tag convention, the message tag is now the
@@ -836,11 +823,11 @@ DEFINE_ON_DEMAND(store_heat_flux){
                 communication */
                 PRF_CSEND_INT(node_host, &n, 1, compute_node);
 
-                PRF_CSEND_REAL_N(node_host, flux, n, compute_node, ND_ND + 1);
+                PRF_CSEND_REAL(node_host, flux, n, compute_node);
                 PRF_CSEND_INT_N(node_host, ids, n, compute_node, mnpf);
 
                 /* once all data has been sent to host, memory on the node can be freed */
-                RELEASE_MEMORY_N(flux, ND_ND + 1);
+                RELEASE_MEMORY(flux);
                 RELEASE_MEMORY_N(ids, mnpf);
             }
         }
@@ -852,24 +839,24 @@ DEFINE_ON_DEMAND(store_heat_flux){
             PRF_CRECV_INT(node_zero, &n, 1, compute_node);
 
             /* once n has been received, the correct amount of memory can be allocated on the host */
-            ASSIGN_MEMORY_N(flux, n, real, ND_ND + 1);
+            ASSIGN_MEMORY(flux, n, real);
             ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
             /* receive the 2D-arrays from node_zero */
-            PRF_CRECV_REAL_N(node_zero,flux, n, compute_node, ND_ND + 1);
+            PRF_CRECV_REAL(node_zero, flux, n, compute_node);
             PRF_CRECV_INT_N(node_zero, ids, n, compute_node, mnpf);
 
             for (i = 0; i < n; i++) {
-                for (d = 0; d < ND_ND + 1; d++) {
-                    fprintf(file, "%27.17e ", flux[d][i]);
-                }
+
+                fprintf(file, "%27.17e ", flux[i]);
+
                 for (d = 0; d < mnpf; d++) {
                     fprintf(file, " %10d", ids[d][i]);
                 }
                 fprintf(file, "\n");
             }
             /* after files have been appended, the memory can be freed */
-            RELEASE_MEMORY_N(flux, ND_ND + 1);
+            RELEASE_MEMORY(flux);
             RELEASE_MEMORY_N(ids, mnpf);
         } /* close compute_node_loop */
 
@@ -1088,11 +1075,7 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
         ASSIGN_MEMORY(flag, n, bool);
         ASSIGN_MEMORY_N(ids, n, int, mnpf);
 
-        double dummy;
         for (i = 0; i < n; i++) {
-            for (d = 0; d < ND_ND; d++) {
-                fscanf(file, "%lf", &dummy); /* read and discard x-, y-, (z-) flux components */
-            }
             fscanf(file, "%lf", &heat_flux[i]); /* read normal incoming heat flux from file */
             flag[i] = false;
             for (d = 0; d < mnpf; d++) {
@@ -1475,17 +1458,16 @@ DEFINE_ON_DEMAND(write_displacement) {
     if (myid == 0) {printf("\nStarted UDF write_displacement.\n"); fflush(stdout);}
 
     /* declaring variables */
-    int thread, n, i, d, compute_node; /* Check if all variables necessary */
-    DECLARE_MEMORY_N(disp, real, ND_ND); // displacement vector
+    int thread, n, i, d, compute_node;
+    DECLARE_MEMORY_N(disp, real, ND_ND); /* displacement vector */
     DECLARE_MEMORY_N(ids, int, mnpf);
     DECLARE_MEMORY(face_area, real);
-    int timestep;
 
 #if RP_NODE
     Domain *domain;
     Thread *t, *face_thread, *itf_thread;
     cell_t c;
-    face_t face;
+    face_t face, cell_face;
     Node *node;
     int face_number, node_number, j;
     real heat, vel, src, ds, A_by_es;
@@ -1525,7 +1507,6 @@ DEFINE_ON_DEMAND(write_displacement) {
         domain = Get_Domain(1);
         itf_thread = Lookup_Thread(domain, thread_ids[thread]);
 
-        /* TODO: this udf does not work multicore because the loop runs over all faces and not just the partioned interface of this calculation node */
         n = THREAD_N_ELEMENTS_INT(itf_thread); /* get number of faces in this partition of face_thread */
 
         /* assign memory on compute node that accesses its partition of the face_thread */
@@ -1534,78 +1515,80 @@ DEFINE_ON_DEMAND(write_displacement) {
         ASSIGN_MEMORY(face_area, n, real);
 
         i = 0;
-        thread_loop_c(t,domain)
-        {
-            begin_c_loop(c,t)
+        /* loop over all faces (tracked by variable "face") in current compute node partition of face_thread */
+        begin_f_loop(face, itf_thread) {
+            if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
+
+            c = F_C0(face, itf_thread); /* adjacent cell */
+            t = THREAD_T0(itf_thread); /* adjacent cell thread (F_C0_THREAD(face, itf_thread)) */
+            heat = 0;
+
+            /* Allocates memory for gradient and reconstruction gradient macros */
+            Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
+            /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
+            Scalar_Reconstruction(domain, "rp-global", SV_T, -1, SV_T_RG, NULL);
+            // Scalar_Derivatives(domain, "rp-global", SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
+
+            c_face_loop(c,t,face_number)
             {
+                face_thread = C_FACE_THREAD(c,t,face_number);
+                cell_face = C_FACE(c,t,face_number);
 
-                if (C_UDMI(c,t,ADJ) == 1.0) {
-                    if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
-                    heat = 0;
+                /* for cell faces at coupling interface */
+                if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
 
-                    /* Allocates memory for gradient and reconstruction gradient macros */
-                    Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
-                    /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
-                    Scalar_Reconstruction(domain, "rp-global", SV_T, -1, SV_T_RG, NULL);
-                    // Scalar_Derivatives(domain, "rp-global", SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
+                    /* Incoming heat from liquid side */
+                    heat += BOUNDARY_HEAT_FLUX(cell_face, face_thread); // [W]
+                    F_AREA(area, cell_face, face_thread);
+                    NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
 
-                    c_face_loop(c,t,face_number)
-                    {
-                        face_thread = C_FACE_THREAD(c,t,face_number);
-                        face = C_FACE(c,t,face_number);
+                    /* store face area of cell */
+                    face_area[i] = NV_MAG(area); // [m^2]
 
-                        /* for cell faces at coupling interface */
-                        if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
-
-                            /* Incoming heat from liquid side */
-                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // [W]
-                            F_AREA(area, face, face_thread);
-                            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
-
-                            /* store face area of cell */
-                            face_area[i] = NV_MAG(area); // [m^2]
-
-                            /* loop over all nodes in the face */
-                            j = 0;
-                            f_node_loop(face, face_thread, node_number) {
-                                if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
-                                node = F_NODE(face, face_thread, node_number);
-                                ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
-                                j++;
-                            }
-                        }
-                        else {
-                            // Outgoing heat at interior cell faces -- currently not used!
-                            INTERIOR_FACE_GEOMETRY(face,face_thread,A,ds,es,A_by_es,dr0,dr1);
-                            if (F_C1(face, face_thread) != -1) {
-                                NV_VS_VS(avg_flux, =, C_T_RG(c,t), *, 0.5, +, C_T_RG(F_C0(face, face_thread),F_C0_THREAD(face, face_thread)), *, 0.5);
-                                NV_VS(v0, =, es, *, A_by_es);
-                                heat += C_K_L(c,t)*(C_T(F_C0(face, face_thread),F_C0_THREAD(face, face_thread))-C_T(c,t))*A_by_es/ds + C_K_L(c,t)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
-                            }
-                        }
+                    for (j = 0; j < mnpf; j++) {
+                        /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
+                        ids[j][i] = -1;
                     }
 
-                    if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
-                        vel = heat/(NV_MAG(area)*LH*C_R(c,t));
-                    } else {
-                        if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
-                            vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1(c,t) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
-                        } else { // subcooled --> no interface velocity
-                            vel = 0.0;
-                        }
-                    }
-
+                    /* loop over all nodes in the face */
                     j = 0;
-                    for (j = 0; j < ND_ND; j++) {
-                        disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
+                    f_node_loop(cell_face, face_thread, node_number) {
+                        if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
+                        node = F_NODE(cell_face, face_thread, node_number);
+                        ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                        j++;
                     }
-                    i ++;
-
-                    /* Free memory of reconstruction gradients and gradients */
-                    Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                 }
-            } end_c_loop(c,t)
-        }
+                else {
+                    // Outgoing heat at interior cell faces -- currently not used!
+                    INTERIOR_FACE_GEOMETRY(cell_face,face_thread,A,ds,es,A_by_es,dr0,dr1);
+                    if (F_C1(cell_face, face_thread) != -1) {
+                        NV_VS_VS(avg_flux, =, C_T_RG(c,t), *, 0.5, +, C_T_RG(F_C0(cell_face, face_thread),F_C0_THREAD(cell_face, face_thread)), *, 0.5);
+                        NV_VS(v0, =, es, *, A_by_es);
+                        heat += C_K_L(c,t)*(C_T(F_C0(cell_face, face_thread),F_C0_THREAD(cell_face, face_thread))-C_T(c,t))*A_by_es/ds + C_K_L(c,t)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
+                    }
+                }
+            }
+
+            if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
+                vel = heat/(NV_MAG(area)*LH*C_R(c,t));
+            } else {
+                if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
+                    vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1(c,t) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
+                } else { // subcooled --> no interface velocity
+                    vel = 0.0;
+                }
+            }
+
+            j = 0;
+            for (j = 0; j < ND_ND; j++) {
+                disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
+            }
+            i ++;
+
+            /* Free memory of reconstruction gradients and gradients */
+            Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
+        } end_f_loop(face, itf_thread);
 
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
         compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;

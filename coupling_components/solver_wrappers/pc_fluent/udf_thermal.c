@@ -1467,9 +1467,8 @@ DEFINE_ON_DEMAND(write_displacement) {
     Domain *domain;
     Thread *t, *face_thread, *itf_thread;
     cell_t c;
-    face_t face;
+    face_t face, cell_face;
     Node *node;
-    bool part_of_thread;
     int face_number, node_number, j;
     real heat, vel, src, ds, A_by_es;
     real normal[ND_ND], area[ND_ND], A[ND_ND], es[ND_ND], dr0[ND_ND], dr1[ND_ND], avg_flux[ND_ND], v0[ND_ND];
@@ -1508,7 +1507,6 @@ DEFINE_ON_DEMAND(write_displacement) {
         domain = Get_Domain(1);
         itf_thread = Lookup_Thread(domain, thread_ids[thread]);
 
-        /* TODO: this udf does not work multicore because the loop runs over all faces and not just the partioned interface of this calculation node */
         n = THREAD_N_ELEMENTS_INT(itf_thread); /* get number of faces in this partition of face_thread */
 
         /* assign memory on compute node that accesses its partition of the face_thread */
@@ -1517,86 +1515,80 @@ DEFINE_ON_DEMAND(write_displacement) {
         ASSIGN_MEMORY(face_area, n, real);
 
         i = 0;
-        thread_loop_c(t,domain)
-        {
-            begin_c_loop(c,t)
+        /* loop over all faces (tracked by variable "face") in current compute node partition of face_thread */
+        begin_f_loop(face, itf_thread) {
+            if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
+
+            c = F_C0(face, itf_thread); /* adjacent cell */
+            t = THREAD_T0(itf_thread); /* adjacent cell thread (F_C0_THREAD(face, itf_thread)) */
+            heat = 0;
+
+            /* Allocates memory for gradient and reconstruction gradient macros */
+            Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
+            /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
+            Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
+            // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
+
+            c_face_loop(c,t,face_number)
             {
-                if (C_UDMI(c,t,ADJ) == 1.0) {
-                    if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
-                    heat = 0;
-                    part_of_thread = false;
+                face_thread = C_FACE_THREAD(c,t,face_number);
+                cell_face = C_FACE(c,t,face_number);
 
-                    /* Allocates memory for gradient and reconstruction gradient macros */
-                    Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
-                    /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
-                    Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
-                    // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
+                /* for cell faces at coupling interface */
+                if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
 
-                    c_face_loop(c,t,face_number)
-                    {
-                        face_thread = C_FACE_THREAD(c,t,face_number);
-                        face = C_FACE(c,t,face_number);
+                    /* Incoming heat from liquid side */
+                    heat += BOUNDARY_HEAT_FLUX(cell_face, face_thread); // [W]
+                    F_AREA(area, cell_face, face_thread);
+                    NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
 
-                        /* for cell faces at coupling interface */
-                        if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
-                            part_of_thread = true;
+                    /* store face area of cell */
+                    face_area[i] = NV_MAG(area); // [m^2]
 
-                            /* Incoming heat from liquid side */
-                            heat += BOUNDARY_HEAT_FLUX(face, face_thread); // [W]
-                            F_AREA(area, face, face_thread);
-                            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
-
-                            /* store face area of cell */
-                            face_area[i] = NV_MAG(area); // [m^2]
-
-                            for (j = 0; j < mnpf; j++) {
-                                /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
-                                ids[j][i] = -1;
-                            }
-
-                            /* loop over all nodes in the face */
-                            j = 0;
-                            f_node_loop(face, face_thread, node_number) {
-                                if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
-                                node = F_NODE(face, face_thread, node_number);
-                                ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
-                                j++;
-                            }
-                        }
-                        else {
-                            // Outgoing heat at interior cell faces -- currently not used!
-                            INTERIOR_FACE_GEOMETRY(face,face_thread,A,ds,es,A_by_es,dr0,dr1);
-                            if (F_C1(face, face_thread) != -1) {
-                                NV_VS_VS(avg_flux, =, C_T_RG(c,t), *, 0.5, +, C_T_RG(F_C0(face, face_thread),F_C0_THREAD(face, face_thread)), *, 0.5);
-                                NV_VS(v0, =, es, *, A_by_es);
-                                heat += C_K_L(c,t)*(C_T(F_C0(face, face_thread),F_C0_THREAD(face, face_thread))-C_T(c,t))*A_by_es/ds + C_K_L(c,t)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
-                            }
-                        }
+                    for (j = 0; j < mnpf; j++) {
+                        /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
+                        ids[j][i] = -1;
                     }
 
-                    if (part_of_thread) {
-                        if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
-                            vel = heat/(NV_MAG(area)*LH*C_R(c,t));
-                        } else {
-                            if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
-                                vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1(c,t) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
-                            } else { // subcooled --> no interface velocity
-                                vel = 0.0;
-                            }
-                        }
-
-                        j = 0;
-                        for (j = 0; j < ND_ND; j++) {
-                            disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
-                        }
-                        i ++;
+                    /* loop over all nodes in the face */
+                    j = 0;
+                    f_node_loop(cell_face, face_thread, node_number) {
+                        if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
+                        node = F_NODE(cell_face, face_thread, node_number);
+                        ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                        j++;
                     }
-
-                    /* Free memory of reconstruction gradients and gradients */
-                    Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
                 }
-            } end_c_loop(c,t)
-        }
+                else {
+                    // Outgoing heat at interior cell faces -- currently not used!
+                    INTERIOR_FACE_GEOMETRY(cell_face,face_thread,A,ds,es,A_by_es,dr0,dr1);
+                    if (F_C1(cell_face, face_thread) != -1) {
+                        NV_VS_VS(avg_flux, =, C_T_RG(c,t), *, 0.5, +, C_T_RG(F_C0(cell_face, face_thread),F_C0_THREAD(cell_face, face_thread)), *, 0.5);
+                        NV_VS(v0, =, es, *, A_by_es);
+                        heat += C_K_L(c,t)*(C_T(F_C0(cell_face, face_thread),F_C0_THREAD(cell_face, face_thread))-C_T(c,t))*A_by_es/ds + C_K_L(c,t)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
+                    }
+                }
+            }
+
+            if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
+                vel = heat/(NV_MAG(area)*LH*C_R(c,t));
+            } else {
+                if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
+                    vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1(c,t) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
+                } else { // subcooled --> no interface velocity
+                    vel = 0.0;
+                }
+            }
+
+            j = 0;
+            for (j = 0; j < ND_ND; j++) {
+                disp[j][i] = -1.0*normal[j]*vel*dt; // Positive flux results in interface motion opposite to the face normals
+            }
+            i ++;
+
+            /* Free memory of reconstruction gradients and gradients */
+            Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
+        } end_f_loop(face, itf_thread);
 
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
         compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;

@@ -65,7 +65,8 @@
             "melt_temp": 299.15,
             "ini_condition": 0,
             "mapping_domain": "rectangular",
-            "mapping_limits": [0, 0, 0.1, 0.1]
+            "mapping_limits": [0, 0, 0.1, 0.1],
+            "mapping_conservative": true
           },
           "thread_names": [
             "boundary"
@@ -111,7 +112,8 @@
                 "melt_temp": 299.15,
                 "ini_condition": 299.15,
                 "mapping_domain": "rectangular",
-                "mapping_limits": [0, 0, 0.1, 0.1]
+                "mapping_limits": [0, 0, 0.1, 0.1],
+                "mapping_conservative": true
               },
               "thread_names": [
                 "boundary"

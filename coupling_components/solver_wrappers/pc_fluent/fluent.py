@@ -117,12 +117,6 @@ class SolverWrapperPCFluent(SolverWrapper):
         elif "heat_flux" in self.input_variables:
             self.thermal_bc = "heat_flux"
 
-        # Check if solid solver is running single core
-        if self.thermal_bc == "heat_flux" and self.cores != 1:
-            self.cores = 1
-            warning_text = 'Number of cores has been reset to 1 because the write_displacement udf used in the solid solver has not yet been parallelised.'
-            tools.print_info(warning_text, layout='warning')
-
     @tools.time_initialize
     def initialize(self):
         super().initialize()
