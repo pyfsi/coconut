@@ -1,0 +1,15 @@
+{
+  "timestep_size": 0.01,
+  "timestep_start": 0,
+  "interface": {
+    "x0": 0.05,
+    "y0": 0,
+    "x1": 0.05,
+    "y1": 0.1,
+    "faces": 100
+  },
+  "material_properties": {
+    "rho": 870,
+    "latent": 179000
+  }
+}

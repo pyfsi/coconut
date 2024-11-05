@@ -9,9 +9,9 @@ define user-defined user-defined-memory 12
 define models unsteady-1st-order y
 define models viscous laminar y
 define models solver pressure-based y
+solve set equations flow y
 define models energy y n n n y
-define models solidification-melting? yes , , ,
-solve set equations flow n
+define models solidification-melting? yes constant 1e12 no
 
 define materials copy fluid air pcm
 define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
@@ -24,7 +24,7 @@ define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y moti
 
 define operating-conditions gravity n
 
-solve monitors residual check-convergence y
+solve monitors residual check-convergence n n n y
 solve monitors residual convergence-criteria 1e-12
 
 solve set discretization-scheme temperature 0
