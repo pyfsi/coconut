@@ -6,10 +6,15 @@
     "y0": 0,
     "x1": 0.05,
     "y1": 0.1,
-    "faces": 100
+    "faces": 100,
+    "movement_direction": [1, 0]
   },
   "material_properties": {
     "rho": 870,
     "latent": 179000
+  },
+  "conservative_mapper": {
+    "mapping_domain": "rectangular",
+    "mapping_limits": [0, 0, 0.1, 0.1]
   }
 }
