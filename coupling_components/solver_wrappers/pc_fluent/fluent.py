@@ -464,14 +464,6 @@ class SolverWrapperPCFluent(SolverWrapper):
             else:
                 self.mapper_n2f.initialize(self.interface_output, self.interface_internal)
 
-            if self.conservative:
-                # create and initialize node to node (n2n) displacement mapper for output purposes
-                n2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest",
-                                                                          "settings": {"directions": ["x", "y"],
-                                                                                       "check_bounding_box": False}}}
-                self.mapper_n2n = tools.create_instance(n2n_settings)
-                self.mapper_n2n.initialize(self.interface_internal_nodes, self.interface_output)
-
     def initialize_solution_step(self):
         super().initialize_solution_step()
 

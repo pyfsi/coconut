@@ -37,59 +37,105 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
             self.settings.update(case_file_settings)
 
         # store settings
-        self.dt = self.settings['timestep_size']
+        self.dt = self.settings['delta_t']
+        self.restart = self.settings['save_restart']
         self.timestep = self.settings['timestep_start']
         self.interface_settings = self.settings['interface']
         self.material_properties = self.settings['material_properties']
+        self.mapper_settings = self.settings['conservative_mapper']
+
+        if self.restart != 0:  # restart
+            raise NotImplementedError('Restart functionality not supported.')
 
         self.x0 = self.interface_settings['x0']
         self.y0 = self.interface_settings['y0']
         self.x1 = self.interface_settings['x1']
-        self.x1 = self.interface_settings['y1']
+        self.y1 = self.interface_settings['y1']
         self.n = self.interface_settings['faces']
-
+        self.mov_dir = self.interface_settings['movement_direction']
+        self.mov_dir = np.array((self.mov_dir))
+        
         self.rho = self.material_properties['rho']
-        self.L = self.material_proprties['latent']
+        self.L = self.material_properties['latent']
+
+        self.mapping_domain = self.mapper_settings['mapping_domain']
+        self.mapping_limits = self.mapper_settings['mapping_limits']
+        self.conservative = True
 
         # initialization
-        if self.timestep_start == 0:  # no restart
-            x = np.linspace(self.x0, self.x1, self.n + 1)
-            y = np.linspace(self.y0, self.y1, self.n + 1)
-            ini_coord = []
-            for i in range(self.n):
-                ini_coord.append([(x[i] + x[i+1]) / 2, (y[i] + y[i+1]) / 2])
-            self.ini_coord = np.array(ini_coord)
+        x = np.linspace(self.x0, self.x1, self.n + 1)
+        y = np.linspace(self.y0, self.y1, self.n + 1)
+        ini_coord_faces = []
+        for i in range(self.n):
+            ini_coord_faces.append([(x[i] + x[i+1]) / 2, (y[i] + y[i+1]) / 2, 0])
+        self.ini_coord_faces = np.array(ini_coord_faces)
 
-            self.prev_disp = np.zeros((self.n, 2))  # previous time step displacement
-            self.dx = np.zeros((self.n, 2))  # latest time step displacement
-            self.heat_flux = np.zeros(self.n) # heat flux [W/m^2]
+        x = np.reshape(x, (self.n + 1, 1))
+        y = np.reshape(y, (self.n + 1, 1))
+        z = np.zeros((self.n + 1, 1))
+        self.ini_coord_nodes = np.concatenate((x, y), axis=1)
+        self.ini_coord_nodes = np.concatenate((self.ini_coord_nodes, z), axis=1)
+        self.area = self.area_calc(self.ini_coord_nodes)
 
-        else:  # restart
-            file_name = join(self.working_directory, f'case_timestep{self.timestep}.pickle')
-            with open(file_name, 'rb') as file:
-                data = pickle.load(file)
-            self.ini_coord = data['ini_coord']
-            self.prev_disp = data['prev_disp']
-            self.dx = data['dx']
-            self.heat_flux = data['heat_flux']
+        self.prev_face_disp = np.zeros((self.n, 3))  # previous total face displacement
+        self.prev_disp = np.zeros((self.n + 1, 3))  # previous total node displacement
 
-        # create ModelParts
+        self.face_dx = np.zeros((self.n, 3))  # latest time step face displacement
+        self.dx = np.zeros((self.n + 1, 3))  # latest time step node displacement
+
+        self.heat_flux = np.zeros((self.n,1)) # heat flux [W/m^2]
+
+        # create input & output ModelParts
         self.model = Model()
-        self.input_model_part_name = self.settings['interface_input'][0]['model_part']
-        self.output_model_part_name = self.settings['interface_output'][0]['model_part']
-        self.model_part = self.model.create_model_part(self.input_model_part_name, self.ini_coord[:,0].flatten(),
-                                                       self.ini_coord[:,1].flatten(), np.zeros(self.n), np.arange(self.n))
-        if self.input_model_part_name != self.output_model_part_name:
-            self.model_part = self.model.create_model_part(self.output_model_part_name, self.ini_coord[:,0].flatten(),
-                                                       self.ini_coord[:,1].flatten(), np.zeros(self.n), np.arange(self.n))
 
-        # interfaces
+        self.input_mp_name = self.settings['interface_input'][0]['model_part']
+        self.output_mp_name = self.settings['interface_output'][0]['model_part']
+
+        self.model.create_model_part(self.input_mp_name, self.ini_coord_faces[:,0].flatten(),
+                                               self.ini_coord_faces[:,1].flatten(), np.zeros(self.n), np.arange(self.n))
+        self.model.create_model_part(self.output_mp_name, self.ini_coord_nodes[:,0].flatten(),
+                                               self.ini_coord_nodes[:,1].flatten(), np.zeros(self.n + 1), np.arange(self.n + 1))
+
+        # input & output interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
-        self.interface_input.set_variable_data(self.input_model_part_name, 'heat_flux', self.heat_flux)
-        self.interface_output = Interface(self.settings['interface_output'], self.model)
-        self.interface_output.set_variable_data(self.output_model_part_name, 'displacement', self.prev_disp + self.dx)
+        self.interface_input.set_variable_data(self.input_mp_name, 'heat_flux', self.heat_flux)
 
-        self.output_solution_step()
+        self.interface_output = Interface(self.settings['interface_output'], self.model)
+        self.interface_output.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
+
+        # internal models for face-to-node mapping
+        self.internal_model = Model()
+        self.internal_face_settings = [{"model_part": self.output_mp_name, "variables": ["1ts_disp", "prev_disp", "area"]}]
+        self.internal_node_settings = [{"model_part": self.output_mp_name, "variables": ["displacement", "1ts_disp", "prev_disp"]}]
+
+        self.internal_model.create_model_part(self.output_mp_name, self.ini_coord_faces[:, 0].flatten(),
+                                     self.ini_coord_faces[:, 1].flatten(), np.zeros(self.n), np.arange(self.n))
+
+        self.interface_internal_faces = Interface(self.internal_face_settings, self.internal_model)
+        self.interface_internal_nodes = Interface(self.internal_node_settings, self.model)
+
+        # create and initialize face to node (f2n) displacement mapper
+        f2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear_conservative",
+                                                                  "settings": {"directions": ["x", "y"],
+                                                                               "check_bounding_box": False,
+                                                                               "domain": self.mapping_domain,
+                                                                               "limits": self.mapping_limits}}}
+        self.mapper_f2n = tools.create_instance(f2n_settings)
+        self.mapper_f2n.initialize(self.interface_internal_faces, self.interface_internal_nodes)
+
+        # create and initialize node to face (n2f) displacement mapper
+        n2f_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
+                                                                  "settings": {"directions": ["x", "y"],
+                                                                               "check_bounding_box": False}}}
+        self.mapper_n2f = tools.create_instance(n2f_settings)
+        self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal_faces)
+
+        # create and initialize node to node (n2n) displacement mapper for output purposes
+        n2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest",
+                                                                  "settings": {"directions": ["x", "y"],
+                                                                               "check_bounding_box": False}}}
+        self.mapper_n2n = tools.create_instance(n2n_settings)
+        self.mapper_n2n.initialize(self.interface_internal_nodes, self.interface_output)
 
     @tools.time_initialize
     def initialize(self):
@@ -99,260 +145,59 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         super().initialize_solution_step()
 
         self.timestep += 1
+        self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal_faces, conservative=self.conservative)
+
         self.prev_disp += self.dx
+        self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'prev_disp', self.prev_disp)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
         # input
         self.interface_input = interface_input.copy()
-        self.disp = interface_input.get_variable_data(self.input_model_part_name, 'displacement')
-        a = np.pi * (self.d + 2 * self.disp[:, 1]) ** 2 / 4
+        self.heat_flux = interface_input.get_variable_data(self.input_mp_name, 'heat_flux') # [W/m^2]
+        self.heat_flux = -1*self.heat_flux # negative heat flux for liquid domain is positive for solid domain
+        
+        disp_magn = (self.heat_flux * self.dt) / (self.rho * self.L) # Stefan condition
+        self.area, normal_array = self.area_calc(self.ini_coord_nodes + self.prev_disp)
 
-        # input does not contain boundary conditions
-        self.a[1:self.m + 1] = a
-        self.a[0] = self.a[1]
-        self.a[self.m + 1] = self.a[self.m]
+        self.face_dx = disp_magn*normal_array
 
-        self.k += 1
+        self.interface_internal_faces.set_variable_data(self.output_mp_name, '1ts_disp', self.face_dx)
+        self.interface_internal_faces.set_variable_data(self.output_mp_name, 'area', self.area)
 
-        # initial residual
-        f = self.get_residual()
-        if self.k == 1:
-            self.residual0 = np.linalg.norm(f)
+        # map face displacement to node displacement
+        self.mapper_f2n.map_f2n(self.interface_internal_faces, self.interface_internal_nodes, conservative=self.conservative)
+        
+        self.dx = self.interface_internal_nodes.get_variable_data(self.output_mp_name, '1ts_disp')
+        self.interface_output.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
+        self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
 
-        # coupling convergence
-        residual = np.linalg.norm(f)
-        if self.check_coupling_convergence and residual / self.residual0 < self.newtontol:
-            self.coupling_convergence = True
-            if self.print_coupling_convergence:
-                tools.print_info(f'{self.__class__.__name__} converged')
-
-        # Newton iterations
-        converged = False
-        if self.residual0:
-            for s in range(self.newtonmax):
-                j = self.get_jacobian()
-                b = -f
-                x = solve_banded((self.al, self.au), j, b)
-                self.u += x[0::2]
-                self.p += x[1::2]
-                if self.inlet_variable == 'velocity':
-                    self.u[0] = self.get_inlet_boundary()
-                elif self.inlet_variable == 'pressure':
-                    self.p[0] = self.get_inlet_boundary()
-                f = self.get_residual()
-                residual = np.linalg.norm(f)
-                if residual / self.residual0 < self.newtontol:
-                    converged = True
-                    break
-            if not converged:
-                Exception('Newton failed to converge')
-
-        if self.debug:
-            file_name = join(self.working_directory, f'input_displacement_ts{self.n}_it{self.k}.txt')
-            with open(file_name, 'w') as file:
-                file.write(f"{'z-coordinate':<22}\t{'x-displacement':<22}\t{'y-displacement':<22}"
-                           f"\t{'z-displacement':<22}\n")
-                for i in range(len(self.z)):
-                    file.write(f'{self.z[i]:<22}\t{self.disp[i, 0]:<22}\t{self.disp[i, 1]:<22}'
-                               f'\t{self.disp[i, 2]:<22}\n')
-            p = self.p[1:self.m + 1] * self.rhof
-            u = self.u[1:self.m + 1]
-            file_name = join(self.working_directory, f'output_pressure_velocity_ts{self.n}_it{self.k}.txt')
-            with open(file_name, 'w') as file:
-                file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
-                for i in range(len(self.z)):
-                    file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
-
-        # output does not contain boundary conditions
-        self.pres = self.p[1:self.m + 1] * self.rhof
-        self.interface_output.set_variable_data(self.output_model_part_name, 'pressure', self.pres.reshape(-1, 1))
-        self.interface_output.set_variable_data(self.output_model_part_name, 'traction', self.trac)
+        # output
         return self.interface_output
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
-    @tools.time_save
-    def output_solution_step(self):
-        super().output_solution_step()
-
-        if self.n > 0 and self.save_restart != 0 and self.n % self.save_restart == 0:
-            file_name = join(self.working_directory, f'case_timestep{self.n}.pickle')
-            with open(file_name, 'wb') as file:
-                pickle.dump({'a': self.a, 'p': self.p, 'u': self.u}, file)
-            if self.save_restart < 0 and self.n + self.save_restart > self.timestep_start:
-                try:
-                    os.remove(join(self.working_directory, f'case_timestep{self.n + self.save_restart}.pickle'))
-                except OSError:
-                    pass
-        if self.debug:
-            p = self.p[1:self.m + 1] * self.rhof
-            u = self.u[1:self.m + 1]
-            file_name = join(self.working_directory, f'pressure_velocity_ts{self.n}.txt')
-            with open(file_name, 'w') as file:
-                file.write(f"{'z-coordinate':<22}\t{'pressure':<22}\t{'velocity':<22}\n")
-                for i in range(len(self.z)):
-                    file.write(f'{self.z[i]:<22}\t{p[i]:<22}\t{u[i]:<22}\n')
-
     def finalize(self):
         super().finalize()
+    
+    def area_calc(self, nodes):
+        """
+        Receives: array with ordered (n+1) node coordinates
+        Returns: array with ordered (n) face areas bounded by given nodes
+        """
 
-    def get_inlet_boundary(self):
-        if self.inlet_type == 1:
-            x = self.inlet_reference \
-                + self.inlet_amplitude * np.sin(2 * np.pi * (self.n * self.dt) / self.inlet_period)
-        elif self.inlet_type == 2:
-            x = self.inlet_reference + (self.inlet_amplitude if self.n <= self.inlet_period / self.dt else 0)
-        elif self.inlet_type == 3:
-            x = self.inlet_reference \
-                + self.inlet_amplitude * (np.sin(np.pi * (self.n * self.dt) / self.inlet_period)) ** 2
-        elif self.inlet_type == 4:
-            x = self.inlet_reference + self.inlet_amplitude
-        else:
-            x = self.inlet_reference + self.inlet_amplitude * (self.n * self.dt) / self.inlet_period
-        return x
+        nf = np.shape(nodes)[0] - 1
+        area = np.zeros(nf)
+        normal_array = np.zeros((nf, 3))
 
-    def get_residual(self):
-        usign = self.u[1:self.m + 1] > 0
-        ur = self.u[1:self.m + 1] * usign + self.u[2:self.m + 2] * (1.0 - usign)
-        ul = self.u[0:self.m] * usign + self.u[1:self.m + 1] * (1.0 - usign)
+        for i in range(nf):
+            area[i] = np.sqrt((nodes[i+1][0] - nodes[i][0])**2 + (nodes[i+1][1] - nodes[i][1])**2)
+            nx = (nodes[i+1][0] - nodes[i][0]) / area[i]
+            ny = (nodes[i + 1][1] - nodes[i][1]) / area[i]
+            normal = np.array([ny, -1*nx])
+            if np.dot(self.mov_dir, normal) < 0:
+                normal = -1*normal
+            normal_array[i, 0:2] = normal
 
-        f = np.zeros(2 * self.m + 4)
-        if self.inlet_variable == 'velocity':
-            f[0] = (self.u[0] - self.get_inlet_boundary()) * self.conditioning
-            f[1] = (self.p[0] - (2.0 * self.p[1] - self.p[2])) * self.conditioning
-        elif self.inlet_variable == 'pressure':
-            f[0] = (self.u[0] - (2.0 * self.u[1] - self.u[2])) * self.conditioning
-            f[1] = (self.p[0] - self.get_inlet_boundary()) * self.conditioning
-        elif self.inlet_variable == 'total_pressure':
-            f[0] = (self.u[0] - (2.0 * (self.get_inlet_boundary() - self.p[0])) ** 0.5) * self.conditioning
-            f[1] = (self.p[0] - (2.0 * self.p[1] - self.p[2])) * self.conditioning
-        f[2:2 * self.m + 2:2] = (self.dz / self.dt * (self.a[1:self.m + 1] - self.an[1:self.m + 1]) * self.unsteady
-                                 + (self.u[1:self.m + 1] + self.u[2:self.m + 2])
-                                 * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
-                                 - (self.u[1:self.m + 1] + self.u[0:self.m])
-                                 * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0
-                                 - self.alpha * (self.p[2:self.m + 2] - 2.0 * self.p[1:self.m + 1] + self.p[0:self.m]))
-        f[3:2 * self.m + 3:2] = (self.dz / self.dt * (self.u[1:self.m + 1] * self.a[1:self.m + 1]
-                                                      - self.un[1:self.m + 1] * self.an[1:self.m + 1]) * self.unsteady
-                                 + ur * (self.u[1:self.m + 1] + self.u[2:self.m + 2])
-                                 * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
-                                 - ul * (self.u[1:self.m + 1] + self.u[0:self.m])
-                                 * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0
-                                 + ((self.p[2:self.m + 2] - self.p[1:self.m + 1])
-                                    * (self.a[1:self.m + 1] + self.a[2:self.m + 2])
-                                    + (self.p[1:self.m + 1] - self.p[0:self.m])
-                                    * (self.a[1:self.m + 1] + self.a[0:self.m])) / 4.0)
-        f[2 * self.m + 2] = (self.u[self.m + 1] - (2.0 * self.u[self.m] - self.u[self.m - 1])) * self.conditioning
-        if self.outlet_type == 1:
-            f[2 * self.m + 3] = (self.p[self.m + 1] - (2.0 *
-                                                       (self.cmk2 -
-                                                        (np.sqrt(self.cmk2 - self.pn[self.m + 1] / 2.0)
-                                                         - (self.u[self.m + 1] - self.un[self.m + 1]) / 4.0) ** 2))
-                                 ) * self.conditioning
-        else:
-            f[2 * self.m + 3] = (self.p[self.m + 1] - self.outlet_amplitude) * self.conditioning
-        return f
-
-    def get_jacobian(self):
-        usign = self.u[1:self.m + 1] > 0
-        j = np.zeros((self.al + self.au + 1, 2 * self.m + 4))
-        if self.inlet_variable == 'velocity':
-            j[self.au + 0 - 0, 0] = 1.0 * self.conditioning  # [0,0]
-            j[self.au + 1 - 1, 1] = 1.0 * self.conditioning  # [1,1]
-            j[self.au + 1 - 3, 3] = -2.0 * self.conditioning  # [1,3]
-            j[self.au + 1 - 5, 5] = 1.0 * self.conditioning  # [1,5]
-        elif self.inlet_variable == 'pressure':
-            j[self.au + 0 - 0, 0] = 1.0 * self.conditioning  # [0,0]
-            j[self.au + 0 - 2, 2] = -2.0 * self.conditioning  # [0,2]
-            j[self.au + 0 - 4, 4] = 1.0 * self.conditioning  # [0,4]
-            j[self.au + 1 - 1, 1] = 1.0 * self.conditioning  # [1,1]
-        elif self.inlet_variable == 'total_pressure':
-            j[self.au + 0 - 0, 0] = 1.0 * self.conditioning  # [0,0]
-            j[self.au + 0 - 1, 1] = (2.0 * (self.get_inlet_boundary() - self.p[0])) ** -0.5 * self.conditioning  # [1,1]
-            j[self.au + 1 - 1, 1] = 1.0 * self.conditioning  # [1,1]
-            j[self.au + 1 - 3, 3] = -2.0 * self.conditioning  # [1,3]
-            j[self.au + 1 - 5, 5] = 1.0 * self.conditioning  # [1,5]
-
-        j[self.au + 2, 0:2 * self.m + 0:2] = -(self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0  # [2*i, 2*(i-1)]
-        j[self.au + 3, 0:2 * self.m + 0:2] = (-((self.u[1:self.m + 1] + 2.0 * self.u[0:self.m]) * usign
-                                                + self.u[1:self.m + 1] * (1.0 - usign))
-                                              * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0)  # [2*i+1, 2*(i-1)]
-        j[self.au + 1, 1:2 * self.m + 1:2] = -self.alpha  # [2*i, 2*(i-1)+1]
-        j[self.au + 2, 1:2 * self.m + 1:2] = -(self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0  # [2*i+1, 2*(i-1)+1]
-
-        j[self.au + 0, 2:2 * self.m + 2:2] = ((self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
-                                              - (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0)  # [2*i, 2*i]
-        j[self.au + 1, 2:2 * self.m + 2:2] = (self.dz / self.dt * self.a[1:self.m + 1] * self.unsteady
-                                              + ((2.0 * self.u[1:self.m + 1] + self.u[2:self.m + 2]) * usign
-                                                 + self.u[2:self.m + 2] * (1.0 - usign))
-                                              * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0
-                                              - (self.u[0:self.m] * usign
-                                                 + (2.0 * self.u[1:self.m + 1] + self.u[0:self.m]) * (1.0 - usign))
-                                              * (self.a[1:self.m + 1] + self.a[0:self.m]) / 4.0)  # [2*i+1, 2*i]
-        j[self.au - 1, 3:2 * self.m + 3:2] = 2.0 * self.alpha  # [2*i, 2*i+1]
-        j[self.au + 0, 3:2 * self.m + 3:2] = (-(self.a[1:self.m + 1] + self.a[2:self.m + 2])
-                                              + (self.a[1:self.m + 1] + self.a[0:self.m])) / 4.0  # [2*i+1, 2*i+1]
-
-        j[self.au - 2, 4:2 * self.m + 4:2] = (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0  # [2*i, 2*(i+1)]
-        j[self.au - 1, 4:2 * self.m + 4:2] = ((self.u[1:self.m + 1] * usign + (self.u[1:self.m + 1]
-                                                                               + 2.0 * self.u[2:self.m + 2])
-                                               * (1.0 - usign))
-                                              * (self.a[1:self.m + 1] + self.a[2:self.m + 2]) / 4.0)  # [2*i+1, 2*(i+1)]
-        j[self.au - 3, 5:2 * self.m + 5:2] = -self.alpha  # [2*i, 2*(i+1)+1]
-        j[self.au - 2, 5:2 * self.m + 5:2] = (self.a[1:self.m + 1]
-                                              + self.a[2:self.m + 2]) / 4.0  # [2*i+1, 2*(i+1)+1]
-
-        j[self.au + (2 * self.m + 2) - (2 * self.m + 2), 2 * self.m + 2] = 1.0 * self.conditioning  # [2*m+2, 2*m+2]
-        j[self.au + (2 * self.m + 2) - (2 * self.m), 2 * self.m] = -2.0 * self.conditioning  # [2*m+2, 2*m]
-        j[self.au + (2 * self.m + 2) - (2 * self.m - 2), 2 * self.m - 2] = 1.0 * self.conditioning  # [2*m+2, 2*m-2]
-        if self.outlet_type == 1:
-            j[self.au + (2 * self.m + 3) - (2 * self.m + 2),
-              2 * self.m + 2] = (-(np.sqrt(self.cmk2 - self.pn[self.m + 1] / 2.0)
-                                   - (self.u[self.m + 1] - self.un[self.m + 1]) / 4.0)) \
-                                * self.conditioning  # [2*m+3, 2*m+2]
-        j[self.au + (2 * self.m + 3) - (2 * self.m + 3), 2 * self.m + 3] = 1.0 * self.conditioning  # [2*m+3, 2*m+3]
-        return j
-
-    def get_surrogate_jacobian(self):
-        # df/d(u,p')
-        jf = self.get_jacobian()
-        jf = bnd.remove_boundaries(jf, 2)
-        jf = jf[1:-1, :]
-        jf = bnd.to_dense(jf)
-
-        # dp/df
-        jif = np.linalg.inv(jf)
-        jif = self.rhof * jif[1::2, :]
-
-        # df/da
-        ja = self.get_jacobian_area()
-
-        # da/dr
-        jr = 2 * np.sqrt(np.pi * self.a[1: self.m + 1])
-
-        # dp/dr
-        jsurrogate = jif @ -ja * jr
-        return jsurrogate
-
-    def get_jacobian_area(self):
-        usign = self.u[1:self.m + 1] > 0
-        ur = self.u[1:self.m + 1] * usign + self.u[2:self.m + 2] * (1.0 - usign)
-        ul = self.u[0:self.m] * usign + self.u[1:self.m + 1] * (1.0 - usign)
-        j = np.zeros((2 * self.m, self.m))
-        for i in range(self.m):
-            if i > 0:
-                j[2 * i, i - 1] = - (self.u[i] + self.u[i + 1]) / 4  # [2*i, i-1]
-                j[2 * i + 1, i - 1] = (- ul[i] * (self.u[i] + self.u[i + 1]) / 4
-                                       + (self.p[i + 1] - self.p[i]) / 4)  # [2*i+1, i-1]
-            j[2 * i, i] = (self.dz / self.dt * self.unsteady + (self.u[i + 1] + self.u[i + 2]) / 4
-                           - (self.u[i] + self.u[i + 1]) / 4)  # [2*i, i]
-            j[2 * i + 1, i] = (self.dz / self.dt * self.u[i + 1] * self.unsteady
-                               + ur[i] * (self.u[i + 1] + self.u[i + 2]) / 4 - ul[i] * (self.u[i] + self.u[i + 1]) / 4
-                               + (self.p[i + 2] - self.p[i + 1]) / 4 + (self.p[i + 1] - self.p[i]) / 4)  # [2*i+1, i]
-            if i < self.m - 1:
-                j[2 * i, i + 1] = (self.u[i + 1] + self.u[i + 2]) / 4  # [2*i, i+1]
-                j[2 * i + 1, i + 1] = (ur[i] * (self.u[i + 1] + self.u[i + 2]) / 4
-                                       + (self.p[i + 2] - self.p[i + 1]) / 4)  # [2*i+1, i+1]
-        return j
+        return np.reshape(area, (nf, 1)), normal_array

@@ -1,23 +1,26 @@
+import glob
 import shutil
 import subprocess
+from os.path import join
 
 from coconut import tools
 
-csm_solver = 'abaqus.v2024'
-cfd_dir = './CFD'
-csm_dir = './CSM'
+solver_2 = 'pc_fluent.v2024R2'
+cfd_dir_1 = 'CFD_1'
+cfd_dir_2 = 'CFD_2'
 
-# copy run_simulation.py script to main directory
-shutil.copy('../../run_simulation.py', './')
+# clean up Fluent
+if glob.glob(join(cfd_dir_2, 'cleanup-fluent*')):
+    subprocess.check_call(f'sh cleanup-fluent*', shell=True, cwd=cfd_dir_2)
 
 # clean working directories
-shutil.rmtree(cfd_dir, ignore_errors=True)
-shutil.rmtree(csm_dir, ignore_errors=True)
+shutil.rmtree(cfd_dir_1, ignore_errors=True)
+shutil.rmtree(cfd_dir_2, ignore_errors=True)
 
 # create new CFD folder
-shutil.copytree('../setup_files/tube_flow', cfd_dir)
+shutil.copytree('setup_files/solid', cfd_dir_1)
 
 # create new CSM folder
-shutil.copytree('../setup_files/abaqus2d', csm_dir)
-csm_env = tools.get_solver_env(csm_solver, csm_dir)
-subprocess.check_call('./setup_abaqus2d.sh', shell=True, cwd=csm_dir, env=csm_env)
+shutil.copytree('setup_files/liquid', cfd_dir_2)
+cfd_env_2 = tools.get_solver_env(solver_2, cfd_dir_2)
+subprocess.check_call('./setup_fluent_2.sh', shell=True, cwd=cfd_dir_2, env=cfd_env_2)
