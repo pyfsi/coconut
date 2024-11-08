@@ -20,6 +20,12 @@ class SolverWrapperKratosStructure(SolverWrapper):
     version = None  # KratosMultiphysics version, set in subclass, for version 9.1 f. ex.: '91'
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input & output variables for Kratos solver wrapper
+    accepted_out_var = ['displacement']
+    accepted_in_var = ['pressure', 'traction']
+    error_out = f'Only permitted output variable is displacement for Kratos'
+    error_in = f'Only permitted input variables are pressure and traction for Kratos.'
+    
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)

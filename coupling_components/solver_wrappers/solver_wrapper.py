@@ -3,6 +3,11 @@ from coconut import tools
 
 
 class SolverWrapper(Component):
+    # Solver variable check, should be set in subclass
+    accepted_out_var = None
+    accepted_in_var = None
+    error_out = None
+    error_in = None
 
     def __init__(self, parameters):
         super().__init__()
@@ -32,35 +37,17 @@ class SolverWrapper(Component):
         super().initialize()
 
         # check variables in parameter.json file
-        warning = None
-        skip = False
-        if 'fluent' in self.type or 'openfoam' in self.type:
-            accepted_out_var = ['pressure', 'traction']
-            accepted_in_var = ['displacement']
-            error_out = f'Only permitted output variables are pressure and traction for {self.type}.'
-            error_in = f'Only permitted input variable is displacement for {self.type}.'
-        elif 'abaqus' in self.type or 'kratos_structure' in self.type:
-            accepted_out_var = ['displacement']
-            accepted_in_var = ['pressure', 'traction']
-            error_out = f'Only permitted output variable is displacement for {self.type}.'
-            error_in = f'Only permitted input variables are pressure and traction for {self.type}.'
-        elif 'mapped' in self.type:
-            skip = True
-        else:
-            warning = 'Variables could not be checked as solver_wrapper was not recognized.'
-
-        if warning is None and skip is False:
+        if self.accepted_out_var is not None:
             for mp in self.settings['interface_output']:
                 for var in mp['variables']:
-                    if var not in accepted_out_var:
-                        raise NameError(error_out)
+                    if var not in self.accepted_out_var:
+                        raise NameError(self.error_out)
 
+        if self.accepted_in_var is not None:
             for mp in self.settings['interface_input']:
                 for var in mp['variables']:
-                    if var not in accepted_in_var:
-                        raise NameError(error_in)
-        elif warning is not None and skip is False:
-            tools.print_info(warning, layout='warning')
+                    if var not in self.accepted_in_var:
+                        raise NameError(self.error_in)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
