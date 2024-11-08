@@ -83,27 +83,10 @@
           "mapper_interface_input": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.combined",
+              "type": "mappers.radial_basis",
               "settings": {
-                "mappers": [
-                  {
-                    "type": "mappers.depth_2d_to_3d",
-                    "settings": {
-                      "direction_depth": "z",
-                      "coordinates_depth": [
-                        -0.5,
-                        0.5
-                      ]
-                    }
-                  },
-                  {
-                    "type": "mappers.radial_basis",
-                    "settings": {
-                      "directions": [
-                        "x", "z"
-                      ]
-                    }
-                  }
+                "directions": [
+                  "x"
                 ]
               }
             }
