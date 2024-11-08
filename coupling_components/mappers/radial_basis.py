@@ -2,7 +2,7 @@ from coconut.coupling_components.mappers.interpolator import MapperInterpolator
 from coconut import tools
 
 from scipy.spatial import distance
-from scipy.linalg import solve
+from scipy.linalg import lstsq, null_space
 import numpy as np
 from multiprocessing import Pool, cpu_count
 
@@ -67,34 +67,62 @@ def get_coeffs(coords_to, distances, coords_from, shape_parameter, include_polyn
     def phi(r):
         return (1 - r) ** 4 * (1 + 4 * r) * np.heaviside(1 - r, 0)
 
+    n = coords_from.shape[0]  # number of from points
     d_ref = distances[-1] * shape_parameter
-
-    # create column Phi_to, based on distances to from-points
-    d_to = distances.reshape(-1, 1)
-    Phi_to = phi(d_to / d_ref)
 
     # create matrix Phi, based on distances between from-points
     d = distance.squareform(distance.pdist(coords_from))
     Phi = phi(d / d_ref)
 
+    # create column Phi_to, based on distances to from-points
+    d_to = distances.reshape(-1, 1)
+    Phi_to = phi(d_to / d_ref)
+
     if include_polynomial:
-        # create column p_to
-        p_to = np.concatenate((np.array([1]), coords_to)).reshape(-1, 1)
+        # determine scale to improve conditioning number
+        scale = np.mean(np.linalg.norm(coords_from, axis=1))
 
         # create matrix p
-        p = np.hstack((np.ones((coords_from.shape[0], 1)), coords_from))
+        p = np.hstack((np.ones((n, 1)), coords_from / scale))
+
+        # create column p_to
+        p_to = np.concatenate((np.array([1]), coords_to / scale)).reshape(-1, 1)
+
+        # determine null space of p
+        ns = null_space(p)
 
         # stack matrices
-        A = np.block([[Phi, p], [p.T, np.zeros((p.shape[1], p.shape[1]))]])
-        B = np.block([[Phi_to], [p_to]])
+        if ns.size is not 0:
+            # if the from-points are collinear (2d,3d) or coplanar (3d), the linear polynomial is not uniquely defined
+            # then, the resulting hyperplane is chosen such that there is no change in value when moving orthogonal
+            # to this line/plane
+            #
+            # if the from-points are collinear (2d,3d) or coplanar (3d), the null space of P is not 0
+            # the null space contains the coefficients for the equations such as ax+by+cz+d=0 that represent this
+            # line/plane
+            # the coefficients a, b, c are the orthogonal directions to this line/plane
+            # the requirement is added that the coefficients of the hyperplane are orthogonal to these coefficients
+            # i.e., require orthogonality of the normal of the resulting hyperplane (projected on the point space)
+            # to directions that are orthogonal to the line/plane formed by the from-points
+
+            ns[0] = 0  # ns contains the directions that are orthogonal to the line/plane formed by the from-points
+            ns_dim = ns.shape[1]
+            A = np.block([[Phi, p],
+                          [p.T, np.zeros((p.shape[1], p.shape[1]))],
+                          [np.zeros((ns_dim, n)), ns.T]
+                          ])  # not square, full (column) rank
+        else:
+            A = np.block([[Phi, p], [p.T, np.zeros((p.shape[1], p.shape[1]))]])  # symmetric, full rank
+        b = np.block([[Phi_to], [p_to]])
     else:
-        A = Phi
-        B = Phi_to
+        A = Phi  # symmetric, full rank
+        b = Phi_to
+
+    # solve system A^T c = b for c, minimal norm solution if A^T is column rank deficit, and truncate
+    coeffs, residues, rank, s = lstsq(A.T, b, overwrite_a=True, overwrite_b=True)
+    coeffs = coeffs[:n]
 
     # calculate condition number
-    cond = np.linalg.cond(A)
-
-    # solve system A^T c = B for c (A is symmetric) and truncate
-    coeffs = solve(A, B, assume_a='sym')[:Phi_to.shape[0]]
+    cond = s[0] / s[rank - 1]
 
     return coeffs.reshape(1, -1), cond

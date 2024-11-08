@@ -241,7 +241,7 @@ Assume that $n$ nearest *from*-points will be used in the interpolation.
 An unknown function $f(\boldsymbol{x})$ can then be approximated as the weighted sum of $n$ shifted radial basis functions:
 
 $$
-f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||).
 $$
 
 To determine the coefficients $\alpha_j$, we require that the exact function value is returned at the $n$ *from*-points.
@@ -264,7 +264,7 @@ However, in our case, the *from*-point values vector $\boldsymbol{f}$ is not kno
 Therefore, the approximation to calculate the interpolation in the *to*-point is rewritten as follows:
 
 $$
-f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}.
 $$
 
 The coefficients vector $\boldsymbol{c}$ can now be calculated based only on the coordinates by solving the system
@@ -295,10 +295,10 @@ A warning is printed when the condition number of an interpolation matrix become
 Adding a linear polynomial $p(\boldsymbol{x})$
 
 $$
-p(\boldsymbol{x}) = \beta_0 + \beta_1 x_1 + \dots + \beta_d x_d.
+p(\boldsymbol{x}) = \beta_0 + \beta_1 x_1 + \dots + \beta_d x_d,
 $$
 
-to the radial basis interpolant allows to exactly capture linear variations in *from*-point values:
+with $d$ the dimension of $\boldsymbol{x}$, to the radial basis interpolant allows to exactly capture linear variations in *from*-point values:
 
 $$
 f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||) + p(\boldsymbol{x}).
@@ -311,7 +311,7 @@ $$
 \sum_j \alpha_j q(\boldsymbol{x}_j) = 0
 $$
 
-for all $q$ with a degree lower than the degree of p.
+for all polynomials $q$ with a degree lower than the degree of $p$.
 These conditions can be written in matrix form as 
 
 $$
@@ -332,7 +332,7 @@ $$
 
 with $\boldsymbol{P} \in \mathbb{R}^{n \times (d+1)}$, and $\boldsymbol{\beta} \in \mathbb{R}^{(d+1) \times 1}$.
 
-As before, this system can be solved for the vectors $\boldsymbol{\alpha}$ and $\boldsymbol{\beta}$ with the *from*-point values (each time the mapper is used), but it is less expensive to construct the vector $\boldsymbol{c} \in \mathbb{R}^{n \times 1}$ (once, when the mapper is initialized), as follows:
+As before, this system can be solved for the vectors $\boldsymbol{\alpha}$ and $\boldsymbol{\beta}$ with the *from*-point values (each time the mapper is used), but it is less expensive to construct the vector $\boldsymbol{c} \in \mathbb{R}^{n \times 1}$ (once, when the mapper is initialized) as follows:
 
 $$
 f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) + p(\boldsymbol{x}_{to}) = {\boldsymbol{\Phi}_{to}}^T \boldsymbol{\alpha} + {\boldsymbol{P}_{to}}^T \boldsymbol{\beta} 
@@ -386,6 +386,9 @@ $$
 $$
 
 For details refer to Degroote and Vierendeels [[2](#2)].
+
+Note that when the from-points are collinear (in 2d or 3d) or coplanar (in 3d), the linear polynomial $p(\boldsymbol{x})$ is not uniquely defined.
+Then, the corresponding hyperplane is chosen such that there is no change in value when moving orthogonal to the line or plane formed by the *from*-points.
 
 <a id="1">[1]</a>
 [Lombardi M., Parolini N. and Quarteroni A., "Radial basis functions for inter-grid interpolation and mesh motion in FSI problems", Computer Methods in Applied Mechanics and Engineering, vol. 256, pp. 117-131, 2013.](https://doi.org/10.1016/j.cma.2012.12.019)
