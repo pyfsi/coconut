@@ -147,7 +147,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cfd, env=self.env)
 
         # get general simulation info from  fluent.log and report.sum
-        self.coco_messages.wait_message('case_info_exported')
+        self.coco_messages.wait_message('case_info_exported', self.fluent_process)
 
         with open(log, 'r') as file:
             for line in file:
@@ -254,7 +254,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.timestep += 1
 
         self.coco_messages.send_message('next')
-        self.coco_messages.wait_message('next_ready')
+        self.coco_messages.wait_message('next_ready', self.fluent_process)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -278,7 +278,7 @@ class SolverWrapperFluentALM(SolverWrapper):
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
-        self.coco_messages.wait_message('continue_ready')
+        self.coco_messages.wait_message('continue_ready', self.fluent_process)
 
         if self.check_coupling_convergence:
             # check if Fluent converged after 1 iteration
@@ -336,7 +336,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready')
+            self.coco_messages.wait_message('save_ready', self.fluent_process)
 
         # remove unnecessary files
         if self.timestep - 1 > self.timestep_start:
@@ -365,7 +365,7 @@ class SolverWrapperFluentALM(SolverWrapper):
     def finalize(self):
         super().finalize()
         self.coco_messages.send_message('stop')
-        self.coco_messages.wait_message('stop_ready')
+        self.coco_messages.wait_message('stop_ready', self.fluent_process)
         self.fluent_process.wait()
 
         # remove unnecessary files
@@ -430,7 +430,7 @@ class SolverWrapperFluentALM(SolverWrapper):
 
         # make Fluent store coordinates and ids
         self.coco_messages.send_message('store_grid')
-        self.coco_messages.wait_message('store_grid_ready')
+        self.coco_messages.wait_message('store_grid_ready', self.fluent_process)
 
         coord_data = {}
 
