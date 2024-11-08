@@ -203,6 +203,9 @@ class SolverWrapperOpenFOAM(SolverWrapper):
 
         self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
 
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.openfoam_process)
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 

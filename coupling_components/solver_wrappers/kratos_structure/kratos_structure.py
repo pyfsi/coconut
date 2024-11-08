@@ -68,6 +68,10 @@ class SolverWrapperKratosStructure(SolverWrapper):
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> kratos.log',
                                     shell=True, cwd=self.working_directory, env=self.env)
+
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.kratos_process)
+
         self.coco_messages.wait_message('start_ready')
 
         for mp_name in self.interface_sub_model_parts_list:
