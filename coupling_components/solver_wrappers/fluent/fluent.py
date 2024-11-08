@@ -23,11 +23,9 @@ class SolverWrapperFluent(SolverWrapper):
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
-    # define input & output variables for Fluent solver wrapper
-    accepted_out_var = ['pressure', 'traction']
+    # define input and output variables
     accepted_in_var = ['displacement']
-    error_out = f'Only permitted output variables are pressure and traction for Fluent.'
-    error_in = f'Only permitted input variable is displacement for Fluent'
+    accepted_out_var = ['pressure', 'traction']
 
     @tools.time_initialize
     def __init__(self, parameters):
