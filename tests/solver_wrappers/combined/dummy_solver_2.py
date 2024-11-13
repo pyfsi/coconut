@@ -29,7 +29,7 @@ class DummySolver2(SolverWrapper):
         dy = ly / (ny - 1)
         perturb_factor = 0.0
         x = np.linspace(0, lx, nx) + np.random.rand(nx) * dx * perturb_factor
-        y = np.linspace(0, ly, ny) + np.random.rand(nx) * dy * perturb_factor
+        y = np.linspace(0, ly, ny) + np.random.rand(ny) * dy * perturb_factor
 
         xx, yy = np.meshgrid(x, y)
         x0_in = xx.ravel()
@@ -54,8 +54,8 @@ class DummySolver2(SolverWrapper):
             self.mp_name_out_list.append(interface_settings['model_part'])
 
         # interfaces
-        self.interface_input = Interface(self.settings["interface_input"], self.model)
-        self.interface_output = Interface(self.settings["interface_output"], self.model)
+        self.interface_input = Interface(self.settings['interface_input'], self.model)
+        self.interface_output = Interface(self.settings['interface_output'], self.model)
 
     @tools.time_initialize
     def initialize(self):
@@ -98,6 +98,6 @@ if __name__ == '__main__':
     with open('parameters.json', 'r') as parameter_file:
         parameters = json.load(parameter_file)
 
-    sol_param = parameters['settings']['solver_wrappers'][1]
+    sol_param = parameters['settings']['solver_wrappers'][1]['settings']['solver_wrapper']
     dummy_solver = create(sol_param)
     print(dummy_solver.get_interface_output().get_interface_data())

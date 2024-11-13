@@ -2,7 +2,7 @@ from coconut.coupling_components.mappers.interpolator import MapperInterpolator
 from coconut import tools
 
 from scipy.spatial import distance
-from scipy.linalg import lstsq, null_space
+from scipy.linalg import lstsq, null_space, solve
 import numpy as np
 from multiprocessing import Pool, cpu_count
 
@@ -118,11 +118,18 @@ def get_coeffs(coords_to, distances, coords_from, shape_parameter, include_polyn
         A = Phi  # symmetric, full rank
         b = Phi_to
 
-    # solve system A^T c = b for c, minimal norm solution if A^T is column rank deficit, and truncate
-    coeffs, residues, rank, s = lstsq(A.T, b, overwrite_a=True, overwrite_b=True)
-    coeffs = coeffs[:n]
+    if A.shape[0] == A.shape[1]:
+        # solve system A^T c = b for c (A is symmetric) and truncate
+        coeffs = solve(A, b, assume_a='sym')[:n]
 
-    # calculate condition number
-    cond = s[0] / s[rank - 1]
+        # calculate condition number
+        cond = np.linalg.cond(A)
+    else:
+        # solve system A^T c = b for c, minimal norm solution if A^T is column rank deficit, and truncate
+        coeffs, residues, rank, s = lstsq(A.T, b, overwrite_a=True, overwrite_b=True)
+        coeffs = coeffs[:n]
+
+        # calculate condition number
+        cond = s[0] / s[rank - 1]
 
     return coeffs.reshape(1, -1), cond
