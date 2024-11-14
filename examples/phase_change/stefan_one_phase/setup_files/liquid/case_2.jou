@@ -19,10 +19,10 @@ define boundary-conditions fluid , y pcm n n n n , n , n y n
 ;define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n ,
 define boundary-conditions zone-type adiabatic symmetry
 ;heated wall 10 °C above solidus temp.
-define boundary-conditions wall wall 0 n 0 n y temperature n 309.15 y motion-bc-stationary n n ,
-define boundary-conditions wall boundary 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n ,
+define boundary-conditions wall wall n 0 n 0 n y temperature n 309.15 y motion-bc-stationary n n ,
+define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n ,
 
-;define operating-conditions operating-pressure 0
+define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
 solve monitors residual check-convergence y y y y

@@ -8,7 +8,7 @@
       "timestep_start": 0,
       "delta_t": 0.1,
       "omega_max": 0.8,
-      "save_results": 1,
+      "save_results": 10,
       "save_restart": 0,
       "debug": false,
       "model": {
@@ -44,7 +44,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.pc_fluent.v2024R1",
+        "type": "solver_wrappers.pc_fluent.v2024R2",
         "settings": {
           "working_directory": "CFD_2",
           "case_file": "pc_fluid.cas.h5",
@@ -57,7 +57,10 @@
             "latent": 179000,
             "melt_temp": 299.15,
             "ini_condition": 0,
-            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")"
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
+            "mapping_domain": "rectangular",
+            "mapping_limits": [0, 0, 0.1, 0.01],
+            "mapping_conservative": false
           },
           "thread_names": [
             "boundary"
@@ -95,7 +98,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.pc_fluent.v2024R1",
+            "type": "solver_wrappers.pc_fluent.v2024R2",
             "settings": {
               "working_directory": "CFD_1",
               "case_file": "pc_solid.cas.h5",
@@ -108,7 +111,10 @@
                 "latent": 179000,
                 "melt_temp": 299.15,
                 "ini_condition": 299.15,
-                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")"
+                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
+                "mapping_domain": "rectangular",
+                "mapping_limits": [0, 0, 0.1, 0.01],
+                "mapping_conservative": false
               },
               "thread_names": [
                 "boundary"
