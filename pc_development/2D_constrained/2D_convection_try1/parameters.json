@@ -1,0 +1,172 @@
+{
+  "settings": {
+    "number_of_timesteps": 30000
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.aitken",
+    "settings": {
+      "timestep_start": 0,
+      "delta_t": 0.01,
+      "omega_max": 0.8,
+      "save_results": 1,
+      "save_restart": 0,
+      "debug": false,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-13,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 10
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+              "tolerance": 1e-15,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.pc_fluent.v2024R2",
+        "settings": {
+          "working_directory": "CFD_2",
+          "case_file": "2D_fluid.cas.h5",
+          "dimensions": 2,
+          "unsteady": true,
+          "multiphase": false,
+          "debug": false,
+          "PC": {
+            "moving_boundary": true,
+            "latent": 179000,
+            "melt_temp": 299.15,
+            "ini_condition": 0,
+            "mapping_domain": "rectangular",
+            "mapping_limits": [0, 0, 0.1, 0.1],
+            "mapping_conservative": true
+          },
+          "thread_names": [
+            "boundary"
+          ],
+          "interface_input": [
+            {
+              "model_part": "boundary_in_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "boundary_out_faces",
+              "variables": [
+                "heat_flux"
+              ]
+            }
+          ],
+          "cores": 2,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 100,
+          "save_results": 3000
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.pc_fluent.v2024R2",
+            "settings": {
+              "working_directory": "CFD_1",
+              "case_file": "2D_solid.cas.h5",
+              "dimensions": 2,
+              "unsteady": true,
+              "multiphase": false,
+              "debug": false,
+              "PC": {
+                "moving_boundary": true,
+                "latent": 179000,
+                "melt_temp": 299.15,
+                "ini_condition": 299.15,
+                "mapping_domain": "rectangular",
+                "mapping_limits": [0, 0, 0.1, 0.1],
+                "mapping_conservative": true
+              },
+              "thread_names": [
+                "boundary"
+              ],
+              "interface_input": [
+                {
+                  "model_part": "boundary_in_faces",
+                  "variables": [
+                    "heat_flux"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "boundary_out_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+              "cores": 1,
+              "fluent_gui": false,
+              "max_nodes_per_face": 2,
+              "flow_iterations": 100,
+              "save_results": 3000
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

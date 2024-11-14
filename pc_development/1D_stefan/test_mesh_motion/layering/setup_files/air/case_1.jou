@@ -1,0 +1,71 @@
+file set-batch-options n n n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case 2D_left.msh
+grid check
+grid modify-zones zone-type 2 fluid
+
+define user-defined user-defined-memory 12
+
+define models unsteady-1st-order y
+define models viscous laminar y
+define models solver pressure-based y
+
+;Enable energy model?
+;Compute viscous energy dissipation?
+;Include pressure work in energy equation?
+;Include kinetic energy in energy equation?
+;Include diffusion at inlets?
+define models energy y n y y y
+solve set equations flow y
+
+define materials change-create air air yes ideal-gas no no no no no no
+
+define boundary-conditions fluid , n n n n n , n , n y n
+define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n ,
+;Outer wall is adiabatic as well
+define boundary-conditions wall wall 0 n 0 n n n 0 y motion-bc-stationary n n ,
+define boundary-conditions wall boundary 0 n 0 n n n 0 y motion-bc-stationary n n ,
+
+;define operating-conditions operating-pressure 0
+define operating-conditions gravity n
+
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-10
+
+solve set discretization-scheme temperature 0
+solve set discretization-scheme mom 0
+solve set discretization-scheme density 0
+solve set discretization-scheme pressure 12
+solve set gradient-scheme n y
+; SIMPLE (20) - PISO (22)
+solve set p-v-coupling 22
+solve set under-relaxation temperature 0.9
+solve set under-relaxation mom 0.75
+solve set under-relaxation pressure 0.75
+solve set under-relaxation density 0.5
+
+define dynamic-mesh dynamic-mesh y n n n n
+define dynamic-mesh controls smoothing n
+define dynamic-mesh controls layering y
+define dynamic-mesh controls remeshing n
+define dynamic-mesh controls layering-parameters constant-height y
+define dynamic-mesh controls layering-parameters collapse-factor 0.2
+define dynamic-mesh controls layering-parameters split-factor 0.4
+; Last option below: exclude mesh motion in boundary conditions? y
+define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+; Include end of setup command in json file for layering! Non-zero cell height for layering
+
+solve initialize set-defaults temperature 298.15
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0
+solve initialize set-defaults y-velocity 0
+solve initialize initialize-flow
+
+solve set transient-controls fixed-user-specified y
+solve set transient-controls max-iterations-per-time-step 5
+solve set transient-controls time-step-size 0.1
+solve set transient-controls number-of-time-steps 100
+
+file write-case-data pc_air.cas.h5
+exit
