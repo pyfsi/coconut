@@ -31,13 +31,11 @@ class MapperLinearBounded(Component):
         self.settings = parameters['settings']
         self.balanced_tree = self.settings.get('balanced_tree', False)
         self.check_bounding_box = self.settings.get('check_bounding_box', True)
-        self.n_nearest = 0  # must be set in subclass!
 
         # initialization
         self.n_from, self.n_to = None, None
         self.coords_from, self.coords_to = None, None
         self.tree = None
-        self.distances = None
         self.nearest = None
         self.coeffs = None
 
@@ -128,7 +126,7 @@ class MapperLinearBounded(Component):
         else:  # less stable
             self.tree = cKDTree(self.coords_from, balanced_tree=False)
 
-        self.distances, self.nearest = self.tree.query(self.coords_to, k=self.n_nearest)
+        _, self.nearest = self.tree.query(self.coords_to, k=self.n_nearest)
         self.nearest = self.nearest.reshape(-1, self.n_nearest)
 
         # check for duplicate points
@@ -155,12 +153,6 @@ class MapperLinearBounded(Component):
         self.boundary_ind, self.boundary_name = find_boundary_nodes(self.coords_to, self.vertices)
         self.boundary_nodes = self.coords_to[self.boundary_ind]
 
-        if np.shape(self.boundary_nodes)[1] == 2:
-            self.boundary_nodes_3D = np.append(self.boundary_nodes, np.zeros((np.shape(self.boundary_nodes)[0], 1)),
-                                               axis=1)
-        elif np.shape(self.boundary_nodes)[1] == 3:
-            self.boundary_nodes_3D = self.boundary_nodes
-
         # build and query TO (nodes) tree
         if self.balanced_tree:  # time-intensive
             self.node_tree = cKDTree(self.coords_to)
@@ -171,12 +163,6 @@ class MapperLinearBounded(Component):
             _, self.neighbour = self.node_tree.query(self.boundary_nodes, k=[2])
             self.neighbour = self.neighbour.reshape(-1, self.n_nearest)
             self.neighbour_nodes = self.coords_to[self.neighbour][0]
-
-            if np.shape(self.neighbour_nodes)[1] == 2:
-                self.neighbour_nodes_3D = np.append(self.neighbour_nodes,
-                                                    np.zeros((np.shape(self.neighbour_nodes)[0], 1)), axis=1)
-            elif np.shape(self.neighbour_nodes)[1] == 3:
-                self.neighbour_nodes_3D = self.neighbour_nodes
 
     def __call__(self, args_from, args_to):
         # unpack arguments
@@ -190,31 +176,36 @@ class MapperLinearBounded(Component):
             raise TypeError('Variables must be equal')
 
         # interpolation
-        data_from = interface_from.get_variable_data(mp_name_from, var_from)
-        data_to = interface_to.get_variable_data(mp_name_to, var_to)
+        data_from = interface_from.get_variable_data(mp_name_from, var_from)[:, 0:len(self.directions)]
+        data_to = interface_to.get_variable_data(mp_name_to, var_to)[:, 0:len(self.directions)]
+
         for i in range(data_to.shape[0]):
             for j in range(data_to.shape[1]):
                 data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest[i, :], j])
 
         # project shifted boundary nodes on domain boundary
         if np.size(self.boundary_ind) >= 1:
-            moved_boundary_nodes = self.boundary_nodes_3D + data_to[self.boundary_ind]
-            moved_neighbour_nodes = self.neighbour_nodes_3D + data_to[self.neighbour][0]
+            moved_boundary_nodes = self.boundary_nodes + data_to[self.boundary_ind]
+            moved_neighbour_nodes = self.neighbour_nodes + data_to[self.neighbour][0]
             for i in range(np.shape(moved_boundary_nodes)[0]):
-                params = np.polyfit((moved_boundary_nodes[i, 0], moved_neighbour_nodes[i, 0]),
-                                    (moved_boundary_nodes[i, 1], moved_neighbour_nodes[i, 1]),
-                                    deg=1)
-                coord = intersect(params, self.boundary_name[i], self.vertices)
+                # list [(x0, x1), (y0, y1)] of 2D faces closest to domain boundaries
+                line_coords = [(moved_boundary_nodes[i, 0], moved_neighbour_nodes[i, 0]),
+                                    (moved_boundary_nodes[i, 1], moved_neighbour_nodes[i, 1])]
+                coord = intersect(line_coords, self.boundary_name[i], self.vertices)
 
                 if self.boundary_name[i] == 'top' or self.boundary_name[i] == 'bottom':
-                    disp_x = coord[0] - self.boundary_nodes_3D[i, 0]
+                    disp_x = coord[0] - self.boundary_nodes[i, 0]
                     disp_y = 0
                 elif self.boundary_name[i] == 'left' or self.boundary_name[i] == 'right':
                     disp_x = 0
-                    disp_y = coord[1] - self.boundary_nodes_3D[i, 1]
+                    disp_y = coord[1] - self.boundary_nodes[i, 1]
 
                 data_to[int(self.boundary_ind[i]), 0] = disp_x
                 data_to[int(self.boundary_ind[i]), 1] = disp_y
+
+        # add z-coordinate to data_to
+        if np.shape(data_to)[1] == 2:
+            data_to = np.append(data_to, np.zeros((np.shape(data_to)[0], 1)), axis=1)
 
         # Set mapped varaible data
         interface_to.set_variable_data(mp_name_to, var_to, data_to)
@@ -324,14 +315,14 @@ def find_boundary_nodes(coords, rect_vertices):
 
     return boundary_indices, boundary_names
 
-def intersect(param, boundary_name, vertices):
+def intersect(line_coords, boundary_name, vertices):
     """
     Finds the intersection point of two lines:
-      - One line defined by y = a*x + b
+      - Line between the node at the domain boundary and its nearest node neighbour
       - Domain boundary line
 
     Args:
-      param: slope and intercept of first line [a b]
+      line_coords: list of tuples [(x0, x1), (y0, y1)] with (x0, y0) the node coordinates at the domain boundary and (x1, y1) the neighbouring node coordinates
       boundary_name: 'left, 'right', 'bottom' or 'top'
       vertices: A list of 4 tuples representing the rectangular domain vertices
                       (lower left, upper left, lower right, upper right).
@@ -339,6 +330,10 @@ def intersect(param, boundary_name, vertices):
     Returns:
       The intersection point as a tuple (x, y), or None if there is no intersection.
     """
+
+    x_nodes = line_coords[0]
+    y_nodes = line_coords[1]
+    param, vertical = linear_fit(x_nodes, y_nodes)
 
     if boundary_name == 'left':
         p1, p2 = vertices[0], vertices[1]
@@ -349,14 +344,47 @@ def intersect(param, boundary_name, vertices):
     elif boundary_name == 'top':
         p1, p2 = vertices[1], vertices[3]
 
-    param_boundary = np.polyfit((p1[0], p2[0]), (p1[1], p2[1]), deg=1)
+    param_boundary, vert_boundary = linear_fit((p1[0], p2[0]), (p1[1], p2[1]))
 
-    # Check for parallel lines
-    if param[0] == param_boundary[0]:
-        raise ValueError("Lines are parallel and do not intersect.")
+    if vertical is True and vert_boundary is True:
+        raise ValueError("Two vertical lines do not intersect.")
+    elif vertical is True and vert_boundary is False:
+        x = x_nodes[0]
+        y = param_boundary[0] * x + param_boundary[1]
+    elif vertical is False and vert_boundary is True:
+        x = p1[0]
+        y = param[0] * x + param[1]
+    else:
+        # Check for parallel lines
+        if param[0] == param_boundary[0]:
+            raise ValueError("Lines are parallel and do not intersect.")
 
-    # Calculate intersection point
-    x = (param_boundary[1] - param[1]) / (param[0] - param_boundary[0])
-    y = param[0] * x + param[1]
+        # Calculate intersection point
+        x = (param_boundary[1] - param[1]) / (param[0] - param_boundary[0])
+        y = param[0] * x + param[1]
 
     return (x, y)
+
+def linear_fit(x, y):
+    """
+    Finds the coefficents a and b of the line defined by y = a*x + b going through two points
+
+    Args:
+      x: tuple with x-coordinates of both points (x1, x2)
+      y: tuple with y-coordinates of both points (y1, y2)
+
+    Returns:
+      coeff: tuple with coefficients (a, b) such that y = a*x + b goes trough points (x1, y1) and (x2, y2)
+      vertical: boolean to indicate whether x1 == x2
+    """
+
+    vert = False
+    coeff = [0, 0]
+
+    if x[0] != x[1]:
+        coeff[0] = (y[1] - y[0]) / (x[1] - x[0])
+        coeff[1] = y[0] - coeff[0] * x[0]
+    else:
+        vert = True
+
+    return np.array(coeff), vert

@@ -1,5 +1,6 @@
 #include "udf.h"
 #include "sg.h"
+#include "dynamesh_tools.h"
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1574,7 +1575,7 @@ DEFINE_ON_DEMAND(write_displacement) {
                 vel = heat/(NV_MAG(area)*LH*C_R(c,t));
             } else {
                 if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
-                    vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1(c,t) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
+                    vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1_SAFE(c,t,dt) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
                 } else { // subcooled --> no interface velocity
                     vel = 0.0;
                 }
@@ -1760,7 +1761,7 @@ if (C_UDMI(c,t,ADJ) == 1.0) {
     } else {
         /* This definition is only valid for solid during melting! */
         if (C_UDMI(c,t,PR_H) >= 0.0) {
-            source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,PR_H)/dt;
+            source = C_UDMI(c,t,SIGN)*C_R(c,t)*(C_UDMI(c,t,PR_H) + ((C_UDMI(c,t,D_VOL) / C_VOLUME(c,t)) * C_CP(c,t) * (TM - 298.15)))/dt;
         } else {
             source = 0.0;
         }
