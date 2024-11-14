@@ -3,7 +3,7 @@ import numpy as np
 from coconut.examples.post_processing.post_processing import *
 
 # With non-conservative mapper
-pp = PostProcess('HPC_run_60000/case_results.pickle')
+pp = PostProcess('case_results/case_non_conservative.pickle')
 print(pp)
 print("\n")
 
@@ -11,7 +11,7 @@ sx = pp.add_subset(interface='interface_x', model_part='boundary_in_nodes')
 sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 
 # With conservative mapper
-pp_c = PostProcess('new_HPC_run/case_results.pickle')
+pp_c = PostProcess('case_results/case_conservative.pickle')
 print(pp_c)
 print("\n")
 
