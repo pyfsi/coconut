@@ -24,6 +24,10 @@ class SolverWrapperPCFluent(SolverWrapper):
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = list(accepted_variables_pc['in'].keys())
+    accepted_out_var = list(accepted_variables_pc['out'].keys())
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -188,14 +192,6 @@ class SolverWrapperPCFluent(SolverWrapper):
                            f'\n\tThe used hosts_file is {join(self.dir_cfd, self.hosts_file)}'
             tools.print_info(warning, layout='warning')
             self.cores = max_cores
-
-        # check variables in parameter.json file
-        for var in self.input_variables:
-            if var not in accepted_variables_pc['in']:
-                raise NameError("Only permitted input variables are displacement, temperature and heat flux")
-        for var in self.output_variables:
-            if var not in accepted_variables_pc['out']:
-                raise NameError("Only permitted output variables are displacement, temperature, heat flux, pressure and traction")
 
         # start Fluent with journal
         log = join(self.dir_cfd, 'fluent.log')
