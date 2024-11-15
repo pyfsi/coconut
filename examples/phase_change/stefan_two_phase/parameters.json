@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 72000
+    "number_of_timesteps": 550
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
@@ -91,7 +91,7 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 6000
+          "save_results": 50
         }
       },
       {
@@ -145,7 +145,7 @@
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 6000
+              "save_results": 50
             }
           },
           "mapper_interface_input": {

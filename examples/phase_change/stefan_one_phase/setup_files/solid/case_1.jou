@@ -11,7 +11,7 @@ define models viscous laminar y
 define models solver pressure-based y
 solve set equations flow y
 define models energy y n n n y
-define models solidification-melting? yes constant 1e12 no
+define models solidification-melting? yes constant 1e5 no
 
 define materials copy fluid air pcm
 define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
@@ -29,14 +29,20 @@ define operating-conditions gravity n
 solve monitors residual check-convergence n n n y
 solve monitors residual convergence-criteria 1e-14
 
-solve set discretization-scheme temperature 0
 solve set gradient-scheme n y
 ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 24
+solve set discretization-scheme mom 0
+solve set discretization-scheme temperature 1
+; Standard (10) - Linear (11) - Second order (12) - Body force weighted (13) - PRESTO! (14)
+solve set discretization-scheme pressure 10
+
+solve set under-relaxation temperature 0.9
+solve set under-relaxation delh 0.9
+solve set under-relaxation density 0.9
 
 ;Initialise solid at melting temperature
 solve initialize set-defaults temperature 299.15
-solve set under-relaxation temperature 0.9
 solve initialize initialize-flow
 
 define dynamic-mesh dynamic-mesh y n n n n
