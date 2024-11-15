@@ -3,12 +3,30 @@ from coconut import tools
 
 
 class SolverWrapper(Component):
+    # solver variable check, should be set in subclass
+    accepted_in_var = None
+    accepted_out_var = None
 
     def __init__(self, parameters):
         super().__init__()
 
         self.settings = parameters['settings']
-        self.type = parameters["type"]
+        self.type = parameters['type']
+
+        # check input variables
+        if self.accepted_in_var is not None:
+            for mp in self.settings['interface_input']:
+                for var in mp['variables']:
+                    if var not in self.accepted_in_var:
+                        raise ValueError(f'{self.__class__.__name__} does not accept {var} as input variable\n'
+                                         f'Accepted input variables are: {", ".join(self.accepted_in_var)}')
+        # check variables output variables
+        if self.accepted_out_var is not None:
+            for mp in self.settings['interface_output']:
+                for var in mp['variables']:
+                    if var not in self.accepted_out_var:
+                        raise ValueError(f'{self.__class__.__name__} does not accept {var} as output variable\n'
+                                         f'Accepted output variables are: {", ".join(self.accepted_out_var)}')
 
         if not self.mapped:
             self.interface_input = None
@@ -27,41 +45,6 @@ class SolverWrapper(Component):
 
         # debug
         self.debug = self.settings.get('debug', False)  # save copy of input and output files in every iteration
-
-    def initialize(self):
-        super().initialize()
-
-        # check variables in parameter.json file
-        warning = None
-        skip = False
-        #TODO: merge variable control from pc & cht solver wrappers to here
-        if "mapped" in self.type or "pc" in self.type or "cht" in self.type:
-            skip = True
-        elif "fluent" in self.type or "openfoam" in self.type:
-            accepted_out_var = ["pressure", "traction"]
-            accepted_in_var = ["displacement"]
-            error_out = f"Only permitted output variables are pressure and traction for {self.type}."
-            error_in = f"Only permitted input variable is displacement for {self.type}."
-        elif "abaqus" in self.type or "kratos_structure" in self.type:
-            accepted_out_var = ["displacement"]
-            accepted_in_var = ["pressure", "traction"]
-            error_out = f"Only permitted output variable is displacement for {self.type}."
-            error_in = f"Only permitted input variables are pressure and traction for {self.type}."
-        else:
-            warning = "Variables could not be checked as solver_wrapper was not recognized."
-
-        if warning is None and skip is False:
-            for mp in self.settings['interface_output']:
-                for var in mp['variables']:
-                    if var not in accepted_out_var:
-                        raise NameError(error_out)
-
-            for mp in self.settings['interface_input']:
-                for var in mp['variables']:
-                    if var not in accepted_in_var:
-                        raise NameError(error_in)
-        elif warning is not None and skip is False:
-            tools.print_info(warning, layout='warning')
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
