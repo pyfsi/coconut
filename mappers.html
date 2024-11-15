@@ -2089,6 +2089,11 @@ This transformer can be initialized in both directions. </p>
 </thead>
 <tbody>
 <tr>
+<td style="text-align: right;"><code>include_polynomial</code></td>
+<td style="text-align: center;">bool</td>
+<td>(optional) Default: <code>true</code>. If <code>true</code> a polynomial is included in the radial basis function as described below.</td>
+</tr>
+<tr>
 <td style="text-align: right;"><code>n_nearest</code></td>
 <td style="text-align: center;">int</td>
 <td>(optional) Default: <code>81</code>, if mapping in 3 <code>directions</code>, else <code>9</code>. Number of nearest neighbours used to perform mapping.</td>
@@ -2129,10 +2134,10 @@ This transformer can be initialized in both directions. </p>
 An unknown function <span class="arithmatex"><span class="MathJax_Preview">f(\boldsymbol{x})</span><script type="math/tex">f(\boldsymbol{x})</script></span> can then be approximated as the weighted sum of <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> shifted radial basis functions:</p>
 <div class="arithmatex">
 <div class="MathJax_Preview">
-f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||).
 </div>
 <script type="math/tex; mode=display">
-f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||)
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||).
 </script>
 </div>
 <p>To determine the coefficients <span class="arithmatex"><span class="MathJax_Preview">\alpha_j</span><script type="math/tex">\alpha_j</script></span>, we require that the exact function value is returned at the <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> <em>from</em>-points.
@@ -2155,14 +2160,14 @@ f(\boldsymbol{x}_i) = f_i = \sum_j \alpha_j \phi(||\boldsymbol{x}_i - \boldsymbo
 </script>
 </div>
 <p>with <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{f}, \boldsymbol{\alpha} \in \mathbb{R}^{n \times 1}</span><script type="math/tex">\boldsymbol{f}, \boldsymbol{\alpha} \in \mathbb{R}^{n \times 1}</script></span>, and <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\Phi} \in \mathbb{R}^{n \times n}</span><script type="math/tex">\boldsymbol{\Phi} \in \mathbb{R}^{n \times n}</script></span>. This system can be solved for the weights-vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\alpha}</span><script type="math/tex">\boldsymbol{\alpha}</script></span>.</p>
-<p>However, in our case, the <em>from</em>-point values vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{f}</span><script type="math/tex">\boldsymbol{f}</script></span> is not known in advance: it contains the values of the <code>Variable</code> that will be interpolated. </p>
-<p>Therefore, the approximation to calculate the interpolatoin in the <em>to</em>-point is rewritten as follows:</p>
+<p>However, in our case, the <em>from</em>-point values vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{f}</span><script type="math/tex">\boldsymbol{f}</script></span> is not known in advance: it contains the values of the <code>variable</code> that will be interpolated. </p>
+<p>Therefore, the approximation to calculate the interpolation in the <em>to</em>-point is rewritten as follows:</p>
 <div class="arithmatex">
 <div class="MathJax_Preview">
-f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}.
 </div>
 <script type="math/tex; mode=display">
-f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) = \boldsymbol{\Phi}_{to}^T \boldsymbol{\alpha} = \boldsymbol{\Phi}_{to}^T \boldsymbol{\Phi}^{-1} \boldsymbol{f} = \boldsymbol{c}^T \boldsymbol{f}.
 </script>
 </div>
 <p>The coefficients vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> can now be calculated based only on the coordinates by solving the system</p>
@@ -2175,6 +2180,7 @@ f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbo
 </script>
 </div>
 <p>As every to-point has different nearest neighbours in the <em>from</em>-points, the coefficient vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> must be calculated for each <em>to</em>-point independently. The matrix <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\Phi}</span><script type="math/tex">\boldsymbol{\Phi}</script></span> and vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\Phi}_{to}</span><script type="math/tex">\boldsymbol{\Phi}_{to}</script></span> must also be calculated for every <em>to</em>-point independently.</p>
+<p><strong>The shape parameter</strong></p>
 <p>For every <em>to</em>-point, the reference distance <span class="arithmatex"><span class="MathJax_Preview">d_{ref}</span><script type="math/tex">d_{ref}</script></span> is determined as the product of the <code>shape_parameter</code> and the distance between the <em>to</em>-point and the furthest <em>from</em>-point.</p>
 <p>In order to ensure that the basis function of each of the nearest <em>from</em>-points covers every <em>from</em>-point, the <code>shape_parameter</code> should be larger than two.
 This value may however lead to an interpolation function which consists of sharp peaks or wiggles, with the correct value near the <em>from</em>-points, but a deviating value away from them.</p>
@@ -2183,7 +2189,178 @@ In this case the interpolation matrix approaches the identity matrix.</p>
 <p>Choosing a higher value improves the interpolation as the basis functions become wider, but the interpolation matrix becomes less stable, i.e. the condition number increases.
 The default value is 200.
 In practice, the <code>shape_parameter</code> is chosen so that the interpolation matrix is "on the edge of ill-conditioning" (for example, with a condition number of roughly <span class="arithmatex"><span class="MathJax_Preview">10^{13}</span><script type="math/tex">10^{13}</script></span> for double-precision floating point).
-A warning is printed when the condition number of an interpolation matrix becomes higher than <span class="arithmatex"><span class="MathJax_Preview">10^{13}</span><script type="math/tex">10^{13}</script></span>.</p>
+A warning is printed when the condition number of an interpolation matrix becomes higher than <span class="arithmatex"><span class="MathJax_Preview">10^{13}</span><script type="math/tex">10^{13}</script></span>. Refer also to Lombardi et al. [<a href="#1">1</a>].</p>
+<p><strong>Adding a polynomial</strong></p>
+<p>Adding a linear polynomial <span class="arithmatex"><span class="MathJax_Preview">p(\boldsymbol{x})</span><script type="math/tex">p(\boldsymbol{x})</script></span></p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+p(\boldsymbol{x}) = \beta_0 + \beta_1 x_1 + \dots + \beta_d x_d,
+</div>
+<script type="math/tex; mode=display">
+p(\boldsymbol{x}) = \beta_0 + \beta_1 x_1 + \dots + \beta_d x_d,
+</script>
+</div>
+<p>with <span class="arithmatex"><span class="MathJax_Preview">d</span><script type="math/tex">d</script></span> the dimension of <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{x}</span><script type="math/tex">\boldsymbol{x}</script></span>, to the radial basis interpolant allows to exactly capture linear variations in <em>from</em>-point values:</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||) + p(\boldsymbol{x}).
+</div>
+<script type="math/tex; mode=display">
+f(\boldsymbol{x}) = \sum_j \alpha_j \phi(||\boldsymbol{x} - \boldsymbol{x}_j||) + p(\boldsymbol{x}).
+</script>
+</div>
+<p>To determine the coefficients <span class="arithmatex"><span class="MathJax_Preview">\alpha_j</span><script type="math/tex">\alpha_j</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\beta_j</span><script type="math/tex">\beta_j</script></span>, additional conditions are required next to matching the exact function values at the <span class="arithmatex"><span class="MathJax_Preview">n</span><script type="math/tex">n</script></span> <em>from</em>-points.
+Therefore, we impose that</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+\sum_j \alpha_j q(\boldsymbol{x}_j) = 0
+</div>
+<script type="math/tex; mode=display">
+\sum_j \alpha_j q(\boldsymbol{x}_j) = 0
+</script>
+</div>
+<p>for all polynomials <span class="arithmatex"><span class="MathJax_Preview">q</span><script type="math/tex">q</script></span> with a degree lower than the degree of <span class="arithmatex"><span class="MathJax_Preview">p</span><script type="math/tex">p</script></span>.
+These conditions can be written in matrix form as </p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{\Phi} &amp; \boldsymbol{P} \\
+    \boldsymbol{P}^T &amp; \boldsymbol{0} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{\alpha} \\
+    \boldsymbol{\beta} \\
+    \end{bmatrix}.
+</div>
+<script type="math/tex; mode=display">
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{\Phi} & \boldsymbol{P} \\
+    \boldsymbol{P}^T & \boldsymbol{0} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{\alpha} \\
+    \boldsymbol{\beta} \\
+    \end{bmatrix}.
+</script>
+</div>
+<p>with <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{P} \in \mathbb{R}^{n \times (d+1)}</span><script type="math/tex">\boldsymbol{P} \in \mathbb{R}^{n \times (d+1)}</script></span>, and <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\beta} \in \mathbb{R}^{(d+1) \times 1}</span><script type="math/tex">\boldsymbol{\beta} \in \mathbb{R}^{(d+1) \times 1}</script></span>.</p>
+<p>As before, this system can be solved for the vectors <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\alpha}</span><script type="math/tex">\boldsymbol{\alpha}</script></span> and <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{\beta}</span><script type="math/tex">\boldsymbol{\beta}</script></span> with the <em>from</em>-point values (each time the mapper is used), but it is less expensive to construct the vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{c} \in \mathbb{R}^{n \times 1}</span><script type="math/tex">\boldsymbol{c} \in \mathbb{R}^{n \times 1}</script></span> (once, when the mapper is initialized) as follows:</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) + p(\boldsymbol{x}_{to}) = {\boldsymbol{\Phi}_{to}}^T \boldsymbol{\alpha} + {\boldsymbol{P}_{to}}^T \boldsymbol{\beta} 
+%=
+%    \begin{bmatrix}
+%    {\boldsymbol{\Phi}_{to}}^T &amp; {\boldsymbol{P}_{to}}^T \\
+%    \end{bmatrix}
+%    \begin{bmatrix}
+%    \boldsymbol{\alpha} \\
+%    \boldsymbol{\beta} \\
+%    \end{bmatrix}
+=
+    \begin{bmatrix}
+    {\boldsymbol{\Phi}_{to}}^T &amp; {\boldsymbol{P}_{to}}^T \\
+    \end{bmatrix}
+    {\begin{bmatrix}
+    \boldsymbol{\Phi} &amp; \boldsymbol{P} \\
+    \boldsymbol{P}^T &amp; \boldsymbol{0} \\
+    \end{bmatrix}}^{-1}
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{c}^T &amp; \dots \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+= \boldsymbol{c}^T \boldsymbol{f}.
+</div>
+<script type="math/tex; mode=display">
+f(\boldsymbol{x}_{to}) = \sum_j \alpha_j \phi(||\boldsymbol{x}_{to} - \boldsymbol{x}_j||) + p(\boldsymbol{x}_{to}) = {\boldsymbol{\Phi}_{to}}^T \boldsymbol{\alpha} + {\boldsymbol{P}_{to}}^T \boldsymbol{\beta} 
+%=
+%    \begin{bmatrix}
+%    {\boldsymbol{\Phi}_{to}}^T & {\boldsymbol{P}_{to}}^T \\
+%    \end{bmatrix}
+%    \begin{bmatrix}
+%    \boldsymbol{\alpha} \\
+%    \boldsymbol{\beta} \\
+%    \end{bmatrix}
+=
+    \begin{bmatrix}
+    {\boldsymbol{\Phi}_{to}}^T & {\boldsymbol{P}_{to}}^T \\
+    \end{bmatrix}
+    {\begin{bmatrix}
+    \boldsymbol{\Phi} & \boldsymbol{P} \\
+    \boldsymbol{P}^T & \boldsymbol{0} \\
+    \end{bmatrix}}^{-1}
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{c}^T & \dots \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{f} \\
+    \boldsymbol{0} \\
+    \end{bmatrix}
+= \boldsymbol{c}^T \boldsymbol{f}.
+</script>
+</div>
+<p>As before, the coefficients vector <span class="arithmatex"><span class="MathJax_Preview">\boldsymbol{c}</span><script type="math/tex">\boldsymbol{c}</script></span> can now be calculated based only on the coordinates by solving the system</p>
+<div class="arithmatex">
+<div class="MathJax_Preview">
+    \begin{bmatrix}
+    \boldsymbol{\Phi} &amp; \boldsymbol{P} \\
+    \boldsymbol{P}^T &amp; \boldsymbol{0} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{c} \\
+    \dots \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{\Phi}_{to} \\
+    \boldsymbol{P}_{to} \\
+    \end{bmatrix}.
+</div>
+<script type="math/tex; mode=display">
+    \begin{bmatrix}
+    \boldsymbol{\Phi} & \boldsymbol{P} \\
+    \boldsymbol{P}^T & \boldsymbol{0} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    \boldsymbol{c} \\
+    \dots \\
+    \end{bmatrix}
+=
+    \begin{bmatrix}
+    \boldsymbol{\Phi}_{to} \\
+    \boldsymbol{P}_{to} \\
+    \end{bmatrix}.
+</script>
+</div>
+<p>For details refer to Degroote and Vierendeels [<a href="#2">2</a>].</p>
+<p>Note that when the from-points are collinear (in 2d or 3d) or coplanar (in 3d), the linear polynomial <span class="arithmatex"><span class="MathJax_Preview">p(\boldsymbol{x})</span><script type="math/tex">p(\boldsymbol{x})</script></span> is not uniquely defined.
+Then, the corresponding hyperplane is chosen such that there is no change in value when moving orthogonal to the line or plane formed by the <em>from</em>-points.</p>
+<p><a id="1">[1]</a>
+<a href="https://doi.org/10.1016/j.cma.2012.12.019">Lombardi M., Parolini N. and Quarteroni A., "Radial basis functions for inter-grid interpolation and mesh motion in FSI problems", Computer Methods in Applied Mechanics and Engineering, vol. 256, pp. 117-131, 2013.</a></p>
+<p><a id="2">[2]</a>
+<a href="http://doi.org/10.1016/j.cma.2012.03.010">Degroote J. and Vierendeels J., "Multi-level quasi-Newton coupling algorithms for the partitioned simulation of fluid–structure interaction", Computer Methods in Applied Mechanics and Engineering, vol. 225-228, pp. 14-27, 2012.</a></p>
 
 
 
