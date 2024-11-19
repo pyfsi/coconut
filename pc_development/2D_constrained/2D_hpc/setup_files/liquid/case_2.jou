@@ -29,7 +29,8 @@ solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-12
 
 solve set discretization-scheme temperature 1
 solve set discretization-scheme mom 1
-solve set discretization-scheme pressure 12
+; Standard (10) - Linear (11) - Second order (12) - Body force weighted (13) - PRESTO! (14)
+solve set discretization-scheme pressure 11
 solve set gradient-scheme n y
 ;solve set under-relaxation temperature 0.3
 
@@ -42,7 +43,8 @@ solve initialize initialize-flow
 
 ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 20
-solve iterate 150
+solve set pseudo-time-method formulation 2
+solve iterate 3000
 
 define models unsteady-1st-order y
 ; SIMPLE (20) - PISO (22) - coupled (24)
