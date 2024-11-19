@@ -4,8 +4,8 @@ $L1 = 0.001
 $L2 = 0.1
 $H = 0.1
 
-$Xintervals = 50
-$Yintervals = 100
+$Xintervals = 99
+$Yintervals = 200
     /CODE
 save name "2D_solid.dbs"
 solver select "FLUENT 5/6"
@@ -21,7 +21,7 @@ face create "FluidInternal" wireframe "Top" "Right" "Bottom" "Left"
 edge link "Bottom" "Top" directions 0 0
 edge link "Left" "Right" directions 0 0
 edge mesh "Bottom" intervals $Xintervals
-edge mesh "Left" intervals $Yintervals
+edge mesh "Left" successive ratio1 1.018301 intervals $Yintervals
 face mesh "FluidInternal" submap
 physics create "boundary" btype "WALL" edge "Left"
 physics create "side" btype "WALL" edge "Right"

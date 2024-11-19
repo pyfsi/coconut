@@ -23,16 +23,23 @@ define boundary-conditions zone-type adiabatic symmetry
 define boundary-conditions wall wall n 0 n 0 n y temperature n 289.15 y motion-bc-stationary n n 0 n ,
 define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n 0 n ,
 
-;define operating-conditions operating-pressure 0
+define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
 solve monitors residual check-convergence n n n y
 solve monitors residual convergence-criteria 1e-14
 
-solve set discretization-scheme temperature 0
 solve set gradient-scheme n y
 ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 24
+solve set discretization-scheme mom 0
+solve set discretization-scheme temperature 1
+; Standard (10) - Linear (11) - Second order (12) - Body force weighted (13) - PRESTO! (14)
+solve set discretization-scheme pressure 10
+
+solve set under-relaxation temperature 0.9
+solve set under-relaxation delh 0.9
+solve set under-relaxation density 0.9
 
 ;Initialise solid according to Stefan solution
 solve initialize set-defaults temperature 299.15

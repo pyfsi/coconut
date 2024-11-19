@@ -20,7 +20,7 @@ face create "FluidInternal" wireframe "Top" "Right" "Bottom" "Left"
 edge link "Bottom" "Top" directions 0 0
 edge link "Left" "Right" directions 0 0
 edge mesh "Bottom" intervals $Xintervals
-edge mesh "Left" intervals $Yintervals
+edge mesh "Left" successive ratio1 1.037063 intervals $Yintervals
 face mesh "FluidInternal" submap
 physics create "boundary" btype "WALL" edge "Right"
 physics create "heated" btype "WALL" edge "Left"

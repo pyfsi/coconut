@@ -208,8 +208,11 @@ class SolverWrapperPCFluent(SolverWrapper):
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.fluent_process)
+
         # get general simulation info from  fluent.log and report.sum
-        self.coco_messages.wait_message('case_info_exported', self.fluent_process)
+        self.coco_messages.wait_message('case_info_exported')
 
         with open(log, 'r') as file:
             for line in file:
@@ -284,7 +287,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         # import node and face information if no restart
         if self.timestep_start == 0:
-            self.coco_messages.wait_message('nodes_and_faces_stored', self.fluent_process)
+            self.coco_messages.wait_message('nodes_and_faces_stored')
 
         # create Model used for coupling
         self.model = data_structure.Model()
@@ -481,7 +484,7 @@ class SolverWrapperPCFluent(SolverWrapper):
             self.write_output_to_file("displacement")
 
         self.coco_messages.send_message('next')
-        self.coco_messages.wait_message('next_ready', self.fluent_process)
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -507,7 +510,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
-        self.coco_messages.wait_message('continue_ready', self.fluent_process)
+        self.coco_messages.wait_message('continue_ready')
 
         # process output interface data
         for dct in self.interface_output.parameters:
@@ -642,7 +645,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready', self.fluent_process)
+            self.coco_messages.wait_message('save_ready')
 
         # remove unnecessary files
         if self.timestep - 1 > self.timestep_start:
@@ -666,7 +669,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         super().finalize()
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
         self.coco_messages.send_message('stop')
-        self.coco_messages.wait_message('stop_ready', self.fluent_process)
+        self.coco_messages.wait_message('stop_ready')
         self.fluent_process.wait()
 
         # remove unnecessary files
@@ -829,7 +832,7 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         # make Fluent store coordinates and ids
         self.coco_messages.send_message('store_grid')
-        self.coco_messages.wait_message('store_grid_ready', self.fluent_process)
+        self.coco_messages.wait_message('store_grid_ready')
 
         coord_data = {}
 

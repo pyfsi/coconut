@@ -184,6 +184,9 @@ class SolverWrapperCHTFluent(SolverWrapper):
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
 
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.fluent_process)
+
         # get general simulation info from  fluent.log and report.sum
         self.coco_messages.wait_message('case_info_exported')
 
