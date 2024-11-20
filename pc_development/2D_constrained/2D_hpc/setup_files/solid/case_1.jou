@@ -11,10 +11,11 @@ define models viscous laminar y
 define models solver pressure-based y
 solve set equations flow y
 define models energy y n n n y
-define models solidification-melting? yes constant 1e12 no
+define models solidification-melting? yes constant 1e9 no
 
 define materials copy fluid air pcm
-define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 2.4 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
+; more realistic conductivities!
+define materials change-create pcm , yes constant 870 yes constant 2400 yes constant 0.24 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
 
 define boundary-conditions fluid , y pcm n n n n , n , n y n
 define boundary-conditions wall bottom n 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
