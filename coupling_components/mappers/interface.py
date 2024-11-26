@@ -45,27 +45,21 @@ class MapperInterface(Component):
         for mapper in self.mappers.values():
             mapper.output_solution_step()
 
-    def map_f2n(self, interface_from, interface_to, conservative=False):
+    def map_f2n(self, interface_from, interface_to):
         # loop over ModelParts and variables
         for pair_from in interface_from.model_part_variable_pairs:
             for pair_to in interface_to.model_part_variable_pairs:
                 if pair_from[0] == pair_to[0]:
-                    if pair_from[1] == "displacement" and pair_to[1] == "displacement" and conservative is False:
-                        mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
-                        mapper((interface_from, *pair_from), (interface_to, *pair_to))
-                    elif pair_from[1] == "1ts_disp" and pair_to[1] == "1ts_disp" and conservative is True:
+                    if pair_from[1] == "1ts_disp" and pair_to[1] == "1ts_disp":
                         mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
                         mapper((interface_from, *pair_from), (interface_to, *pair_to))
 
-    def map_n2f(self, interface_from, interface_to, conservative=False):
+    def map_n2f(self, interface_from, interface_to):
         # loop over ModelParts and variables
         for pair_from in interface_from.model_part_variable_pairs:
             for pair_to in interface_to.model_part_variable_pairs:
                 if pair_from[0].replace("in", "out") == pair_to[0]:
-                    if pair_from[1] == "displacement" and pair_to[1] == "displacement" and conservative is False:
-                        mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
-                        mapper((interface_from, *pair_from), (interface_to, *pair_to))
-                    elif pair_from[1] == "displacement" and pair_to[1] == "prev_disp" and conservative is True:
+                    if pair_from[1] == "displacement" and pair_to[1] == "prev_disp":
                         mapper = self.mappers[pair_from[0] + '_to_' + pair_to[0]]
                         mapper((interface_from, *pair_from), (interface_to, *pair_to))
 

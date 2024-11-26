@@ -2,7 +2,7 @@
 #
 #PBS -N 2D_convection
 #PBS -l walltime=71:55:00
-#PBS -l nodes=1:ppn=6
+#PBS -l nodes=1:ppn=24
 #
 
 ml Anaconda3

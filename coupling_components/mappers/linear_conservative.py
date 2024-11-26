@@ -31,13 +31,16 @@ class MapperLinearConservative(Component):
         # store settings
         self.settings = parameters['settings']
         self.balanced_tree = self.settings.get('balanced_tree', False)
+        self.parallel = self.settings.get('parallel', False)
         self.check_bounding_box = self.settings.get('check_bounding_box', True)
 
         # volume-conserving iterations
+        self.tolerance = self.settings.get('volume_tolerance', 1e-14)
+        self.max_iterations = self.settings.get('mapper_iterations', 20)
+        self.relax = self.settings.get('mapper_relaxation', 0.4)
+        self.conservative = self.settings.get('mapping_conservative', True)
+        self.projection_order = self.settings.get('projection_order', 1) # 0: no projection, 1: 1st order upwind projection, 2: 2nd order upwind
         self.C = None
-        self.tolerance = 1e-6 # include as setting?
-        self.max_iterations = 20 # include as setting?
-        self.relax = 0.4 # include as setting?
 
         # initialization
         self.n_from, self.n_to = None, None
@@ -67,28 +70,27 @@ class MapperLinearConservative(Component):
             if self.scaling.size != len(self.directions):
                 raise ValueError(f'Scaling must have same length as directions')
 
-        # store settings
-        self.parallel = self.settings['parallel'] if 'parallel' in self.settings else False
-        self.domain_type = self.settings.get('domain', None)
-        self.limits = self.settings.get('limits', None)
-
         # create domain
-        if self.domain_type == 'rectangular':
-            if len(self.limits) == 4:
-                ll = (self.limits[0], self.limits[1])  # lower left vertex
-                ul = (self.limits[0], self.limits[3])  # upper left vertex
-                lr = (self.limits[2], self.limits[1])  # lower right vertex
-                ur = (self.limits[2], self.limits[3])  # upper right vertex
-                self.vertices = [ll, ul, lr, ur]
+        if self.projection_order != 0:
+            self.domain_type = self.settings.get('domain', None)
+            self.limits = self.settings.get('limits', None)
+
+            if self.domain_type == 'rectangular':
+                if len(self.limits) == 4:
+                    ll = (self.limits[0], self.limits[1])  # lower left vertex
+                    ul = (self.limits[0], self.limits[3])  # upper left vertex
+                    lr = (self.limits[2], self.limits[1])  # lower right vertex
+                    ur = (self.limits[2], self.limits[3])  # upper right vertex
+                    self.vertices = [ll, ul, lr, ur]
+                else:
+                    raise ValueError(
+                        'The 2D coordinates of the lower left vertex (0) and upper right vertex (1) are required in the following order: [x0, y0, x1, y1].')
+            elif self.domain_type is None:
+                raise ValueError(
+                    'This mapper requires domain specifications. Choose between following domain types: rectangular.')
             else:
                 raise ValueError(
-                    'The 2D coordinates of the lower left vertex (0) and upper right vertex (1) are required in the following order: [x0, y0, x1, y1].')
-        elif self.domain_type is None:
-            raise ValueError(
-                'This mapper requires domain specifications. Choose between following domain types: rectangular.')
-        else:
-            raise ValueError(
-                f'Given domain type {self.domain_type} is not supported. Choose between following domain types: rectangular.')
+                    f'Given domain type {self.domain_type} is not supported. Choose between following domain types: rectangular.')
 
         # determine number of nearest
         if len(self.directions) == 2:
@@ -104,6 +106,9 @@ class MapperLinearConservative(Component):
         self.coords_from = np.zeros((self.n_from, len(self.directions)))
         for j, direction in enumerate(self.directions):
             self.coords_from[:, j] = getattr(model_part_from, direction)
+
+        if not self.conservative:
+            self.C = np.ones((self.n_from, 1))
 
         # get coords_to
         self.n_to = model_part_to.size
@@ -137,12 +142,8 @@ class MapperLinearConservative(Component):
         _, self.nearest_faces = self.tree.query(self.coords_to, k=self.n_nearest)
         self.nearest_faces = self.nearest_faces.reshape(-1, self.n_nearest)
 
-        self.check_duplicate_points(model_part_from)
-
         # check for duplicate points
-        # Find indices of nodes on domain boundaries
-        self.boundary_ind, self.boundary_name = find_boundary_nodes(self.coords_to, self.vertices)
-        self.boundary_nodes = self.coords_to[self.boundary_ind]
+        self.check_duplicate_points(model_part_from)
 
         # build and query TO (nodes) tree
         if self.balanced_tree:  # time-intensive
@@ -153,10 +154,21 @@ class MapperLinearConservative(Component):
         _, self.nearest_nodes = self.node_tree.query(self.coords_from, k=self.n_nearest)
         self.nearest_nodes = self.nearest_nodes.reshape(-1, self.n_nearest)
 
-        if np.size(self.boundary_ind) >= 1:
-            _, self.neighbour = self.node_tree.query(self.boundary_nodes, k=[2])
-            self.neighbour = self.neighbour.reshape(-1, self.n_nearest)
-            self.neighbour_nodes = self.coords_to[self.neighbour][0]
+        if self.projection_order != 0:
+            # Find indices of nodes on domain boundaries
+            self.boundary_ind, self.boundary_name = find_boundary_nodes(self.coords_to, self.vertices)
+            self.boundary_nodes = self.coords_to[self.boundary_ind]
+            self.n_endpoints = np.size(self.boundary_ind)
+
+            if np.size(self.boundary_ind) >= 1:
+                _, self.neighbour = self.node_tree.query(self.boundary_nodes, k=[2]) # closest neighbour
+                self.neighbour = self.neighbour.reshape(-1, self.n_endpoints)
+                self.neighbour_nodes = self.coords_to[self.neighbour][0]
+                if self.projection_order == 2:
+                    _, self.neighbour_2 = self.node_tree.query(self.boundary_nodes, k=[3]) # 2nd closest neighbour
+                    self.neighbour_2 = self.neighbour_2.reshape(-1, self.n_endpoints)
+                    self.neighbour_2_nodes = self.coords_to[self.neighbour_2][0]
+
 
     def __call__(self, args_from, args_to):
         # unpack arguments
@@ -176,8 +188,11 @@ class MapperLinearConservative(Component):
         self.prev_coord_to = self.coords_to + self.prev_disp_to
 
         # update boundary & neighbour nodes
-        self.boundary_nodes = self.prev_coord_to[self.boundary_ind]
-        self.neighbour_nodes = self.prev_coord_to[self.neighbour][0]
+        if self.projection_order != 0:
+            self.boundary_nodes = self.prev_coord_to[self.boundary_ind]
+            self.neighbour_nodes = self.prev_coord_to[self.neighbour][0]
+            if self.projection_order == 2:
+                self.neighbour_2_nodes = self.prev_coord_to[self.neighbour_2][0]
 
         # recalculate coefficients based on new face position
         iterable = []
@@ -201,48 +216,51 @@ class MapperLinearConservative(Component):
         data_to = interface_to.get_variable_data(mp_name_to, var_to)[:, 0:len(self.directions)]
 
         # initialise multiplication coefficients for face displacements
-        if self.C is None:
-            C = np.ones((self.n_from, 1))
-        else:
-            C = self.C
-        C_prev = np.zeros((self.n_from, 1))
-        it = 0
-        # don't forget previous time step coefficients! Store somewhere (or don't overwrite with zeros)
+        if self.conservative is True:
+            if self.C is None:
+                C = np.ones((self.n_from, 1))
+            else:
+                C = self.C
 
-        # calculate cell-based volume
-        area = interface_from.get_variable_data(mp_name_from, 'area')
-        dx = np.linalg.norm(data_from, axis=1)
-        dx = dx.reshape(self.n_from, 1)
-        cell_vol = area * dx
-        node_vol = np.zeros(np.shape(cell_vol))
+            it = 0
+            C_prev = np.zeros((self.n_from, 1))
 
-        # perform loop to determine multiplication factor C to compensate for lost or falsely created volume
-        while np.linalg.norm(C - C_prev) > self.tolerance and it < self.max_iterations:
-            it += 1
-            C_prev = C
+            # calculate cell-based volume
+            area = interface_from.get_variable_data(mp_name_from, 'area')
+            dx = np.linalg.norm(data_from, axis=1)
+            dx = dx.reshape(self.n_from, 1)
+            cell_vol = area * dx
+            node_vol = np.zeros(np.shape(cell_vol))
 
-            # interpolate and project shifted boundary nodes on domain boundary
-            data_itp = self.interpolate(C * data_from, data_to)
+            # perform loop to determine multiplication factor C to compensate for lost or falsely created volume
+            while np.linalg.norm(cell_vol - node_vol) > self.tolerance and it < self.max_iterations:
+                it += 1
+                C_prev = C
 
-            # compare cell-based volume to node-based volume
-            for i, c_vol in enumerate(cell_vol):
-                nearest = self.nearest_nodes[i, :]
-                prev_coord = self.prev_coord_to[nearest, :]
-                new_coord = prev_coord + data_itp[nearest, :]
-                x = np.array([prev_coord[0][0], prev_coord[1][0], new_coord[0][0], new_coord[1][0]])
-                y = np.array([prev_coord[0][1], prev_coord[1][1], new_coord[0][1], new_coord[1][1]])
-                node_vol[i] = PolyArea(x, y)
+                # interpolate and project shifted boundary nodes on domain boundary
+                data_itp = self.interpolate(C * data_from, data_to)
 
-            C = cell_vol/node_vol
-            C = (1 - self.relax) * C + self.relax * C_prev
+                # compare cell-based volume to node-based volume
+                for i, c_vol in enumerate(cell_vol):
+                    nearest = self.nearest_nodes[i, :]
+                    prev_coord = self.prev_coord_to[nearest, :]
+                    new_coord = prev_coord + data_itp[nearest, :]
+                    x = np.array([prev_coord[0][0], prev_coord[1][0], new_coord[0][0], new_coord[1][0]])
+                    y = np.array([prev_coord[0][1], prev_coord[1][1], new_coord[0][1], new_coord[1][1]])
+                    node_vol[i] = PolyArea(x, y)
 
-        # print warning if C did not converge fast enough
-        if it >= self.max_iterations and np.linalg.norm(C - C_prev) > self.tolerance:
-            warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(C - C_prev)} > {self.tolerance}.'
-            tools.print_info(warning_text, layout='warning')
+                C = cell_vol/node_vol
+                C = (1 - self.relax) * C + self.relax * C_prev
 
-        # store and interpolate with converged C
-        self.C = C
+            # print warning if C did not converge fast enough
+            if it >= self.max_iterations and np.linalg.norm(cell_vol - node_vol) > self.tolerance:
+                warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(C - C_prev)} > {self.tolerance}.'
+                tools.print_info(warning_text, layout='warning')
+
+            # store converged C
+            self.C = C
+
+        # interpolate with final C values
         data_itp = self.interpolate(self.C * data_from, data_to)
 
         # add z-coordinate to data_itp
@@ -260,9 +278,11 @@ class MapperLinearConservative(Component):
                 data_to[i, j] = np.dot(self.coeffs[i], data_from[self.nearest_faces[i, :], j])
 
         # boundary projection
-        if np.size(self.boundary_ind) >= 1:
+        if self.projection_order != 0 and np.size(self.boundary_ind) >= 1:
             moved_boundary_nodes = self.boundary_nodes + data_to[self.boundary_ind]
             moved_neighbour_nodes = self.neighbour_nodes + data_to[self.neighbour][0]
+            if self.projection_order == 2:
+                moved_neighbour_2_nodes = self.neighbour_2_nodes + data_to[self.neighbour_2][0]
             for i in range(np.shape(moved_boundary_nodes)[0]):
                 # list [(x0, x1), (y0, y1)] of 2D faces closest to domain boundaries
                 line_coords = [(moved_boundary_nodes[i, 0], moved_neighbour_nodes[i, 0]),
@@ -276,8 +296,25 @@ class MapperLinearConservative(Component):
                     disp_x = 0
                     disp_y = coord[1] - self.boundary_nodes[i, 1]
 
-                data_to[int(self.boundary_ind[i]), 0] = disp_x
-                data_to[int(self.boundary_ind[i]), 1] = disp_y
+                if self.projection_order == 2:
+                    line_coords = [(moved_boundary_nodes[i, 0], moved_neighbour_2_nodes[i, 0]),
+                                   (moved_boundary_nodes[i, 1], moved_neighbour_2_nodes[i, 1])]
+                    coord = intersect(line_coords, self.boundary_name[i], self.vertices)
+
+                    if self.boundary_name[i] == 'top' or self.boundary_name[i] == 'bottom':
+                        disp_x_2 = coord[0] - self.boundary_nodes[i, 0]
+                        disp_y_2 = 0
+                    elif self.boundary_name[i] == 'left' or self.boundary_name[i] == 'right':
+                        disp_x_2 = 0
+                        disp_y_2 = coord[1] - self.boundary_nodes[i, 1]
+
+                    # 2nd order upwind projection
+                    data_to[int(self.boundary_ind[i]), 0] = 1.5 * disp_x - 0.5 * disp_x_2
+                    data_to[int(self.boundary_ind[i]), 1] = 1.5 * disp_y - 0.5 * disp_y_2
+                else:
+                    # 1st order upwind projection
+                    data_to[int(self.boundary_ind[i]), 0] = disp_x
+                    data_to[int(self.boundary_ind[i]), 1] = disp_y
 
         return data_to
 

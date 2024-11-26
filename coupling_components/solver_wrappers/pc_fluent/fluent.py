@@ -73,20 +73,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
 
-        # Phase change specific settings
-        self.pc_settings = self.settings['PC']
-        self.ini_condition = self.pc_settings.get('ini_condition', None) # initial condition for outgoing variables
-        self.latent_heat = self.pc_settings.get('latent', None)
-        if self.latent_heat is None:
-            raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
-        self.melt_temp = self.pc_settings.get('melt_temp', None)
-        if self.melt_temp is None:
-            raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
-        self.moving_boundary = self.pc_settings.get('moving_boundary', True)
-        self.mapping_domain = self.pc_settings.get('mapping_domain', None)
-        self.mapping_limits = self.pc_settings.get('mapping_limits', None)
-        self.conservative = self.pc_settings.get('mapping_conservative', False)
-
+        # Output variables
         self.output_ini_cond = {}
         self.output_variables = []
         f_n = 0
@@ -95,31 +82,56 @@ class SolverWrapperPCFluent(SolverWrapper):
             self.output_ini_cond[mp['model_part']] = 0
             if "nodes" in mp["model_part"]:
                 if f_n == 0:
-                    self.output_variables += mp['variables']  # NEW: list of output variables
+                    self.output_variables += mp['variables']
                     f_n = 1
             if "faces" in mp["model_part"]:
                 if f_f == 0:
-                    self.output_variables += mp['variables']  # NEW: list of output variables
+                    self.output_variables += mp['variables']
                     f_f = 1
 
+        # Input variables
         f_n = 0
         f_f = 0
         self.input_variables = []
         for mp in self.settings['interface_input']:
             if "nodes" in mp["model_part"]:
                 if f_n == 0:
-                    self.input_variables += mp['variables']  # NEW: list of input variables
+                    self.input_variables += mp['variables']
                     f_n = 1
             if "faces" in mp["model_part"]:
                 if f_f == 0:
-                    self.input_variables += mp['variables']  # NEW: list of input variables
+                    self.input_variables += mp['variables']
                     f_f = 1
 
+        # Thermal boundary condition at input interface
         self.thermal_bc = None
         if "temperature" in self.input_variables:
             self.thermal_bc = "temperature"
         elif "heat_flux" in self.input_variables:
             self.thermal_bc = "heat_flux"
+
+        # Phase change specific settings
+        self.pc_settings = self.settings['PC']
+        self.ini_condition = self.pc_settings.get('ini_condition', None)  # initial condition for outgoing variables
+        self.moving_boundary = self.pc_settings.get('moving_boundary', True)
+        self.latent_heat = self.pc_settings.get('latent', None)
+        if self.latent_heat is None:
+            raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
+        self.melt_temp = self.pc_settings.get('melt_temp', None)
+        if self.melt_temp is None:
+            raise ValueError(
+                'Melt temperature should be provided in the json file in case of phase change problems')
+
+        # Face-to-node mapping settings for solid domain
+        if "displacement" in self.output_variables:
+            self.f2n_settings = self.pc_settings['f2n_mapping']
+            self.mapping_domain = self.f2n_settings.get('mapping_domain', None)
+            self.mapping_limits = self.f2n_settings.get('mapping_limits', None)
+            self.conservative = self.f2n_settings.get('mapping_conservative', False)
+            self.vol_tolerance = self.f2n_settings.get('volume_tolerance', 1e-14)
+            self.mapper_iterations = self.f2n_settings.get('mapper_iterations', 20)
+            self.mapper_relaxation = self.f2n_settings.get('mapper_relaxation', 0.4)
+            self.mapper_projection = self.f2n_settings.get('projection_order', 1) # 0: no projection, 1: 1st order upwind projection, 2: 2nd order upwind
 
     @tools.time_initialize
     def initialize(self):
@@ -295,10 +307,8 @@ class SolverWrapperPCFluent(SolverWrapper):
         # create Model used internally for face (and node) displacements
         if "displacement" in self.output_variables:
             self.internal_model = data_structure.Model()
-            self.internal_settings = []
-            if self.conservative:
-                self.internal_face_settings = []
-                self.internal_node_settings = []
+            self.internal_face_settings = []
+            self.internal_node_settings = []
 
         # create input ModelParts (nodes for displacement, faces for temperature or heat flux)
         for item in (self.settings['interface_input']):
@@ -402,27 +412,21 @@ class SolverWrapperPCFluent(SolverWrapper):
 
             # create or append interface settings
             if "nodes" in mp_name and "displacement" in item["variables"]:
-                if self.conservative:
-                    self.internal_face_settings.append({"model_part": mp_name, "variables": ["1ts_disp", "prev_disp", "area"]})
-                    self.internal_node_settings.append({"model_part": mp_name, "variables": ["displacement", "1ts_disp", "prev_disp"]})
-                else:
-                    self.internal_settings.append({"model_part": mp_name, "variables": ["displacement"]})
+                self.internal_face_settings.append({"model_part": mp_name, "variables": ["1ts_disp", "prev_disp", "area"]})
+                self.internal_node_settings.append({"model_part": mp_name, "variables": ["displacement", "1ts_disp", "prev_disp"]})
 
             # create initial conditions at output interface
             if self.ini_condition is not None:
                 if "faces" in mp_name:
                     self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
 
-        # create Interfaces
+        # create interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)
         self.interface_output = data_structure.Interface(self.settings['interface_output'], self.model)
         if "displacement" in self.output_variables:
-            if self.conservative:
-                self.interface_internal = data_structure.Interface(self.internal_face_settings, self.internal_model)
-                # create an output interface with additional variables to enable conservative mapping
-                self.interface_internal_nodes = data_structure.Interface(self.internal_node_settings, self.model)
-            else:
-                self.interface_internal = data_structure.Interface(self.internal_settings, self.internal_model)
+            self.interface_internal = data_structure.Interface(self.internal_face_settings, self.internal_model)
+            # create an output interface with additional variables to enable conservative mapping
+            self.interface_internal_nodes = data_structure.Interface(self.internal_node_settings, self.model)
 
         # set initial conditions at output interface
         for key in self.output_ini_cond:
@@ -434,34 +438,30 @@ class SolverWrapperPCFluent(SolverWrapper):
                         else:
                             self.interface_output.set_variable_data(key, var, self.output_ini_cond[key])
 
+        # define displacement mappers
         if "displacement" in self.output_variables:
-            mapper = "mappers."
-            if self.conservative:
-                mapper += "linear_conservative"
-            else:
-                mapper += "linear_bounded"
+            f2n_settings_dict = {"directions": ["x", "y"],
+                                 "check_bounding_box": False,
+                                 "projection_order": self.mapper_projection,
+                                 "domain": self.mapping_domain,
+                                 "limits": self.mapping_limits,
+                                 "mapping_conservative": self.conservative,
+                                 "mapper_relaxation": self.mapper_relaxation,
+                                 "mapper_iterations": self.mapper_iterations,
+                                 "volume_tolerance": self.vol_tolerance}
 
             # create and initialize face to node (f2n) displacement mapper
-            f2n_settings = {"type": "mappers.interface", "settings": {"type": mapper,
-                                                                         "settings": {"directions": ["x", "y"],
-                                                                                      "check_bounding_box": False,
-                                                                                      "domain": self.mapping_domain,
-                                                                                      "limits": self.mapping_limits}}}
-            self.mapper_f2n = tools.create_instance(f2n_settings)
-            if self.conservative:
-                self.mapper_f2n.initialize(self.interface_internal, self.interface_internal_nodes)
-            else:
-                self.mapper_f2n.initialize(self.interface_internal, self.interface_output)
+            f2n_mapper = {"type": "mappers.interface", "settings": {"type": "mappers.linear_conservative",
+                                                                         "settings": f2n_settings_dict}}
+            self.mapper_f2n = tools.create_instance(f2n_mapper)
+            self.mapper_f2n.initialize(self.interface_internal, self.interface_internal_nodes)
 
             # create and initialize node to face (n2f) displacement mapper
             n2f_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear",
                                                                       "settings": {"directions": ["x", "y"],
                                                                                    "check_bounding_box": False}}}
             self.mapper_n2f = tools.create_instance(n2f_settings)
-            if self.conservative:
-                self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
-            else:
-                self.mapper_n2f.initialize(self.interface_output, self.interface_internal)
+            self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
@@ -471,14 +471,10 @@ class SolverWrapperPCFluent(SolverWrapper):
 
         if "displacement" in self.output_variables:
             # map output node displacement to face displacement
-
-            if self.conservative:
-                self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal, conservative=self.conservative)
-                for item in self.settings['interface_output']:
-                    mp_name = item['model_part']
-                    self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
-            else:
-                self.mapper_n2f.map_n2f(self.interface_output, self.interface_internal, conservative=self.conservative)
+            self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal)
+            for item in self.settings['interface_output']:
+                mp_name = item['model_part']
+                self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
 
             # write interface output data at new time step
             self.write_output_to_file("displacement")
@@ -553,33 +549,19 @@ class SolverWrapperPCFluent(SolverWrapper):
                             if not np.all(ids == model_part.id):
                                 raise ValueError('IDs of data do not match ModelPart IDs')
 
-                            if self.conservative:
-                                self.interface_internal.set_variable_data(mp_name, "1ts_disp", vector)
-                                self.interface_internal.set_variable_data(mp_name, "area", scalar)
+                            self.interface_internal.set_variable_data(mp_name, "1ts_disp", vector)
+                            self.interface_internal.set_variable_data(mp_name, "area", scalar)
 
-                                # map face displacement to node displacement
-                                self.mapper_f2n.map_f2n(self.interface_internal, self.interface_internal_nodes, conservative=self.conservative)
-                            else:
-                                # fetch face displacement of previous time step & update to new time step
-                                prev_disp = self.interface_internal.get_variable_data(mp_name, 'displacement')
-                                displacement_new = prev_disp + vector
-                                self.interface_internal.set_variable_data(mp_name, var, displacement_new)
-
-                                # map face displacement to node displacement
-                                self.mapper_f2n.map_f2n(self.interface_internal, self.interface_output, conservative=self.conservative)
+                            # map face displacement to node displacement
+                            self.mapper_f2n.map_f2n(self.interface_internal, self.interface_internal_nodes)
 
                             # calculate full node displacement in case of the conservative mapper
-                            if self.conservative:
-                                full_disp = self.interface_internal_nodes.get_variable_data(mp_name, "prev_disp") + self.interface_internal_nodes.get_variable_data(mp_name, "1ts_disp")
-                                self.interface_output.set_variable_data(mp_name, var, full_disp)
-                                self.interface_internal_nodes.set_variable_data(mp_name, var, full_disp)
+                            full_disp = self.interface_internal_nodes.get_variable_data(mp_name, "prev_disp") + self.interface_internal_nodes.get_variable_data(mp_name, "1ts_disp")
+                            self.interface_output.set_variable_data(mp_name, var, full_disp)
+                            self.interface_internal_nodes.set_variable_data(mp_name, var, full_disp)
 
                             # write nodes_update file for move nodes udf in solid domain
                             self.write_output_to_file(var)
-
-                            # reset face displacement to converged position of previous time step (avoid accumulation)
-                            if not self.conservative:
-                                self.interface_internal.set_variable_data(mp_name, var, prev_disp)
 
                         else:
                             # store vector and scalar values in interface
