@@ -1,15 +1,15 @@
-from coconut import solver_modules
-
-import time
-from contextlib import contextmanager
-import numpy as np
-import warnings
-import os
-from os.path import join
-import subprocess
-import pickle
 import importlib.util
+import os
+import pickle
 import shutil
+import subprocess
+import time
+import warnings
+from contextlib import contextmanager
+from os.path import join
+
+import numpy as np
+from coconut import solver_modules
 
 
 def create_instance(settings, if_not_defined=None):
@@ -394,12 +394,14 @@ def get_solver_env(solver_module_name, working_dir):
         solver_load_cmd = 'echo'
 
     # run the module load command and store the environment
+    log_file_name = join(working_dir, 'solver_load_cmd.log')
     try:
-        subprocess.check_call(
-            f'{solver_load_cmd} && python3 -c "from coconut import tools;tools.write_env()"',
-            shell=True, cwd=working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with open(log_file_name, 'w') as f:
+            subprocess.check_call(
+                f'{solver_load_cmd} && python3 -c "from coconut import tools ; tools.write_env()"',
+                shell=True, cwd=working_dir, stdout=f, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
-        raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed.')
+        raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed, see {log_file_name}')
 
     # load the environment variables and return as python-dict
     env_filepath = join(working_dir, env_filename)
