@@ -1,0 +1,363 @@
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -g -i case.jou
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/cortex/lnamd64/cortex.24.2.0 -f fluent -g -i case.jou (fluent "2ddp -pdefault  -host -r24.2.0 -t1 -mpi=intel -path/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent -ssh")
+
+Opening input/output transcript to file "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/fluent-20241203-100432-2212767.trn".
+Auto-Transcript Start Time:  10:04:32, 03 Dec 2024 
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -pdefault -host -t1 -mpi=intel -path/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent -ssh -cx node3522.doduo.os:40051:32995
+Starting /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/lnamd64/2ddp_host/fluent.24.2.0 host -cx node3522.doduo.os:40051:32995 "(list (rpsetvar (QUOTE parallel/function) "fluent 2ddp -flux -node -r24.2.0 -t1 -pdefault -mpi=intel -ssh") (rpsetvar (QUOTE parallel/rhost) "") (rpsetvar (QUOTE parallel/ruser) "") (rpsetvar (QUOTE parallel/nprocs_string) "1") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) "/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent") (rpsetvar (QUOTE parallel/hostsfile) "") (rpsetvar (QUOTE gpuapp/devices) ""))"
+
+              Welcome to ANSYS Fluent 2024 R2
+
+              Copyright 1987-2024 ANSYS, Inc. All Rights Reserved.
+              Unauthorized use, distribution or duplication is prohibited.
+              This product is subject to U.S. laws governing export and re-export.
+              For full Legal Notice, see documentation.
+
+Build Time: May 13 2024 11:01:44 EDT  Build Id: 10192  
+ 
+Connected License Server List:	1055@ir03lic1.ugent.be
+
+*********************************************
+Info: Your license enables 4-way parallel execution.
+For faster simulations, please start the application with the appropriate parallel options.
+*********************************************
+
+
+     --------------------------------------------------------------
+     This is an academic version of ANSYS FLUENT. Usage of this product
+     license is limited to the terms and conditions specified in your ANSYS
+     license form, additional terms section.
+     --------------------------------------------------------------
+Host spawning Node 0 on machine "node3522.doduo.os" (unix).
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -flux -node -t1 -pdefault -mpi=intel -ssh -mport 10.141.5.22:10.141.5.22:39635:0
+Starting /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/multiport/mpi/lnamd64/intel2021/bin/mpirun --rsh=ssh -f /tmp/fluent-appfile.vsc48608.2214622 -genv I_MPI_FABRICS shm -genv FLUENT_ARCH lnamd64 -genv I_MPI_DEBUG 0 -genv I_MPI_ADJUST_GATHERV 3 -genv I_MPI_ADJUST_ALLREDUCE 2 -genv I_MPI_PLATFORM auto -genv PYTHONHOME /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/../../commonfiles/CPython/3_10/linx64/Release/python -genv FLUENT_PROD_DIR /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0 -genv FLUENT_AFFINITY 0 -genv I_MPI_PIN enable -genv KMP_AFFINITY disabled -n 1 /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/lnamd64/2ddp_node/fluent_mpi.24.2.0 node -mpiw intel -pic shmem -mport 10.141.5.22:10.141.5.22:39635:0
+
+-------------------------------------------------------------------------------
+ID    Hostname           Core  O.S.      PID      Vendor                
+-------------------------------------------------------------------------------
+n0    node3522.doduo.os  1/96  Linux-64  2214729  AMD EPYC 7552 48-Core 
+host  node3522.doduo.os        Linux-64  2213618  AMD EPYC 7552 48-Core 
+
+MPI Option Selected: intel
+-------------------------------------------------------------------------------
+
+Cleanup script file is /kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/cleanup-fluent-node3522.doduo.os-2213618.sh
+
+ +------------------------------------------------------------------+
+ |                    ANSYS Product Improvement                     |
+ |                                                                  |
+ |   ANSYS Product Improvement Program helps improve ANSYS          |
+ |   products. Participating in this program is like filling out a  |
+ |   survey. Without interrupting your work, the software reports   |
+ |   anonymous usage information such as errors, machine and        |
+ |   solver statistics, features used, etc. to ANSYS. We never      |
+ |   use the data to identify or contact you.                       |
+ |   The data does NOT contain:                                     |
+ |   - Any personally identifiable information including names,     |
+ |     IP addresses, file names, part names, etc.                   |
+ |   - Any information about your geometry or design specific       |
+ |     inputs.                                                      |
+ |   You can stop participation at any time. To change your         |
+ |   selection go to Help >> ANSYS Product Improvement Program      |
+ |   in the GUI.                                                    |
+ |   For more information about the ANSYS Privacy Policy, please    |
+ |   check: http://www.ansys.com/privacy                            |
+ |                                                                  |
+ +------------------------------------------------------------------+
+
+Reading journal file case.jou...
+
+> file set-batch-options n y n
+
+> (enable-dynamic-mesh-node-ids #t)
+()
+
+
+> file startt "transcript_setup.txt"
+Opening input/output transcript to file "transcript_setup.txt".
+
+-------------------------------------------------------------------------------
+ID    Hostname           Core  O.S.      PID      Vendor                
+-------------------------------------------------------------------------------
+n0*   node3522.doduo.os  1/96  Linux-64  2214729  AMD EPYC 7552 48-Core 
+host  node3522.doduo.os        Linux-64  2213618  AMD EPYC 7552 48-Core 
+
+MPI Option Selected: intel
+Selected system interconnect: shared-memory
+-------------------------------------------------------------------------------
+
+
+> file read-case mesh_tube2d.msh
+
+Reading "mesh_tube2d.msh"...
+
+Buffering for file scan...
+
+    1111 nodes.
+     100 mixed wall faces, zone  3.
+Warning: Reversing 100 faces, zone  3.
+     100 mixed axis faces, zone  4.
+      10 mixed pressure-outlet faces, zone  5.
+Warning: Reversing 10 faces, zone  5.
+      10 mixed pressure-outlet faces, zone  6.
+    1890 mixed interior faces, zone  8.
+    1000 quadrilateral cells, zone  2.
+
+Building...
+     mesh
+     materials,
+     interface,
+     domains,
+     zones,
+	default-interior
+	in
+	out
+	box
+	beamoutside
+	fluid
+     parallel,
+Done.
+Warning: The use of axis boundary conditions is not appropriate for
+         a 2D/3D flow problem. Please consider changing the zone
+         type to symmetry or wall, or the problem to axisymmetric.
+
+Warning: The use of axis boundary conditions is not appropriate for
+         a 2D/3D flow problem. Please consider changing the zone
+         type to symmetry or wall, or the problem to axisymmetric.
+
+
+> define models axisymmetric y
+
+> grid check
+
+ Domain Extents:
+   x-coordinate: min (m) = -2.500000e-02, max (m) = 2.500000e-02
+   y-coordinate: min (m) = 0.000000e+00, max (m) = 5.000000e-03
+ Volume statistics:
+   minimum volume (m3): 3.926991e-10
+   maximum volume (m3): 7.461283e-09
+     total volume (m3): 3.926991e-06
+   minimum 2d volume (m3): 2.500000e-07
+   maximum 2d volume (m3): 2.500000e-07
+ Face area statistics:
+   minimum face area (m2): 5.000000e-04
+   maximum face area (m2): 5.000000e-04
+ Checking mesh.............................
+Done.
+ 
+> grid modify-zones zone-name default-interior fluid-interior
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> define user-defined compiled-functions compile 
+"udf_inlet" y 
+ Give C-Source file names:
+"udf_inlet.c" ""
+ Give header file names:
+ ""Copy "./udf_inlet.c" to "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet/src"
+make: *** No rule to make target 'clean'.  Stop.
+
+Working...
+# linking to ../../src/udf_inlet.c in lnamd64/2ddp_host
+# linking to ../../src/makefile in lnamd64/2ddp_host
+# building library in lnamd64/2ddp_host
+
+# Generating udf_names.c because of makefile udf_inlet.c
+# Compiling udf_names.o because of udf_names.c
+# Compiling udf_inlet.o because of udf_inlet.c
+# Linking libudf.so because of makefile user.udf udf_names.c udf_names.o udf_inlet.o
+# linking to ../../src/udf_inlet.c in lnamd64/2ddp_node
+# linking to ../../src/makefile in lnamd64/2ddp_node
+# building library in lnamd64/2ddp_node
+
+# Generating udf_names.c because of makefile udf_inlet.c
+# Compiling udf_names.o because of udf_names.c
+# Compiling udf_inlet.o because of udf_inlet.c
+# Linking libudf.so because of makefile user.udf udf_names.c udf_names.o udf_inlet.o
+
+You can also see the 'log'-file in 
+the working directory for this compilation history
+
+Done.
+
+
+> define user-defined compiled-functions load "udf_inlet"
+node3522.doduo.os: Opening library "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet"...
+Done.
+
+node3522.doduo.os: Opening library "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet"...
+	pressure_inlet
+Done.
+
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> define materials change-create air fluid fluid is a fluid
+y 
+Density
+constant 1000.0 
+n n y 
+Viscosity
+constant 0.003 
+n n n y
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> define models unsteady-1st-order y
+Pressure-Velocity Coupling scheme is set to SIMPLE
+
+> define models viscous laminar y
+
+> define models solver pressure-based y
+
+> define boundary-conditions pressure-outlet (out in)
+in y y y "udf" "pressure_inlet::udf_inlet" n y y n n
+
+> define boundary-conditions pressure-outlet (out in)
+out y n 0 n y y n n
+
+> define boundary-conditions wall (beamoutside)
+beamoutside y motion-bc-stationary y shear-bc-noslip
+
+> define operating-conditions operating-pressure 0
+
+> define operating-conditions gravity n
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> define dynamic-mesh dynamic-mesh y n n y n
+
+> define dynamic-mesh controls smoothing y
+
+> define dynamic-mesh controls smoothing-parameters smoothing-method spring
+
+> define dynamic-mesh controls smoothing-parameters constant-factor 1
+
+> define dynamic-mesh controls smoothing-parameters bnd-node-relaxation 1
+
+> define dynamic-mesh controls smoothing-parameters bnd-stiffness-factor 1
+
+> define dynamic-mesh controls smoothing-parameters skew-smooth-niter 10
+
+> define dynamic-mesh controls smoothing-parameters skew-smooth-cell-skew-max 0.7
+
+> define dynamic-mesh controls smoothing-parameters max-iter 20
+
+> define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
+
+> define dynamic-mesh controls layering n
+
+> define dynamic-mesh controls remeshing n
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> solve monitors residual check-convergence y y y
+
+> solve monitors residual convergence-criteria 1.0E-12 1.0E-12 1.0E-12
+
+> solve monitors force monitor-unsteady-iters y
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> solve set discretization-scheme mom 1
+
+> solve set discretization-scheme pressure 10
+
+> solve set p-v-coupling 22
+
+> solve set p-v-controls 1 1 y
+
+> solve set gradient-scheme  Options:
+ Green-Gauss Cell-Based 
+ Green-Gauss Node-Based 
+ Least-Squares Cell-Based Default 
+y
+
+ Green-Gauss Node-Based will be used
+> solve set reporting-interval 10
+
+> solve set flow-warnings n
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> solve initialize set-defaults pressure 0
+
+> solve initialize set-defaults x-velocity 0
+
+> solve initialize set-defaults y-velocity 0
+
+> solve initialize initialize-flow
+
+> 
+adjoint/                parallel/               server/
+define/                 parametric-study/       solve/
+display/                plot/                   surface/
+exit                    preferences/            views/
+file/                   print-license-usage
+mesh/                   report/
+
+> file write-case-data case_tube2d.cas
+Fast-loading "/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/addons/afd/lib/hdfio.bin"
+Done.
+
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_tube2d.cas.h5" in NODE0 mode and compression level 1 ...
+Grouping cells for Laplace smoothing ...
+        1000 cells,     1 zone  ...
+        2110 faces,     5 zones ...
+        1111 nodes,     1 zone  ...
+  Done.
+Done.
+
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_tube2d.dat.h5" in NODE0 mode and compression level 1 ...
+  Writing results.
+Done.
+
+> exit
+
+Transcript closed.
+Auto-Transcript Stop Time:  10:04:58, 03 Dec 2024 
+Total Transcript Time: 0 Minute 26 Second.
+
+Automatic transcript closed.

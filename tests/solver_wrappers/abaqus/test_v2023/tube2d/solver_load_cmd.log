@@ -1,0 +1,57 @@
+-------------------------------------------------------------------------------
+There are messages associated with the following module(s):
+-------------------------------------------------------------------------------
+
+GCCcore/12.2.0:
+   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   + ___________________________________ + + / This module will soon no
+   longer \ + + \ be available on this cluster! / + +
+   ----------------------------------- + + \ ^__^ + + \ (xx)\_______ + +
+   (__)\ )\/\ + + U ||----w | + + || || + + + + Only modules installed with
+   a recent toolchain will still be available + + when this cluster has been
+   migrated to the RHEL 9 operating system. + + Recent toolchains include
+   GCC(core)/12.3.0, gompi/2023a, foss/2023a, + + gfbf/2023a, iimpi/2023a,
+   intel/2023a, and newer versions. + + + + You should update your workflow
+   or job script to use more recent software installations, + + or accept
+   that the modules you currently rely on will soon no longer be available.
+   + + + + To request a more recent version of the software you are using, +
+   + please submit a software installation request via: + +
+   https://www.ugent.be/hpc/en/support/software-installation-request + + + +
+   The HPC-UGent Tier-2 clusters running RHEL 8 will be migrated to RHEL 9.
+   + + For more information, see https://docs.hpc.ugent.be/rhel9/ . + + + +
+   If you have any questions, please contact hpc@ugent.be . + + + ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+intel/2022b:
+   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   + ___________________________________ + + / This module will soon no
+   longer \ + + \ be available on this cluster! / + +
+   ----------------------------------- + + \ ^__^ + + \ (xx)\_______ + +
+   (__)\ )\/\ + + U ||----w | + + || || + + + + Only modules installed with
+   a recent toolchain will still be available + + when this cluster has been
+   migrated to the RHEL 9 operating system. + + Recent toolchains include
+   GCC(core)/12.3.0, gompi/2023a, foss/2023a, + + gfbf/2023a, iimpi/2023a,
+   intel/2023a, and newer versions. + + + + You should update your workflow
+   or job script to use more recent software installations, + + or accept
+   that the modules you currently rely on will soon no longer be available.
+   + + + + To request a more recent version of the software you are using, +
+   + please submit a software installation request via: + +
+   https://www.ugent.be/hpc/en/support/software-installation-request + + + +
+   The HPC-UGent Tier-2 clusters running RHEL 8 will be migrated to RHEL 9.
+   + + For more information, see https://docs.hpc.ugent.be/rhel9/ . + + + +
+   If you have any questions, please contact hpc@ugent.be . + + + ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-------------------------------------------------------------------------------
+
+
+┌───────────[91m,-""-.[0m────────────────────────────────────────[32m__ _.--..--._ _[0m──────┐
+│      __  [91m/[39m___[91m...\[0m  __   ___   ____   __ __  ______   [32m.-' _/   _/\_   \_'-.[0m  *│
+│     /  ][39m{_____}[0m ()/  ] /   \ |    \ |  |  ||      | [32m|__ /   _/[33m\__/[32m\_   \__|[0m  │
+│    /  / |     |  /  / |     ||  _  ||  |  ||      |    [32m|___/\_[33m\__/[90m(¨)[32m\___|[0m   │
+│   /  /  |  O  | /  /  |  O  ||  |  ||  |  ||_|  |_| * [39m__[0m      [33m\__/[0m   *       │
+│  /   \_ |     |/   \_ |     ||  |  ||  :  |  |  |   [39m_|[91m==[39m|_[0m* [33m_[0m [33m\__/[0m         * │
+│  \     ||     |\     ||     ||  |  ||     |  |  | [2m_,[0m (",)[2m__[33m|_|[0m [33m\__/[0m    *     │
+│   \____| \___/  \____| \___/ |__|__| \__,_|  |__|  [2m\[0m(´[90m.[0m `)  [33m|[0m * [33m\__/[0m      *  │
+│ ___________________________________________________(´ [90m:[0m  `)_[33m|[0m____[33m\__/[0m_______ │
+└──────────────────────────────────────────────────────────────────────────────┘
+

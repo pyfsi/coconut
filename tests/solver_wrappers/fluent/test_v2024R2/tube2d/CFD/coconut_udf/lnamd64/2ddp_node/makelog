@@ -1,0 +1,4 @@
+# Generating udf_names.c because of fluent.c
+# Compiling udf_names.o because of udf_names.c
+# Compiling fluent.o because of fluent.c
+# Linking libudf.so because of udf_names.c udf_names.o fluent.o

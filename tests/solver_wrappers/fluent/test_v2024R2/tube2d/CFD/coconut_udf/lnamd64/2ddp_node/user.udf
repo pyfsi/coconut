@@ -1,0 +1,4 @@
+CSOURCES= fluent.c
+HSOURCES=
+FLUENT_INC=/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent
+GPU_SUPPORT=off

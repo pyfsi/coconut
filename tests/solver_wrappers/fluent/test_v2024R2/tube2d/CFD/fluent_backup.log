@@ -1,0 +1,678 @@
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -gu -t1 -i fluent.jou
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/cortex/lnamd64/cortex.24.2.0 -f fluent -gu -i fluent.jou (fluent "2ddp -pdefault  -host -r24.2.0 -t1 -mpi=intel -path/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent -ssh")
+
+Opening input/output transcript to file "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/fluent-20241203-100647-2228012.trn".
+Auto-Transcript Start Time:  10:06:47, 03 Dec 2024 
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -pdefault -host -t1 -mpi=intel -path/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent -ssh -cx node3522.doduo.os:36021:42443
+Starting /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/lnamd64/2ddp_host/fluent.24.2.0 host -cx node3522.doduo.os:36021:42443 "(list (rpsetvar (QUOTE parallel/function) "fluent 2ddp -flux -node -r24.2.0 -t1 -pdefault -mpi=intel -ssh") (rpsetvar (QUOTE parallel/rhost) "") (rpsetvar (QUOTE parallel/ruser) "") (rpsetvar (QUOTE parallel/nprocs_string) "1") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) "/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent") (rpsetvar (QUOTE parallel/hostsfile) "") (rpsetvar (QUOTE gpuapp/devices) ""))"
+
+              Welcome to ANSYS Fluent 2024 R2
+
+              Copyright 1987-2024 ANSYS, Inc. All Rights Reserved.
+              Unauthorized use, distribution or duplication is prohibited.
+              This product is subject to U.S. laws governing export and re-export.
+              For full Legal Notice, see documentation.
+
+Build Time: May 13 2024 11:01:44 EDT  Build Id: 10192  
+ 
+Connected License Server List:	1055@ir03lic1.ugent.be
+
+*********************************************
+Info: Your license enables 4-way parallel execution.
+For faster simulations, please start the application with the appropriate parallel options.
+*********************************************
+
+
+     --------------------------------------------------------------
+     This is an academic version of ANSYS FLUENT. Usage of this product
+     license is limited to the terms and conditions specified in your ANSYS
+     license form, additional terms section.
+     --------------------------------------------------------------
+Host spawning Node 0 on machine "node3522.doduo.os" (unix).
+/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -flux -node -t1 -pdefault -mpi=intel -ssh -mport 10.141.5.22:10.141.5.22:42711:0
+Starting /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/multiport/mpi/lnamd64/intel2021/bin/mpirun --rsh=ssh -f /tmp/fluent-appfile.vsc48608.2228591 -genv I_MPI_FABRICS shm -genv FLUENT_ARCH lnamd64 -genv I_MPI_DEBUG 0 -genv I_MPI_ADJUST_GATHERV 3 -genv I_MPI_ADJUST_ALLREDUCE 2 -genv I_MPI_PLATFORM auto -genv PYTHONHOME /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/../../commonfiles/CPython/3_10/linx64/Release/python -genv FLUENT_PROD_DIR /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0 -genv FLUENT_AFFINITY 0 -genv I_MPI_PIN enable -genv KMP_AFFINITY disabled -n 1 /apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/lnamd64/2ddp_node/fluent_mpi.24.2.0 node -mpiw intel -pic shmem -mport 10.141.5.22:10.141.5.22:42711:0
+
+-------------------------------------------------------------------------------
+ID    Hostname           Core  O.S.      PID      Vendor                
+-------------------------------------------------------------------------------
+n0    node3522.doduo.os  1/96  Linux-64  2228664  AMD EPYC 7552 48-Core 
+host  node3522.doduo.os        Linux-64  2228267  AMD EPYC 7552 48-Core 
+
+MPI Option Selected: intel
+-------------------------------------------------------------------------------
+
+Cleanup script file is /kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/cleanup-fluent-node3522.doduo.os-2228267.sh
+
+Warning:
+Software rasterizer found, hardware acceleration will be disabled.
+In the absence of hardware-accelerated drivers, the performance of all graphics operations will be severely affected. Make sure you have a supported graphics card, latest graphics driver, and a supported remote visualization tool with direct server-side rendering enabled. If you feel your system meets these requirements, try forcing the accelerated driver by using the command line flag (-driver <name>) or setting the HOOPS_PICTURE environment variable. Refer to the documentation for more details.
+
+ +------------------------------------------------------------------+
+ |                    ANSYS Product Improvement                     |
+ |                                                                  |
+ |   ANSYS Product Improvement Program helps improve ANSYS          |
+ |   products. Participating in this program is like filling out a  |
+ |   survey. Without interrupting your work, the software reports   |
+ |   anonymous usage information such as errors, machine and        |
+ |   solver statistics, features used, etc. to ANSYS. We never      |
+ |   use the data to identify or contact you.                       |
+ |   The data does NOT contain:                                     |
+ |   - Any personally identifiable information including names,     |
+ |     IP addresses, file names, part names, etc.                   |
+ |   - Any information about your geometry or design specific       |
+ |     inputs.                                                      |
+ |   You can stop participation at any time. To change your         |
+ |   selection go to Help >> ANSYS Product Improvement Program      |
+ |   in the GUI.                                                    |
+ |   For more information about the ANSYS Privacy Policy, please    |
+ |   check: http://www.ansys.com/privacy                            |
+ |                                                                  |
+ +------------------------------------------------------------------+
+
+Reading journal file fluent.jou...
+
+> ;   GENERAL SETTINGS
+file set-batch-options n n n
+
+> ;file start-transcript "transcript.txt"
+(enable-dynamic-mesh-node-ids #t)
+()
+
+
+> ;file binary-files n
+(define unsteady #t)
+unsteady
+
+
+> (define multiphase #f)
+multiphase
+
+
+> (define flow_iterations 30)
+flow_iterations
+
+
+> (define check_coupling_convergence #f)
+check_coupling_convergence
+
+
+> (define delta_t 0.0001)
+delta_t
+
+
+> (define timestep_start 0)
+timestep_start
+
+
+> ;
+;   FUNCTION DEFINITIONS
+(define (send_message message)
+    (system (string-append "touch " message ".coco"))
+)
+send_message
+
+
+> (define (wait_message message)
+    (do ((j 0 j)) ((= j 1))
+        (if
+            (file-exists? (string-append message ".coco"))
+            (begin
+                (set! j 1)
+                (system (string-append "rm " message ".coco"))
+            )
+            (system "sleep 0.1")
+        )
+    )
+)
+wait_message
+
+
+> (define (check_message message)
+    (if
+        (file-exists? (string-append message ".coco"))
+        (begin
+            (newline)(display (string-append "RECEIVED MESSAGE " message))(newline)
+            (system (string-append "rm " message ".coco"))
+            (= 0 0)
+        )
+        (= 0 1)
+    )
+)
+check_message
+
+
+> (define (print-iter-info)
+    (begin
+        (newline)
+        (display (format #f "### timestep ~a, iteration ~a ###"
+            (%rpgetvar 'udf/timestep) (%rpgetvar 'udf/iteration)) )
+        (newline)
+    )
+)
+print-iter-info
+
+
+> ;
+;   READ CASE/DATA, COMPILE AND LOAD UDF
+(if (= timestep_start 0)
+    (begin
+        (ti-menu-load-string "file read-case-data /kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_tube2d.cas.h5")
+        (rp-var-define 'udf/timestep 0 'int #f)
+        (rp-var-define 'udf/iteration 0 'int #f)
+        (ti-menu-load-string "define user-defined compiled-functions compile \"coconut_udf\" y \"fluent.c\" \"\" \"\"")
+        (ti-menu-load-string "define user-defined compiled-functions load \"coconut_udf\"")
+    )
+    (ti-menu-load-string (format #f "file read-case-data \"case_timestep~a.cas\"" timestep_start))
+)
+file read-case-data /kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_tube2d.cas.h5Fast-loading "/apps/gent/RHEL8/zen2-ib/software/FLUENT/2024R2/v242/fluent/fluent24.2.0/addons/afd/lib/hdfio.bin"
+Done.
+
+Reading from node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_tube2d.cas.h5" in NODE0 mode ...
+  Reading mesh ...
+        1000 cells,     1 cell zone  ...
+           1000 quadrilateral cells,  zone id: 2
+        2110 faces,     5 face zones ...
+            100 2D wall faces,  zone id: 3
+            100 2D axis faces,  zone id: 4
+             10 2D pressure-outlet faces,  zone id: 5
+             10 2D pressure-outlet faces,  zone id: 6
+           1890 2D interior faces,  zone id: 8
+        1111 nodes,     1 node zone  ...
+  Done.
+
+
+Checking the existence of compiled "udf_inlet" UDF library for current platform.
+If needed will attempt auto-compilation...
+
+ 	 Make sure that UDF source files are in the directory 
+ 	 that contains your case and data files. If you have 
+ 	 an existing udf_inlet directory, please remove this 
+ 	 directory to ensure that latest files are used. 
+  
+
+Will now auto-compile UDF library "udf_inlet".
+
+
+
+
+
+Copy "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet.c" to "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet/src"
+Files udf_names.c and user.udf in 2ddp_host are up-to-date.
+Files udf_names.c and user.udf in 2ddp_node are up-to-date.
+
+Working...
+# linking to ../../src/udf_inlet.c in lnamd64/2ddp_host
+# building library in lnamd64/2ddp_host
+
+# linking to ../../src/udf_inlet.c in lnamd64/2ddp_node
+# building library in lnamd64/2ddp_node
+
+
+You can also see the 'log'-file in 
+the working directory for this compilation history
+
+Done.
+
+node3522.doduo.os: Opening library "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet"...
+Done.
+
+node3522.doduo.os: Opening library "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/udf_inlet"...
+	pressure_inlet
+Done.
+
+Building...
+     mesh
+     materials,
+     interface,
+     domains,
+	mixture
+     zones,
+	fluid-interior
+	in
+	out
+	box
+	beamoutside
+	fluid
+     parallel,
+Done.
+
+Reading from node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_tube2d.dat.h5" in NODE0 mode ...
+
+
+  Reading results.
+Parallel variables...
+Done.
+define user-defined compiled-functions compile 
+"coconut_udf" y 
+ Give C-Source file names:
+"fluent.c" ""
+ Give header file names:
+ ""
+
+
+
+
+Copy "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/fluent.c" to "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/coconut_udf/src"
+Files udf_names.c and user.udf in 2ddp_host are up-to-date.
+Files udf_names.c and user.udf in 2ddp_node are up-to-date.
+
+Working...
+# linking to ../../src/fluent.c in lnamd64/2ddp_host
+# building library in lnamd64/2ddp_host
+
+# Generating udf_names.c because of fluent.c
+# Compiling udf_names.o because of udf_names.c
+# Compiling fluent.o because of fluent.c
+# Linking libudf.so because of udf_names.c udf_names.o fluent.o
+# linking to ../../src/fluent.c in lnamd64/2ddp_node
+# building library in lnamd64/2ddp_node
+
+# Generating udf_names.c because of fluent.c
+# Compiling udf_names.o because of udf_names.c
+# Compiling fluent.o because of fluent.c
+# Linking libudf.so because of udf_names.c udf_names.o fluent.o
+
+You can also see the 'log'-file in 
+the working directory for this compilation history
+
+Done.
+define user-defined compiled-functions load "coconut_udf"
+node3522.doduo.os: Opening library "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/coconut_udf"...
+Done.
+
+node3522.doduo.os: Opening library "/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/coconut_udf"...
+	get_thread_ids
+	store_coordinates_id
+	store_pressure_traction
+	move_nodes
+Done.
+#t
+
+
+> ;   STORE REPORTING INTERVAL
+;
+(define reporting_interval (%rpgetvar 'iteration-chunk))
+reporting_interval
+
+
+> ;
+;   SAVE CASE INFO TO TEXT FILE
+report summary y "report.sum"
+
+> (send_message "case_info_exported")
+0
+
+
+> ;
+;   GET_THREAD_IDS IN UDF AND JOURNAL
+(wait_message "thread_ids_written_to_file")
+#f
+
+
+> define user-defined execute-on-demand "get_thread_ids::coconut_udf"
+
+> (define face_threads (list "beamoutside"))
+face_threads
+
+
+> ;
+;   SETUP DYNAMIC MESH
+(if (= timestep_start 0)
+    (begin
+        (if unsteady
+            (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n")
+        )
+        (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::coconut_udf\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; new lines matter in journal scripts
+        )
+        (if unsteady
+            (begin
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters motion-relaxation 1\n")
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters residual-criteria -1\n")
+                (ti-menu-load-string "define dynamic-mesh controls implicit-update-parameters update-interval 1\n")
+            )
+        )
+    )
+)
+define dynamic-mesh dynamic-mesh? yes no no yes no
+
+> define dynamic-mesh zones create beamoutside user-defined "move_nodes::coconut_udf" no no , constant 0 no no no
+
+> define dynamic-mesh controls implicit-update-parameters motion-relaxation 1
+
+> define dynamic-mesh controls implicit-update-parameters residual-criteria -1
+
+> define dynamic-mesh controls implicit-update-parameters update-interval 1
+
+> #t
+
+
+> ;
+;   STORE COORDINATES AND IDS
+(if (= timestep_start 0)
+    (begin
+        (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::coconut_udf\"")
+        (send_message "nodes_and_faces_stored")
+    )
+)
+define user-defined execute-on-demand "store_coordinates_id::coconut_udf"
+
+Started UDF store_coordinates_id.
+
+Finished UDF store_coordinates_id.
+0
+
+
+> ;
+;   SET DELTA_T
+(if unsteady
+    (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))
+)
+solve set time-step 0.0001#t
+
+
+> ;
+;   FSI LOOP
+(do ((j 0 j)) ((= j 1))
+    (system "sleep 0.1")
+    (if (check_message "save")
+        (begin
+            (ti-menu-load-string (format #f "file write-case-data \"case_timestep~a.cas\"" (%rpgetvar 'udf/timestep)))
+            (send_message "save_ready")
+        )
+    )
+    (if (check_message "next")
+        (begin
+            
+
+            (rpsetvar 'udf/iteration 0)
+            (rpsetvar 'udf/timestep (+ (%rpgetvar 'udf/timestep) 1))
+            (print-iter-info)
+            (send_message "next_ready")
+        )
+    )
+    (if (check_message "continue")
+        (begin
+            (rpsetvar 'udf/iteration (+ (%rpgetvar 'udf/iteration) 1))
+            (print-iter-info)
+            (if check_coupling_convergence
+                (begin
+                    (ti-menu-load-string "solve set reporting-interval 1")
+                    (if unsteady
+                        (if (= (%rpgetvar 'udf/iteration) 1)
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                (ti-menu-load-string "solve iterate 1")
+                                (if (%rpgetvar 'solution/converged?)
+                                    (begin
+                                        (newline)(display "Check convergence :: converged")(newline)
+                                        (send_message "solver_converged")
+                                    )
+                                    (begin
+                                        (newline)(display "Check convergence :: not converged")(newline)
+                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                    )
+                                )
+                            )
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                (ti-menu-load-string "solve iterate 1")
+                                (if (%rpgetvar 'solution/converged?)
+                                    (begin
+                                        (newline)(display "Check convergence :: converged")(newline)
+                                        (send_message "solver_converged")
+                                    )
+                                    (begin
+                                        (newline)(display "Check convergence :: not converged")(newline)
+                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                        (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                    )
+                                )
+                            )
+                        )
+                        (begin
+                            (ti-menu-load-string "solve mesh-motion y")
+                            (ti-menu-load-string "solve iterate 1")
+                            (if (%rpgetvar 'solution/converged?)
+                                (begin
+                                    (newline)(display "Check convergence :: converged")(newline)
+                                    (send_message "solver_converged")
+                                )
+                                (begin
+                                    (newline)(display "Check convergence :: not converged")(newline)
+                                    (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                    (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                )
+                            )
+                        )
+                    )
+                )
+                (begin
+                    (if unsteady
+                        (if (= (%rpgetvar 'udf/iteration) 1)
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
+                            )
+                            (begin
+                                (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                (ti-menu-load-string "solve iterate 1")
+                                (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                            )
+                        )
+                        (begin
+                            (ti-menu-load-string "solve mesh-motion y")
+                            (ti-menu-load-string "solve iterate flow_iterations")
+                        )
+                    )
+                )
+            )
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::coconut_udf\"")
+            (send_message "continue_ready")
+        )
+    )
+    (if (check_message "store_grid")
+        (begin
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::coconut_udf\"")
+            (send_message "store_grid_ready")
+        )
+    )
+    (if (check_message "stop")
+        (begin
+            
+
+            (set! j 1)
+            (send_message "stop_ready")
+            (system "sleep 0.1")
+        )
+    )
+)
+
+RECEIVED MESSAGE next
+
+### timestep 1, iteration 0 ###
+
+RECEIVED MESSAGE continue
+
+### timestep 1, iteration 1 ###
+solve dual-time-iterate 1 0
+Finished UDF move_nodes.
+
+Updating solution at time level N...
+ done.
+
+Updating mesh at time level N... done.
+
+  iter  continuity  x-velocity  y-velocity     time/iter
+Flow time = 0.0001s, time step = 1
+solve iterate 30
+  iter  continuity  x-velocity  y-velocity     time/iter
+    10  4.0190e-02  5.5549e-02  3.0949e-05  0:00:00   20
+    20  1.1321e-03  1.5646e-03  2.4452e-06  0:00:00   10
+    30  3.1829e-05  4.3983e-05  1.2371e-07  0:00:00    0
+define user-defined execute-on-demand "store_pressure_traction::coconut_udf"
+Started UDF store_pressure_traction.
+
+Finished UDF store_pressure_traction.
+
+RECEIVED MESSAGE save
+file write-case-data "case_timestep1.cas"
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep1.cas.h5" in NODE0 mode and compression level 1 ...
+Grouping cells for Laplace smoothing ...
+        1000 cells,     1 zone  ...
+        2110 faces,     5 zones ...
+        1111 nodes,     1 zone  ...
+  Done.
+Done.
+
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep1.dat.h5" in NODE0 mode and compression level 1 ...
+  Writing results.
+Done.
+
+RECEIVED MESSAGE next
+
+### timestep 2, iteration 0 ###
+
+RECEIVED MESSAGE continue
+
+### timestep 2, iteration 1 ###
+solve dual-time-iterate 1 0
+Finished UDF move_nodes.
+
+Updating solution at time level N...
+ done.
+
+Updating mesh at time level N... done.
+
+  iter  continuity  x-velocity  y-velocity     time/iter
+    30  3.1829e-05  4.3983e-05  1.2371e-07  0:00:00    0
+Flow time = 0.0002s, time step = 2
+solve iterate 30
+  iter  continuity  x-velocity  y-velocity     time/iter
+    30  3.1829e-05  4.3983e-05  1.2371e-07  0:00:00   30
+    40  1.1483e+00  1.2865e-02  2.5887e-03  0:00:00   20
+    50  4.0164e-02  3.0643e-04  7.0288e-05  0:00:00   10
+    60  1.3358e-03  7.3450e-06  1.9259e-06  0:00:00    0
+define user-defined execute-on-demand "store_pressure_traction::coconut_udf"
+Started UDF store_pressure_traction.
+
+Finished UDF store_pressure_traction.
+
+RECEIVED MESSAGE save
+file write-case-data "case_timestep2.cas"
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep2.cas.h5" in NODE0 mode and compression level 1 ...
+Grouping cells for Laplace smoothing ...
+        1000 cells,     1 zone  ...
+        2110 faces,     5 zones ...
+        1111 nodes,     1 zone  ...
+  Done.
+Done.
+
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep2.dat.h5" in NODE0 mode and compression level 1 ...
+  Writing results.
+Done.
+
+RECEIVED MESSAGE next
+
+### timestep 3, iteration 0 ###
+
+RECEIVED MESSAGE continue
+
+### timestep 3, iteration 1 ###
+solve dual-time-iterate 1 0
+Finished UDF move_nodes.
+
+Updating solution at time level N...
+ done.
+
+Updating mesh at time level N... done.
+
+  iter  continuity  x-velocity  y-velocity     time/iter
+    60  1.3358e-03  7.3450e-06  1.9259e-06  0:00:00    0
+Flow time = 0.0003s, time step = 3
+solve iterate 30
+  iter  continuity  x-velocity  y-velocity     time/iter
+    60  1.3358e-03  7.3450e-06  1.9259e-06  0:00:00   30
+    70  1.3079e+00  1.5414e-02  2.8511e-03  0:00:00   20
+    80  4.3009e-02  3.4978e-04  8.0351e-05  0:00:00   10
+    90  1.3592e-03  7.8124e-06  2.2028e-06  0:00:00    0
+define user-defined execute-on-demand "store_pressure_traction::coconut_udf"
+Started UDF store_pressure_traction.
+
+Finished UDF store_pressure_traction.
+
+RECEIVED MESSAGE save
+file write-case-data "case_timestep3.cas"
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep3.cas.h5" in NODE0 mode and compression level 1 ...
+Grouping cells for Laplace smoothing ...
+        1000 cells,     1 zone  ...
+        2110 faces,     5 zones ...
+        1111 nodes,     1 zone  ...
+  Done.
+Done.
+
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep3.dat.h5" in NODE0 mode and compression level 1 ...
+  Writing results.
+Done.
+
+RECEIVED MESSAGE next
+
+### timestep 4, iteration 0 ###
+
+RECEIVED MESSAGE continue
+
+### timestep 4, iteration 1 ###
+solve dual-time-iterate 1 0
+Finished UDF move_nodes.
+
+Updating solution at time level N...
+ done.
+
+Updating mesh at time level N... done.
+
+  iter  continuity  x-velocity  y-velocity     time/iter
+    90  1.3592e-03  7.8124e-06  2.2028e-06  0:00:00    0
+Flow time = 0.0004s, time step = 4
+solve iterate 30
+  iter  continuity  x-velocity  y-velocity     time/iter
+    90  1.3592e-03  7.8124e-06  2.2028e-06  0:00:00   30
+   100  2.3240e-01  8.2344e-05  1.5932e-04  0:00:00   20
+   110  6.4834e-03  1.7418e-06  4.1895e-06  0:00:00   10
+   120  1.7999e-04  4.4402e-08  1.1307e-07  0:00:00    0
+define user-defined execute-on-demand "store_pressure_traction::coconut_udf"
+Started UDF store_pressure_traction.
+
+Finished UDF store_pressure_traction.
+
+RECEIVED MESSAGE save
+file write-case-data "case_timestep4.cas"
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep4.cas.h5" in NODE0 mode and compression level 1 ...
+Grouping cells for Laplace smoothing ...
+        1000 cells,     1 zone  ...
+        2110 faces,     5 zones ...
+        1111 nodes,     1 zone  ...
+  Done.
+Done.
+
+Writing to node3522.doduo.os:"/kyukon/home/gent/486/vsc48608/python_packages/coconut/coconut/tests/solver_wrappers/fluent/test_v2024R2/tube2d/CFD/case_timestep4.dat.h5" in NODE0 mode and compression level 1 ...
+  Writing results.
+Done.
+
+RECEIVED MESSAGE store_grid
+define user-defined execute-on-demand "store_coordinates_id::coconut_udf"
+
+Started UDF store_coordinates_id.
+
+Finished UDF store_coordinates_id.
+
+RECEIVED MESSAGE stop
+#f
+
+
+> exit Auto-Transcript Stop Time:  10:07:03, 03 Dec 2024 
+Total Transcript Time: 0 Minute 16 Second.
+
+Automatic transcript closed.
