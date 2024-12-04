@@ -1,12 +1,11 @@
 #!/bin/sh
 #
-#PBS -N 2D_fine
+#PBS -N 2D_fine_1_99
 #PBS -l walltime=71:55:00
 #PBS -l nodes=1:ppn=8
 #
 
-# Use SciPy-bundle instead of Anaconda3 on shinx
-module load SciPy-bundle/2024.05-gfbf-2024a
+ml Anaconda3
 export PYTHONPATH=$VSC_SCRATCH/:$PYTHONPATH
 
 export OMP_PROC_BIND=FALSE # required on UGent-HPC for processes spawned from Python

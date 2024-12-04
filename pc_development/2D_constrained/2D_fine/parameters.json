@@ -64,10 +64,7 @@
             "latent": 179000,
             "melt_temp": 299.15,
             "ini_condition": 0,
-            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
-            "mapping_domain": "rectangular",
-            "mapping_limits": [0, 0, 0.1, 0.1],
-            "mapping_conservative": true
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")"
           },
           "thread_names": [
             "boundary"
@@ -113,9 +110,15 @@
                 "melt_temp": 299.15,
                 "ini_condition": 299.15,
                 "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
-                "mapping_domain": "rectangular",
-                "mapping_limits": [0, 0, 0.1, 0.1],
-                "mapping_conservative": true
+                "f2n_mapping": {
+                  "mapping_domain": "rectangular",
+                  "mapping_limits": [0, 0, 0.1, 0.1],
+                  "mapping_conservative": true,
+                  "volume_tolerance": 1e-14,
+                  "mapper_iterations": 20,
+                  "mapper_relaxation": 0.4,
+                  "projection_order": 2
+                }
               },
               "thread_names": [
                 "boundary"

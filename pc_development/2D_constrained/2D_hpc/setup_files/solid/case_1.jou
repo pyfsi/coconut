@@ -9,34 +9,32 @@ define user-defined user-defined-memory 12
 define models unsteady-1st-order y
 define models viscous laminar y
 define models solver pressure-based y
-solve set equations flow y
+solve set equations flow n
 define models energy y n n n y
-define models solidification-melting? yes constant 1e9 no
+define models solidification-melting? no
 
 define materials copy fluid air pcm
 ; more realistic conductivities!
-define materials change-create pcm , yes constant 870 yes constant 2400 yes constant 0.24 yes constant 0.004 no yes 8.61e-4 y 179000 y 299.15 y 299.15 n
+define materials change-create pcm , yes constant 870 yes constant 2400 yes constant 0.24 yes constant 0.004 no yes 8.61e-4 n
 
 define boundary-conditions fluid , y pcm n n n n , n , n y n
-define boundary-conditions wall bottom n 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
-define boundary-conditions wall side n 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
-define boundary-conditions wall top n 0 n 0 n n n 0 y motion-bc-stationary n n 0 n ,
-define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n 0 n ,
+define boundary-conditions wall bottom n 0 n 0 n n n 0 y motion-bc-stationary n n ,
+define boundary-conditions wall side n 0 n 0 n n n 0 y motion-bc-stationary n n ,
+define boundary-conditions wall top n 0 n 0 n n n 0 y motion-bc-stationary n n ,
+define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n ,
 
 define operating-conditions operating-pressure 0
 define operating-conditions gravity n
 
-solve monitors residual check-convergence n n n y
+solve monitors residual check-convergence y
 solve monitors residual convergence-criteria 1e-14
 
-solve set discretization-scheme temperature 0
 solve set gradient-scheme n y
-; SIMPLE (20) - PISO (22) - coupled (24)
-solve set p-v-coupling 24
+solve set discretization-scheme temperature 1
+solve set under-relaxation temperature 0.9
 
 ;Initialise solid at melting temperature
 solve initialize set-defaults temperature 299.15
-solve set under-relaxation temperature 0.9
 solve initialize initialize-flow
 
 define dynamic-mesh dynamic-mesh y n n n n

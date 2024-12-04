@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 360000
+    "number_of_timesteps": 1200
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
@@ -57,10 +57,7 @@
             "latent": 179000,
             "melt_temp": 299.15,
             "ini_condition": 0,
-            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
-            "mapping_domain": "rectangular",
-            "mapping_limits": [0, 0, 0.1, 0.01],
-            "mapping_conservative": false
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")"
           },
           "thread_names": [
             "boundary"
@@ -85,7 +82,7 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 6000
+          "save_results": 300
         }
       },
       {
@@ -105,9 +102,15 @@
                 "latent": 179000,
                 "melt_temp": 299.15,
                 "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
-                "mapping_domain": "rectangular",
-                "mapping_limits": [0, 0, 0.1, 0.01],
-                "mapping_conservative": false
+                "f2n_mapping": {
+                  "mapping_domain": "rectangular",
+                  "mapping_limits": [0, 0, 0.1, 0.01],
+                  "mapping_conservative": false,
+                  "volume_tolerance": 1e-14,
+                  "mapper_iterations": 20,
+                  "mapper_relaxation": 0.4,
+                  "projection_order": 2
+                }
               },
               "thread_names": [
                 "boundary"
@@ -132,7 +135,7 @@
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 6000
+              "save_results": 300
             }
           },
           "mapper_interface_input": {

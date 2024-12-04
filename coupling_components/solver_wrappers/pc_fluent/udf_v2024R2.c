@@ -64,6 +64,8 @@ for (_d = 0; _d < dim; _d++) {                                      \
     PRF_CRECV_REAL(from, name[_d], n, tag);                         \
 }
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 /* User defined memory -- not available in 3D! */
 #define PR_1_X 0 // previous x-coordinate of first node in face
 #define PR_1_Y 1 // previous y-coordinate of first node in face
@@ -1572,9 +1574,9 @@ DEFINE_ON_DEMAND(write_displacement) {
             }
 
             if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
-                vel = heat/(NV_MAG(area)*LH*C_R(c,t));
+                vel = heat/(NV_MAG(area)*LH*C_R(c,t)); // Stefan condition
             } else {
-                if (C_H(c,t) >= (C_CP(c,t) * (TM - 298.15))) { // transition to melting
+                if (C_T(c,t) >= TM) { // transition to melting
                     vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1_SAFE(c,t,dt) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
                 } else { // subcooled --> no interface velocity
                     vel = 0.0;
@@ -1700,7 +1702,7 @@ DEFINE_ON_DEMAND(update_cell_enthalpy)
     // loop over all cells
     thread_loop_c(t,d) {
         begin_c_loop(c,t) {
-            C_UDMI(c,t,PR_H) = C_H(c,t) - C_CP(c,t)*(TM - 298.15);
+            C_UDMI(c,t,PR_H) = C_H(c,t) - C_CP(c,t)*(TM - 298.15); // should be previous enthalpy on NEW UPDATED MESH --> update??
         } end_c_loop(c,t)
     }
 #endif /* RP_NODE */
@@ -1744,6 +1746,31 @@ return source;
 }
 
 
+  /*------------------------*/
+ /* remove_excess_enthalpy */
+/*------------------------*/
+
+DEFINE_ADJUST(remove_excess_enthalpy, d)
+{
+#if RP_NODE
+    Thread *t;
+    cell_t c;
+
+    // loop over all cells
+    thread_loop_c(t,d) {
+        begin_c_loop(c,t) {
+            if (C_UDMI(c,t,ADJ) == 1.0) {
+                if (C_T(c,t) > TM) {
+                    C_T(c,t) = TM;
+                    C_H(c,t) = C_CP(c,t)*(TM - 298.15);
+                }
+            }
+        } end_c_loop(c,t)
+    }
+#endif /* RP_NODE */
+}
+
+
   /*-------------------*/
  /* udf_energy_source */
 /*-------------------*/
@@ -1751,26 +1778,25 @@ return source;
 DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
 /*Source term for energy equation, to account for latent and sensible heat.*/
-real source, test;
+real source;
+real CST = 1e6;
 
-if (C_UDMI(c,t,ADJ) == 1.0) {
-    if (fluid) {
-        /* This definition is only valid for fluid during melting! */
-        source = (C_UDMI(c,t,SIGN)*C_R(c,t)*(C_CP(c,t)*(TM - 298.15))*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
-        dS[eqn] = 0.0;
-    } else {
-        /* This definition is only valid for solid during melting! */
-        if (C_UDMI(c,t,PR_H) >= 0.0) {
-            source = C_UDMI(c,t,SIGN)*C_R(c,t)*(C_UDMI(c,t,PR_H) + ((C_UDMI(c,t,D_VOL) / C_VOLUME(c,t)) * C_CP(c,t) * (TM - 298.15)))/dt;
-        } else {
-            source = 0.0;
-        }
-        // Maybe need to correct with correct cell volumes
-        dS[eqn] = 0.0;
-    }
-} else {
-    source = 0.0;
+if (fluid) {
+    // This definition is only valid for fluid during melting!
+    source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*C_R(c,t)*C_CP(c,t)*(TM - 298.15)*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
     dS[eqn] = 0.0;
+} else { // solid
+    if (C_UDMI(c,t,PR_H) >= 0.0) { // Two-way correction during melting (T >< TM)
+        source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*(C_T(c,t) - TM)/dt; // Large source term to force T to TM
+        dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt; // dS/dT (temperature derivative)
+    } else { // One-way correction during transition (T > TM)
+        source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*MAX(C_T(c,t) - TM, 0.0)/dt;
+        if (source > 0.0) {
+            dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt;
+        } else {
+            dS[eqn] = 0.0;
+        }
+    }
 }
 
 return source;
