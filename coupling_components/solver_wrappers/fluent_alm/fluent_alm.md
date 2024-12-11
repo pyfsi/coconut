@@ -46,7 +46,7 @@ The magnitude of the error can be estimated by comparing the volume integral of 
 
 The parameters don't differ much from the ones described in the [Fluent solver wrapper documentation](../fluent/fluent.md#parameters), with the following exceptions:
 
-* The keywords `max_nodes_per_face` and `multiphase` are removed. The fromer as no physical yarn surface mesh is present and thus this parameter becomes obsolete, the latter as multiphase is not allowed/supported.
+* The keywords `max_nodes_per_face` and `multiphase` are removed. The former as no physical yarn surface mesh is present and thus this parameter becomes obsolete, the latter as multiphase is not allowed/supported.
 * The keyword `dimensions` is ignored and hardcoded to 3 as only 3D-cases are supported for the moment.
 * Regarding the model parts names (under `interface_input` and `interface_output`), the only requirement is that the string given at `thread_names` is a substring of the model part names. As variables, only `displacement` and `traction` should be selected.
 * Finally, a new subdictionary with keyword `ALM` should be provided, containing the following keywords:

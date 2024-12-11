@@ -41,13 +41,22 @@ real c_moment[6];
 #define T_ATM |T_ATM|
 #define R 287.05
 
+typedef struct neighbour_cell_struct {
+    cxboolean active;
+    cell_t cell;
+    Thread *cell_thread;
+    real inv_dist;  // inverse distance between cell center and actuator point
+} Neighbour_Cell;
+
 typedef struct yarn_point_struct {
 	int partition;
-	int highest_partition;
+	Neighbour_Cell neighbours[6];  // Assumption: by default hexahedral cells (polyhedral cells prohibited)
 	cell_t cell;
 	Thread *cell_thread;
 	cxboolean found;
 	real vs_w[N_CIRC_S+1];  // velocity sampling: sum of weights
+	real inv_dist;  // inverse distance between cell center and actuator point
+	real inv_dist_sum;  // sum of inverse distance interpolation weights
 } Yarn_Point;
 
 /* Global variables */
@@ -63,7 +72,7 @@ real yarn_forces[NYARNPOINTS][ND_ND];
 
 real local_theta[NYARNPOINTS];
 real sample_coordinates[NYARNPOINTS][N_CIRC_S+1][ND_ND];
-real sampled_velocity[NYARNPOINTS][2][ND_ND];
+real sampled_velocity[NYARNPOINTS][N_CIRC_S+1][ND_ND];
 real air_values[NYARNPOINTS][NSCALARS];
 
 int timestep = 0;
@@ -120,14 +129,21 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
 #if RP_NODE
     CX_Cell_Id *cx_cell;
     static ND_Search *domain_table = NULL;
-    int point, nwithforce;
-    cell_t cell;
-	Thread *cell_thread;
+    int point, nwithforce, n;
+    real centroid[ND_ND], dist[ND_ND], sum;
+    cell_t cell, cell_other;
+    face_t face;
+	Thread *cell_thread, *cell_thread_other, *face_thread;
 
-    /* initialize all yarn points as not found */
+    /* initialize all yarn points as not found and its neighbours as not active */
 	for (point = 0; point < NYARNPOINTS; point++)
 	{
 		point_struct[point].found = FALSE;
+		point_struct[point].partition = -1;  // Reset partition to a negative value, gets overwritten later on
+		for (n = 0; n < 6; n++)
+		{
+		    point_struct[point].neighbours[n].active = FALSE;
+		}
 	}
 
     /* search for points */
@@ -137,12 +153,58 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
         cx_cell = CX_Find_Cell_With_Point(domain_table, coordinate_list[point], 0.0);
         if (cx_cell)
         {
+            point_struct[point].found = TRUE;
             cell = RP_CELL(cx_cell);
             cell_thread = RP_THREAD(cx_cell);
-            point_struct[point].partition = C_PART(cell, cell_thread);  // Partition id of process that has 'cell' as internal cell
-            point_struct[point].cell = cell;
-            point_struct[point].cell_thread = cell_thread;
-            point_struct[point].found = TRUE;
+            if (C_NFACES(cell, cell_thread) > 6)
+                {
+                    Error("UDF-Error: cell %i has %i faces (maximum allowed: 6). \n", cell, C_NFACES(cell, cell_thread));
+                }
+            if (myid == C_PART(cell, cell_thread))  // Check if myid is process that has 'cell' as internal cell
+            {
+                point_struct[point].partition = myid;
+                sum = 0.0;
+                point_struct[point].cell = cell;
+                point_struct[point].cell_thread = cell_thread;
+                C_CENTROID(centroid, cell, cell_thread);
+                NV_VV(dist, =, coordinate_list[point], -, centroid);
+                if (NV_MAG(dist) > DBL_EPSILON)  // Check if actuator point does not coincide with cell center
+                {
+                    point_struct[point].inv_dist = 1.0 / NV_MAG(dist);
+                    sum += 1.0 / NV_MAG(dist);
+                    c_face_loop(cell, cell_thread, n)  // Construct inverse distance interpolation stencil from neighbours
+                    {
+                        face = C_FACE(cell, cell_thread, n);
+                        face_thread = C_FACE_THREAD(cell, cell_thread, n);
+                        if (!BOUNDARY_FACE_THREAD_P(face_thread))  // Check if face is not at domain boundary
+                        {
+                            point_struct[point].neighbours[n].active = TRUE;
+                            if ((F_C0(face, face_thread) == cell) && (THREAD_T0(face_thread) == cell_thread))
+                            {
+                                cell_other = F_C1(face, face_thread);
+                                cell_thread_other = THREAD_T1(face_thread);
+                            }
+                            else
+                            {
+                                cell_other = F_C0(face, face_thread);
+                                cell_thread_other = THREAD_T0(face_thread);
+                            }
+                            point_struct[point].neighbours[n].cell = cell_other;
+                            point_struct[point].neighbours[n].cell_thread = cell_thread_other;
+                            C_CENTROID(centroid, cell_other, cell_thread_other);
+                            NV_VV(dist, =, coordinate_list[point], -, centroid);
+                            point_struct[point].neighbours[n].inv_dist = 1.0 / NV_MAG(dist);
+                            sum += 1.0 / NV_MAG(dist);
+                        }
+                    }
+                }
+                else
+                {
+                    point_struct[point].inv_dist = 1.0;
+                    sum += 1.0;
+                }
+                point_struct[point].inv_dist_sum = sum;
+            }
         }
     }
     domain_table = CX_End_ND_Point_Search(domain_table);
@@ -150,16 +212,16 @@ void find_cell_at_yarn_points(Yarn_Point point_struct[NYARNPOINTS], real coordin
     nwithforce = 0;
     for (point = 0; point < NYARNPOINTS; point ++)
     {
-        point_struct[point].highest_partition = PRF_GIHIGH1(point_struct[point].partition);
-        point_struct[point].found = PRF_GIHIGH1(point_struct[point].found);
-        if (point_struct[point].found && (myid == point_struct[point].highest_partition))
+        point_struct[point].partition = PRF_GIHIGH1(point_struct[point].partition);
+        point_struct[point].found = PRF_GBOR1(point_struct[point].found);
+        if (point_struct[point].found && (myid == point_struct[point].partition))
         {
             nwithforce++;
         }
         else if (!point_struct[point].found)
         {
             /* Assign a processor to this yarn point, so that all the points get a processor. Divise equally. */
-            point_struct[point].highest_partition = point % compute_node_count;
+            point_struct[point].partition = point % compute_node_count;
         }
     }
 
@@ -200,9 +262,10 @@ void calculate_air_velocity_density_yarn_orientation()
     cell_t cell;
     Thread *cell_thread;
     Domain *domain;
+    domain = Get_Domain(1);
 
-    real work[NYARNPOINTS*2*ND_ND];
-    for (n = 0; n < NYARNPOINTS*2*ND_ND; n++)
+    real work[NYARNPOINTS*(N_CIRC_S+1)*ND_ND];
+    for (n = 0; n < NYARNPOINTS*(N_CIRC_S+1)*ND_ND; n++)
     {
         work[n] = 0.0;
     }
@@ -228,37 +291,44 @@ void calculate_air_velocity_density_yarn_orientation()
         {
             yarn_points[point].vs_w[n] = 0.0;
             NV_S(sample_coordinates[point][n], =, 0.0);
+            NV_S(sampled_velocity[point][n], =, 0.0);
         }
-        NV_S(sampled_velocity[point][0], =, 0.0);
-        NV_S(sampled_velocity[point][1], =, 0.0);
     }
 
-    /* Integral velocity sampling at actuator point, no normalization needed  */
-    domain = Get_Domain(1);
-    thread_loop_c(cell_thread, domain)
-	{
-		begin_c_loop_int(cell, cell_thread) // Only loop over interior cells to avoid double counting!
-		{
-		    C_CENTROID(centroid, cell, cell_thread);
-		    for(point = 0; point < NYARNPOINTS; point++)
-		    {
-		        if (yarn_points[point].found)
-		        {
-		            NV_VV(dist, =, yarn_coordinates[point], -, centroid);
-                    g = pow(G_EPS, -3.0) * pow(M_PI, -1.5) * exp(-NV_MAG2(dist)/pow(G_EPS, 2.0));
-
-		            sampled_velocity[point][0][0] += g * C_VOLUME(cell, cell_thread) * C_U(cell, cell_thread);
-		            sampled_velocity[point][0][1] += g * C_VOLUME(cell, cell_thread) * C_V(cell, cell_thread);
+    /* Inverse distance velocity sampling at actuator point */
+    for(point = 0; point < NYARNPOINTS; point++)
+    {
+        if (yarn_points[point].found && (myid == yarn_points[point].partition))
+        {
+            // First: contribution of owner cells
+            sampled_velocity[point][0][0] = yarn_points[point].inv_dist * C_U(yarn_points[point].cell, yarn_points[point].cell_thread);
+            sampled_velocity[point][0][1] = yarn_points[point].inv_dist * C_V(yarn_points[point].cell, yarn_points[point].cell_thread);
 #if RP_3D
-		            sampled_velocity[point][0][2] += g * C_VOLUME(cell, cell_thread) * C_W(cell, cell_thread);
+            sampled_velocity[point][0][2] = yarn_points[point].inv_dist * C_W(yarn_points[point].cell, yarn_points[point].cell_thread);
 #endif /* RP_3D */
-		        }
-		    }
-		} end_c_loop_int(cell, cell_thread)
+            // Secondly: contribution of neighbour cells
+            for (n = 0; n < 6; n++)
+            {
+                if (yarn_points[point].neighbours[n].active)
+                {
+                    sampled_velocity[point][0][0] += yarn_points[point].neighbours[n].inv_dist * C_U(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
+                    sampled_velocity[point][0][1] += yarn_points[point].neighbours[n].inv_dist * C_V(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
+#if RP_3D
+                    sampled_velocity[point][0][2] += yarn_points[point].neighbours[n].inv_dist * C_W(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
+#endif /* RP_3D */
+                }
+            }
+            // Normalize by sum of weights
+            sampled_velocity[point][0][0] /= yarn_points[point].inv_dist_sum;
+            sampled_velocity[point][0][1] /= yarn_points[point].inv_dist_sum;
+#if RP_3D
+            sampled_velocity[point][0][2] /= yarn_points[point].inv_dist_sum;
+#endif /* RP_3D */
+        }
     }
 
     /* Synchronize velocities over different processors, as this is needed to compute the new sampling point */
-    PRF_GRSUM(&sampled_velocity[0][0][0], NYARNPOINTS*2*ND_ND, work);
+    PRF_GRSUM(&sampled_velocity[0][0][0], NYARNPOINTS*(N_CIRC_S+1)*ND_ND, work);
 
     /* Get sampling point from velocity at actuator point */
     for (point = 0; point < NYARNPOINTS; point++)
@@ -335,36 +405,6 @@ void calculate_air_velocity_density_yarn_orientation()
         }
     }
 
-    /* Compute sum of interpolation weights */
-    thread_loop_c(cell_thread, domain)
-    {
-        begin_c_loop_int(cell, cell_thread)
-        {
-            C_CENTROID(centroid, cell, cell_thread);
-            for (point = 0; point < NYARNPOINTS; point ++)
-            {
-                if (yarn_points[point].found)
-		        {
-		            for (n = 0; n < N_CIRC_S+1; n ++)
-                    {
-                        NV_VV(dist, =, sample_coordinates[point][n], -, centroid);
-                        g = pow(G_EPS, -3.0) * pow(M_PI, -1.5) * exp(-NV_MAG2(dist)/pow(G_EPS, 2.0));
-                        yarn_points[point].vs_w[n] += g * C_VOLUME(cell, cell_thread);
-		            }
-                }
-            }
-        } end_c_loop_int(cell, cell_thread)
-    }
-
-    /* Synchronize sum of weights across processors */
-    for (point = 0; point < NYARNPOINTS; point ++)
-    {
-        if (yarn_points[point].found)
-        {
-            PRF_GRSUM(&yarn_points[point].vs_w[0], N_CIRC_S+1, iwork);
-        }
-    }
-
     /* Integral velocity sampling at new sample points */
     thread_loop_c(cell_thread, domain)
 	{
@@ -378,23 +418,25 @@ void calculate_air_velocity_density_yarn_orientation()
 		            /* Cross-flow sampling */
 		            NV_VV(dist, =, sample_coordinates[point][0], -, centroid);
                     g = pow(G_EPS, -3.0) * pow(M_PI, -1.5) * exp(-NV_MAG2(dist)/pow(G_EPS, 2.0));
+                    yarn_points[point].vs_w[0] += g * C_VOLUME(cell, cell_thread);
 
-		            sampled_velocity[point][0][0] += g * C_VOLUME(cell, cell_thread) / yarn_points[point].vs_w[0] * C_U(cell, cell_thread);
-		            sampled_velocity[point][0][1] += g * C_VOLUME(cell, cell_thread) / yarn_points[point].vs_w[0] * C_V(cell, cell_thread);
+		            sampled_velocity[point][0][0] += g * C_VOLUME(cell, cell_thread) * C_U(cell, cell_thread);
+		            sampled_velocity[point][0][1] += g * C_VOLUME(cell, cell_thread) * C_V(cell, cell_thread);
 #if RP_3D
-		            sampled_velocity[point][0][2] += g * C_VOLUME(cell, cell_thread) / yarn_points[point].vs_w[0] * C_W(cell, cell_thread);
+		            sampled_velocity[point][0][2] += g * C_VOLUME(cell, cell_thread) * C_W(cell, cell_thread);
 #endif /* RP_3D */
 
                     /* Axial flow sampling */
                     for (n = 0; n < N_CIRC_S; n ++)
                     {
-                        NV_VV(dist, =, sample_coordinates[point][n], -, centroid);
+                        NV_VV(dist, =, sample_coordinates[point][1+n], -, centroid);
                         g = pow(G_EPS, -3.0) * pow(M_PI, -1.5) * exp(-NV_MAG2(dist)/pow(G_EPS, 2.0));
+                        yarn_points[point].vs_w[1+n] += g * C_VOLUME(cell, cell_thread);
 
-                        sampled_velocity[point][1][0] += g * C_VOLUME(cell, cell_thread) / yarn_points[point].vs_w[n] * C_U(cell, cell_thread) / N_CIRC_S;
-                        sampled_velocity[point][1][1] += g * C_VOLUME(cell, cell_thread) / yarn_points[point].vs_w[n] * C_V(cell, cell_thread) / N_CIRC_S;
+                        sampled_velocity[point][1+n][0] += g * C_VOLUME(cell, cell_thread) * C_U(cell, cell_thread);
+                        sampled_velocity[point][1+n][1] += g * C_VOLUME(cell, cell_thread) * C_V(cell, cell_thread);
 #if RP_3D
-                        sampled_velocity[point][1][2] += g * C_VOLUME(cell, cell_thread) / yarn_points[point].vs_w[n] * C_W(cell, cell_thread) / N_CIRC_S;
+                        sampled_velocity[point][1+n][2] += g * C_VOLUME(cell, cell_thread) * C_W(cell, cell_thread);
 #endif /* RP_3D */
                     }
 		        }
@@ -403,28 +445,56 @@ void calculate_air_velocity_density_yarn_orientation()
     }
 
     /* Synchronize velocities over different processors, as this is needed to compute the correct flow angle */
-    PRF_GRSUM(&sampled_velocity[0][0][0], NYARNPOINTS*2*ND_ND, work);
+    PRF_GRSUM(&sampled_velocity[0][0][0], NYARNPOINTS*(N_CIRC_S+1)*ND_ND, work);
 
-    /* Now get the other flow variables (density, viscosity) and flow orientation */
+    /* Synchronize sum of weights across processors */
+    for (point = 0; point < NYARNPOINTS; point ++)
+    {
+        if (yarn_points[point].found)
+        {
+            PRF_GRSUM(&yarn_points[point].vs_w[0], N_CIRC_S+1, iwork);
+        }
+    }
+
+    /* Now get the other flow variables (density, viscosity, pressure gradient) and flow orientation */
     for (point = 0; point < NYARNPOINTS; point++)
     {
-        if (yarn_points[point].found && (myid == yarn_points[point].highest_partition))
+        if (yarn_points[point].found && (myid == yarn_points[point].partition))
         {
             cell = yarn_points[point].cell;
             cell_thread = yarn_points[point].cell_thread;
-            air_values[point][SCALAR_R] = C_R(cell, cell_thread);
-            air_values[point][SCALAR_MU] = C_MU_L(cell, cell_thread);
-            air_values[point][SCALAR_PX] = C_P_G(cell, cell_thread)[0];
-            air_values[point][SCALAR_PY] = C_P_G(cell, cell_thread)[1];
+            // Inverse distance interpolation: owner cell
+            air_values[point][SCALAR_R] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_R(cell, cell_thread);
+            air_values[point][SCALAR_MU] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_MU_L(cell, cell_thread);
+            air_values[point][SCALAR_PX] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(cell, cell_thread)[0];
+            air_values[point][SCALAR_PY] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(cell, cell_thread)[1];
 #if RP_3D
-            air_values[point][SCALAR_PZ] = C_P_G(cell, cell_thread)[2];
+            air_values[point][SCALAR_PZ] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(cell, cell_thread)[2];
 #endif /* RP_3D */
+            // Inverse distance interpolation: neighbour cells
+            for (n = 0; n < 6; n++)
+            {
+                if (yarn_points[point].neighbours[n].active)
+                {
+                    air_values[point][SCALAR_R] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_R(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
+                    air_values[point][SCALAR_MU] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_MU_L(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
+                    air_values[point][SCALAR_PX] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[0];
+                    air_values[point][SCALAR_PY] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[1];
+#if RP_3D
+                    air_values[point][SCALAR_PZ] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[2];
+#endif /* RP_3D */
+                }
+            }
 
             /* Use blending function to distinguish between cross-flow sampling and axial flow sampling and make velocity relative to yarn velocity*/
             omega = pow(cos(local_theta[point]), 10);
             for (d = 0; d < ND_ND; d ++)
             {
-                air_values[point][SCALAR_U+d] = (1 - omega) * sampled_velocity[point][0][d] + omega * sampled_velocity[point][1][d] - yarn_velocities[point][d];
+                air_values[point][SCALAR_U+d] = (1 - omega) * sampled_velocity[point][0][d] / yarn_points[point].vs_w[0] - yarn_velocities[point][d];
+                for (n = 0; n < N_CIRC_S; n++)
+                {
+                    air_values[point][SCALAR_U+d] += omega * sampled_velocity[point][1+n][d] / (N_CIRC_S * yarn_points[point].vs_w[1+n]);
+                }
             }
 
             /* Compute the orientation of the thread with respect to the flow */
@@ -447,7 +517,7 @@ void calculate_air_velocity_density_yarn_orientation()
             }
             air_values[point][SCALAR_THETA] = acos(dot_prod);
         }
-        else if ((!yarn_points[point].found) && (myid == yarn_points[point].highest_partition))
+        else if ((!yarn_points[point].found) && (myid == yarn_points[point].partition))
         {
             /* If yarn is out of domain: set atmospheric values and zero flow velocity, but compute on one core only */
             air_values[point][SCALAR_R] = P_ATM / (R * T_ATM);
@@ -528,8 +598,8 @@ void calculate_yarn_forces()
 
     initialize_force_coefficients();
 
-    for (point = 0; point < NYARNPOINTS; point++){
-
+    for (point = 0; point < NYARNPOINTS; point++)
+    {
         /* Initialize with zero force */
         NV_S(yarn_forces[point], =, 0.0);
 
@@ -868,7 +938,7 @@ DEFINE_ON_DEMAND(read_coordinates)
     /* Calculate cell size at actuator points */
 /*    for (point = 0; point < NYARNPOINTS; point ++)
     {
-        if ((yarn_points[point].found) && (myid == yarn_points[point].highest_partition))
+        if ((yarn_points[point].found) && (myid == yarn_points[point].partition))
         {
             cell = yarn_points[point].cell;
             cell_thread = yarn_points[point].cell_thread;
