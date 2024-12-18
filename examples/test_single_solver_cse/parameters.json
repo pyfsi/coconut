@@ -5,9 +5,9 @@
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
-      "solver_index": 0,
-      "test_class": "InterpolatedData",
-      "delta_t": 0.05
+      "solver_index": 1,
+      "test_class": "TransientTest",
+      "delta_t": 0.0001
     },
     "settings": {
       "timestep_start": 0,
@@ -89,7 +89,7 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "surfaces": ["WALLOUTSIDE"],
+              "surfaces": ["ASSEMBLY_WALLOUTSIDE"],
               "interface_input": [
                 {
                   "model_part": "WALLOUTSIDE_load_points",

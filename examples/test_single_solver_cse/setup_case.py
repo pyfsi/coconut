@@ -27,5 +27,5 @@ shutil.rmtree(csm_dir, ignore_errors=True)
 # subprocess.check_call('./setup_fluent3d.sh', shell=True, cwd=cfd_dir, env=cfd_env)
 
 # create new CSM folder
-shutil.copytree('../tube/setup_files/abaqus3d', csm_dir)
+shutil.copytree('../tube/setup_files/abaqus3dcse', csm_dir)
 csm_env = tools.get_solver_env(csm_solver, csm_dir)

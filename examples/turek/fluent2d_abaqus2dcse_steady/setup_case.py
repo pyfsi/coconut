@@ -27,5 +27,5 @@ cfd_env = tools.get_solver_env(cfd_solver, cfd_dir)
 subprocess.check_call('./setup_fluent2d_steady.sh', shell=True, cwd=cfd_dir, env=cfd_env)
 
 # create new CSM folder
-shutil.copytree('../setup_files/abaqus2d_steadycse', csm_dir)
+shutil.copytree('../setup_files/abaqus2dcse_steady', csm_dir)
 csm_env = tools.get_solver_env(csm_solver, csm_dir)

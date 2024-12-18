@@ -473,7 +473,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         # on data line for time increment
                         incr_info = [inc.strip() for inc in line.split(',')]
                         if not np.isclose(float(incr_info[0]), self.delta_t, atol=0):
-                            warnings.warn(f'Suggested time increment {float(incr_info[0])} in input file not used'
+                            warnings.warn(f'Suggested time increment {float(incr_info[0])} in input file not used '
                                           f'because increment is set by CSE: delta_t = {self.delta_t} ',
                                           category=UserWarning)
                             incr_info[0] = str(self.delta_t)

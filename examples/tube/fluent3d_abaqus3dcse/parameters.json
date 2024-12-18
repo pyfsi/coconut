@@ -84,7 +84,7 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "surfaces": ["WALLOUTSIDE"],
+              "surfaces": ["ASSEMBLY_WALLOUTSIDE"],
               "save_results": 1,
               "interface_input": [
                 {
