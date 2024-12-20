@@ -16,11 +16,9 @@ sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 
 # Animate interface displacement & heat flux
 ani_front = Animation2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto', func_animation_settings=dict(skip=9))
-ani_plot = Plot2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto', time_step=580)
-#ani_front.save('figs_ani/ani_front.gif')
+ani_plot = Plot2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto', time_step=800)
 plt.show()
 plt.close()
-#ani_disp = Animation2dDisplacement(sx, x_component='y', y_component='x')
 
 Animation2d(sy, 'initial_coordinates', 'heat_flux', x_component='y', func_animation_settings=dict(skip=9))
 plt.show()

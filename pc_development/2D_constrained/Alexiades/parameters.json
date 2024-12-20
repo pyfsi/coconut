@@ -63,7 +63,8 @@
             "moving_boundary": true,
             "latent": 60000,
             "melt_temp": 505.0,
-            "ini_condition": 0
+            "ini_condition": 0,
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 5e-5 yes no no\")"
           },
           "thread_names": [
             "boundary"
@@ -84,7 +85,7 @@
               ]
             }
           ],
-          "cores": 12,
+          "cores": 10,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
@@ -95,10 +96,33 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.python.pc_saturated_solid",
+            "type": "solver_wrappers.pc_fluent.v2024R2",
             "settings": {
               "working_directory": "CFD_1",
-              "input_file": "solver_parameters.json",
+              "case_file": "2D_solid.cas.h5",
+              "dimensions": 2,
+              "unsteady": true,
+              "multiphase": false,
+              "debug": false,
+              "PC": {
+                "moving_boundary": true,
+                "latent": 60000,
+                "melt_temp": 505.0,
+                "ini_condition": 505.0,
+                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 5e-5 yes no no\")",
+                "f2n_mapping": {
+                  "mapping_domain": "rectangular",
+                  "mapping_limits": [0, 0, 0.1, 0.1],
+                  "mapping_conservative": true,
+                  "volume_tolerance": 1e-13,
+                  "mapper_iterations": 20,
+                  "mapper_relaxation": 0.4,
+                  "projection_order": 2
+                }
+              },
+              "thread_names": [
+                "boundary"
+              ],
               "interface_input": [
                 {
                   "model_part": "boundary_in_faces",
@@ -114,7 +138,12 @@
                     "displacement"
                   ]
                 }
-              ]
+              ],
+              "cores": 20,
+              "fluent_gui": false,
+              "max_nodes_per_face": 2,
+              "flow_iterations": 100,
+              "save_results": 5000
             }
           },
           "mapper_interface_input": {

@@ -15,10 +15,12 @@ sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 #print(sy.get_values('heat_flux'))
 
 # Animate interface displacement & heat flux
-ani_front = Animation2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto')
-#ani_disp = Animation2dDisplacement(sx, x_component='y', y_component='x')
+ani_front = Animation2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto', func_animation_settings=dict(skip=9))
+ani_plot = Plot2d(sx, 'coordinates', 'coordinates', 'x', 'y', aspect='auto', time_step=800)
+plt.show()
+plt.close()
 
-Animation2d(sy, 'initial_coordinates', 'heat_flux', x_component='y')
+Animation2d(sy, 'initial_coordinates', 'heat_flux', x_component='y', func_animation_settings=dict(skip=9))
 plt.show()
 
 """

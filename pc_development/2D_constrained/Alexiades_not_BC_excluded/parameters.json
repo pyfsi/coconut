@@ -63,7 +63,8 @@
             "moving_boundary": true,
             "latent": 60000,
             "melt_temp": 505.0,
-            "ini_condition": 0
+            "ini_condition": 0,
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" no no , constant 5e-5 yes no no\")"
           },
           "thread_names": [
             "boundary"

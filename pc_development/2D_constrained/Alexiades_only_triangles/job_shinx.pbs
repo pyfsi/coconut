@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-#PBS -N 2D_fine_1_99
+#PBS -N 2D_Alexiades_noBL
 #PBS -l walltime=71:55:00
-#PBS -l nodes=1:ppn=8
+#PBS -l nodes=1:ppn=13
 #
 
 # Use SciPy-bundle instead of Anaconda3 on shinx
@@ -11,8 +11,9 @@ export PYTHONPATH=$VSC_SCRATCH/:$PYTHONPATH
 
 export OMP_PROC_BIND=FALSE # required on UGent-HPC for processes spawned from Python
 
-cd $VSC_SCRATCH/coconut/pc_development/2D_constrained/2D_fine/
-python3 setup_case.py
+cd $VSC_SCRATCH/coconut/pc_development/2D_constrained/Alexiades_only_triangles/
+# To enable animations, cases must be setup beforehand
+# python3 setup_case.py
 
 # To run multinode: uncomment the line below and ...
 # ... make sure "hosts_file": "fluent.hosts" is added to the Fluent settings in the JSON file

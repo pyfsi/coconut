@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 1000
+    "number_of_timesteps": 120000
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
@@ -8,8 +8,8 @@
       "timestep_start": 0,
       "delta_t": 0.01,
       "omega_max": 0.8,
-      "save_results": 1,
-      "save_restart": 500,
+      "save_results": 10,
+      "save_restart": 10000,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
@@ -85,11 +85,11 @@
               ]
             }
           ],
-          "cores": 10,
+          "cores": 12,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 100
+          "save_results": 5000
         }
       },
       {

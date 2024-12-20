@@ -56,14 +56,6 @@ define dynamic-mesh controls smoothing-parameters max-iter 50
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing y
 define dynamic-mesh controls remeshing-parameters unified-remeshing? y
-;define dynamic-mesh controls remeshing-parameters remeshing-methods y y y n
-;define dynamic-mesh controls remeshing-parameters zone-remeshing y
-;define dynamic-mesh controls remeshing-parameters cell-skew-max 0.7
-;define dynamic-mesh controls remeshing-parameters length-min 0
-;define dynamic-mesh controls remeshing-parameters length-max 1.2e-4
-;define dynamic-mesh controls remeshing-parameters size-remesh-interval 5
-;define dynamic-mesh controls remeshing-parameters sizing-function n
-;define dynamic-mesh controls remeshing-parameters sizing-funct-defaults
 
 ; Last option below: exclude mesh motion in boundary conditions? y --> fluid should not move due to interface motion
 define dynamic-mesh zones create top deforming faceted n y y y y y n y
@@ -72,6 +64,95 @@ define dynamic-mesh zones create bottom deforming faceted n y y y y y n y
 define dynamic-mesh zones create fluid deforming y y y
 
 solve initialize initialize-flow
+
+; Report definitions and report file
+solve report-definitions add vol volume-zonevol
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add umax volume-max
+field x-velocity
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add umin volume-min
+field x-velocity
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add vmax volume-max
+field y-velocity
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add vmin volume-min
+field y-velocity
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add streammax volume-max
+field stream-function
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add streammin volume-min
+field stream-function
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-definitions add heated-flux surface-areaavg
+field heat-flux
+surface-names heated ()
+per-surface? no
+q
+
+solve report-definitions add avg-temp volume-average
+field temperature
+zone-names fluid ()
+per-zone? no
+q
+
+solve report-files add report-file
+report-defs vol umax umin vmax vmin streammax streammin heated-flux avg-temp ()
+file-name "./report-file.out"
+active? yes
+q
+
+; Rake creation and streamline animation
+surface rake-surface rake 0.000125 0.05 0.099875 0.05 400
+
+display objects create pathlines streamlines
+coarsen 1
+field density
+skip 0
+step 20000
+surfaces-list rake ()
+q
+
+display set picture x-resolution 3840
+display set picture y-resolution 2160
+
+views camera field 0.11 0.11
+views camera target 0.02 0.05 0
+views save-view view-correct
+
+solve animate objects create ani-streamlines
+animate-on streamlines
+append-filename? yes
+append-filename-with time-step
+frequency-of time-step
+frequency 100
+storage-dir "./animation_frames"
+storage-type png
+view view-correct
+q
 
 file write-case-data 2D_fluid.cas.h5
 exit
