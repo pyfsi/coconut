@@ -99,6 +99,7 @@ Since `machine_name` is set to `ugent_cluster_CO7`, this dictionary is used by d
 In case your system differs from the `ugent_cluster_CO7` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
 If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
 When CoCoNuT tries to use a solver module that is not present in the `solver_load_cmd_dict` or that has the wrong value, an error will be raised.
+The standard output and error are redirected to a file named *`solver_load_cmd.log`*.
 
 ### Quick test
 
