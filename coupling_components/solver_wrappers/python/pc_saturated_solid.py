@@ -37,15 +37,13 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
             self.settings.update(case_file_settings)
 
         # store settings
-        self.dt = self.settings['delta_t']
-        self.restart = self.settings['save_restart']
-        self.timestep = self.settings['timestep_start']
+        self.dt = self.settings['timestep_size']
+        self.timestep_start = self.settings.get('timestep_start', 0)
+        self.timestep = self.timestep_start  # time step
+        self.save_restart = self.settings.get('save_restart', 0)
         self.interface_settings = self.settings['interface']
         self.material_properties = self.settings['material_properties']
         self.mapper_settings = self.settings['conservative_mapper']
-
-        if self.restart != 0:  # restart
-            raise NotImplementedError('Restart functionality not supported.')
 
         self.x0 = self.interface_settings['x0']
         self.y0 = self.interface_settings['y0']
@@ -60,29 +58,44 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
 
         self.mapping_domain = self.mapper_settings['mapping_domain']
         self.mapping_limits = self.mapper_settings['mapping_limits']
-        self.conservative = True
+        self.conservative = self.mapper_settings.get('mapping_conservative', False)
+        self.vol_tolerance = self.mapper_settings.get('volume_tolerance', 1e-14)
+        self.mapper_iterations = self.mapper_settings.get('mapper_iterations', 20)
+        self.mapper_relaxation = self.mapper_settings.get('mapper_relaxation', 0.4)
+        self.mapper_projection = self.mapper_settings.get('projection_order', 1) # 0: no projection, 1: 1st order upwind projection, 2: 2nd order upwind
 
         # initialization
-        x = np.linspace(self.x0, self.x1, self.n + 1)
-        y = np.linspace(self.y0, self.y1, self.n + 1)
-        ini_coord_faces = []
-        for i in range(self.n):
-            ini_coord_faces.append([(x[i] + x[i+1]) / 2, (y[i] + y[i+1]) / 2, 0])
-        self.ini_coord_faces = np.array(ini_coord_faces)
+        if self.timestep_start == 0:  # no restart
+            x = np.linspace(self.x0, self.x1, self.n + 1)
+            y = np.linspace(self.y0, self.y1, self.n + 1)
+            ini_coord_faces = []
+            for i in range(self.n):
+                ini_coord_faces.append([(x[i] + x[i+1]) / 2, (y[i] + y[i+1]) / 2, 0])
+            self.ini_coord_faces = np.array(ini_coord_faces) # initial face coordinates
 
-        x = np.reshape(x, (self.n + 1, 1))
-        y = np.reshape(y, (self.n + 1, 1))
-        z = np.zeros((self.n + 1, 1))
-        self.ini_coord_nodes = np.concatenate((x, y), axis=1)
-        self.ini_coord_nodes = np.concatenate((self.ini_coord_nodes, z), axis=1)
-        self.area = self.area_calc(self.ini_coord_nodes)
+            x = np.reshape(x, (self.n + 1, 1))
+            y = np.reshape(y, (self.n + 1, 1))
+            z = np.zeros((self.n + 1, 1))
+            self.ini_coord_nodes = np.concatenate((x, y), axis=1)
+            self.ini_coord_nodes = np.concatenate((self.ini_coord_nodes, z), axis=1) # initial node coordinates
 
-        self.prev_face_disp = np.zeros((self.n, 3))  # previous total face displacement
-        self.prev_disp = np.zeros((self.n + 1, 3))  # previous total node displacement
+            self.prev_face_disp = np.zeros((self.n, 3))  # previous total face displacement
+            self.prev_disp = np.zeros((self.n + 1, 3))  # previous total node displacement
 
-        self.face_dx = np.zeros((self.n, 3))  # latest time step face displacement
-        self.dx = np.zeros((self.n + 1, 3))  # latest time step node displacement
+            self.face_dx = np.zeros((self.n, 3))  # latest time step face displacement
+            self.dx = np.zeros((self.n + 1, 3))  # latest time step node displacement
+        else: # restart
+            file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
+            with open(file_name, 'rb') as file:
+                data = pickle.load(file)
+            self.ini_coord_nodes = data['ini_nodes'] # initial node coordinates
+            self.ini_coord_faces = data['ini_faces'] # initial face coordinates
+            self.prev_disp = data['prev_nodes'] # previous total node displacement
+            self.prev_face_disp = data['prev_faces'] # previous total face displacement
+            self.dx = data['dx_nodes'] # latest time step node displacement
+            self.face_dx = data['dx_faces'] # latest time step face displacement
 
+        self.area = self.area_calc(self.ini_coord_nodes + self.prev_disp)
         self.heat_flux = np.zeros((self.n,1)) # heat flux [W/m^2]
 
         # create input & output ModelParts
@@ -115,11 +128,18 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.interface_internal_nodes = Interface(self.internal_node_settings, self.model)
 
         # create and initialize face to node (f2n) displacement mapper
+        f2n_settings_dict = {"directions": ["x", "y"],
+                             "check_bounding_box": False,
+                             "projection_order": self.mapper_projection,
+                             "domain": self.mapping_domain,
+                             "limits": self.mapping_limits,
+                             "mapping_conservative": self.conservative,
+                             "mapper_relaxation": self.mapper_relaxation,
+                             "mapper_iterations": self.mapper_iterations,
+                             "volume_tolerance": self.vol_tolerance}
+
         f2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.linear_conservative",
-                                                                  "settings": {"directions": ["x", "y"],
-                                                                               "check_bounding_box": False,
-                                                                               "domain": self.mapping_domain,
-                                                                               "limits": self.mapping_limits}}}
+                                                                  "settings": f2n_settings_dict}}
         self.mapper_f2n = tools.create_instance(f2n_settings)
         self.mapper_f2n.initialize(self.interface_internal_faces, self.interface_internal_nodes)
 
@@ -130,13 +150,6 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.mapper_n2f = tools.create_instance(n2f_settings)
         self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal_faces)
 
-        # create and initialize node to node (n2n) displacement mapper for output purposes
-        n2n_settings = {"type": "mappers.interface", "settings": {"type": "mappers.nearest",
-                                                                  "settings": {"directions": ["x", "y"],
-                                                                               "check_bounding_box": False}}}
-        self.mapper_n2n = tools.create_instance(n2n_settings)
-        self.mapper_n2n.initialize(self.interface_internal_nodes, self.interface_output)
-
     @tools.time_initialize
     def initialize(self):
         super().initialize()
@@ -145,7 +158,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         super().initialize_solution_step()
 
         self.timestep += 1
-        self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal_faces, conservative=self.conservative)
+        self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal_faces)
 
         self.prev_disp += self.dx
         self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'prev_disp', self.prev_disp)
@@ -166,7 +179,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.interface_internal_faces.set_variable_data(self.output_mp_name, 'area', self.area)
 
         # map face displacement to node displacement
-        self.mapper_f2n.map_f2n(self.interface_internal_faces, self.interface_internal_nodes, conservative=self.conservative)
+        self.mapper_f2n.map_f2n(self.interface_internal_faces, self.interface_internal_nodes)
         
         self.dx = self.interface_internal_nodes.get_variable_data(self.output_mp_name, '1ts_disp')
         self.interface_output.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
@@ -177,6 +190,25 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
+        if self.timestep > 0 and self.save_restart != 0 and self.timestep % self.save_restart == 0:
+            file_name = join(self.working_directory, f'case_timestep{self.timestep}.pickle')
+            with open(file_name, 'wb') as file:
+                pickle.dump({'ini_nodes': self.ini_coord_nodes,
+                             'ini_faces': self.ini_coord_faces,
+                             'prev_nodes': self.prev_disp,
+                             'prev_faces': self.prev_face_disp,
+                             'dx_nodes': self.dx,
+                             'dx_faces': self.face_dx}, file)
+            if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start:
+                try:
+                    os.remove(join(self.working_directory, f'case_timestep{self.timestep + self.save_restart}.pickle'))
+                except OSError:
+                    pass
 
     def finalize(self):
         super().finalize()

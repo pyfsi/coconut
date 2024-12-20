@@ -39,7 +39,7 @@ class SolverWrapperPCFluent(SolverWrapper):
         # set parameters
         self.settings = parameters['settings']
         self.dir_cfd = join(os.getcwd(), self.settings['working_directory'])
-        self.env = None  # environment in which correct version of Fluent software is available, set in sub-class
+        self.env = None  # environment in which correct version of Fluent software is available, set in subclass
         self.coco_messages = tools.CocoMessages(self.dir_cfd)
         self.coco_messages.remove_all_messages()
         self.backup_fluent_log()
@@ -623,6 +623,10 @@ class SolverWrapperPCFluent(SolverWrapper):
     def finalize_solution_step(self):
         super().finalize_solution_step()
 
+    @tools.time_save
+    def output_solution_step(self):
+        super().output_solution_step()
+
         # save if required
         if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
@@ -640,7 +644,6 @@ class SolverWrapperPCFluent(SolverWrapper):
                 # - save_restart is negative
                 # - files from a previous calculation are not touched
                 # - files are not kept for save_results
-
                 for extension in ('cas.h5', 'cas', 'dat.h5', 'dat'):
                     try:
                         os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))

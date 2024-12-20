@@ -254,7 +254,7 @@ class MapperLinearConservative(Component):
 
             # print warning if C did not converge fast enough
             if it >= self.max_iterations and np.linalg.norm(cell_vol - node_vol) > self.tolerance:
-                warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(C - C_prev)} > {self.tolerance}.'
+                warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(cell_vol - node_vol)} > {self.tolerance}.'
                 tools.print_info(warning_text, layout='warning')
 
             # store converged C

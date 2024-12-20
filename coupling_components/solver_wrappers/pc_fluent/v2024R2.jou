@@ -82,7 +82,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (if moving_boundary
-                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in boundary conditions? yes
+                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 yes no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in bc's? yes / Option[-3]: deform adjacent BL with zone? yes
                 (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary , constant 0 no\n"(list-ref face_threads k))) ; In case the interface is stationary
             )
         )

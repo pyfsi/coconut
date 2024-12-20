@@ -1779,7 +1779,7 @@ DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
 /*Source term for energy equation, to account for latent and sensible heat.*/
 real source;
-real CST = 1e6;
+real CST = 1e8;
 
 if (fluid) {
     // This definition is only valid for fluid during melting!

@@ -6,7 +6,7 @@ grid modify-zones zone-type fluid fluid
 
 define user-defined user-defined-memory 12
 
-define models unsteady-1st-order y
+define models unsteady-2nd-order-bounded y
 define models viscous laminar y
 define models solver pressure-based y
 solve set equations flow n
@@ -18,9 +18,9 @@ define materials copy fluid air pcm
 define materials change-create pcm , yes constant 870 yes constant 2400 yes constant 0.24 yes constant 0.004 no yes 8.61e-4 n
 
 define boundary-conditions fluid , y pcm n n n n , n , n y n
-define boundary-conditions wall bottom n 0 n 0 n n n 0 y motion-bc-stationary n n ,
-define boundary-conditions wall side n 0 n 0 n n n 0 y motion-bc-stationary n n ,
-define boundary-conditions wall top n 0 n 0 n n n 0 y motion-bc-stationary n n ,
+define boundary-conditions wall bottom n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-spec-shear n 0 n 0 n,
+define boundary-conditions wall side n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-spec-shear n 0 n 0 n,
+define boundary-conditions wall top n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-spec-shear n 0 n 0 n,
 define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n ,
 
 define operating-conditions operating-pressure 0
