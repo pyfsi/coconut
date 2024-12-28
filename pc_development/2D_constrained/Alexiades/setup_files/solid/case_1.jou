@@ -1,7 +1,7 @@
 file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case 2D_solid_BL.msh
+file read-case 2D_solid_bl.msh
 grid modify-zones zone-type fluid fluid
 
 define user-defined user-defined-memory 12

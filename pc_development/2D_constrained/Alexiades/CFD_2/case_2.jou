@@ -26,7 +26,7 @@ define operating-conditions operating-pressure 0
 define operating-conditions gravity y 0 -10
 
 solve monitors residual check-convergence y y y y
-solve monitors residual convergence-criteria 1e-6 1e-8 1e-8 1e-12
+solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-12
 
 solve set discretization-scheme temperature 1
 solve set discretization-scheme mom 1
