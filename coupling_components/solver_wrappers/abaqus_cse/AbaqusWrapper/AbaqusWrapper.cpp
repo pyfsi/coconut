@@ -75,8 +75,21 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
     connectToCSE(userData, port); // Establish connection with CSE
 
     SMACseCreateFieldDefinition("pressure", SMACseFieldPos_atElemCentroid, SMACseFieldAlgType_Scalar, SMACseFieldDataType_Double); // Define field pressure
-    SMACseCreateFieldDefinition("traction_vector", SMACseFieldPos_atElemCentroid, SMACseFieldAlgType_Vector3d, SMACseFieldDataType_Double); // Define field traction
-    SMACseCreateFieldDefinition("displacement", SMACseFieldPos_atNode, SMACseFieldAlgType_Vector3d, SMACseFieldDataType_Double); // Define field displacement
+    SMACseFieldAlgebraicType vectorType;
+    switch (nDim) {
+        case 2:
+            vectorType = SMACseFieldAlgType_Vector2d;
+            break;
+        case 3:
+            vectorType = SMACseFieldAlgType_Vector3d;
+            break;
+        default:
+            cerr << "Unknown number of dimensions " << nDim << endl;
+            exit(1);
+    }
+    SMACseCreateFieldDefinition("traction_vector", SMACseFieldPos_atElemCentroid, vectorType, SMACseFieldDataType_Double); // Define field traction
+    SMACseCreateFieldDefinition("displacement", SMACseFieldPos_atNode, vectorType, SMACseFieldDataType_Double); // Define field displacement
+
     cout << "Fields created" << endl;
 
     vector<string> meshNameArray(nModelParts); // Mesh name for each model part
@@ -145,13 +158,9 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
             status = SMACseGetTargetTime(startTime, dt, &CSETargetTime, &CSEdt, &lockstep, NULL); // Gets the preferred time step size from CSE (here constant dt)
 
             if (abs(endTime - CSETargetTime) > dt * 1e-8) {
-                // Constructing the error message
-                ostringstream oss;
-                oss << "The time step size prescribed by the CoSimulation Engine ("
-                    << CSEdt << ") doesn't match the set dt (" << dt << ")\n"
-                    << "CSETargetTime = " << CSETargetTime << " endTime = " << endTime << endl;
-
-                myMessageHandler(SMACseMsgHandler_ErrorMessage, oss.str().c_str(), 0, NULL, 0, NULL);
+                cerr << "The time step size prescribed by the CoSimulation Engine ("
+                     << CSEdt << ") doesn't match the set dt (" << dt << ")\n"
+                     << "CSETargetTime = " << CSETargetTime << " endTime = " << endTime << endl;
                 exit(1);
             }
 
@@ -175,7 +184,6 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
 
             // Do iterations
             status = SMACseNotifyIteration(endTime, 0); // Run Abaqus
-            cout << status << endl;
 
             // Write data from Abaqus
             for (unsigned int i = 0; i < nModelParts; ++i) { // Loop over model parts
@@ -193,9 +201,8 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
         }
 
         if (checkMessage("end_step")) { // Stop simulation
+            cout << "  Coupling iteration " << iteration << " end" << endl;
             status = SMACseNotifyIteration(endTime, 1); // Stop iterating
-            cout << status << endl;
-
             status = SMACseNotifyEnd(endTime); // Notify completion of time step to CSE
             sendMessage("end_step_ready");
         }
@@ -205,6 +212,7 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
         }
 
         if (checkMessage("stop")) { // Stop simulation
+            cout << "\n>> Stop " << endl;
             sendMessage("stop_ready");
             SMACseDisconnect(); // Terminate connection
             SMACseFinalize(); // Finalize
@@ -545,7 +553,9 @@ bool checkMessage(const string& message) {
     string filename = "../" + message + ".coco";
     ifstream file(filename);
     if (file.good()) { // Returns true if the file is accessible
-        cout << "Received coconut message " << message << endl;
+        if (debug) {
+            cout << "Received coconut message " << message << endl;
+        }
         remove(filename.c_str());
         return file.good();
     } else {
@@ -568,6 +578,8 @@ void sendMessage(const string& message) {
         cerr << "Error creating file: " << message << endl;
         return;
     }
-    cout << "Sent coconut message " << message << endl;
+    if (debug) {
+        cout << "Sent coconut message " << message << endl;
+    }
     file.close();
 }

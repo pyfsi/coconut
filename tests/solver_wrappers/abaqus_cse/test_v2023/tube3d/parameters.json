@@ -1,0 +1,30 @@
+{
+  "type": "solver_wrappers.abaqus_cse.v2023",
+  "settings": {
+    "working_directory": "solver_wrappers/abaqus_cse/test_v2023/tube3d/CSM",
+    "cores": 1,
+    "dimensions": 3,
+    "delta_t": 1e-3,
+    "timestep_start": 0,
+    "save_restart": 1,
+    "surfaces": ["ASSEMBLY_WALLOUTSIDE"],
+    "interface_input": [
+      {
+        "model_part": "WALLOUTSIDE_load_points",
+        "variables": [
+          "pressure",
+          "traction"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "WALLOUTSIDE_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "input_file": "case_tube3d.inp"
+  }
+}

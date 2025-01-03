@@ -111,7 +111,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # prepare CSE config xml file
         template_xml_file = join(self.path_src, 'CSE_config.xml')
         cse_config_xml_file = join(self.dir_cse, 'CSE_config.xml')
-        # shutil.copy(template_xml_file, cse_config_xml_file)
         self.prepare_xml(template_xml_file, cse_config_xml_file)
 
         # compile solver AbaqusWrapper if necessary
@@ -243,6 +242,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             for var in mp_var['variables']:
                 file_name = join(self.dir_csm, f'{var}_mp{mp_id}.txt')
                 data = np.loadtxt(file_name, skiprows=2)
+                data = np.hstack((data, np.zeros((data.shape[0], 3 - data.shape[1]))))
                 self.interface_output.set_variable_data(mp_var['model_part'], var, data)
 
         # copy output data for debugging
@@ -328,7 +328,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             raise RuntimeError('Intel compiler g++ must be available')
 
     def verify_surface_names(self):
-        subprocess.run(f'abaqus job=datacheck input={self.input_file.strip(".inp")} datacheck', shell=True,
+        subprocess.run(f'abaqus job=datacheck input={self.input_file.removesuffix(".inp")} datacheck', shell=True,
                        cwd=self.dir_csm, env=self.env, check=True)
 
         data_file = join(self.dir_csm, 'datacheck.dat')
@@ -440,7 +440,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def prepare_input_file(self, template_input_file, input_file):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
-        import_lines = "\n".join([f'{surface}, PNU, TRVECNU' for surface in self.surfaces])  # same as P, TRVEC
+        import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
         out = f'**\n' \
               f'** **********************************\n' \
               f'**	     COSIMULATION SETTINGS\n' \

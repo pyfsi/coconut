@@ -1,0 +1,30 @@
+{
+  "type": "solver_wrappers.abaqus_cse.v2024",
+  "settings": {
+    "working_directory": "solver_wrappers/abaqus_cse/test_v2024/tube2d/CSM",
+    "cores": 1,
+    "dimensions": 2,
+    "delta_t": 1e-3,
+    "timestep_start": 0,
+    "save_restart": 1,
+    "surfaces": ["ASSEMBLY_BEAMINSIDEMOVING"],
+    "interface_input": [
+      {
+        "model_part": "BEAMINSIDEMOVING_load_points",
+        "variables": [
+          "pressure",
+          "traction"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "BEAMINSIDEMOVING_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "input_file": "case_tube2d.inp"
+  }
+}
