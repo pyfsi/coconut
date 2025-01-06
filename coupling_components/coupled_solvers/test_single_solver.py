@@ -35,7 +35,7 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
         self.restart = False  # no restart allowed
         self.settings['save_restart'] = 0  # in order to pass on default value
         self.save_restart = 0  # no restart files are saved
-        self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.write_results = self.settings.get('write_results', 0)  # time step interval to save results
         self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.delta_t = self.settings['delta_t']
         tools.print_info(f'Using delta_t = {self.delta_t} and timestep_start = {self.timestep_start_current}')
@@ -72,7 +72,7 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
         self.iterations = []
 
         # save results variables
-        if self.save_results:
+        if self.write_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
@@ -126,7 +126,7 @@ class CoupledSolverTestSingleSolver(CoupledSolver):
             self.x = self.solver_wrapper.get_interface_input()
             self.y = self.solver_wrapper.get_interface_output()
 
-        if self.save_results:
+        if self.write_results:
             self.complete_solution_x = self.x.get_interface_data().reshape(-1, 1)
             self.complete_solution_y = self.y.get_interface_data().reshape(-1, 1)
         self.start_run_time = time.time()  # start of calculation
