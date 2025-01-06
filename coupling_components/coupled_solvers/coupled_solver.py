@@ -47,8 +47,8 @@ class CoupledSolver(Component):
         for index in range(2):
             parameters = self.parameters['solver_wrappers'][index]
             # add timestep_start, delta_t and save_restart to solver_wrapper settings
-            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t',
-                                                                             'save_restart'])
+            tools.pass_on_parameters(self.settings, parameters['settings'],
+                                     ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
             if self.solver_wrappers[-1].mapped:

@@ -21,7 +21,7 @@ class SolverWrapperCombined(SolverWrapper):
         # create solvers
         for sol_wrapper_param in self.settings['solver_wrappers']:
             tools.pass_on_parameters(self.settings, sol_wrapper_param['settings'],
-                                     ['timestep_start', 'delta_t', 'save_restart'])
+                                     ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
         nr_mapped_sol_wrappers = 0
         for index, sol_wrapper_param in enumerate(self.settings['solver_wrappers']):
             if sol_wrapper_param['type'] == 'solver_wrappers.mapped':

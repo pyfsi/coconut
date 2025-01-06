@@ -21,7 +21,7 @@ class ModelMapped(Component):
         if 'settings' not in self.settings['surrogate']:
             self.settings['surrogate']['settings'] = {}
         tools.pass_on_parameters(self.settings, self.settings['surrogate']['settings'],
-                                 ['timestep_start', 'delta_t', 'save_restart', 'case_name'])
+                                 ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart', 'case_name'])
         self.surrogate = tools.create_instance(self.settings['surrogate'])
         self.provides_get_solution = self.surrogate.provides_get_solution
         self.provides_set_solution = self.surrogate.provides_set_solution
