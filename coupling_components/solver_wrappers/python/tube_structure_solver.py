@@ -48,7 +48,7 @@ class SolverWrapperTubeStructure(SolverWrapper):
         if self.solver not in ('solve_banded', 'direct'):
             raise ValueError('The value of key "solver" must be "direct" or "solve_banded"')
         self.timestep_start = self.settings.get('timestep_start', 0)
-        self.save_restart = self.settings.get('save_restart', 0)  # eg to restart
+        self.save_restart = self.settings.get('save_restart', 0)  # to restart
 
         l = self.settings['l']  # length
         d = self.settings['d']  # diameter
