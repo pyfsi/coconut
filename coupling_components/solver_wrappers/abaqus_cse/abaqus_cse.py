@@ -1,7 +1,7 @@
-import glob
 import os
 import re
 import shutil
+import socket
 import subprocess
 import time
 import warnings
@@ -11,6 +11,7 @@ from os.path import join
 from xml.dom import minidom
 
 import numpy as np
+import psutil
 from coconut import data_structure
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWrapper
@@ -40,13 +41,17 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.settings = parameters['settings']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
-        self.save_results = self.settings.get('save_results', 1)  # TODO: implement save_result -> frequency
+        self.number_of_timesteps = self.settings['number_of_timesteps']
+        self.end_time = self.number_of_timesteps * self.delta_t
+        self.save_results = self.settings.get('save_results',
+                                              1)  # TODO: changes frequency or adds storing of preselected fields
         self.save_restart = self.settings['save_restart']  # TODO: implement restart
         self.input_file = self.settings['input_file']
+        self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
         self.dimensions = self.settings['dimensions']
         self.surfaces = self.settings['surfaces']
-        self.port = self.settings.get('port', 40000)
+        self.port = self.settings.get('port', self.get_free_port())
         self.dir_csm = os.path.realpath(self.settings['working_directory'])
         self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')
@@ -82,6 +87,16 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.abaqus_process = None
         self.abaqus_wrapper_process = None
 
+        # check if port is in use and choose other one is this is the case
+        if self.is_port_in_use(self.port):
+            tools.print_info(f'Port {self.port} is in use, choose another port '
+                             f'or omit parameter to let the OS choose a free port', layout='warning')
+
+        # print warning related to traction in 2D
+        if self.dimensions == 2:
+            tools.print_info(f'WARNING: In 2-dimensional cases, the solver wrapper {self.__class__.__name__} '
+                             f'does not take into account traction', layout='warning')
+
     @tools.time_initialize
     def initialize(self):
         super().initialize()
@@ -106,7 +121,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # prepare input file for Abaqus
         template_input_file = join(self.dir_csm, self.input_file)
         abaqus_input_file = join(self.dir_csm, 'Abaqus.inp')
-        self.prepare_input_file(template_input_file, abaqus_input_file)
+        if self.disable_modification_of_input_file:
+            shutil.copy(template_input_file, abaqus_input_file)
+        else:
+            self.prepare_input_file(template_input_file, abaqus_input_file)
 
         # prepare CSE config xml file
         template_xml_file = join(self.path_src, 'CSE_config.xml')
@@ -123,47 +141,31 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                   f'{len(self.settings["interface_output"])}\nport {self.port}\ndebug {int(self.debug)}\n'
             f.write(out)
 
-        # launch processes
+        # define command for debug mode
         debug_cmd = f'export ABAQUS_MPF_DIAGNOSTIC_LEVEL=1023 && ' if self.debug else ''
 
         # launch CSE
         cse_log_file = join(self.dir_cse, 'CSE.log')
-        launch_cmd = f'abaqus cse -config {cse_config_xml_file} -listenerPort {self.port} -timeout 86400 &> {cse_log_file}'
+        launch_cmd = f'abaqus cse -config {cse_config_xml_file} -listenerPort {self.port} -timeout 86400 ' \
+                     f'&> {cse_log_file}'
         cmd = debug_cmd + launch_cmd
         self.cse_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cse, env=self.env)
+        self.check_license(cse_log_file, ['SIMULIA Co-Simulation Engine'])
 
         # launch Abaqus
         abq_log_file = join(self.dir_csm, 'abaqus.log')
         launch_cmd = f'abaqus job=Abaqus input=Abaqus.inp -cseDirector localhost:{self.port} -timeout 86400 ' \
-                     f'interactive  cpus={self.cores} output_precision=full &> {abq_log_file}'
-        cmd = debug_cmd + launch_cmd  # cpus={self.cores} output_precision=full interactive
+                     f'cpus={self.cores} output_precision=full interactive &> {abq_log_file}'
+        cmd = debug_cmd + launch_cmd
         self.abaqus_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_csm, env=self.env)
-
-        # TODO: implement check if licensing is ok
-
-        # # check log for completion and or errors
-        # subprocess.run(f'tail -n 10 {self.logfile} > Temp_log.coco', shell=True, cwd=self.dir_csm,
-        #                executable='/bin/bash', env=self.env)
-        # log_tmp = os.path.join(self.dir_csm, 'Temp_log.coco')
-        # bool_lic = True
-        # with open(log_tmp, 'r') as fp:
-        #     for line in fp:
-        #         if any(x in line for x in ['Licensing error', 'license error',
-        #                                    'Error checking out Abaqus license']):
-        #             bool_lic = False
-        # if not bool_lic:
-        #     tools.print_info('Abaqus licensing error', layout='fail')
-        # elif 'COMPLETED' in line:  # check final line for completed
-        #     bool_completed = True
-        # elif bool_lic:  # final line did not contain 'COMPLETED' but also no licensing error detected
-        #     raise RuntimeError(f'Abaqus did not complete, unclassified error, see {self.logfile} for extra '
-        #                        f'information')
+        self.check_license(abq_log_file, ['Abaqus/Standard'])
 
         # launch AbaqusWrapper
         abqw_log_file = join(self.dir_abqw, f'{self.solver}.log')
         cmd = f'abaqus {join(self.solver_dir, self.solver)} &> {abqw_log_file}'
         self.abaqus_wrapper_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_abqw,
                                                        env=self.env)
+        self.check_license(cse_log_file, ['SIMULIA Co-Simulation Engine', 'Abaqus/Cosimulation'])
 
         # pass on process to coco_messages for polling
         self.coco_messages.set_process(self.abaqus_wrapper_process)
@@ -231,8 +233,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
+        # TODO: implement check to see if Abaqus converged after one iteration
         # if self.check_coupling_convergence:
-        #     # check if Fluent converged after 1 iteration
+        #     # check if Abaqus converged after 1 iteration
         #     self.coupling_convergence = self.coco_messages.check_message('solver_converged')
         #     if self.print_coupling_convergence and self.coupling_convergence:
         #         tools.print_info(f'{self.__class__.__name__} converged')
@@ -258,45 +261,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
 
         self.coco_messages.send_message('end_step')
         self.coco_messages.wait_message('end_step_ready')
-        # if self.timestep - 1 > self.timestep_start and \
-        #         (self.save_restart == 0 or (self.timestep - 1) % self.save_restart != 0):
-        #     # no files from previous time step needed for restart
-        #     self.remove_files(self.timestep - 1)
-        # if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
-        #         self.timestep % self.save_restart == 0:
-        #     # if (self.timestep + self.save_restart < self.timestep_start): don't touch files from previous
-        #     # calculation
-        #     # files from (self.timestep + self.save_restart) may be removed as new restart files are
-        #     # present at current timestep
-        #     self.remove_files(self.timestep + self.save_restart)
 
     @tools.time_save
     def output_solution_step(self):
         super().output_solution_step()
-        pass
-
-        # # save if required
-        # if (self.save_results != 0 and self.timestep % self.save_results == 0) \
-        #         or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
-        #     self.coco_messages.send_message('save')
-        #     self.coco_messages.wait_message('save_ready')
-        #
-        # # remove unnecessary files
-        # if self.timestep - 1 > self.timestep_start:
-        #     self.remove_dat_files(self.timestep - 1)
-        #     if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
-        #             self.timestep % self.save_restart == 0 \
-        #             and (self.save_results == 0 or (self.timestep + self.save_restart) % self.save_results != 0):
-        #         # new restart file is written (self.timestep % self.save_restart ==0),
-        #         # so previous one (at self.timestep + self.save_restart) can be deleted if:
-        #         # - save_restart is negative
-        #         # - files from a previous calculation are not touched
-        #         # - files are not kept for save_results
-        #         for extension in ('cas.h5', 'cas', 'dat.h5', 'dat'):
-        #             try:
-        #                 os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
-        #             except OSError:
-        #                 continue
 
     def finalize(self):
         super().finalize()
@@ -310,7 +278,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
 
     def check_software(self):
-        """Check whether the software requirements for this wrapper are fulfilled."""
         # Abaqus version
         result = subprocess.run(['abaqus information=release'], shell=True, stdout=subprocess.PIPE, env=self.env)
         if self.version not in str(result.stdout):
@@ -319,7 +286,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
 
         # compiler
         try:
-            result = subprocess.run('g++ --version', shell=True, capture_output=True, env=self.env, check=True, text=True)
+            result = subprocess.run('g++ --version', shell=True, capture_output=True, env=self.env, check=True,
+                                    text=True)
             version = re.search(r'g\+\+ \(.*?\) (\d+)\.', result.stdout).group(1)
             if version is None or int(version) < 8:
                 warnings.warn(f'The g++ compiler version is\n{result.stdout}\nThis might be insufficient to compile '
@@ -327,33 +295,95 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         except subprocess.CalledProcessError:
             raise RuntimeError('Intel compiler g++ must be available')
 
+    @staticmethod
+    def check_license(log_file, licenses):
+        licenses_received = 0
+        counter = 0
+        lim = 10000
+        while not os.path.exists(log_file) and counter < lim:
+            counter += 1
+            time.sleep(0.1)
+        if counter == lim:
+            raise RuntimeError(f'Timed out waiting for file: {log_file}')
+        with open(log_file, 'r') as f:
+            while licenses_received < len(licenses):
+                line = f.readline()
+                if not line:  # no new line, sleep for a short period to wait for new lines
+                    time.sleep(0.1)
+                    continue
+                if 'license' not in line and 'queue' not in line:  # not yet in relevant part, read next line
+                    continue
+                if line == f'Abaqus License Manager checked out the following licenses:\n':
+                    line = f.readline()
+                    if not line.startswith(licenses[licenses_received]):
+                        raise ValueError(f'Unexpected license: {line}')
+                    licenses_received += 1
+                    continue
+                else:
+                    tools.print_info(f'Waiting for Abaqus license:', layout='info')
+                tools.print_info(f'\t{line.strip()}', layout='info')
+
+    @staticmethod
+    def is_port_in_use(port):
+        for conn in psutil.net_connections(kind='inet'):
+            if conn.laddr.port == port:
+                return True
+        return False
+
+    @staticmethod
+    def get_free_port():
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('localhost', 0))  # Let the OS pick an available port
+            return s.getsockname()[1]
+
     def verify_surface_names(self):
         subprocess.run(f'abaqus job=datacheck input={self.input_file.removesuffix(".inp")} datacheck', shell=True,
                        cwd=self.dir_csm, env=self.env, check=True)
+        datacheck_log_file = join(self.dir_csm, 'datacheck.log')
+        self.check_license(datacheck_log_file, ['Abaqus/Standard'])
 
         data_file = join(self.dir_csm, 'datacheck.dat')
-        while not os.path.exists(data_file):  # TODO: implement function to wait for file
-            time.sleep(0.5)
-        time.sleep(1.0)
+
+        # remove data file if exists
+        if os.path.exists(data_file):
+            os.remove(data_file)
+
+        # wait for data file
+        file_ready = False
+        counter = 0
+        lim = 10000
+        check_lines = 20  # check last 20 lines
+        while not file_ready and counter < lim:
+            if os.path.exists(data_file):
+                with open(data_file, 'r') as f:
+                    lines = f.readlines()
+                    file_ready = len(lines) > check_lines and 'ANALYSIS DATACHECK COMPLETE' in ''.join(
+                        lines[-check_lines:])
+            counter += 1
+            time.sleep(0.1)
+        if counter == lim:
+            raise RuntimeError(f'Timed out waiting for file: {data_file}')
+
+        # read in surfaces defined in data file
         defined_surfaces = set()
         with open(data_file, 'r') as f:
             for line in f:
                 defined_surfaces.update(re.findall(r'\s*\*surface, type=ELEMENT, name=(\S+)', line))
 
+        # check if surfaces in parameter file exist in data file
         for surface in self.surfaces:
             if surface not in defined_surfaces:
                 raise ValueError(f'Surface {surface} is not defined in Abaqus\n'
                                  f'\tAvailable surfaces are:{" ,".join(defined_surfaces)}')
 
-        if not self.debug:  # TODO: fix removal
-            to_be_removed_suffix = ['.023', '1.SMABulk', '.cax', '.com', '.log', '.dat', '.mdl', '.msg', '.odb', '.prt',
+        # remove datacheck files
+        if not self.debug:
+            to_be_removed_suffix = ['.023', '1.SMABulk', '.cax', '.com', '.dat', '.log', '.mdl', '.msg', '.odb', '.prt',
                                     '.res', '.sim', '.stt']
             for suffix in to_be_removed_suffix:
-                try:
-                    os.remove(join(self.dir_csm, f'datacheck{suffix}'))
-                except FileNotFoundError:
-                    pass
-                    # print(f'datacheck{suffix} not found')
+                file_path = join(self.dir_csm, f'datacheck{suffix}')
+                if os.path.exists(file_path):
+                    os.remove(file_path)
 
     def compile_solver(self):
         # compile abaqus wrapper
@@ -428,7 +458,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
 
         # replace parameters
         replace_parameters_in_xml_attributes(root, 'constantDt', '|DT|', self.delta_t)
-        replace_parameters_in_xml_attributes(root, 'duration', '|DURATION|', 'INF')
+        replace_parameters_in_xml_attributes(root, 'duration', '|DURATION|', self.end_time)
 
         # pretty print with indentation
         parsed_xml = minidom.parseString(ElTr.tostring(root, xml_declaration=True, encoding='UTF-8'))
@@ -441,35 +471,37 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
         import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
-        out = f'**\n' \
-              f'** **********************************\n' \
-              f'**	     COSIMULATION SETTINGS\n' \
-              f'** **********************************\n' \
-              f'*co-simulation, name=std_std,program=MULTIPHYSICS\n' \
-              f'*co-simulation region, type=SURFACE, export\n' \
-              f'{export_lines}\n' \
-              f'*co-simulation region, type=SURFACE, import\n' \
-              f'{import_lines}\n' \
-              f'**\n' \
-              f'** **********************************\n'
+        cosimulation_settings = f'** **********************************\n' \
+                                f'**	     COSIMULATION SETTINGS\n' \
+                                f'** **********************************\n' \
+                                f'*CO-SIMULATION, NAME=COCONUT, PROGRAM=MULTIPHYSICS\n' \
+                                f'*CO-SIMULATION REGION, TYPE=SURFACE, EXPORT\n' \
+                                f'{export_lines}\n' \
+                                f'*CO-SIMULATION REGION, TYPE=SURFACE, IMPORT\n' \
+                                f'{import_lines}\n' \
+                                f'**\n' \
+                                f'** **********************************\n' \
+                                f'**\n'
 
-        # TODO: INITIAL=NO setting?
+        # create new modified input file
         with open(template_input_file, 'r') as in_file:
             with open(input_file, 'w') as out_file:
                 in_step = False
                 analysis_seen = False
-                cosimulation_settings_written = False
+                cosimulation_settings_found = False
                 incrementation_seen = False
+                output_found = False
+                restart_found = False
                 for line in in_file:
-                    if line.startswith('*Step'):
+                    if line.upper().startswith('*STEP'):
                         in_step = True
                     elif in_step and line[0] == '*' and line[1] != '*' and not analysis_seen:
-                        if not (line.lower().startswith('*dynamic') or line.lower().startswith('*static')):
+                        if not (line.upper().startswith('*DYNAMIC') or line.upper().startswith('*STATIC')):
                             warnings.warn(f'Expected *DYNAMIC or *STATIC instead of\n\t{line}\nCheck resulting input '
                                           f'file {input_file} to see if insertions were done correctly',
                                           category=UserWarning)
                         analysis_seen = True
-                    if in_step and analysis_seen and not line.startswith('*') and not incrementation_seen:
+                    elif in_step and analysis_seen and not line.startswith('*') and not incrementation_seen:
                         # on data line for time increment
                         incr_info = [inc.strip() for inc in line.split(',')]
                         if not np.isclose(float(incr_info[0]), self.delta_t, atol=0):
@@ -477,15 +509,45 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                                           f'because increment is set by CSE: delta_t = {self.delta_t} ',
                                           category=UserWarning)
                             incr_info[0] = str(self.delta_t)
-                        incr_info[1] = '999999'
-                        line_new = ', '.join(incr_info) + '\n'
-                        out_file.write(line_new)
-                        if not cosimulation_settings_written:
-                            out_file.write(out)
-                            cosimulation_settings_written = True
+                        incr_info[1] = str(self.end_time)
+                        line = ', '.join(incr_info) + '\n'
                         incrementation_seen = True
-                    else:
-                        out_file.write(line)
+                    elif in_step and line.upper().startswith('*CO-SIMULATION'):
+                        cosimulation_settings_found = True
+                    elif in_step and line.upper().startswith('*OUTPUT'):
+                        line_parts = line.split(',')
+                        parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'TIME INTERVAL', 'TIME POINTS']
+                        # remove all parameters referring to when to store
+                        line_parts = [p for p in line_parts if not any(param in p.upper() for param in parameters)]
+                        line_parts.append(f'FREQUENCY={self.save_results}')
+                        line = ', '.join(line_parts) + '\n'
+                        output_found = True
+                    elif in_step and line.upper().startswith('*RESTART'):
+                        line_parts = line.split(',')
+                        if 'WRITE' in line_parts[1].upper():  # not a restart write command, so don't change
+                            parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'OVERLAY']
+                            # remove all parameters referring to when to store
+                            line_parts = [p for p in line_parts if not any(param in p.upper() for param in parameters)]
+                            line_parts.append(f'FREQUENCY={abs(self.save_restart)}')
+                            if self.save_restart < 0:
+                                line_parts.append('OVERLAY')
+                            line = ', '.join(line_parts) + '\n'
+                            restart_found = True
+                    elif line.upper().startswith('*END STEP'):
+                        if cosimulation_settings_found:
+                            tools.print_info('Co-simulation settings already defined in the Abaqus input file, '
+                                             'make sure this definition is correct.\nRemove these settings to let '
+                                             'CoCoNuT write the Co-simulation settings', layout='info')
+                        else:
+                            out_file.write(cosimulation_settings)
+                        if not output_found:
+                            out_file.write(f'*OUTPUT, FIELD, VARIABLE=PRESELECT, FREQUENCY={self.save_results}\n**\n')
+                        if not restart_found:
+                            out_file.write(f'*RESTART, WRITE, FREQUENCY={abs(self.save_restart)}')
+                            if self.save_restart < 0:
+                                out_file.write(', OVERLAY')
+                            out_file.write('\n**\n')
+                    out_file.write(line)
 
     def copy_for_debugging(self, path):
         new_path = f'{path[:-len(".txt")]}_ts{self.timestep}_it{self.iteration}.txt'

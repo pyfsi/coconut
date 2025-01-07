@@ -486,33 +486,4 @@ RIGHTFIXED, 3, 3
 *Dynamic,application=QUASI-STATIC,direct,nohaf,initial=NO
 0.0001, 0.01,
 **
-**
-** **********************************
-**	      COSIMULATION SETTINGS
-** **********************************
-*co-simulation, name=std_std,program=MULTIPHYSICS
-*co-simulation region, type=SURFACE, export
-ASSEMBLY_WALLOUTSIDE, U
-*co-simulation region, type=SURFACE, import
-ASSEMBLY_WALLOUTSIDE, PNU, TRVECNU
-**
-** LOADS
-** 
-** OUTPUT REQUESTS
-** 
-*Restart, write, overlay, frequency=99999
-** 
-** FIELD OUTPUT: F-Output-1
-** 
-*Output, field, frequency=99999
-*Node Output, nset=WALLOUTSIDE
-COORD, U
-** 
-** FIELD OUTPUT: F-Output-2
-** 
-*Output, field, variable=PRESELECT, frequency=1
-** 
-** HISTORY OUTPUT: H-Output-1
-** 
-*Output, history, variable=PRESELECT, frequency=1
 *End Step

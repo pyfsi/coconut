@@ -207,10 +207,6 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
             sendMessage("end_step_ready");
         }
 
-        if (checkMessage("save")) { // Save data
-            sendMessage("save_ready");
-        }
-
         if (checkMessage("stop")) { // Stop simulation
             cout << "\n>> Stop " << endl;
             sendMessage("stop_ready");
