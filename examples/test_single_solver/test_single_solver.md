@@ -7,7 +7,7 @@ using `test_single_solver` as coupling component. For more information refer to 
 
 The `type` is set to `coupled_solvers.test_single_solver` and an additional required dictionary `test_settings` is added.
 All other parameters in the JSON file, including the `settings` dictionary, can be set to the values that will be used in the actual coupled simulation.
-The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `save_results` and `name` if not provided in `test_settings`.
+The `settings` dictionary is used to look up `delta_t`, `timestep_start`, `write_results` and `name` if not provided in `test_settings`.
 The other dictionaries are not used: no `predictor`,` convergence_criterion` or `mapper` are used.
 
 ## Solvers
