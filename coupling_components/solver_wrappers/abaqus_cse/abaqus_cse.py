@@ -300,6 +300,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         licenses_received = 0
         counter = 0
         lim = 10000
+        already_printed_info = False
         while not os.path.exists(log_file) and counter < lim:
             counter += 1
             time.sleep(0.1)
@@ -319,8 +320,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         raise ValueError(f'Unexpected license: {line}')
                     licenses_received += 1
                     continue
-                else:
+                if not already_printed_info:
                     tools.print_info(f'Waiting for Abaqus license:', layout='info')
+                    already_printed_info = True
                 tools.print_info(f'\t{line.strip()}', layout='info')
 
     @staticmethod

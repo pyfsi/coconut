@@ -4,7 +4,6 @@ import unittest
 import numpy as np
 import os
 from os.path import join
-import subprocess
 import json
 import shutil
 

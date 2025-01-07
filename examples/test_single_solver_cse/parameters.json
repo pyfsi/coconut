@@ -1,19 +1,18 @@
 {
   "settings": {
-    "number_of_timesteps": 10
+    "timestep_start": 0,
+    "number_of_timesteps": 4,
+    "delta_t": 0.0001
   },
   "coupled_solver": {
     "type": "coupled_solvers.test_single_solver",
     "test_settings": {
       "solver_index": 1,
-      "test_class": "TransientTest",
-      "delta_t": 0.0001
+      "test_class": "TransientTest"
     },
     "settings": {
-      "timestep_start": 0,
-      "delta_t": 0.0001,
       "omega": 0.01,
-      "save_results": 1,
+      "write_results": 1,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
@@ -89,7 +88,11 @@
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "surfaces": ["ASSEMBLY_WALLOUTSIDE"],
+              "save_restart": 1,
+              "save_results": 4,
+              "surfaces": [
+                "ASSEMBLY_WALLOUTSIDE"
+              ],
               "interface_input": [
                 {
                   "model_part": "WALLOUTSIDE_load_points",

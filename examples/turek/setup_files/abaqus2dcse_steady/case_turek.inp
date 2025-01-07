@@ -6176,7 +6176,6 @@ _BEAMINSIDEMOVING0_S1, S1
 *Boundary
 BEAMINSIDEFIXED, 1, 1
 BEAMINSIDEFIXED, 2, 2
-BEAMINSIDEFIXED, 6, 6
 ** 
 ** OUTPUT REQUESTS
 ** 
@@ -6184,11 +6183,11 @@ BEAMINSIDEFIXED, 6, 6
 ** 
 ** FIELD OUTPUT: F-Output-1
 ** 
-*Output, field, frequency=99999
+*Output, field, frequency=1
 *Node Output
 COORD, U
 *Element Output, directions=YES
-COORD, 
+COORD, TRVEC
 ** 
 ** FIELD OUTPUT: F-Output-2
 ** 
