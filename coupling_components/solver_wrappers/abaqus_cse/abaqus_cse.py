@@ -71,7 +71,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.number_of_mps = len(self.surfaces)
 
         # setting for compilation of solver
-        self.compile_clean = self.settings.get('compile_clean', False)
         self.solver = 'AbaqusWrapper'  # name of executable
         self.solver_dir = join(self.path_src, self.solver)
         self.dir_abqw = join(self.dir_csm, self.solver)  # solver Abaqus wrapper directory
@@ -390,7 +389,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def compile_solver(self):
         # compile abaqus wrapper
         source_file = f'{self.solver}.cpp'
-        make_cmd = f'abaqus make job={source_file} {"recompile" if self.compile_clean else ""} &> {self.compile_log}'
+        make_cmd = f'abaqus make job={source_file} &> {self.compile_log}'
         try:
             subprocess.run(make_cmd, cwd=self.solver_dir, check=True, shell=True, env=self.env)
         except subprocess.CalledProcessError:
