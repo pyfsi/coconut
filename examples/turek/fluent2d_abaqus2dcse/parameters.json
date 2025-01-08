@@ -1,0 +1,198 @@
+{
+  "settings": {
+    "timestep_start": 0,
+    "number_of_timesteps": 17500,
+    "delta_t": 0.002,
+    "save_restart": 500
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.iqni",
+    "settings": {
+      "omega": 0.05,
+      "write_results": 500,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-10,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.quadratic"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 15
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.fluent.v2024R2",
+        "settings": {
+          "working_directory": "CFD",
+          "case_file": "case_turek.cas.h5",
+          "dimensions": 2,
+          "unsteady": true,
+          "end_of_timestep_commands": "(ti-menu-load-string \"report forces wall-forces n circleoutside beamtopoutside beamrightoutside beambottomoutside () 1 0 y forces.frp\")",
+          "thread_names": [
+            "beamtopoutside",
+            "beamrightoutside",
+            "beambottomoutside"
+          ],
+          "interface_input": [
+            {
+              "model_part": "beamtopoutside_nodes",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "beamrightoutside_nodes",
+              "variables": [
+                "displacement"
+              ]
+            },
+            {
+              "model_part": "beambottomoutside_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "beamtopoutside_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "beamrightoutside_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            },
+            {
+              "model_part": "beambottomoutside_faces",
+              "variables": [
+                "pressure",
+                "traction"
+              ]
+            }
+          ],
+          "cores": 12,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 200,
+          "save_results": 25
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.abaqus_cse.v2024",
+            "settings": {
+              "working_directory": "CSM",
+              "cores": 1,
+              "dimensions": 2,
+              "debug": true,
+              "surfaces": [
+                "ASSEMBLY_BEAMINSIDEMOVING0",
+                "ASSEMBLY_BEAMINSIDEMOVING1",
+                "ASSEMBLY_BEAMINSIDEMOVING2"
+              ],
+              "interface_input": [
+                {
+                  "model_part": "BEAMINSIDEMOVING0_centers",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                },
+                {
+                  "model_part": "BEAMINSIDEMOVING1_centers",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                },
+                {
+                  "model_part": "BEAMINSIDEMOVING2_centers",
+                  "variables": [
+                    "pressure",
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "BEAMINSIDEMOVING0_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "BEAMINSIDEMOVING1_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                },
+                {
+                  "model_part": "BEAMINSIDEMOVING2_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+              "input_file": "case_turek_linear.inp",
+              "save_results": 25
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
