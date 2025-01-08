@@ -1,7 +1,7 @@
 # AbaqusCSE
 
 This is the documentation for the new version of the Abaqus solver wrapper, which uses the Abaqus Co-Simulation Engine (CSE) avoiding the need to start and stop Abaqus every coupling iteration.
-Refer to [Abaqus](../abaqus.md) for the first version of the Abaqus solver wrapper.
+Refer to [Abaqus](../abaqus.md) for the old version of the Abaqus solver wrapper.
 
 Abaqus is a structural solver implementing the finite element method.
 Currently, this wrapper only supports FSI simulations, no other multi-physics problems.
@@ -23,15 +23,15 @@ More information about `ModelParts` and `Interface` can be found in the [data st
  - Working directory: Subdirectory of the main directory in which Abaqus runs.
  - Source directory: Directory where the source files of the Abaqus solver wrapper are found: *`coupling_components/solver_wrappers/abaqus`*.
  - Extra directory: Subdirectory of the source directory with some files to assist with the setup.
- - Geometrical nodes: Nodes in Abaqus related to the geometry of the elements. At these nodes the displacement data is exported. 
- - Load points: Every element has load points. This is where the loads (input to Abaqus) are applied.
- - Time step: Time step from the viewpoint of the fluid-structure interaction, usually equal to the time-step of the flow solver and structural solver, although one of the solvers can deviate in the case of subcycling.
+
+ - Time step: Time step from the viewpoint of the fluid-structure interaction, usually equal to the time step of the flow solver and structural solver, although one of the solvers can deviate in the case of subcycling.
  - Increment: Time increment in the nomenclature of the Abaqus software. This is usually equal to the time step of the flow solver and overall coupled simulation, but in case of subcycling within the Abaqus solver, a time step can be subdivided in multiple increments.
 
 ## Environment
  - A working directory for Abaqus needs to be created within the main directory. Its **relative path to the main directory** should be specified in the JSON file. In the [CoCoNuT examples](../../../examples/examples.md) this folder is typically called *`CSM`*, but any name is allowed.
  - The **Abaqus software should be available as well as compilers** to compile the user-subroutines (FORTRAN) and post-processing code (C++). Some compilers also require a license. 
  - If the **Abaqus license server** needs to be specified explicitly, it is advised to do this in the [solver modules file](../../../README.md#checking-the-solver-modules).
+ -  export LM_LICENSE_FILE
 
 ## Parameters
 This section describes the parameter settings in the JSON file.
@@ -49,7 +49,7 @@ It can be useful to have a look at a JSON file of one of the examples in the *`e
 |                                            `port` | int  | (optional) If not provided, the operating system will choose a free port. This port is used for the communication between the AbaqusWrapper executable and the CSE.                                                                                                                                                                                                                                                        |
 |                                    `save_results` | int  | (optional) Default: `1`. This will modify the frequency of storing fields or history in the *`.odb`* file. If no output definition is present in the input file, one is created for the *PRESELECT* variables.                                                                                                                                                                                                             |
 |                                        `surfaces` | list | List of the surface names defined in Abaqus. Note that the order has to be the same as those of the interface definitions. Take the Abaqus naming conventions into account: surfaces names are capitiliazed unless specified within double quotes, and the name is often prepended for example with ASSEMBLY_ (“Assembly.Part” is translated to “Assembly_Part”).                                                          |
-|                               `working_directory` | str  | Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. Should be created before execution and contain the input file.                                                                                                                                                                                                                                        |
+|                               `working_directory` | str  | Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. This folder is typically called *`CSM`*, but any name is allowed. It should be created before execution and contain the input file.                                                                                                                                                                   |
 
 The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing).
 If they are defined in both locations, a warning is printed and the top-level value is used.

@@ -43,8 +43,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.timestep_start = self.settings['timestep_start']
         self.number_of_timesteps = self.settings['number_of_timesteps']
         self.end_time = self.number_of_timesteps * self.delta_t
-        self.save_results = self.settings.get('save_results',
-                                              1)  # TODO: changes frequency or adds storing of preselected fields
+        self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']  # TODO: implement restart
         self.input_file = self.settings['input_file']
         self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
@@ -109,6 +108,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
                                          f'substitution: \n \t{line} \nA parameter was not substituted')
                     outfile.write(line)
+        shutil.copy(join(self.dir_csm, 'abaqus_v6.env'), join(self.dir_cse, 'abaqus_v6.env'))
 
         # clean/create tmp directory
         shutil.rmtree(join('/tmp', self.tmp_dir_unique), ignore_errors=True)
@@ -472,16 +472,11 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
         import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
-        cosimulation_settings = f'** **********************************\n' \
-                                f'**	     COSIMULATION SETTINGS\n' \
-                                f'** **********************************\n' \
-                                f'*CO-SIMULATION, NAME=COCONUT, PROGRAM=MULTIPHYSICS\n' \
+        cosimulation_settings = f'*CO-SIMULATION, NAME=COCONUT, PROGRAM=MULTIPHYSICS\n' \
                                 f'*CO-SIMULATION REGION, TYPE=SURFACE, EXPORT\n' \
                                 f'{export_lines}\n' \
                                 f'*CO-SIMULATION REGION, TYPE=SURFACE, IMPORT\n' \
                                 f'{import_lines}\n' \
-                                f'**\n' \
-                                f'** **********************************\n' \
                                 f'**\n'
 
         # create new modified input file
