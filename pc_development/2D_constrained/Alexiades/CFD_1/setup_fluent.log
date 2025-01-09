@@ -1,10 +1,10 @@
 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -g -i case_1.jou
 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/cortex/lnamd64/cortex.24.2.0 -f fluent -g -i case_1.jou (fluent "2ddp -pdefault  -host -r24.2.0 -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh")
 
-Opening input/output transcript to file "/cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/fluent-20241228-010046-1761872.trn".
-Auto-Transcript Start Time:  01:00:46, 28 Dec 2024 
-/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -pdefault -host -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh -cx cfdclu32.ugent.be:33739:40593
-Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_host/fluent.24.2.0 host -cx cfdclu32.ugent.be:33739:40593 "(list (rpsetvar (QUOTE parallel/function) "fluent 2ddp -flux -node -r24.2.0 -t1 -pdefault -mpi=intel -ssh") (rpsetvar (QUOTE parallel/rhost) "") (rpsetvar (QUOTE parallel/ruser) "") (rpsetvar (QUOTE parallel/nprocs_string) "1") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) "/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent") (rpsetvar (QUOTE parallel/hostsfile) "") (rpsetvar (QUOTE gpuapp/devices) ""))"
+Opening input/output transcript to file "/cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/fluent-20250109-110544-900554.trn".
+Auto-Transcript Start Time:  11:05:44, 09 Jan 2025 
+/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -pdefault -host -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh -cx cfdclu32.ugent.be:45091:35947
+Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_host/fluent.24.2.0 host -cx cfdclu32.ugent.be:45091:35947 "(list (rpsetvar (QUOTE parallel/function) "fluent 2ddp -flux -node -r24.2.0 -t1 -pdefault -mpi=intel -ssh") (rpsetvar (QUOTE parallel/rhost) "") (rpsetvar (QUOTE parallel/ruser) "") (rpsetvar (QUOTE parallel/nprocs_string) "1") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) "/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent") (rpsetvar (QUOTE parallel/hostsfile) "") (rpsetvar (QUOTE gpuapp/devices) ""))"
 
               Welcome to ANSYS Fluent 2024 R2
 
@@ -29,19 +29,19 @@ For faster simulations, please start the application with the appropriate parall
      license form, additional terms section.
      --------------------------------------------------------------
 Host spawning Node 0 on machine "cfdclu32.ugent.be" (unix).
-/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -flux -node -t1 -pdefault -mpi=intel -ssh -mport 157.193.126.32:157.193.126.32:36561:0
-Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/multiport/mpi/lnamd64/intel2021/bin/mpirun --rsh=ssh -f /tmp/fluent-appfile.victor.1762442 -genv I_MPI_FABRICS shm -genv FLUENT_ARCH lnamd64 -genv I_MPI_DEBUG 0 -genv I_MPI_ADJUST_GATHERV 3 -genv I_MPI_ADJUST_ALLREDUCE 2 -genv I_MPI_PLATFORM auto -genv PYTHONHOME /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/../../commonfiles/CPython/3_10/linx64/Release/python -genv FLUENT_PROD_DIR /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0 -genv FLUENT_AFFINITY 0 -genv I_MPI_PIN enable -genv KMP_AFFINITY disabled -n 1 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_node/fluent_mpi.24.2.0 node -mpiw intel -pic shmem -mport 157.193.126.32:157.193.126.32:36561:0
+/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -flux -node -t1 -pdefault -mpi=intel -ssh -mport 157.193.126.32:157.193.126.32:44593:0
+Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/multiport/mpi/lnamd64/intel2021/bin/mpirun --rsh=ssh -f /tmp/fluent-appfile.victor.901105 -genv I_MPI_FABRICS shm -genv FLUENT_ARCH lnamd64 -genv I_MPI_DEBUG 0 -genv I_MPI_ADJUST_GATHERV 3 -genv I_MPI_ADJUST_ALLREDUCE 2 -genv I_MPI_PLATFORM auto -genv PYTHONHOME /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/../../commonfiles/CPython/3_10/linx64/Release/python -genv FLUENT_PROD_DIR /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0 -genv FLUENT_AFFINITY 0 -genv I_MPI_PIN enable -genv KMP_AFFINITY disabled -n 1 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_node/fluent_mpi.24.2.0 node -mpiw intel -pic shmem -mport 157.193.126.32:157.193.126.32:44593:0
 
 -------------------------------------------------------------------------------
-ID    Hostname           Core  O.S.      PID      Vendor                      
+ID    Hostname           Core  O.S.      PID     Vendor                      
 -------------------------------------------------------------------------------
-n0    cfdclu32.ugent.be  1/32  Linux-64  1762522  INTEL(R) XEON(R) GOLD 6526Y 
-host  cfdclu32.ugent.be        Linux-64  1762090  INTEL(R) XEON(R) GOLD 6526Y 
+n0    cfdclu32.ugent.be  1/32  Linux-64  901192  INTEL(R) XEON(R) GOLD 6526Y 
+host  cfdclu32.ugent.be        Linux-64  900756  INTEL(R) XEON(R) GOLD 6526Y 
 
 MPI Option Selected: intel
 -------------------------------------------------------------------------------
 
-Cleanup script file is /cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/cleanup-fluent-cfdclu32.ugent.be-1762090.sh
+Cleanup script file is /cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/cleanup-fluent-cfdclu32.ugent.be-900756.sh
 
 Posting ANSYS Product Improvement Program startup data
 Done.
@@ -56,6 +56,9 @@ Reading journal file case_1.jou...
 
 > ;file start "transcript_setup.txt"
 file read-case 2D_solid_bl.msh
+WARNING: Rank:0 Machine cfdclu32.ugent.be has 13 % of RAM filled with file buffer caches.
+This can cause potential performance issues. Please use -cflush flag to flush the cache. 
+
 
 Reading "2D_solid_bl.msh"...
 
@@ -106,7 +109,7 @@ exit                    preferences/            views/
 file/                   print-license-usage
 mesh/                   report/
 
-> define models unsteady-2nd-order y
+> define models unsteady-1st-order y
 Pressure-Velocity Coupling scheme is set to SIMPLE
 
 > define models viscous laminar y
@@ -217,7 +220,7 @@ n y
 > ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 22
 
-> solve set under-relaxation temperature 0.9
+> solve set under-relaxation temperature 0.7
 
 > 
 adjoint/                parallel/               server/
@@ -242,19 +245,18 @@ mesh/                   report/
 
 > define dynamic-mesh dynamic-mesh y n n n n
 
-Warning: disabling second-order variable time step size formulation as is not supported with dynamic mesh.
 > define dynamic-mesh controls smoothing y
 
 > define dynamic-mesh controls smoothing-parameters smoothing-method spring
 
-> define dynamic-mesh controls smoothing-parameters constant-factor 1
+> define dynamic-mesh controls smoothing-parameters constant-factor 0
 
 > ; NOTE: bnd-node-relaxation 0 prevents deforming boundary nodes from moving
 ;define dynamic-mesh controls smoothing-parameters bnd-node-relaxation 1
 ;define dynamic-mesh controls smoothing-parameters bnd-stiffness-factor 1
 define dynamic-mesh controls smoothing-parameters skew-smooth-niter 10
 
-> define dynamic-mesh controls smoothing-parameters skew-smooth-cell-skew-max 0.7
+> define dynamic-mesh controls smoothing-parameters skew-smooth-cell-skew-max 0.5
 
 > define dynamic-mesh controls smoothing-parameters max-iter 20
 
@@ -267,7 +269,15 @@ define dynamic-mesh controls smoothing-parameters skew-smooth-niter 10
      prism and sizing settings,
 > define dynamic-mesh controls remeshing-parameters unified-remeshing? y
 
-> 
+> ;define dynamic-mesh controls remeshing-parameters remeshing-methods y n y n
+;define dynamic-mesh controls remeshing-parameters zone-remeshing n
+define dynamic-mesh controls remeshing-parameters cell-skew-max 0.5
+
+> ;define dynamic-mesh controls remeshing-parameters length-min 0
+;define dynamic-mesh controls remeshing-parameters length-max 2e-4
+;define dynamic-mesh controls remeshing-parameters size-remesh-interval 5
+;define dynamic-mesh controls remeshing-parameters sizing-function n
+
 adjoint/                parallel/               server/
 define/                 parametric-study/       solve/
 display/                plot/                   surface/
@@ -277,6 +287,7 @@ mesh/                   report/
 
 > ; Last option below: exclude mesh motion in boundary conditions? y
 ; Third option below: use Laplace instead of spring smoothing? n
+; Fifth option below: enable region remeshing? n
 define dynamic-mesh zones create top deforming faceted n y n y y y y n y
 
 > define dynamic-mesh zones create bottom deforming faceted n y n y y y y n y
@@ -311,7 +322,7 @@ Done.
 
 Posting ANSYS Product Improvement Program performance data 
 Done.
-Auto-Transcript Stop Time:  01:01:11, 28 Dec 2024 
-Total Transcript Time: 0 Minute 25 Second.
+Auto-Transcript Stop Time:  11:06:07, 09 Jan 2025 
+Total Transcript Time: 0 Minute 22 Second.
 
 Automatic transcript closed.

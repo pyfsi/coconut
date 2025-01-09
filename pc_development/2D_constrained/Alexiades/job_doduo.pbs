@@ -13,6 +13,7 @@ export OMP_PROC_BIND=FALSE # required on UGent-HPC for processes spawned from Py
 cd $VSC_SCRATCH/coconut/pc_development/2D_constrained/Alexiades/
 # To enable animations, cases must be setup beforehand
 # python3 setup_case.py
+mkdir CFD_2/animation_frames
 
 # To run multinode: uncomment the line below and ...
 # ... make sure "hosts_file": "fluent.hosts" is added to the Fluent settings in the JSON file

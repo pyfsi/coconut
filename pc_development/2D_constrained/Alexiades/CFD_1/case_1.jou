@@ -6,7 +6,7 @@ grid modify-zones zone-type fluid fluid
 
 define user-defined user-defined-memory 12
 
-define models unsteady-2nd-order y
+define models unsteady-1st-order y
 define models viscous laminar y
 define models solver pressure-based y
 solve set equations flow n
@@ -32,7 +32,7 @@ solve set discretization-scheme temperature 1
 solve set gradient-scheme n y
 ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 22
-solve set under-relaxation temperature 0.9
+solve set under-relaxation temperature 0.7
 
 ;Initialise solid at melting temperature
 solve initialize set-defaults temperature 505
@@ -41,20 +41,28 @@ solve initialize initialize-flow
 define dynamic-mesh dynamic-mesh y n n n n
 define dynamic-mesh controls smoothing y
 define dynamic-mesh controls smoothing-parameters smoothing-method spring
-define dynamic-mesh controls smoothing-parameters constant-factor 1
+define dynamic-mesh controls smoothing-parameters constant-factor 0
 ; NOTE: bnd-node-relaxation 0 prevents deforming boundary nodes from moving
 ;define dynamic-mesh controls smoothing-parameters bnd-node-relaxation 1
 ;define dynamic-mesh controls smoothing-parameters bnd-stiffness-factor 1
 define dynamic-mesh controls smoothing-parameters skew-smooth-niter 10
-define dynamic-mesh controls smoothing-parameters skew-smooth-cell-skew-max 0.7
+define dynamic-mesh controls smoothing-parameters skew-smooth-cell-skew-max 0.5
 define dynamic-mesh controls smoothing-parameters max-iter 20
 define dynamic-mesh controls smoothing-parameters spring-on-all-elements y
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing y
 define dynamic-mesh controls remeshing-parameters unified-remeshing? y
+;define dynamic-mesh controls remeshing-parameters remeshing-methods y n y n
+;define dynamic-mesh controls remeshing-parameters zone-remeshing n
+define dynamic-mesh controls remeshing-parameters cell-skew-max 0.5
+;define dynamic-mesh controls remeshing-parameters length-min 0
+;define dynamic-mesh controls remeshing-parameters length-max 2e-4
+;define dynamic-mesh controls remeshing-parameters size-remesh-interval 5
+;define dynamic-mesh controls remeshing-parameters sizing-function n
 
 ; Last option below: exclude mesh motion in boundary conditions? y
 ; Third option below: use Laplace instead of spring smoothing? n
+; Fifth option below: enable region remeshing? n
 define dynamic-mesh zones create top deforming faceted n y n y y y y n y
 define dynamic-mesh zones create bottom deforming faceted n y n y y y y n y
 define dynamic-mesh zones create fluid deforming y all y y

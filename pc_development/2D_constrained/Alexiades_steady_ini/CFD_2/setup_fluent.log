@@ -1,0 +1,2 @@
+/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -i case_2.jou
+/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/cortex/lnamd64/cortex.24.2.0 -f fluent -i case_2.jou (fluent "2ddp -pdefault  -host -r24.2.0 -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh")
