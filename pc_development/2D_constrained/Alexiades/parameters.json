@@ -1,6 +1,6 @@
 {
   "settings": {
-    "number_of_timesteps": 24000
+    "number_of_timesteps": 120000
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
@@ -8,8 +8,8 @@
       "timestep_start": 0,
       "delta_t": 0.01,
       "omega_max": 0.8,
-      "save_results": 4000,
-      "save_restart": 4000,
+      "save_results": 500,
+      "save_restart": 20000,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
@@ -85,11 +85,11 @@
               ]
             }
           ],
-          "cores": 4,
+          "cores": 15,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 4000
+          "save_results": 5000
         }
       },
       {
@@ -139,11 +139,11 @@
                   ]
                 }
               ],
-              "cores": 4,
+              "cores": 15,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 4000
+              "save_results": 5000
             }
           },
           "mapper_interface_input": {

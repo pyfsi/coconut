@@ -85,6 +85,7 @@ for (_d = 0; _d < dim; _d++) {                                      \
 real dt = |TIME_STEP_SIZE|;
 real LH = |LATENT_HEAT|;
 real TM = |MELT_TEMP|;
+int TS_START = |TIME_STEP_START|;
 bool unsteady = |UNSTEADY|;
 bool fluid = |FLUID|;
 int _d; /* don't use in UDFs! (overwritten by functions above) */
@@ -914,7 +915,7 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
-        if (timestep == 0) {
+        if (timestep == TS_START) {
             skip_search = true;
         } else {
             Error("\nUDF-error: Unable to open %s for reading\n", file_name);
@@ -1055,7 +1056,7 @@ DEFINE_PROFILE(set_heat_flux, face_thread, var) {
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
-        if (timestep == 0) {
+        if (timestep == TS_START) {
             skip_search = true;
         } else {
             Error("\nUDF-error: Unable to open %s for reading\n", file_name);

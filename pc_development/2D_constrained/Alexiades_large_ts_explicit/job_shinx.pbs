@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#PBS -N 2D_Alexiades_large_ts
+#PBS -N 2D_Alexiades_large_ts_explicit
 #PBS -l walltime=71:55:00
 #PBS -l nodes=1:ppn=21
 #
@@ -11,7 +11,7 @@ export PYTHONPATH=$VSC_SCRATCH/:$PYTHONPATH
 
 export OMP_PROC_BIND=FALSE # required on UGent-HPC for processes spawned from Python
 
-cd $VSC_SCRATCH/coconut/pc_development/2D_constrained/Alexiades_large_ts/
+cd $VSC_SCRATCH/coconut/pc_development/2D_constrained/Alexiades_large_ts_explicit/
 # To enable animations, cases must be setup beforehand
 # python3 setup_case.py
 mkdir CFD_2/animation_frames

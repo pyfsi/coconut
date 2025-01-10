@@ -182,6 +182,7 @@ class SolverWrapperPCFluent(SolverWrapper):
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     line = line.replace('|LATENT_HEAT|', str(self.latent_heat))
                     line = line.replace('|MELT_TEMP|', str(self.melt_temp))
+                    line = line.replace('|TIME_STEP_START|', str(self.timestep_start))
                     line = line.replace('|UNSTEADY|', 'true' if self.unsteady else 'false')
                     line = line.replace('|FLUID|', 'false' if self.thermal_bc == "heat_flux" else 'true')
                     outfile.write(line)

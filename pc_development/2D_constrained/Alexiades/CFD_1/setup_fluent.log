@@ -1,10 +1,10 @@
 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -g -i case_1.jou
 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/cortex/lnamd64/cortex.24.2.0 -f fluent -g -i case_1.jou (fluent "2ddp -pdefault  -host -r24.2.0 -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh")
 
-Opening input/output transcript to file "/cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/fluent-20250109-110544-900554.trn".
-Auto-Transcript Start Time:  11:05:44, 09 Jan 2025 
-/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -pdefault -host -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh -cx cfdclu32.ugent.be:45091:35947
-Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_host/fluent.24.2.0 host -cx cfdclu32.ugent.be:45091:35947 "(list (rpsetvar (QUOTE parallel/function) "fluent 2ddp -flux -node -r24.2.0 -t1 -pdefault -mpi=intel -ssh") (rpsetvar (QUOTE parallel/rhost) "") (rpsetvar (QUOTE parallel/ruser) "") (rpsetvar (QUOTE parallel/nprocs_string) "1") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) "/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent") (rpsetvar (QUOTE parallel/hostsfile) "") (rpsetvar (QUOTE gpuapp/devices) ""))"
+Opening input/output transcript to file "/cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/fluent-20250110-132731-1637300.trn".
+Auto-Transcript Start Time:  13:27:31, 10 Jan 2025 
+/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -pdefault -host -t1 -mpi=intel -path/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent -ssh -cx cfdclu32.ugent.be:40831:46649
+Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_host/fluent.24.2.0 host -cx cfdclu32.ugent.be:40831:46649 "(list (rpsetvar (QUOTE parallel/function) "fluent 2ddp -flux -node -r24.2.0 -t1 -pdefault -mpi=intel -ssh") (rpsetvar (QUOTE parallel/rhost) "") (rpsetvar (QUOTE parallel/ruser) "") (rpsetvar (QUOTE parallel/nprocs_string) "1") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) "/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent") (rpsetvar (QUOTE parallel/hostsfile) "") (rpsetvar (QUOTE gpuapp/devices) ""))"
 
               Welcome to ANSYS Fluent 2024 R2
 
@@ -29,19 +29,19 @@ For faster simulations, please start the application with the appropriate parall
      license form, additional terms section.
      --------------------------------------------------------------
 Host spawning Node 0 on machine "cfdclu32.ugent.be" (unix).
-/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -flux -node -t1 -pdefault -mpi=intel -ssh -mport 157.193.126.32:157.193.126.32:44593:0
-Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/multiport/mpi/lnamd64/intel2021/bin/mpirun --rsh=ssh -f /tmp/fluent-appfile.victor.901105 -genv I_MPI_FABRICS shm -genv FLUENT_ARCH lnamd64 -genv I_MPI_DEBUG 0 -genv I_MPI_ADJUST_GATHERV 3 -genv I_MPI_ADJUST_ALLREDUCE 2 -genv I_MPI_PLATFORM auto -genv PYTHONHOME /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/../../commonfiles/CPython/3_10/linx64/Release/python -genv FLUENT_PROD_DIR /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0 -genv FLUENT_AFFINITY 0 -genv I_MPI_PIN enable -genv KMP_AFFINITY disabled -n 1 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_node/fluent_mpi.24.2.0 node -mpiw intel -pic shmem -mport 157.193.126.32:157.193.126.32:44593:0
+/apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/bin/fluent -r24.2.0 2ddp -flux -node -t1 -pdefault -mpi=intel -ssh -mport 157.193.126.32:157.193.126.32:34525:0
+Starting /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/multiport/mpi/lnamd64/intel2021/bin/mpirun --rsh=ssh -f /tmp/fluent-appfile.victor.1637856 -genv I_MPI_FABRICS shm -genv FLUENT_ARCH lnamd64 -genv I_MPI_DEBUG 0 -genv I_MPI_ADJUST_GATHERV 3 -genv I_MPI_ADJUST_ALLREDUCE 2 -genv I_MPI_PLATFORM auto -genv PYTHONHOME /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/../../commonfiles/CPython/3_10/linx64/Release/python -genv FLUENT_PROD_DIR /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0 -genv FLUENT_AFFINITY 0 -genv I_MPI_PIN enable -genv KMP_AFFINITY disabled -n 1 /apps/RHEL8/ANSYS/2024R2/ansys_inc/v242/fluent/fluent24.2.0/lnamd64/2ddp_node/fluent_mpi.24.2.0 node -mpiw intel -pic shmem -mport 157.193.126.32:157.193.126.32:34525:0
 
 -------------------------------------------------------------------------------
-ID    Hostname           Core  O.S.      PID     Vendor                      
+ID    Hostname           Core  O.S.      PID      Vendor                      
 -------------------------------------------------------------------------------
-n0    cfdclu32.ugent.be  1/32  Linux-64  901192  INTEL(R) XEON(R) GOLD 6526Y 
-host  cfdclu32.ugent.be        Linux-64  900756  INTEL(R) XEON(R) GOLD 6526Y 
+n0    cfdclu32.ugent.be  1/32  Linux-64  1637929  INTEL(R) XEON(R) GOLD 6526Y 
+host  cfdclu32.ugent.be        Linux-64  1637489  INTEL(R) XEON(R) GOLD 6526Y 
 
 MPI Option Selected: intel
 -------------------------------------------------------------------------------
 
-Cleanup script file is /cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/cleanup-fluent-cfdclu32.ugent.be-900756.sh
+Cleanup script file is /cfdfile1/data/fm/victor/Software/coconut/pc_development/2D_constrained/Alexiades/CFD_1/cleanup-fluent-cfdclu32.ugent.be-1637489.sh
 
 Posting ANSYS Product Improvement Program startup data
 Done.
@@ -56,7 +56,7 @@ Reading journal file case_1.jou...
 
 > ;file start "transcript_setup.txt"
 file read-case 2D_solid_bl.msh
-WARNING: Rank:0 Machine cfdclu32.ugent.be has 13 % of RAM filled with file buffer caches.
+WARNING: Rank:0 Machine cfdclu32.ugent.be has 14 % of RAM filled with file buffer caches.
 This can cause potential performance issues. Please use -cflush flag to flush the cache. 
 
 
@@ -249,7 +249,7 @@ mesh/                   report/
 
 > define dynamic-mesh controls smoothing-parameters smoothing-method spring
 
-> define dynamic-mesh controls smoothing-parameters constant-factor 0
+> define dynamic-mesh controls smoothing-parameters constant-factor 1
 
 > ; NOTE: bnd-node-relaxation 0 prevents deforming boundary nodes from moving
 ;define dynamic-mesh controls smoothing-parameters bnd-node-relaxation 1
@@ -322,7 +322,7 @@ Done.
 
 Posting ANSYS Product Improvement Program performance data 
 Done.
-Auto-Transcript Stop Time:  11:06:07, 09 Jan 2025 
-Total Transcript Time: 0 Minute 22 Second.
+Auto-Transcript Stop Time:  13:27:49, 10 Jan 2025 
+Total Transcript Time: 0 Minute 18 Second.
 
 Automatic transcript closed.

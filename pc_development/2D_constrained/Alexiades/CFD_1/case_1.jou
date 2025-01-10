@@ -41,7 +41,7 @@ solve initialize initialize-flow
 define dynamic-mesh dynamic-mesh y n n n n
 define dynamic-mesh controls smoothing y
 define dynamic-mesh controls smoothing-parameters smoothing-method spring
-define dynamic-mesh controls smoothing-parameters constant-factor 0
+define dynamic-mesh controls smoothing-parameters constant-factor 1
 ; NOTE: bnd-node-relaxation 0 prevents deforming boundary nodes from moving
 ;define dynamic-mesh controls smoothing-parameters bnd-node-relaxation 1
 ;define dynamic-mesh controls smoothing-parameters bnd-stiffness-factor 1
