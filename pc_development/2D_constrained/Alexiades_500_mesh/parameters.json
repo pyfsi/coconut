@@ -8,7 +8,7 @@
       "timestep_start": 0,
       "delta_t": 0.01,
       "omega_max": 0.8,
-      "save_results": 10,
+      "save_results": 100,
       "save_restart": 10000,
       "debug": false,
       "model": {

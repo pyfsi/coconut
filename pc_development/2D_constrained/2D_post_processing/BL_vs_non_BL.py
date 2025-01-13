@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from coconut.examples.post_processing.post_processing import *
 
-# With no boundary layer n
+# With no boundary layer
 pp = PostProcess('../Alexiades_only_triangles/case_results.pickle')
 print(pp)
 print("\n")
@@ -10,7 +10,7 @@ print("\n")
 sx = pp.add_subset(interface='interface_x', model_part='boundary_in_nodes')
 sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 
-# With conservative mapper
+# With boundary layer
 pp_BL = PostProcess('../Alexiades_solid_py/case_results.pickle')
 print(pp_BL)
 print("\n")
@@ -40,16 +40,16 @@ if animations:
     plt.show()
     plt.close()
 
-# Compare interface at t = 10 s
+# Compare interface at t = 300 s
 x_non_BL = sx.get_values('coordinates', 'x')
 y_non_BL = sx.get_values('coordinates', 'y')
-x_non_BL = x_non_BL[1000,:].flatten()
-y_non_BL = y_non_BL[1000,:].flatten()
+x_non_BL = x_non_BL[30000,:].flatten()
+y_non_BL = y_non_BL[30000,:].flatten()
 
 x_BL = sx_BL.get_values('coordinates', 'x')
 y_BL = sx_BL.get_values('coordinates', 'y')
-x_BL = x_BL[1000,:].flatten()
-y_BL = y_BL[1000,:].flatten()
+x_BL = x_BL[30000,:].flatten()
+y_BL = y_BL[30000,:].flatten()
 
 line_non_BL, = plt.plot(x_non_BL, y_non_BL, '-b', label='no BL')
 line_BL, = plt.plot(x_BL, y_BL, '-g', label='BL')
