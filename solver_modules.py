@@ -19,6 +19,8 @@ solver_load_cmd_dict = {
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024 '
                         '&& export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
+        'abaqus_cse.v2023': 'ml ABAQUS/2023',
+        'abaqus_cse.v2024': 'ml ABAQUS/2024',
     },
     'ugent_hpc': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml iimpi/2023a ; unset SLURM_GTIDS '
@@ -36,7 +38,9 @@ solver_load_cmd_dict = {
                         '; export LM_LICENSE_FILE=@ir03lic1.ugent.be:27000@ea11serv03.private.ugent.be',
         'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE',  # needs to be FALSE in job script, but TRUE for Kratos
         'openfoam.v10': 'ml OpenFOAM/10-foss-2023a ; source $FOAM_BASH',
-        'openfoam.v11': 'ml OpenFOAM/11-foss-2023a ; source $FOAM_BASH'
+        'openfoam.v11': 'ml OpenFOAM/11-foss-2023a ; source $FOAM_BASH',
+        'abaqus_cse.v2023': 'ml ABAQUS/2023 ; export LM_LICENSE_FILE=27000@ea11serv03.private.ugent.be',
+        'abaqus_cse.v2024': 'ml ABAQUS/2024 ; export LM_LICENSE_FILE=27000@ea11serv03.private.ugent.be',
     },
     'hortense': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml intel/2021a '
