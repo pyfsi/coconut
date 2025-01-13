@@ -13,6 +13,6 @@ class CoupledSolverOneWay(CoupledSolver):
 
     def solve_solution_step(self):
         self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
-        xt = self.solver_wrappers[1].solve_solution_step(self.y.copy())
+        self.x = xt = self.solver_wrappers[1].solve_solution_step(self.y.copy())
         r = xt - self.x
         self.finalize_iteration(r)
