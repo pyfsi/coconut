@@ -485,11 +485,16 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 in_step = False
                 analysis_seen = False
                 cosimulation_settings_found = False
-                incrementation_seen = False
+                time_step_size_seen = False
                 output_found = False
                 restart_found = False
                 for line in in_file:
                     if line.upper().startswith('*STEP'):
+                        step_info = [info.strip() for info in line.split(',')]
+                        # remove "number of increments", if set
+                        step_info = [p for p in step_info if 'INC' not in p.upper()]
+                        step_info.append(f'INC={self.number_of_timesteps}')
+                        line = ', '.join(step_info) + '\n'
                         in_step = True
                     elif in_step and line[0] == '*' and line[1] != '*' and not analysis_seen:
                         if not (line.upper().startswith('*DYNAMIC') or line.upper().startswith('*STATIC')):
@@ -497,7 +502,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                                           f'file {input_file} to see if insertions were done correctly',
                                           category=UserWarning)
                         analysis_seen = True
-                    elif in_step and analysis_seen and not line.startswith('*') and not incrementation_seen:
+                    elif in_step and analysis_seen and not line.startswith('*') and not time_step_size_seen:
                         # on data line for time increment
                         incr_info = [inc.strip() for inc in line.split(',')]
                         if not np.isclose(float(incr_info[0]), self.delta_t, atol=0):
@@ -507,7 +512,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                             incr_info[0] = str(self.delta_t)
                         incr_info[1] = str(self.end_time)
                         line = ', '.join(incr_info) + '\n'
-                        incrementation_seen = True
+                        time_step_size_seen = True
                     elif in_step and line.upper().startswith('*CO-SIMULATION'):
                         cosimulation_settings_found = True
                     elif in_step and line.upper().startswith('*OUTPUT'):
