@@ -474,8 +474,11 @@ class SolverWrapperPCFluent(SolverWrapper):
             # map output node displacement to face displacement
             self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal)
             for item in self.settings['interface_output']:
+                print(item)
                 mp_name = item['model_part']
-                self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
+                if "displacement" in item['variables']:
+                    print(mp_name)
+                    self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
 
             # write interface output data at new time step
             self.write_output_to_file("displacement")
