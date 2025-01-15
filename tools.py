@@ -47,6 +47,25 @@ class CocoMessages:
                 raise RuntimeError(f'CoCoNuT timed out, waiting for message: {message}.coco')
         os.remove(file)
         return
+    def wait_awebox(self, timestep):
+        wait = False
+        cumul_time = 0
+        filename = f'move_zone_aileron_right_update_timestep{timestep}.dat' #Last file to be written
+        file = join(self.working_directory, filename)
+        #if not os.path.isfile(file):
+            #print(f'Waiting for AWEbox files timestep ' + str(timestep))
+            #wait = True
+        while not os.path.isfile(file):
+            time.sleep(0.001)
+            cumul_time += 0.001
+            #RuntimeWarning(f'Waiting for AWEbox')
+            if cumul_time > self.max_wait_time:
+                if self.timed_out_action is not None:
+                    self.timed_out_action(message)
+                raise RuntimeError(f'CoCoNuT timed out, waiting for AWEbox file:' + filename)
+        #if wait:
+            #print(f'Waiting done')
+        return
 
     def check_message(self, message):
         file = join(self.working_directory, message + '.coco')

@@ -343,7 +343,8 @@ class SolverWrapperFluent(SolverWrapper):
                 cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
-        # let Fluent run, wait for data
+        # wait for AWEbox, let Fluent run, wait for data
+        self.coco_messages.wait_awebox(self.timestep)
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
