@@ -15,44 +15,7 @@ C==============================================================================
       SAVE /SURF/
       DATA SURFACEIDS /|surfaceIDs|/
 
-#ifdef MPI
-      INTEGER ID,IDENTIFIED
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-
-      DATA IDENTIFIED/-1/
-#endif
-
       END
-
-C==============================================================================
-C======================== IDENTIFY SUBROUTINE =================================
-C==============================================================================
-#ifdef MPI
-      SUBROUTINE IDENTIFY
-      
-      IMPLICIT NONE
-      
-      INCLUDE 'mpif.h'
-
-      INTEGER ID,IDENTIFIED,IERROR
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-      
-      IF (|cpus| > 1) THEN
-         CALL MPI_COMM_RANK(MPI_COMM_WORLD,ID,IERROR)
-         IF (IERROR < 0) THEN
-            CALL STDB_ABQERR(-3,'USR-error: problem while identifying')
-         END IF
-      ELSE
-         ID = 0
-      END IF
-       
-      IDENTIFIED = 1
-      
-      RETURN
-      END
-#endif
 
 C==============================================================================
 C======================== DLOAD SUBROUTINE ====================================
@@ -74,13 +37,7 @@ C==============================================================================
       COMMON /SURF/ SURFACEIDS
       SAVE /SURF/
 
-#ifdef MPI
-      INTEGER ID,IDENTIFIED
-      COMMON /IDENT/ ID,IDENTIFIED
-      SAVE /IDENT/
-#else 
       INTEGER ID
-#endif
 
       DOUBLE PRECISION F,TIME(2),COORDS(D)
       CHARACTER(LEN=20) :: FMT_FACES
@@ -92,13 +49,7 @@ C==============================================================================
       FMT_FACES = '(2I6,|dimension|ES27.17E2)'
       UNIT_FACES = (/ (100+R,R=1,S) /)
 
-#ifdef MPI
-      IF (IDENTIFIED < 0) THEN
-         CALL IDENTIFY
-      END IF
-#else
       ID = 0
-#endif
 
       FOUND  = .FALSE.
       IF (S > 1) THEN

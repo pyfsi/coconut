@@ -46,10 +46,10 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.openfoam.v8",
+            "type": "solver_wrappers.openfoam.v11",
             "settings": {
               "working_directory": "CFD",
-              "application": "coconut_pimpleFoam",
+              "application": "coconut_foamRun",
               "boundary_names": [
                 "bottom"
               ],
@@ -83,27 +83,10 @@
           "mapper_interface_input": {
             "type": "mappers.interface",
             "settings": {
-              "type": "mappers.combined",
+              "type": "mappers.radial_basis",
               "settings": {
-                "mappers": [
-                  {
-                    "type": "mappers.depth_2d_to_3d",
-                    "settings": {
-                      "direction_depth": "z",
-                      "coordinates_depth": [
-                        -0.5,
-                        0.5
-                      ]
-                    }
-                  },
-                  {
-                    "type": "mappers.radial_basis",
-                    "settings": {
-                      "directions": [
-                        "x", "z"
-                      ]
-                    }
-                  }
+                "directions": [
+                  "x"
                 ]
               }
             }

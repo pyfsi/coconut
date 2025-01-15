@@ -1,13 +1,12 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  4.x                                   |
+|  \\    /   O peration     | Version:  11                                    |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
-    version     2.0;
     format      ascii;
     class       dictionary;
     location    "system";
@@ -31,17 +30,11 @@ solvers
         relTol          0;
     }
 
-    U
+    "U|UFinal"
     {
         solver          smoothSolver;
         smoother        GaussSeidel;
         tolerance       1e-12;
-        relTol          0;
-    }
-
-    UFinal
-    {
-        $U;
         relTol          0;
     }
     

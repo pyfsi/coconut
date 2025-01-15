@@ -1,12 +1,32 @@
 from coconut.coupling_components.component import Component
+from coconut import tools
 
 
 class SolverWrapper(Component):
+    # solver variable check, should be set in subclass
+    accepted_in_var = None
+    accepted_out_var = None
 
     def __init__(self, parameters):
         super().__init__()
 
         self.settings = parameters['settings']
+        self.type = parameters['type']
+
+        # check input variables
+        if self.accepted_in_var is not None:
+            for mp in self.settings['interface_input']:
+                for var in mp['variables']:
+                    if var not in self.accepted_in_var:
+                        raise ValueError(f'{self.__class__.__name__} does not accept {var} as input variable\n'
+                                         f'Accepted input variables are: {", ".join(self.accepted_in_var)}')
+        # check variables output variables
+        if self.accepted_out_var is not None:
+            for mp in self.settings['interface_output']:
+                for var in mp['variables']:
+                    if var not in self.accepted_out_var:
+                        raise ValueError(f'{self.__class__.__name__} does not accept {var} as output variable\n'
+                                         f'Accepted output variables are: {", ".join(self.accepted_out_var)}')
 
         if not self.mapped:
             self.interface_input = None

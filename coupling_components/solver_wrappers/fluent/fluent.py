@@ -23,6 +23,10 @@ class SolverWrapperFluent(SolverWrapper):
     version_bis = None  # Fluent internal version, typically of the form 'x.x.0', set in subclass
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = ['displacement']
+    accepted_out_var = ['pressure', 'traction']
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -74,7 +78,7 @@ class SolverWrapperFluent(SolverWrapper):
         super().initialize()
 
         # prepare Fluent journal
-        journal = f'v{self.version}.jou'
+        journal = f'fluent.jou'
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
@@ -109,7 +113,7 @@ class SolverWrapperFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        udf = f'v{self.version}.c'
+        udf = 'fluent.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
@@ -150,6 +154,9 @@ class SolverWrapperFluent(SolverWrapper):
             cmd = cmd1 + '-gu ' + cmd2 + cmd3
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
                                                shell=True, cwd=self.dir_cfd, env=self.env)
+
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.fluent_process)
 
         # get general simulation info from  fluent.log and report.sum
         self.coco_messages.wait_message('case_info_exported')
@@ -238,7 +245,7 @@ class SolverWrapperFluent(SolverWrapper):
 
             # get face thread ID that corresponds to ModelPart
             for thread_name in self.thread_ids:
-                if thread_name in mp_name:
+                if (thread_name + '_nodes') == mp_name:
                     self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
             if mp_name not in self.model_part_thread_ids:
                 raise AttributeError('Could not find thread name corresponding ' +
@@ -272,7 +279,7 @@ class SolverWrapperFluent(SolverWrapper):
 
             # get face thread ID that corresponds to ModelPart
             for thread_name in self.thread_ids:
-                if thread_name in mp_name:
+                if (thread_name + '_faces') == mp_name:
                     self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
             if mp_name not in self.model_part_thread_ids:
                 raise AttributeError('Could not find thread name corresponding ' +

@@ -16,9 +16,13 @@ def create(parameters):
 
 
 class SolverWrapperTubeStructure(SolverWrapper):
-    al = 2  # Number of terms below diagonal in matrix
-    au = 2  # Number of terms above diagonal in matrix
+    al = 2  # number of terms below diagonal in matrix
+    au = 2  # number of terms above diagonal in matrix
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
+
+    # define input and output variables
+    accepted_in_var = ['pressure', 'traction']
+    accepted_out_var = ['displacement']
 
     @tools.time_initialize
     def __init__(self, parameters):

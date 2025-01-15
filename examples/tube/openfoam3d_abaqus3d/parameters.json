@@ -43,10 +43,10 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.openfoam.v8",
+        "type": "solver_wrappers.openfoam.v11",
         "settings": {
           "working_directory": "CFD",
-          "application": "coconut_pimpleFoam",
+          "application": "coconut_foamRun",
           "boundary_names": [
             "mantle"
           ],
@@ -105,7 +105,6 @@
                   ]
                 }
               ],
-              "mp_mode": "THREADS",
               "input_file": "case_tube3d.inp"
             }
           },

@@ -1,5 +1,6 @@
 import collections.abc
 import pickle
+import warnings
 from fractions import Fraction
 
 import matplotlib.animation as ani
@@ -34,7 +35,7 @@ class PostProcess:
     def print_model_parts_variables(self):
         tools.print_info(self.get_model_parts_variables())
 
-    def get_model_parts_variables(self, pre=''):
+    def get_model_parts_variables(self, pre='', print_size=False):
         # returns a string with an overview of model parts and variables
         out = ''
         for interface_name in self.interface_names:
@@ -42,7 +43,8 @@ class PostProcess:
             interface = self.data[interface_name]
             for mp_dict in interface.parameters:
                 mp_name = mp_dict['model_part']
-                out += f'{pre}{" " * 4}model part "{mp_name}" with variables\n'
+                mp_size = f'of size {interface.get_model_part(mp_name).size} ' if print_size else ''
+                out += f'{pre}{" " * 4}model part "{mp_name}" {mp_size}with variables\n'
                 for var in mp_dict['variables']:
                     dim = variables_dimensions[var]
                     out += f'{pre}{" " * 8}{var} ({"scalar" if dim == 1 else "vector"})\n'
@@ -76,7 +78,7 @@ class PostProcess:
     def get_summary(self, pre=''):
         time_allocation = self.data['time_allocation']
         previous_calculations = time_allocation['previous_calculations']
-        restart = len(previous_calculations) == 0
+        restart = len(previous_calculations) != 0
         out = f'{pre}Summary\n'
         out += f'{pre}Total calculation time{" (after restart)" if restart else ""}: ' \
                f'{time_allocation["total"]:.3f}s\n'
@@ -103,6 +105,15 @@ class PostProcess:
     def print_info(self):
         tools.print_info(self.data['info'])
 
+    def get_data(self):
+        return dict(self.data)  # return copy
+
+    def get_residual_history(self):
+        return self.data['residual'].copy()  # return copy
+
+    def get_coupling_iterations(self):
+        return self.data['iterations'].copy()  # return copy
+
     def add_subset(self, **kwargs):
         self.subsets.append(SubSet(self, **kwargs))
         return self.subsets[-1]
@@ -113,7 +124,7 @@ class PostProcess:
     def __repr__(self):
         return f'PostProcess of pickle file {self.pickle_file_path}\nContaining {self.time_steps} ' \
                f'time step{"" if self.time_steps == 1 else "s"} with size {self.dt}s\n' \
-               f'Coupling\n{self.get_model_parts_variables(" " * 4)}'
+               f'Coupling\n{self.get_model_parts_variables(" " * 4, print_size=True)}'
 
 
 class SubSet:
@@ -147,7 +158,7 @@ class SubSet:
                                      f'Options:\n{options}')
                 else:
                     self.model_part_name = model_part
-                    self.interface_name = mp_names['model_part'][0]
+                    self.interface_name = mp_names[model_part][0]
             self.interface = self.run.data[self.interface_name]
         else:
             if interface not in self.run.interface_names:
@@ -389,39 +400,39 @@ class BaseFigure:
         name = self._check_subset_name(subset, name)
         self.subsets.append((dict(name=name, subset=subset)))
 
-    def remove_subset(self, name):
-        names = self.get_subset_names()
-        if isinstance(name, int) and name in range(len(self.subsets)):
-            self.subsets.pop(name)
-        elif isinstance(name, str) and name in names:
-            self.subsets.pop(names.index(name))
-        else:
-            raise ValueError(f'Unknown value "{name}", provide index of SubSet to remove or its name\n'
-                             f'Available options:\n\t{", ".join(names)}')
+    def remove_subset(self, name_or_index):
+        self.subsets.pop(self._get_index(name_or_index))
+        self.update_figure_layout()
 
     def get_subsets(self):
         return [subset['subset'] for subset in self.subsets]
 
-    def _get_subset_property(self, name, prop):
+    def _get_index(self, name_or_index):
         names = self.get_subset_names()
-        if isinstance(name, int) and name in range(len(self.subsets)):
-            index = name
-        elif isinstance(name, str) and name in names:
-            index = names.index(name)
+        if isinstance(name_or_index, int) and name_or_index in range(len(self.subsets)):
+            index = name_or_index
+        elif isinstance(name_or_index, str) and name_or_index in names:
+            index = names.index(name_or_index)
         else:
-            raise ValueError(f'Unknown value "{name}", provide index of SubSet or its name\n'
+            raise ValueError(f'Unknown value "{name_or_index}", provide index of SubSet to remove or its name\n'
                              f'Available options:\n\t{", ".join(names)}')
-        return self.subsets[index][prop]
+        return index
 
-    def get_subset(self, name):
-        return self._get_subset_property(name, 'subset')
+    def _get_subset_property(self, name_or_index, prop):
+        return self.subsets[self._get_index(name_or_index)][prop]
+
+    def get_subset(self, name_or_index):
+        return self._get_subset_property(name_or_index, 'subset')
 
     def get_subset_names(self):
         return [subset['name'] for subset in self.subsets]
 
     def update_figure_layout(self):
         if self.ax is not None:
-            self.ax.set_aspect(self.aspect, adjustable='datalim')
+            try:  # 'auto' is not implemented for Axes3D for earlier Python versions
+                self.ax.set_aspect(self.aspect, adjustable='box')
+            except NotImplementedError:
+                self.ax.set_box_aspect([1, 1, 1])
             if len(self.subsets) > 1:
                 self.ax.legend()
         self.figure.tight_layout()
@@ -473,6 +484,10 @@ class Figure(BaseFigure):
         super().add_subset(subset, name=name)
         self._update_time_step(subset)
 
+    def remove_subset(self, name_or_index):
+        super().remove_subset(name_or_index)
+        self._reset_time_steps()
+
     def _update_time_step(self, subset):
         old_base_dt = self.base_dt
 
@@ -500,6 +515,11 @@ class Figure(BaseFigure):
 
         # update base time step
         self.base_time_step = self._convert_to_time_step(self.time)
+
+    def _reset_time_steps(self):
+        self.base_dt = self.subsets[0]['subset'].run.dt
+        for ss in self.subsets:
+            self._update_time_step(ss['subset'])
 
     @staticmethod
     # find common denominator for updating time step sizes
@@ -533,8 +553,11 @@ class Figure(BaseFigure):
     def initialize(self):
         pass
 
-    def update(self, base_time_step):
+    def update(self, base_time_step, update_subsets=False):
         pass
+
+    def update_subsets(self):
+        self.update(self.base_time_step, update_subsets=True)
 
     def update_figure_layout(self):
         super().update_figure_layout()
@@ -649,26 +672,30 @@ class Figure2d(Figure):
             return np.min(a), np.max(a)
 
         if self.x_variable == 'initial_coordinates':
-            x = subset.get_initial_coordinates_selection()[:, self.x_component]
-            x_min, x_max = min_max(x)
+            x = x_tot = subset.get_initial_coordinates_selection()[:, self.x_component]
         else:
-            x = subset.get_values(self.x_variable, component=self.x_component)
-            x_min, x_max = min_max(x)
+            x = x_tot = subset.get_values(self.x_variable, component=self.x_component)
             x = x[time_step - subset.get_steps_selection()[0]]
         if self.y_variable == 'initial_coordinates':
-            y = subset.get_initial_coordinates_selection()[:, self.y_component]
-            y_min, y_max = min_max(y)
+            y = y_tot = subset.get_initial_coordinates_selection()[:, self.y_component]
         else:
-            y = subset.get_values(self.y_variable, component=self.y_component)
-            y_min, y_max = min_max(y)
+            y = y_tot = subset.get_values(self.y_variable, component=self.y_component)
             y = y[time_step - subset.get_steps_selection()[0]]
+
+        x_min, x_max = min_max(x_tot)
+        y_min, y_max = min_max(y_tot)
 
         line, = self.ax.plot(x, y, label=name)
 
-        self.subsets.append(dict(name=name, subset=subset, line=line, x_limits=[x_min, x_max], y_limits=[y_min, y_max]))
+        self.subsets.append(dict(name=name, subset=subset, line=line, x=x_tot, y=y_tot, x_limits=[x_min, x_max],
+                                 y_limits=[y_min, y_max]))
         self._update_time_step(subset)
 
         self.update_figure_layout()
+
+    def remove_subset(self, name_or_index):
+        self.get_line(name_or_index).remove()
+        super().remove_subset(name_or_index)
 
     def update_figure_layout(self):
         self.update_limits()
@@ -701,8 +728,8 @@ class Figure2d(Figure):
     def get_lines(self):
         return [subset['line'] for subset in self.subsets]
 
-    def get_line(self, name):
-        return self._get_subset_property(name, 'line')
+    def get_line(self, name_or_index):
+        return self._get_subset_property(name_or_index, 'line')
 
     def initialize(self):
         for subset in self.subsets:
@@ -714,7 +741,7 @@ class Figure2d(Figure):
         nan_array.fill(np.nan)
         line.set_ydata(nan_array)
 
-    def update(self, base_time_step):
+    def update(self, base_time_step, update_subsets=False):
         for ss in self.subsets:
             subset, line = ss['subset'], ss['line']
             base_ts_start, base_ts_end, dt_ratio = ss['base_ts_start'], ss['base_ts_end'], ss['dt_ratio']
@@ -724,12 +751,16 @@ class Figure2d(Figure):
                 time_index = base_time_step // dt_ratio - subset.get_steps_selection()[0]
                 # update x-variable
                 if self.x_variable != 'initial_coordinates':
-                    x = subset.get_values(self.x_variable, component=self.x_component)[time_index]
+                    if update_subsets:
+                        ss['x'] = subset.get_values(self.x_variable, component=self.x_component)
+                    x = ss['x'][time_index]
                     line.set_xdata(x)
 
                 # update y-variable
                 if self.y_variable != 'initial_coordinates':
-                    y = subset.get_values(self.y_variable, component=self.y_component)[time_index]
+                    if update_subsets:
+                        ss['y'] = subset.get_values(self.y_variable, component=self.y_component)
+                    y = ss['y'][time_index]
                     line.set_ydata(y)
 
         if self.print_text:
@@ -842,21 +873,24 @@ class Figure3d(Figure):
         name = self._check_subset_name(subset, name)
 
         if self.color_by is None:
-            color = None
+            color = color_tot = None
             color_min, color_max = 0, 0
         else:
             color = subset.get_values(self.color_by, component=self.component)
             if len(color.shape) > 2:
                 color = np.linalg.norm(color, axis=-1)
             color_min, color_max = np.min(color), np.max(color)
+            color_tot = color
             color = color[time_step - subset.get_steps_selection()[0]]
 
         if self.variable == 'coordinates' or (
                 self.variable is None and 'coordinates' in subset.get_available_variables()):
-            coordinates = subset.get_values(self.variable)[time_step - subset.get_steps_selection()[0]].T
+            coordinates = coord_tot = subset.get_values(self.variable)
+            coordinates = coordinates[time_step - subset.get_steps_selection()[0]].T
             tools.print_info(f'{self.figure_name}: Instantaneous coordinates used')
         else:
             coordinates = subset.get_initial_coordinates_selection().T
+            coord_tot = None
             tools.print_info(f'{self.figure_name}: Initial coordinates used')
 
         if color is None:
@@ -866,7 +900,8 @@ class Figure3d(Figure):
         else:  # make sure all subsets are plotted using the same color scale
             scatter = self.ax.scatter(*coordinates, c=color, label=name, cmap=cmap, norm=self.color_bar.norm)
 
-        self.subsets.append(dict(name=name, subset=subset, scatter=scatter, color_limits=[color_min, color_max]))
+        self.subsets.append(dict(name=name, subset=subset, scatter=scatter, color_limits=[color_min, color_max],
+                            color=color_tot, coordinates=coord_tot))
         self._update_time_step(subset)
 
         if self.color_bar is None and self.color_by is not None:
@@ -874,6 +909,10 @@ class Figure3d(Figure):
             self.color_bar.set_label(self._repr_component() + self.color_by)
 
         self.update_figure_layout()
+
+    def remove_subset(self, name_or_index):
+        self.get_scatter(name_or_index).remove()
+        super().remove_subset(name_or_index)
 
     def update_figure_layout(self):
         if self.color_by is not None:
@@ -892,8 +931,8 @@ class Figure3d(Figure):
     def get_scatters(self):
         return [subset['scatter'] for subset in self.subsets]
 
-    def get_scatter(self, name):
-        return self._get_subset_property(name, 'scatter')
+    def get_scatter(self, name_or_index):
+        return self._get_subset_property(name_or_index, 'scatter')
 
     def initialize(self):
         for subset in self.subsets:
@@ -905,7 +944,7 @@ class Figure3d(Figure):
             nan_array.fill(np.nan)
             scatter._offsets3d = 3 * (nan_array,)
 
-    def update(self, base_time_step):
+    def update(self, base_time_step, update_subsets=False):
         for ss in self.subsets:
             subset, scatter = ss['subset'], ss['scatter']
             base_ts_start, base_ts_end, dt_ratio = ss['base_ts_start'], ss['base_ts_end'], ss['dt_ratio']
@@ -916,13 +955,19 @@ class Figure3d(Figure):
                 # update coordinates
                 if self.variable == 'coordinates' or (
                         self.variable is None and 'coordinates' in subset.get_available_variables()):
-                    coordinates = subset.get_values('coordinates')[time_index].T
+                    if update_subsets:
+                        ss['coordinates'] = subset.get_values('coordinates')
+                    coordinates = ss['coordinates'][time_index].T
                     scatter._offsets3d = tuple(coordinates)
                 # update color
                 if self.color_by is not None:
-                    color = subset.get_values(self.color_by, component=self.component)[time_index]
-                    if len(color.shape) > 1:
-                        color = np.linalg.norm(color, axis=-1)
+                    if update_subsets:
+                        color = subset.get_values(self.color_by, component=self.component)
+                        if len(color.shape) > 2:
+                            color = np.linalg.norm(color, axis=-1)
+                        ss['color'] = color
+                    color = ss['color'][time_index]
+
                     scatter.set_array(color)
 
         if self.print_text:
@@ -996,10 +1041,21 @@ class Animation(Figure):
 
         self.writer = ani.PillowWriter(fps=15, metadata=dict(artist='CoCoNuT'), bitrate=1800)
 
+        self.frames = None
+        self.skip = 0
+        self.save_count = None
+        self.animation = None
+
         if func_animation_settings is None:
             func_animation_settings = {}
-        else:
-            func_animation_settings = dict(func_animation_settings)
+        func_animation_settings = self.set_func_animation_settings(**func_animation_settings)
+
+        super().__init__(*args, **kwargs)
+
+        self.make_animation(**func_animation_settings)
+
+    def set_func_animation_settings(self, **func_animation_settings):
+        func_animation_settings = dict(func_animation_settings)  # creates copy
         # frames: iterable, int, generator function, or None, optional
         #     (None) Plots all non-empty frames.
         #     (int) Number of frames (<= number of time steps + 1).
@@ -1010,22 +1066,17 @@ class Animation(Figure):
         #     Number of frames to cache.
         if 'frames' in func_animation_settings:
             self.frames = func_animation_settings.pop('frames')
-        else:
-            self.frames = None
         if 'skip' in func_animation_settings:
             self.skip = func_animation_settings.pop('skip')
-        else:
-            self.skip = 0
         if 'save_count' in func_animation_settings:
             self.save_count = func_animation_settings.pop('save_count')
-        else:
-            self.save_count = None
 
-        super().__init__(*args, **kwargs)
-
-        self.animation = None
-
-        self.make_animation(**func_animation_settings)
+        if self.animation is not None:  # overwrite animation
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                del self.animation
+            self.make_animation(**func_animation_settings)
+        return func_animation_settings
 
     def _update_time_step(self, subset):
         old_base_dt = self.base_dt
@@ -1039,6 +1090,18 @@ class Animation(Figure):
             self.frames *= dt_ratio
         elif isinstance(self.frames, range):
             self.frames = range(self.frames.start * dt_ratio, self.frames.stop * dt_ratio, self.frames.step * dt_ratio)
+
+    def _reset_time_steps(self):
+        dt_ratio = self.base_dt / self.subsets[0]['subset'].run.dt
+
+        self.skip = int(self.skip * dt_ratio)
+        if isinstance(self.frames, int):
+            self.frames = int(self.frames * dt_ratio)
+        elif isinstance(self.frames, range):
+            self.frames = range(int(self.frames.start * dt_ratio), int(self.frames.stop * dt_ratio),
+                                int(self.frames.step * dt_ratio))
+
+        super()._reset_time_steps()
 
     def make_animation(self, interval=200, repeat=True, blit=False, **kwargs):
         """

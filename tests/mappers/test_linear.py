@@ -1,4 +1,4 @@
-from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
+from coconut.tests.mappers.test_interpolator import Case1D, Case2DCircle, Case3DSphere, Case3DCylinder, Case3DSinc
 from coconut.coupling_components.mappers.linear import *
 
 import unittest
@@ -43,7 +43,7 @@ class TestMapperLinear(unittest.TestCase):
             => max error = 0.032
         """
 
-        case = Case2D(n_from, n_to)
+        case = Case2DCircle(n_from, n_to)
         case.map(self.parameters)
         self.assertTrue(case.check(tolerance=0.05))
         if self.gui:

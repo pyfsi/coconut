@@ -50,8 +50,8 @@ If different parameters are used with different Fluent versions, this should be 
 The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
 
 -   *`X.py`*: defines the `SolverWrapperFluentX` class, 
--   *`X.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
--   *`X.c`*: Fluent UDF file that implements additional functionality used in Fluent, written in C.
+-   *`fluent.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
+-   *`fluent.c`*: Fluent UDF file that implements additional functionality used in Fluent, written in C.
 
 ### The `initialize` method
 
@@ -106,25 +106,17 @@ Instead of comparing the different residuals (continuity, x-velocity, ...) with 
 
 ## Version specific documentation
 
-### v2019R3 (19.5.0)
-
-Base version.
-With respect to older Fluent versions, the solutions in this version are (slightly) different because the *Rhie-Chow face flux interpolation in the pressure-based solver* has changed. This setting can be reverted with the TUI command `solve set previous undo-2019r3 y n`, which is included in *`v2019R3.jou`*.
-
 The results can be slightly different when restarts are used for multi-core simulations for the following reason: *For parallel cases with smoothing that do not use dynamic load balancing, a zonal partitioning with Laplace smoothing will automatically be applied when the file is read, which should result in better load balancing for the mesh smoothing calculations.*
 After a restart, the partitioning can be different and hence the mesh deformation can be slightly different.
-
-### v2021R1 (21.1.0)
-
-This version fails for the tested multiphase problems.
-The saving of "cell residuals" for postprocessing with the following command `solve set expert y y n y` results in the following error:
-`Error at Node 0: alloc_thread_sv: storage already exists for SV_RECON_MIN on thread 2, domain 3`.
-This issue is solved in v2023R1.
 
 ### v2023R1 (23.1.0)
 
 No major changes.
 
 ### v2024R1 (24.1.0)
+
+No major changes.
+
+### v2024R2 (24.2.0)
 
 No major changes.
