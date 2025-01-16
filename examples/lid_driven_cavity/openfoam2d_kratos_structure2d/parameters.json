@@ -1,15 +1,15 @@
 {
   "settings": {
-    "number_of_timesteps": 7000
+    "timestep_start": 0,
+    "number_of_timesteps": 7000,
+    "delta_t": 0.01,
+    "save_restart": -500
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
     "settings": {
-      "timestep_start": 0,
-      "delta_t": 0.01,
       "omega": 0.05,
-      "save_results": 100,
-      "save_restart": -500,
+      "write_results": 100,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {

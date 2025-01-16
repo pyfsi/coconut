@@ -11,7 +11,7 @@ class CoupledSolverIQNI(CoupledSolver):
         super().__init__(parameters)
 
         tools.pass_on_parameters(self.settings, self.settings['model']['settings'],
-                                 ('timestep_start', 'delta_t', 'save_restart'))
+                                 ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
         self.model = tools.create_instance(self.parameters['settings']['model'])
         self.omega = self.settings['omega']

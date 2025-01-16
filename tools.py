@@ -280,9 +280,12 @@ def time_save(output_solution_step):
 # pass on parameters
 def pass_on_parameters(settings_from, settings_to, keys):
     for key in keys:
-        if key in settings_to:
-            print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-        settings_to[key] = settings_from[key]
+        if key not in settings_from:
+            print_info(f'WARNING: parameter "{key}" cannot be passed on because not defined', layout='warning')
+        else:
+            if key in settings_to:
+                print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
+            settings_to[key] = settings_from[key]
 
 
 # compare bounding box of ModelParts
@@ -478,13 +481,15 @@ def rm_timed(path: str, sleep: float = 0.5, attempts: int = 100) -> None:
     """
     for i in range(attempts):
         try:
-            shutil.rmtree(path)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
             break
         except OSError:
             time.sleep(sleep)
     if os.path.exists(path):
         print_info(f'Timed out removing {path}', layout='warning')
-        shutil.rmtree(path)
 
 
 # remove a key in a nested dictionary/list

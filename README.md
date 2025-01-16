@@ -181,7 +181,7 @@ Now try to change some settings in the JSON file, such as the mappers, the time 
 After a simulation is finished, it can be useful to inspect or visualize the output quantities (i.e. displacement, pressure and in general also shear).
 CoCoNuT has some built-in tools to do just that described in the [post-processing documentation](examples/post_processing/post_processing.md).
 For the FSI-simulation we have just performed, an example script is present in *`$COCO/coconut/examples/post_processing/`*.
-It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
+It requires the `write_results` setting in the `coupled_solver` part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
 By running this example script *`animate_example.py`*, we will generate several animations:
 
 ```bash
