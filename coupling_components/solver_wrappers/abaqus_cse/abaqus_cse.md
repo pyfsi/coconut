@@ -44,8 +44,8 @@ It can be useful to have a look at a JSON file of one of the examples in the _`e
 |                                           `debug` | bool | (optional) Default: `false`. Additional files are created or retained that are helpful for debugging, such as Abaqus send-and-receive file (Abaqus.SRE) or the input and output data of the solver for every coupling iterations.                                                                                                                                                                                          |
 |                                      `dimensions` | int  | Dimensionality of the problem (2 or 3).                                                                                                                                                                                                                                                                                                                                                                                    |
 | <nobr>`disable_modification_of_input_file`</nobr> | bool | (optional) Default: `false`. If `true`, the input file is not modified by CoCoNuT but simply copied to a file named Abaqus.inp. The user is responsible to correctly define the co-simulation settings, the time step, the duration, the output and the restart behaviour.                                                                                                                                                 |
-|                                 `interface_input` | list | Should contain a dictionary for each input `ModelPart` to be created, having a key `model_part` and a key `variables`. The order of the list should correspond to the order of the Abaqus _surfaces_ provided in the parameter `surfaces`, as well as to the order of the model parts in the other solver. The value of the key `variables` should be a list of the variables `pressure` and `traction`.                   |
-|                                `interface_output` | list | Similar to `interface_input` but contains the output `ModelParts` for Abaqus geometrical nodes. In this case the `variables` key specifies the output variable, chosen from _`data_structure/variables.py`_. Here, the value of the key `variables` should be a `[displacement]`. Again, the order should correspond to the `surfaces` as well as to the `Interface` definitions of the solver to which Abaqus is coupled. |
+|                                 `interface_input` | list | Should contain a dictionary for each input `ModelPart` to be created, having a key `model_part` and a key `variables`. The order of the list should correspond to the order of the Abaqus _surfaces_ provided in the parameter `surfaces`, as well as to the order of the model parts in the other solver. The value of the key `variables` should be a list of the variables `pressure` and `traction`. The `interface_input` corresponds to the face centers of the elements on the surface.                  |
+|                                `interface_output` | list | Similar to `interface_input` but contains the output `ModelParts` for Abaqus geometrical nodes. In this case the `variables` key specifies the output variable, chosen from _`data_structure/variables.py`_. Here, the value of the key `variables` should be a `displacement`. Again, the order should correspond to the `surfaces` as well as to the `Interface` definitions of the solver to which Abaqus is coupled. |
 |                                      `input_file` | str  | Name of the Abaqus input file (.inp) provided by the user. <br> Example: _`case.inp`_                                                                                                                                                                                                                                                                                                                                      |
 |                                            `port` | int  | (optional) If not provided, the operating system will choose a free port. This port is used for the communication between the AbaqusWrapper executable and the CSE.                                                                                                                                                                                                                                                        |
 |                                    `save_results` | int  | (optional) Default: `1`. This will modify the frequency of storing fields or history in the _`.odb`_ file. If no output definition is present in the input file, one is created for the _PRESELECT_ variables.                                                                                                                                                                                                             |
@@ -73,7 +73,7 @@ The dashed arrows represent communication at the start of the calculations, whil
 On the far right, the **Abaqus** process is shown, which is the actual solver.
 The used mesh information and settings are contained within an input file _`Abaqus.inp`_.
 CoCoNuT crates this file based on the provided `input_file` in the JSON file.
-The time step, duration, number of increments, output frequency, restart frequency and co-simulation settings are all updated or added by the Python solver wrapper (unless `disable_modification_of_input_file` is `true`).
+The time step, duration, number of increments, output frequency, restart frequency and co-simulation settings are all updated or added by the Python solver wrapper (unless `disable_modification_of_input_file` is `true`). This includes the load definition on the `ModelParts` and a basic output request.
 
 The communication with this Abaqus process is taken care of by the **Co-Simulation Engine (CSE)**.
 This is a second process launched by the Python solver wrapper.
@@ -87,9 +87,9 @@ The suffix _mp0_ refers to model part 0, that is the first model part.
 
 !!! success "Log files"
 
-    Since the Python wrapper will launch three separate processes, it is wise to check to log file of each when an error occurs.
+    Since the Python wrapper will launch three separate processes, it is wise to check the log file of each process should an error occur.
 
-    - The Abaqus process is launched in the `working_directory`, and the log file is named _`abaqus.log`_. Usually, usefull information is found in _`Abaqus.msg`_ and occasionally _`abaqus.dat`_.
+    - The Abaqus process is launched in the `working_directory`, and the log file is named _`abaqus.log`_. Usually, useful information can be found in _`Abaqus.msg`_ and occasionally _`Abaqus.dat`_.
     - The CSE process is launched in a subfolder, _`CSE`_, of the `working_directory`, and the log file is named _`cse.log`_.
     - The AbaqusWrapper process is launched in a subfolder, _`AbaqusWrapper`_,  of the `working_directory` , and the log file is named _`AbaqusWrapper.log`_.
 
@@ -115,7 +115,7 @@ The base file has to contain all necessary information about the structural mode
  - Boundary conditions.
  - Surfaces where external loads need to be applied (one surface per `ModelPart`).
     - Here _"Surface"_ refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.
-- A _Step_ definition, which contains solver settings. The following type of analyses are some examples (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default):
+ - A _Step_ definition, which contains solver settings. The following type of analyses are some examples (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default):
     - Implicit dynamic, application quasi-static
     - Implicit dynamic, application moderate dissipation
     - Implicit dynamic, application transient fidelity
