@@ -1791,7 +1791,7 @@ if (fluid) {
         source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*(C_T(c,t) - TM)/dt; // Large source term to force T to TM
         dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt; // dS/dT (temperature derivative)
     } else { // One-way correction during transition (T > TM)
-        // source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*MAX(C_T(c,t) - TM, 0.0)/dt;
+        // source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*MAX(C_T(c,t) - TM, 0.0)/dt; --> causes a delay, fix this!
         source = 0.0;
         if (source > 0.0) {
             dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt;

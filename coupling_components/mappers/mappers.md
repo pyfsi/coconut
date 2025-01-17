@@ -390,6 +390,92 @@ For details refer to Degroote and Vierendeels [[2](#2)].
 Note that when the from-points are collinear (in 2d or 3d) or coplanar (in 3d), the linear polynomial $p(\boldsymbol{x})$ is not uniquely defined.
 Then, the corresponding hyperplane is chosen such that there is no change in value when moving orthogonal to the line or plane formed by the *from*-points.
 
+## Application-Specific Interpolators
+
+
+
+The interpolators listed below have been designed for application-specific use cases.
+
+### `LinearConservative`
+
+This mapper accomplishes the *face-to-node* mapping of the displacement variable for phase change simulations.
+The interface displacement, which is calculated at the cell faces, should be translated to the face nodes in order to move the interface and underlying mesh in the solvers themselves.
+As such, The interpolation of face values to node values occurs on the same interface.
+The *face-to-node* interpolation, however, should fulfil two requirements: local mass conservation and the interface end points should remain on the boundary during the simulation.
+This mapper is called from `fluent.py` within the [pc_fluent solver wrapper](../solver_wrappers/pc_fluent/pc_fluent.md)
+and from `pc_saturated_solid.py` within the [Python solver wrappers](../solver_wrappers/python/python.md#phase-change-saturated-solid).
+Both solver wrappers are responsible for the solid domain during solid-liquid phase change.
+This linear mapper is based on the regular `MapperLinear` and inherits from the `MapperInterpolator` class. The added functionality requires additional settings:
+
+|              parameter | type  | description                                                                                                                                      |
+|-----------------------:|:-----:|--------------------------------------------------------------------------------------------------------------------------------------------------|
+|       `mapping_domain` |  str  | Shape of the domain boundaries which the interface end points need to follow. Currently, only `rectangular`is supported.                         |
+|       `mapping_limits` | list  | Defines the domain boundaries. For a rectangular domain, the following coordinates are required: \[$x_{min}$, $y_{min}$, $x_{max}$, $y_{max}$\]. |
+| `mapping_conservative` | bool  | (optional) Default: `true`. Enables the local mass conservation algorithm if `true`.                                                             |
+|     `volume_tolerance` | float | (optional) Default: `1e-14`. Absolute tolerance for mass conservation.                                                                           |
+|    `mapper_iterations` |  int  | (optional) Default: `20`. Maximum number of iterations the local mass conservation algorithm should perform.                                     |
+|    `mapper_relaxation` | float | (optional) Default: `0.4`. Relaxation factor for the local mass conservation algorithm.                                                          |
+|     `projection_order` |  str  | (optional) Default: `1`. Number of neighbouring nodes taken into account for projecting the interface endpoints on the domain boundaries.        |
+
+As mentioned above, two important features are required to correctly interpolate face displacement to node displacement.
+
+**Projecting the interface endpoints on the domain boundaries**
+
+When the interface meets a domain boundary at a non-orthogonal angle, the interface endpoints deviates away from the boundary due to the linear interpolation.
+This effect is illustrated in the figure below: because the face displacement is assumed perpendicular to the face, a slanted face causes a non-parallel displacment relative to the domain boundary.
+As a result, when this face displacement is mapped to the nodes, the node touching the boundary also receives a non-parallel displacement.
+This can cause strong deviations during long simulations.
+
+![](images/projection.png "Endpoint at interface moving away from the domain boundary")
+
+To correct these deviations, the end point is projected onto the boundary after each linear interpolation step.
+The projection is done by drawing a line through the boundary node position and a neighbouring node position.
+The intersection of this line with the boundary is the new location of the boundary node.
+
+The order of the projection represents how many neighbouring node displacements are used for the projection:
+
+- *0th order*: no projection
+- *1st order*: closest neighboring node is used to obtain a single intersection point $\mathbf{x_1}$
+- *2nd order*: besides the first intersection point, a second intersection point $\mathbf{x_2}$ is found by using the second closest neighbour node
+
+In case of 1st order projection, the final boundary node is equal to $\mathbf{x_1}$, while the 2nd order projection results in $\frac{3}{2} \mathbf{x_1} - \frac{3}{2} \mathbf{x_2}$ as boundary node coordinate.
+The first order projection has been found to work best.
+
+**Local volume conservation**
+
+The solid domain solvers enforce the Stefan condition at each cell face on the interface during phase change simulation.
+As such, the face displacements (perpendicular to the face orientation) following from an energy balance with the incoming heat flux from the liquid domain.
+The energy balance is respected when these face displacements are translated correctly to the node displacements for mesh motion.
+The local volume change at the interface corresponds namely to the local energy balance.
+
+The shape of the interface, however, can cause volume to either *appear* or *disappear* during *face-to-node* mapping. This is illustrated below.
+
+![](images/vol_cons.png "Volume creation and destruction at respectively concave and convex interface shapes")
+
+For a concave interface, the *outwards* movement of the interface causes gaps to be formed between the swept volumes due to the face displacements.
+These gaps are filled after the *face-to-node* mapping, creating additional volume and overestimated phase change.
+Consequently, the *node-based* displacement is larger than the *face-based* displacement.
+
+Convex interfaces, on the other hand, experience the opposite effect: the swept volumes due to the face displacements overlap,
+causing these volumes to be counted only once, instead of twice. As such, the *node-based* displacement is smaller than the *face-based* displacement,
+leading to underestimated phase change.
+
+To counteract these local volume (and mass) imbalances, each face displacement vector is assigned a scalar correction factor that will be determined iteratively.
+Initialy, the correction factor $C$ is set to 1 for each face, meaning no correction. Then, the following loop is executed until convergence.
+
+While $residual < tolerance$:
+
+1. Correct face displacements $\Delta x_f' = C \cdot \Delta x_f$
+2. Calculate face-based volume change using face area $A$ for each face: $\Delta V_{faces} = A \cdot \Delta x_f'$
+2. Map $\Delta x_f'$ to node displacements $\Delta x_n$
+3. Calculate node-based displacement with shoelace theorem: $\Delta V_{nodes} = f(\Delta x_n)$
+4. Update correction factor: $C_{new} = \frac{\Delta V_{faces}}{\Delta V_{nodes}}$
+5. Relaxation factor $\alpha$: $C = (1 - \alpha) \cdot C_{new} + \alpha \cdot C_{old}$
+6. Calculate residual as norm of the vector $(\Delta V_{faces} - \Delta V_{nodes})$ on each face 
+7. Return to 1
+
+The next coupling iteration can start from the previous values of $C$.
+
 <a id="1">[1]</a>
 [Lombardi M., Parolini N. and Quarteroni A., "Radial basis functions for inter-grid interpolation and mesh motion in FSI problems", Computer Methods in Applied Mechanics and Engineering, vol. 256, pp. 117-131, 2013.](https://doi.org/10.1016/j.cma.2012.12.019)
 

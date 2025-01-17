@@ -64,9 +64,11 @@ The initial guess in every time step is done using the linear predictor.
 Two convergence criteria have been specified:
 
 -   The number of iterations in every time step is larger than 10.
--   The residual norm of the displacement and temperature combined is a factor $10^{-4}$ lower than the initial value.
+-   The residual norm of the displacement and temperature combined has an absolute value lower than $10^{-12}$.
  
-When either criterion is satisfied the simulation stops.
+When either criterion is satisfied the simulation stops. Using a relative norm is not possible in this case beacuse during the first time steps, 
+when the cells adjacent to the interface in the solid domain are heating up to melting temperature, the interface temperature remains constant
+and the displacement is zero, causing a zero relative norm.
  
 ## References
 <a id="1">[1]</a>

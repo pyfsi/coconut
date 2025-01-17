@@ -251,6 +251,11 @@ This is exactly the residual value that is used by the convergence criterion to 
 Therefore, a solver tolerance `residual_atol` has to be defined for these solvers in case the solver coupling convergence criterion is selected.
 
 
+## Phase change: saturated solid
+
+Text.
+
+
 ## References
 <a id="1">[1]</a> 
 [Degroote J., Annerel S. and Vierendeels J., "Stability analysis of Gauss-Seidel iterations in a partitioned simulation of fluid-structure interaction", Computers & Structures, vol. 88, no. 5-6, pp. 263, 2010.](http://hdl.handle.net/1854/LU-940283)

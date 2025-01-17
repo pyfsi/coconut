@@ -6,7 +6,7 @@ and builds further on the (thermal) features introduced in the [Conjugate heat t
 
 ## How solid-liquid phase change is simulated with a partitioned approach
 
-During phase transitions, two distinct phases coexist: solid and liquid. 
+During phase transitions, two distinct phases coexist: solid and liquid.
 In a partitioned approach, these phases are modeled independently, with interactions occurring at the phase change interface.
 For instance, during ice melting, heat flux from the liquid phase (water) induces mass transfer from the solid (ice) to the liquid domain.
 
@@ -82,7 +82,8 @@ $$
 $$
 with $\rho$ the density of the PCM, $L$ the latent heat, $-k_L \nabla T|^L$ the interface heat flux at the liquid side and $-k_S \nabla T|^S$ the same at the solid side.
 The face displacement is written to a file and the fluent script of the solver wrapper subsequently converts this to node displacement before it is passed on as output.
-A built-in mapper in CoCoNuT facilitates the face-to-node mapping. These node displacements are then returned to the liquid solver for the next coupling iteration.
+A built-in mapper in CoCoNuT facilitates the [face-to-node mapping](../../mappers/mappers.md#linearconservative).
+These node displacements are then returned to the liquid solver for the next coupling iteration.
 
 If the solid is at the melting temperature, the interface temperature is assumed to be at the melting temperature as well, eliminating the need to exchange interface temperature as a variable.
 However, when the solid is subcooled below the melting temperature, it may require initial sensible heating before phase change occurs.
