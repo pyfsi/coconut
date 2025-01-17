@@ -758,6 +758,27 @@
   
   
     <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
         
   
@@ -1697,8 +1718,41 @@ For these <code>Interface</code> objects (implemented in <em><code>coconut/data_
 <p>The main coupling component in which all other coupling components are instantiated is the coupled solver.
 The coupled solver itself is created in the <code>Analysis</code> class (<em><code>coconut/analysis.py</code></em>), which is the starting point of the CoCoNuT calculation.
 Upon the start of CoCoNuT, an instance of <code>Analysis</code> is made and its method <code>run</code> is executed.
-The coupled solver keeps track of all <code>Components</code> and runs the methods <code>initialize</code>, <code>finalize</code>, <code>initialize_solution_step</code>, <code>finalize_solution_step</code> and <code>output_solution_step</code>,
-when its respective methods are executed.</p>
+It will read in parameters related to time incrementation which have to been defined in the top-level dictionary <code>settings</code>.
+These parameters are the following:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">float</td>
+<td>Fixed time step size used in both solvers. For a steady simulation typically a value of <code>1</code> is taken.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><nobr><code>number_of_timesteps</code></nobr></td>
+<td style="text-align: center;">int</td>
+<td>The amount of time steps to run the calculation. For a steady calculation, the value should be <code>1</code>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers <a href="https://pyfsi.github.io/coconut/coupled_solvers#save-results">writing of the results</a>, if <code>write_results</code> is non-zero.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>time_step_start</code></td>
+<td style="text-align: center;">int</td>
+<td>Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be <code>0</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The coupled solver keeps track of all <code>Components</code> and runs the methods <code>initialize</code>, <code>finalize</code>, <code>initialize_solution_step</code>, <code>finalize_solution_step</code> and <code>output_solution_step</code>,
+for all components when its respective methods are called.</p>
 <h2 id="end-of-the-calculation">End of the calculation</h2>
 <p>At the end of the calculation a summary will be printed by the coupled solver.
 Next to the average number of coupling iterations per time step required to reach convergence, it provides an overview of the computational time.

@@ -688,6 +688,27 @@
   
   
     <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
         
   
@@ -1674,7 +1695,7 @@ using <code>test_single_solver</code> as coupling component. For more informatio
 <h2 id="coupling-algorithm">Coupling algorithm</h2>
 <p>The <code>type</code> is set to <code>coupled_solvers.test_single_solver</code> and an additional required dictionary <code>test_settings</code> is added.
 All other parameters in the JSON file, including the <code>settings</code> dictionary, can be set to the values that will be used in the actual coupled simulation.
-The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>name</code> if not provided in <code>test_settings</code>.
+The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>write_results</code> and <code>name</code> if not provided in <code>test_settings</code>.
 The other dictionaries are not used: no <code>predictor</code>,<code>convergence_criterion</code> or <code>mapper</code> are used.</p>
 <h2 id="solvers">Solvers</h2>
 <p>If you run this case as is, the Fluent case and solver will be tested, as the <code>solver_index</code> is set to 0 in <code>test_settings</code>.

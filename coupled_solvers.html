@@ -887,6 +887,27 @@
   
   
     <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
         
   
@@ -1830,11 +1851,6 @@ The following parameters need to be included in the <code>settings</code> dictio
 <td>(optional) Default: <code>false</code>. The data <code>solution_x</code> and <code>solution_y</code> are saved every iteration except of every time step (see <a href="#save-results">results pickle file</a>). Residual distribution is also saved in additional field <code>solution_r</code> for every iteration.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>delta_t</code></td>
-<td style="text-align: center;">float</td>
-<td>Fixed time step size used in both solvers. For a steady simulation typically a value of 1 is taken.</td>
-</tr>
-<tr>
 <td style="text-align: right;"><code>case_name</code></td>
 <td style="text-align: center;">str</td>
 <td>(optional) Default: <code>"case"</code>. Name of the case. This name is used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results (<em><code>&lt;case_name&gt;_results.pickle</code></em>) and a restart file (<em><code>&lt;case_name&gt;_restart_ts&lt;time_step&gt;.pickle</code></em>). If a files already exists, it is overwritten with the exception of the results file upon restart. In that case the new data is appended.</td>
@@ -1845,24 +1861,45 @@ The following parameters need to be included in the <code>settings</code> dictio
 <td>(optional) Default: <code>case_name</code>. Only used when restart is performed (<code>timestep_start</code> &gt; 0). Refers to the case which has to be restarted. The following pickle file will be used: <em><code>&lt;restart_case&gt;_restart_ts&lt;timestep_start&gt;.pickle</code></em>. This file path starts in the folder from where the simulation is performed.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>save_restart</code></td>
-<td style="text-align: center;">int</td>
-<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers a <a href="#save-results">results save</a>, if <code>save_results</code> is non-zero.</td>
-</tr>
-<tr>
-<td style="text-align: right;"><code>save_results</code></td>
+<td style="text-align: right;"><code>write_results</code></td>
 <td style="text-align: center;">int</td>
 <td>(optional) Default: <code>0</code>. Time step interval at which a pickle file is written containing some main <a href="#save-results">results</a> for ALL previous time steps. If <code>0</code>, no such information is stored and no pickle file is written.</td>
 </tr>
+</tbody>
+</table>
+<p>The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the coupled solver (e.g. for standalone testing).
+If they are defined in both locations, a warning is printed and the top-level value is used.</p>
+<table>
+<thead>
 <tr>
-<td style="text-align: right;"><nobr><code>time_step_start</code></nobr></td>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">float</td>
+<td>Fixed time step size used in both solvers. For a steady simulation typically a value of <code>1</code> is taken.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><nobr><code>number_of_timesteps</code></nobr></td>
+<td style="text-align: center;">int</td>
+<td>The amount of time steps to run the calculation. For a steady calculation, the value should be <code>1</code>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) Default: <code>-1</code>. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers <a href="#save-results">writing of the results</a>, if <code>write_results</code> is non-zero.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>time_step_start</code></td>
 <td style="text-align: center;">int</td>
 <td>Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be <code>0</code>.</td>
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are necessary parameters (also in a steady simulation), but can also be defined in the solver wrapper directly (e.g. for standalone testing).
-If they are defined both here and in the solver wrapper, then the former value is used and a warning is printed.</p>
 <p><strong>These parameters should also be specified for the coupled solvers inheriting from <code>CoupledSolver</code>.</strong></p>
 <h2 id="gauss-seidel">Gauss-Seidel</h2>
 <p>The <code>type</code> for this coupled solver is <code>coupled_solvers.gauss_seidel</code>.</p>
@@ -2290,7 +2327,7 @@ Some clarifying examples are given in the example <a href="https://pyfsi.github.
 <td>(optional) Name of the case used to store a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file with results. The pickle file will have the name <em><code>&lt;case_name&gt;_&lt;test_solver_working_directory&gt;_results.pickle</code></em>. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>"case"</code>.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>save_results</code></td>
+<td style="text-align: right;"><code>write_results</code></td>
 <td style="text-align: center;">int</td>
 <td>(optional) Default: <code>0</code>. Time step interval at which a pickle file is written containing some main <a href="#save-results">results</a> for ALL previous time steps. If <code>0</code>, no such information is stored and no pickle file is written. If not provided, the value from <code>settings</code> is used or if <code>settings</code> is not present: <code>0</code>.</td>
 </tr>
@@ -2312,14 +2349,14 @@ Some clarifying examples are given in the example <a href="https://pyfsi.github.
 </tbody>
 </table>
 <p>Other dictionaries, used for the actual calculation can be kept, but will not be used, with the possible exception of the <code>settings</code> dictionary.
-The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>save_results</code> and <code>case_name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
+The <code>settings</code> dictionary is used to look up <code>delta_t</code>, <code>timestep_start</code>, <code>write_results</code> and <code>case_name</code> if not provided in <code>test_settings</code>. Note that <code>test_settings</code> has priority over the parameters defined in <code>settings</code>. This means a calculation can be tested, by only adding the <code>test_settings</code> dictionary and changing the coupled solver <code>type</code> to <code>coupled_solvers.test_single_solver</code> and without altering anything else.
 An illustration can be found in the example <a href="https://pyfsi.github.io/coconut/test_single_solver">test_single_solver</a>.</p>
 <p>The optional pickle file, which saves some <a href="#save-results">results</a>, uses the name as specified by the JSON settings followed by an underscore and the solver working directory.</p>
 <p>During run time, the norm of <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> are printed. A residual does not exist here. The arrays <span class="arithmatex"><span class="MathJax_Preview">x</span><script type="math/tex">x</script></span> and <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> do not necessarily have a physical meaning, but are the in- and output of the first solver, which is typically the flow solver. Then, the vector <span class="arithmatex"><span class="MathJax_Preview">y</span><script type="math/tex">y</script></span> will contain pressure and traction components for all points. Nonetheless, these values can be useful to verify that the solver wrapper runs.</p>
 <p>The test environment <code>test_single_solver</code> tests only the <code>solver_wrapper</code> itself, no mapping is included.</p>
 <h2 id="save-results">Save results</h2>
-<p>In each coupled solver, a positive non-zero value can be assigned to the <code>save_results</code> parameter, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by <code>save_results</code>, but contains information for all time steps.
-In other words, if the parameter is non-zero, it only controls the writing frequency and not the content of the file. If <code>save_results</code> is zero, no result are kept and no file is written.
+<p>In each coupled solver, a positive non-zero value can be assigned to the <code>write_results</code> parameter, in order to save some results into a <a href="https://docs.python.org/3/library/pickle.html">pickle</a> file. The key <code>case_name</code> dictates the name of this file as explained above. The pickle file is written corresponding to the time step interval as dictated by <code>write_results</code>, but contains information for all time steps.
+In other words, if the parameter is non-zero, it only controls the writing frequency and not the content of the file. If <code>write_results</code> is zero, no result are kept and no file is written.
 For a non-zero value of <code>save_restart</code>, a save for <a href="#saving-restart-files">restart purposes</a> also triggers the saving of the results file.
 The pickle file may be used by the postprocessing files included with the examples. It contains a dictionary with the following keys:</p>
 <table>
@@ -2447,7 +2484,7 @@ As described above the pickle file for restart has a name (<em><code>&lt;case_na
 <p>The frequency of saving a restart pickle file is determined by the <code>save_restart</code> interval as described above.
 Remark that it is only useful to save the restart pickle file, when the solver data are saved as well.
 Therefore, the <code>save_restart</code> parameter is transferred automatically to the solver wrappers.</p>
-<p>If <code>save_results</code> is non-zero, a save of restart information also triggers the saving of the <a href="#save-results">results pickle file</a>, to avoid discontinuity of this file.</p>
+<p>If <code>write_results</code> is non-zero, a save of restart information also triggers the saving of the <a href="#save-results">results pickle file</a>, to avoid discontinuity of this file.</p>
 <h3 id="performing-restart">Performing restart</h3>
 <p>To restart a case, <code>timestep_start</code> has to be a positive integer above zero.
 The first time step that will be calculated is <code>timestep_start</code> plus one.

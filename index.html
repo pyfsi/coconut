@@ -864,6 +864,27 @@
   
   
     <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
         
   
@@ -1791,13 +1812,13 @@ We develop high-performance quasi-Newton algorithms to accelerate convergence of
 <p>These instructions describe the setup of CoCoNuT on Linux. The package has not been tested on Windows or macOS, so compatibility is not guaranteed, although we do not expect major issues. </p>
 <h3 id="requirements">Requirements</h3>
 <ul>
-<li><code>python&gt;=3.6.8</code> </li>
-<li><code>numpy&gt;=1.19.5</code></li>
-<li><code>scipy&gt;=1.3.0</code></li>
-<li><code>pandas&gt;=1.0.0</code> (required for <a href="https://pyfsi.github.io/coconut/kratos_structure">Kratos solver wrapper</a>)</li>
-<li><code>matplotlib=3.1.3</code> (recommended)</li>
+<li><code>python&gt;=3.11.5</code> </li>
+<li><code>numpy&gt;=1.24.3</code></li>
+<li><code>scipy&gt;=1.11.1</code></li>
+<li><code>pandas&gt;=2.0.3</code> (required for <a href="https://pyfsi.github.io/coconut/kratos_structure">Kratos solver wrapper</a>)</li>
+<li><code>matplotlib&gt;=3.7.2</code> (recommended)</li>
 </ul>
-<p>We recommend Anaconda 2019.07 or newer.</p>
+<p>We recommend Anaconda 2023.09 or newer. Older versions of the software might also work, but are not tested.</p>
 <h3 id="installation-procedure">Installation procedure</h3>
 <p>CoCoNuT does not need to be compiled, hence installation is straightforward. 
 The source code can be downloaded as a zip file, or cloned directly from GitHub. For users that have no experience with Git or GitHub, we recommend the first option. The second option makes it easier to update the software and contribute to the code. </p>
@@ -1848,7 +1869,8 @@ If multiple commands are needed, they should appropriately be separated within t
 Since <code>machine_name</code> is set to <code>ugent_cluster_CO7</code>, this dictionary is used by default.
 In case your system differs from the <code>ugent_cluster_CO7</code> settings, it is advised to add your own internal dictionary to <code>solver_load_cmd_dict</code> and provide this key to <code>machine_name</code>.
 If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
-When CoCoNuT tries to use a solver module that is not present in the <code>solver_load_cmd_dict</code> or that has the wrong value, an error will be raised.</p>
+When CoCoNuT tries to use a solver module that is not present in the <code>solver_load_cmd_dict</code> or that has the wrong value, an error will be raised.
+The standard output and error are redirected to a file named <em><code>solver_load_cmd.log</code></em>.</p>
 <h3 id="quick-test">Quick test</h3>
 <p>We recommend to run the unit tests at the end of the installation, to make sure that everything works. </p>
 <ul>
@@ -1903,7 +1925,7 @@ We would now expect the second dictionary to generate a solver wrapper to commun
 <p>After a simulation is finished, it can be useful to inspect or visualize the output quantities (i.e. displacement, pressure and in general also shear).
 CoCoNuT has some built-in tools to do just that described in the <a href="https://pyfsi.github.io/coconut/post_processing">post-processing documentation</a>.
 For the FSI-simulation we have just performed, an example script is present in <em><code>$COCO/coconut/examples/post_processing/</code></em>.
-It requires the <code>save_results</code> setting in the <code>coupled_solver</code> part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
+It requires the <code>write_results</code> setting in the <code>coupled_solver</code> part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
 By running this example script <em><code>animate_example.py</code></em>, we will generate several animations:</p>
 <div class="highlight"><pre><span></span><code>python3<span class="w"> </span><span class="nv">$COCO</span>/coconut/examples/post_processing/animate_example.py
 </code></pre></div>

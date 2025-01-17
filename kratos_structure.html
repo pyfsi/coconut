@@ -691,6 +691,27 @@
   
   
     <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
         
   
@@ -1784,11 +1805,6 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 <td>(optional) Default: <code>false</code>. For every iteration, text files are saved with the input and output data of the solver.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>delta_t</code></td>
-<td style="text-align: center;">double</td>
-<td>(optional) Fixed time step size in structural solver.</td>
-</tr>
-<tr>
 <td style="text-align: right;"><code>input_file</code></td>
 <td style="text-align: center;">str</td>
 <td>Project parameters file used by Kratos in JSON format. In the <a href="https://pyfsi.github.io/coconut/tube_fluent3d_kratos_structure3d">example cases</a>, this is typically called <em><code>ProjectParameters.json</code></em>.</td>
@@ -1831,7 +1847,7 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 <tr>
 <td style="text-align: right;"><code>timestep_start</code></td>
 <td style="text-align: center;">int</td>
-<td>(optional) Time step to (re)start a transient FSI calculation from. If 0 is given, the simulation starts from t = 0, else the code looks for the relevant case and data files.</td>
+<td>(optional)</td>
 </tr>
 <tr>
 <td style="text-align: right;"><code>working_directory</code></td>
@@ -1840,7 +1856,34 @@ The solver wrapper of <code>StructuralMechanicsApplication</code> from Kratos ha
 </tr>
 </tbody>
 </table>
-<p><code>timestep_start</code> and <code>delta_t</code> are usually defined in the parameters of the <code>coupled_solver</code>. However, they can also be given directly as a parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in the coupled solver and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p>The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing).
+If they are defined in both locations, a warning is printed and the top-level value is used.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">float</td>
+<td>Fixed time step size in structural solver</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) Default: <code>0</code>. Indicates the time step interval at which files for restart have to be saved. A minus sign indicates only the files from the last interval are retained.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>timestep_start</code></td>
+<td style="text-align: center;">int</td>
+<td>Time step to (re)start a transient FSI calculation from. If <code>0</code> is given, the simulation starts from t = 0, else the code looks for the relevan  files.</td>
+</tr>
+</tbody>
+</table>
 <p>If different parameters are used with different Kratos versions, this should be specified both in this section and in the version specific documentation section.</p>
 <h2 id="overview-of-operation">Overview of operation</h2>
 <p>The solver wrapper consists of 2 files, where <code>X</code> is the Kratos version without decimal, e.g. for version 6.0 this becomes <code>60</code>:</p>

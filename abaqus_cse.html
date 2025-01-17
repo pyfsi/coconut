@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pyfsi.github.io/coconut/breaking_dam_fluent2d_abaqus2d.html">
+        <link rel="canonical" href="https://pyfsi.github.io/coconut/abaqus_cse.html">
       
       
-        <link rel="prev" href="post_processing.html">
+        <link rel="prev" href="abaqus.html">
       
       
-        <link rel="next" href="breaking_dam_fluent2d_kratos_structure2d.html">
+        <link rel="next" href="fluent.html">
       
       
       <link rel="icon" href="assets/images/favicon.ico">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Fluent 2D - Abaqus 2D - CoCoNuT</title>
+        <title>AbaqusCSE - CoCoNuT</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#breaking-dam-with-fluent2d-and-abaqus2d" class="md-skip">
+        <a href="#abaquscse" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Fluent 2D - Abaqus 2D
+              AbaqusCSE
             
           </span>
         </div>
@@ -227,10 +227,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="coupling_components.html" class="md-tabs__link">
           
   
@@ -279,12 +281,10 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="examples.html" class="md-tabs__link">
           
   
@@ -389,25 +389,28 @@
       
   
   
+    
   
   
+  
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -418,7 +421,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Coupling components
@@ -603,8 +606,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -612,13 +617,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" checked>
         
           
           <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
@@ -632,7 +635,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_6">
             <span class="md-nav__icon md-icon"></span>
             Solver wrappers
@@ -685,10 +688,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="abaqus_cse.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="abaqus_cse.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -697,6 +720,137 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fluid-structure-interaction-with-abaqus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fluid-structure interaction with Abaqus
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-of-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview of operation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-case-creation-of-an-abaqus-input-file-inp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting up a case: creation of an Abaqus input file (.inp)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up a case: creation of an Abaqus input file (.inp)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-surfaces-in-abaqus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating surfaces in Abaqus
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#end-of-the-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      End of the calculation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solver coupling convergence
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-specific-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version specific documentation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version specific documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v2023" class="md-nav__link">
+    <span class="md-ellipsis">
+      v2023
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v2024" class="md-nav__link">
+    <span class="md-ellipsis">
+      v2024
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -845,28 +999,25 @@
       
   
   
-    
   
   
-  
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -877,7 +1028,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Examples
@@ -930,8 +1081,6 @@
                 
   
   
-    
-  
   
   
     
@@ -941,11 +1090,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
         
           
           <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
@@ -959,7 +1110,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_3">
             <span class="md-nav__icon md-icon"></span>
             Breaking dam
@@ -970,30 +1121,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Fluent 2D - Abaqus 2D
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1002,71 +1133,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#coupling-algorithm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Coupling algorithm
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#predictor" class="md-nav__link">
-    <span class="md-ellipsis">
-      Predictor
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#convergence-criterion" class="md-nav__link">
-    <span class="md-ellipsis">
-      Convergence criterion
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#solvers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Solvers
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      References
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1707,98 +1773,240 @@
                   
 
 
-<h1 id="breaking-dam-with-fluent2d-and-abaqus2d">Breaking dam with Fluent2D and Abaqus2D</h1>
-<p>This example simulates a dam-break on a top-fixed flexible gate.
-The liquid, initially located in a free-surface tank, imposes a variable pressure on the bending flexible gate.
-This case has been examined numerically and experimentally by Antoci et al. [<a href="#1">1</a>].
-Here, this 2D FSI calculation is performed with Fluent and Abaqus.</p>
-<p>The figure below shows the bending of the gate and the flowing water (with Fluent).
-<img alt="breaking_dam_animation" src="images/breaking_dam_phase.gif" title="Animation of the bending of the breaking dam and the flowing liquid with Fluent" /></p>
-<p>The geometry is provided in the following figure. Pressure outlets and walls are indicated in blue and black, respectively.
-The gap beneath the gate is exagerated for clarity.
-<img alt="breaking_dam_geometry" src="images/breaking_dam_geometry.svg" title="Breaking dam geometry" /></p>
-<p>The corresponding parameters are:</p>
+<h1 id="abaquscse">AbaqusCSE</h1>
+<p>This is the documentation for the new version of the Abaqus solver wrapper, which uses the Abaqus Co-Simulation Engine (CSE) avoiding the need to start and stop Abaqus every coupling iteration.
+Refer to <a href="https://pyfsi.github.io/coconut/abaqus">Abaqus</a> for the old version of the Abaqus solver wrapper.</p>
+<p>Abaqus is a structural solver implementing the finite element method.
+Currently, this wrapper only supports FSI simulations, no other multi-physics problems.</p>
+<div class="admonition failure">
+<p class="admonition-title">For two-dimensional cases, the traction forces are not taken into account</p>
+</div>
+<div class="admonition failure">
+<p class="admonition-title">Restart has not yet been implemented</p>
+</div>
+<details class="info">
+<summary>Terminology</summary>
+<ul>
+<li>A <em>step</em> in Abaqus is a convenient period of time (during which a load is applied for example). Within the context of CoCoNuT it usually coincides with the complete duration of the calculation. It should not be confused with the <em>time step</em>.</li>
+<li>An <em>increment</em> in Abaqus is usually equal to the time step of Abaqus, unless subcycling is applied within the Abaqus solver. Then a time step can be subdivided in multiple increments.</li>
+<li>In an implicit or strongly coupled FSI calculation, the structural solver is called multiple times per time step. A call of the the flow solver and subsequent call of the structural solver is called a <em>coupling iteration</em>. All coupling iterations are part of the same attempt of the same increment (unless subcycling is used).</li>
+</ul>
+</details>
+<details class="warning">
+<summary>Subcycling</summary>
+<p>Subcycling has not been tested for this solver wrapper. Note that the maximum number of increments is now set to the number of time steps. In order to apply subcycling, this needs to be modified.</p>
+</details>
+<details class="success">
+<summary>Licensing</summary>
+<p>If the <strong>Abaqus license server</strong> needs to be specified explicitly, it is advised to do this in the <a href="https://pyfsi.github.io/coconut/#checking-the-solver-modules">solver modules file</a> by setting the variable <em>LM_LICENSE_FILE</em>.
+The file <em><code>abaqus_v6.env</code></em> is the environment file for the Abaqus solver and will be automically created by the CoCoNuT Python wrapper.</p>
+</details>
+<h2 id="fluid-structure-interaction-with-abaqus">Fluid-structure interaction with Abaqus</h2>
+<p>Abaqus (Dassault Systèmes) can be used to solve for the structural displacement/deformation in partitioned FSI-simulations.
+The FSI interface consist of a <em>surfaces</em> in the Abaqus model, where pressure and traction loads are applied.
+The loads are applied in the element centers, the displacements are exported in the element nodes.
+The input loads are collected in one or more <code>ModelParts</code> in the <em>input</em> <code>Interface</code>,
+the output nodes are collected in one or more <code>ModelParts</code> of the <em>output</em> <code>Interface</code>.
+Each <code>ModelPart</code> on the input <code>Interface</code> has a counterpart on the output <code>Interface</code>.
+More information about <code>ModelParts</code> and <code>Interface</code> can be found in the <a href="https://pyfsi.github.io/coconut/data_structure">data structure documentation</a>.</p>
+<h2 id="parameters">Parameters</h2>
+<p>This section describes the parameter settings in the JSON file.
+It can be useful to have a look at a JSON file of one of the examples in the <em><code>examples</code></em> folder.</p>
 <table>
 <thead>
 <tr>
 <th style="text-align: right;">parameter</th>
-<th style="text-align: center;">value</th>
+<th style="text-align: center;">type</th>
 <th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;"><code>A</code></td>
-<td style="text-align: center;">0.1 m</td>
-<td>Width of the liquid tank.</td>
+<td style="text-align: right;"><code>cores</code></td>
+<td style="text-align: center;">int</td>
+<td>Number of cores to be used by Abaqus.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>G</code></td>
-<td style="text-align: center;">0.0025 m</td>
-<td>Clearance of the elastic gate.</td>
+<td style="text-align: right;"><code>debug</code></td>
+<td style="text-align: center;">bool</td>
+<td>(optional) Default: <code>false</code>. Additional files are created or retained that are helpful for debugging, such as Abaqus send-and-receive file (Abaqus.SRE) or the input and output data of the solver for every coupling iterations.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>H</code></td>
-<td style="text-align: center;">0.14 m</td>
-<td>Initial height of the liquid column.</td>
+<td style="text-align: right;"><code>dimensions</code></td>
+<td style="text-align: center;">int</td>
+<td>Dimensionality of the problem (2 or 3).</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>L</code></td>
-<td style="text-align: center;">0.079 m</td>
-<td>Height of the elastic gate.</td>
+<td style="text-align: right;"><nobr><code>disable_modification_of_input_file</code></nobr></td>
+<td style="text-align: center;">bool</td>
+<td>(optional) Default: <code>false</code>. If <code>true</code>, the input file is not modified by CoCoNuT but simply copied to a file named Abaqus.inp. The user is responsible to correctly define the co-simulation settings, the time step, the duration, the output and the restart behaviour.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>S</code></td>
-<td style="text-align: center;">0.005 m</td>
-<td>Thickness of the elastic gate.</td>
+<td style="text-align: right;"><code>interface_input</code></td>
+<td style="text-align: center;">list</td>
+<td>Should contain a dictionary for each input <code>ModelPart</code> to be created, having a key <code>model_part</code> and a key <code>variables</code>. The order of the list should correspond to the order of the Abaqus <em>surfaces</em> provided in the parameter <code>surfaces</code>, as well as to the order of the model parts in the other solver. The value of the key <code>variables</code> should be a list of the variables <code>pressure</code> and <code>traction</code>. The <code>interface_input</code> corresponds to the face centers of the elements on the surface.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>interface_output</code></td>
+<td style="text-align: center;">list</td>
+<td>Similar to <code>interface_input</code> but contains the output <code>ModelParts</code> for Abaqus geometrical nodes. In this case the <code>variables</code> key specifies the output variable, chosen from <em><code>data_structure/variables.py</code></em>. Here, the value of the key <code>variables</code> should be a <code>displacement</code>. Again, the order should correspond to the <code>surfaces</code> as well as to the <code>Interface</code> definitions of the solver to which Abaqus is coupled.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>input_file</code></td>
+<td style="text-align: center;">str</td>
+<td>Name of the Abaqus input file (.inp) provided by the user. <br> Example: <em><code>case.inp</code></em></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>port</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) If not provided, the operating system will choose a free port. This port is used for the communication between the AbaqusWrapper executable and the CSE.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_results</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) Default: <code>1</code>. This will modify the frequency of storing fields or history in the <em><code>.odb</code></em> file. If no output definition is present in the input file, one is created for the <em>PRESELECT</em> variables.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>surfaces</code></td>
+<td style="text-align: center;">list</td>
+<td>List of the surface names defined in Abaqus. Note that the order has to be the same as those of the interface definitions. Take the Abaqus naming conventions into account: surfaces names are capitalized unless specified within double quotes in the input file, and the name is often prepended for example with ASSEMBLY_ (“Assembly.Part” is translated to “Assembly_Part”).</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>working_directory</code></td>
+<td style="text-align: center;">str</td>
+<td>Relative path to the directory in which Abaqus will be executed and where all structural information will be stored. This folder is typically called <em><code>CSM</code></em>, but any name is allowed. It should be created before execution and contain the input file.</td>
 </tr>
 </tbody>
 </table>
-<p>The elastic gate is made of rubber and has the following parameters:</p>
+<p>The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing).
+If they are defined in both locations, a warning is printed and the top-level value is used.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">float</td>
+<td>Size of the time step in Abaqus.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><nobr><code>number_of_timesteps</code></nobr></td>
+<td style="text-align: center;">int</td>
+<td>The amount of time steps to run the calculation. For a steady calculation, the value should be <code>1</code>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
+<td>Indicates the time step interval at which files for restart have to be saved. A minus sign indicates only the files from the last interval are retained.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>timestep_start</code></td>
+<td style="text-align: center;">int</td>
+<td>Time step to start from. Data should be available at this time step. For a new simulation this value will typically be <code>0</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview-of-operation">Overview of operation</h2>
+<p>The communication with Abaqus is achieved through the Co-Simulation Engine (CSE).
+Therefore, CoCoNuT will launch 3 processes simultaneously, as shown below.
+The dashed arrows represent communication at the start of the calculations, while the full arrows represent communication of pressure, traction and displacement on run time.</p>
+<p><img alt="overview" src="images/abaqus_cse_structure.svg" title="Overview of operation of AbaqusCSE" /></p>
+<p>On the far right, the <strong>Abaqus</strong> process is shown, which is the actual solver.
+The used mesh information and settings are contained within an input file <em><code>Abaqus.inp</code></em>.
+CoCoNuT crates this file based on the provided <code>input_file</code> in the JSON file.
+The time step, duration, number of increments, output frequency, restart frequency and co-simulation settings are all updated or added by the Python solver wrapper (unless <code>disable_modification_of_input_file</code> is <code>true</code>). This includes the load definition on the <code>ModelParts</code> and a basic output request.</p>
+<p>The communication with this Abaqus process is taken care of by the <strong>Co-Simulation Engine (CSE)</strong>.
+This is a second process launched by the Python solver wrapper.
+Its settings are dictated by the file <em><code>CSE_config.xml</code></em> which is also created by Python solver wrapper.</p>
+<p>Finally, a third process is launched: the executable <strong>AbaqusWrapper</strong>.
+Its C++ code is stored in <em><code>coupling_components/solver_wrappers/abaqus_cse/AbaqusWrapper</code></em> and automatically compiled by the Python solver wrapper.
+At the start of a calculation, it receives input written by the Python solver wrapper by reading the file <em><code>AbaqusWrapper_input.txt</code></em>.
+When the calculation is running, the Python solver wrapper communicates with the AbaqusWrapper using text files such as: <em><code>pressure_mp0.txt</code></em>.
+The suffix <em>mp0</em> refers to model part 0, that is the first model part.</p>
+<div class="admonition success">
+<p class="admonition-title">Log files</p>
+<p>Since the Python wrapper will launch three separate processes, it is wise to check the log file of each process should an error occur.</p>
 <ul>
-<li>density: 1100 kg/m³</li>
-<li>modulus of elasticity: 10<span class="arithmatex"><span class="MathJax_Preview">^7</span><script type="math/tex">^7</script></span> Pa</li>
-<li>poisson's ratio: 0.49</li>
+<li>The Abaqus process is launched in the <code>working_directory</code>, and the log file is named <em><code>abaqus.log</code></em>. Usually, useful information can be found in <em><code>Abaqus.msg</code></em> and occasionally <em><code>Abaqus.dat</code></em>.</li>
+<li>The CSE process is launched in a subfolder, <em><code>CSE</code></em>, of the <code>working_directory</code>, and the log file is named <em><code>cse.log</code></em>.</li>
+<li>The AbaqusWrapper process is launched in a subfolder, <em><code>AbaqusWrapper</code></em>,  of the <code>working_directory</code> , and the log file is named <em><code>AbaqusWrapper.log</code></em>.</li>
 </ul>
-<p>The flow calculation uses the volume of fluid (VOF) method to model the free-surface.
-The liquid phase is water with the following properties:</p>
+<p>For debugging purposes, it is usefull to set the <code>debug</code> JSON parameter on true, resulting in the output of additional files.</p>
+</div>
+<h2 id="setting-up-a-case-creation-of-an-abaqus-input-file-inp">Setting up a case: creation of an Abaqus input file (.inp)</h2>
+<p>The Abaqus solver wrapper is configured to start from an input file which contains all necessary information for the calculation.
+Its name should be specified in the JSON file via the parameter <code>input_file</code>, and it should be located in the <code>working_directory</code>.
+For the remainder of this section this file will be referred to as "base file".</p>
+<p>Creation of the base file is not considered a part of the solver wrapper functionality as it is case-specific.
+However, in order for the solver wrapper to work, the base file has to comply with certain general conditions.
+This section aims at informing the user about the requirements for the base file.</p>
+<h3 id="general">General</h3>
+<p>The base file needs to be of the ".inp" type, this is an "input file for Abaqus". ".inp-files" are created via Abaqus by, after configuration, creating a "job" and requesting a "write input" for that job.
+These files can be opened in Abaqus by using "file &gt; import &gt; model".
+The base file has to contain all necessary information about the structural model, which includes:</p>
 <ul>
-<li>density: 1000 kg/m³</li>
-<li>dynamic viscosity: 0.001 Pa<span class="arithmatex"><span class="MathJax_Preview">\cdot</span><script type="math/tex">\cdot</script></span>s</li>
+<li>Mesh defining the structure geometry and discretization.<ul>
+<li>Also, the element type needs to be defined.</li>
 </ul>
-<p>The gas phase is air modelled with the following parameters:</p>
+</li>
+<li>Material properties.</li>
+<li>Boundary conditions.</li>
+<li>Surfaces where external loads need to be applied (one surface per <code>ModelPart</code>).<ul>
+<li>Here <em>"Surface"</em> refers to nomenclature of the Abaqus software itself. The name can be found as such in the Abaqus working tree.</li>
+</ul>
+</li>
+<li>A <em>Step</em> definition, which contains solver settings. The following type of analyses are some examples (it is advised to explicitly set them based on this documentation rather than leaving it to Abaqus to fill in a default):<ul>
+<li>Implicit dynamic, application quasi-static</li>
+<li>Implicit dynamic, application moderate dissipation</li>
+<li>Implicit dynamic, application transient fidelity</li>
+<li>Static general</li>
+</ul>
+</li>
+<li>Additional loads not dependent on the flow solver.</li>
+</ul>
+<p>Abaqus models contain parts and those parts are used to create assemblies.
+The assembly, determines the position and orientation that will be used.</p>
+<p>Abaqus has a GUI as well as a Python interface (which is also accessible) via the GUI. References to both the Python interface and GUI will be made below.</p>
+<h3 id="creating-surfaces-in-abaqus">Creating surfaces in Abaqus</h3>
+<p>Per surface in the fluid-structure interface (where loads and displacements need to be exchanged) a "surface" should be created. There are multiple possibilities to create these surfaces:</p>
 <ul>
-<li>density: 1.225 kg/m³</li>
-<li>dynamic viscosity: 1.7894 10<span class="arithmatex"><span class="MathJax_Preview">^{-5}</span><script type="math/tex">^{-5}</script></span> Pa<span class="arithmatex"><span class="MathJax_Preview">\cdot</span><script type="math/tex">\cdot</script></span>s</li>
+<li>From the geometry: when the geometry has been defined in Abaqus itself, the geometry faces can easily be selected in the GUI. This method is often the most straightforward, but the Abaqus model should contain the geometry.</li>
+<li>From the mesh: when the geometry is not available (this can for example be the case when a mesh has been imported), a surface can be defined by selecting multiple mesh faces. As a surface typically covers many mesh faces, it is useful there to select the regions "by angle", which uses the angle between mesh faces to determine whether adjacent faces should be selected. This way the surface selection can be extended until a sharp corner is met.</li>
+<li>By converting a "node set" containing all the nodes on the surface and then calling the <code>SurfaceFromNodeSet</code> method which can be found in the <em><code>make_surface.py</code></em> file in <em><code>coupling_components/solver_wrappers/abaqus/extra</code></em>. It is advised to copy this file to the working directory.</li>
 </ul>
-<p>The gravitational accelartion is 9.81 m/s².
-The total simulated time is 0.4 s in time steps of 0.001 s.</p>
-<h2 id="coupling-algorithm">Coupling algorithm</h2>
-<p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQN-ILS).
-The reuse parameter <code>q</code> is set to 10, which means that data from the last ten time steps will be used to stabilize and accelerate the convergence.</p>
-<h2 id="predictor">Predictor</h2>
-<p>The initial guess in every time step is done using the linear predictor.</p>
-<h2 id="convergence-criterion">Convergence criterion</h2>
-<p>Two convergence criteria have been specified:</p>
-<ul>
-<li>The number of iterations in every time step is larger than 20.</li>
-<li>The residual norm on the displacement is a factor <span class="arithmatex"><span class="MathJax_Preview">10^{-3}</span><script type="math/tex">10^{-3}</script></span> lower than the initial value.</li>
-</ul>
-<p>When either criterion is satisfied the simulation stops.</p>
-<h2 id="solvers">Solvers</h2>
-<p>Fluent is used as flow solver.
-The provided mesh is triangular. When the gate bends remeshing is performed to perserve its quality.
-A script to regenerate it using Gambit is included. This script allows to change the resolution and geometrical parameters.</p>
-<p>The structural solver is Abaqus.
-The Abaqus case is built when setting up the case starting from the file <em><code>mesh_breaking_dam.inp</code></em> containing nodes and elements.
-This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
-The result of the setup is a completed input file <em><code>case_breaking_dam.inp</code></em>.
-The Abaqus element type used is CPE8R.</p>
-<p>To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
-In the structural solver wrapper, a linear interpolation mapper is used to interpolate in the x- and y-direction from and to the coupled solver.</p>
-<h2 id="references">References</h2>
-<p><a id="1">[1]</a>
-<a href="https://doi.org/10.1016/j.compstruc.2007.01.002">Antoci C., Gallatie M. and Sibilla S., "Numerical simulation of fluid-structure interaction by SPH", Computers &amp; Structures, vol. 85, no. 11, pp. 879-890, 2007.</a></p>
+<p>An example on the use of <code>SurfaceFromNodeSet</code> (via the Python console in Abaqus or a Python script for Abaqus):
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">make_surface</span> <span class="kn">import</span> <span class="n">SurfaceFromNodeSet</span>
+<span class="n">my_model</span> <span class="o">=</span> <span class="n">mdb</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s1">&#39;Model-1&#39;</span><span class="p">]</span>
+<span class="n">my_assembly</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">rootAssembly</span>  
+<span class="n">my_instance</span> <span class="o">=</span> <span class="n">my_assembly</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="s1">&#39;PART-1-1&#39;</span><span class="p">]</span>
+<span class="n">inputSurfaceA</span> <span class="o">=</span> <span class="n">SurfaceFromNodeSet</span><span class="p">(</span><span class="n">my_assembly</span><span class="p">,</span> <span class="n">my_instance</span><span class="p">,</span> <span class="s1">&#39;NODESET_NAME_A&#39;</span><span class="p">,</span> <span class="s1">&#39;SURFACE_NAME_A&#39;</span><span class="p">)</span>
+</code></pre></div></p>
+<div class="admonition tip">
+<p class="admonition-title">Note about choosing model parts and surfaces</p>
+<p>The created "surfaces" for load input and displacement output, correspond to <code>ModelParts</code> in the CoCoNuT code. It is strongly advised to subdivide to fluid-structure interaction interface intelligently, depending on the geometry.
+As a rule of thumb it can be said that a surfaces at two sides of a sharp corner should be assigned to a different <code>ModelPart</code>.
+Issues can arise at sharp corners, as the interpolation is based on shortest distance.
+Those are avoided by having different <code>ModelParts</code> at each side of the corner.</p>
+<p>Another reason to do this is because the code cannot handle elements with two or more faces being part of the same <code>ModelPart</code>. 
+This situation would occur if the surface contains corners.
+An example is an airfoil where the suction side and pressure side belong to the same <code>ModelPart</code>: elements at the trailing edge will have (a) face(s) at both the pressure side and suction side.
+Even when the code would allow this, interpolation mistakes become likely, as a geometrical node or element center on the suction side could have (a) nearest neighbour(s) on the pressure side, leading to wrong data being used for interpolation.</p>
+</div>
+<h2 id="end-of-the-calculation">End of the calculation</h2>
+<p>Unlike for the <a href="https://pyfsi.github.io/coconut/coupling_components">other solvers</a>, CoCoNuT does not keep track of the time it takes to write output files, since this is controlled by Abaqus and triggered by CoCoNuT.
+Nevertheless, the output frequency is controlled by CoCoNuT and can be set with the JSON file parameter <code>save_results</code>.</p>
+<h2 id="solver-coupling-convergence">Solver coupling convergence</h2>
+<p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> has not yet been implemented for this Abaqus solver wrapper.</p>
+<h2 id="version-specific-documentation">Version specific documentation</h2>
+<h3 id="v2023">v2023</h3>
+<p>No major changes.</p>
+<h3 id="v2024">v2024</h3>
+<p>Abaqus is now using Python 3.10 instead of Python 2.7.</p>
 
 
 

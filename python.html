@@ -691,6 +691,27 @@
   
   
     <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="fluent.html" class="md-nav__link">
         
   
@@ -1811,11 +1832,6 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 <td>(optional) Default: <code>false</code>. For every iteration, text files are saved with the input and output data of the solver.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>delta_t</code></td>
-<td style="text-align: center;">double</td>
-<td>Fixed time step size. This parameter is usually specified in a higher component.</td>
-</tr>
-<tr>
 <td style="text-align: right;"><code>input_file</code></td>
 <td style="text-align: center;">str</td>
 <td>(optional) Name of the input file, which may be present in the folder given in <code>working_directory</code>. The file contains parameters required for the solver, in JSON-format. The parameters specified in the main parameter JSON file have priority over the parameters defined in this file.</td>
@@ -1841,23 +1857,40 @@ Especially the pressure stabilization term in the flow solver smooths the pressu
 <td>(optional) Default: <code>true</code>. Indicates if case is steady or unsteady.</td>
 </tr>
 <tr>
-<td style="text-align: right;"><code>save_restart</code></td>
-<td style="text-align: center;">int</td>
-<td>(optional) Default: 0. Determines the time step interval upon which a pickle file <em><code>case_timestep&lt;time step&gt;.pickle</code></em> is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.</td>
-</tr>
-<tr>
-<td style="text-align: right;"><code>time_step_start</code></td>
-<td style="text-align: center;">int</td>
-<td>(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file <em><code>case_timestep&lt;timestep_start&gt;.pickle</code></em> to start from the corresponding time step. For a steady simulation, the value should be <code>0</code>.</td>
-</tr>
-<tr>
 <td style="text-align: right;"><code>working_directory</code></td>
 <td style="text-align: center;">str</td>
 <td>Absolute path to the working directory or relative path with respect to the current directory.</td>
 </tr>
 </tbody>
 </table>
-<p><code>delta_t</code> is a necessary parameter, while <code>timestep_start</code> and <code>save_restart</code> are optional, but all are usually defined in a higher component. However, they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing). If they are defined both in higher component and in the solver wrapper, then the former value is used and a warning is printed.</p>
+<p>The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing).
+If they are defined in both locations, a warning is printed and the top-level value is used.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">float</td>
+<td>Fixed time step size in the solver.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) Default: 0. Determines the time step interval upon which a pickle file <em><code>case_timestep&lt;time step&gt;.pickle</code></em> is written, to be used for restart purposes. A minus sign indicates only the file from the last interval is retained.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>timestep_start</code></td>
+<td style="text-align: center;">int</td>
+<td>(optional) Default: 0. Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from scratch. Otherwise, the code looks for the pickle file <em><code>case_timestep&lt;timestep_start&gt;.pickle</code></em> to start from the corresponding time step. For a steady simulation, the value should be <code>0</code>.</td>
+</tr>
+</tbody>
+</table>
 <p>Because these solvers are simple, it is possible to omit the use of interpolation between two solver wrappers.
 In that case, the names of the <code>ModelParts</code> of both flow and structural solver need to be the same.</p>
 <h3 id="tube-flow-solver">Tube flow solver</h3>
