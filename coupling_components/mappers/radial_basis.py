@@ -92,7 +92,7 @@ def get_coeffs(coords_to, distances, coords_from, shape_parameter, include_polyn
         ns = null_space(p)
 
         # stack matrices
-        if ns.size is not 0:
+        if ns.size != 0:
             # if the from-points are collinear (2d,3d) or coplanar (3d), the linear polynomial is not uniquely defined
             # then, the resulting hyperplane is chosen such that there is no change in value when moving orthogonal
             # to this line/plane

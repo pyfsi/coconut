@@ -1,6 +1,9 @@
 # Abaqus
 
-This is the documentation for all Abaqus solver wrappers. Abaqus is a structural solver implementing the finite element method.
+This is the documentation for the first version of the Abaqus solver wrapper, which starts and terminates Abaqus for every coupling iteration.
+Refer to [AbaqusCSE](../abaqus_cse.md) for the new version of the Abaqus solver wrapper.
+
+Abaqus is a structural solver implementing the finite element method.
 Currently, this wrapper only supports FSI simulations, no other multi-physics problems. 
 Subcycling within the structural solver is possible.
 
@@ -51,7 +54,7 @@ If they are defined in both locations, a warning is printed and the top-level va
 |-----------------:|:-----:|----------------------------------------------------------------------------------------------------------------------------------------------------------|
 |        `delta_t` | float | Size of the time step in Abaqus.                                                                                                                         |
 |   `save_restart` |  int  | Indicates the time step interval at which files for restart have to be saved. A minus sign indicates only the files from the last interval are retained. |
-| `timestep_start` |  int  | Time step to start from. Data should be available at this time step. For a new simulation this value will typically be 0.                                |
+| `timestep_start` |  int  | Time step to start from. Data should be available at this time step. For a new simulation this value will typically be `0`.                              |
 
 
 ## Overview of operation

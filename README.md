@@ -29,13 +29,13 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 
 ### Requirements
 
--   `python>=3.6.8` 
--   `numpy>=1.19.5`
--   `scipy>=1.3.0`
--   `pandas>=1.0.0` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos_structure/kratos_structure.md))
--   `matplotlib=3.1.3` (recommended)
+-   `python>=3.11.5` 
+-   `numpy>=1.24.3`
+-   `scipy>=1.11.1`
+-   `pandas>=2.0.3` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos_structure/kratos_structure.md))
+-   `matplotlib>=3.7.2` (recommended)
 
-We recommend Anaconda 2019.07 or newer.
+We recommend Anaconda 2023.09 or newer. Older versions of the software might also work, but are not tested.
 
 
 ### Installation procedure

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CoupledMultiphysicsSimulation>
+    <header>
+        <SchemaVersion>1.2</SchemaVersion>
+    </header>
+    <components>
+        <component name="AbaqusWrapper">
+            <bottomUpImplementation>
+                <codeName>AbaqusWrapper</codeName>
+            </bottomUpImplementation>
+        </component>
+        <component name="Abaqus">
+            <bottomUpImplementation>
+                <codeName>Abaqus/Standard</codeName>
+            </bottomUpImplementation>
+        </component>
+    </components>
+    <componentInstances>
+        <componentInstance name="AbaqusWrapper">
+            <component>AbaqusWrapper</component>
+        </componentInstance>
+        <componentInstance name="Abaqus">
+            <component>Abaqus</component>
+        </componentInstance>
+    </componentInstances>
+    <connectors>
+<!--                    Will be completed by Python wrapper -->
+        <connector name="FromAbaqusWrapper">
+            <componentInstance>AbaqusWrapper</componentInstance>
+            <variables>
+                <output>
+                    <variable>pressure.wrapperMesh0</variable>
+                    <variable>traction_vector.wrapperMesh0</variable>
+                </output>
+            </variables>
+        </connector>
+        <connector name="ToAbaqusWrapper">
+            <componentInstance>AbaqusWrapper</componentInstance>
+            <variables>
+                <input>
+                    <variable>displacement.wrapperMesh0</variable>
+                </input>
+            </variables>
+        </connector>
+        <connector name="FromAbaqus">
+            <componentInstance>Abaqus</componentInstance>
+            <variables>
+                <output>
+                    <variable>displacement.|REGION|</variable>
+                </output>
+            </variables>
+        </connector>
+        <connector name="ToAbaqus">
+            <componentInstance>Abaqus</componentInstance>
+            <variables>
+                <input>
+                    <variable>pressure.|REGION|</variable>
+                    <variable>traction_vector.|REGION|</variable>
+                </input>
+            </variables>
+        </connector>
+    </connectors>
+    <connectionSets>
+<!--                    Will be completed by Python wrapper -->
+        <connectionSet name="FromAbaqusWrapperToAbaqus" type="FIELD">
+            <connection mapOn="NOMAP">
+                <connector>FromAbaqusWrapper</connector>
+                <connector>ToAbaqus</connector>
+            </connection>
+        </connectionSet>
+        <connectionSet name="FromAbaqusToAbaqusWrapper" type="FIELD">
+            <connection mapOn="NOMAP">
+                <connector>FromAbaqus</connector>
+                <connector>ToAbaqusWrapper</connector>
+            </connection>
+        </connectionSet>
+    </connectionSets>
+    <execution>
+        <compositeActors>
+            <compositeActor name="twoCodeContinuousTime">
+                <actors>
+                    <atomicActor>AbaqusWrapper</atomicActor>
+                    <atomicActor>Abaqus</atomicActor>
+                </actors>
+                <modelOfComputation>
+                    <continuousTime>
+                        <algorithm>GAUSS-SEIDEL</algorithm>
+                        <negotiationMethod>CONSTANTDT</negotiationMethod>
+                        <constantDt>|DT|</constantDt>
+                        <iterativeCoupling>
+                        </iterativeCoupling>
+                    </continuousTime>
+                </modelOfComputation>
+            </compositeActor>
+        </compositeActors>
+        <connectionGroups>
+            <connectionCategory name="InitialConditions">
+<!--                    Will be completed by Python wrapper -->
+                <connectionSet>FromAbaqusWrapperToAbaqus</connectionSet>
+                <connectionSet>FromAbaqusToAbaqusWrapper</connectionSet>
+            </connectionCategory>
+            <connectionCategory name="CouplingStep">
+<!--                    Will be completed by Python wrapper -->
+                <connectionSet>FromAbaqusWrapperToAbaqus</connectionSet>
+                <connectionSet>FromAbaqusToAbaqusWrapper</connectionSet>
+            </connectionCategory>
+<!--                    Will be completed by Python wrapper -->
+            <connectionCategory name="CouplingIteration">
+                <connectionSet>FromAbaqusWrapperToAbaqus</connectionSet>
+                <connectionSet>FromAbaqusToAbaqusWrapper</connectionSet>
+            </connectionCategory>
+        </connectionGroups>
+        <scenario>
+            <duration>|DURATION|</duration>
+        </scenario>
+    </execution>
+</CoupledMultiphysicsSimulation>

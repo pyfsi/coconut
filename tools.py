@@ -462,13 +462,15 @@ def rm_timed(path: str, sleep: float = 0.5, attempts: int = 100) -> None:
     """
     for i in range(attempts):
         try:
-            shutil.rmtree(path)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
             break
         except OSError:
             time.sleep(sleep)
     if os.path.exists(path):
         print_info(f'Timed out removing {path}', layout='warning')
-        shutil.rmtree(path)
 
 
 # remove a key in a nested dictionary/list

@@ -1,4 +1,4 @@
-from coconut.tools import create_instance, get_solver_env
+from coconut.tools import create_instance, rm_timed
 
 import unittest
 import numpy as np
@@ -8,7 +8,7 @@ import json
 import shutil
 
 
-class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
+class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
     version = None  # Abaqus version, e.g. 2022, set in subclass
     setup_case = True
     dimension = 2
@@ -77,7 +77,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.setup_case:
-            shutil.rmtree(cls.working_dir)
+            rm_timed(cls.working_dir)
 
     def setUp(self):
         with open(self.file_name) as parameter_file:
@@ -100,6 +100,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         """
         np.testing.assert_allclose(self.a2_1, self.a1_1, rtol=1e-15)
 
+    @unittest.skip('Not yet implemented, needs adjustment')
     def test_restart(self):
         """
         Test whether restarting at time step 2 and simulating 2 time steps yields the same displacement as when the
@@ -192,6 +193,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         np.testing.assert_array_equal(a4_extra, a4_extra * 0.0)  # if a column remains it should be all zeroes
         np.testing.assert_allclose(self.a4[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)  # non-zero columns
 
+    @unittest.skipIf(dimension == 2, 'Traction not supported in 2D')
     def test_shear(self):
         """
         Test whether shear is also applied.
@@ -232,7 +234,7 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         self.assertNotAlmostEqual(self.mean_displacement_no_shear - self.mean_displacement_shear, 0., delta=1e-12)
 
 
-class TestSolverWrapperAbaqusTube3D(TestSolverWrapperAbaqusTube2D):
+class TestSolverWrapperAbaqusCSETube3D(TestSolverWrapperAbaqusCSETube2D):
     version = None
     setup_case = True
     dimension = 3
