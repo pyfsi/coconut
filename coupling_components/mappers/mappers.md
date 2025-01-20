@@ -407,15 +407,15 @@ and from `pc_saturated_solid.py` within the [Python solver wrappers](../solver_w
 Both solver wrappers are responsible for the solid domain during solid-liquid phase change.
 This linear mapper is based on the regular `MapperLinear` and inherits from the `MapperInterpolator` class. The added functionality requires additional settings:
 
-|              parameter | type  | description                                                                                                                                      |
-|-----------------------:|:-----:|--------------------------------------------------------------------------------------------------------------------------------------------------|
-|       `mapping_domain` |  str  | Shape of the domain boundaries which the interface end points need to follow. Currently, only `rectangular`is supported.                         |
-|       `mapping_limits` | list  | Defines the domain boundaries. For a rectangular domain, the following coordinates are required: \[$x_{min}$, $y_{min}$, $x_{max}$, $y_{max}$\]. |
-| `mapping_conservative` | bool  | (optional) Default: `true`. Enables the local mass conservation algorithm if `true`.                                                             |
-|     `volume_tolerance` | float | (optional) Default: `1e-14`. Absolute tolerance for mass conservation.                                                                           |
-|    `mapper_iterations` |  int  | (optional) Default: `20`. Maximum number of iterations the local mass conservation algorithm should perform.                                     |
-|    `mapper_relaxation` | float | (optional) Default: `0.4`. Relaxation factor for the local mass conservation algorithm.                                                          |
-|     `projection_order` |  str  | (optional) Default: `1`. Number of neighbouring nodes taken into account for projecting the interface endpoints on the domain boundaries.        |
+|              parameter |  type  | description                                                                                                                                      |
+|-----------------------:|:------:|--------------------------------------------------------------------------------------------------------------------------------------------------|
+|       `mapping_domain` |  str   | Shape of the domain boundaries which the interface end points need to follow. Currently, only `rectangular`is supported.                         |
+|       `mapping_limits` |  list  | Defines the domain boundaries. For a rectangular domain, the following coordinates are required: \[$x_{min}$, $y_{min}$, $x_{max}$, $y_{max}$\]. |
+| `mapping_conservative` |  bool  | (optional) Default: `true`. Enables the local mass conservation algorithm if `true`.                                                             |
+|     `volume_tolerance` | double | (optional) Default: `1e-14`. Absolute tolerance for mass conservation.                                                                           |
+|    `mapper_iterations` |  int   | (optional) Default: `20`. Maximum number of iterations the local mass conservation algorithm should perform.                                     |
+|    `mapper_relaxation` | double | (optional) Default: `0.4`. Relaxation factor for the local mass conservation algorithm.                                                          |
+|     `projection_order` |  str   | (optional) Default: `1`. Number of neighbouring nodes taken into account for projecting the interface endpoints on the domain boundaries.        |
 
 As mentioned above, two important features are required to correctly interpolate face displacement to node displacement.
 
@@ -426,7 +426,7 @@ This effect is illustrated in the figure below: because the face displacement is
 As a result, when this face displacement is mapped to the nodes, the node touching the boundary also receives a non-parallel displacement.
 This can cause strong deviations during long simulations.
 
-![](images/projection.png "Endpoint at interface moving away from the domain boundary")
+<img src="images/projection.png" alt="Endpoint at interface moving away from the domain boundary" width="40%">
 
 To correct these deviations, the end point is projected onto the boundary after each linear interpolation step.
 The projection is done by drawing a line through the boundary node position and a neighbouring node position.
@@ -450,7 +450,7 @@ The local volume change at the interface corresponds namely to the local energy 
 
 The shape of the interface, however, can cause volume to either *appear* or *disappear* during *face-to-node* mapping. This is illustrated below.
 
-![](images/vol_cons.png "Volume creation and destruction at respectively concave and convex interface shapes")
+<img src="images/vol_cons.png" alt="Volume creation and destruction at respectively concave and convex interface shapes" width="40%">
 
 For a concave interface, the *outwards* movement of the interface causes gaps to be formed between the swept volumes due to the face displacements.
 These gaps are filled after the *face-to-node* mapping, creating additional volume and overestimated phase change.

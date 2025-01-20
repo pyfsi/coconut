@@ -38,6 +38,7 @@ A new subdictionary with keyword `PC` should be provided, however, containing th
 |                `latent` | float | Latent heat of the phase change material (PCM).                                                                                             |
 |             `melt_temp` | float | Melting temperature of the phase change material (PCM).                                                                                     |
 | `end_of_setup_commands` |  str  | (optional) Fluent journal command(s) to be executed after the setup is finished, can be used to indicate the cell height for mesh layering. |
+|           `f2n_mapping` | dict  | Settings for the [face-to-node mapper](../../mappers/mappers.md#linearconservative).                                                        |
 
 
 ## Overview of operation
@@ -64,12 +65,13 @@ These new node positions are compared to those of the previous mesh update in th
 The swept volume is assigned to the corresponding interface cells and used to calculate the mass and energy source terms within these cells.
 The flow and energy equations, incorporating these source terms, are then solved in the liquid domain, and the resulting interface heat flux is recorded by the *`store_heat_flux`* UDF.
 
-Within the solid domain, only the energy equation is solved with a source term corresponding to the enthalpy method for phase change [[1](#1)].
-The enthalpy method ensures a correct temperature field and derived heat fluxes in the solid phase.
-Consequently, an additional energy source term is required to account for the *'excess'* cell enthalpy in the interface cells inherited from the previous time step.
-This *'excess'* enthalpy represents the latent part of the cell enthalpy, which is added to the cell's sensible enthalpy at melting temperature.
-If not removed by a source term (which acts as a sink during melting), the cell enthalpy of boundary cells would continue to increase due to the incoming
-heat flux across multiple time steps. This would lead to an increase in the liquid fraction despite the mesh updates, which should remove all molten material each time step.
+Within the solid domain, only the energy equation is solved. To limit the temperature to the melting temperature $T_m$,
+a Darcy-like source term is used, which becomes very large when $T > T_m$:
+$$
+-C \cdot \rho \cdot c_p \frac{T - T_m}{dt}
+$$
+with $\rho$ the density of the PCM, $c_p$ the specific heat, $dt$ the time step size of the simulation and $C$ a large constant, currently set to $10^8$.
+As such, the temperature is forced to the melting temperature whenever it would exceed this upper limit.
 
 The heat flux profile returned by the liquid solver serves as input for the solid solver through the *`set_heat_flux`* UDF.
 The *`update_cell_enthalpy`* UDF stores the cell enthalpy of cells adjacent to the interface, which is necessary for the energy source term.
