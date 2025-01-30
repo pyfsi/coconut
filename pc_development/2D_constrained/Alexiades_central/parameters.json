@@ -3,7 +3,7 @@
     "number_of_timesteps": 120000
   },
   "coupled_solver": {
-    "type": "coupled_solvers.explicit",
+    "type": "coupled_solvers.aitken",
     "settings": {
       "timestep_start": 0,
       "delta_t": 0.01,
@@ -64,7 +64,7 @@
             "latent": 60000,
             "melt_temp": 505.0,
             "ini_condition": 0,
-            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 1e-4 yes no no\")"
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 5e-5 yes no no\")"
           },
           "thread_names": [
             "boundary"

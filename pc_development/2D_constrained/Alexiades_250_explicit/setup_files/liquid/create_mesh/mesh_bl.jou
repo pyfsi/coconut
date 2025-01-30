@@ -1,0 +1,38 @@
+/LIQUID DOMAIN
+    /PARAMETERS
+$L = 0.001
+$H = 0.1
+
+$Xintervals = 4
+$Yintervals = 250
+    /CODE
+save name "2D_liquid.dbs"
+solver select "FLUENT 5/6"
+vertex create "LeftBottom" coordinates 0 0 0
+vertex create "LeftTop" coordinates 0 $H 0
+vertex create "RightBottom" coordinates $L 0 0
+vertex create "RightTop" coordinates $L $H 0
+edge create "Bottom" straight "LeftBottom" "RightBottom"
+edge create "Left" straight "LeftTop" "LeftBottom"
+edge create "Right" straight "RightTop" "RightBottom"
+edge create "Top" straight "LeftTop" "RightTop"
+face create "FluidInternal" wireframe "Top" "Right" "Bottom" "Left"
+edge link "Bottom" "Top" directions 0 0
+edge link "Left" "Right" directions 0 0
+
+blayer create uniform first 2e-4 growth 1 rows 2
+blayer attach "b_layer.1" edge "Right" face "FluidInternal"
+
+edge mesh "Bottom" intervals $Xintervals
+edge mesh "Left" intervals $Yintervals
+default set "mesh.trimesh.max_faces" numeric 50000000
+face mesh "FluidInternal" triangle
+
+physics create "boundary" btype "WALL" edge "Right"
+physics create "heated" btype "WALL" edge "Left"
+physics create "top" btype "WALL" edge "Top"
+physics create "bottom" btype "WALL" edge "Bottom"
+physics create "Fluid" ctype "FLUID" face "FluidInternal"
+export fluent5 "2D_liquid_BL.msh" nozval
+save
+end

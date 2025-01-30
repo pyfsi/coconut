@@ -1,0 +1,25 @@
+{
+  "timestep_size": 0.01,
+  "timestep_start": 0,
+  "interface": {
+    "x0": 0.001,
+    "y0": 0,
+    "x1": 0.001,
+    "y1": 0.1,
+    "faces": 250,
+    "movement_direction": [1, 0]
+  },
+  "material_properties": {
+    "rho": 7500,
+    "latent": 60000
+  },
+  "conservative_mapper": {
+    "mapping_domain": "rectangular",
+    "mapping_limits": [0, 0, 0.1, 0.1],
+    "mapping_conservative": true,
+    "volume_tolerance": 1e-13,
+    "mapper_iterations": 20,
+    "mapper_relaxation": 0.4,
+    "projection_order": 1
+  }
+}
