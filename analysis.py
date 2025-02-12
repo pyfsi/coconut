@@ -13,9 +13,9 @@ class Analysis:
         pass_on_parameters(self.settings, parameters['coupled_solver']['settings'],
                            ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required.')
+        # Python version: 3.11 or higher
+        if sys.version_info < (3, 11):
+            raise RuntimeError('Python version 3.11 or higher required.')
 
         self.coupled_solver = create_instance(self.parameters['coupled_solver'])
 
