@@ -668,11 +668,22 @@ void calculate_yarn_forces()
         {
             NV_S(e_v, =, 0.0);
             NV_S(e_drag, =, 0.0);
-            NV_S(f_a, =, 0.0);
-            NV_S(f_drag, =, 0.0);
-            NV_S(f_pres, =, 0.0);
             c_a = 0.0;
             c_td = 0.0;
+            NV_S(f_a, =, 0.0);
+            NV_S(f_drag, =, 0.0);
+
+            /* Calculate normal pressure force on yarn */
+            grad_p[0] = air_values[point][SCALAR_PX];
+            grad_p[1] = air_values[point][SCALAR_PY];
+#if RP_3D
+            grad_p[2] = air_values[point][SCALAR_PZ];
+#endif /* RP_3D */
+
+            NV_V_VS(f_pres, =, grad_p, -, yarn_tangent[point], *, NV_DOT(yarn_tangent[point], grad_p));
+            vol = -M_PI * pow(YARN_DIAMETER, 2)/4.0;
+            NV_S(f_pres, *=, vol);
+            NV_V(yarn_forces[point], =, f_pres);
         }
 
         /* Print to console */
