@@ -530,7 +530,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
         import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
-        cosimulation_settings = f'*CO-SIMULATION, NAME=COCONUT, PROGRAM=MULTIPHYSICS\n' \
+        cosimulation_settings = f'**\n' \
+                                f'** CO-SIMULATION SETTINGS\n' \
+                                f'**\n' \
+                                f'*CO-SIMULATION, NAME=COCONUT, PROGRAM=MULTIPHYSICS\n' \
                                 f'*CO-SIMULATION REGION, TYPE=SURFACE, EXPORT\n' \
                                 f'{export_lines}\n' \
                                 f'*CO-SIMULATION REGION, TYPE=SURFACE, IMPORT\n' \
@@ -585,7 +588,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                     elif in_step and line.upper().startswith('*CO-SIMULATION'):
                         cosimulation_settings_found = True
                     elif in_step and line.upper().startswith('*OUTPUT'):
-                        line_parts = line.split(',')
+                        line_parts = line.strip().split(',')
                         parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'TIME INTERVAL', 'TIME POINTS']
                         # remove all parameters referring to when to store
                         line_parts = [p for p in line_parts if not any(param in p.upper() for param in parameters)]
@@ -593,7 +596,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         line = ', '.join(line_parts) + '\n'
                         output_found = True
                     elif in_step and line.upper().startswith('*RESTART'):
-                        line_parts = line.split(',')
+                        line_parts = line.strip().split(',')
                         if 'WRITE' in line_parts[1].upper():  # not a restart write command, so don't change
                             parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'OVERLAY']
                             # remove all parameters referring to when to store

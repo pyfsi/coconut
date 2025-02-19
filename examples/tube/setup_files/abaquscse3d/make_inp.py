@@ -39,10 +39,6 @@ tubeModel.HomogeneousShellSection(integrationRule=SIMPSON, material='Material', 
                                   temperature=GRADIENT, thickness=0.001, thicknessModulus=None, useDensity=OFF)
 tubePart.SectionAssignment(offset=-0.5, region=Region(elements=tubePart.elements), sectionName='ShellSection')
 tubeAssembly.regenerate()
-step1 = tubeModel.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=0.01, nlgeom=ON, maxNumInc=100,
-                                       haftol=1, initialInc=0.0001, minInc=0.0001, maxInc=0.01, amplitude=RAMP,
-                                       noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED,
-                                       application=QUASI_STATIC)
 tubeModel.DisplacementBC(amplitude=UNSET, createStepName='Initial', distributionType=UNIFORM, fieldName='',
                          localCsys=None, name='BC-1', region=tubeAssembly.sets['LEFTFIXED'], u1=SET, u2=SET, u3=SET,
                          ur1=UNSET, ur2=UNSET, ur3=UNSET)
@@ -51,6 +47,10 @@ tubeModel.DisplacementBC(amplitude=UNSET, createStepName='Initial', distribution
                          ur1=UNSET, ur2=UNSET, ur3=UNSET)
 wallOutside = tubeAssembly.Surface(name='WALLOUTSIDE', side2Elements=tubeInstance.elements)
 tubeAssembly.regenerate()
+step1 = tubeModel.ImplicitDynamicsStep(name='Step-1', previous='Initial', timePeriod=0.01, nlgeom=ON, maxNumInc=100,
+                                       haftol=1, initialInc=0.0001, minInc=0.0001, maxInc=0.01, amplitude=RAMP,
+                                       noStop=OFF, nohaf=ON, initialConditions=OFF, timeIncrementationMethod=FIXED,
+                                       application=QUASI_STATIC)
 jobName = 'case_tube3d'
 tubeJob = mdb.Job(name=jobName, model='Model-1', description='tube3d')
 tubeJob.writeInput()
