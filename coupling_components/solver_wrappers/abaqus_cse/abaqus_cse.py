@@ -9,7 +9,6 @@ import xml.etree.ElementTree as ElTr
 from getpass import getuser
 from os.path import join
 from xml.dom import minidom
-from pathlib import Path
 import numpy as np
 import psutil
 from coconut import data_structure
@@ -58,7 +57,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         if self.timestep_start > 0:
             self.restart_step = None
             self.restart_inc = None
-            self.dir_vault = Path(self.dir_csm) / 'vault'
+            self.dir_vault = join(self.dir_csm, 'vault')
             self.dir_vault.mkdir(exist_ok=True)
             self.vault_suffixes = ['com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'sta', 'stt']
 
@@ -137,8 +136,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 self.restart_inc = self.timestep_start - restart_log[-1, 1]
                 # copy previous job files to the vault
                 for suffix in self.vault_suffixes:
-                    from_file = Path(self.dir_csm) / f'Abaqus.{suffix}'
-                    to_file = Path(self.dir_vault) / f'Abaqus_Step-{self.restart_step}.{suffix}'
+                    from_file = join(self.dir_csm, f'Abaqus.{suffix}')
+                    to_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
                     shutil.copy2(from_file, to_file)
                 # update restart_log
                 restart_log = np.append(restart_log, [[self.restart_step+1, self.timestep_start]], axis=0)
@@ -151,7 +150,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 obsolete_steps = restart_log[index+1:-1, 0]
                 for step in obsolete_steps:
                     for suffix in self.vault_suffixes:
-                        os.unlink(Path(self.dir_vault) / f'Abaqus_Step-{step}.{suffix}')
+                        os.unlink(join(self.dir_vault, f'Abaqus_Step-{step}.{suffix}'))
                 # update restart_log
                 restart_log = np.append(restart_log[:index+1], [[self.restart_step+1, self.timestep_start]], axis=0)
             # write adapted restart log
@@ -204,8 +203,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         else:
             # copy previous job files from vault to working directory
             for suffix in self.vault_suffixes:
-                from_file = Path(self.dir_vault) / f'Abaqus_Step-{self.restart_step}.{suffix}'
-                to_file = Path(self.dir_csm) / f'Abaqus_Step-{self.restart_step}.{suffix}'
+                from_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
+                to_file = join(self.dir_csm, f'Abaqus_Step-{self.restart_step}.{suffix}')
                 shutil.copy2(from_file, to_file)
             # run analysis (restart)
             launch_cmd = f'abaqus job=Abaqus oldjob=Abaqus_Step-{self.restart_step} input=Abaqus.inp -cseDirector ' \
@@ -333,7 +332,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
         if self.timestep_start > 0:  # remove files from which restart happened (duplicates are in the vault)
             for suffix in self.vault_suffixes:
-                os.unlink(Path(self.dir_csm) / f'Abaqus_Step-{self.restart_step}.{suffix}')
+                os.unlink(join(self.dir_csm, f'Abaqus_Step-{self.restart_step}.{suffix}'))
 
     def check_software(self):
         # Abaqus version
