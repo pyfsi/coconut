@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ElTr
 from getpass import getuser
 from os.path import join
 from xml.dom import minidom
-
+from pathlib import Path
 import numpy as np
 import psutil
 from coconut import data_structure
@@ -55,6 +55,12 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.path_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_abaqus')
+        if self.timestep_start > 0:
+            self.restart_step = None
+            self.restart_inc = None
+            self.dir_vault = Path(self.dir_csm) / 'vault'
+            self.dir_vault.mkdir(exist_ok=True)
+            self.vault_suffixes = ['com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'sta', 'stt']
 
         # initialize coconut messages
         self.coco_messages = tools.CocoMessages(self.dir_csm)
@@ -117,6 +123,45 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # verify provided surface names
         self.verify_surface_names()
 
+        # create/adapt restart.log
+        if self.timestep_start == 0:
+            with open(join(self.dir_csm, 'restart.log'), 'w') as outfile:
+                outfile.write('#step number, timestep start\n')
+                outfile.write(f'1\t 0\n')
+        else:
+            restart_log = np.loadtxt(join(self.dir_csm, 'restart.log'), skiprows=1, ndmin=2, dtype=int)
+            # check if we can restart from last files
+            if self.timestep_start > restart_log[-1, 1]:
+                # start timestep is within scope of last simulation
+                self.restart_step = restart_log[-1, 0]
+                self.restart_inc = self.timestep_start - restart_log[-1, 1]
+                # copy previous job files to the vault
+                for suffix in self.vault_suffixes:
+                    from_file = Path(self.dir_csm) / f'Abaqus.{suffix}'
+                    to_file = Path(self.dir_vault) / f'Abaqus_Step-{self.restart_step}.{suffix}'
+                    shutil.copy2(from_file, to_file)
+                # update restart_log
+                restart_log = np.append(restart_log, [[self.restart_step+1, self.timestep_start]], axis=0)
+            else:
+                # restart from older files: find which one is the most recent to restart from
+                index = np.where(restart_log[:, 1] < self.timestep_start)[0][-1]
+                self.restart_step = restart_log[index, 0]
+                self.restart_inc = self.timestep_start - restart_log[index, 1]
+                # clean up vault: remove newer files (but not from the last index, as they don't exist in the vault yet)
+                obsolete_steps = restart_log[index+1:-1, 0]
+                for step in obsolete_steps:
+                    for suffix in self.vault_suffixes:
+                        os.unlink(Path(self.dir_vault) / f'Abaqus_Step-{step}.{suffix}')
+                # update restart_log
+                restart_log = np.append(restart_log[:index+1], [[self.restart_step+1, self.timestep_start]], axis=0)
+            # write adapted restart log
+            np.savetxt(join(self.dir_csm, 'restart.log'), restart_log, header='#step number, timestep start', fmt='%d')
+            # check if restart_step and restart_inc are found
+            if self.restart_step is None:
+                raise ValueError(f'Abaqus step number to restart from not found')
+            if self.restart_inc is None:
+                raise ValueError(f'Abaqus increment number to restart from not found')
+
         # prepare input file for Abaqus
         template_input_file = join(self.dir_csm, self.input_file)
         abaqus_input_file = join(self.dir_csm, 'Abaqus.inp')
@@ -136,7 +181,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # write input for solver AbaqusWrapper
         solver_input_file = join(self.dir_abqw, 'AbaqusWrapper_input.txt')
         with open(solver_input_file, 'w') as f:
-            out = f'dt {self.delta_t}\ndimensions {self.dimensions}\nnumber_of_model_parts ' \
+            out = f'timestep_start {self.timestep_start}\ndt {self.delta_t}\ndimensions {self.dimensions}\nnumber_of_model_parts ' \
                   f'{len(self.settings["interface_output"])}\nport {self.port}\ndebug {int(self.debug)}\n'
             f.write(out)
 
@@ -153,8 +198,19 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
 
         # launch Abaqus
         abq_log_file = join(self.dir_csm, 'abaqus.log')
-        launch_cmd = f'abaqus job=Abaqus input=Abaqus.inp -cseDirector localhost:{self.port} -timeout 86400 ' \
-                     f'cpus={self.cores} output_precision=full interactive &> {abq_log_file}'
+        if self.timestep_start == 0:
+            launch_cmd = f'abaqus job=Abaqus input=Abaqus.inp -cseDirector localhost:{self.port} -timeout 86400 ' \
+                         f'cpus={self.cores} output_precision=full interactive &> {abq_log_file}'
+        else:
+            # copy previous job files from vault to working directory
+            for suffix in self.vault_suffixes:
+                from_file = Path(self.dir_vault) / f'Abaqus_Step-{self.restart_step}.{suffix}'
+                to_file = Path(self.dir_csm) / f'Abaqus_Step-{self.restart_step}.{suffix}'
+                shutil.copy2(from_file, to_file)
+            # run analysis (restart)
+            launch_cmd = f'abaqus job=Abaqus oldjob=Abaqus_Step-{self.restart_step} input=Abaqus.inp -cseDirector ' \
+                         f'localhost:{self.port} -timeout 86400 cpus={self.cores} output_precision=full ' \
+                         f'interactive  &> {abq_log_file}'
         cmd = debug_cmd + launch_cmd
         self.abaqus_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_csm, env=self.env)
         self.check_license(abq_log_file, ['Abaqus/Standard'])
@@ -275,6 +331,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
 
         # remove unnecessary files
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
+        if self.timestep_start > 0:  # remove files from which restart happened (duplicates are in the vault)
+            for suffix in self.vault_suffixes:
+                os.unlink(Path(self.dir_csm) / f'Abaqus_Step-{self.restart_step}.{suffix}')
 
     def check_software(self):
         # Abaqus version
@@ -488,11 +547,22 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 time_step_size_seen = False
                 output_found = False
                 restart_found = False
+                bool_restart = False
+                if self.timestep_start > 0:  # write restart-file
+                    out_file.write('*HEADING \n')
+                    out_file.write(f'*RESTART, READ, STEP={self.restart_step}, INC={self.restart_inc}, END STEP \n')
                 for line in in_file:
-                    if line.upper().startswith('*STEP'):
+                    if '** --' in line:
+                        bool_restart = True
+                    elif line.upper().startswith('*STEP'):
                         step_info = [info.strip() for info in line.split(',')]
                         # remove "number of increments", if set
                         step_info = [p for p in step_info if 'INC' not in p.upper()]
+                        # at restart: make new step name
+                        if self.timestep_start > 0:
+                            step_info = [p for p in step_info if 'NAME=' not in p.upper()]
+                            step_info.append(f'NAME=Step-{self.restart_step+1}')
+                        # set number of increments
                         step_info.append(f'INC={self.number_of_timesteps}')
                         line = ', '.join(step_info) + '\n'
                         in_step = True
@@ -548,7 +618,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                             if self.save_restart < 0:
                                 out_file.write(', OVERLAY')
                             out_file.write('\n**\n')
-                    out_file.write(line)
+                    if (self.timestep_start == 0) or bool_restart:
+                        out_file.write(line)
 
     def copy_for_debugging(self, path):
         new_path = f'{path[:-len(".txt")]}_ts{self.timestep}_it{self.iteration}.txt'
