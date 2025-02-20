@@ -20,7 +20,7 @@ void putField(const char* fieldType, const char* meshName, const char* collectio
 void myMessageHandler(const SMACseMsgHandlerSeverity severity, const char* msg, const int numNodes, const int* nodes, const int numElements, const int* elements);
 
 // Own functions
-void readInput(const string filenameInput, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts);
+void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts);
 void connectToCSE(void* userData, const string& port);
 int findIndex(const vector<unsigned int>& vec, unsigned int target);
 vector<double> getElemCentroidCoordinates(const vector<unsigned int>& nodeLabels, const vector<double>& nodeCoordinates, const vector<unsigned int>& connectivity, const unsigned int& nElems, const unsigned int& nodePerElem, const unsigned int& nDim);
@@ -41,6 +41,7 @@ struct MeshInputData {
     MeshInputData() : pressure(nullptr), traction(nullptr) {}
 };
 
+int timeStepStart = -1; // Start time step of current CSE run
 unsigned int timeStep = 0; // Time step counter
 unsigned int iteration = 0; // Coupling iteration counter
 unsigned int debug = 0; // Debug boolean
@@ -59,7 +60,7 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
     string port; // Port for connection
     unsigned int nModelParts; // Number of model parts
     const string filenameInput = "AbaqusWrapper_input.txt";
-    readInput(filenameInput, dt, port, nDim, nModelParts); // Read input from CoCoNuT wrapper
+    readInput(filenameInput, timeStepStart, dt, port, nDim, nModelParts); // Read input from CoCoNuT wrapper
 
     const string filenamePressure = "../pressure_mp"; // To be appended with <modelPartID>.txt
     const string filenameTraction = "../traction_mp"; // To be appended with <modelPartID>.txt
@@ -151,7 +152,7 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
     while (true) { // FSI loop
         if (checkMessage("next")) { // Start next step
             startTime = endTime;
-            cout << "\n>> Timestep " << ++timeStep << endl;
+            cout << "\n>> Timestep " << ++timeStep + timeStepStart << endl;
             endTime = timeStep * dt;
             iteration = 0;
 
@@ -176,9 +177,9 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
                 readData(filenamePressure + to_string(i) + extension, pressureArray[i]); // Read in pressure
                 readData(filenameTraction + to_string(i) + extension, tractionArray[i]); // Read in traction vector
                 if (debug) {
-                    string extraInfo = + "_ts" + to_string(timeStep) + "_it" + to_string(iteration);
+                    string extraInfo = + "_ts" + to_string(timeStep + timeStepStart) + "_it" + to_string(iteration);
                     writeData(string("read_pressure_mp") + to_string(i) + extraInfo + extension, pressureArray[i], 1); // Write read pressure
-                    writeData(string("read_traction_mp") + to_string(i) + extraInfo  + extension, tractionArray[i], nDim); // Write read traction
+                    writeData(string("read_traction_mp") + to_string(i) + extraInfo + extension, tractionArray[i], nDim); // Write read traction
                 }
             }
 
@@ -255,7 +256,7 @@ void myMessageHandler(const SMACseMsgHandlerSeverity severity, const char* msg, 
     }
 }
 
-void readInput(const string filenameInput, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts) {
+void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts) {
     ifstream file(filenameInput);
 
     if (!file) {
@@ -266,7 +267,9 @@ void readInput(const string filenameInput, double& dt, string& port, unsigned in
     string keyword; // To store the keyword
     // Read until all lines are processed
     while (file >> keyword) {
-        if (keyword == "dt") {
+        if (keyword == "timestep_start") {
+            file >> timeStepStart;
+        } else if (keyword == "dt") {
             file >> dt;
         } else if (keyword == "number_of_model_parts") {
             file >> nModelParts;
@@ -283,6 +286,10 @@ void readInput(const string filenameInput, double& dt, string& port, unsigned in
 
     // Check if any of the required values were not read
     bool allValuesRead = true;
+    if (timeStepStart == -1) {
+        cerr << "Error: 'timestep_start' not read correctly from file" << endl;
+        allValuesRead = false;
+    }
     if (dt == 0.0) {
         cerr << "Error: 'dt' not read correctly from file" << endl;
         allValuesRead = false;
@@ -306,6 +313,7 @@ void readInput(const string filenameInput, double& dt, string& port, unsigned in
 
     // Print the values to verify that they were read correctly
     cout << "Input values read from " << filenameInput << endl;;
+    cout << "timeStepStart: " << timeStepStart << endl;
     cout << "dt: " << dt << endl;
     cout << "nDim: " << nDim << endl;
     cout << "nModelParts: " << nModelParts << endl;
@@ -433,8 +441,10 @@ int writeRemoteMeshData(const char* localMeshName, unsigned int* nNodesPtr, unsi
         writeData("../element_labels_mp" + to_string(modelPartID) + extension, elemLabels, 1);
         writeData("../connectivity_mp" + to_string(modelPartID) + extension, connectivity, nodePerElem);
     }
-    writeData("../initial_node_coordinates_mp" + to_string(modelPartID) + extension, nodeCoordinates, nDim, nodeLabels);
-    writeData("../initial_element_centroid_coordinates_mp" + to_string(modelPartID) + extension, elemCentroidCoordinates, nDim, elemLabels);
+    if (timeStepStart == 0) {  // Not for restart
+        writeData("../initial_node_coordinates_mp" + to_string(modelPartID) + extension, nodeCoordinates, nDim, nodeLabels);
+        writeData("../initial_element_centroid_coordinates_mp" + to_string(modelPartID) + extension, elemCentroidCoordinates, nDim, elemLabels);
+    }
 
     *nNodesPtr = nNodes;
     *nElemsPtr = nElems;
@@ -507,7 +517,7 @@ void writeData(const string& filename, const vector<T>& values, const unsigned i
     }
 
     // Print header
-    file << "# " << stripFilename(filename) << ": timestep " << timeStep << ", iteration " << iteration << " #" << values.size() / dim << endl;
+    file << "# " << stripFilename(filename) << ": timestep " << timeStep + timeStepStart << ", iteration " << iteration << " #" << values.size() / dim << endl;
     string labelName;
     if (!labels.empty()) {
         labelName = "label";
