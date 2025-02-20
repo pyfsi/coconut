@@ -58,7 +58,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             self.restart_step = None
             self.restart_inc = None
             self.dir_vault = join(self.dir_csm, 'vault')
-            self.dir_vault.mkdir(exist_ok=True)
+            if not os.path.exists(self.dir_vault):
+                os.mkdir(self.dir_vault)
             self.vault_suffixes = ['com', 'dat', 'mdl', 'msg', 'odb', 'prt', 'res', 'sim', 'sta', 'stt']
 
         # initialize coconut messages
@@ -138,7 +139,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 for suffix in self.vault_suffixes:
                     from_file = join(self.dir_csm, f'Abaqus.{suffix}')
                     to_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
-                    shutil.copy2(from_file, to_file)
+                    shutil.copy(from_file, to_file)
                 # update restart_log
                 restart_log = np.append(restart_log, [[self.restart_step+1, self.timestep_start]], axis=0)
             else:
@@ -205,7 +206,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             for suffix in self.vault_suffixes:
                 from_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
                 to_file = join(self.dir_csm, f'Abaqus_Step-{self.restart_step}.{suffix}')
-                shutil.copy2(from_file, to_file)
+                shutil.copy(from_file, to_file)
             # run analysis (restart)
             launch_cmd = f'abaqus job=Abaqus oldjob=Abaqus_Step-{self.restart_step} input=Abaqus.inp -cseDirector ' \
                          f'localhost:{self.port} -timeout 86400 cpus={self.cores} output_precision=full ' \
@@ -486,7 +487,12 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             for tag_instance in tag_instances:
                 tag_instance.text = tag_instance.text.replace(parameter, str(value))
 
-        load_vars = ['pressure', 'traction_vector']
+        if self.dimensions == 2:
+            load_vars = ['pressure']
+        elif self.dimensions == 3:
+            load_vars = ['pressure', 'traction_vector']
+        else:
+            raise ValueError(f'Dimensions must equal 2 or 3, not {self.dimensions}')
         disp_vars = ['displacement']
 
         connectors_elem = root.find('.//connectors')
@@ -529,7 +535,12 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def prepare_input_file(self, template_input_file, input_file):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
-        import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
+        if self.dimensions == 2:
+            import_lines = "\n".join([f'{surface}, P' for surface in self.surfaces])
+        elif self.dimensions == 3:
+            import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
+        else:
+            raise ValueError(f'Dimensions must equal 2 or 3, not {self.dimensions}')
         cosimulation_settings = f'**\n' \
                                 f'** CO-SIMULATION SETTINGS\n' \
                                 f'**\n' \
