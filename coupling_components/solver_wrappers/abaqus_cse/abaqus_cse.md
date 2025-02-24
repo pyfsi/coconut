@@ -177,7 +177,8 @@ Say now that the user has performed five restarts already (*`restart.log`* conta
 To run the restart, the restart files *`Abaqus_Step-4.*`* are copied from the *`vault`* to the working directory.
 In a way, CoCoNuT cleans its own restart history (it keeps it 'linear'), where previous simulation data are safely stored in the *`vault`* and only the files after the last restart are kept in the working directory (*`Abaqus.*`*).
 
-In case the parameter `disable_modification_of_input_file` is `true`, the user itself is responsible for providing the correct restart options in the `input_file`. Specifically, this is the step and increment from which the simulation is restarted and the new step definition (including the Co-Simulation settings).
+In case the parameter `disable_modification_of_input_file` is `true`, the user itself is responsible for providing the correct restart options in the `input_file`.
+Specifically, this is the step and increment from which the simulation is restarted and the new step definition (including the Co-Simulation settings).
 
 ## Solver coupling convergence
 
