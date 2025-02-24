@@ -5,6 +5,7 @@ import numpy as np
 import os
 from os.path import join
 import json
+import multiprocessing
 import shutil
 
 
@@ -100,7 +101,6 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
         """
         np.testing.assert_allclose(self.a2_1, self.a1_1, rtol=1e-15)
 
-    @unittest.skip('Not yet implemented, needs adjustment')
     def test_restart(self):
         """
         Test whether restarting at time step 2 and simulating 2 time steps yields the same displacement as when the
@@ -114,6 +114,7 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
 
         # create solver which restarts at time step 2
         self.parameters['settings']['timestep_start'] = 2
+        self.parameters['settings']['number_of_timesteps'] = 2
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
@@ -161,7 +162,8 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
         """
 
         # adapt Parameters, create solver
-        self.parameters['settings']['cores'] = 4
+        self.parameters['settings']['number_of_timesteps'] = 4
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
@@ -193,13 +195,64 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
         np.testing.assert_array_equal(a4_extra, a4_extra * 0.0)  # if a column remains it should be all zeroes
         np.testing.assert_allclose(self.a4[:, indices], self.a1[:, indices], rtol=1e-10, atol=1e-17)  # non-zero columns
 
-    @unittest.skipIf(dimension == 2, 'Traction not supported in 2D')
+    def test_displacement(self):
+        """
+        Test if applying subsequently a load, twice the load and again the initial load yields the same displacements.
+        """
+
+        # adapt Parameters, create solver
+        self.parameters['settings']['cores'] = min(4, multiprocessing.cpu_count())
+        self.parameters['settings']['number_of_timesteps'] = 1
+        solver = create_instance(self.parameters)
+        solver.initialize()
+        interface_input = solver.get_interface_input()
+        model_part = interface_input.get_model_part(self.mp_name_in)
+        coords = [model_part.x0, model_part.y0, model_part.z0]
+
+        # give value to variables
+        pressure = self.get_p(coords[self.axial_dir]).reshape(-1, 1)
+        pressures = [pressure, 2 * pressure, pressure]
+        traction = np.zeros((model_part.size, 3))
+
+        solver.initialize_solution_step()
+        displacements = []
+        for p in pressures:
+            interface_input.set_variable_data(self.mp_name_in, 'pressure', p)
+            interface_input.set_variable_data(self.mp_name_in, 'traction', traction)
+            interface_output = solver.solve_solution_step(interface_input)
+            displacements.append(interface_output.get_variable_data(self.mp_name_out, 'displacement'))
+        solver.finalize_solution_step()
+        solver.output_solution_step()
+        solver.finalize()
+
+        # check if same load gives same displacement
+        np.testing.assert_allclose(displacements[0][:, self.radial_dirs[0]], displacements[2][:, self.radial_dirs[0]],
+                                   rtol=1e-10)
+
+        # check if different loads give different displacements
+        for i in range(len(displacements)):
+            print(displacements[i][:, self.radial_dirs[0]])
+        d01 = np.linalg.norm(displacements[0][:, self.radial_dirs[0]] - displacements[1][:, self.radial_dirs[0]])
+        d02 = np.linalg.norm(displacements[0][:, self.radial_dirs[0]] - displacements[2][:, self.radial_dirs[0]])
+        self.assertNotAlmostEqual(d02 - d01, 0., delta=1e-12)
+
+
+class TestSolverWrapperAbaqusCSETube3D(TestSolverWrapperAbaqusCSETube2D):
+    version = None
+    setup_case = True
+    dimension = 3
+    axial_dir = 0  # x-direction is axial direction
+    radial_dirs = [1, 2]
+    mp_name_in = 'WALLOUTSIDE_load_points'
+    mp_name_out = 'WALLOUTSIDE_nodes'
+
     def test_shear(self):
         """
         Test whether shear is also applied.
         """
 
         # create solver
+        self.parameters['settings']['number_of_timesteps'] = 4
         solver = create_instance(self.parameters)
         solver.initialize()
         interface_input = solver.get_interface_input()
@@ -232,16 +285,6 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
         print(f'Mean displacement in axial direction without shear = {self.mean_displacement_no_shear} m')
         print(f'Mean displacement in axial direction with shear = {self.mean_displacement_shear} m')
         self.assertNotAlmostEqual(self.mean_displacement_no_shear - self.mean_displacement_shear, 0., delta=1e-12)
-
-
-class TestSolverWrapperAbaqusCSETube3D(TestSolverWrapperAbaqusCSETube2D):
-    version = None
-    setup_case = True
-    dimension = 3
-    axial_dir = 0  # x-direction is axial direction
-    radial_dirs = [1, 2]
-    mp_name_in = 'WALLOUTSIDE_load_points'
-    mp_name_out = 'WALLOUTSIDE_nodes'
 
 
 if __name__ == '__main__':
