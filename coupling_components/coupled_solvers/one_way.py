@@ -12,7 +12,9 @@ class CoupledSolverOneWay(CoupledSolver):
         print_info('CoupledSolverOneWay is chosen: convergence criterion and predictor are ignored', layout='info')
 
     def solve_solution_step(self):
+        self.x *= 0  # set interface to zero: no effect of other solver
         self.y = self.solver_wrappers[0].solve_solution_step(self.x.copy()).copy()
         xt = self.solver_wrappers[1].solve_solution_step(self.y.copy())
         r = xt - self.x
+        self.x = xt  # for storing resulting interface
         self.finalize_iteration(r)

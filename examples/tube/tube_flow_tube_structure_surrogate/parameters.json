@@ -1,14 +1,14 @@
 {
   "settings": {
-    "number_of_timesteps": 100
+    "timestep_start": 0,
+    "number_of_timesteps": 100,
+    "delta_t": 0.0001,
+    "save_restart": 0
   },
   "coupled_solver": {
     "type": "coupled_solvers.iqnism",
     "settings": {
-      "timestep_start": 0,
-      "delta_t": 0.0001,
-      "save_results": 100,
-      "save_restart": 0,
+      "write_results": 100,
       "model": {
         "type": "coupled_solvers.models.mvmf",
         "settings": {
@@ -24,7 +24,7 @@
             "coupled_solver": {
               "type": "coupled_solvers.iqni",
               "settings": {
-                "save_results": 100,
+                "write_results": 100,
                 "omega": 0.05,
                 "model": {
                   "type": "coupled_solvers.models.mvmf",

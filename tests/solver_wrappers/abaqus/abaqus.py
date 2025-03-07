@@ -4,7 +4,6 @@ import unittest
 import numpy as np
 import os
 from os.path import join
-import subprocess
 import json
 import shutil
 
@@ -23,19 +22,17 @@ class TestSolverWrapperAbaqusTube2D(unittest.TestCase):
         dir_name = os.path.realpath(os.path.dirname(__file__))
         cls.file_name = join(dir_name, f'test_v{cls.version}/tube{cls.dimension}d/parameters.json')
         cls.working_dir = join(dir_name, f'test_v{cls.version}/tube{cls.dimension}d/CSM')
-        dir_tmp = join(dir_name, f'test_v{cls.version}/tube{cls.dimension}d')
+        cls.setup_dir = join(dir_name, f'test_v{cls.version}/tube{cls.dimension}d/setup_abaqus')
 
         # perform reference calculation
         with open(cls.file_name) as parameter_file:
             parameters = json.load(parameter_file)
 
         parameters['settings']['working_directory'] = os.path.relpath(cls.working_dir)  # set working directory
-        solver_name = parameters['type'].replace('solver_wrappers.', '')
-        env = get_solver_env(solver_name, dir_tmp)
 
         if cls.setup_case:
-            p = subprocess.Popen('sh ' + join(dir_tmp, 'setup_abaqus.sh'), cwd=dir_tmp, shell=True, env=env)
-            p.wait()
+            shutil.rmtree(cls.working_dir, ignore_errors=True)
+            shutil.copytree(cls.setup_dir, cls.working_dir)
 
         # create the solver
         solver = create_instance(parameters)

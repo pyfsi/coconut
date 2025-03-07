@@ -1,19 +1,22 @@
-from coconut.tools import create_instance
+from coconut.tools import create_instance, pass_on_parameters
 import json
 import sys
 
 class Analysis:
     def __init__(self, parameters):
         self.parameters = parameters
-        self.settings = parameters["settings"]
+        self.settings = parameters['settings']
 
-        self.number_of_timesteps = self.settings["number_of_timesteps"]
+        self.number_of_timesteps = self.settings['number_of_timesteps']
+        self.settings['save_restart'] = self.settings.get('save_restart', -1)  # restart data save interval, default -1
+        pass_on_parameters(self.settings, parameters['coupled_solver']['settings'],
+                           ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
-        # Python version: 3.6 or higher
-        if sys.version_info < (3, 6):
-            raise RuntimeError('Python version 3.6 or higher required.')
+        # Python version: 3.11 or higher
+        if sys.version_info < (3, 11):
+            raise RuntimeError('Python version 3.11 or higher required.')
 
-        self.coupled_solver = create_instance(self.parameters["coupled_solver"])
+        self.coupled_solver = create_instance(self.parameters['coupled_solver'])
 
     def run(self):
         self.initialize()

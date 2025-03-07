@@ -1163,7 +1163,7 @@ class Animation(Figure):
 
     def save(self, file_path=None):
         if file_path is None:
-            file_path = f'{self.figure_name}.gif'
+            file_path = f'{self.figure_name.replace(" ", "_")}.gif'
         self.animation.save(file_path, writer=self.writer)
 
     def set_writer(self, writer):
