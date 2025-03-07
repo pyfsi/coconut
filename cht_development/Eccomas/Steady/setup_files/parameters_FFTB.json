@@ -1,16 +1,16 @@
 {
   "settings": {
-    "number_of_timesteps": 1
+    "timestep_start": 0,
+    "number_of_timesteps": 1,
+    "delta_t": 1.0,
+    "save_restart": 0
   },
   "coupled_solver": {
     "type": "coupled_solvers.|METHOD|",
     "settings": {
-      "timestep_start": 0,
-      "delta_t": 1.0,
       "omega": "|OMEGA|",
       "omega_max": "|OMEGA_MAX|",
-      "save_results": 1,
-      "save_restart": 0,
+      "write_results": 1,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",

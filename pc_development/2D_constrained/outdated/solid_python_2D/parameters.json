@@ -1,15 +1,15 @@
 {
   "settings": {
-    "number_of_timesteps": 60000
+    "timestep_start": 0,
+    "number_of_timesteps": 60000,
+    "delta_t": 0.01,
+    "save_restart": 0
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
     "settings": {
-      "timestep_start": 0,
-      "delta_t": 0.01,
       "omega_max": 0.8,
-      "save_results": 10,
-      "save_restart": 0,
+      "write_results": 10,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",

@@ -8,7 +8,7 @@ import pickle
 from functools import reduce
 
 # This script plots the convergence residuals of the coupling iterations in every time step.
-# To generate a result file, include a non-zero int 'save_results' in the settings of the coupled solver.
+# To generate a result file, include a non-zero int 'write_results' in the settings of the coupled solver.
 # Give a name to the case by including the string {'case_name': 'a_name'} in the settings of the coupled solver.
 
 tolerance = 1e-2  # tolerance
