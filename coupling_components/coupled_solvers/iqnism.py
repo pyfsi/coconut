@@ -15,11 +15,11 @@ class CoupledSolverIQNISM(CoupledSolver):
         # add timestep_start, delta_t, save_restart and case_name to surrogate settings
         if 'settings' not in self.settings['surrogate']:
             self.settings['surrogate']['settings'] = {}
-        tools.pass_on_parameters(self.settings, self.settings['surrogate']['settings'], ['timestep_start', 'delta_t',
-                                                                                         'save_restart', 'case_name'])
+        tools.pass_on_parameters(self.settings, self.settings['surrogate']['settings'],
+                                 ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart', 'case_name'])
         # add timestep_start, delta_t, save_restart to model settings
         tools.pass_on_parameters(self.settings, self.settings['model']['settings'],
-                                 ('timestep_start', 'delta_t', 'save_restart'))
+                                 ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
         self.model = tools.create_instance(self.settings['model'])
         self.settings['surrogate']['type'] = self.settings['surrogate'].get('type',

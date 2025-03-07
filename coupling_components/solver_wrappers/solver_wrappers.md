@@ -28,13 +28,14 @@ coupled solver as an `Interface` object.
 
 There are currently two solver wrappers for computational fluid dynamics (CFD) packages:
 
-- [ANSYS Fluent](fluent/fluent.md) (2023R1, 2024R1)
-- [OpenFOAM](openfoam/openfoam.md) (8)
+- [ANSYS Fluent](fluent/fluent.md)
+- [OpenFOAM](openfoam/openfoam.md)
 
-There are currently also two solver wrappers for computational structural mechanics (CSM) packages :
+There are currently also three solver wrappers for computational structural mechanics (CSM) packages :
 
-- [Abaqus](abaqus/abaqus.md) (2021, 2022)
-- [Kratos Multiphysics](kratos_structure/kratos_structure.md) (9.1)
+- [Abaqus](abaqus/abaqus.md)
+- [AbaqusCSE](abaqus_cse/abaqus_cse.md)
+- [Kratos Multiphysics](kratos_structure/kratos_structure.md)
 
 CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms
 and implementations. These are:
