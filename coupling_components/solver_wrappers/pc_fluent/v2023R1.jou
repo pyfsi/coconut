@@ -82,7 +82,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
             (if moving_boundary
-                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in boundary conditions? yes
+                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in bc's? yes / Option[-3]: deform adjacent BL with zone? no -> change to yes in parameters if necessary
                 (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary , constant 0 no\n"(list-ref face_threads k))) ; In case the interface is stationary
             )
         )
@@ -112,7 +112,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
         (if (= thermal_bc 1)
-            (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; heat flux BC -> solid
+            (ti-menu-load-string "define boundary-conditions fluid , n y 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; heat flux BC -> solid
             (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; temp. BC or nothing -> liquid
         )
     )
@@ -126,7 +126,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             ))
             ((= thermal_bc 1)
             (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no yes heat-flux yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no 0 no ,\n"(list-ref face_threads k))) ; Previous command after udf: "no no no ,"
+            (ti-menu-load-string (format #f "define boundary-conditions wall ~a 0 no 0 no yes heat-flux yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no ,\n"(list-ref face_threads k))) ; Previous command after udf: "no no no 0 no ,"
             ))
     )
 )
@@ -200,11 +200,11 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             )
             (if (= thermal_bc 1)
                 (begin
-                    (if moving_boundary
-                        (ti-menu-load-string "define user-defined execute-on-demand \"write_displacement::udf_thermal\"")
-                    )
                     (if temp_stored
                         (ti-menu-load-string "define user-defined execute-on-demand \"store_temperature::udf_thermal\"")
+                    )
+                    (if moving_boundary
+                        (ti-menu-load-string "define user-defined execute-on-demand \"write_displacement::udf_thermal\"")
                     )
                 )
                 (ti-menu-load-string "define user-defined execute-on-demand \"store_heat_flux::udf_thermal\"")

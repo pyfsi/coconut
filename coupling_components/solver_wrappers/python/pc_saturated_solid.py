@@ -18,6 +18,10 @@ def create(parameters):
 class SolverWrapperSaturatedSolid(SolverWrapper):
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = ['heat_flux']
+    accepted_out_var = ['displacement']
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
