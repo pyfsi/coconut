@@ -41,25 +41,33 @@ if animations:
     plt.close()
 
 # Compare interface at given time
-t = 57800
-t_expl = 57800
+time = [100, 200, 450, 700]
+lines = []
+
 x_expl = sx.get_values('coordinates', 'x')
 y_expl = sx.get_values('coordinates', 'y')
-x_expl = x_expl[t_expl,:].flatten()
-y_expl = y_expl[t_expl,:].flatten()
-
 x_c = sx_c.get_values('coordinates', 'x')
 y_c = sx_c.get_values('coordinates', 'y')
-x_c = x_c[t,:].flatten()
-y_c = y_c[t,:].flatten()
 
-line_expl, = plt.plot(x_expl, y_expl, '-b', label='explicit')
-line_c, = plt.plot(x_c, y_c, '-g', label='aitken')
+for t in time:
+    x_expl_tmp = x_expl[t*100,:].flatten()
+    y_expl_tmp = y_expl[t*100,:].flatten()
+    x_c_tmp = x_c[t*100,:].flatten()
+    y_c_tmp = y_c[t*100,:].flatten()
+
+    line_expl, = plt.plot(x_expl_tmp, y_expl_tmp, '--r', label='explicit')
+    lines.append(line_expl)
+    line_c, = plt.plot(x_c_tmp, y_c_tmp, '-k', label='aitken')
+    lines.append(line_c)
+
+legend_handles = [plt.plot([], [], '--r')[0], plt.plot([], [], '-k')[0]] # Get handles
+legend_labels = ['explicit', 'Aitken']
+
 plt.ylabel('y-coordinate [m]')
 plt.xlabel('x-coordinate [m]')
-plt.xlim((0, 0.1))
-#plt.title('Comparison between BL mesh and non-BL mesh at 10 s')
-plt.legend(handles=[line_expl, line_c])
+plt.xlim((0, 0.05))
+plt.legend(legend_handles, legend_labels)
+plt.tight_layout()
 plt.savefig('figs_ani/comp_coupling_expl.png')
 plt.show()
 plt.close()

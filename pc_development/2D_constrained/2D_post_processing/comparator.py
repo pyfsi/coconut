@@ -3,8 +3,8 @@ import numpy as np
 from coconut.examples.post_processing.post_processing import *
 
 # New case
-pp_new = PostProcess('../Alexiades_steady_ini/case_results.pickle')
-title = 'steady_ini'
+pp_new = PostProcess('../Alexiades_250_explicit/case_results.pickle')
+title = '250_expl'
 print(pp_new)
 print("\n")
 
@@ -42,7 +42,7 @@ if animations:
     plt.close()
 
 # Compare interface
-t = 352 # s
+t = 112 # s
 dt = 0.01 # s
 x_new = sx_new.get_values('coordinates', 'x')
 y_new = sx_new.get_values('coordinates', 'y')
