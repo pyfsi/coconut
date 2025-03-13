@@ -13,8 +13,10 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = './'
-case_paths = ['mesh_2/case_results.pickle', 'mesh_5/case_results.pickle', 'mesh_10_v2/case_results.pickle', 'mesh_10_v3/case_results.pickle']
-legend_entries = ['Coconut - mesh 5*10^-4', 'Coconut - mesh 2*10^-4', 'Coconut - mesh 10^-4', 'Coconut - mesh 10^-4 - v3']
+#case_paths = ['mesh_2/case_results.pickle', 'mesh_5/case_results.pickle', 'mesh_10_v2/case_results.pickle', 'mesh_10_v3/case_results.pickle']
+#legend_entries = ['Partitioned - mesh 5*10^-4', 'Partitioned - mesh 2*10^-4', 'Partitioned - mesh 10^-4', 'Partitioned - mesh 10^-4 - v3']
+case_paths = ['mesh_2/case_results.pickle', 'mesh_5/case_results.pickle', 'mesh_10_v2/case_results.pickle']
+legend_entries = ['Partitioned - mesh 5*10^-4', 'Partitioned - mesh 2*10^-4', 'Partitioned - mesh 10^-4']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_full_coarse.out', 'lf_1_to_99.out']
 fluent_legend = ['Fluent - coarse mesh', 'Fluent - fine mesh']
@@ -35,10 +37,12 @@ lines_disp = []
 lines_lf = []
 lines_heat_flux = []
 arrays = []
+arrays_hf = []
 lines_error = []
+lines_error_hf = []
 
 # make figures
-line_styles = ['r--', 'c--', 'b--', 'g--', 'y--', 'k--', 'k-.']
+line_styles = ['b--', 'g--', 'r--', 'c--', 'y--', 'k--', 'k-.']
 for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), ('solution_y', 'interface_y', 'heat_flux', 'W/m^2')):
     if var == "displacement":
         if not disp_plots:
@@ -184,6 +188,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.xlabel('Time [h]')
             plt.legend(handles=lines_lf)
             plt.tight_layout()
+            plt.savefig('legend_lf.png', dpi=150)
             plt.show()
             plt.close()
 
@@ -213,6 +218,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             time = time_step_start + dt * np.array(range(np.shape(solution)[1]))
             line, = plt.plot(time[1:-1], -heat_flux.flatten()[1:-1], line_styles[j], label=name)
             lines_heat_flux.append(line)
+            arrays_hf.append(-heat_flux.flatten())
 
         line, = plt.plot(time_ana[M.floor(t_ini / dt):], q_ana[M.floor(t_ini / dt):], line_styles[-1], label="Ana - stefan")
         lines_heat_flux.append(line)
@@ -221,5 +227,21 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
         plt.ylabel('Heat flux [W/m^2]')
         plt.xlabel('Time [s]')
         plt.legend(handles=lines_heat_flux)
+        plt.savefig('legend_hf.png', dpi=150)
+        plt.show()
+        plt.close()
+
+        # calculate error of coconut simulations -> only works if all time step sizes are equal!
+        for i, hf_sim in enumerate(arrays_hf):
+            rel_error = np.abs(q_ana[start_index:end_index + 1] - hf_sim[0:min_index + 1])/np.abs(q_ana[start_index:end_index + 1])
+            print('Average relative error =', np.mean(rel_error)*100, '% for case:', legend_entries[i])
+            line, = plt.plot(time_ana[start_index:end_index + 1], rel_error, line_styles[i], label=legend_entries[i])
+            lines_error_hf.append(line)
+
+        # Log-plot of simulation error
+        plt.ylabel('Heat flux - error')
+        plt.yscale('log')
+        plt.xlabel('Time [s]')
+        plt.legend(handles=lines_error_hf)
         plt.show()
         plt.close()

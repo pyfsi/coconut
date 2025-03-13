@@ -4,7 +4,11 @@ import math as M
 import pandas as pd
 from scipy.optimize import fsolve
 from scipy.special import erf
+from scipy.interpolate import interp1d
 from coconut.examples.post_processing.post_processing import *
+
+# Plot and process interface positions?
+itf_pos = False
 
 # Functions
 def wall_hf_stefan(k, a, dT, St, t):
@@ -12,48 +16,86 @@ def wall_hf_stefan(k, a, dT, St, t):
     lam = fsolve(eq_la, 0.2)
     return k * dT / (np.sqrt(M.pi * a * t) * erf(lam))
 
+def calculate_diff_norm(x_val, y_val, x_sim, y_sim):
+    """
+    Calculates the relative norm of the difference between reference and simulation coordinates.
+
+    Args:
+        x_val (np.array): Reference x-coordinates at fixed y-coordinates.
+        y_val (np.array): Reference y-coordinates.
+        x_sim (np.array): Simulation x-coordinates.
+        y_sim (np.array): Simulation y-coordinates.
+
+    Returns:
+        float: The relative norm of the difference.
+    """
+
+    # 1. Interpolate simulation x-coordinates to the reference y-coordinates
+    f_x_sim = interp1d(y_sim, x_sim, kind='linear', fill_value="extrapolate")
+    x_sim_interp = f_x_sim(y_val)
+
+    # 2. Calculate the difference between reference and interpolated simulation x-coordinates
+    diff = x_val - x_sim_interp
+
+    # 3. Calculate the norm of the difference
+    norm_diff = np.linalg.norm(diff)/np.linalg.norm(x_val)
+
+    return norm_diff
+
 # Read and load data
 sim_file = 'CFD_2/report-file.out'
 validation_path = '../2D_post_processing/Alexiades_validation/'
 
-pp = PostProcess('case_results.pickle')
-sx = pp.add_subset(interface='interface_x', model_part='boundary_in_nodes')
-sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
+if itf_pos:
+    pp = PostProcess('case_results.pickle')
+    sx = pp.add_subset(interface='interface_x', model_part='boundary_in_nodes')
+    sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 
-# Interface location
-itf_loc_val = np.loadtxt(validation_path + 'interface_loc.txt', delimiter=' ')
-y_val = itf_loc_val[:,0]
-x_val_100 = itf_loc_val[:,1]
-x_val_200 = itf_loc_val[:,2]
-x_val_450 = itf_loc_val[:,3]
-x_val_700 = itf_loc_val[:,4]
+    # Interface location
+    itf_loc_val = np.loadtxt(validation_path + 'interface_loc.txt', delimiter=' ')
+    y_val = itf_loc_val[:,0]
+    x_val_100 = itf_loc_val[:,1]
+    x_val_200 = itf_loc_val[:,2]
+    x_val_450 = itf_loc_val[:,3]
+    x_val_700 = itf_loc_val[:,4]
 
-x_sim_100 = sx.get_values('coordinates', 'x')[10000,:].flatten()
-y_sim_100 = sx.get_values('coordinates', 'y')[10000,:].flatten()
-x_sim_200 = sx.get_values('coordinates', 'x')[20000,:].flatten()
-y_sim_200 = sx.get_values('coordinates', 'y')[20000,:].flatten()
-x_sim_450 = sx.get_values('coordinates', 'x')[45000,:].flatten()
-y_sim_450 = sx.get_values('coordinates', 'y')[45000,:].flatten()
-x_sim_700 = sx.get_values('coordinates', 'x')[70000,:].flatten()
-y_sim_700 = sx.get_values('coordinates', 'y')[70000,:].flatten()
+    x_sim_100 = sx.get_values('coordinates', 'x')[10000,:].flatten()
+    y_sim_100 = sx.get_values('coordinates', 'y')[10000,:].flatten()
+    x_sim_200 = sx.get_values('coordinates', 'x')[20000,:].flatten()
+    y_sim_200 = sx.get_values('coordinates', 'y')[20000,:].flatten()
+    x_sim_450 = sx.get_values('coordinates', 'x')[45000,:].flatten()
+    y_sim_450 = sx.get_values('coordinates', 'y')[45000,:].flatten()
+    x_sim_700 = sx.get_values('coordinates', 'x')[70000,:].flatten()
+    y_sim_700 = sx.get_values('coordinates', 'y')[70000,:].flatten()
 
-line_val_100, = plt.plot(x_val_100, y_val, '*k', label='Validation 100 s')
-line_sim_100, = plt.plot(x_sim_100, y_sim_100, '-k', label='Simulation 100 s')
-line_val_200, = plt.plot(x_val_200, y_val, '*g', label='Validation 200 s')
-line_sim_200, = plt.plot(x_sim_200, y_sim_200, '-g', label='Simulation 200 s')
-line_val_450, = plt.plot(x_val_450, y_val, '*r', label='Validation 450 s')
-line_sim_450, = plt.plot(x_sim_450, y_sim_450, '-r', label='Simulation 450 s')
-line_val_700, = plt.plot(x_val_700, y_val, '*b', label='Validation 700 s')
-line_sim_700, = plt.plot(x_sim_700, y_sim_700, '-b', label='Simulation 700 s')
-plt.ylabel('y-coordinate [m]')
-plt.xlabel('x-coordinate [m]')
-plt.xlim((0, 0.06))
-#plt.title('Validation of coupled simulation: interface location')
-plt.legend(handles=[line_val_100, line_sim_100, line_val_200, line_sim_200, line_val_450, line_sim_450, line_val_700, line_sim_700])
-plt.tight_layout()
-plt.savefig('Validation_figures/Validation_itf_loc.png')
-plt.show()
-plt.close()
+    line_val_100, = plt.plot(x_val_100, y_val, '*k', label='Validation 100 s')
+    line_sim_100, = plt.plot(x_sim_100, y_sim_100, '-k', label='Simulation 100 s')
+    line_val_200, = plt.plot(x_val_200, y_val, '*g', label='Validation 200 s')
+    line_sim_200, = plt.plot(x_sim_200, y_sim_200, '-g', label='Simulation 200 s')
+    line_val_450, = plt.plot(x_val_450, y_val, '*r', label='Validation 450 s')
+    line_sim_450, = plt.plot(x_sim_450, y_sim_450, '-r', label='Simulation 450 s')
+    line_val_700, = plt.plot(x_val_700, y_val, '*b', label='Validation 700 s')
+    line_sim_700, = plt.plot(x_sim_700, y_sim_700, '-b', label='Simulation 700 s')
+    plt.ylabel('y-coordinate [m]')
+    plt.xlabel('x-coordinate [m]')
+    plt.xlim((0, 0.06))
+    #plt.title('Validation of coupled simulation: interface location')
+    plt.legend(handles=[line_val_100, line_sim_100, line_val_200, line_sim_200, line_val_450, line_sim_450, line_val_700, line_sim_700])
+    plt.tight_layout()
+    plt.savefig('Validation_figures/Validation_itf_loc.png')
+    plt.show()
+    plt.close()
+
+    # Calculate the norm of the difference at each time
+    norm_100 = calculate_diff_norm(x_val_100, y_val, x_sim_100, y_sim_100)
+    norm_200 = calculate_diff_norm(x_val_200, y_val, x_sim_200, y_sim_200)
+    norm_450 = calculate_diff_norm(x_val_450, y_val, x_sim_450, y_sim_450)
+    norm_700 = calculate_diff_norm(x_val_700, y_val, x_sim_700, y_sim_700)
+
+    print(f"Norm of difference at 100s: {norm_100*100} %")
+    print(f"Norm of difference at 200s: {norm_200*100} %")
+    print(f"Norm of difference at 450s: {norm_450*100} %")
+    print(f"Norm of difference at 700s: {norm_700*100} %")
 
 # Material properties and problem parameters
 k = 60 # W/mK
@@ -133,6 +175,15 @@ plt.tight_layout()
 plt.savefig('Validation_figures/Validation_Nu.png')
 plt.show()
 plt.close()
+
+# print relative error in Nusselt number
+rel_diff = 0
+for i, t in enumerate(time_val):
+    rel_diff += np.abs(Nu_val[i] - Nu_sim[M.ceil(t/dt)])/np.abs(Nu_val[i])
+
+rel_norm_Nu = rel_diff/len(time_val)
+
+print('Relative norm of Nusselt number:', rel_norm_Nu*100, '%')
 
 # Nusselt number from plot digitizer
 line_sim, = plt.plot(time_sim[ts_0:ts_end], Nu_sim[ts_0:ts_end], '-k', label='Simulation')
