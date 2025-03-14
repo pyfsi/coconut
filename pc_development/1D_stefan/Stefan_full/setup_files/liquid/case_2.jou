@@ -4,7 +4,7 @@ file set-batch-options n n n
 file read-case 1mm_left_fine.msh ; 2D mesh!
 grid modify-zones zone-type 2 fluid
 
-define user-defined user-defined-memory 12
+define user-defined user-defined-memory 13
 
 define models unsteady-1st-order y
 define models viscous laminar y

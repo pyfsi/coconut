@@ -4,7 +4,7 @@ file set-batch-options n n n
 file read-case 2D_liquid.msh
 grid modify-zones zone-type fluid fluid
 
-define user-defined user-defined-memory 12
+define user-defined user-defined-memory 13
 
 define models unsteady-2nd-order y
 define models viscous laminar y

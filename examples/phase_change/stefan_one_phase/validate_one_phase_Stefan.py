@@ -15,11 +15,11 @@ from scipy import integrate
 common_path = './'
 #case_paths = ['mesh_2/case_results.pickle', 'mesh_5/case_results.pickle', 'mesh_10_v2/case_results.pickle', 'mesh_10_v3/case_results.pickle']
 #legend_entries = ['Partitioned - mesh 5*10^-4', 'Partitioned - mesh 2*10^-4', 'Partitioned - mesh 10^-4', 'Partitioned - mesh 10^-4 - v3']
-case_paths = ['mesh_2/case_results.pickle', 'mesh_5/case_results.pickle', 'mesh_10_v2/case_results.pickle']
-legend_entries = ['Partitioned - mesh 5*10^-4', 'Partitioned - mesh 2*10^-4', 'Partitioned - mesh 10^-4']
+case_paths = ['mesh_5/case_results.pickle']
+legend_entries = ['Partitioned - mesh 2*10^-4']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_full_coarse.out', 'lf_1_to_99.out']
-fluent_legend = ['Fluent - coarse mesh', 'Fluent - fine mesh']
+fluent_legend = ['Fixed grid - coarse mesh', 'Fixed grid - fine mesh']
 
 itf_faces = [10,10,10,10]
 

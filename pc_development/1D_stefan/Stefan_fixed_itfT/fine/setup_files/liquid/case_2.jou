@@ -5,7 +5,7 @@ file read-case grid_2D_5cm_right_fine.msh ; 2D fine mesh!
 grid check
 grid modify-zones zone-type 2 fluid
 
-define user-defined user-defined-memory 12
+define user-defined user-defined-memory 13
 
 define models viscous laminar y
 define models solver pressure-based y

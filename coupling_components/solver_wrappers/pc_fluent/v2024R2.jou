@@ -107,10 +107,11 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 ;   HOOK SOURCE UDFs TO CONSERVATION EQUATIONS AND SET ADJACENT FLAGS
 (if moving_boundary
     (begin
-        (ti-menu-load-string "define user-defined execute-on-demand \"ini_sign::udf_thermal\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"ini_udm::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"activator::udf_thermal\"")
         (if (= thermal_bc 1)
             (ti-menu-load-string "define boundary-conditions fluid , n y 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; heat flux BC -> solid
             (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; temp. BC or nothing -> liquid
@@ -195,6 +196,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                     (ti-menu-load-string "solve iterate flow_iterations")
                 )
             )
+            (ti-menu-load-string "define user-defined execute-on-demand \"activator::udf_thermal\"")
             (if force_balance
                 (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::udf_thermal\"")
             )

@@ -77,8 +77,9 @@ for (_d = 0; _d < dim; _d++) {                                      \
 #define NEW_2_Y 7 // new y-coordinate of second node in face
 #define ADJ 8 // flag for cells adjacent to the interface
 #define D_VOL 9 // swept volume during move_nodes operation
-#define PR_H 10 // Cell liquid fraction in previous converged timestep
+#define PR_H 10 // cell liquid fraction in previous converged timestep
 #define SIGN 11 // defines wether the cell is on the growing or shrinking side during phase change
+#define ACT 12 // set to 1 if phase change is active in the cell
 
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
@@ -1574,14 +1575,14 @@ DEFINE_ON_DEMAND(write_displacement) {
                 }
             }
 
-            if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
-                vel = heat/(NV_MAG(area)*LH*C_R(c,t)); // Stefan condition
-            } else {
-                if (C_T(c,t) >= TM) { // transition to melting
+            if (C_UDMI(c,t,ACT) == 1.0) { // during melting
+                if (C_UDMI(c,t,PR_H) >= 0.0) { // melting regime
+                    vel = heat/(NV_MAG(area)*LH*C_R(c,t)); // Stefan condition
+                } else {  // transition to melting
                     vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1_SAFE(c,t,dt) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
-                } else { // subcooled --> no interface velocity
-                    vel = 0.0;
                 }
+            } else { // subcooled --> no interface velocity
+                vel = 0.0;
             }
 
             j = 0;
@@ -1710,11 +1711,35 @@ DEFINE_ON_DEMAND(update_cell_enthalpy)
 }
 
 
-  /*----------*/
- /* ini_sign */
-/*----------*/
+  /*-----------*/
+ /* activator */
+/*-----------*/
 
-DEFINE_ON_DEMAND(ini_sign)
+DEFINE_ADJUST(activator, d)
+{
+#if RP_NODE
+    Thread *t;
+    cell_t c;
+
+    // loop over all cells
+    thread_loop_c(t,d) {
+        begin_c_loop(c,t) {
+            if (C_UDMI(c,t,ADJ) == 1.0 && C_UDMI(c,t,ACT) == 0.0) { // once switched on is always switched on --> assumption
+                if (C_T(c,t) >= TM) {
+                    C_UDMI(c,t,ACT) = 1.0;
+                }
+            }
+        } end_c_loop(c,t)
+    }
+#endif /* RP_NODE */
+}
+
+
+  /*---------*/
+ /* ini_udm */
+/*---------*/
+
+DEFINE_ON_DEMAND(ini_udm)
 {
 #if RP_NODE
     Domain *d;
@@ -1726,6 +1751,7 @@ DEFINE_ON_DEMAND(ini_sign)
         begin_c_loop(c,t) // loop over all cells
         {
             C_UDMI(c,t,SIGN) = 0.0;
+            C_UDMI(c,t,ACT) = 0.0;
         } end_c_loop(c,t)
     }
 #endif /* RP_NODE */
@@ -1747,31 +1773,6 @@ return source;
 }
 
 
-  /*------------------------*/
- /* remove_excess_enthalpy */
-/*------------------------*/
-
-DEFINE_ADJUST(remove_excess_enthalpy, d)
-{
-#if RP_NODE
-    Thread *t;
-    cell_t c;
-
-    // loop over all cells
-    thread_loop_c(t,d) {
-        begin_c_loop(c,t) {
-            if (C_UDMI(c,t,ADJ) == 1.0) {
-                if (C_T(c,t) > TM) {
-                    C_T(c,t) = TM;
-                    C_H(c,t) = C_CP(c,t)*(TM - 298.15);
-                }
-            }
-        } end_c_loop(c,t)
-    }
-#endif /* RP_NODE */
-}
-
-
   /*-------------------*/
  /* udf_energy_source */
 /*-------------------*/
@@ -1787,17 +1788,12 @@ if (fluid) {
     source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*C_R(c,t)*C_CP(c,t)*(TM - 298.15)*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
     dS[eqn] = 0.0;
 } else { // solid
-    if (C_UDMI(c,t,PR_H) >= 0.0) { // Two-way correction during melting (T >< TM)
+    if (C_UDMI(c,t,ACT) == 1.0) { // Two-way correction during melting (T >< TM)
         source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*(C_T(c,t) - TM)/dt; // Large source term to force T to TM
         dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt; // dS/dT (temperature derivative)
-    } else { // One-way correction during transition (T > TM)
-        // source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*MAX(C_T(c,t) - TM, 0.0)/dt; --> causes a delay, fix this!
+    } else {
         source = 0.0;
-        if (source > 0.0) {
-            dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt;
-        } else {
-            dS[eqn] = 0.0;
-        }
+        dS[eqn] = 0.0;
     }
 }
 
