@@ -1,6 +1,5 @@
 from coconut.tools import print_info
 from coconut.coupling_components.coupled_solvers.coupled_solver import CoupledSolver
-import numpy as np
 
 def create(parameters):
     return CoupledSolverOneWay(parameters)
