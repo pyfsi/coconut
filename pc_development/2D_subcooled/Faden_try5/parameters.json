@@ -1,15 +1,15 @@
 {
   "settings": {
     "timestep_start": 0,
-    "number_of_timesteps": 1200,
+    "number_of_timesteps": 72000,
     "delta_t": 0.1,
-    "save_restart": 0
+    "save_restart": 7200
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
     "settings": {
       "omega_max": 0.8,
-      "write_results": 10,
+      "write_results": 100,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
@@ -42,7 +42,7 @@
           {
             "type": "convergence_criteria.absolute_norm",
             "settings": {
-              "tolerance": 1e-15,
+              "tolerance": 1e-12,
               "order": 2
             }
           }
@@ -87,11 +87,11 @@
               ]
             }
           ],
-          "cores": 6,
+          "cores": 16,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
-          "flow_iterations": 100,
-          "save_results": 120
+          "flow_iterations": 80,
+          "save_results": 3600
         }
       },
       {
@@ -143,11 +143,11 @@
                   ]
                 }
               ],
-              "cores": 8,
+              "cores": 20,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
-              "flow_iterations": 100,
-              "save_results": 60
+              "flow_iterations": 80,
+              "save_results": 3600
             }
           },
           "mapper_interface_input": {

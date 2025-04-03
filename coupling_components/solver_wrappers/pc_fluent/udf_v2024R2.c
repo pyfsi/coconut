@@ -1104,64 +1104,66 @@ DEFINE_ON_DEMAND(read_liquid_hf) {
     face_thread = Lookup_Thread(domain, thread_ids[thread]);
     n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
 
-    begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
-        if (!skip_search) {
-            for (i=0; i < n; i++) { /* loop over all faces in ids array */
-                if (flag[i]) { /* skip faces in ids array that have been assigned already */
-                    continue;
-                } else {
-                    isNodeFound = true;
-                    f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
-                        if (!isNodeFound) { /* break loop if previous node was not found */
-                            break;
-                        }
-                        node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
-                        if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
-                            id = NODE_DM_ID(node);
-                        } else {
-                            skip_search = true;
-                            isNodeFound = false;
-                            break;
-                        }
-                        for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
-                            if (id == ids[d][i]) {
-                                isNodeFound = true;
+    if (n > 0) {
+        begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
+            if (!skip_search) {
+                for (i=0; i < n_file; i++) { /* loop over all faces in ids array */
+                    if (flag[i]) { /* skip faces in ids array that have been assigned already */
+                        continue;
+                    } else {
+                        isNodeFound = true;
+                        f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
+                            if (!isNodeFound) { /* break loop if previous node was not found */
                                 break;
+                            }
+                            node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
+                            if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
+                                id = NODE_DM_ID(node);
                             } else {
+                                skip_search = true;
                                 isNodeFound = false;
+                                break;
+                            }
+                            for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
+                                if (id == ids[d][i]) {
+                                    isNodeFound = true;
+                                    break;
+                                } else {
+                                    isNodeFound = false;
+                                }
                             }
                         }
-                    }
-                    if (skip_search) {
-                        break;
-                    }
-                    if (isNodeFound) { /* All nodes have been found, so the faces match */
-                        flag[i] = true;
-                        C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),QL) = -1*heat_flux[i];
-                        /* Code currently only for melting: set_heat_flux udf only used in solid domain & solid domain will shrink */
-                        // C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = -1.0;
-                        break;
+                        if (skip_search) {
+                            break;
+                        }
+                        if (isNodeFound) { /* All nodes have been found, so the faces match */
+                            flag[i] = true;
+                            C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),QL) = -1*heat_flux[i];
+                            /* Code currently only for melting: set_heat_flux udf only used in solid domain & solid domain will shrink */
+                            // C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = -1.0;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        if (skip_search) {
-            Error("\nFaces cannot be identified by by node id's because node values have not been loaded by Fluent.\n");
-            exit(1);
-        }
-        if (!isNodeFound && !skip_search) {
-            for (d = 0; d < mnpf; d++) {
-                char nodeID[11];
-                sprintf(nodeID, " %d", ids[d][i]);
-                strcat(error_msg, nodeID);
-                if (d < mnpf - 1) {
-                    strcat(error_msg, ",");
-                }
+            if (skip_search) {
+                Error("\nFaces cannot be identified by by node id's because node values have not been loaded by Fluent.\n");
+                exit(1);
             }
-            Error("\n%s\n", error_msg);
-            exit(1);
-        }
-    } end_f_loop(face, face_thread);
+            if (!isNodeFound && !skip_search) {
+                for (d = 0; d < mnpf; d++) {
+                    char nodeID[11];
+                    sprintf(nodeID, " %d", ids[d][i]);
+                    strcat(error_msg, nodeID);
+                    if (d < mnpf - 1) {
+                        strcat(error_msg, ",");
+                    }
+                }
+                Error("\n%s\n", error_msg);
+                exit(1);
+            }
+        } end_f_loop(face, face_thread);
+    }
 
     RELEASE_MEMORY(heat_flux);
     RELEASE_MEMORY(flag);
@@ -1171,6 +1173,7 @@ DEFINE_ON_DEMAND(read_liquid_hf) {
         sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
                 timestep-1, thread_ids[thread]);
         remove(file_name);}
+
 #endif /* RP_NODE */
 
     } /* close loop over threads */
