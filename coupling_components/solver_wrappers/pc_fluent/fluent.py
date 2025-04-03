@@ -119,8 +119,13 @@ class SolverWrapperPCFluent(SolverWrapper):
             raise ValueError('Latent heat should be provided in the json file in case of phase change problems')
         self.melt_temp = self.pc_settings.get('melt_temp', None)
         if self.melt_temp is None:
-            raise ValueError(
-                'Melt temperature should be provided in the json file in case of phase change problems')
+            raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
+        self.melt_enthalpy = self.pc_settings.get('melt_enthalpy', 0.0)
+        if self.melt_enthalpy == 0.0:
+            tools.print_info('No melting enthalpy is given: constant cp assumed.', layout='warning')
+        self.solid_density = self.pc_settings.get('solid_density', 0.0) # Give zero option and assume rho_s == rho_l
+        if self.solid_density == 0.0:
+            tools.print_info('Equal density for solid and liquid is assumed', layout='warning')
 
         # Face-to-node mapping settings for solid domain
         if "displacement" in self.output_variables:
@@ -182,6 +187,8 @@ class SolverWrapperPCFluent(SolverWrapper):
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     line = line.replace('|LATENT_HEAT|', str(self.latent_heat))
                     line = line.replace('|MELT_TEMP|', str(self.melt_temp))
+                    line = line.replace('|MELT_ENTHALPY|', str(self.melt_enthalpy))
+                    line = line.replace('|SOLID_DENSITY|', str(self.solid_density))
                     line = line.replace('|TIME_STEP_START|', str(self.timestep_start))
                     line = line.replace('|UNSTEADY|', 'true' if self.unsteady else 'false')
                     line = line.replace('|FLUID|', 'false' if self.thermal_bc == "heat_flux" else 'true')

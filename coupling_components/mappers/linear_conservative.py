@@ -232,30 +232,34 @@ class MapperLinearConservative(Component):
             cell_vol = area * dx
             node_vol = np.zeros(np.shape(cell_vol))
 
-            # perform loop to determine multiplication factor C to compensate for lost or falsely created volume
-            while np.linalg.norm(cell_vol - node_vol) > self.tolerance and it < self.max_iterations:
-                it += 1
-                C_prev = C
+            if not np.any(dx): # if all face displacements are zero
+                C = np.ones((self.n_from, 1))
+            else:
+                # perform loop to determine multiplication factor C to compensate for lost or falsely created volume
+                while np.linalg.norm(cell_vol - node_vol) > self.tolerance and it < self.max_iterations:
+                    it += 1
+                    C_prev = C
 
-                # interpolate and project shifted boundary nodes on domain boundary
-                data_itp = self.interpolate(C * data_from, data_to)
+                    # interpolate and project shifted boundary nodes on domain boundary
+                    data_itp = self.interpolate(C * data_from, data_to)
 
-                # compare cell-based volume to node-based volume
-                for i, c_vol in enumerate(cell_vol):
-                    nearest = self.nearest_nodes[i, :]
-                    prev_coord = self.prev_coord_to[nearest, :]
-                    new_coord = prev_coord + data_itp[nearest, :]
-                    x = np.array([prev_coord[0][0], prev_coord[1][0], new_coord[0][0], new_coord[1][0]])
-                    y = np.array([prev_coord[0][1], prev_coord[1][1], new_coord[0][1], new_coord[1][1]])
-                    node_vol[i] = PolyArea(x, y)
+                    # compare cell-based volume to node-based volume
+                    for i, c_vol in enumerate(cell_vol):
+                        nearest = self.nearest_nodes[i, :]
+                        prev_coord = self.prev_coord_to[nearest, :]
+                        new_coord = prev_coord + data_itp[nearest, :]
+                        x = np.array([prev_coord[0][0], prev_coord[1][0], new_coord[0][0], new_coord[1][0]])
+                        y = np.array([prev_coord[0][1], prev_coord[1][1], new_coord[0][1], new_coord[1][1]])
+                        node_vol[i] = PolyArea(x, y)
 
-                C = cell_vol/node_vol
-                C = (1 - self.relax) * C + self.relax * C_prev
+                    C = cell_vol/node_vol
+                    C[~np.isfinite(C)] = 1.0
+                    C = (1 - self.relax) * C + self.relax * C_prev
 
-            # print warning if C did not converge fast enough
-            if it >= self.max_iterations and np.linalg.norm(cell_vol - node_vol) > self.tolerance:
-                warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(cell_vol - node_vol)} > {self.tolerance}.'
-                tools.print_info(warning_text, layout='warning')
+                # print warning if C did not converge fast enough
+                if it >= self.max_iterations and np.linalg.norm(cell_vol - node_vol) > self.tolerance:
+                    warning_text = f'Conservative mapper - C did not converge below tolerance: {np.linalg.norm(cell_vol - node_vol)} > {self.tolerance}.'
+                    tools.print_info(warning_text, layout='warning')
 
             # store converged C
             self.C = C

@@ -13,17 +13,17 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = './'
-case_paths = ['case_results.pickle']
-legend_entries = ['Coconut']
+case_paths = ['new/case_results.pickle', 'old/case_results.pickle']
+legend_entries = ['New source', 'Old source']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_fine.out', 'lf_coarse.out']
 fluent_legend = ['Fluent - fine', 'Fluent - coarse']
 
-itf_faces = [100]
+itf_faces = [100, 100]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction
-fluent_val = True # Is Fluent validation data available?
+fluent_val = False # Is Fluent validation data available?
 
 # load cases
 results = {}
@@ -34,9 +34,11 @@ for name, path in zip(legend_entries, case_paths):
 lines_disp = []
 lines_lf = []
 lines_heat_flux = []
+arrays = []
+lines_error = []
 
 # make figures
-line_styles = ['k--', 'g--', 'r--', 'b--', 'y--', 'c--', 'k-.']
+line_styles = ['b--', 'g--', 'r--', 'c--', 'y--', 'k--', 'k-.']
 for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), ('solution_y', 'interface_y', 'heat_flux', 'W/m^2')):
     if var == "displacement":
         if not disp_plots:
@@ -84,8 +86,13 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
             # determine max time reached by Coconut simulations
             if j == 0:
+                t_min_co = time[-1]
                 t_max_co = time[-1]
+                min_index = len(time) - 1
             else:
+                if time[-1] < t_min_co:
+                    t_min_co = time[-1]
+                    min_index = len(time) - 1
                 if time[-1] > t_max_co:
                     t_max_co = time[-1]
 
@@ -95,6 +102,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             else:
                 line, = plt.plot(time + t_ini, LF.flatten(), line_styles[j], label=name)
                 lines_lf.append(line)
+                arrays.append(LF.flatten())
 
         # Plot interface displacement in time
         if disp_plots:
@@ -134,7 +142,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
                     # set correct initial conditions
                     time_val[0] = 0.0
-                    if 'full' in name:
+                    if 'full' in fluent_cases[j]:
                         LF_val[0] = 0.0
                     else:
                         time_val += t_ini
@@ -162,6 +170,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
             # Stefan solution (part 2)
             t_end = t_ini + max(t_max_co, t_max_fl)  # solution time
+            t_end_error = t_ini + max(t_min_co, t_max_fl)
 
             dt = 0.01
             m = M.ceil((t_end - t_ini) / dt)
@@ -169,6 +178,8 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             x_front_ana = 2 * la * np.sqrt(alpha_l * time_ana)
             LF_ana = x_front_ana / x_end
             q_ana = rho * LH * la * M.sqrt(alpha_l) * time_ana ** (-1 / 2)
+            start_index = 0
+            end_index = M.ceil((t_end_error - t_ini) / dt)
 
             # plot analytical
             line, = plt.plot(time_ana, LF_ana, line_styles[len(legend_entries) + len(fluent_legend)], label="Ana - stefan")
@@ -178,6 +189,23 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.ylabel('Liquid fraction')
             plt.xlabel('Time [s]')
             plt.legend(handles=lines_lf)
+            # plt.tight_layout()
+            # plt.savefig('legend_lf.png', dpi=150)
+            plt.show()
+            plt.close()
+
+            # calculate error of coconut simulations -> only works if all time step sizes are equal!
+            for i, lf_sim in enumerate(arrays):
+                min_index = max(end_index-start_index, min_index)
+                error = np.abs(LF_ana[start_index+1:end_index] - lf_sim[1:min_index])#/np.abs(LF_ana[start_index+1:end_index] - LF_ana[0])
+                line, = plt.plot(time_ana[start_index+1:end_index], error, line_styles[i], label=legend_entries[i])
+                lines_error.append(line)
+
+            # Log-plot of simulation error
+            plt.ylabel('Liquid fraction - error')
+            plt.yscale('log')
+            plt.xlabel('Time [s]')
+            plt.legend(handles=lines_error)
             plt.show()
             plt.close()
 
