@@ -1,10 +1,10 @@
 file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case 1mm_left_fine.msh ; 2D mesh!
+file read-case 50mm_left_fine.msh ; 2D mesh!
 grid modify-zones zone-type 2 fluid
 
-define user-defined user-defined-memory 15
+define user-defined user-defined-memory 13
 
 define models unsteady-1st-order y
 define models viscous laminar y
@@ -13,7 +13,7 @@ define models energy y n n n y
 solve set equations flow y
 
 define materials copy fluid air pcm
-define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 1.5 yes constant 0.004 no yes 8.61e-4 n
+define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 1.5 yes constant 0.004 no yes 8.61e-4 no
 
 define boundary-conditions fluid , y pcm n n n n , n , n y n
 ;define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n ,
@@ -28,12 +28,13 @@ define operating-conditions gravity n
 solve monitors residual check-convergence y y y y
 solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-12
 
-solve set discretization-scheme temperature 0
+solve set discretization-scheme temperature 1
 solve set discretization-scheme mom 0
 solve set discretization-scheme pressure 12
 solve set gradient-scheme n y
 ; SIMPLE (20) - PISO (22) - coupled (24)
 solve set p-v-coupling 24
+solve set under-relaxation temperature 0.9
 
 ;solve set reporting-interval 10
 ;solve set flow-warnings n

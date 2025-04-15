@@ -21,14 +21,14 @@ shutil.rmtree(cfd_dir_1, ignore_errors=True)
 shutil.rmtree(cfd_dir_2, ignore_errors=True)
 
 # copy run_simulation.py script to main directory
-shutil.copy('../../run_simulation.py', './')
+shutil.copy('../../../run_simulation.py', './')
 
 # create new CFD folder
-shutil.copytree('setup_files/solid', cfd_dir_1)
+shutil.copytree('../setup_files/solid_fluent_smoothing', cfd_dir_1)
 cfd_env_1 = tools.get_solver_env(solver_1, cfd_dir_1)
 subprocess.check_call('./setup_fluent_1.sh', shell=True, cwd=cfd_dir_1, env=cfd_env_1)
 
 # create new CSM folder
-shutil.copytree('setup_files/liquid', cfd_dir_2)
+shutil.copytree('../setup_files/liquid_fluent', cfd_dir_2)
 cfd_env_2 = tools.get_solver_env(solver_2, cfd_dir_2)
 subprocess.check_call('./setup_fluent_2.sh', shell=True, cwd=cfd_dir_2, env=cfd_env_2)

@@ -24,7 +24,7 @@ shutil.rmtree(cfd_dir_2, ignore_errors=True)
 shutil.copy('../../../run_simulation.py', './')
 
 # create new CFD folder
-shutil.copytree('../setup_files/solid_fluent', cfd_dir_1)
+shutil.copytree('../setup_files/solid_fluent_layering', cfd_dir_1)
 cfd_env_1 = tools.get_solver_env(solver_1, cfd_dir_1)
 subprocess.check_call('./setup_fluent_1.sh', shell=True, cwd=cfd_dir_1, env=cfd_env_1)
 

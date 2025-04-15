@@ -185,7 +185,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
 
             # Plot liquid fraction
             plt.ylabel('Liquid fraction')
-            plt.xlabel('Time [h]')
+            plt.xlabel('Time [s]')
             plt.legend(handles=lines_lf)
             plt.tight_layout()
             plt.savefig('legend_lf.png', dpi=150)
@@ -205,7 +205,6 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.legend(handles=lines_error)
             plt.show()
             plt.close()
-            
 
     if var == "heat_flux":
         for j, name in enumerate(legend_entries):

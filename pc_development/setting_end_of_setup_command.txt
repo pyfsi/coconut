@@ -1,0 +1,7 @@
+For phase change problems, defining an end_of_setup_command in recommended in the following cases:
+    - Layering mesh deformation technique for 1D problems --> requires adjacent cell height of moving boundary:
+        E.g.: "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")"
+        --> defines a constant cell height of 0.0001 m
+    - Smoothing mesh deformation technique with adjacent boundary layer (recommended for accurate resolution near interface and source term handling):
+        E.g.: "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 5e-5 yes no no\")"
+        --> 'yes' after '5e-5' answers the following question: 'deform adjacent boundary layer with zone?'

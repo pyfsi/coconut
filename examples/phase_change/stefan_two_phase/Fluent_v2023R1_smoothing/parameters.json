@@ -1,15 +1,15 @@
 {
   "settings": {
     "timestep_start": 0,
-    "number_of_timesteps": 72000,
-    "delta_t": 0.1,
+    "number_of_timesteps": 7200,
+    "delta_t": 0.01,
     "save_restart": 0
   },
   "coupled_solver": {
     "type": "coupled_solvers.aitken",
     "settings": {
       "omega_max": 0.8,
-      "write_results": 100,
+      "write_results": 10,
       "debug": false,
       "model": {
         "type": "coupled_solvers.models.ls",
@@ -38,13 +38,20 @@
               "tolerance": 1e-12,
               "order": 2
             }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
           }
         ]
       }
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.pc_fluent.v2024R2",
+        "type": "solver_wrappers.pc_fluent.v2023R1",
         "settings": {
           "working_directory": "CFD_2",
           "case_file": "pc_fluid.cas.h5",
@@ -68,12 +75,6 @@
               "variables": [
                 "displacement"
               ]
-            },
-            {
-              "model_part": "boundary_in_faces",
-              "variables": [
-                "temperature"
-              ]
             }
           ],
           "interface_output": [
@@ -88,14 +89,14 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 100,
-          "save_results": 6000
+          "save_results": 360
         }
       },
       {
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.pc_fluent.v2024R2",
+            "type": "solver_wrappers.pc_fluent.v2023R1",
             "settings": {
               "working_directory": "CFD_1",
               "case_file": "pc_solid.cas.h5",
@@ -136,19 +137,13 @@
                   "variables": [
                     "displacement"
                   ]
-                },
-                {
-                  "model_part": "boundary_out_faces",
-                  "variables": [
-                    "temperature"
-                  ]
                 }
               ],
               "cores": 2,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 6000
+              "save_results": 360
             }
           },
           "mapper_interface_input": {
