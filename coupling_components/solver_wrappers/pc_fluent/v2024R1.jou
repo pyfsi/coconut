@@ -107,10 +107,9 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 ;   HOOK SOURCE UDFs TO CONSERVATION EQUATIONS AND SET ADJACENT FLAGS
 (if moving_boundary
     (begin
-        (ti-menu-load-string "define user-defined execute-on-demand \"ini_sign::udf_thermal\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"ini_udm::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
-        (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
         (if (= thermal_bc 1)
             (ti-menu-load-string "define boundary-conditions fluid , n y 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; heat flux BC -> solid
             (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; temp. BC or nothing -> liquid
@@ -120,14 +119,10 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 ;
 ;   HOOK PROFILE UDFs TO INTERFACE BOUNDARY CONDITIONS
 (if (= timestep_start 0)
-    (cond ((= thermal_bc 0)
-            (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define boundary-conditions wall ~a no 0 no 0 no yes temperature yes yes \"udf\" \"set_temperature::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
-            ))
-            ((= thermal_bc 1)
-            (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define boundary-conditions wall ~a no 0 no 0 no yes heat-flux yes yes \"udf\" \"set_heat_flux::udf_thermal\" no no no ,\n"(list-ref face_threads k))) ; Previous command after udf: "no no no 0 no ,"
-            ))
+    (if (= thermal_bc 0)
+        (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
+        (ti-menu-load-string (format #f "define boundary-conditions wall ~a no 0 no 0 no yes temperature yes yes \"udf\" \"set_temperature::udf_thermal\" no no no ,\n"(list-ref face_threads k)))
+        )
     )
 )
 ;
@@ -166,7 +161,9 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                     (begin
                         (ti-menu-load-string "solve dual-time-iterate 1 0")
                         (if moving_boundary
-                            (ti-menu-load-string "define user-defined execute-on-demand \"update_cell_enthalpy::udf_thermal\"")
+                            (if (= thermal_bc 1)
+                                (ti-menu-load-string "define user-defined execute-on-demand \"read_liquid_hf::udf_thermal\"")
+                            )
                         )
                         (ti-menu-load-string "solve iterate 1")
                         (if moving_boundary
@@ -178,6 +175,11 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                         (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                     )
                     (begin
+                        (if moving_boundary
+                            (if (= thermal_bc 1)
+                                (ti-menu-load-string "define user-defined execute-on-demand \"read_liquid_hf::udf_thermal\"")
+                            )
+                        )
                         (ti-menu-load-string "solve dual-time-iterate 0 1")
                         (ti-menu-load-string "solve iterate 1")
                         (if moving_boundary

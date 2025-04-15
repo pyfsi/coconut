@@ -77,14 +77,16 @@ for (_d = 0; _d < dim; _d++) {                                      \
 #define NEW_2_Y 7 // new y-coordinate of second node in face
 #define ADJ 8 // flag for cells adjacent to the interface
 #define D_VOL 9 // swept volume during move_nodes operation
-#define PR_H 10 // Cell liquid fraction in previous converged timestep
-#define SIGN 11 // defines wether the cell is on the growing or shrinking side during phase change
+#define SIGN 10 // defines wether the cell is on the growing or shrinking side during phase change
+#define QL 11 // incoming liquid heat flux into the solid domain
 
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
 real dt = |TIME_STEP_SIZE|;
 real LH = |LATENT_HEAT|;
 real TM = |MELT_TEMP|;
+real HM = |MELT_ENTHALPY|;
+real rho_s = |SOLID_DENSITY|;
 int TS_START = |TIME_STEP_START|;
 bool unsteady = |UNSTEADY|;
 bool fluid = |FLUID|;
@@ -592,7 +594,7 @@ DEFINE_ON_DEMAND(store_temperature){
         begin_f_loop(face, face_thread) {
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
-            /* Strategy to allow subcooling of the solid domain */
+            /* Strategy to allow subcooling of the solid domain --> currently not in use */
             if (fluid) {
                 temp[i] = F_T(face, face_thread);
             } else {
@@ -771,7 +773,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
             flux[i] = heat/NV_MAG(area);
 
             /* Code currently only for melting: store_heat_flux udf only used in liquid domain & liquid domain will grow */
-            C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = 1.0;
+            // C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = 1.0;
 
             for (j = 0; j < mnpf; j++) {
                 /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
@@ -1016,146 +1018,168 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
 }
 
 
-  /*---------------*/
- /* set_heat_flux */
-/*---------------*/
+  /*----------------*/
+ /* read_liquid_hf */
+/*----------------*/
 
-DEFINE_PROFILE(set_heat_flux, face_thread, var) {
-    /* UDF that can be used to define a custom heat flux boundary profile in Fluent, similar to set_temperature.
-    It will read the updated heat flux profile from a file and set them as thermal boundary condition.
+DEFINE_ON_DEMAND(read_liquid_hf) {
+    /* The UDF will read the updated heat flux profile from a file and store them as a UDM value in the cell adjacent to the boundary face.
     As only the compute nodes have access to their own partition of the mesh, each one is responsible for reading
     the file containing the updated heat fluxes and selecting the correct row. */
-    if (myid == 0) {printf("\nStarted UDF set_heat_flux.\n"); fflush(stdout);}
+    if (myid == 0) {printf("\nStarted UDF read_liquid_hf.\n"); fflush(stdout);}
+    bool skip_search = false; // Boolean to indicate whether loop should search for corresponding node id's
+    int thread;
     char file_name[256];
-    int thread_id = THREAD_ID(face_thread);
-    int timestep;
-    bool skip_search; // Boolean to indicate whether loop should search for corresponding node id's
-    skip_search = false;
+
 
 #if RP_NODE
+    Domain *domain;
+    Thread *face_thread;
     face_t face;
     Node *node;
-    int i, d, n, node_number, id, id_bis;
+    int i, d, node_number, id;
+    int n, n_file;
     DECLARE_MEMORY(heat_flux, real);
     DECLARE_MEMORY(flag, bool);
     DECLARE_MEMORY_N(ids, int, mnpf);
     FILE *file = NULL;
 #endif /* RP_NODE */
 
-    if (unsteady) {
-        timestep = N_TIME;
-    } else {
-        timestep = N_ITER;
-        if (timestep != 0) {
-            timestep = 1;
-        }
-    }
+#if RP_HOST
+    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
+#endif /* RP_HOST */
 
-    sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
-            timestep, thread_id);
+    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
+
+    for (thread=0; thread<n_threads; thread++) { /* both host and node execute loop over face_threads (= ModelParts) */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+        sprintf(file_name, "heat_flux_timestep%i_thread%i.dat",
+                timestep, thread_ids[thread]);
+        host_to_node_sync_file(file_name); /* send file to the compute nodes */
+#else
+    struct stat st = {0};
+    /* create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved */
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+    sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
+            timestep, thread_ids[thread]);
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
+#endif /* RP_HOST */
 
 #if RP_NODE
     if (NULLP(file = fopen(file_name, "r"))) {
-        if (timestep == TS_START) {
-            skip_search = true;
-        } else {
-            Error("\nUDF-error: Unable to open %s for reading\n", file_name);
-            exit(1);
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name);
+        exit(1);
+    }
+
+    char line[256];
+    n_file = 0;
+    while (fgets(line, sizeof(line), file) != NULL) {
+            n_file++;
+        }
+    n_file--;
+    char line_bis[64];
+    fseek(file, 0L, SEEK_SET);
+    fgets(line_bis, sizeof(line_bis), file); // Discard the header line
+
+    ASSIGN_MEMORY(heat_flux, n_file, real);
+    ASSIGN_MEMORY(flag, n_file, bool);
+    ASSIGN_MEMORY_N(ids, n_file, int, mnpf);
+
+    for (i = 0; i < n_file; i++) {
+        fscanf(file, "%lf", &heat_flux[i]); /* read normal incoming heat flux from file */
+        flag[i] = false;
+        for (d = 0; d < mnpf; d++) {
+            fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
         }
     }
 
-    if (!skip_search) {
-        char line[256];
-        n = 0;
-        while (fgets(line, sizeof(line), file) != NULL) {
-                n++;
-            }
-        n--;
-        char line_bis[64];
-        fseek(file, 0L, SEEK_SET);
-        fgets(line_bis, sizeof(line_bis), file); // Discard the header line
-
-        ASSIGN_MEMORY(heat_flux, n, real);
-        ASSIGN_MEMORY(flag, n, bool);
-        ASSIGN_MEMORY_N(ids, n, int, mnpf);
-
-        for (i = 0; i < n; i++) {
-            fscanf(file, "%lf", &heat_flux[i]); /* read normal incoming heat flux from file */
-            flag[i] = false;
-            for (d = 0; d < mnpf; d++) {
-                fscanf(file, "%i", &ids[d][i]); /* read node ids from file */
-            }
-        }
-
-        fclose(file);
-    }
+    fclose(file);
 
     char error_msg[256] = "UDF-error: No match for face with node ids";
     bool isNodeFound;
-    begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
-        if (!skip_search) {
-            for (i=0; i < n; i++) { /* loop over all faces in ids array */
-                if (flag[i]) { /* skip faces in ids array that have been assigned already */
-                    continue;
-                } else {
-                    isNodeFound = true;
-                    f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
-                        if (!isNodeFound) { /* break loop if previous node was not found */
-                            break;
-                        }
-                        node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
-                        if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
-                            id = NODE_DM_ID(node);
-                        } else {
-                            skip_search = true;
-                            isNodeFound = false;
-                            break;
-                        }
-                        for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
-                            if (id == ids[d][i]) {
-                                isNodeFound = true;
+
+    domain = Get_Domain(1);
+    face_thread = Lookup_Thread(domain, thread_ids[thread]);
+    n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
+
+    if (n > 0) {
+        begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
+            if (!skip_search) {
+                for (i=0; i < n_file; i++) { /* loop over all faces in ids array */
+                    if (flag[i]) { /* skip faces in ids array that have been assigned already */
+                        continue;
+                    } else {
+                        isNodeFound = true;
+                        f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
+                            if (!isNodeFound) { /* break loop if previous node was not found */
                                 break;
+                            }
+                            node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
+                            if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
+                                id = NODE_DM_ID(node);
                             } else {
+                                skip_search = true;
                                 isNodeFound = false;
+                                break;
+                            }
+                            for (d = 0; d < mnpf; d++) { /* loop over all node ids for current face in ids array */
+                                if (id == ids[d][i]) {
+                                    isNodeFound = true;
+                                    break;
+                                } else {
+                                    isNodeFound = false;
+                                }
                             }
                         }
-                    }
-                    if (skip_search) {
-                        break;
-                    }
-                    if (isNodeFound) { /* All nodes have been found, so the faces match */
-                        flag[i] = true;
-                        F_PROFILE(face, face_thread, var) = -1*heat_flux[i];
-                        /* Code currently only for melting: set_heat_flux udf only used in solid domain & solid domain will shrink */
-                        C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = -1.0;
-                        break;
+                        if (skip_search) {
+                            break;
+                        }
+                        if (isNodeFound) { /* All nodes have been found, so the faces match */
+                            flag[i] = true;
+                            C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),QL) = -1*heat_flux[i];
+                            /* Code currently only for melting: set_heat_flux udf only used in solid domain & solid domain will shrink */
+                            // C_UDMI(F_C0(face, face_thread),THREAD_T0(face_thread),SIGN) = -1.0;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        if (skip_search) {
-            F_PROFILE(face, face_thread, var) = 0.0; // assign zero value when faces cannot be identified by node id's
-        }
-        if (!isNodeFound && !skip_search) {
-            for (d = 0; d < mnpf; d++) {
-                char nodeID[11];
-                sprintf(nodeID, " %d", ids[d][i]);
-                strcat(error_msg, nodeID);
-                if (d < mnpf - 1) {
-                    strcat(error_msg, ",");
-                }
+            if (skip_search) {
+                Error("\nFaces cannot be identified by by node id's because node values have not been loaded by Fluent.\n");
+                exit(1);
             }
-            Error("\n%s\n", error_msg);
-            exit(1);
-        }
-    } end_f_loop(face, face_thread);
+            if (!isNodeFound && !skip_search) {
+                for (d = 0; d < mnpf; d++) {
+                    char nodeID[11];
+                    sprintf(nodeID, " %d", ids[d][i]);
+                    strcat(error_msg, nodeID);
+                    if (d < mnpf - 1) {
+                        strcat(error_msg, ",");
+                    }
+                }
+                Error("\n%s\n", error_msg);
+                exit(1);
+            }
+        } end_f_loop(face, face_thread);
+    }
 
     RELEASE_MEMORY(heat_flux);
     RELEASE_MEMORY(flag);
     RELEASE_MEMORY_N(ids, mnpf);
+
+    if (myid == 0) {
+        sprintf(file_name, "|TMP_DIRECTORY_NAME|/heat_flux_timestep%i_thread%i.dat",
+                timestep-1, thread_ids[thread]);
+        remove(file_name);}
+
 #endif /* RP_NODE */
 
-    if (myid == 0) {printf("\nFinished UDF set_heat_flux.\n"); fflush(stdout);}
+    } /* close loop over threads */
+
+    if (myid == 0) {printf("\nFinished UDF read_liquid_hf.\n"); fflush(stdout);}
 }
 
 
@@ -1458,7 +1482,8 @@ DEFINE_ON_DEMAND(calc_volume_change)
 /*--------------------*/
 
 DEFINE_ON_DEMAND(write_displacement) {
-/* Store previous and new interface node coordinates in UDM's and flags cells adjacent to the boundary.*/
+/* Calculate and write displacement based on the Stefan condition: difference between solid and liquid heat flux.
+This is where the melting actually happens! */
     if (myid == 0) {printf("\nStarted UDF write_displacement.\n"); fflush(stdout);}
 
     /* declaring variables */
@@ -1469,13 +1494,13 @@ DEFINE_ON_DEMAND(write_displacement) {
 
 #if RP_NODE
     Domain *domain;
-    Thread *t, *face_thread, *itf_thread;
+    Thread *t, *face_thread;
     cell_t c;
-    face_t face, cell_face;
+    face_t face;
     Node *node;
-    int face_number, node_number, j;
-    real heat, vel, src, ds, A_by_es;
-    real normal[ND_ND], area[ND_ND], A[ND_ND], es[ND_ND], dr0[ND_ND], dr1[ND_ND], avg_flux[ND_ND], v0[ND_ND];
+    int node_number, j;
+    real heat, vel;
+    real normal[ND_ND], area[ND_ND];
 #endif /* RP_NODE */
     
 #if RP_HOST
@@ -1509,9 +1534,9 @@ DEFINE_ON_DEMAND(write_displacement) {
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
         domain = Get_Domain(1);
-        itf_thread = Lookup_Thread(domain, thread_ids[thread]);
+        face_thread = Lookup_Thread(domain, thread_ids[thread]);
 
-        n = THREAD_N_ELEMENTS_INT(itf_thread); /* get number of faces in this partition of face_thread */
+        n = THREAD_N_ELEMENTS_INT(face_thread); /* get number of faces in this partition of face_thread */
 
         /* assign memory on compute node that accesses its partition of the face_thread */
         ASSIGN_MEMORY_N(disp, n, real, ND_ND);
@@ -1520,69 +1545,36 @@ DEFINE_ON_DEMAND(write_displacement) {
 
         i = 0;
         /* loop over all faces (tracked by variable "face") in current compute node partition of face_thread */
-        begin_f_loop(face, itf_thread) {
+        begin_f_loop(face, face_thread) {
             if (i >= n) {Error("\nIndex %i >= array size %i.", i, n);}
 
-            c = F_C0(face, itf_thread); /* adjacent cell */
-            t = THREAD_T0(itf_thread); /* adjacent cell thread (F_C0_THREAD(face, itf_thread)) */
-            heat = 0;
+            c = F_C0(face, face_thread); /* adjacent cell */
+            t = THREAD_T0(face_thread); /* adjacent cell thread (F_C0_THREAD(face, face_thread)) */
 
-            /* Allocates memory for gradient and reconstruction gradient macros */
-            Alloc_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
-            /* (Re-)calculate the gradients and store them in the memory allocated before. Have to be called in the correct order. */
-            Scalar_Reconstruction(domain, SV_T, -1, SV_T_RG, NULL);
-            // Scalar_Derivatives(domain, SV_T, -1, SV_T_G, SV_T_RG, NULL); -> does not work multi-core... & not needed atm
+            /* Heat entering the solid domain */
+            heat = BOUNDARY_HEAT_FLUX(face, face_thread); // [W]
+            F_AREA(area, face, face_thread);
+            NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
 
-            c_face_loop(c,t,face_number)
-            {
-                face_thread = C_FACE_THREAD(c,t,face_number);
-                cell_face = C_FACE(c,t,face_number);
+            /* store face area of cell */
+            face_area[i] = NV_MAG(area); // [m^2]
 
-                /* for cell faces at coupling interface */
-                if (THREAD_ID(face_thread) == THREAD_ID(itf_thread)) {
-
-                    /* Incoming heat from liquid side */
-                    heat += BOUNDARY_HEAT_FLUX(cell_face, face_thread); // [W]
-                    F_AREA(area, cell_face, face_thread);
-                    NV_VS(normal, =, area, *, 1.0 / NV_MAG(area)); // normal vector
-
-                    /* store face area of cell */
-                    face_area[i] = NV_MAG(area); // [m^2]
-
-                    for (j = 0; j < mnpf; j++) {
-                        /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
-                        ids[j][i] = -1;
-                    }
-
-                    /* loop over all nodes in the face */
-                    j = 0;
-                    f_node_loop(cell_face, face_thread, node_number) {
-                        if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
-                        node = F_NODE(cell_face, face_thread, node_number);
-                        ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
-                        j++;
-                    }
-                }
-                else {
-                    // Outgoing heat at interior cell faces -- currently not used!
-                    INTERIOR_FACE_GEOMETRY(cell_face,face_thread,A,ds,es,A_by_es,dr0,dr1);
-                    if (F_C1(cell_face, face_thread) != -1) {
-                        NV_VS_VS(avg_flux, =, C_T_RG(c,t), *, 0.5, +, C_T_RG(F_C0(cell_face, face_thread),F_C0_THREAD(cell_face, face_thread)), *, 0.5);
-                        NV_VS(v0, =, es, *, A_by_es);
-                        heat += C_K_L(c,t)*(C_T(F_C0(cell_face, face_thread),F_C0_THREAD(cell_face, face_thread))-C_T(c,t))*A_by_es/ds + C_K_L(c,t)*(NV_DOT(avg_flux, A)-NV_DOT(avg_flux, v0));
-                    }
-                }
+            for (j = 0; j < mnpf; j++) {
+                /* -1 is placeholder, it is usually overwritten, but not always in unstructured grids */
+                ids[j][i] = -1;
             }
 
-            if (C_UDMI(c,t,PR_H) >= 0.0) { // during melting
-                vel = heat/(NV_MAG(area)*LH*C_R(c,t)); // Stefan condition
-            } else {
-                if (C_T(c,t) >= TM) { // transition to melting
-                    vel = (C_UDMI(c,t,PR_H) * C_VOLUME_M1_SAFE(c,t,dt) / dt + heat / C_R(c,t)) / (NV_MAG(area) * LH);
-                } else { // subcooled --> no interface velocity
-                    vel = 0.0;
-                }
+            /* loop over all nodes in the face */
+            j = 0;
+            f_node_loop(face, face_thread, node_number) {
+                if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
+                node = F_NODE(face, face_thread, node_number);
+                ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                j++;
             }
+
+            /* Stefan condition: (q_L - q_S) / (rho * LH) = v_itf --> assumed normal to the interface */
+            vel = (C_UDMI(c,t,QL) - heat / NV_MAG(area)) / (C_R(c,t) * LH);
 
             j = 0;
             for (j = 0; j < ND_ND; j++) {
@@ -1590,9 +1582,7 @@ DEFINE_ON_DEMAND(write_displacement) {
             }
             i ++;
 
-            /* Free memory of reconstruction gradients and gradients */
-            Free_Storage_Vars(domain, SV_T_RG, SV_T_G, SV_NULL);
-        } end_f_loop(face, itf_thread);
+        } end_f_loop(face, face_thread);
 
         /* assign destination ID compute_node to "node_host" or "node_zero" (these names are known) */
         compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
@@ -1687,34 +1677,11 @@ DEFINE_ON_DEMAND(write_displacement) {
 }
 
 
-  /*----------------------*/
- /* update_cell_enthalpy */
-/*----------------------*/
+  /*---------*/
+ /* ini_udm */
+/*---------*/
 
-DEFINE_ON_DEMAND(update_cell_enthalpy)
-{
-#if RP_NODE
-    Domain *d;
-    d = Get_Domain(1);
-    Thread *t;
-    cell_t c;
-    real H;
-
-    // loop over all cells
-    thread_loop_c(t,d) {
-        begin_c_loop(c,t) {
-            C_UDMI(c,t,PR_H) = C_H(c,t) - C_CP(c,t)*(TM - 298.15); // should be previous enthalpy on NEW UPDATED MESH --> update??
-        } end_c_loop(c,t)
-    }
-#endif /* RP_NODE */
-}
-
-
-  /*----------*/
- /* ini_sign */
-/*----------*/
-
-DEFINE_ON_DEMAND(ini_sign)
+DEFINE_ON_DEMAND(ini_udm)
 {
 #if RP_NODE
     Domain *d;
@@ -1725,7 +1692,12 @@ DEFINE_ON_DEMAND(ini_sign)
     {
         begin_c_loop(c,t) // loop over all cells
         {
-            C_UDMI(c,t,SIGN) = 0.0;
+            if (fluid) { // Currently only melting problems are supported --> can be ad hoc defined depending on incoming and outgoing heat fluxes (see heat flux udf's)
+                C_UDMI(c,t,SIGN) = 1.0;
+            } else {
+                C_UDMI(c,t,SIGN) = -1.0;
+            }
+            C_UDMI(c,t,QL) = 0.0;
         } end_c_loop(c,t)
     }
 #endif /* RP_NODE */
@@ -1739,10 +1711,22 @@ DEFINE_ON_DEMAND(ini_sign)
 DEFINE_SOURCE(udf_mass_source,c,t,dS,eqn)
 {
 /*Source term for continuity equation, to compensate mass loss or mass gain.*/
-real source;
+real source, rho;
 
-source = C_UDMI(c,t,SIGN)*C_R(c,t)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
-dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+if (fluid) {
+    if (rho_s == 0.0) {
+        rho = C_R(c,t);
+    } else {
+        rho = rho_s;
+    }
+
+    source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*rho*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+    dS[eqn] = 0.0;
+} else { // solid
+    source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*C_R(c,t)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
+    dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt); // dS/d(rho)
+}
+
 return source;
 }
 
@@ -1753,27 +1737,31 @@ return source;
 
 DEFINE_SOURCE(udf_energy_source,c,t,dS,eqn)
 {
-/*Source term for energy equation, to account for latent and sensible heat.*/
-real source;
-real CST = 1e8;
+/*Source term for energy equation, to account for sensible heat.*/
+real source, rho;
 
 if (fluid) {
-    // This definition is only valid for fluid during melting!
-    source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*C_R(c,t)*C_CP(c,t)*(TM - 298.15)*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
-    dS[eqn] = 0.0;
-} else { // solid
-    if (C_UDMI(c,t,PR_H) >= 0.0) { // Two-way correction during melting (T >< TM)
-        source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*(C_T(c,t) - TM)/dt; // Large source term to force T to TM
-        dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt; // dS/dT (temperature derivative)
-    } else { // One-way correction during transition (T > TM)
-        // source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)*MAX(C_T(c,t) - TM, 0.0)/dt; --> causes a delay, fix this!
-        source = 0.0;
-        if (source > 0.0) {
-            dS[eqn] = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*CST*C_R(c,t)*C_CP(c,t)/dt;
-        } else {
-            dS[eqn] = 0.0;
-        }
+    if (rho_s == 0.0) {
+        rho = C_R(c,t);
+    } else {
+        rho = rho_s;
     }
+
+    // This definition is only valid for fluid during melting!
+    if (HM != 0.0) {
+        source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*rho*HM*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+    } else {
+        source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*rho*C_CP(c,t)*(TM - 298.15)*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+    }
+    dS[eqn] = 0.0;
+} else {
+    // This definition is only valid for solid during melting!
+    if (HM != 0.0) {
+        source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*C_R(c,t)*HM*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+    } else {
+        source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*C_R(c,t)*C_CP(c,t)*(TM - 298.15)*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
+    }
+    dS[eqn] = 0.0;
 }
 
 return source;

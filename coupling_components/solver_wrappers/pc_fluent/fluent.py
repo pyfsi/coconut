@@ -175,10 +175,7 @@ class SolverWrapperPCFluent(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
-        if self.version == '2024R2':
-            udf = f'udf_v{self.version}.c'
-        else:
-            udf = 'udf_thermal.c'
+        udf = 'udf_thermal.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
                 for line in infile:
