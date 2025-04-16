@@ -7,8 +7,11 @@ from scipy.special import erf
 from scipy.interpolate import interp1d
 from coconut.examples.post_processing.post_processing import *
 
+# Start delay of simulation due to starting with LF = 0.01
+t_delay = 1.25416 # s
+
 # Plot and process interface positions?
-itf_pos = False
+itf_pos = True
 
 # Functions
 def wall_hf_stefan(k, a, dT, St, t):
@@ -59,14 +62,14 @@ if itf_pos:
     x_val_450 = itf_loc_val[:,3]
     x_val_700 = itf_loc_val[:,4]
 
-    x_sim_100 = sx.get_values('coordinates', 'x')[10000,:].flatten()
-    y_sim_100 = sx.get_values('coordinates', 'y')[10000,:].flatten()
-    x_sim_200 = sx.get_values('coordinates', 'x')[20000,:].flatten()
-    y_sim_200 = sx.get_values('coordinates', 'y')[20000,:].flatten()
-    x_sim_450 = sx.get_values('coordinates', 'x')[45000,:].flatten()
-    y_sim_450 = sx.get_values('coordinates', 'y')[45000,:].flatten()
-    x_sim_700 = sx.get_values('coordinates', 'x')[70000,:].flatten()
-    y_sim_700 = sx.get_values('coordinates', 'y')[70000,:].flatten()
+    x_sim_100 = sx.get_values('coordinates', 'x')[9875,:].flatten()
+    y_sim_100 = sx.get_values('coordinates', 'y')[9875,:].flatten()
+    x_sim_200 = sx.get_values('coordinates', 'x')[19875,:].flatten()
+    y_sim_200 = sx.get_values('coordinates', 'y')[19875,:].flatten()
+    x_sim_450 = sx.get_values('coordinates', 'x')[44875,:].flatten()
+    y_sim_450 = sx.get_values('coordinates', 'y')[44875,:].flatten()
+    x_sim_700 = sx.get_values('coordinates', 'x')[69875,:].flatten()
+    y_sim_700 = sx.get_values('coordinates', 'y')[69875,:].flatten()
 
     line_val_100, = plt.plot(x_val_100, y_val, '*k', label='Validation 100 s')
     line_sim_100, = plt.plot(x_sim_100, y_sim_100, '-k', label='Simulation 100 s')
@@ -111,7 +114,7 @@ L = 0.1 # m
 
 # Variables at different time instances
 var_time_val = np.loadtxt(validation_path + 'variables_in_time.txt', delimiter=' ')
-time_val = var_time_val[0,:]
+time_val = var_time_val[0,:] - t_delay
 LF_val = var_time_val[1,:]
 Nu_val = var_time_val[2,:] # *2
 stream_max_val = var_time_val[3,:] * 10**(-6)

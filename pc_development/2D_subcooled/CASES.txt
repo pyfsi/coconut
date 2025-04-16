@@ -1,0 +1,24 @@
+Differences between Faden cases:
+    - Faden_try1: 'outflow' outlet left (outdated --> solved with old solid source term (CST = 10^8))
+    - Faden_try2: 'outflow' outlet top (outdated --> solved with old solid source term (CST = 10^8))
+    - Faden_try3: 'p-outlet with flow reversal prevented' top
+    - Faden_try4: outlet as wall
+    - Faden_try5: 'outflow' on top
+    - Faden_try6: 'p-outlet with target mass flow rate' top
+    - Faden_try7: 'mass-flow-outlet from named expression' top --> based on UDM V_swept
+    - Faden_try8: outlet pipe on top to minimise impact on flow field (exit is normal pressure-outlet)
+    - Faden_try9: outlet pipe double as long (exit is normal pressure-outlet) --> too narrow, too high flow velocities
+    - Faden_try10: 'mass-flow-outlet from named expression' top --> based on Dynamic cell volume change + Boussinesq approx. at single rho_l
+    - Faden_try11: 'mass-flow-outlet from named expression' side --> based on Dynamic cell volume change + Boussinesq approx. at single rho_l
+
+Faden_full cases:
+    - Case 1: (based on try5) outflow BC on top, top and bottom walls defined as plane in dynamic mesh settings
+    - Case 2: (based on try3) 'p-outlet with flow reversal prevented' on top, top and bottom walls defined as plane in dynamic mesh settings
+    - Case 3: case 2, but:
+        - exclude mesh motion in boundary conditions? no for solids at top & bottom boundary!!!
+    - Case 4: With liquid hf update each coupling iteration!!!
+    - Case 5: case 4 with explicit coupling
+
+TO DO:
+    - Run case 4 and compare wall velocities in solid solver with results from case 2 at 3600 s and 7200 s
+    - Run case 5
