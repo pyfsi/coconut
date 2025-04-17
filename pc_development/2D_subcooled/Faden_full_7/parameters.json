@@ -1,0 +1,181 @@
+{
+  "settings": {
+    "timestep_start": 0,
+    "number_of_timesteps": 144000,
+    "delta_t": 0.05,
+    "save_restart": 7200
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.explicit",
+    "settings": {
+      "omega_max": 0.8,
+      "write_results": 100,
+      "debug": false,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-13,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 10
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+              "tolerance": 1e-12,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.pc_fluent.v2024R2",
+        "settings": {
+          "working_directory": "CFD_2",
+          "case_file": "2D_fluid.cas.h5",
+          "dimensions": 2,
+          "unsteady": true,
+          "multiphase": false,
+          "debug": false,
+          "PC": {
+            "moving_boundary": true,
+            "latent": 236980,
+            "melt_temp": 301.13,
+            "melt_enthalpy": 6636.0797,
+            "solid_density": 867.914,
+            "ini_condition": 0,
+            "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 5e-5 yes no no\")"
+          },
+          "thread_names": [
+            "boundary"
+          ],
+          "interface_input": [
+            {
+              "model_part": "boundary_in_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "boundary_out_faces",
+              "variables": [
+                "heat_flux"
+              ]
+            }
+          ],
+          "cores": 8,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 80,
+          "save_results": 3600
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.pc_fluent.v2024R2",
+            "settings": {
+              "working_directory": "CFD_1",
+              "case_file": "2D_solid.cas.h5",
+              "dimensions": 2,
+              "unsteady": true,
+              "multiphase": false,
+              "debug": false,
+              "PC": {
+                "moving_boundary": true,
+                "latent": 236980,
+                "melt_temp": 301.13,
+                "melt_enthalpy": 5681.5877,
+                "solid_density": 867.914,
+                "ini_condition": 301.13,
+                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 5e-5 yes no no\")",
+                "f2n_mapping": {
+                  "mapping_domain": "rectangular",
+                  "mapping_limits": [0, 0, 0.04, 0.04],
+                  "mapping_conservative": true,
+                  "volume_tolerance": 1e-13,
+                  "mapper_iterations": 20,
+                  "mapper_relaxation": 0.4,
+                  "projection_order": 1
+                }
+              },
+              "thread_names": [
+                "boundary"
+              ],
+              "interface_input": [
+                {
+                  "model_part": "boundary_in_faces",
+                  "variables": [
+                    "heat_flux"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "boundary_out_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+              "cores": 8,
+              "fluent_gui": false,
+              "max_nodes_per_face": 2,
+              "flow_iterations": 80,
+              "save_results": 3600
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

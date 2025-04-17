@@ -4,8 +4,9 @@ from coconut.examples.post_processing.post_processing import *
 
 # different cases to be plotted
 common_path = '../'
-case_paths = ['Faden_full_4/case_results.pickle', 'Faden_full_5/case_results.pickle']
-legend_entries = ['Aitken', 'explicit']
+case_paths = ['Faden_full_5/case_results.pickle', 'Faden_full_6/case_results.pickle', 'Faden_full_7/case_results.pickle']
+legend_entries = ['PRESTO!', 'bfw', 'bfw - p out']
+dt = [0.1, 0.05, 0.05] # s
 
 # fluent interfaces
 plot_fluent = False
@@ -16,8 +17,7 @@ legend_fl = 'Fluent - 738.97 s'
 line_styles = ['r--', 'g--', 'b--', 'k--', 'c--']
 
 # Compare interface at a certain time
-t = 900 # s
-dt = 0.1 # s
+t = 30 # s
 
 lines = []
 
@@ -31,8 +31,8 @@ for j, file in enumerate(case_paths):
     y = sx.get_values('coordinates', 'y')
 
     try:
-        x = x[int(t / dt), :].flatten()
-        y = y[int(t / dt), :].flatten()
+        x = x[int(t / dt[j]), :].flatten()
+        y = y[int(t / dt[j]), :].flatten()
         line, = plt.plot(x, y, line_styles[j], label=legend_entries[j])
         lines.append(line)
     except IndexError:

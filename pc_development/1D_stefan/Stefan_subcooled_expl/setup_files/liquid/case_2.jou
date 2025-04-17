@@ -1,0 +1,67 @@
+file set-batch-options n n n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case 50mm_left_fine.msh ; 2D mesh!
+grid modify-zones zone-type 2 fluid
+
+define user-defined user-defined-memory 13
+
+define models unsteady-1st-order y
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow y
+
+define materials copy fluid air pcm
+define materials change-create pcm , yes constant 870 yes constant 2500 yes constant 1.5 yes constant 0.004 no yes 8.61e-4 no
+
+define boundary-conditions fluid , y pcm n n n n , n , n y n
+;define boundary-conditions wall adiabatic 0 n 0 n n n 0 y motion-bc-stationary n n ,
+define boundary-conditions zone-type adiabatic symmetry
+;heated wall 10 °C above solidus temp.
+define boundary-conditions wall wall n 0 n 0 n y temperature n 309.15 y motion-bc-stationary n n ,
+define boundary-conditions wall boundary n 0 n 0 n y temperature n 299.15 y motion-bc-stationary n n ,
+
+define operating-conditions operating-pressure 0
+define operating-conditions gravity n
+
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-12
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 0
+solve set discretization-scheme pressure 12
+solve set gradient-scheme n y
+; SIMPLE (20) - PISO (22) - coupled (24)
+solve set p-v-coupling 24
+solve set under-relaxation temperature 0.9
+
+;solve set reporting-interval 10
+;solve set flow-warnings n
+
+;Initialise liquid according to Stefan solution
+solve initialize set-defaults temperature 309.15
+define user-defined compiled-functions compile "stefan" y "stefan.c" "" ""
+define user-defined compiled-functions load "stefan"
+define user-defined function-hooks initialization "temp_ini::stefan" ""
+
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0
+solve initialize set-defaults y-velocity 0
+solve initialize initialize-flow
+
+define dynamic-mesh dynamic-mesh y n n n n
+define dynamic-mesh controls smoothing n
+define dynamic-mesh controls layering y
+define dynamic-mesh controls remeshing n
+define dynamic-mesh controls layering-parameters constant-height y
+define dynamic-mesh controls layering-parameters collapse-factor 0.2
+define dynamic-mesh controls layering-parameters split-factor 0.4
+; Last option below: exclude mesh motion in boundary conditions? y
+define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+; Include end of setup command in json file for layering! Non-zero cell height for layering
+
+solve initialize initialize-flow
+
+file write-case-data pc_fluid.cas.h5
+exit

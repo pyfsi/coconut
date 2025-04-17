@@ -23,11 +23,12 @@ data_fluent = np.loadtxt(fluent_dir + fluent_report_name, delimiter=' ', skiprow
 
 # Construct coconut arrays
 area = 0.04 * 1.0 # m^2
+time = data_solid[:,7]
+time_l = data_liquid[:,9]
+i_end = min(np.size(time), np.size(time_l))
 
 # Solid
-time = data_solid[:,7] + t_delay
-i_end = np.size(time)
-
+time = data_solid[:i_end,7] + t_delay
 q_cool = -1 * area * data_solid[:i_end,1] # [W]
 temp_u1_s = data_solid[:i_end,2]
 temp_u2_s = data_solid[:i_end,3]

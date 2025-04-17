@@ -15,10 +15,8 @@ Faden_full cases:
     - Case 1: (based on try5) outflow BC on top, top and bottom walls defined as plane in dynamic mesh settings
     - Case 2: (based on try3) 'p-outlet with flow reversal prevented' on top, top and bottom walls defined as plane in dynamic mesh settings
     - Case 3: case 2, but:
-        - exclude mesh motion in boundary conditions? no for solids at top & bottom boundary!!!
+        - exclude mesh motion in boundary conditions? no for solids at top & bottom boundary!!! --> improves solid solver a lot!!!
     - Case 4: With liquid hf update each coupling iteration!!!
-    - Case 5: case 4 with explicit coupling
-
-TO DO:
-    - Run case 4 and compare wall velocities in solid solver with results from case 2 at 3600 s and 7200 s
-    - Run case 5
+    - Case 5: case 4 with explicit coupling --> good results, but crashed after 12500 time steps
+    - Case 6: case 5 except: ts = 0.05 s instead of 0.1 s and pressure interpolation = body force weighted (cfr convection currents) instead of PRESTO!
+    - Case 7: case 6 except normal pressure outlet for stability
