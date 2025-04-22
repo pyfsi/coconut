@@ -3,7 +3,7 @@
     "timestep_start": 0,
     "number_of_timesteps": 720000,
     "delta_t": 0.01,
-    "save_restart": 72000
+    "save_restart": 30000
   },
   "coupled_solver": {
     "type": "coupled_solvers.explicit",
@@ -85,11 +85,11 @@
               ]
             }
           ],
-          "cores": 10,
+          "cores": 15,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 80,
-          "save_results": 36000
+          "save_results": 30000
         }
       },
       {
@@ -109,7 +109,7 @@
                 "latent": 179000,
                 "melt_temp": 299.15,
                 "ini_condition": 299.15,
-                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")",
+                "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.0001 no no no\")",
                 "f2n_mapping": {
                   "mapping_domain": "rectangular",
                   "mapping_limits": [0, 0, 0.1, 0.01],
@@ -139,11 +139,11 @@
                   ]
                 }
               ],
-              "cores": 10,
+              "cores": 15,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 100,
-              "save_results": 36000
+              "save_results": 30000
             }
           },
           "mapper_interface_input": {
