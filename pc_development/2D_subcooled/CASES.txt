@@ -20,3 +20,17 @@ Faden_full cases:
     - Case 5: case 4 with explicit coupling --> good results, but crashed after 12500 time steps
     - Case 6: case 5 except: ts = 0.05 s instead of 0.1 s and pressure interpolation = body force weighted (cfr convection currents) instead of PRESTO!
     - Case 7: case 6 except normal pressure outlet for stability
+
+OBSERVATION: no difference between pressure outlet with and without reverse flow prevented
+--> normal p-out is much more stable -> take this
+
+PROBLEM: Case 4, 6 & 7 crash around t = 1100 s due to stretched interface faces
+--> see max_face_area.py script
+--> grid refinement: 4x more faces at interface (800 vs 200 faces)
+--> case 8 (based on case 7 -> no flow reversal prevention)
+
+    - case 8: refined grid at LF = 0.01 (var. density + normal p-out)
+    - case 9: refined grid at LF = 0.01 (cst. liquid density + Boussinesq + normal p-out) --> even worse
+    - case 10: refined grid at LF = 0.01 + rho_l = rho_s + Boussinesq + NO outlet --> stopped, melts too fast
+    - case 11 & 13: Case 8, but grid at LF = 0.02 and double outlet size
+    - case 12: case 10, but corrected latent heat to make up for density loss in solid --> melts slower --> CRASH

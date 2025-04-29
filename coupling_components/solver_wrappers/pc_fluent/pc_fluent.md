@@ -24,6 +24,7 @@ Essentially, heat flux and interface displacement are exchanged as variables bet
 * Only 2D cases. Axisymmetric or 3D cases are currently not supported.
 * Currently, only melting is supported, no solidification.
 * Currently, only constrained melting cases are possible. The goal is to add mechanical coupling between the domains in the close future to allow unconstrained melting cases.
+* Subcooled solids are possible, but should be initialised in such a way that the phase change interface is already at melting temperature. Heating of the solid without melting is a conjugate heat transfer problem and not possible yet.
 
 
 ## Parameters
@@ -31,14 +32,16 @@ Essentially, heat flux and interface displacement are exchanged as variables bet
 All parameters used in the orginal [Fluent solver wrapper](../fluent/fluent.md) remain available.
 A new subdictionary with keyword `PC` should be provided, however, containing the following keywords:
 
-|               parameter | type  | description                                                                                                                                 |
-|------------------------:|:-----:|---------------------------------------------------------------------------------------------------------------------------------------------|
-|       `moving_boundary` | bool  | (optional) Default: `true`. Should normally be always `true`, as phase change problems are moving boundary problems.                        |
-|         `ini_condition` | float | Scalar value as initial condition for the output thermal boundary condition: temperature (in K) or heat flux (in W/m$\cdot$K).              |
-|                `latent` | float | Latent heat of the phase change material (PCM).                                                                                             |
-|             `melt_temp` | float | Melting temperature of the phase change material (PCM).                                                                                     |
-| `end_of_setup_commands` |  str  | (optional) Fluent journal command(s) to be executed after the setup is finished, can be used to indicate the cell height for mesh layering. |
-|           `f2n_mapping` | dict  | Settings for the [face-to-node mapper](../../mappers/mappers.md#linearconservative).                                                        |
+|               parameter | type  | description                                                                                                                                        |
+|------------------------:|:-----:|----------------------------------------------------------------------------------------------------------------------------------------------------|
+|       `moving_boundary` | bool  | (optional) Default: `true`. Should normally be always `true`, as phase change problems are moving boundary problems.                               |
+|         `ini_condition` | float | Scalar value as initial condition for the output thermal boundary condition: temperature (in K) or heat flux (in W/m$\cdot$K).                     |
+|                `latent` | float | Latent heat of the phase change material (PCM).                                                                                                    |
+|             `melt_temp` | float | Melting temperature of the phase change material (PCM).                                                                                            |
+|         `melt_enthalpy` | float | (optional) Default: enthalpy is calculated with the assumption of a constant $c_p$ value for each phase. Sensible enthalpy at melting temperature. |
+|         `solid_density` | float | (optional) Default: solid density is assumed equal to liquid density. Density of the solid phase at melting temperature.                           |
+| `end_of_setup_commands` |  str  | (optional) Fluent journal command(s) to be executed after the setup is finished, can be used to indicate the cell height for mesh layering.        |
+|           `f2n_mapping` | dict  | Settings for the [face-to-node mapper](../../mappers/mappers.md#linearconservative).                                                               |
 
 
 ## Overview of operation
@@ -65,17 +68,15 @@ These new node positions are compared to those of the previous mesh update in th
 The swept volume is assigned to the corresponding interface cells and used to calculate the mass and energy source terms within these cells.
 The flow and energy equations, incorporating these source terms, are then solved in the liquid domain, and the resulting interface heat flux is recorded by the *`store_heat_flux`* UDF.
 
-Within the solid domain, only the energy equation is solved. To limit the temperature to the melting temperature $T_m$,
-a Darcy-like source term is used, which becomes very large when $T > T_m$:
-$$
--C \cdot \rho \cdot c_p \frac{T - T_m}{dt}
-$$
-with $\rho$ the density of the PCM, $c_p$ the specific heat, $dt$ the time step size of the simulation and $C$ a large constant, currently set to $10^8$.
-As such, the temperature is forced to the melting temperature whenever it would exceed this upper limit.
+Within the solid domain, the conservation equations for mass, momentum and energy are solved.
+The mass- and momentum equation, however, have a trivial solution, but should be included to account for the ALE terms due to mesh motion.
+A temperature boundary condition is set to the malting temperature at the phase change interface, just as in the liquid domain.
+The mesh is deformed and the volume change is accounted for in the same way as in the liquid domain:
+using mass and source terms based on the swept volume of each cell face at the interface.
 
-The heat flux profile returned by the liquid solver serves as input for the solid solver through the *`set_heat_flux`* UDF.
-The *`update_cell_enthalpy`* UDF stores the cell enthalpy of cells adjacent to the interface, which is necessary for the energy source term.
-The energy equation with the correct source term is then solved, enabling the calculation of the new interface displacement.
+The heat flux profile returned by the liquid solver serves as input for the solid solver through the *`read_liquid_hf`* UDF.
+The heat flux values are stored in the UDM (user-defined memory) of the cells adjacent to the cell faces at the interface.
+These will later be used to calculate the interface displacment.
 
 This is done through the *`write_displacement`* UDF, where the Stefan condition is applied to each cell face at the interface.
 The displacement follows from the interface velocity $v_{itf}$, which can be determined by enforcing the Stefan condition:
@@ -83,14 +84,21 @@ $$
 \rho \cdot L \cdot v_{itf} = -k_L \nabla T |^L + k_S \nabla T |^S
 $$
 with $\rho$ the density of the PCM, $L$ the latent heat, $-k_L \nabla T|^L$ the interface heat flux at the liquid side and $-k_S \nabla T|^S$ the same at the solid side.
+The liquid heat flux is stored in the UDM of the cell adjacent to the face and the solid heat flux follows from the local temperature gradient in the solid domain.
 The face displacement is written to a file and the fluent script of the solver wrapper subsequently converts this to node displacement before it is passed on as output.
 A built-in mapper in CoCoNuT facilitates the [face-to-node mapping](../../mappers/mappers.md#linearconservative).
 These node displacements are then returned to the liquid solver for the next coupling iteration.
 
-If the solid is at the melting temperature, the interface temperature is assumed to be at the melting temperature as well, eliminating the need to exchange interface temperature as a variable.
-However, when the solid is subcooled below the melting temperature, it may require initial sensible heating before phase change occurs.
-In such cases, the problem initially becomes a conjugate heat transfer problem, necessitating the exchange of temperature from the solid domain to the liquid domain.
-The transition from sensible heating to latent heating also requires special treatment.
+The interface is always assumed to be at melting temperature, eliminating the need to exchange the interface temperature as a variable between the solvers.
+As a result, the current implementation in CoCoNuT requires the problem to be initialised with both the solid and liquid domains already present
+and the interface at melting temperature.
+For example, for constrained melting in a cavity heated from one side,
+this can be done by creating a small initial liquid domain and a complementary solid domain as if the liquid fraction were 0.01.
+The temperature field in both domains can be initialised using the analytical solution to the Stefan problem.
+This is because conductive heat transfer is dominant in the early stages of melting anyway.
+
+Consequently, the simulation cannot start from a fully solid domain, or with an interface below melting temperature.
+The latter would require exchanging temperature as a variable, as this is initially a conjugate heat transfer problem.
 
 In summary, the coupling strategy is illustrated in the figure below.
 
@@ -106,7 +114,6 @@ In these file conventions, A is the time step number and B the Fluent thread ID.
 -   Face displacement is passed from Fluent to CoCoNuT with files of the form *`displacement_timestepA_threadB.dat`*.
 -   The new node coordinates are passed from CoCoNuT to Fluent with files of the form *`nodes_update_timestepA_threadB.dat`*.
 -   Heat flux is passed from Fluent to CoCoNuT with files of the form *`heat_flux_timestepA_threadB.dat`*.
--   Temperature is passed from Fluent to CoCoNuT with files of the form *`temperature_timestepA_threadB.dat`*.
 -   Files with extension *`.coco`* are used to exchange messages between CoCoNuT and Fluent. 
 
 

@@ -7,11 +7,16 @@ from scipy.special import erf
 from scipy.interpolate import interp1d
 from coconut.examples.post_processing.post_processing import *
 
-# Start delay of simulation due to starting with LF = 0.01 (based on conduction only Fluent simulation)
-t_delay = 12.47 # s
+# Plot temperatures?
+temp_plots = False
+
+# Start delay of simulation due to starting with LF = 0.01 & 0.02 (based on conduction only Fluent simulation)
+t_delay_001 = 12.47 # s
+t_delay_002 = 58.79 # s 61.23
 
 # Read and load coconut data
-case_dir = '../Faden_full_5/'
+start_lf_001 = False
+case_dir = '../Faden_full_11/'
 report_file_name = 'report-file.out'
 data_solid = np.loadtxt(case_dir + 'CFD_1/' + report_file_name, delimiter=' ', skiprows=3)
 data_liquid = np.loadtxt(case_dir + 'CFD_2/' + report_file_name, delimiter=' ', skiprows=3)
@@ -20,6 +25,8 @@ data_liquid = np.loadtxt(case_dir + 'CFD_2/' + report_file_name, delimiter=' ', 
 fluent_dir = 'fluent_reports/'
 fluent_report_name = 'report-file.out'
 data_fluent = np.loadtxt(fluent_dir + fluent_report_name, delimiter=' ', skiprows=3)
+
+t_delay = t_delay_001 if start_lf_001 else t_delay_002
 
 # Construct coconut arrays
 area = 0.04 * 1.0 # m^2
@@ -125,57 +132,24 @@ plt.savefig('Report_figures/hf_cooled_wall.png')
 plt.show()
 plt.close()
 
-# Temperature plot (u1)
-line_sim, = plt.plot(time[ts_0:], temp_u1[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], temp_u1_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Temperature (u1) [K]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
-plt.tight_layout()
-plt.savefig('Report_figures/Temperature_u1.png')
-plt.show()
-plt.close()
+# Temperature plots
+if temp_plots:
+    # Combine temperature data into a single array
+    temp_data_sim = np.array([temp_u1, temp_u2, temp_u3, temp_l1, temp_l2]).T  # Shape: (n, 5)
+    temp_data_fl = np.array([temp_u1_fl, temp_u2_fl, temp_u3_fl, temp_l1_fl, temp_l2_fl]).T # Shape (n,5)
 
-# Temperature plot (u2)
-line_sim, = plt.plot(time[ts_0:], temp_u2[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], temp_u2_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Temperature (u2) [K]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
-plt.tight_layout()
-plt.savefig('Report_figures/Temperature_u2.png')
-plt.show()
-plt.close()
+    # Labels for the plots
+    labels = ['u1', 'u2', 'u3', 'l1', 'l2']
 
-# Temperature plot (u3)
-line_sim, = plt.plot(time[ts_0:], temp_u3[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], temp_u3_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Temperature (u3) [K]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
-plt.tight_layout()
-plt.savefig('Report_figures/Temperature_u3.png')
-plt.show()
-plt.close()
-
-# Temperature plot (l1)
-line_sim, = plt.plot(time[ts_0:], temp_l1[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], temp_l1_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Temperature (l1) [K]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
-plt.tight_layout()
-plt.savefig('Report_figures/Temperature_l1.png')
-plt.show()
-plt.close()
-
-# Temperature plot (l2)
-line_sim, = plt.plot(time[ts_0:], temp_l2[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], temp_l2_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Temperature (l2) [K]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
-plt.tight_layout()
-plt.savefig('Report_figures/Temperature_l2.png')
-plt.show()
-plt.close()
+    # Loop through each temperature dataset
+    for i in range(len(labels)):
+        plt.figure() #Creates a new figure for each plot.
+        line_sim, = plt.plot(time[ts_0:], temp_data_sim[ts_0:, i], '-k', label='Coconut')
+        line_fl, = plt.plot(time_fl[ts_0_fl:], temp_data_fl[ts_0_fl:,i], '--r', label='Fluent')
+        plt.ylabel(f'Temperature ({labels[i]}) [K]')
+        plt.xlabel('Time [s]')
+        plt.legend(handles=[line_sim, line_fl])
+        plt.tight_layout()
+        plt.savefig(f'Report_figures/Temperature_{labels[i]}.png')
+        plt.show()
+        plt.close() #Closes the current figure

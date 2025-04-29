@@ -13,13 +13,13 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = './'
-case_paths = ['previous_runs/run_7200/case_results.pickle', 'previous_runs/run_720_large_ts/case_results.pickle']
-legend_entries = ['0.01 s', '0.1 s']
+case_paths = ['Fluent_v2023R1_smoothing/case_results.pickle']
+legend_entries = ['new']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_fine.out', 'lf_coarse.out']
 fluent_legend = ['Fluent - fine', 'Fluent - coarse']
 
-itf_faces = [100, 100]
+itf_faces = [100]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction
@@ -172,7 +172,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             t_end = t_ini + max(t_max_co, t_max_fl)  # solution time
             t_end_error = t_ini + max(t_min_co, t_max_fl)
 
-            dt = 0.1
+            dt = 0.01
             m = M.ceil((t_end - t_ini) / dt)
             time_ana = np.linspace(t_ini, t_end, m + 1)
             x_front_ana = 2 * la * np.sqrt(alpha_l * time_ana)
