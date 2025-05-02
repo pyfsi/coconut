@@ -30,12 +30,10 @@ solver_load_cmd_dict = {
         'fluent.v2024R2': 'ml FLUENT/2024R2 ; unset SLURM_GTIDS '
                           '&& export ANSYSLI_SERVERS=2325@ir03lic1.ugent.be '
                           '&& export ANSYSLMD_LICENSE_FILE=1055@ir03lic1.ugent.be',
-        'abaqus.v2023': 'ml intel/2024a ; ml ABAQUS/2023',
         'abaqus.v2024': 'ml intel/2024a ; ml ABAQUS/2024-hotfix-2405',
         'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE',  # needs to be FALSE in job script, but TRUE for Kratos
         'openfoam.v10': 'ml OpenFOAM/10-foss-2023a ; source $FOAM_BASH',
         'openfoam.v11': 'ml OpenFOAM/11-foss-2023a ; source $FOAM_BASH',
-        'abaqus_cse.v2023': 'ml ABAQUS/2023',
         'abaqus_cse.v2024': 'ml ABAQUS/2024',
     },
     'hortense': {
