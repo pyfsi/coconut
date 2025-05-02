@@ -7,7 +7,7 @@ import time
 import warnings
 import xml.etree.ElementTree as ElTr
 from getpass import getuser
-from os.path import join
+from os.path import join, dirname, abspath
 from xml.dom import minidom
 import numpy as np
 import psutil
@@ -110,6 +110,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
+                    line = line.replace('|LICENSE_FILE_NAME|', join(dirname(abspath(__file__)), 'DSLicSrv.txt'))
                     if '|' in line:
                         raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
                                          f'substitution: \n \t{line} \nA parameter was not substituted')
@@ -141,19 +142,19 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                     to_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
                     shutil.copy(from_file, to_file)
                 # update restart_log
-                restart_log = np.append(restart_log, [[self.restart_step+1, self.timestep_start]], axis=0)
+                restart_log = np.append(restart_log, [[self.restart_step + 1, self.timestep_start]], axis=0)
             else:
                 # restart from older files: find which one is the most recent to restart from
                 index = np.where(restart_log[:, 1] < self.timestep_start)[0][-1]
                 self.restart_step = restart_log[index, 0]
                 self.restart_inc = self.timestep_start - restart_log[index, 1]
                 # clean up vault: remove newer files (but not from the last index, as they don't exist in the vault yet)
-                obsolete_steps = restart_log[index+1:-1, 0]
+                obsolete_steps = restart_log[index + 1:-1, 0]
                 for step in obsolete_steps:
                     for suffix in self.vault_suffixes:
                         os.unlink(join(self.dir_vault, f'Abaqus_Step-{step}.{suffix}'))
                 # update restart_log
-                restart_log = np.append(restart_log[:index+1], [[self.restart_step+1, self.timestep_start]], axis=0)
+                restart_log = np.append(restart_log[:index + 1], [[self.restart_step + 1, self.timestep_start]], axis=0)
             # write adapted restart log
             np.savetxt(join(self.dir_csm, 'restart.log'), restart_log, header='#step number, timestep start', fmt='%d')
             # check if restart_step and restart_inc are found
@@ -194,7 +195,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                      f'&> {cse_log_file}'
         cmd = debug_cmd + launch_cmd
         self.cse_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cse, env=self.env)
-        self.check_license(cse_log_file, ['SIMULIA Co-Simulation Engine'])
 
         # launch Abaqus
         abq_log_file = join(self.dir_csm, 'abaqus.log')
@@ -213,14 +213,14 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                          f'interactive  &> {abq_log_file}'
         cmd = debug_cmd + launch_cmd
         self.abaqus_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_csm, env=self.env)
-        self.check_license(abq_log_file, ['Abaqus/Standard'])
+        self.check_license(abq_log_file, ['Abaqus'])
 
         # launch AbaqusWrapper
         abqw_log_file = join(self.dir_abqw, f'{self.solver}.log')
         cmd = f'abaqus {join(self.solver_dir, self.solver)} &> {abqw_log_file}'
         self.abaqus_wrapper_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_abqw,
                                                        env=self.env)
-        self.check_license(cse_log_file, ['SIMULIA Co-Simulation Engine', 'Abaqus/Cosimulation'])
+        self.check_license(cse_log_file, ['Abaqus/Cosimulation'])
 
         # pass on process to coco_messages for polling
         self.coco_messages.set_process(self.abaqus_wrapper_process)
@@ -400,7 +400,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         subprocess.run(f'abaqus job=datacheck input={self.input_file.removesuffix(".inp")} datacheck', shell=True,
                        cwd=self.dir_csm, env=self.env, check=True)
         datacheck_log_file = join(self.dir_csm, 'datacheck.log')
-        self.check_license(datacheck_log_file, ['Abaqus/Standard'])
+        self.check_license(datacheck_log_file, ['Abaqus'])
 
         data_file = join(self.dir_csm, 'datacheck.dat')
 
@@ -574,7 +574,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         # at restart: make new step name
                         if self.timestep_start > 0:
                             step_info = [p for p in step_info if 'NAME=' not in p.upper()]
-                            step_info.append(f'NAME=Step-{self.restart_step+1}')
+                            step_info.append(f'NAME=Step-{self.restart_step + 1}')
                         # set number of increments
                         step_info.append(f'INC={self.number_of_timesteps}')
                         line = ', '.join(step_info) + '\n'

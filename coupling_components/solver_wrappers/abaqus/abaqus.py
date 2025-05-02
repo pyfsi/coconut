@@ -3,7 +3,7 @@ from coconut.coupling_components.solver_wrappers.solver_wrapper import SolverWra
 from coconut import tools
 
 import os
-from os.path import join
+from os.path import join, dirname, abspath
 import glob
 import subprocess
 import shutil
@@ -82,6 +82,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|TMP_DIRECTORY_NAME|', join('/tmp', self.tmp_dir_unique))
+                    line = line.replace('|LICENSE_FILE_NAME|', join(dirname(abspath(__file__)), 'DSLicSrv.txt'))
                     line = line.replace('|LINK_SL|', self.link_sl) if self.link_sl is not None \
                         else (line, '')['|LINK_SL|' in line]  # replace |LINK_SL| if needed, else remove line
                     line = line.replace('|LINK_EXE|', self.link_exe) if self.link_exe is not None \
@@ -129,10 +130,10 @@ class SolverWrapperAbaqus(SolverWrapper):
             # get load points from usrInit.f at timestep_start
             self.print_log(f'\n### Get load integration points using usrInit.f ###')
             cmd1 = f'rm -f CSM_Time{self.timestep_start}Surface*Faces.dat ' \
-                f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
+                   f'CSM_Time{self.timestep_start}Surface*FacesBis.dat'
             # the output files will have a name with a higher time step  ('job=') than the input file ('input=')
             cmd2 = f'abaqus job=CSM_Time{self.timestep_start + 1} input=CSM_Time{self.timestep_start} ' \
-                f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
+                   f'cpus=1 output_precision=full interactive >> {self.logfile} 2>&1'
             commands = cmd1 + '; ' + cmd2
             subprocess.run(commands, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
@@ -301,7 +302,7 @@ class SolverWrapperAbaqus(SolverWrapper):
             for mp_id in range(len(self.mp_in)):
                 file_name1 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input.dat')
                 file_name2 = join(self.dir_csm, f'CSM_Time{self.timestep}Surface{mp_id}Cpu0Input'
-                                  f'_it{self.iteration}.dat')
+                                                f'_it{self.iteration}.dat')
                 shutil.copy2(file_name1, file_name2)
 
         # run Abaqus and check for (licensing) errors
@@ -317,14 +318,14 @@ class SolverWrapperAbaqus(SolverWrapper):
                 tools.print_info(f'Starting attempt {attempt}')
             if self.timestep == 1:
                 cmd = f'abaqus job=CSM_Time{self.timestep} input=CSM_Time{self.timestep - 1} ' \
-                    f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
+                      f'cpus={self.cores} output_precision=full interactive >> {self.logfile} 2>&1'
                 subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
             else:
                 if self.iteration == 1:
                     # run datacheck and store generated files safely
                     cmd = f'abaqus datacheck job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
-                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
-                        f'>> {self.logfile} 2>&1'
+                          f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
+                          f'>> {self.logfile} 2>&1'
                     subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
                     for suffix in self.vault_suffixes:
                         from_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
@@ -332,8 +333,8 @@ class SolverWrapperAbaqus(SolverWrapper):
                         shutil.copy(from_file, to_file)
                     # run continue
                     cmd = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
-                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
-                        f'>> {self.logfile} 2>&1'
+                          f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
+                          f'>> {self.logfile} 2>&1'
                     subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
                 else:
                     # run continue using previously stored simulation files
@@ -342,8 +343,8 @@ class SolverWrapperAbaqus(SolverWrapper):
                         to_file = Path(self.dir_csm) / f'CSM_Time{self.timestep}.{suffix}'
                         shutil.copy(from_file, to_file)
                     cmd = f'abaqus continue job=CSM_Time{self.timestep} oldjob=CSM_Time{self.timestep - 1} ' \
-                        f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
-                        f'>> {self.logfile} 2>&1'
+                          f'input=CSM_Restart cpus={self.cores} output_precision=full interactive ' \
+                          f'>> {self.logfile} 2>&1'
                     subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
             # check log for completion and or errors
@@ -366,7 +367,7 @@ class SolverWrapperAbaqus(SolverWrapper):
 
             # append additional information to log file
             cmd = f'tail -n 23 CSM_Time{self.timestep}.msg | head -n 15 | sed -e \'s/^[ \\t]*//\' ' \
-                f'>> {self.logfile} 2>&1'
+                  f'>> {self.logfile} 2>&1'
             subprocess.run(cmd, shell=True, cwd=self.dir_csm, executable='/bin/bash', env=self.env)
 
         # write Abaqus output
