@@ -38,13 +38,6 @@
               "tolerance": 1e-12,
               "order": 2
             }
-          },
-          {
-            "type": "convergence_criteria.relative_norm",
-            "settings": {
-              "tolerance": 1e-3,
-              "order": 2
-            }
           }
         ]
       }
