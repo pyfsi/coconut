@@ -76,6 +76,9 @@ define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing y
 define dynamic-mesh controls remeshing-parameters unified-remeshing? y
 
+; Print remeshing details to console!
+define dynamic-mesh transient-settings verbosity 3
+
 ; Last option below: exclude mesh motion in boundary conditions? y --> fluid should not move due to interface motion
 ; Third option below: use Laplace instead of spring smoothing? n --> springs ensure the BL cells remain the same thickness on the endwalls
 define dynamic-mesh zones create top deforming plane 0.0002 0.04 0 1 n y n y y y y n y

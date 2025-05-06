@@ -1,0 +1,32 @@
+/LIQUID DOMAIN
+    /PARAMETERS
+$L1 = 0.05
+$L2 = 0.1
+$H = 0.01
+
+$Xintervals = 50
+$Yintervals = 10
+    /CODE
+save name "50mm_right_coarse.dbs"
+solver select "FLUENT 5/6"
+vertex create "LeftBottom" coordinates $L1 0 0
+vertex create "LeftTop" coordinates $L1 $H 0
+vertex create "RightBottom" coordinates $L2 0 0
+vertex create "RightTop" coordinates $L2 $H 0
+edge create "Bottom" straight "LeftBottom" "RightBottom"
+edge create "Left" straight "LeftTop" "LeftBottom"
+edge create "Right" straight "RightTop" "RightBottom"
+edge create "Top" straight "LeftTop" "RightTop"
+face create "FluidInternal" wireframe "Top" "Right" "Bottom" "Left"
+edge link "Bottom" "Top" directions 0 0
+edge link "Left" "Right" directions 0 0
+edge mesh "Bottom" intervals $Xintervals
+edge mesh "Left" intervals $Yintervals
+face mesh "FluidInternal" submap
+physics create "boundary" btype "WALL" edge "Left"
+physics create "wall" btype "WALL" edge "Right"
+physics create "adiabatic" btype "WALL" edge "Top" "Bottom"
+physics create "Fluid" ctype "FLUID" face "FluidInternal"
+export fluent5 "50mm_right_coarse.msh" nozval
+save
+end
