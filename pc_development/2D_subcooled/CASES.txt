@@ -34,3 +34,6 @@ PROBLEM: Case 4, 6 & 7 crash around t = 1100 s due to stretched interface faces
     - case 10: refined grid at LF = 0.01 + rho_l = rho_s + Boussinesq + NO outlet --> stopped, melts too fast
     - case 11 & 13: Case 8, but grid at LF = 0.02 and double outlet size
     - case 12: case 10, but corrected latent heat to make up for density loss in solid --> melts slower --> CRASH
+    - case 14: case 13, but with methods-based remeshing instead of unified (ts = 0.05 s)
+    - case 15: case 13, but with ts = 0.01 s
+    - case 16: case 14, but with ts = 0.1 s
