@@ -36,4 +36,8 @@ PROBLEM: Case 4, 6 & 7 crash around t = 1100 s due to stretched interface faces
     - case 12: case 10, but corrected latent heat to make up for density loss in solid --> melts slower --> CRASH
     - case 14: case 13, but with methods-based remeshing instead of unified (ts = 0.05 s)
     - case 15: case 13, but with ts = 0.01 s
-    - case 16: case 14, but with ts = 0.1 s
+    - case 16: case 14, but with ts = 0.1 s & fluid cell zone not set as deforming --> can influence remeshing
+
+ALL SOLID SOLVERS HAD NO MASS SOURCE TERM ENABLED UNTIL NOW:
+
+    - case 17: case 16 with solid mass source term

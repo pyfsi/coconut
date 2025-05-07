@@ -8,10 +8,8 @@ file set-batch-options n n n
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
-(define moving_boundary |MOVING_BOUNDARY|)
 (define force_balance |FORCE_BALANCE|)
 (define thermal_bc |THERMAL_BC|)
-(define temp_stored |TEMP_STORED|)
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -81,10 +79,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n") ; 4th: Enable Implicit Update? Yes
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (if moving_boundary
-                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in bc's? yes / Option[-3]: deform adjacent BL with zone? no -> change to yes in parameters if necessary
-                (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a stationary , constant 0 no\n"(list-ref face_threads k))) ; In case the interface is stationary
-            )
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in bc's? yes / Option[-3]: deform adjacent BL with zone? no -> change to yes in parameters if necessary
         )
         (if unsteady
             (begin
@@ -106,16 +101,11 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 ;
 ;   HOOK SOURCE UDFs TO CONSERVATION EQUATIONS AND SET ADJACENT FLAGS
 (if (= timestep_start 0)
-    (if moving_boundary
-        (begin
-            (ti-menu-load-string "define user-defined execute-on-demand \"ini_udm::udf_thermal\"")
-            (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-            (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
-            (if (= thermal_bc 1)
-                (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; heat flux BC -> solid
-                (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; temp. BC or nothing -> liquid
-            )
-        )
+    (begin
+        (ti-menu-load-string "define user-defined execute-on-demand \"ini_udm::udf_thermal\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+        (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
+        (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; mass and energy source term for both solid and liquid solver
     )
 )
 ;
@@ -164,34 +154,16 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                 (if (= (%rpgetvar 'udf/iteration) 1)
                     (begin
                         (ti-menu-load-string "solve dual-time-iterate 1 0")
-                        (if moving_boundary
-                            (if (= thermal_bc 1)
-                                (ti-menu-load-string "define user-defined execute-on-demand \"read_liquid_hf::udf_thermal\"")
-                            )
-                        )
                         (ti-menu-load-string "solve iterate 1")
-                        (if moving_boundary
-                            (begin
-                                (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
-                            )
-                        )
+                        (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+                        (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
                         (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                     )
                     (begin
-                        (if moving_boundary
-                            (if (= thermal_bc 1)
-                                (ti-menu-load-string "define user-defined execute-on-demand \"read_liquid_hf::udf_thermal\"")
-                            )
-                        )
                         (ti-menu-load-string "solve dual-time-iterate 0 1")
                         (ti-menu-load-string "solve iterate 1")
-                        (if moving_boundary
-                            (begin
-                                (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
-                                (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
-                            )
-                        )
+                        (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
+                        (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
                         (ti-menu-load-string "solve dual-time-iterate 0 0")
                         (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                     )
@@ -204,17 +176,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             (if force_balance
                 (ti-menu-load-string "define user-defined execute-on-demand \"store_pressure_traction::udf_thermal\"")
             )
-            (if (= thermal_bc 1)
-                (begin
-                    (if temp_stored
-                        (ti-menu-load-string "define user-defined execute-on-demand \"store_temperature::udf_thermal\"")
-                    )
-                    (if moving_boundary
-                        (ti-menu-load-string "define user-defined execute-on-demand \"write_displacement::udf_thermal\"")
-                    )
-                )
-                (ti-menu-load-string "define user-defined execute-on-demand \"store_heat_flux::udf_thermal\"")
-            )
+            (ti-menu-load-string "define user-defined execute-on-demand \"store_heat_flux::udf_thermal\"")
             (send_message "continue_ready")
         )
     )

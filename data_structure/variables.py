@@ -30,6 +30,30 @@ accepted_variables_pc = {
     }
 }
 
+accepted_variables_pc_liquid = {
+    'in': {
+        'displacement': ['nodes_update', 3],
+        'temperature': ['temperature', 1]
+    },
+    'out':{
+        'pressure': ['pressure_traction', 0],
+        'traction': ['skip', 0], # catch variable stored in the same file to avoid double reading of the same file
+        'heat_flux': ['heat_flux', 1]
+    }
+}
+
+accepted_variables_pc_solid = {
+    'in': {
+        'displacement': ['nodes_update', 3],
+        'temperature': ['temperature', 1],
+        'heat_flux': ['heat_flux', 1]
+    },
+    'out':{
+        'temperature': ['temperature', 1],
+        'displacement': ['displacement', 0]
+    }
+}
+
 accepted_variables_cht = {
     'in': {
         'displacement': ['nodes_update', 3],

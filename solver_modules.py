@@ -52,8 +52,7 @@ solver_load_cmd_dict = {
 
 
 def get_solver_cmd(solver_name):
-    if 'pc' in solver_name:
-        solver_name = solver_name.replace('pc_fluent', 'fluent')
-    elif 'cht' in solver_name:
-        solver_name = solver_name.replace('cht_fluent', 'fluent')
+    replace_list = ['pc_fluent_solid', 'pc_fluent_liquid', 'pc_fluent', 'cht_fluent']
+    for prefix in replace_list:
+        solver_name = solver_name.replace(prefix, 'fluent')
     return solver_load_cmd_dict[machine_name][solver_name]
