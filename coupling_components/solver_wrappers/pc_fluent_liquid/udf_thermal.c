@@ -1170,6 +1170,7 @@ if (rho_s == 0.0) {
     rho = C_R(c,t);
 } else {
     rho = rho_s;
+}
 
 source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*rho*C_UDMI(c,t,D_VOL)/(C_VOLUME(c,t)*dt);
 dS[eqn] = 0.0;

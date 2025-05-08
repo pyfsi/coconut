@@ -1,12 +1,12 @@
-from coconut.coupling_components.solver_wrappers.pc_fluent.fluent import SolverWrapperPCFluentSolid
+from coconut.coupling_components.solver_wrappers.pc_fluent_solid.fluent import SolverWrapperPCFluentSolid
 from coconut import tools
 
 
 def create(parameters):
-    return SolverWrapperPCFluent2024R2(parameters)
+    return SolverWrapperPCFluent2024R2Solid(parameters)
 
 
-class SolverWrapperPCFluent2024R2(SolverWrapperPCFluentSolid):
+class SolverWrapperPCFluent2024R2Solid(SolverWrapperPCFluentSolid):
     version = '2024R2'
     version_bis = '24.2.0'
 
