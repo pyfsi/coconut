@@ -1,9 +1,9 @@
 {
   "settings": {
     "timestep_start": 0,
-    "number_of_timesteps": 720000,
-    "delta_t": 0.01,
-    "save_restart": 60000
+    "number_of_timesteps": 72000,
+    "delta_t": 0.1,
+    "save_restart": 7200
   },
   "coupled_solver": {
     "type": "coupled_solvers.explicit",
@@ -44,7 +44,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.pc_fluent.v2024R2",
+        "type": "solver_wrappers.pc_fluent_liquid.v2024R2",
         "settings": {
           "working_directory": "CFD_2",
           "case_file": "pc_fluid.cas.h5",
@@ -53,7 +53,6 @@
           "multiphase": false,
           "debug": false,
           "PC": {
-            "moving_boundary": true,
             "latent": 179000,
             "melt_temp": 299.15,
             "ini_condition": 0,
@@ -76,29 +75,33 @@
               "variables": [
                 "heat_flux"
               ]
+            },
+            {
+              "model_part": "boundary_out_nodes",
+              "variables": [
+                "displacement"
+              ]
             }
           ],
           "cores": 4,
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 80,
-          "save_results": 30000
+          "save_results": 7200
         }
       },
       {
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.pc_fluent.v2024R2",
+            "type": "solver_wrappers.pc_fluent_solid.v2024R2",
             "settings": {
               "working_directory": "CFD_1",
               "case_file": "pc_solid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
-              "multiphase": false,
               "debug": false,
               "PC": {
-                "moving_boundary": true,
                 "latent": 179000,
                 "melt_temp": 299.15,
                 "ini_condition": 299.15,
@@ -110,7 +113,7 @@
                   "volume_tolerance": 1e-14,
                   "mapper_iterations": 20,
                   "mapper_relaxation": 0.4,
-                  "projection_order": 2
+                  "projection_order": 1
                 }
               },
               "thread_names": [
@@ -121,6 +124,12 @@
                   "model_part": "boundary_in_faces",
                   "variables": [
                     "heat_flux"
+                  ]
+                },
+                {
+                  "model_part": "boundary_in_nodes",
+                  "variables": [
+                    "displacement"
                   ]
                 }
               ],
@@ -136,7 +145,7 @@
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 80,
-              "save_results": 30000
+              "save_results": 7200
             }
           },
           "mapper_interface_input": {
