@@ -468,6 +468,44 @@ class SolverWrapperPCFluent(SolverWrapper):
             self.mapper_n2f = tools.create_instance(n2f_settings)
             self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
 
+        # Last node positions at the interface should be loaded upon restart
+        if ("displacement" in self.output_variables) and (self.timestep_start != 0):
+            for dct in self.interface_internal_nodes.parameters:
+                mp_name = dct['model_part']
+                thread_id = self.model_part_thread_ids[mp_name]
+                # read in datafile
+                if 'displacement' in dct['variables']:
+                    tmp = f'displacement_restart_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    if not os.path.exists(file_name):
+                        raise FileNotFoundError(
+                            f'File {tmp} not found in working directory {self.dir_cfd}')
+                    data = np.loadtxt(file_name, skiprows=1, ndmin=2)
+                    req_dim = min([self.dimensions, accepted_variables_pc['in']['displacement'][1]]) + 1
+                    if data.shape[1] != req_dim:
+                        raise ValueError('Given dimension does not match coordinates')
+
+                    # get face coordinates and ids
+                    vector_tmp = np.zeros((data.shape[0], 3)) * 0.
+                    vector_tmp[:, :self.dimensions] = data[:, :-1]
+                    ids_tmp = data[:, -1].astype(int)  # array is flattened
+
+                    # sort and remove doubles
+                    args = np.unique(ids_tmp, return_index=True)[1].tolist()
+                    vector = vector_tmp[args, :]
+                    ids = ids_tmp[args]
+                    print(vector)
+
+                    # store vector values in interface
+                    model_part = self.model.get_model_part(mp_name)
+                    if ids.size != model_part.size:
+                        raise ValueError('Size of data does not match size of ModelPart')
+                    if not np.all(ids == model_part.id):
+                        raise ValueError('IDs of data do not match ModelPart IDs')
+
+                    self.interface_internal_nodes.set_variable_data(mp_name, 'displacement', vector)
+                    self.interface_output.set_variable_data(mp_name, 'displacement', vector)
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
@@ -524,7 +562,7 @@ class SolverWrapperPCFluent(SolverWrapper):
                 prefix = accepted_variables_pc['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'skip':
-                    data = self.read_output_file(prefix, mp_name, thread_id)
+                    data = self.read_output_file(prefix, thread_id)
                     if accepted_variables_pc['out'][var][1] == 0:
                         req_dim = self.dimensions + 1 + self.mnpf
                     else:
@@ -567,7 +605,10 @@ class SolverWrapperPCFluent(SolverWrapper):
                             self.interface_internal_nodes.set_variable_data(mp_name, var, full_disp)
 
                             # write nodes_update file for move nodes udf in solid domain
-                            self.write_output_to_file(var)
+                            if (self.save_restart != 0 and self.timestep % self.save_restart == 0):
+                                self.write_output_to_file(var, restart=True)
+                            else:
+                                self.write_output_to_file(var)
 
                         else:
                             # store vector and scalar values in interface
@@ -778,7 +819,7 @@ class SolverWrapperPCFluent(SolverWrapper):
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
 
-    def write_output_to_file(self, var):
+    def write_output_to_file(self, var, restart=False):
         if var == 'displacement':
             for dct in self.interface_output.parameters:
                 mp_name = dct['model_part']
@@ -789,17 +830,31 @@ class SolverWrapperPCFluent(SolverWrapper):
                     x = model_part.x0 + displacement[:, 0]
                     y = model_part.y0 + displacement[:, 1]
                     z = model_part.z0 + displacement[:, 2]
+
                     if self.dimensions == 2:
                         data = np.rec.fromarrays([x, y, model_part.id])
                         fmt = '%27.17e%27.17e%27d'
                     else:
                         data = np.rec.fromarrays([x, y, z, model_part.id])
                         fmt = '%27.17e%27.17e%27.17e%27d'
+
                     tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-    def read_output_file(self, prefix, mp_name, thread_id=None):
+                    if restart:
+                        if self.dimensions == 2:
+                            data = np.rec.fromarrays([displacement[:, 0], displacement[:, 1], model_part.id])
+                            fmt = '%27.17e%27.17e%27d'
+                        else:
+                            data = np.rec.fromarrays([displacement[:, 0], displacement[:, 1], displacement[:, 2], model_part.id])
+                            fmt = '%27.17e%27.17e%27.17e%27d'
+
+                        tmp = f'displacement_restart_timestep{self.timestep}_thread{thread_id}.dat'
+                        file_name = join(self.dir_cfd, tmp)
+                        np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
+
+    def read_output_file(self, prefix, thread_id=None):
         tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
         file_name = join(self.dir_cfd, tmp)
         data = np.loadtxt(file_name, skiprows=1, ndmin=2)

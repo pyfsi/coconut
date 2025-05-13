@@ -23,8 +23,16 @@ Essentially, heat flux and interface displacement are exchanged as variables bet
 
 * Only 2D cases. Axisymmetric or 3D cases are currently not supported.
 * Currently, only melting is supported, no solidification.
-* Currently, only constrained melting cases are possible. The goal is to add mechanical coupling between the domains in the close future to allow unconstrained melting cases.
-* Subcooled solids are possible, but should be initialised in such a way that the phase change interface is already at melting temperature. Heating of the solid without melting is a conjugate heat transfer problem and not possible yet.
+* Currently, only constrained melting cases are possible.
+The goal is to add mechanical coupling between the domains in the close future to allow unconstrained melting cases.
+* Subcooled solids are possible, but should be initialised in such a way that the phase change interface is already at melting temperature.
+Heating of the solid without melting is a conjugate heat transfer problem and not possible yet.
+* The displacement calculated in the solid solver is used without modification in the next coupling iteration or time step,
+while the liquid solver receives modified displacment values.
+Each coupling iteration, the coupled solver modifies the liquid solver input according to the chosen coupled solver
+and the (non-constant) predictor modifies the displacement each new time step.
+As such, the interface position in the solid and liquid solver can slightly differ.
+
 
 
 ## Parameters
@@ -115,6 +123,7 @@ In these file conventions, A is the time step number and B the Fluent thread ID.
 -   The new node coordinates are passed from CoCoNuT to Fluent with files of the form *`nodes_update_timestepA_threadB.dat`*.
 -   Heat flux is passed from Fluent to CoCoNuT with files of the form *`heat_flux_timestepA_threadB.dat`*.
 -   Files with extension *`.coco`* are used to exchange messages between CoCoNuT and Fluent. 
+-   Node displacement is saved for restart of the solid solver with files of the form *`displacement_restart_timestepA_threadB.dat`*.
 
 
 ## Setting up a new case

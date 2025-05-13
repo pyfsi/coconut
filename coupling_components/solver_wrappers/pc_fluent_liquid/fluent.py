@@ -73,6 +73,23 @@ class SolverWrapperPCFluentLiquid(SolverWrapper):
         self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
 
+        # Input variables
+        f_n = 0
+        f_f = 0
+        self.input_variables = []
+        check_in_out_disp = []
+        for mp in self.settings['interface_input']:
+            if "nodes" in mp["model_part"]:
+                if f_n == 0:
+                    self.input_variables += mp['variables']
+                    f_n = 1
+                if mp['variables'] == 'displacement':
+                    check_in_out_disp.append(mp["model_part"])
+            if "faces" in mp["model_part"]:
+                if f_f == 0:
+                    self.input_variables += mp['variables']
+                    f_f = 1
+
         # Output variables
         self.output_ini_cond = {}
         self.output_variables = []
@@ -84,24 +101,22 @@ class SolverWrapperPCFluentLiquid(SolverWrapper):
                 if f_n == 0:
                     self.output_variables += mp['variables']
                     f_n = 1
+                if mp['variables'] == 'displacement':
+                    mp_in = mp["model_part"].replace('out', 'in')
+                    if mp_in in check_in_out_disp:
+                        check_in_out_disp.remove(mp_in)
+                    else:
+                        raise ValueError(f'Model part with output displacement {mp["model_part"]} lacks corresponding input model part: {mp_in}.')
             if "faces" in mp["model_part"]:
                 if f_f == 0:
                     self.output_variables += mp['variables']
                     f_f = 1
 
-        # Input variables
-        f_n = 0
-        f_f = 0
-        self.input_variables = []
-        for mp in self.settings['interface_input']:
-            if "nodes" in mp["model_part"]:
-                if f_n == 0:
-                    self.input_variables += mp['variables']
-                    f_n = 1
-            if "faces" in mp["model_part"]:
-                if f_f == 0:
-                    self.input_variables += mp['variables']
-                    f_f = 1
+        # Check if input model parts with displacement variable have no corresponding output model parts.
+        # This is necessary for the interface update in the solid solver.
+        if check_in_out_disp:
+            absent_out_mp = [str(mp).replace('in', 'out') for mp in check_in_out_disp]
+            raise ValueError(f'Model parts with input displacement {check_in_out_disp} lack corresponding output model parts to return the displacement: {absent_out_mp}.')
 
         # Thermal boundary condition at input interface
         self.thermal_bc = None
@@ -441,8 +456,17 @@ class SolverWrapperPCFluentLiquid(SolverWrapper):
             for var in dct['variables']:
                 prefix = accepted_variables_pc_liquid['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
-                if prefix != 'skip':
-                    data = self.read_output_file(prefix, mp_name, thread_id)
+
+                if var == 'displacement':
+                    if 'nodes' not in mp_name:
+                        raise ValueError('Model part must be node-based for the displacement variable')
+
+                    # Pass input displacement directly to output for use in solid solver
+                    self.interface_output.set_variable_data(mp_name, 'displacement',
+                                                            self.interface_input.get_variable_data(mp_name.replace('out', 'in'), 'displacement'))
+
+                elif prefix != 'skip':
+                    data = self.read_output_file(prefix, thread_id)
                     if accepted_variables_pc_liquid['out'][var][1] == 0:
                         req_dim = self.dimensions + 1 + self.mnpf
                     else:
@@ -573,12 +597,6 @@ class SolverWrapperPCFluentLiquid(SolverWrapper):
                             os.remove(join(self.dir_cfd, accepted_variables_pc_liquid['out'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                         except OSError:
                             pass
-                    if var == 'displacement':
-                        # solid zone outputs displacement and creates input file for itself at the same time
-                        try:
-                            os.remove(join(self.dir_cfd, accepted_variables_pc_liquid['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
-                        except OSError:
-                            pass
                 for var in self.input_variables:
                     try:
                         os.remove(join(self.dir_cfd, accepted_variables_pc_liquid['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
@@ -671,7 +689,7 @@ class SolverWrapperPCFluentLiquid(SolverWrapper):
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
 
-    def read_output_file(self, prefix, mp_name, thread_id=None):
+    def read_output_file(self, prefix, thread_id=None):
         tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
         file_name = join(self.dir_cfd, tmp)
         data = np.loadtxt(file_name, skiprows=1, ndmin=2)

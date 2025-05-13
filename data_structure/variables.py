@@ -38,7 +38,8 @@ accepted_variables_pc_liquid = {
     'out':{
         'pressure': ['pressure_traction', 0],
         'traction': ['skip', 0], # catch variable stored in the same file to avoid double reading of the same file
-        'heat_flux': ['heat_flux', 1]
+        'heat_flux': ['heat_flux', 1],
+        'displacement': ['displacement', 0]
     }
 }
 

@@ -60,6 +60,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
+        self.re_ini = False # Re-initialisation flag for displacement in case of restart
         self.timestep = self.timestep_start
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
@@ -72,6 +73,23 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         self.dict_face_ids = {} # Dictionary of dictionaries containing a list of node ids corresponding to the hashed face ids
         self.model = None
 
+        # Input variables
+        f_n = 0
+        f_f = 0
+        self.input_variables = []
+        check_in_out_disp = []
+        for mp in self.settings['interface_input']:
+            if "nodes" in mp["model_part"]:
+                if f_n == 0:
+                    self.input_variables += mp['variables']
+                    f_n = 1
+                if mp['variables'] == 'displacement':
+                    check_in_out_disp.append(mp["model_part"])
+            if "faces" in mp["model_part"]:
+                if f_f == 0:
+                    self.input_variables += mp['variables']
+                    f_f = 1
+
         # Output variables
         self.output_ini_cond = {}
         self.output_variables = []
@@ -83,24 +101,22 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                 if f_n == 0:
                     self.output_variables += mp['variables']
                     f_n = 1
+                if mp['variables'] == 'displacement':
+                    mp_in = mp["model_part"].replace('out', 'in')
+                    if mp_in in check_in_out_disp:
+                        check_in_out_disp.remove(mp_in)
+                    else:
+                        raise ValueError(f'Model part with output displacement {mp["model_part"]} lacks corresponding input model part: {mp_in}.')
             if "faces" in mp["model_part"]:
                 if f_f == 0:
                     self.output_variables += mp['variables']
                     f_f = 1
 
-        # Input variables
-        f_n = 0
-        f_f = 0
-        self.input_variables = []
-        for mp in self.settings['interface_input']:
-            if "nodes" in mp["model_part"]:
-                if f_n == 0:
-                    self.input_variables += mp['variables']
-                    f_n = 1
-            if "faces" in mp["model_part"]:
-                if f_f == 0:
-                    self.input_variables += mp['variables']
-                    f_f = 1
+        # Check if input model parts with displacement variable have no corresponding output model parts.
+        # This is necessary for the interface update in the solid solver.
+        if check_in_out_disp:
+            absent_out_mp = [str(mp).replace('in', 'out') for mp in check_in_out_disp]
+            raise ValueError(f'Model parts with input displacement {check_in_out_disp} lack corresponding output model parts to return the displacement: {absent_out_mp}.')
 
         # Thermal boundary condition at input interface
         self.thermal_bc = None
@@ -448,22 +464,23 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             self.mapper_n2f = tools.create_instance(n2f_settings)
             self.mapper_n2f.initialize(self.interface_internal_nodes, self.interface_internal)
 
+        if self.timestep_start != 0:
+            self.re_ini = True # Displacements in internal interfaces will need to be re-initialised when data is available
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
         self.iteration = 0
         self.timestep += 1
 
+        # Update previous displacements
         if "displacement" in self.output_variables:
-            # map output node displacement to face displacement
+            # map output node displacement to face previous displacement
             self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal)
             for item in self.settings['interface_output']:
                 mp_name = item['model_part']
                 if "displacement" in item['variables']:
                     self.interface_internal_nodes.set_variable_data(mp_name, "prev_disp", self.interface_internal_nodes.get_variable_data(mp_name, "displacement"))
-
-            # write interface output data at new time step
-            self.write_output_to_file("displacement")
 
         self.coco_messages.send_message('next')
         self.coco_messages.wait_message('next_ready')
@@ -479,6 +496,11 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         for var in self.input_variables:
             # write interface input data
             self.write_input_to_file(var)
+
+            # Initialise internal interfaces upon restart with incoming interface data
+            if self.re_ini and var == 'displacement':
+                self.ini_internal()
+                self.re_ini = False
 
             # copy input data for debugging
             if self.debug:
@@ -504,7 +526,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                 prefix = accepted_variables_pc_solid['out'][var][0]
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'skip':
-                    data = self.read_output_file(prefix, mp_name, thread_id)
+                    data = self.read_output_file(prefix, thread_id)
                     if accepted_variables_pc_solid['out'][var][1] == 0:
                         req_dim = self.dimensions + 1 + self.mnpf
                     else:
@@ -551,7 +573,6 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
 
                         else:
                             raise KeyError('Output variable in solid solver with dimension 0 should always be displacement.')
-
 
                     if accepted_variables_pc_solid['out'][var][1] == 3:
                         # get face coordinates and ids
@@ -747,6 +768,19 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
 
+    def ini_internal(self):
+        for dct in self.interface_input.parameters:
+            mp_name = dct['model_part']
+            if 'nodes' in mp_name:
+                displacement = self.interface_input.get_variable_data(mp_name, 'displacement')
+
+                # Initialise internal_nodes interface
+                self.interface_internal_nodes.set_variable_data(mp_name.replace('in', 'out'), 'displacement', displacement)
+                self.interface_internal_nodes.set_variable_data(mp_name.replace('in', 'out'), 'prev_disp', displacement)
+
+                # map output node displacement to face previous displacement
+                self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal)
+
     def write_output_to_file(self, var):
         if var == 'displacement':
             for dct in self.interface_output.parameters:
@@ -758,17 +792,19 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                     x = model_part.x0 + displacement[:, 0]
                     y = model_part.y0 + displacement[:, 1]
                     z = model_part.z0 + displacement[:, 2]
+
                     if self.dimensions == 2:
                         data = np.rec.fromarrays([x, y, model_part.id])
                         fmt = '%27.17e%27.17e%27d'
                     else:
                         data = np.rec.fromarrays([x, y, z, model_part.id])
                         fmt = '%27.17e%27.17e%27.17e%27d'
+
                     tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
                     file_name = join(self.dir_cfd, tmp)
                     np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-    def read_output_file(self, prefix, mp_name, thread_id=None):
+    def read_output_file(self, prefix, thread_id=None):
         tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
         file_name = join(self.dir_cfd, tmp)
         data = np.loadtxt(file_name, skiprows=1, ndmin=2)
