@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+#PBS -N Faden_split_2
+#PBS -l walltime=71:55:00
+#PBS -l nodes=1:ppn=40
+#
+
+# Use SciPy-bundle instead of Anaconda3 on shinx
+module load SciPy-bundle/2024.05-gfbf-2024a
+export PYTHONPATH=$VSC_SCRATCH/:$PYTHONPATH
+
+export OMP_PROC_BIND=FALSE # required on UGent-HPC for processes spawned from Python
+
+cd $VSC_SCRATCH/coconut/pc_development/2D_subcooled/Faden_split_2/
+python3 setup_case.py
+
+# To run multinode: uncomment the line below and ...
+# ... make sure "hosts_file": "fluent.hosts" is added to the Fluent settings in the JSON file
+# cat $PBS_NODEFILE > CFD/fluent.hosts
+
+python3 run_simulation.py

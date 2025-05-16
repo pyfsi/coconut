@@ -79,6 +79,8 @@ for (_d = 0; _d < dim; _d++) {                                      \
 #define D_VOL 9 // swept volume during move_nodes operation
 #define SIGN 10 // defines wether the cell is on the growing or shrinking side during phase change
 #define QL 11 // incoming liquid heat flux into the solid domain
+#define N_ID 0 // u-d node memory where initial node ids are saved
+
 
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
@@ -234,6 +236,9 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
 
                 if (i_n >= n_nodes) {Error("\nIndex %i >= array size %i.", i_n, n_nodes);}
                 node_ids[i_n] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                if (timestep == TS_START) {
+                    N_UDMI(node,0) = NODE_DM_ID(node); /* store initial dynamic mesh node id in a node UDM */
+                }
                 for (d = 0; d < ND_ND; d++) {
                     node_coords[d][i_n] = NODE_COORD(node)[d];
                 }
@@ -435,7 +440,7 @@ DEFINE_ON_DEMAND(store_temperature){
             f_node_loop(face, face_thread, node_number) {
                 if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
                 node = F_NODE(face, face_thread, node_number);
-                ids[j][i] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
+                ids[j][i] = N_UDMI(node,0); /* store dynamic mesh node id of current node */
                 j++;
             }
             i++;
@@ -615,7 +620,7 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
                         }
                         node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
                         if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
-                            id = NODE_DM_ID(node);
+                            id = N_UDMI(node,0);
                         } else {
                             skip_search = true;
                             isNodeFound = false;
@@ -768,7 +773,7 @@ DEFINE_ON_DEMAND(read_liquid_hf) {
                             }
                             node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
                             if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
-                                id = NODE_DM_ID(node);
+                                id = N_UDMI(node,0);
                             } else {
                                 skip_search = true;
                                 isNodeFound = false;
@@ -899,18 +904,21 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
         f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
             node = F_NODE(face, face_thread, node_number); /* get global face ndoe index from local node index */
             if NODE_POS_NEED_UPDATE(node) { /* only execute if position has not been updated yet (efficiency) */
+                int found_node = 0;
                 for (i=0; i < n; i++) { /* loop over all lines to find the correct node */
-                    if (NODE_DM_ID(node) == ids[i]) { /* correct node has the same dynamic mesh node id */
+                    if (N_UDMI(node,0) == ids[i]) { /* correct node has the same dynamic mesh node id */
                         for (d = 0; d < ND_ND; d++) {
                             NODE_COORD(node)[d] = coords[d][i]; /* modify node coordinates */
                         }
                         NODE_POS_UPDATED(node); /* flag node as updated */
+                        found_node = 1;
                         break; /* break loop for efficiency */
                     }
-                    if (i == n - 1) {
-                        Error("\nUDF-error: No match for node id %i\n", NODE_DM_ID(node));
-                        exit(1);
-                    }
+                }
+                if (!found_node) {
+                    printf("\nUDF-warning: No match for node id %i\n", N_UDMI(node,0));
+                    Error("\nUDF-error: No match for node id %i\n", N_UDMI(node,0));
+                    exit(1);
                 }
             }
         }

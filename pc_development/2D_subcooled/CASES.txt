@@ -31,7 +31,7 @@ PROBLEM: Case 4, 6 & 7 crash around t = 1100 s due to stretched interface faces
 
     - case 8: refined grid at LF = 0.01 (var. density + normal p-out)
     - case 9: refined grid at LF = 0.01 (cst. liquid density + Boussinesq + normal p-out) --> even worse
-    - case 10: refined grid at LF = 0.01 + rho_l = rho_s + Boussinesq + NO outlet --> stopped, melts too fast
+    - (case 10): refined grid at LF = 0.01 + rho_l = rho_s + Boussinesq + NO outlet --> stopped and deleted, melts too fast
     - case 11 & 13: Case 8, but grid at LF = 0.02 and double outlet size
     - case 12: case 10, but corrected latent heat to make up for density loss in solid --> melts slower --> CRASH
     - case 14: case 13, but with methods-based remeshing instead of unified (ts = 0.05 s)
@@ -41,3 +41,7 @@ ALL SOLID SOLVERS HAD NO MASS SOURCE TERM ENABLED UNTIL NOW:
 
     - case 16: case 14, but with ts = 0.1 s & fluid cell zone not set as deforming --> can influence remeshing
     - case 17: case 13: unified remeshing WITH cell-skew-max = 0.4 instead of 0.7 (ts = 0.1 s & fluid cell zone not set as deforming)
+
+USING SPLIT SOLVER WRAPPER FOR IMPROVED RESTART AND INTERFACE COHERNCE BETWEEN SOLID AND LIQUID
+    - split 1: case 17 with split solver wrapper
+    - split 2: split 1 with node ids stored in node UDM's --> avoid error upon restart
