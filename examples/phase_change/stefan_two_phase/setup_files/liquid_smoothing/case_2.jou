@@ -1,7 +1,7 @@
 file set-batch-options n n n
 (enable-dynamic-mesh-node-ids #t)
 ;file start "transcript_setup.txt"
-file read-case 50mm_left_fine.msh ; 2D mesh!
+file read-case 50mm_left_coarse.msh ; 2D mesh!
 grid modify-zones zone-type 2 fluid
 
 define user-defined user-defined-memory 13
@@ -30,6 +30,7 @@ solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-12
 
 solve set discretization-scheme temperature 1
 solve set discretization-scheme mom 0
+; 10: standard, 11: linear, 12: second order, 13: body force weighted, 14: PRESTO!
 solve set discretization-scheme pressure 12
 solve set gradient-scheme n y
 ; SIMPLE (20) - PISO (22) - coupled (24)
@@ -60,6 +61,7 @@ define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
 ; Last option below: exclude mesh motion in boundary conditions? y
 define dynamic-mesh zones create adiabatic deforming faceted n y n y n y
+; Include end of setup command in json file for layering! Non-zero cell height for layering
 
 solve initialize initialize-flow
 

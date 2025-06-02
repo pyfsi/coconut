@@ -42,6 +42,11 @@ ALL SOLID SOLVERS HAD NO MASS SOURCE TERM ENABLED UNTIL NOW:
     - case 16: case 14, but with ts = 0.1 s & fluid cell zone not set as deforming --> can influence remeshing
     - case 17: case 13: unified remeshing WITH cell-skew-max = 0.4 instead of 0.7 (ts = 0.1 s & fluid cell zone not set as deforming)
 
-USING SPLIT SOLVER WRAPPER FOR IMPROVED RESTART AND INTERFACE COHERNCE BETWEEN SOLID AND LIQUID
+USING SPLIT SOLVER WRAPPER FOR IMPROVED RESTART AND INTERFACE COHERENCE BETWEEN SOLID AND LIQUID
     - split 1: case 17 with split solver wrapper
-    - split 2: split 1 with node ids stored in node UDM's --> avoid error upon restart
+    - split 2: split 1 with node ids stored in node UDM's --> avoid error upon restart --> crashed due to stretched faces at the interface
+    - split 3: unified remeshing - retain size distribution no! --> attempt to make cells near interface larger, but less skew
+
+Split 3 works up to 1800 s! Improvement of cell skewness near interface, but eventually they degrade as well
+    - run_1: first run on original mesh
+    - current run: mesh at 1800 s extracted and manually remeshed --> coconut restarted as if time step = 0

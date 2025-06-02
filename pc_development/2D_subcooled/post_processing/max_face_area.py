@@ -9,9 +9,9 @@ def exponential(t, b):
 
 # different cases to be plotted
 common_path = '../'
-case_paths = ['Faden_full_5/case_results.pickle', 'Faden_full_6/case_results.pickle', 'Faden_full_7/case_results.pickle', 'Faden_full_8/case_results.pickle']
-legend_entries = ['PRESTO!', 'bfw', 'bfw - p out', 'fine']
-dt = [0.1, 0.05, 0.05, 0.05] # s
+case_paths = ['Faden_split_3/case_results.pickle', 'Faden_full_17/HPC/case_results.pickle']
+legend_entries = ['dont retain', 'retain']
+dt = [0.1, 0.1] # s
 
 line_styles = ['r--', 'g--', 'b--', 'k--', 'c--']
 

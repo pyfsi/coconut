@@ -2,28 +2,29 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math as M
 import pandas as pd
-from scipy.optimize import fsolve
-from scipy.special import erf
-from scipy.interpolate import interp1d
 from coconut.examples.post_processing.post_processing import *
 
 # Plot temperatures?
 temp_plots = False
 
+# Plot Faden validation data?
+faden = True
+faden_dir = 'Faden_paper/'
+
 # Start delay of simulation due to starting with LF = 0.01 & 0.02 (based on conduction only Fluent simulation)
 t_delay_001 = 12.47 # s
-t_delay_002 = 58.79 # s 61.23
+t_delay_002 = 61.23 # s 61.23 or 58.79
 
 # Read and load coconut data
 start_lf_001 = False
-case_dir = '../Faden_full_11/'
+case_dir = '../Faden_split_3/'
 report_file_name = 'report-file.out'
 data_solid = np.loadtxt(case_dir + 'CFD_1/' + report_file_name, delimiter=' ', skiprows=3)
 data_liquid = np.loadtxt(case_dir + 'CFD_2/' + report_file_name, delimiter=' ', skiprows=3)
 
 # Read and load Fluent comparison data
 fluent_dir = 'fluent_reports/'
-fluent_report_name = 'report-file.out'
+fluent_report_name = 'report-file-full.out'
 data_fluent = np.loadtxt(fluent_dir + fluent_report_name, delimiter=' ', skiprows=3)
 
 t_delay = t_delay_001 if start_lf_001 else t_delay_002
@@ -87,48 +88,80 @@ ts_0 = M.ceil(1.0/0.1)
 ts_0_fl = 118
 
 # Create plots
+
 # Liquid fraction
-line_sim, = plt.plot(time[ts_0:], LF[ts_0:], '-k', label='Coconut')
-line_fl_1, = plt.plot(time_fl[ts_0_fl:], LF_1_fl[ts_0_fl:], '--r', label='Fluent 1')
-#line_fl_2, = plt.plot(time_fl[ts_0_fl:], LF_2_fl[ts_0_fl:], '--b', label='Fluent 2')
-plt.ylabel('Liquid fraction [-]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl_1])
+line_sim, = plt.plot(time[ts_0:], LF[ts_0:], '-k', label='Partitioned')
+line_fl_1, = plt.plot(time_fl[ts_0_fl:], LF_1_fl[ts_0_fl:], '--r', label='Fixed grid')
+lines_lf = [line_sim, line_fl_1]
+
+# Read and load Faden paper comparison data for liquid fraction
+if faden:
+    """
+    faden_data = ['Faden_LF_exp_itv.csv', 'Faden_LF_sim.csv']
+    faden_legend = ['Faden - exp. 0.95 itv', 'Faden - numerical']
+    line_styles = ['g.', 'b.']
+    """
+    faden_data = ['Faden_LF_sim.csv']
+    faden_legend = ['Faden (2024)']
+    line_styles = ['g.']
+    for j, file in enumerate(faden_data):
+        time_Fa, LF_Fa = np.loadtxt(faden_dir + file, skiprows=1, delimiter=',', unpack=True)
+        line, = plt.plot(time_Fa*60, LF_Fa, line_styles[j], label=faden_legend[j]) # time is in minutes
+        lines_lf.append(line)
+
+plt.ylabel('Liquid fraction [-]', fontsize=16)
+plt.xlabel('Time [s]', fontsize=16)
+plt.xlim((-100, 2000))
+plt.ylim((0, 0.16))
+plt.xticks(fontsize=14)  # Increase font size of x-ticks
+plt.yticks(fontsize=14)  # Increase font size of y-ticks
+plt.legend(handles=lines_lf, fontsize=16)
 plt.tight_layout()
-plt.savefig('Report_figures/liquid_fraction.png')
+plt.savefig('Report_figures/liquid_fraction.png', dpi=150)
 plt.show()
 plt.close()
 
 # Max. velocity magnitude
-line_sim, = plt.plot(time[ts_0:], v_max[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], v_max_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Max. velocity mag. [m/s]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
+line_sim, = plt.plot(time[ts_0:], v_max[ts_0:]*1000, '-k', label='Partitioned')
+line_fl, = plt.plot(time_fl[ts_0_fl:], v_max_fl[ts_0_fl:]*1000, '--r', label='Fixed grid')
+plt.ylabel('Max. velocity mag. [mm/s]', fontsize=16)
+plt.xlabel('Time [s]', fontsize=16)
+plt.xlim((-100, 2000))
+plt.xticks(fontsize=14)  # Increase font size of x-ticks
+plt.yticks(fontsize=14)  # Increase font size of y-ticks
+plt.legend(handles=[line_sim, line_fl], fontsize=16)
 plt.tight_layout()
-plt.savefig('Report_figures/max_velocity.png')
+plt.savefig('Report_figures/max_velocity.png', dpi=150)
 plt.show()
 plt.close()
 
 # Heat flux @ heated wall
-line_sim, = plt.plot(time[ts_0:], q_heat[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], q_heat_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Area avg. heat flux [W/m^2]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
+line_sim, = plt.plot(time[ts_0:], q_heat[ts_0:], '-k', label='Partitioned')
+line_fl, = plt.plot(time_fl[ts_0_fl:], q_heat_fl[ts_0_fl:], '--r', label='Fixed grid')
+plt.ylabel('Area avg. heat flux [W/m^2]', fontsize=16)
+plt.xlabel('Time [s]', fontsize=16)
+plt.xlim((-100, 2000))
+plt.ylim((0, 120))
+plt.xticks(fontsize=14)  # Increase font size of x-ticks
+plt.yticks(fontsize=14)  # Increase font size of y-ticks
+plt.legend(handles=[line_sim, line_fl], fontsize=16)
 plt.tight_layout()
-plt.savefig('Report_figures/hf_heated_wall.png')
+plt.savefig('Report_figures/hf_heated_wall.png', dpi=150)
 plt.show()
 plt.close()
 
 # Heat flux @ cooled wall
-line_sim, = plt.plot(time[ts_0:], q_cool[ts_0:], '-k', label='Coconut')
-line_fl, = plt.plot(time_fl[ts_0_fl:], q_cool_fl[ts_0_fl:], '--r', label='Fluent')
-plt.ylabel('Area avg. heat flux [W/m^2]')
-plt.xlabel('Time [s]')
-plt.legend(handles=[line_sim, line_fl])
+line_sim, = plt.plot(time[ts_0:], q_cool[ts_0:], '-k', label='Partitioned')
+line_fl, = plt.plot(time_fl[ts_0_fl:], q_cool_fl[ts_0_fl:], '--r', label='Fixed grid')
+plt.ylabel('Area avg. heat flux [W/m^2]', fontsize=16)
+plt.xlabel('Time [s]', fontsize=16)
+plt.xlim((-100, 2000))
+plt.ylim((-0.3, 3.5))
+plt.xticks(fontsize=14)  # Increase font size of x-ticks
+plt.yticks(fontsize=14)  # Increase font size of y-ticks
+plt.legend(handles=[line_sim, line_fl], fontsize=16)
 plt.tight_layout()
-plt.savefig('Report_figures/hf_cooled_wall.png')
+plt.savefig('Report_figures/hf_cooled_wall.png', dpi=150)
 plt.show()
 plt.close()
 

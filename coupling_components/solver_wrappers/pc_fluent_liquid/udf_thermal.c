@@ -235,7 +235,7 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
                 if (i_n >= n_nodes) {Error("\nIndex %i >= array size %i.", i_n, n_nodes);}
                 node_ids[i_n] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
                 if (timestep == TS_START) {
-                    N_UDMI(node,0) = NODE_DM_ID(node); /* store initial dynamic mesh node id in a node UDM */
+                    N_UDMI(node,N_ID) = NODE_DM_ID(node); /* store initial dynamic mesh node id in a node UDM */
                 }
                 for (d = 0; d < ND_ND; d++) {
                     node_coords[d][i_n] = NODE_COORD(node)[d];
@@ -445,7 +445,7 @@ DEFINE_ON_DEMAND(store_pressure_traction) {
             f_node_loop(face, face_thread, node_number) {
                 if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
                 node = F_NODE(face, face_thread, node_number);
-                ids[j][i] = N_UDMI(node,0); /* store dynamic mesh node id of current node */
+                ids[j][i] = N_UDMI(node,N_ID); /* store dynamic mesh node id of current node */
                 j++;
             }
             i++;
@@ -615,7 +615,7 @@ DEFINE_ON_DEMAND(store_heat_flux){
             f_node_loop(face, face_thread, node_number) {
                 if (j >= mnpf) {Error("\nIndex %i >= array size %i.", j, mnpf);}
                 node = F_NODE(face, face_thread, node_number);
-                ids[j][i] = N_UDMI(node,0); /* store dynamic mesh node id of current node */
+                ids[j][i] = N_UDMI(node,N_ID); /* store dynamic mesh node id of current node */
                 j++;
             }
             i++;
@@ -795,7 +795,7 @@ DEFINE_PROFILE(set_temperature, face_thread, var) {
                         }
                         node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
                         if (NNULLP(THREAD_STORAGE(NODE_THREAD(node), SV_DM_ID))) { // checks if node values are already loaded
-                            id = N_UDMI(node,0);
+                            id = N_UDMI(node,N_ID);
                         } else {
                             skip_search = true;
                             isNodeFound = false;
@@ -916,7 +916,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
             if NODE_POS_NEED_UPDATE(node) { /* only execute if position has not been updated yet (efficiency) */
                 int found_node = 0;
                 for (i=0; i < n; i++) { /* loop over all lines to find the correct node */
-                    if (N_UDMI(node,0) == ids[i]) { /* correct node has the same dynamic mesh node id */
+                    if (N_UDMI(node,N_ID) == ids[i]) { /* correct node has the same dynamic mesh node id */
                         for (d = 0; d < ND_ND; d++) {
                             NODE_COORD(node)[d] = coords[d][i]; /* modify node coordinates */
                         }
@@ -926,8 +926,8 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                     }
                 }
                 if (!found_node) {
-                    printf("\nUDF-warning: No match for node id %i\n", N_UDMI(node,0));
-                    Error("\nUDF-error: No match for node id %i\n", N_UDMI(node,0));
+                    printf("\nUDF-warning: No match for node id %i\n", N_UDMI(node,N_ID));
+                    Error("\nUDF-error: No match for node id %i\n", N_UDMI(node,N_ID));
                     exit(1);
                 }
             }

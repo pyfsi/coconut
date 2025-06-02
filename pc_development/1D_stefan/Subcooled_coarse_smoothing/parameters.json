@@ -1,7 +1,7 @@
 {
   "settings": {
     "timestep_start": 0,
-    "number_of_timesteps": 72000,
+    "number_of_timesteps": 144000,
     "delta_t": 0.1,
     "save_restart": 7200
   },
