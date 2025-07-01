@@ -19,6 +19,7 @@ solver_load_cmd_dict = {
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024',
         'abaqus_cse.v2023': 'ml ABAQUS/2023',
         'abaqus_cse.v2024': 'ml ABAQUS/2024',
+        'abaqus_cse.v2025': 'ml ABAQUS/2025'
     },
     'ugent_hpc': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml iimpi/2023a ; unset SLURM_GTIDS '

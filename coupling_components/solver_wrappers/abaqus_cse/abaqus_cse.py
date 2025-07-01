@@ -43,7 +43,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.number_of_timesteps = self.settings['number_of_timesteps']
         self.end_time = self.number_of_timesteps * self.delta_t
         self.save_results = self.settings.get('save_results', 1)
-        self.save_restart = self.settings['save_restart']  # TODO: implement restart
+        self.save_restart = self.settings['save_restart']
         self.input_file = self.settings['input_file']
         self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -97,7 +97,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                              f'or omit parameter to let the OS choose a free port', layout='warning')
 
         # print warning related to traction in 2D
-        if self.dimensions == 2:
+        if self.dimensions == 2 and int(self.version) < 2025:
             tools.print_info(f'WARNING: In 2-dimensional cases, the solver wrapper {self.__class__.__name__} '
                              f'does not take into account traction', layout='warning')
 
@@ -488,7 +488,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 tag_instance.text = tag_instance.text.replace(parameter, str(value))
 
         if self.dimensions == 2:
-            load_vars = ['pressure']
+            if int(self.version) < 2025:
+                load_vars = ['pressure']
+            elif int(self.version) >= 2025:
+                load_vars = ['pressure', 'traction_vector']
         elif self.dimensions == 3:
             load_vars = ['pressure', 'traction_vector']
         else:
@@ -536,7 +539,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
         if self.dimensions == 2:
-            import_lines = "\n".join([f'{surface}, P' for surface in self.surfaces])
+            if int(self.version) < 2025:
+                import_lines = "\n".join([f'{surface}, P' for surface in self.surfaces])
+            else:
+                import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
         elif self.dimensions == 3:
             import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
         else:

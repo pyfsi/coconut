@@ -6,7 +6,7 @@ Refer to [Abaqus](../abaqus.md) for the old version of the Abaqus solver wrapper
 Abaqus is a structural solver implementing the finite element method.
 Currently, this wrapper only supports FSI simulations, no other multi-physics problems.
 
-!!! failure "For two-dimensional cases, the traction forces are not taken into account"
+!!! failure "For two-dimensional cases in versions older than Abaqus/2025, the traction forces are not taken into account"
 
 ??? info "Terminology"
 
@@ -191,3 +191,6 @@ No major changes.
 
 ### v2024
 Abaqus is now using Python 3.10 instead of Python 2.7.
+
+### v2025
+AbaqusCSE now supports traction for two-dimensional cases.
