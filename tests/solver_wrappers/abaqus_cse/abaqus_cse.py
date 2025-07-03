@@ -241,10 +241,6 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
         Test whether shear is also applied.
         """
 
-        if self.dimension == 2 and int(self.version) < 2025:
-            self.skipTest('AbaqusCSE does not take into account traction for two-dimensional cases in versions before '
-                          'Abaqus/2025')
-
         # create solver
         self.parameters['settings']['number_of_timesteps'] = 4
         solver = create_instance(self.parameters)
