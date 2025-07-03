@@ -194,3 +194,4 @@ Abaqus is now using Python 3.10 instead of Python 2.7.
 
 ### v2025
 AbaqusCSE now supports traction for two-dimensional cases.
+During testing, it was found however that traction lags one timestep (for both 3D and 2D cases). In older versions, (2024 and 2023), traction is not applied correctly even for 3D cases. Results should therefore be interpreted with caution. If traction is an important contributor to the fluid forces at the FSI interface, consider using the [legacy Abaqus wrapper](../abaqus/abaqus.md). 

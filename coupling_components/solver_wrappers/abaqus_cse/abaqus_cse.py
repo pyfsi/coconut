@@ -96,10 +96,16 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             tools.print_info(f'Port {self.port} is in use, choose another port '
                              f'or omit parameter to let the OS choose a free port', layout='warning')
 
-        # print warning related to traction in 2D
+        # print warning related to traction
         if self.dimensions == 2 and int(self.version) < 2025:
             tools.print_info(f'WARNING: In 2-dimensional cases, the solver wrapper {self.__class__.__name__} '
                              f'does not take into account traction', layout='warning')
+        elif int(self.version) == 2025:
+            tools.print_info(f'WARNING: The solver wrapper {self.__class__.__name__} (version 2025) lags one timestep '
+                             f'in applying traction', layout='warning')
+        else:  # 3D, version 2024 or older
+            tools.print_info(f'WARNING: The solver wrapper {self.__class__.__name__} does not apply traction correctly',
+                             layout='warning')
 
     @tools.time_initialize
     def initialize(self):
