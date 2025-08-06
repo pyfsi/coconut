@@ -17,14 +17,14 @@ t_delay_002 = 61.23 # s 61.23 or 58.79
 
 # Read and load coconut data
 start_lf_001 = False
-case_dir = '../Faden_split_3/'
+case_dir = '../Faden_split_3_coarse/'
 report_file_name = 'report-file.out'
 data_solid = np.loadtxt(case_dir + 'CFD_1/' + report_file_name, delimiter=' ', skiprows=3)
 data_liquid = np.loadtxt(case_dir + 'CFD_2/' + report_file_name, delimiter=' ', skiprows=3)
 
 # Read and load Fluent comparison data
 fluent_dir = 'fluent_reports/'
-fluent_report_name = 'report-file-full.out'
+fluent_report_name = 'report-file-new.out'
 data_fluent = np.loadtxt(fluent_dir + fluent_report_name, delimiter=' ', skiprows=3)
 
 t_delay = t_delay_001 if start_lf_001 else t_delay_002
@@ -59,11 +59,12 @@ full_vol = 0.04 * 0.04 # m^3
 LF = vol_liquid / full_vol
 
 # Merge temperature arrays
-temp_u1 = np.where(temp_u1_l >= 311.13, np.minimum(temp_u1_s, temp_u1_l), np.maximum(temp_u1_s, temp_u1_l))
-temp_u2 = np.where(temp_u2_l >= 311.13, np.minimum(temp_u2_s, temp_u2_l), np.maximum(temp_u2_s, temp_u2_l))
-temp_u3 = np.where(temp_u3_l >= 311.13, np.minimum(temp_u3_s, temp_u3_l), np.maximum(temp_u3_s, temp_u3_l))
-temp_l1 = np.where(temp_l1_l >= 311.13, np.minimum(temp_l1_s, temp_l1_l), np.maximum(temp_l1_s, temp_l1_l))
-temp_l2 = np.where(temp_l2_l >= 311.13, np.minimum(temp_l2_s, temp_l2_l), np.maximum(temp_l2_s, temp_l2_l))
+tol = 2
+temp_u1 = np.where(temp_u1_l >= 311.13 - tol, np.minimum(temp_u1_s, temp_u1_l), np.maximum(temp_u1_s, temp_u1_l))
+temp_u2 = np.where(temp_u2_l >= 311.13 - tol, np.minimum(temp_u2_s, temp_u2_l), np.maximum(temp_u2_s, temp_u2_l))
+temp_u3 = np.where(temp_u3_l >= 311.13 - tol, np.minimum(temp_u3_s, temp_u3_l), np.maximum(temp_u3_s, temp_u3_l))
+temp_l1 = np.where(temp_l1_l >= 311.13 - tol, np.minimum(temp_l1_s, temp_l1_l), np.maximum(temp_l1_s, temp_l1_l))
+temp_l2 = np.where(temp_l2_l >= 311.13 - tol, np.minimum(temp_l2_s, temp_l2_l), np.maximum(temp_l2_s, temp_l2_l))
 
 # Construct fluent arrays
 solid_mass_1 = data_fluent[:,1]
@@ -96,14 +97,10 @@ lines_lf = [line_sim, line_fl_1]
 
 # Read and load Faden paper comparison data for liquid fraction
 if faden:
-    """
     faden_data = ['Faden_LF_exp_itv.csv', 'Faden_LF_sim.csv']
     faden_legend = ['Faden - exp. 0.95 itv', 'Faden - numerical']
     line_styles = ['g.', 'b.']
-    """
-    faden_data = ['Faden_LF_sim.csv']
-    faden_legend = ['Faden (2024)']
-    line_styles = ['g.']
+
     for j, file in enumerate(faden_data):
         time_Fa, LF_Fa = np.loadtxt(faden_dir + file, skiprows=1, delimiter=',', unpack=True)
         line, = plt.plot(time_Fa*60, LF_Fa, line_styles[j], label=faden_legend[j]) # time is in minutes
@@ -111,11 +108,11 @@ if faden:
 
 plt.ylabel('Liquid fraction [-]', fontsize=16)
 plt.xlabel('Time [s]', fontsize=16)
-plt.xlim((-100, 2000))
-plt.ylim((0, 0.16))
+#plt.xlim((-100, 2500))
+#plt.ylim((0, 0.20))
 plt.xticks(fontsize=14)  # Increase font size of x-ticks
 plt.yticks(fontsize=14)  # Increase font size of y-ticks
-plt.legend(handles=lines_lf, fontsize=16)
+plt.legend(handles=lines_lf, fontsize=14)
 plt.tight_layout()
 plt.savefig('Report_figures/liquid_fraction.png', dpi=150)
 plt.show()
@@ -126,7 +123,7 @@ line_sim, = plt.plot(time[ts_0:], v_max[ts_0:]*1000, '-k', label='Partitioned')
 line_fl, = plt.plot(time_fl[ts_0_fl:], v_max_fl[ts_0_fl:]*1000, '--r', label='Fixed grid')
 plt.ylabel('Max. velocity mag. [mm/s]', fontsize=16)
 plt.xlabel('Time [s]', fontsize=16)
-plt.xlim((-100, 2000))
+#plt.xlim((-100, 2500))
 plt.xticks(fontsize=14)  # Increase font size of x-ticks
 plt.yticks(fontsize=14)  # Increase font size of y-ticks
 plt.legend(handles=[line_sim, line_fl], fontsize=16)
@@ -140,8 +137,8 @@ line_sim, = plt.plot(time[ts_0:], q_heat[ts_0:], '-k', label='Partitioned')
 line_fl, = plt.plot(time_fl[ts_0_fl:], q_heat_fl[ts_0_fl:], '--r', label='Fixed grid')
 plt.ylabel('Area avg. heat flux [W/m^2]', fontsize=16)
 plt.xlabel('Time [s]', fontsize=16)
-plt.xlim((-100, 2000))
-plt.ylim((0, 120))
+#plt.xlim((-100, 2500))
+#plt.ylim((0, 120))
 plt.xticks(fontsize=14)  # Increase font size of x-ticks
 plt.yticks(fontsize=14)  # Increase font size of y-ticks
 plt.legend(handles=[line_sim, line_fl], fontsize=16)
@@ -155,8 +152,8 @@ line_sim, = plt.plot(time[ts_0:], q_cool[ts_0:], '-k', label='Partitioned')
 line_fl, = plt.plot(time_fl[ts_0_fl:], q_cool_fl[ts_0_fl:], '--r', label='Fixed grid')
 plt.ylabel('Area avg. heat flux [W/m^2]', fontsize=16)
 plt.xlabel('Time [s]', fontsize=16)
-plt.xlim((-100, 2000))
-plt.ylim((-0.3, 3.5))
+#plt.xlim((-100, 2500))
+#plt.ylim((-0.3, 3.5))
 plt.xticks(fontsize=14)  # Increase font size of x-ticks
 plt.yticks(fontsize=14)  # Increase font size of y-ticks
 plt.legend(handles=[line_sim, line_fl], fontsize=16)

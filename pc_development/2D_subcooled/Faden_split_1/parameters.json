@@ -92,8 +92,8 @@
               ]
             }
           ],
-          "cores": 20,
-          "fluent_gui": false,
+          "cores": 16,
+          "fluent_gui": true,
           "max_nodes_per_face": 2,
           "flow_iterations": 80,
           "save_results": 3600
@@ -151,7 +151,7 @@
                   ]
                 }
               ],
-              "cores": 20,
+              "cores": 16,
               "fluent_gui": false,
               "max_nodes_per_face": 2,
               "flow_iterations": 80,

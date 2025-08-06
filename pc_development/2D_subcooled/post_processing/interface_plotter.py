@@ -7,17 +7,27 @@ from coconut.examples.post_processing.post_processing import *
 # Start delay of simulation due to starting with LF = 0.01 & 0.02 (round to 0.1)
 t_001 = 12.5 # s (based on conduction only Fluent simulation)
 t_002 = 61.2 # s (based on CoCoNuT simulations starting from LF = 0.02)
-t_restart = t_002 + 1800.0 # time of restart after manual remeshing at t = 1800 s
+t_restart_1 = t_002 + 1800.0 # time of restart after manual remeshing at t = 1800 s (for run 2)
+t_restart_2 = t_002 + 3240.0 # time of restart after manual remeshing at t = 3240 s (for run 3)
+t_restart_3 = t_002 + 5040.0 # time of restart after manual remeshing at t = 5040 s (for run 4)
+t_restart_4 = t_002 + 6120.0 # time of restart after manual remeshing at t = 6120 s (for run 5)
+t_restart_5 = t_002 + 6660.0 # time of restart after manual remeshing at t = 6660 s (for final run)
 
 # different cases to be plotted
 common_path = '../'
+"""
 case_paths = ['Faden_split_3/case_results.pickle', 'Faden_split_3/run_1/case_results.pickle', 'Faden_split_3/HPC/case_results.pickle']
 legend_entries = ['No initial sizing - remeshed', 'No initial sizing - not remeshed', 'No initial sizing - HPC']
 dt = [0.1, 0.1, 0.1] # s
 t_delay = [t_restart, t_002, t_002]
+"""
+case_paths = ['Faden_split_3_coarse/case_results.pickle']
+legend_entries = ['Partitioned']
+dt = [0.1] # s
+t_delay = [t_002]
 
 # fluent interfaces
-plot_fluent = False
+plot_fluent = True
 common_path_fl = './fluent_interfaces/'
 itf_file_fl = 'itf-pos-1800-00s.xy'
 
@@ -26,17 +36,22 @@ legend_fl = 'Fluent - ' + parts[2] + '.' + parts[3].replace('s.xy', '') + ' s'
 time_fl = float(parts[2]) + float(parts[3].replace('s.xy', ''))/100
 
 # Paper Faden interfaces
-plot_Faden = False
+plot_Faden = True
 common_path_Fa = './Faden_paper/'
-itf_file_Fa = 'Faden-num-itf-1800s.csv'
+itf_files_Fa = ['Faden-num-itf-1800s.csv'] # , 'Faden-exp-itf-1800s.csv']
 
-parts = itf_file_Fa.split('-')
-legend_Fa = 'Faden - ' + parts[3].replace('s.csv', '') + ' s'
+legend_Fa = []
+for itf in itf_files_Fa:
+    parts = itf.split('-')
+    if 'num' in itf:
+        legend_Fa.append('Faden num. - ' + parts[3].replace('s.csv', '') + '.00 s')
+    elif 'exp' in itf:
+        legend_Fa.append('Faden exp. - ' + parts[3].replace('s.csv', '') + '.00 s')
 
 line_styles = ['r--', 'g--', 'b--', 'k--', 'r--', 'k--']
 
 # Compare interface at a certain time: t_sim is the simulation time of the simulation with the largest time delay
-t_sim = 90.0
+t_sim = 1800.0
 
 if plot_fluent:
     if all(x == t_delay[0] for x in t_delay):
@@ -95,22 +110,23 @@ if plot_fluent:
 
 # Faden interface
 if plot_Faden:
-    x, y = np.loadtxt(common_path_Fa + itf_file_Fa, skiprows=1, delimiter=',', unpack=True) # measured in mm
-    sorted_indices = np.argsort(y)
-    x = x[sorted_indices]
-    y = y[sorted_indices]
+    for j, file in enumerate(itf_files_Fa):
+        x, y = np.loadtxt(common_path_Fa + file, skiprows=1, delimiter=',', unpack=True) # measured in mm
+        sorted_indices = np.argsort(y)
+        x = x[sorted_indices]
+        y = y[sorted_indices]
 
-    # --- Apply smoothing to the x data ---
-    # Choose appropriate window_length and polyorder
-    # window_length should be an odd integer, typically larger for more smoothing
-    # polyorder should be less than window_length, e.g., 2 or 3 for most cases
-    window_length = 11  # Example: Adjust as needed, must be odd
-    polyorder = 2  # Example: Adjust as needed
+        # --- Apply smoothing to the x data ---
+        # Choose appropriate window_length and polyorder
+        # window_length should be an odd integer, typically larger for more smoothing
+        # polyorder should be less than window_length, e.g., 2 or 3 for most cases
+        window_length = 11  # Example: Adjust as needed, must be odd
+        polyorder = 2  # Example: Adjust as needed
 
-    x_smoothed = savgol_filter(x, window_length, polyorder)
+        x_smoothed = savgol_filter(x, window_length, polyorder)
 
-    line, = plt.plot(x_smoothed/1000, y/1000, line_styles[len(case_paths)+1], label=legend_Fa)
-    lines.append(line)
+        line, = plt.plot(x_smoothed/1000, y/1000, line_styles[len(case_paths)+1+j], label=legend_Fa[j])
+        lines.append(line)
 
 plt.ylabel('y-coordinate [m]')
 plt.xlabel('x-coordinate [m]')
