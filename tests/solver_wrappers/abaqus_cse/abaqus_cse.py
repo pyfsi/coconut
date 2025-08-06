@@ -236,16 +236,6 @@ class TestSolverWrapperAbaqusCSETube2D(unittest.TestCase):
         d02 = np.linalg.norm(displacements[0][:, self.radial_dirs[0]] - displacements[2][:, self.radial_dirs[0]])
         self.assertNotAlmostEqual(d02 - d01, 0., delta=1e-12)
 
-
-class TestSolverWrapperAbaqusCSETube3D(TestSolverWrapperAbaqusCSETube2D):
-    version = None
-    setup_case = True
-    dimension = 3
-    axial_dir = 0  # x-direction is axial direction
-    radial_dirs = [1, 2]
-    mp_name_in = 'WALLOUTSIDE_load_points'
-    mp_name_out = 'WALLOUTSIDE_nodes'
-
     def test_shear(self):
         """
         Test whether shear is also applied.
@@ -285,6 +275,16 @@ class TestSolverWrapperAbaqusCSETube3D(TestSolverWrapperAbaqusCSETube2D):
         print(f'Mean displacement in axial direction without shear = {self.mean_displacement_no_shear} m')
         print(f'Mean displacement in axial direction with shear = {self.mean_displacement_shear} m')
         self.assertNotAlmostEqual(self.mean_displacement_no_shear - self.mean_displacement_shear, 0., delta=1e-12)
+
+
+class TestSolverWrapperAbaqusCSETube3D(TestSolverWrapperAbaqusCSETube2D):
+    version = None
+    setup_case = True
+    dimension = 3
+    axial_dir = 0  # x-direction is axial direction
+    radial_dirs = [1, 2]
+    mp_name_in = 'WALLOUTSIDE_load_points'
+    mp_name_out = 'WALLOUTSIDE_nodes'
 
 
 if __name__ == '__main__':

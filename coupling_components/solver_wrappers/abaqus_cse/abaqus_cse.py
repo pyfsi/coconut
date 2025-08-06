@@ -43,7 +43,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.number_of_timesteps = self.settings['number_of_timesteps']
         self.end_time = self.number_of_timesteps * self.delta_t
         self.save_results = self.settings.get('save_results', 1)
-        self.save_restart = self.settings['save_restart']  # TODO: implement restart
+        self.save_restart = self.settings['save_restart']
         self.input_file = self.settings['input_file']
         self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -96,10 +96,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             tools.print_info(f'Port {self.port} is in use, choose another port '
                              f'or omit parameter to let the OS choose a free port', layout='warning')
 
-        # print warning related to traction in 2D
-        if self.dimensions == 2:
-            tools.print_info(f'WARNING: In 2-dimensional cases, the solver wrapper {self.__class__.__name__} '
-                             f'does not take into account traction', layout='warning')
+        # print warning related to traction
+        tools.print_info(f'WARNING: The solver wrapper {self.__class__.__name__} (version 2025) lags one timestep in '
+                         f'applying traction', layout='warning')
 
     @tools.time_initialize
     def initialize(self):
@@ -142,7 +141,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                     to_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
                     shutil.copy(from_file, to_file)
                 # update restart_log
-                restart_log = np.append(restart_log, [[self.restart_step + 1, self.timestep_start]], axis=0)
+                restart_log = np.append(restart_log, np.array([[self.restart_step + 1, self.timestep_start]]), axis=0)
             else:
                 # restart from older files: find which one is the most recent to restart from
                 index = np.where(restart_log[:, 1] < self.timestep_start)[0][-1]
@@ -154,7 +153,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                     for suffix in self.vault_suffixes:
                         os.unlink(join(self.dir_vault, f'Abaqus_Step-{step}.{suffix}'))
                 # update restart_log
-                restart_log = np.append(restart_log[:index + 1], [[self.restart_step + 1, self.timestep_start]], axis=0)
+                restart_log = np.append(restart_log[:index + 1],
+                                        np.array([[self.restart_step + 1, self.timestep_start]]), axis=0)
             # write adapted restart log
             np.savetxt(join(self.dir_csm, 'restart.log'), restart_log, header='#step number, timestep start', fmt='%d')
             # check if restart_step and restart_inc are found
@@ -487,12 +487,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             for tag_instance in tag_instances:
                 tag_instance.text = tag_instance.text.replace(parameter, str(value))
 
-        if self.dimensions == 2:
-            load_vars = ['pressure']
-        elif self.dimensions == 3:
-            load_vars = ['pressure', 'traction_vector']
-        else:
-            raise ValueError(f'Dimensions must equal 2 or 3, not {self.dimensions}')
+        load_vars = ['pressure', 'traction_vector']
         disp_vars = ['displacement']
 
         connectors_elem = root.find('.//connectors')
@@ -535,12 +530,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def prepare_input_file(self, template_input_file, input_file):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
-        if self.dimensions == 2:
-            import_lines = "\n".join([f'{surface}, P' for surface in self.surfaces])
-        elif self.dimensions == 3:
-            import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
-        else:
-            raise ValueError(f'Dimensions must equal 2 or 3, not {self.dimensions}')
+        import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
         cosimulation_settings = f'**\n' \
                                 f'** CO-SIMULATION SETTINGS\n' \
                                 f'**\n' \
