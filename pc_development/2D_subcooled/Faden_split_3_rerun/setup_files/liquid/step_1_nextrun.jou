@@ -1,0 +1,9 @@
+file set-batch-options n n n
+file read-case-data "case_restart.cas.h5"
+define boundary-conditions fluid , n n n n n , n , n y n
+define dynamic-mesh zones delete boundary
+define user-defined compiled-functions unload "udf_thermal"
+file write-case-data "case_restart.cas.h5"
+file cff-files? n
+file write-case "remesh/case_restart.cas"
+exit

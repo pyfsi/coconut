@@ -1,0 +1,15 @@
+/LIQUID DOMAIN
+    /PARAMETERS
+$Xintervals = 170
+$Yintervals = 400
+    /CODE
+import uns "case_restart.cas" d2
+face delete "fluid" onlymesh lowertopology
+blayer create uniform first 5e-5 growth 1 rows 2
+blayer attach "b_layer.1" edge "boundary" face "fluid"
+edge mesh "bottom" "top" intervals $Xintervals
+edge mesh "boundary" "cooled" intervals $Yintervals
+face mesh "fluid" submap
+export fluent5 "remesh.msh" nozval
+save
+end

@@ -13,13 +13,13 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = './'
-case_paths = ['Fluent_v2023R1_smoothing/case_results.pickle']
+case_paths = ['Fluent_v2024R2_split_smoothing/case_results.pickle']
 legend_entries = ['new']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_fine.out', 'lf_coarse.out']
 fluent_legend = ['Fluent - fine', 'Fluent - coarse']
 
-itf_faces = [100]
+itf_faces = [10]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction

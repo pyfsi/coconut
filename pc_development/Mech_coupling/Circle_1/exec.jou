@@ -1,0 +1,7 @@
+file set-batch-options n n n
+file read-case-data circle_finished.cas.h5
+define user-defined compiled-functions compile "lib_udf" y "udf_mech_int.c" "" ""
+define user-defined compiled-functions load "lib_udf"
+define user-defined execute-on-demand "get_thread_ids::lib_udf"
+define user-defined execute-on-demand "store_rigid_body::lib_udf"
+exit

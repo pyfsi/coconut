@@ -46,7 +46,10 @@ USING SPLIT SOLVER WRAPPER FOR IMPROVED RESTART AND INTERFACE COHERENCE BETWEEN 
     - split 1: case 17 with split solver wrapper
     - split 2: split 1 with node ids stored in node UDM's --> avoid error upon restart --> crashed due to stretched faces at the interface
     - split 3: unified remeshing - retain size distribution no! --> attempt to make cells near interface larger, but less skew
+    - split 4: split 3, with aitken implicit coupling --> no improvement
+    - split 5: split 3, mesh motion not excluded from boundary conditions at melting interface! --> no improvement
 
 Split 3 works up to 1800 s! Improvement of cell skewness near interface, but eventually they degrade as well
     - run_1: first run on original mesh
-    - current run: mesh at 1800 s extracted and manually remeshed --> coconut restarted as if time step = 0
+    - run_2: mesh at 1800 s extracted and manually remeshed --> coconut restarted as if time step = 0
+    - current run: mesh at 3240 s extracted and manually remeshed --> coconut restarted as if time step = 0

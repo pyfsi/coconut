@@ -1,0 +1,69 @@
+file set-batch-options n n n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+file read-case liquid.msh
+grid modify-zones zone-type fluid fluid
+
+define models unsteady-2nd-order y
+define models viscous kw-sst y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow y
+
+define materials copy fluid water-liquid
+
+define boundary-conditions fluid , y air n n n n , n , n y n n
+define boundary-conditions wall adiabaticwalls n 0 n 0 n n n 0 n y shear-bc-spec-shear n n 0 n , n 0 n 0 n ,
+define boundary-conditions wall circlewalls n 0 n 0 n n n 0 n y shear-bc-noslip n n 0 n , n ,
+define boundary-conditions zone-type leftwall velocity-inlet
+define boundary-conditions zone-type rightwall pressure-outlet
+define boundary-conditions velocity-inlet leftwall n n y y n 1 n 0 n 300 n n y , ,
+define boundary-conditions pressure-outlet rightwall y n 0 n 300 n y n n y , , y n n
+
+define operating-conditions operating-pressure 0
+define operating-conditions gravity n
+
+solve monitors residual check-convergence y y y y y y
+solve monitors residual convergence-criteria 1e-3 1e-4 1e-4 1e-6 1e-3 1e-3
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+solve set discretization-scheme k 1
+solve set discretization-scheme omega 1
+; 10: standard, 11: linear, 14: PRESTO!, 13: body force weighted
+solve set discretization-scheme pressure 14
+solve set gradient-scheme n y
+; SIMPLE (20) - PISO (22) - coupled (24)
+solve set p-v-coupling 22
+
+;Initialise liquid according to Stefan solution
+solve initialize hyb-initialization
+
+; Report definitions and report file
+solve report-definitions add force-x force
+thread-names circlewalls ()
+per-zone? no
+force-vector 1 0
+q
+
+solve report-definitions add force-y force
+thread-names circlewalls ()
+per-zone? no
+force-vector 0 1
+q
+
+solve report-definitions add moment moment
+thread-names circlewalls ()
+per-zone? no
+scaled? no
+mom-center 0.05 0.05
+mom-axis 0 0 1
+q
+
+solve report-files add report-file
+report-defs force-x force-y moment ()
+file-name "./report-file.out"
+active? yes
+q
+
+file write-case-data circle_ini.cas.h5

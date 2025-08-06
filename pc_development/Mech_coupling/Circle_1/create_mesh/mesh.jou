@@ -1,0 +1,65 @@
+/LIQUID DOMAIN WITH CIRCULAR CUT-OUT
+
+/CODE
+save name "liquid.dbs"
+solver select "FLUENT 5/6"
+
+/ --- Create rectangle vertices
+vertex create "LeftBottom" coordinates 0 0 0
+vertex create "LeftTop" coordinates 0 |H| 0
+vertex create "RightBottom" coordinates |L| 0 0
+vertex create "RightTop" coordinates |L| |H| 0
+
+/ --- Rectangle edges
+edge create "Bottom" straight "LeftBottom" "RightBottom"
+edge create "Left" straight "LeftTop" "LeftBottom"
+edge create "Right" straight "RightTop" "RightBottom"
+edge create "Top" straight "LeftTop" "RightTop"
+
+/ --- Create vertices for the circular arcs
+vertex create "Center" coordinates |Xc| |Yc| 0
+
+/ Arc endpoints at 45°, 135°, 225°, 315°
+vertex create "RightTopArc" coordinates |vx1| |vy1| 0
+vertex create "LeftTopArc" coordinates |vx2| |vy2| 0
+vertex create "LeftBottomArc" coordinates |vx3| |vy3| 0
+vertex create "RightBottomArc" coordinates |vx4| |vy4| 0
+
+/ --- Create 4 circular arcs
+edge create "TopArc" arc center2points "Center" "RightTopArc" "LeftTopArc"
+edge create "LeftArc" arc center2points "Center" "LeftTopArc" "LeftBottomArc"
+edge create "BottomArc" arc center2points "Center" "LeftBottomArc" "RightBottomArc"
+edge create "RightArc" arc center2points "Center" "RightBottomArc" "RightTopArc"
+
+/ --- Diagonal edges from corners to arc points
+edge create "Diag45" straight "RightTopArc" "RightTop"
+edge create "Diag135" straight "LeftTopArc" "LeftTop"
+edge create "Diag225" straight "LeftBottomArc" "LeftBottom"
+edge create "Diag315" straight "RightBottomArc" "RightBottom"
+
+/ --- Create 4 faces
+face create "FluidTop" wireframe "Top" "Diag45" "TopArc" "Diag135"
+face create "FluidLeft" wireframe "Left" "Diag135" "LeftArc" "Diag225"
+face create "FluidBottom" wireframe "Bottom" "Diag225" "BottomArc" "Diag315"
+face create "FluidRight" wireframe "Right" "Diag315" "RightArc" "Diag45"
+
+/ --- Mesh all edges
+edge mesh "Top" "TopArc" "Bottom" "BottomArc" intervals |Xintervals|
+edge mesh "Left" "LeftArc" "Right" "RightArc" intervals |Yintervals|
+edge mesh "Diag45" "Diag135" "Diag225" "Diag315" ratio1 |ratio| intervals |DiagonalIntervals|
+
+/ --- Mesh 4 fluid faces
+face mesh "FluidTop" "FluidLeft" "FluidBottom" "FluidRight" submap
+
+/ --- Apply boundary conditions
+physics create "Fluid" ctype "FLUID" face "FluidTop" "FluidLeft" "FluidBottom" "FluidRight"
+physics create "RightWall" btype "WALL" edge "Right"
+physics create "LeftWall" btype "WALL" edge "Left"
+physics create "AdiabaticWalls" btype "WALL" edge "Top" "Bottom"
+physics create "CircleWalls" btype "WALL" edge "TopArc" "LeftArc" "BottomArc" "RightArc"
+
+/ --- Export mesh
+export fluent5 "liquid.msh" nozval
+
+save
+end

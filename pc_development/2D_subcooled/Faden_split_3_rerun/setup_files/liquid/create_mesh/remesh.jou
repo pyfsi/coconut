@@ -1,0 +1,18 @@
+/LIQUID DOMAIN
+    /PARAMETERS
+$Xspacing = 5e-5
+$Yintervals = 800
+$OUTintervals = 8
+    /CODE
+import uns "case_restart.cas" d2
+face delete "fluid" onlymesh lowertopology
+blayer create uniform first 5e-5 growth 1 rows 2
+blayer attach "b_layer.1" edge "boundary" face "fluid"
+edge mesh "bottom" "top" size $Xspacing
+edge mesh "boundary" "heated" intervals $Yintervals
+edge mesh "outlet" intervals $OUTintervals
+default set "mesh.trimesh.max_faces" numeric 50000000
+face mesh "fluid" triangle
+export fluent5 "remesh.msh" nozval
+save
+end

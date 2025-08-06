@@ -1,0 +1,67 @@
+/LIQUID DOMAIN
+    /PARAMETERS
+$L = 0.0008
+$Lout = 0.0004
+$Lblayer = 0.0007
+$H = 0.04
+$Hout = 0.039
+
+$XTOPintervals = 6
+$XBOTTOMintervals = 14
+$BLintervals = 2
+$YRintervals = 800
+$YLintervals = 780
+$WALLOUTintervals = 20
+$OUTintervals = 8
+    /CODE
+save name "2D_liquid.dbs"
+solver select "FLUENT 5/6"
+vertex create "LeftBottom" coordinates 0 0 0
+vertex create "LeftTop" coordinates 0 $H 0
+vertex create "LeftOut" coordinates 0 $Hout 0
+vertex create "RightBottom" coordinates $L 0 0
+vertex create "RightTop" coordinates $L $H 0
+vertex create "TopOut" coordinates $Lout $H 0
+vertex create "TopBLvertex" coordinates $Lblayer $H 0
+vertex create "BottomBLvertex" coordinates $Lblayer 0 0
+edge create "Bottom" straight "LeftBottom" "BottomBLvertex"
+edge create "BottomBLedge" straight "BottomBLvertex" "RightBottom"
+edge create "Left" straight "LeftOut" "LeftBottom"
+edge create "OutWall" straight "LeftTop" "LeftOut"
+edge create "Right" straight "RightTop" "RightBottom"
+edge create "Top" straight "TopOut" "TopBLvertex"
+edge create "TopBLedge" straight "TopBLvertex" "RightTop"
+edge create "Out" straight "LeftTop" "TopOut"
+edge create "Internal" straight "TopBLvertex" "BottomBLvertex"
+face create "FluidTri" wireframe "Out" "Top" "Internal" "Bottom" "Left" "OutWall"
+face create "FluidQuad" wireframe "TopBLedge" "Internal" "BottomBLedge" "Right"
+
+/blayer create uniform first 5e-5 growth 1 rows 2
+/blayer attach "b_layer.1" edge "Right" face "FluidQuad"
+
+edge mesh "Bottom" intervals $XBOTTOMintervals
+edge mesh "Top" intervals $XTOPintervals
+edge mesh "Right" intervals $YRintervals
+edge mesh "Internal" intervals $YRintervals
+edge mesh "Left" intervals $YLintervals
+edge mesh "OutWall" intervals $WALLOUTintervals
+edge mesh "Out" intervals $OUTintervals
+edge mesh "TopBLedge" intervals $BLintervals
+edge mesh "BottomBLedge" intervals $BLintervals
+default set "mesh.trimesh.max_faces" numeric 50000000
+face mesh "FluidTri" triangle
+face mesh "FluidQuad" submap
+
+physics create "boundary" btype "WALL" edge "Right"
+physics create "heated" btype "WALL" edge "Left" "OutWall"
+physics create "outlet" btype "OUTFLOW" edge "Out"
+physics create "top" btype "WALL" edge "Top"
+physics create "topbl" btype "WALL" edge "TopBLedge"
+physics create "bottom" btype "WALL" edge "Bottom"
+physics create "bottombl" btype "WALL" edge "BottomBLedge"
+physics create "internal" btype "INTERNAL" edge "Internal"
+physics create "FluidTri" ctype "FLUID" face "FluidTri"
+physics create "FluidQuad" ctype "FLUID" face "FluidQuad"
+export fluent5 "2D_liquid_BL.msh" nozval
+save
+end
