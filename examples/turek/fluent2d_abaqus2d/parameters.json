@@ -43,7 +43,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2024R2",
+        "type": "solver_wrappers.fluent.v2025R2",
         "settings": {
           "working_directory": "CFD",
           "case_file": "case_turek.cas.h5",
