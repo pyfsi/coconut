@@ -5,7 +5,8 @@ from os.path import join
 
 from coconut import tools
 
-cfd_solver = 'fluent.v2025R2'
+cfd_solver = 'fluent.v2024R2'
+csm_solver = 'abaqus_cse.v2025'
 cfd_dir = './CFD'
 csm_dir = './CSM'
 
@@ -26,4 +27,6 @@ cfd_env = tools.get_solver_env(cfd_solver, cfd_dir)
 subprocess.check_call('./setup_fluent2d.sh', shell=True, cwd=cfd_dir, env=cfd_env)
 
 # create new CSM folder
-shutil.copytree('../setup_files/tube_structure', 'CSM')
+shutil.copytree('../setup_files/abaquscse2d', csm_dir)
+csm_env = tools.get_solver_env(csm_solver, csm_dir)
+subprocess.check_call('./setup_abaqus2d.sh', shell=True, cwd=csm_dir, env=csm_env)

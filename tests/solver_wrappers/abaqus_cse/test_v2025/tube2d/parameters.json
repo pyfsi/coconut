@@ -1,17 +1,17 @@
 {
-  "type": "solver_wrappers.abaqus_cse.v2023",
+  "type": "solver_wrappers.abaqus_cse.v2025",
   "settings": {
-    "working_directory": "solver_wrappers/abaqus_cse/test_v2023/tube3d/CSM",
+    "working_directory": "solver_wrappers/abaqus_cse/test_v2025/tube2d/CSM",
     "cores": 1,
-    "dimensions": 3,
+    "dimensions": 2,
     "delta_t": 1e-3,
     "timestep_start": 0,
     "number_of_timesteps": 100,
     "save_restart": 1,
-    "surfaces": ["ASSEMBLY_WALLOUTSIDE"],
+    "surfaces": ["ASSEMBLY_BEAMINSIDEMOVING"],
     "interface_input": [
       {
-        "model_part": "WALLOUTSIDE_load_points",
+        "model_part": "BEAMINSIDEMOVING_load_points",
         "variables": [
           "pressure",
           "traction"
@@ -20,12 +20,12 @@
     ],
     "interface_output": [
       {
-        "model_part": "WALLOUTSIDE_nodes",
+        "model_part": "BEAMINSIDEMOVING_nodes",
         "variables": [
           "displacement"
         ]
       }
     ],
-    "input_file": "case_tube3d.inp"
+    "input_file": "case_tube2d.inp"
   }
 }

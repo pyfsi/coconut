@@ -7,7 +7,7 @@ import time
 import warnings
 import xml.etree.ElementTree as ElTr
 from getpass import getuser
-from os.path import join
+from os.path import join, dirname, abspath
 from xml.dom import minidom
 import numpy as np
 import psutil
@@ -43,7 +43,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.number_of_timesteps = self.settings['number_of_timesteps']
         self.end_time = self.number_of_timesteps * self.delta_t
         self.save_results = self.settings.get('save_results', 1)
-        self.save_restart = self.settings['save_restart']  # TODO: implement restart
+        self.save_restart = self.settings['save_restart']
         self.input_file = self.settings['input_file']
         self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -96,10 +96,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             tools.print_info(f'Port {self.port} is in use, choose another port '
                              f'or omit parameter to let the OS choose a free port', layout='warning')
 
-        # print warning related to traction in 2D
-        if self.dimensions == 2:
-            tools.print_info(f'WARNING: In 2-dimensional cases, the solver wrapper {self.__class__.__name__} '
-                             f'does not take into account traction', layout='warning')
+        # print warning related to traction
+        tools.print_info(f'WARNING: The solver wrapper {self.__class__.__name__} (version 2025) lags one timestep in '
+                         f'applying traction', layout='warning')
 
     @tools.time_initialize
     def initialize(self):
@@ -110,6 +109,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             with open(join(self.dir_csm, 'abaqus_v6.env'), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|TMP_DIRECTORY_NAME|', self.tmp_dir_unique)
+                    line = line.replace('|LICENSE_FILE_NAME|', join(dirname(abspath(__file__)), 'DSLicSrv.txt'))
                     if '|' in line:
                         raise ValueError(f'The following line in abaqus_v6.env still contains a \'|\' after '
                                          f'substitution: \n \t{line} \nA parameter was not substituted')
@@ -141,19 +141,20 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                     to_file = join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.{suffix}')
                     shutil.copy(from_file, to_file)
                 # update restart_log
-                restart_log = np.append(restart_log, [[self.restart_step+1, self.timestep_start]], axis=0)
+                restart_log = np.append(restart_log, np.array([[self.restart_step + 1, self.timestep_start]]), axis=0)
             else:
                 # restart from older files: find which one is the most recent to restart from
                 index = np.where(restart_log[:, 1] < self.timestep_start)[0][-1]
                 self.restart_step = restart_log[index, 0]
                 self.restart_inc = self.timestep_start - restart_log[index, 1]
                 # clean up vault: remove newer files (but not from the last index, as they don't exist in the vault yet)
-                obsolete_steps = restart_log[index+1:-1, 0]
+                obsolete_steps = restart_log[index + 1:-1, 0]
                 for step in obsolete_steps:
                     for suffix in self.vault_suffixes:
                         os.unlink(join(self.dir_vault, f'Abaqus_Step-{step}.{suffix}'))
                 # update restart_log
-                restart_log = np.append(restart_log[:index+1], [[self.restart_step+1, self.timestep_start]], axis=0)
+                restart_log = np.append(restart_log[:index + 1],
+                                        np.array([[self.restart_step + 1, self.timestep_start]]), axis=0)
             # write adapted restart log
             np.savetxt(join(self.dir_csm, 'restart.log'), restart_log, header='#step number, timestep start', fmt='%d')
             # check if restart_step and restart_inc are found
@@ -194,7 +195,6 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                      f'&> {cse_log_file}'
         cmd = debug_cmd + launch_cmd
         self.cse_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cse, env=self.env)
-        self.check_license(cse_log_file, ['SIMULIA Co-Simulation Engine'])
 
         # launch Abaqus
         abq_log_file = join(self.dir_csm, 'abaqus.log')
@@ -213,14 +213,14 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                          f'interactive  &> {abq_log_file}'
         cmd = debug_cmd + launch_cmd
         self.abaqus_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_csm, env=self.env)
-        self.check_license(abq_log_file, ['Abaqus/Standard'])
+        self.check_license(abq_log_file, ['Abaqus'])
 
         # launch AbaqusWrapper
         abqw_log_file = join(self.dir_abqw, f'{self.solver}.log')
         cmd = f'abaqus {join(self.solver_dir, self.solver)} &> {abqw_log_file}'
         self.abaqus_wrapper_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_abqw,
                                                        env=self.env)
-        self.check_license(cse_log_file, ['SIMULIA Co-Simulation Engine', 'Abaqus/Cosimulation'])
+        self.check_license(cse_log_file, ['Abaqus/Cosimulation'])
 
         # pass on process to coco_messages for polling
         self.coco_messages.set_process(self.abaqus_wrapper_process)
@@ -400,7 +400,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         subprocess.run(f'abaqus job=datacheck input={self.input_file.removesuffix(".inp")} datacheck', shell=True,
                        cwd=self.dir_csm, env=self.env, check=True)
         datacheck_log_file = join(self.dir_csm, 'datacheck.log')
-        self.check_license(datacheck_log_file, ['Abaqus/Standard'])
+        self.check_license(datacheck_log_file, ['Abaqus'])
 
         data_file = join(self.dir_csm, 'datacheck.dat')
 
@@ -487,12 +487,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             for tag_instance in tag_instances:
                 tag_instance.text = tag_instance.text.replace(parameter, str(value))
 
-        if self.dimensions == 2:
-            load_vars = ['pressure']
-        elif self.dimensions == 3:
-            load_vars = ['pressure', 'traction_vector']
-        else:
-            raise ValueError(f'Dimensions must equal 2 or 3, not {self.dimensions}')
+        load_vars = ['pressure', 'traction_vector']
         disp_vars = ['displacement']
 
         connectors_elem = root.find('.//connectors')
@@ -535,12 +530,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def prepare_input_file(self, template_input_file, input_file):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
-        if self.dimensions == 2:
-            import_lines = "\n".join([f'{surface}, P' for surface in self.surfaces])
-        elif self.dimensions == 3:
-            import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
-        else:
-            raise ValueError(f'Dimensions must equal 2 or 3, not {self.dimensions}')
+        import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
         cosimulation_settings = f'**\n' \
                                 f'** CO-SIMULATION SETTINGS\n' \
                                 f'**\n' \
@@ -574,7 +564,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         # at restart: make new step name
                         if self.timestep_start > 0:
                             step_info = [p for p in step_info if 'NAME=' not in p.upper()]
-                            step_info.append(f'NAME=Step-{self.restart_step+1}')
+                            step_info.append(f'NAME=Step-{self.restart_step + 1}')
                         # set number of increments
                         step_info.append(f'INC={self.number_of_timesteps}')
                         line = ', '.join(step_info) + '\n'

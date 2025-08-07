@@ -1,7 +1,7 @@
 {
-  "type": "solver_wrappers.abaqus_cse.v2024",
+  "type": "solver_wrappers.abaqus_cse.v2025",
   "settings": {
-    "working_directory": "solver_wrappers/abaqus_cse/test_v2024/tube3d/CSM",
+    "working_directory": "solver_wrappers/abaqus_cse/test_v2025/tube3d/CSM",
     "cores": 1,
     "dimensions": 3,
     "delta_t": 1e-3,

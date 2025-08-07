@@ -7,13 +7,13 @@
   "coupled_solver": {
     "type": "coupled_solvers.iqni",
     "settings": {
-      "omega": 0.01,
+      "omega": 0.05,
       "write_results": 1,
       "model": {
         "type": "coupled_solvers.models.ls",
         "settings": {
-          "min_significant": 1e-09,
-          "q": 10
+          "min_significant": 1e-10,
+          "q": 5
         }
       }
     },
@@ -27,13 +27,13 @@
           {
             "type": "convergence_criteria.iteration_limit",
             "settings": {
-              "maximum": 20
+              "maximum": 10
             }
           },
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-3,
+              "tolerance": 1e-4,
               "order": 2
             }
           }
@@ -42,18 +42,18 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent.v2025R2",
+        "type": "solver_wrappers.fluent.v2024R2",
         "settings": {
           "working_directory": "CFD",
-          "case_file": "case_tube3d.cas.h5",
-          "dimensions": 3,
+          "case_file": "case_tube2d.cas.h5",
+          "dimensions": 2,
           "unsteady": true,
           "thread_names": [
-            "wall"
+            "beamoutside"
           ],
           "interface_input": [
             {
-              "model_part": "wall_nodes",
+              "model_part": "beamoutside_nodes",
               "variables": [
                 "displacement"
               ]
@@ -61,16 +61,16 @@
           ],
           "interface_output": [
             {
-              "model_part": "wall_faces",
+              "model_part": "beamoutside_faces",
               "variables": [
                 "pressure",
                 "traction"
               ]
             }
           ],
-          "cores": 6,
+          "cores": 4,
           "fluent_gui": false,
-          "max_nodes_per_face": 4,
+          "max_nodes_per_face": 2,
           "flow_iterations": 200,
           "save_results": 1
         }
@@ -79,12 +79,16 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.v2024",
+            "type": "solver_wrappers.abaqus_cse.v2025",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 2,
-              "arraysize": 1e5,
+              "disable_modification_of_input_file": false,
+              "save_results": 1,
+              "surfaces": [
+                "ASSEMBLY_BEAMINSIDEMOVING"
+              ],
               "interface_input": [
                 {
                   "model_part": "BEAMINSIDEMOVING_load_points",
@@ -122,21 +126,12 @@
                     }
                   },
                   {
-                    "type": "mappers.radial_basis",
+                    "type": "mappers.linear",
                     "settings": {
                       "directions": [
                         "x",
-                        "y",
-                        "z"
+                        "y"
                       ]
-                    }
-                  },
-                  {
-                    "type": "mappers.axisymmetric_3d_to_2d",
-                    "settings": {
-                      "direction_axial": "y",
-                      "direction_radial": "x",
-                      "n_tangential": 8
                     }
                   }
                 ]
@@ -150,20 +145,11 @@
               "settings": {
                 "mappers": [
                   {
-                    "type": "mappers.axisymmetric_2d_to_3d",
-                    "settings": {
-                      "direction_axial": "y",
-                      "direction_radial": "x",
-                      "n_tangential": 8
-                    }
-                  },
-                  {
-                    "type": "mappers.radial_basis",
+                    "type": "mappers.linear",
                     "settings": {
                       "directions": [
                         "x",
-                        "y",
-                        "z"
+                        "y"
                       ]
                     }
                   },

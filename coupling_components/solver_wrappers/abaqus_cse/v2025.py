@@ -3,11 +3,11 @@ from coconut import tools
 
 
 def create(parameters):
-    return SolverWrapperAbaqusCSE2024(parameters)
+    return SolverWrapperAbaqusCSE2025(parameters)
 
 
-class SolverWrapperAbaqusCSE2024(SolverWrapperAbaqusCSE):
-    version = '2024'
+class SolverWrapperAbaqusCSE2025(SolverWrapperAbaqusCSE):
+    version = '2025'
 
     def __init__(self, parameters):
         super().__init__(parameters)
