@@ -1,0 +1,119 @@
+file set-batch-options n n n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+
+file read-case background.msh
+grid modify-zones zone-type fluid.bg fluid
+define boundary-conditions modify-zones append-mesh "component.msh"
+grid modify-zones zone-type fluid.com fluid
+
+define boundary-conditions modify-zones zone-type outercircle overset
+define overset-interfaces create overset-interface fluid.bg () fluid.com () n
+define overset-interfaces options donor-priority-method 0
+define overset-interfaces options verbosity 1
+
+define user-defined user-defined-memory 3
+define user-defined user-defined-node-memory 7
+
+define models unsteady-1st-order y
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+solve set equations flow y
+
+define materials copy fluid air liquid1
+define materials change-create liquid1 , yes constant 1000 yes constant 4182 yes constant 0.6 yes constant 0.01 no n no
+
+define boundary-conditions fluid fluid.bg y liquid1 n n n n , n , n y n
+define boundary-conditions fluid fluid.com y liquid1 n n n n , n , n y n
+define boundary-conditions wall bottom n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-noslip n ,
+define boundary-conditions wall innercircle n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-noslip n ,
+define boundary-conditions wall top n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-spec-shear n 0 n 0 n ,
+define boundary-conditions wall side n 0 n 0 n n n 0 y motion-bc-stationary y shear-bc-spec-shear n 0 n 0 n ,
+
+define operating-conditions gravity y 0 -9.81
+
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1e-3 1e-3 1e-3 1e-6
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+; 12: second order
+solve set discretization-scheme pressure 12
+solve set gradient-scheme n y
+; SIMPLE (20) - PISO (22) - coupled (24)
+solve set p-v-coupling 24
+
+solve set under-relaxation density 0.9
+solve set under-relaxation body-force 0.9
+solve set under-relaxation temperature 0.9
+
+; p-v coupled: mom & pressure relaxation
+solve set p-v-controls 200 0.75 0.75
+
+solve initialize set-defaults temperature 300
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0
+solve initialize set-defaults y-velocity 0
+solve initialize initialize-flow
+
+define dynamic-mesh dynamic-mesh y n n y n
+define dynamic-mesh dynamic-mesh y n n n n
+define dynamic-mesh controls smoothing y
+define dynamic-mesh controls smoothing-parameters smoothing-method diffusion
+define dynamic-mesh controls smoothing-parameters diffusion-coeff-function boundary-distance
+define dynamic-mesh controls smoothing-parameters diffusion-coeff-parameter 1.0
+define dynamic-mesh controls smoothing-parameters max-iter 50
+define dynamic-mesh controls layering n
+define dynamic-mesh controls remeshing n
+
+define dynamic-mesh zones create outercircle deforming faceted n y n y n y
+define dynamic-mesh zones create fluid.bg deforming y n y
+
+solve initialize initialize-flow
+
+; Report definitions and report file
+solve report-definitions add pos-x surface-areaavg
+field x-coordinate
+surface-names innercircle ()
+per-surface? no
+q
+
+solve report-definitions add pos-y surface-areaavg
+field y-coordinate
+surface-names innercircle ()
+per-surface? no
+q
+
+solve report-definitions add max-y surface-vertexmax
+field y-coordinate
+surface-names innercircle ()
+per-surface? no
+q
+
+solve report-definitions add min-y surface-vertexmin
+field y-coordinate
+surface-names innercircle ()
+per-surface? no
+q
+
+solve report-definitions add vel-x surface-areaavg
+field x-velocity
+surface-names innercircle ()
+per-surface? no
+q
+
+solve report-definitions add vel-y surface-areaavg
+field y-velocity
+surface-names innercircle ()
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs max-y min-y pos-x pos-y vel-x vel-y ()
+file-name "./report-file.out"
+active? yes
+q
+
+file write-case-data pc_fluid.cas.h5
+exit

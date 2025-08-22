@@ -1,0 +1,59 @@
+/DONUT COMPONENT DOMAIN
+
+/CODE
+save name "component.dbs"
+solver select "FLUENT 5/6"
+
+/ --- Create rectangle vertices
+vertex create "Center" coordinates 0 0.04 0
+vertex create "InnerLeft" coordinates -0.00125 0.04 0
+vertex create "InnerRight" coordinates 0.00125 0.04 0
+vertex create "OuterLeft" coordinates -0.00375 0.04 0
+vertex create "OuterRight" coordinates 0.00375 0.04 0
+vertex create "InnerBottom" coordinates 0 0.03875 0
+vertex create "InnerTop" coordinates 0 0.04125 0
+vertex create "OuterBottom" coordinates 0 0.03625 0
+vertex create "OuterTop" coordinates 0 0.04375 0
+
+/ --- Create 4 circular arcs on Outer circle
+edge create "OuterLT" arc center2points "Center" "OuterTop" "OuterLeft"
+edge create "OuterLB" arc center2points "Center" "OuterLeft" "OuterBottom"
+edge create "OuterRT" arc center2points "Center" "OuterRight" "OuterTop"
+edge create "OuterRB" arc center2points "Center" "OuterRight" "OuterBottom"
+
+/ --- Create 4 circular arcs on Inner circle
+edge create "InnerLT" arc center2points "Center" "InnerTop" "InnerLeft"
+edge create "InnerLB" arc center2points "Center" "InnerLeft" "InnerBottom"
+edge create "InnerRT" arc center2points "Center" "InnerRight" "InnerTop"
+edge create "InnerRB" arc center2points "Center" "InnerRight" "InnerBottom"
+
+/ --- Create horizontal and vertical edges between outer and inner circle
+edge create "Left" straight "OuterLeft" "InnerLeft"
+edge create "Right" straight "OuterRight" "InnerRight"
+edge create "Top" straight "OuterTop" "InnerTop"
+edge create "Bottom" straight "OuterBottom" "InnerBottom"
+
+/ --- Create 4 faces
+face create "LT" wireframe "Top" "OuterLT" "Left" "InnerLT"
+face create "LB" wireframe "Left" "OuterLB" "Bottom" "InnerLB"
+face create "RT" wireframe "Right" "OuterRT" "Top" "InnerRT"
+face create "RB" wireframe "Bottom" "OuterRB" "Right" "InnerRB"
+
+/ --- Mesh all edges
+edge mesh "Top" "Left" "Bottom" "Right" intervals 96
+edge mesh "OuterLT" "OuterLB" "OuterRB" "OuterRT" intervals 75
+edge mesh "InnerLT" "InnerLB" "InnerRB" "InnerRT" intervals 75
+
+/ --- Mesh 4 fluid faces
+face mesh "LT" "LB" "RB" "RT" submap
+
+/ --- Apply boundary conditions
+physics create "fluid.com" ctype "FLUID" face "LT" "LB" "RB" "RT"
+physics create "OuterCircle" btype "WALL" edge "OuterLT" "OuterLB" "OuterRB" "OuterRT"
+physics create "InnerCircle" btype "WALL" edge "InnerLT" "InnerLB" "InnerRB" "InnerRT"
+
+/ --- Export mesh
+export fluent5 "component.msh" nozval
+
+save
+end

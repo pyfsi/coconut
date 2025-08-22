@@ -1,0 +1,34 @@
+/BACKGROUND MESH
+/PARAMETERS
+$Xintervals = 128
+$Yintervals = 384
+/CODE
+save name "background.dbs"
+solver select "FLUENT 5/6"
+vertex create "LeftBottom" coordinates -0.01 0 0
+vertex create "LeftTop" coordinates -0.01 0.06 0
+vertex create "RightBottom" coordinates 0.01 0 0
+vertex create "RightTop" coordinates 0.01 0.06 0
+
+edge create "Bottom" straight "LeftBottom" "RightBottom"
+edge create "Left" straight "LeftTop" "LeftBottom"
+edge create "Right" straight "RightTop" "RightBottom"
+edge create "Top" straight "LeftTop" "RightTop"
+face create "FluidInternal" wireframe "Top" "Right" "Bottom" "Left"
+
+blayer create uniform first 2.6e-5 growth 1.13 rows 15
+blayer attach "b_layer.1" edge "Bottom" face "FluidInternal"
+
+edge link "Bottom" "Top" directions 0 0
+edge link "Left" "Right" directions 0 0
+edge mesh "Bottom" intervals $Xintervals
+edge mesh "Left" intervals $Yintervals
+face mesh "FluidInternal" submap
+
+physics create "side" btype "WALL" edge "Left" "Right"
+physics create "bottom" btype "WALL" edge "Bottom"
+physics create "top" btype "WALL" edge "Top"
+physics create "fluid.bg" ctype "FLUID" face "FluidInternal"
+
+export fluent5 "background.msh" nozval
+save

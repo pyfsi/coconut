@@ -122,6 +122,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 ; END OF SETUP COMMANDS
 (if (= timestep_start 0)
     |END_OF_SETUP_COMMANDS|
+    (system "sleep 0.1")
 )
 ;
 ;   FSI LOOP

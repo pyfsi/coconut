@@ -1,0 +1,202 @@
+{
+  "settings": {
+    "timestep_start": 0,
+    "number_of_timesteps": 1000,
+    "delta_t": 0.0005,
+    "save_restart": 0
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.test_single_solver",
+    "test_settings": {
+      "solver_index": 0,
+      "test_class": "DummySolid",
+      "delta_t": 0.0005
+    },
+    "settings": {
+      "omega_max": 0.8,
+      "write_results": 100,
+      "debug": false,
+      "model": {
+        "type": "coupled_solvers.models.ls",
+        "settings": {
+          "min_significant": 1e-13,
+          "q": 10
+        }
+      }
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+      "type": "convergence_criteria.or",
+      "settings": {
+        "criteria_list": [
+          {
+            "type": "convergence_criteria.iteration_limit",
+            "settings": {
+              "maximum": 10
+            }
+          },
+          {
+            "type": "convergence_criteria.relative_norm",
+            "settings": {
+              "tolerance": 1e-3,
+              "order": 2
+            }
+          },
+          {
+            "type": "convergence_criteria.absolute_norm",
+            "settings": {
+              "tolerance": 1e-12,
+              "order": 2
+            }
+          }
+        ]
+      }
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.pc_fluent_liquid_rb.v2024R2",
+        "settings": {
+          "working_directory": "CFD_2",
+          "case_file": "pc_fluid.cas.h5",
+          "dimensions": 2,
+          "unsteady": true,
+          "multiphase": false,
+          "debug": false,
+          "PC": {
+            "latent": 100000,
+            "melt_temp": 500,
+            "melt_enthalpy": 5000,
+            "solid_density": 1250.0,
+            "liquid_density": 1000.0,
+            "ini_condition": 0
+          },
+          "RB": {
+            "iteration_max": 10,
+            "tolerance": 1e-3,
+            "relaxation": 1.0,
+            "rotational_update": "explicit"
+          },
+          "thread_names": [
+            "innercircle"
+          ],
+          "overset_boundaries": {
+            "innercircle": "outercircle"
+          },
+          "interface_input": [
+            {
+              "model_part": "innercircle_in_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "innercircle_out_faces",
+              "variables": [
+                "heat_flux"
+              ]
+            },
+            {
+              "model_part": "innercircle_out_nodes",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "cores": 20,
+          "fluent_gui": false,
+          "max_nodes_per_face": 2,
+          "flow_iterations": 80,
+          "save_results": 100
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.pc_fluent_solid.v2024R2",
+            "settings": {
+              "working_directory": "CFD_1",
+              "case_file": "pc_solid.cas.h5",
+              "dimensions": 2,
+              "unsteady": true,
+              "debug": false,
+              "PC": {
+                "latent": 100000,
+                "melt_temp": 500,
+                "melt_enthalpy": 5000,
+                "ini_condition": 300,
+                "f2n_mapping": {
+                  "mapping_domain": "rectangular",
+                  "mapping_limits": [0, 0, 0.04, 0.04],
+                  "mapping_conservative": true,
+                  "volume_tolerance": 1e-13,
+                  "mapper_iterations": 20,
+                  "mapper_relaxation": 0.4,
+                  "projection_order": 1
+                }
+              },
+              "thread_names": [
+                "innercircle"
+              ],
+              "interface_input": [
+                {
+                  "model_part": "innercircle_in_faces",
+                  "variables": [
+                    "heat_flux"
+                  ]
+                },
+                {
+                  "model_part": "innercircle_in_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "innercircle_out_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+              "cores": 4,
+              "fluent_gui": false,
+              "max_nodes_per_face": 2,
+              "flow_iterations": 80,
+              "save_results": 0
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+                "directions": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

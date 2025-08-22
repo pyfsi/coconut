@@ -45,7 +45,7 @@ solver_load_cmd_dict = {
 
 
 def get_solver_cmd(solver_name):
-    replace_list = ['pc_fluent_solid', 'pc_fluent_liquid', 'pc_fluent', 'cht_fluent']
+    replace_list = ['pc_fluent_solid', 'pc_fluent_liquid_rb', 'pc_fluent_liquid', 'pc_fluent', 'cht_fluent']
     for prefix in replace_list:
         solver_name = solver_name.replace(prefix, 'fluent')
     return solver_load_cmd_dict[machine_name][solver_name]
