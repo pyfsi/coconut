@@ -7,11 +7,23 @@ from coconut.examples.post_processing.post_processing import *
 # Start delay of simulation due to starting with LF = 0.01 & 0.02 (round to 0.1)
 t_001 = 12.5 # s (based on conduction only Fluent simulation)
 t_002 = 61.2 # s (based on CoCoNuT simulations starting from LF = 0.02)
-t_restart_1 = t_002 + 1800.0 # time of restart after manual remeshing at t = 1800 s (for run 2)
-t_restart_2 = t_002 + 3240.0 # time of restart after manual remeshing at t = 3240 s (for run 3)
-t_restart_3 = t_002 + 5040.0 # time of restart after manual remeshing at t = 5040 s (for run 4)
-t_restart_4 = t_002 + 6120.0 # time of restart after manual remeshing at t = 6120 s (for run 5)
-t_restart_5 = t_002 + 6660.0 # time of restart after manual remeshing at t = 6660 s (for final run)
+t_run_1 = t_002
+run = 'coarse' # or 'rerun'
+
+if run == 'coarse':
+    # for Faden_split_3_coarse
+    t_run_2 = t_run_1 + 1800.0
+    t_run_3 = t_run_2 + 1620.0
+    t_run_4 = t_run_3 + 900.0
+    t_run_5 = t_run_4 + 1440.0
+    t_run_6 = t_run_5 + 720.0
+    t_run_7 = t_run_6 + 540.0
+elif run == 'rerun':
+    # for Faden_split_3_rerun
+    t_run_2 = t_run_1 + 1800.0
+    t_run_3 = t_run_2 + 1080.0
+    t_run_4 = t_run_3 + 1080.0
+    t_run_5 = t_run_4 + 1260.0
 
 # different cases to be plotted
 common_path = '../'
@@ -24,12 +36,12 @@ t_delay = [t_restart, t_002, t_002]
 case_paths = ['Faden_split_3_coarse/case_results.pickle']
 legend_entries = ['Partitioned']
 dt = [0.1] # s
-t_delay = [t_002]
+t_delay = [t_run_7]
 
 # fluent interfaces
 plot_fluent = True
 common_path_fl = './fluent_interfaces/'
-itf_file_fl = 'itf-pos-1800-00s.xy'
+itf_file_fl = 'itf-pos-7200-00s.xy'
 
 parts = itf_file_fl.split('-')
 legend_fl = 'Fluent - ' + parts[2] + '.' + parts[3].replace('s.xy', '') + ' s'
@@ -38,7 +50,7 @@ time_fl = float(parts[2]) + float(parts[3].replace('s.xy', ''))/100
 # Paper Faden interfaces
 plot_Faden = True
 common_path_Fa = './Faden_paper/'
-itf_files_Fa = ['Faden-num-itf-1800s.csv'] # , 'Faden-exp-itf-1800s.csv']
+itf_files_Fa = ['Faden-num-itf-7200s.csv' , 'Faden-exp-itf-7200s.csv']
 
 legend_Fa = []
 for itf in itf_files_Fa:
@@ -51,7 +63,7 @@ for itf in itf_files_Fa:
 line_styles = ['r--', 'g--', 'b--', 'k--', 'r--', 'k--']
 
 # Compare interface at a certain time: t_sim is the simulation time of the simulation with the largest time delay
-t_sim = 1800.0
+t_sim = 7200.0
 
 if plot_fluent:
     if all(x == t_delay[0] for x in t_delay):

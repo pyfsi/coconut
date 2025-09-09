@@ -9,6 +9,7 @@ file set-batch-options n n n
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
 (define thermal_bc |THERMAL_BC|)
+(define turbulence |TURBULENCE|)
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -104,12 +105,38 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 )
 ;
 ;   HOOK SOURCE UDFs TO CONSERVATION EQUATIONS AND SET ADJACENT FLAGS
+(define domain_threads (list |THREAD_DOMAINS|))
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "define user-defined execute-on-demand \"ini_udm::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
-        (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; mass and energy source term for both solid and liquid solver
+
+        (display (format #f ">>> Using turbulence model = ~a~%" turbulence))
+
+        (cond
+            ((equal? turbulence 'kw-sst)
+                (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
+                    (ti-menu-load-string
+                        (format #f
+                        "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n n"
+                        (list-ref domain_threads k))
+                    )
+                )
+            )
+            ((equal? turbulence 'laminar)
+                (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
+                    (ti-menu-load-string
+                        (format #f
+                        "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n"
+                        (list-ref domain_threads k))
+                    )
+                )
+            )
+            (else
+                (error "NotImplementedError: turbulence model not supported")
+            )
+        )
     )
 )
 ;

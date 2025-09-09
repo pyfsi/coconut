@@ -9,6 +9,7 @@ import glob
 import subprocess
 import multiprocessing
 import numpy as np
+import math as m
 import hashlib
 from getpass import getuser
 import shutil
@@ -58,6 +59,9 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
+        self.turb_model = self.settings.get('turbulence', 'laminar')
+        if self.turb_model != 'laminar' and self.turb_model != 'kw-sst':
+            raise ValueError('Only supported turbulence models are "laminar" and "kw-sst".')
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -183,6 +187,9 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         overset_thread_names_str = ''
         for thread_name in self.overset_thread_ids:
             overset_thread_names_str += ' "' + thread_name + '"'
+        thread_domains_str = ''
+        for thread_domain in self.settings['thread_domains']:
+            thread_domains_str += ' "' + thread_domain + '"'
         thermal_bc = str(2)
         if self.thermal_bc == 'heat_flux':
             thermal_bc = str(1)
@@ -194,9 +201,11 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|OVERSET_THREAD_NAMES|', overset_thread_names_str)
+                    line = line.replace('|THREAD_DOMAINS|', thread_domains_str)
                     line = line.replace('|UNSTEADY|', '#t' if self.unsteady else '#f')
                     line = line.replace('|MULTIPHASE|', '#t' if self.multiphase else '#f')
                     line = line.replace('|THERMAL_BC|', thermal_bc)
+                    line = line.replace('|TURBULENCE|', "'" + str(self.turb_model))
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
@@ -473,6 +482,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         super().initialize_solution_step()
 
         # update a report-file each timestep wuth the RB values
+        self.update_report_file()
 
         self.iteration = 0
         self.timestep += 1
@@ -548,6 +558,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             if self.debug:
                 src = f'rigid_body_timestep{self.timestep}.dat'
                 dst = f'rigid_body_timestep{self.timestep}_Iter{self.iteration}.dat'
+                cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
+                os.system(cmd)
+                src = f'RB_update_timestep{self.timestep}.dat'
+                dst = f'RB_update_timestep{self.timestep}_Iter{self.iteration}.dat'
                 cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
             
@@ -959,6 +973,35 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
             os.system(cmd)
         return data
+
+    def update_report_file(self):
+        """Create or update the rigid-body report file each timestep."""
+
+        tmp = "rigid-body-report-file.out"
+        file_name = join(self.dir_cfd, tmp)
+
+        # If first timestep: create file and write header
+        if self.timestep == 0:
+            with open(file_name, "w") as f:
+                f.write("# CoCoNuT rigid body motion history\n")
+                f.write("#\n")
+                f.write("#  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}\n"
+                        .format("time", "CG_X", "CG_Y", "V_X", "V_Y", "THETA_Z"))
+                f.write("#  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}\n"
+                        .format("(s)", "(m)", "(m)", "(m/s)", "(m/s)", "(deg)"))
+                f.write("#\n")
+
+        # Always append the new line of data
+        time = self.timestep * self.delta_t
+        cg_x = self.com[0]
+        cg_y = self.com[1]
+        v_x = self.v_trans[0]
+        v_y = self.v_trans[1]
+        theta_z = m.degrees(self.theta_total)
+
+        with open(file_name, "a") as f:
+            f.write(f"{time:12.5e}  {cg_x:12.5e}  {cg_y:12.5e}  "
+                    f"{v_x:12.5e}  {v_y:12.5e}  {theta_z:12.5e}\n")
 
     def get_coordinates(self):
         """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)

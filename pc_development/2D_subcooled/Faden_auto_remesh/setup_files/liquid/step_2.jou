@@ -1,0 +1,5 @@
+file set-batch-options n n n
+file read-case-data "case_restart.cas.h5"
+mesh replace "remesh/remesh.msh" no
+file write-case-data "case_restart.cas.h5"
+exit

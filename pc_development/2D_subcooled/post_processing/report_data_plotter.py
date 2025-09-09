@@ -17,7 +17,7 @@ t_delay_002 = 61.23 # s 61.23 or 58.79
 
 # Read and load coconut data
 start_lf_001 = False
-case_dir = '../Faden_split_3_coarse/'
+case_dir = '../Faden_split_3_rerun/run_6/'
 report_file_name = 'report-file.out'
 data_solid = np.loadtxt(case_dir + 'CFD_1/' + report_file_name, delimiter=' ', skiprows=3)
 data_liquid = np.loadtxt(case_dir + 'CFD_2/' + report_file_name, delimiter=' ', skiprows=3)
