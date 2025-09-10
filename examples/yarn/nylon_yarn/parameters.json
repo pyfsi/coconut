@@ -1,0 +1,119 @@
+{
+  "settings": {
+    "number_of_timesteps": 16000
+  },
+  "coupled_solver": {
+    "type": "coupled_solvers.explicit",
+    "settings": {
+      "delta_t": 5e-6,
+      "timestep_start": 0,
+      "save_results": 500,
+      "save_restart": -500
+    },
+    "predictor": {
+      "type": "predictors.linear"
+    },
+    "convergence_criterion": {
+    },
+    "solver_wrappers": [
+      {
+        "type": "solver_wrappers.fluent_alm.v2024R2",
+        "settings": {
+          "working_directory": "CFD",
+          "case_file": "main_nozzle.cas.h5",
+          "unsteady": true,
+          "thread_names": [
+            "yarn"
+          ],
+          "interface_input": [
+            {
+              "model_part": "yarn_displacements",
+              "variables": [
+                "displacement"
+              ]
+            }
+          ],
+          "interface_output": [
+            {
+              "model_part": "yarn_forces",
+              "variables": [
+                "traction"
+              ]
+            }
+          ],
+          "cores": 40,
+          "fluent_gui": false,
+          "flow_iterations": 50,
+          "save_results": 500,
+	  "ALM": {
+	    "yarn_diameter": 0.00072,
+	    "g_eps": 0.00108,
+	    "n_circ_s": 5,
+	    "p_atm": 100000.0,
+	    "T_atm": 300.0
+	  }
+        }
+      },
+      {
+        "type": "solver_wrappers.mapped",
+        "settings": {
+          "solver_wrapper": {
+            "type": "solver_wrappers.abaqus.v2024",
+            "settings": {
+              "working_directory": "CSM",
+              "cores": 4,
+              "dimensions": 3,
+              "arraysize": 1e6,
+              "ramp": false,
+	      "save_results": 500,
+              "interface_input": [
+                {
+                  "model_part": "ALL_ELEMENTS_load_points",
+                  "variables": [
+                    "traction"
+                  ]
+                }
+              ],
+              "interface_output": [
+                {
+                  "model_part": "CL_NODES_nodes",
+                  "variables": [
+                    "displacement"
+                  ]
+                }
+              ],
+	      "line_load": true,
+              "input_file": "Yarn.inp"
+            }
+          },
+          "mapper_interface_input": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+		"directions": [
+		  "x",
+		  "y",
+		  "z"
+		]
+              }
+            }
+          },
+          "mapper_interface_output": {
+            "type": "mappers.interface",
+            "settings": {
+              "type": "mappers.linear",
+              "settings": {
+		"directions": [
+		  "x",
+		  "y",
+		  "z"
+		]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
