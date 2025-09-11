@@ -1,3 +1,7 @@
 - restart functionality for rigid body displacement
-- algo_c2
-- impose bulk RB motion on overset boundary
+- algo_c2 --> OK, used for rotation matrix as well, to convert the melting displacements from solid to global liquid frame
+- relaxation and 1 iteration??? --> relax  = 0.5 & tol = 1e-5 is sufficient for accurate results
+- predictor --> linear included, but seems to hinder convergence
+- momentum source terms!!
+- impose bulk RB motion on overset boundary --> OK
+- mass & energy source should be applied to component mesh!! --> set in journal file! --> OK

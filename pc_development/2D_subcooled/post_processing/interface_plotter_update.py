@@ -5,7 +5,7 @@ from scipy.signal import savgol_filter
 from coconut.examples.post_processing.post_processing import PostProcess
 
 # ---------------- Settings ----------------
-run = 'rerun'  # 'coarse' or 'rerun'
+run = 'split_4'  # 'coarse', 'rerun', 'auto' or 'split_4
 
 # Initial delay due to starting with LF < 0.02
 t_001 = 12.5  # s
@@ -14,17 +14,25 @@ t_run_1 = t_002  # initial offset
 
 # Simulation times per run
 if run == 'coarse':
-    sim_times = [1800, 1620, 900, 1440, 720, 540, 180]  # coarse
+    sim_times = [1800, 1620, 900, 1440, 720, 540, 180]
 elif run == 'rerun':
-    sim_times = [1800, 1080, 1080, 1260, 1440, 5400]  # rerun
+    sim_times = [1800, 1080, 1080, 1260, 1440, 5400]
+elif run == 'auto':
+    sim_times = [1440, 720, 720, 720, 720]
+elif run == 'split_4':
+    sim_times = [1440, 1260, 900, 1440]
 
 if run == 'coarse':
     common_path = '../Faden_split_3_coarse/'
 elif run == 'rerun':
     common_path = '../Faden_split_3_rerun/'
+elif run == 'auto':
+    common_path = '../Faden_auto_remesh/'
+elif run == 'split_4':
+    common_path = '../Faden_split_4/'
 
 # Time instances to plot
-t_sims = [3600.0, 7200.0]  # seconds
+t_sims = [3600.0]  # seconds
 
 # Partitioned simulation settings
 dt = 0.1
@@ -32,14 +40,19 @@ dt = 0.1
 # Fluent interface settings
 plot_fluent = True
 common_path_fl = './fluent_interfaces/'
-itf_files_fl = ['itf-pos-3600-00s.xy', 'itf-pos-7200-00s.xy']
+# build: "itf-pos-{time}-00s.xy"
+itf_files_fl = [f"itf-pos-{int(t)}-00s.xy" for t in t_sims]
 
 # Faden paper settings
 plot_Faden = True
 common_path_Fa = './Faden_paper/'
-line_styles = ['r--', 'b--', 'r--', 'b--']  # different style exp./num.
-itf_files_Fa = ['Faden-num-itf-3600s.csv', 'Faden-exp-itf-3600s.csv',
-                'Faden-num-itf-7200s.csv', 'Faden-exp-itf-7200s.csv']
+# build: "Faden-num-itf-{time}s.csv", then "Faden-exp-itf-{time}s.csv"
+itf_files_Fa = [f"Faden-{kind}-itf-{int(t)}s.csv"
+                for t in t_sims
+                for kind in ["num", "exp"]]
+
+line_style = lambda file: 'r--' if 'num' in file else 'b--'
+
 
 # ---------------- Plotting ----------------
 lines = []
@@ -91,7 +104,7 @@ if plot_Faden:
         sorted_idx = np.argsort(y)
         x, y = x[sorted_idx], y[sorted_idx]
         x_smooth = savgol_filter(x, 11, 2)
-        line, = plt.plot(x_smooth/1000, y/1000, line_styles[i % len(line_styles)])
+        line, = plt.plot(x_smooth/1000, y/1000, line_style(itf_file))
         lines.append(line)
 
 # ---------------- Final plot ----------------
@@ -104,15 +117,23 @@ plt.ylim(0, 0.04)
 
 # Create legend handles manually to match colors/styles
 legend_handles = []
+k = 0
 
 # Partitioned (take the first Partitioned line as representative)
 legend_handles.append(lines[0])
+k += len(t_sims)
+
 # Fluent (first Fluent line)
-legend_handles.append(lines[len(t_sims)])
+if plot_fluent:
+    legend_handles.append(lines[k])
+    k += len(itf_files_fl)
+
 # Faden num (first Faden num line)
-legend_handles.append(lines[len(t_sims)*2])
-# Faden exp (first Faden exp line)
-legend_handles.append(lines[len(t_sims)*2 + 1])
+if plot_Faden:
+    legend_handles.append(lines[k])
+    k += 1
+    # Faden exp (first Faden exp line)
+    legend_handles.append(lines[k])
 
 plt.legend(legend_handles, ['Partitioned', 'Fluent', 'Faden num', 'Faden exp'], fontsize=14)
 

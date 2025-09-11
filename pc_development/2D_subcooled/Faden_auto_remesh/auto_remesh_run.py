@@ -6,7 +6,8 @@ import subprocess
 simulation_machine = 'cfdclu33'  # Machine for setup and simulations
 remesh_machine = 'cfdclu13'      # Machine for remeshing
 num_runs = 9                     # Total number of runs
-run_of_switch = 5                # Run number for switch to non-remeshing in liquid and tri cells in solid
+run_of_tri = 6                   # Run number for switch to tri cells in solid
+run_of_smooth = 7                # Run number for switch to non-remeshing in liquid
 
 # Paths to clean
 folders_to_clean = ["./CFD_1", "./CFD_2"]
@@ -61,12 +62,11 @@ def main():
     # Step 2: Initial simulation (on cfdclu33)
     print(f"\n=== Run 1/{num_runs} ===")
     # run_remote("run_simulation.py", simulation_machine) # 14000 time steps
-    print("\n=== Run 1 and 2 already finished ===")
 
     # Loop over runs (except last one) --> CHANGE BACK, REMOVE THE 1 IN RANGE!!!
-    for i in range(1, num_runs - 1):
+    for i in range(3, num_runs - 1):
         # Step 3: Remesh (on cfdclu13)
-        run_remote(f"remesh.py {run_of_switch}", remesh_machine)
+        run_remote(f"remesh.py {run_of_tri} {run_of_smooth}", remesh_machine) # PASS HERE THE TWO PARAMETERS
 
         # Step 4: Cleanup (local)
         for folder in folders_to_clean:
@@ -78,7 +78,7 @@ def main():
 
     # After loop
     print("\n=== Final Remesh and Cleanup ===")
-    run_remote(f"remesh.py {run_of_switch}", remesh_machine)
+    run_remote(f"remesh.py {run_of_tri} {run_of_smooth}", remesh_machine)
     for folder in folders_to_clean:
         clean_folder(folder, remove_create_mesh=False)
 

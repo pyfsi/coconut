@@ -15,7 +15,7 @@ start_lf_001 = False
 t_delay = t_delay_001 if start_lf_001 else t_delay_002
 
 # Case directories and report files
-case_dir = '../Faden_auto_remesh/'
+case_dir = '../Faden_split_4/'
 report_file_name = 'report-file.out'
 fluent_dir = 'fluent_reports/'
 fluent_report_name = 'report-file-temp.out'
@@ -74,9 +74,9 @@ H_end = 149636.7 # J
 H_ini = -18108.53 # J
 
 # INTERMEDIATE VALUES OF NEW SIM!! ALSO SEE REPORT FILE OF FLUENT!!
-mass_end = 1.3633361 # kg
+mass_end = 1.3527841 # kg
 h_hot = 265038.54 # J/kg (enthalpy at T_m)
-H_end = 47817.748 # J
+H_end = 70626.203 # J
 H_ini = -18108.53 # J
 
 dH = H_end - H_ini

@@ -5,10 +5,14 @@ import re
 import subprocess
 import argparse
 
-def run_cfd_workflow(switch_run_num):
+def run_cfd_workflow(tri_run_num, smooth_run_num):
     """
     Automates the CFD simulation workflow including file cleanup,
     directory management, and Fluent execution.
+
+    Arguments:
+        - tri_run_num: when to switch to tri cells
+        - smooth_run_num: when to disable remeshing
     """
     print("Starting CFD workflow automation script...")
 
@@ -62,7 +66,9 @@ def run_cfd_workflow(switch_run_num):
     previous_run_folder_path = os.path.join(current_dir, previous_run_folder_name)
 
     is_first_run = (past_run_num == 1)
-    do_switch = (past_run_num >= switch_run_num - 1)
+    do_tri = (past_run_num >= tri_run_num - 1)
+    do_smooth = (past_run_num >= smooth_run_num - 1)
+    print('switch_run_num is currently not used --> update auto_remesh_run.py')
 
     try:
         os.makedirs(previous_run_folder_path, exist_ok=True)
@@ -117,25 +123,37 @@ def run_cfd_workflow(switch_run_num):
 
     # --- Step 5 & 6: Copy 'step_1' and 'step_2' jou files ---
     print("\nStep 5 & 6: Copying Fluent journal files...")
-    if is_first_run:
-        step1_jou_name = 'step_1_firstrun.jou' # delete Stefan UDF
-    elif do_switch:
-        step1_jou_name = 'step_1_laterun.jou' # Keep remeshing in liquid
-    else:
-        step1_jou_name = 'step_1_earlyrun.jou' # Switch to smoothing in liquid
 
-    # Copy step_1_*.jou
-    try:
-        shutil.copy2(os.path.join(setup_files_solid_dir, step1_jou_name), cfd1_dir)
-        print(f"  Copied '{step1_jou_name}' to '{cfd1_dir}'")
-        shutil.copy2(os.path.join(setup_files_liquid_dir, step1_jou_name), cfd2_dir)
-        print(f"  Copied '{step1_jou_name}' to '{cfd2_dir}'")
-    except FileNotFoundError as e:
-        print(f"  Error: {e}. Make sure '{step1_jou_name}' exists in 'setup_files/solid/' and 'setup_files/liquid/'.")
-        return
-    except Exception as e:
-        print(f"  Error copying step_1 jou files: {e}")
-        return
+    for j, cfd_dir in enumerate([cfd1_dir, cfd2_dir]):
+        if is_first_run:
+            step1_jou_name = 'step_1_firstrun.jou'  # delete Stefan UDF
+            if j == 0:
+                journal_path = os.path.join(setup_files_solid_dir, step1_jou_name)
+            elif j == 1:
+                journal_path = os.path.join(setup_files_liquid_dir, step1_jou_name)
+        else:
+            if j == 0:
+                step1_jou_name = 'step_1_nextrun.jou'  # Same for quad & tri cells in solid domain
+                journal_path = os.path.join(setup_files_solid_dir, step1_jou_name)
+            elif j == 1:
+                if do_smooth:
+                    step1_jou_name = 'step_1_smoothrun.jou'  # Switch to smoothing in liquid
+                else:
+                    step1_jou_name = 'step_1_remeshrun.jou'  # Keep remeshing in liquid
+                journal_path = os.path.join(setup_files_liquid_dir, step1_jou_name)
+
+        # Copy step_1_*.jou
+        try:
+            dest_path = os.path.join(cfd_dir, 'step_1.jou')
+            shutil.copy2(journal_path, dest_path)
+            print(f"  Copied '{step1_jou_name}' to '{cfd_dir}'")
+        except FileNotFoundError as e:
+            print(
+                f"  Error: {e}. Make sure '{step1_jou_name}' exists in 'setup_files/solid/' or 'setup_files/liquid/'.")
+            return
+        except Exception as e:
+            print(f"  Error copying step_1 jou files: {e}")
+            return
 
     # Copy step_2.jou
     try:
@@ -263,10 +281,11 @@ def run_cfd_workflow(switch_run_num):
                 f"    Warning: Could not find both latest case and data files to create restart files in {cfd_dir}. Ensure previous run generated them.")
 
     # --- Step 10: Run 'fluent' for 'step_1' ---
-    print(f"\nStep 10: Running Fluent for {step1_jou_name}...")
+    print(f"\nStep 10: Running Fluent for 'step_1.jou'...")
     fluent_command_template = "ml -GAMBIT && ml ANSYS_CFD/2024R2 && fluent 2ddp -g -i {jou_file}"
 
-    for cfd_dir, jou_file_name in [(cfd1_dir, step1_jou_name), (cfd2_dir, step1_jou_name)]:
+    for cfd_dir in [cfd1_dir, cfd2_dir]:
+        jou_file_name = "step_1.jou"
         full_jou_path = os.path.join(cfd_dir, jou_file_name)
         command = fluent_command_template.format(jou_file=full_jou_path)
         print(f"  Executing in {cfd_dir}: {command}")
@@ -281,7 +300,7 @@ def run_cfd_workflow(switch_run_num):
                 print(f"  Fluent run for {jou_file_name} in {cfd_dir} failed with exit code {result.returncode}.")
                 print("  STDERR:\n", result.stderr)
         except FileNotFoundError:
-            print(f"  Error: 'fluent' command not found. Ensure Fluent is installed and in your PATH.")
+            print("  Error: 'fluent' command not found. Ensure Fluent is installed and in your PATH.")
         except Exception as e:
             print(f"  An error occurred while running Fluent for {jou_file_name} in {cfd_dir}: {e}")
 
@@ -343,7 +362,7 @@ def run_cfd_workflow(switch_run_num):
     print("\nStep 12: Running remesh.sh scripts...")
     for j, cfd_remesh_dir in enumerate([cfd1_remesh_dir, cfd2_remesh_dir]):
         if j == 0:
-            remesh_script_name = 'remesh_tri.sh' if do_switch else 'remesh_quad.sh'
+            remesh_script_name = 'remesh_tri.sh' if do_tri else 'remesh_quad.sh'
         elif j == 1:
             remesh_script_name = 'remesh.sh'
         remesh_script_path = os.path.join(cfd_remesh_dir, remesh_script_name)
@@ -409,16 +428,20 @@ def run_cfd_workflow(switch_run_num):
     print(f"Previous run folder created: {previous_run_folder_name}")
     print("New run is ready in CFD_1 and CFD_2 folders.")
     print("\nREMINDER:")
-    print("- Update 'report-file.out' with the latest results.")
+    print("- Update 'report-file.out' to the last saved cas.h5 file in case of crash.")
     print("- Update the naming of the Fluent case and data files if necessary.")
     print("- Update the 'parameters.json' file for the next simulation.")
     print("="*50)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Remeshing script")
-    parser.add_argument("switch_run", type=int, nargs="?", default=1,
-                        help="Run number to switch meshing strategy passed from main script (default: 1)")
+
+    parser.add_argument("tri_run_num", type=int, nargs="?", default=1,
+                        help="Run number to switch to tri cells in solid (default: 1)")
+    parser.add_argument("smooth_run_num", type=int, nargs="?", default=1,
+                        help="Run number to disable remeshing in liquid (default: 1)")
+
     args = parser.parse_args()
 
-    run_cfd_workflow(args.switch_run)
+    run_cfd_workflow(args.tri_run_num, args.smooth_run_num)
 

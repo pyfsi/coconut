@@ -1,0 +1,2 @@
+- Linear predictor --> worse convergence --> currently not used!
+- Consistent angular updates

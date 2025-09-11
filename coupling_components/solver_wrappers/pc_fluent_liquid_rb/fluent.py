@@ -158,6 +158,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.rb_iter_max = self.rb_settings.get('iteration_max', 10)
         self.rb_relax = self.rb_settings.get('relaxation', 1.0) # default no relaxation
         self.rot_update = self.rb_settings.get('rotational_update', 'explicit') # or 'algo_c2'
+        self.rb_predictor = self.rb_settings.get('predictor', 'constant')  # or 'linear'
 
         if self.restart:
             self.load_restart_rb_data()
@@ -167,7 +168,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             self.v_trans = np.zeros(3) # current translational velocity
             self.omega_z_prev = 0.0 # last time step rotational velocity
             self.omega_z = 0.0 # current rotational velocity
-            self.theta_total = 0.0 # (rad) total rotation angle of the rigid body compared to the initial position
             self.config_prev = np.identity(3) # previous time step rotational configuration matrix
             self.config_new = np.identity(3) # new time step rotational configuration matrix
             self.a_rot_z_prev = 0.0 # last time step rotational acceleration
@@ -487,15 +487,22 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.iteration = 0
         self.timestep += 1
 
+        # save for linear predictor
+        if self.rb_predictor == 'linear':
+            v_trans_prev2 = self.v_trans_prev
+            omega_z_prev2 = self.omega_z_prev
+
         # update rigid body kinematics
         self.v_trans_prev = self.v_trans
         self.omega_z_prev = self.omega_z
         self.a_rot_z_prev = self.a_rot_z
         self.config_prev = self.config_new
         self.com_prev = self.com
-        self.theta_total += self.omega_z * self.delta_t
 
-        # linear predictor step?
+        # linear predictor step for v_trans & omega_z ---> reduces convergence...
+        if self.rb_predictor == 'linear':
+            self.v_trans = 2 * self.v_trans_prev - v_trans_prev2
+            self.omega_z = 2 * self.omega_z_prev - omega_z_prev2
 
         # Update previous displacement
         for item in self.settings['interface_input']:
@@ -575,6 +582,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
             # print rigid body iteration information to terminal
             self.print_rb_iteration_info(res_v, res_omega)
+
+            # only one iteration for the 1st time step --> avoids divergence
+            if self.timestep == 1:
+                break
 
         # print warning when tolerance not reached within maximum number of iterations
         if self.rb_iter_max == 1:
@@ -839,20 +850,22 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                 thread_id = self.model_part_thread_ids[mp_name]
                 model_part = self.model.get_model_part(mp_name)
                 last_full_disp = self.interface_rb.get_variable_data(mp_name, 'prev_disp')
-                disp_step_melting = self.interface_rb.get_variable_data(mp_name, 'disp_step_melting') # HAS TO BE CONVERTED TO LOCAL FRAME OF REFERENCE!
+                disp_step_melting = self.interface_rb.get_variable_data(mp_name, 'disp_step_melting')
                 x_prev = model_part.x0 + last_full_disp[:, 0]
                 y_prev = model_part.y0 + last_full_disp[:, 1]
                 z_prev = model_part.z0 + last_full_disp[:, 2]
                 r_prev = np.column_stack((x_prev, y_prev, z_prev))
 
+                # update r_prev with the melting displacement, rotated to the global frame (liquid domain)
+                r_temp = r_prev + disp_step_melting
+
                 omega_array = np.zeros(np.shape(r_prev))
                 omega_array[:, 2] = self.omega_z
-                disp_step_rb = (self.v_trans + np.cross(omega_array, (r_prev - self.com_prev))) * self.delta_t
-                #print('disp_step_rb = ', disp_step_rb)
+                disp_step_rb = (self.v_trans + np.cross(omega_array, (r_temp - self.com_prev))) * self.delta_t
 
                 self.interface_rb.set_variable_data(mp_name, 'new_disp', last_full_disp + disp_step_melting + disp_step_rb)
 
-                r_new = r_prev + disp_step_melting + disp_step_rb
+                r_new = r_temp + disp_step_rb
                 x = r_new[:, 0]
                 y = r_new[:, 1]
                 z = r_new[:, 2]
@@ -919,15 +932,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                 file_name = join(self.dir_cfd, tmp)
                 np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-                # Convert to the local frame of reference of the rigid body in the liquid domain
-                c = np.cos(self.theta_total)
-                s = np.sin(self.theta_total)
-                R = np.array([[c, -s, 0],
-                              [s, c, 0],
-                              [0, 0, 1]])
-                disp_step_melting_local = disp_step_melting @ R.T
+                # Convert from the local frame (solid) to the global frame of the rigid body in the liquid domain
+                disp_step_melting_global = np.dot(disp_step_melting, self.config_prev.T)
 
-                self.interface_rb.set_variable_data(mp_name, 'disp_step_melting', disp_step_melting_local)
+                self.interface_rb.set_variable_data(mp_name, 'disp_step_melting', disp_step_melting_global)
 
     def rigid_body_motion(self):
         tmp = f'rigid_body_timestep{self.timestep}.dat'
@@ -948,18 +956,40 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         a_trans = (force_int + (self.solid_density - self.liquid_density) * g * volume) / (self.solid_density * volume)
         a_rot_z = moment_int[2] / moi[2]
 
+        # store previous iteration values for relaxation
+        v_trans_pr_it = self.v_trans
+
+        # 1st order explicit update of translational velocity with relaxation
+        if (self.timestep == 1) and (self.iteration == 1):
+            self.v_trans = self.v_trans_prev + self.delta_t * a_trans # avoids damping the initial condition
+        else:
+            self.v_trans = (self.v_trans_prev + self.delta_t * a_trans) * self.rb_relax + v_trans_pr_it * (1 - self.rb_relax)
+
         if self.rot_update == 'explicit':
             # store previous iteration values for relaxation
-            v_trans_pr_it = self.v_trans
             omega_pr_it = self.omega_z
 
-            # explicit updates with relaxation
-            self.v_trans = (self.v_trans_prev + self.delta_t * a_trans) * self.rb_relax + v_trans_pr_it * (1 - self.rb_relax)
-            self.omega_z = (self.omega_z_prev + self.delta_t * a_rot_z) * self.rb_relax + omega_pr_it * (1 - self.rb_relax)
+            # 1st order explicit updates of rotational velocity with relaxation
+            if (self.timestep == 1) and (self.iteration == 1):
+                self.omega_z = self.omega_z_prev + self.delta_t * a_rot_z
+            else:
+                self.omega_z = (self.omega_z_prev + self.delta_t * a_rot_z) * self.rb_relax + omega_pr_it * (1 - self.rb_relax)
+
+            # Update rotational acceleration
             self.a_rot_z = a_rot_z
+
+            # Update rotation matrix
+            theta = np.array([0, 0, self.delta_t * self.omega_z])
+            self.config_new = self.config_prev @ exp_map(theta)
+
+            # Re-orthonormalize if drift exceeds tolerance
+            if np.linalg.norm(self.config_new.T @ self.config_new - np.identity(3)) > 1e-8:
+                U, _, Vt = np.linalg.svd(self.config_new)
+                self.config_new = U @ Vt
+
         elif self.rot_update == 'algo_c2':
-            self.v_trans = self.v_trans_prev + self.delta_t * a_trans  # explicit update
-            self.config_new, omega_new, A_new = self.algo_c2(moi[2], moment_int[2]) # explicit ALGO_C2 (Simo & Wong) algorithm
+            # ALGO_C2 is second-order accurate and momentum-consistent
+            self.config_new, omega_new, A_new = self.algo_c2(moi[2], moment_int[2])  # explicit ALGO_C2 (Simo & Wong) algorithm
             self.omega_z = omega_new[2]
             self.a_rot_z = A_new[2]
     
@@ -997,11 +1027,13 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         cg_y = self.com[1]
         v_x = self.v_trans[0]
         v_y = self.v_trans[1]
-        theta_z = m.degrees(self.theta_total)
+        R = self.config_new[:2, :2]  # take 2D rotation part if config_new is 3x3
+        theta_rad = np.arctan2(R[1, 0], R[0, 0])
+        theta_deg = np.degrees(theta_rad)
 
         with open(file_name, "a") as f:
             f.write(f"{time:12.5e}  {cg_x:12.5e}  {cg_y:12.5e}  "
-                    f"{v_x:12.5e}  {v_y:12.5e}  {theta_z:12.5e}\n")
+                    f"{v_x:12.5e}  {v_y:12.5e}  {theta_deg:12.5e}\n")
 
     def get_coordinates(self):
         """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)
@@ -1067,28 +1099,30 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         return coord_data
 
     def algo_c2(self, I_zz, M_zz):
+        # ALGO_C2 is second-order accurate and momentum-consistent
+        # Previous state
         omega_prev = np.array([0, 0, self.omega_z_prev])
         A_prev = np.array([0, 0, self.a_rot_z_prev])
         M_prev = np.array([0, 0, M_zz])
-        I = np.zeros(3)
+
+        # Inertia matrix
+        I = np.zeros((3, 3))
         I[2, 2] = I_zz
-        exp_map = lambda x: np.identity(3) + (np.sin(np.linalg.norm(x)) / np.linalg.norm(x)) * x + (1 / 2) * ((np.sin(np.linalg.norm(x)) ** 2) / ((np.linalg.norm(x) / 2) ** 2)) * (x ** 2)
 
         # step 1
         theta = self.delta_t * omega_prev + self.delta_t**2 * A_prev / 2
-        theta_hat = np.array([[0, theta[1], -theta[2]], [theta[2], 0, -theta[0]], [-theta[1], theta[0], 0]])
 
         # step 2
-        config_new = self.config_prev * exp_map(theta_hat)
+        config_new = self.config_prev @ exp_map(theta)
 
         # step 3
-        omega_new = np.invert(I) * exp_map(-theta_hat) * (I * omega_prev.T + self.delta_t * config_new.T * M_prev.T)
+        omega_new = np.linalg.inv(I) @ (exp_map(-theta) @ ((I @ omega_prev.T) + self.delta_t * (config_new.T @ M_prev.T)))
 
         # step 4
         A_new = (omega_new - omega_prev) / self.delta_t
 
         return config_new, omega_new.T, A_new.T
-    
+
     def backup_fluent_log(self):
         file = join(self.dir_cfd, 'fluent.log')
         file_backup = join(self.dir_cfd, 'fluent_backup.log')
@@ -1119,7 +1153,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             'v_trans': self.v_trans,
             'omega_z_prev': self.omega_z_prev,
             'omega_z': self.omega_z,
-            'theta_total': self.theta_total,
             'config_prev': self.config_prev,
             'config_new': self.config_new,
             'a_rot_z_prev': self.a_rot_z_prev,
@@ -1149,7 +1182,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.v_trans = state['v_trans']
         self.omega_z_prev = state['omega_z_prev']
         self.omega_z = state['omega_z']
-        self.theta_total = state['theta_total']
         self.config_prev = state['config_prev']
         self.config_new = state['config_new']
         self.a_rot_z_prev = state['a_rot_z_prev']
@@ -1157,3 +1189,16 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.com = state['com']
         self.com_prev = state['com_prev']
         self.interface_rb = state['interface_rb']
+
+# Helper functions
+def skew(v):
+    return np.array([[0, -v[2], v[1]],
+                     [v[2], 0, -v[0]],
+                     [-v[1], v[0], 0]])
+
+def exp_map(x):
+    if np.linalg.norm(x) < 1e-12:
+        return np.identity(3)
+    else:
+        return np.identity(3) + (np.sin(np.linalg.norm(x)) / np.linalg.norm(x)) * skew(x) + (1 / 2) * (
+                    (np.sin(np.linalg.norm(x)) ** 2) / ((np.linalg.norm(x) / 2) ** 2)) * (skew(x) @ skew(x))
