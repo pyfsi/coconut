@@ -13,9 +13,15 @@ define dynamic-mesh controls smoothing-parameters max-iter 50
 define dynamic-mesh controls layering n
 define dynamic-mesh controls remeshing n
 
+; For diffusion-based smoothing
 define dynamic-mesh zones create top deforming plane 0.0002 0.04 0 1 n y n y n y
 define dynamic-mesh zones create bottom deforming plane 0.0002 0.04 0 1 n y n y n y
 define dynamic-mesh zones create fluid deforming y n y
+
+; For spring-based smoothing
+; define dynamic-mesh zones create top deforming plane 0.0002 0.04 0 1 n y n n y n y
+; define dynamic-mesh zones create bottom deforming plane 0.0002 0.04 0 1 n y n n y n y
+; define dynamic-mesh zones create fluid deforming y global y y
 
 define user-defined compiled-functions unload "udf_thermal"
 

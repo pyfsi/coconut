@@ -15,10 +15,10 @@ start_lf_001 = False
 t_delay = t_delay_001 if start_lf_001 else t_delay_002
 
 # Case directories and report files
-case_dir = '../Faden_split_4/'
+case_dir = '../Faden_auto_remesh/'
 report_file_name = 'report-file.out'
 fluent_dir = 'fluent_reports/'
-fluent_report_name = 'report-file-temp.out'
+fluent_report_name = 'report-file-new.out'
 
 # ----- Load data -----
 data_solid = np.loadtxt(f'{case_dir}CFD_1/{report_file_name}', delimiter=' ', skiprows=3)
@@ -30,9 +30,12 @@ area = 0.04 * 0.08
 area_2D = 0.04 * 1
 full_vol = 0.04 * 0.04
 
-time = data_solid[:,7] + t_delay
-time_l = data_liquid[:,9] + t_delay
+time = data_solid[:,7]
+time_l = data_liquid[:,9]
 i_end = min(len(time), len(time_l))
+
+time = data_solid[:i_end,7] + t_delay
+time_l = data_liquid[:i_end,9] + t_delay
 
 # Solid
 q_cool = -area * data_solid[:i_end,1]
@@ -74,10 +77,12 @@ H_end = 149636.7 # J
 H_ini = -18108.53 # J
 
 # INTERMEDIATE VALUES OF NEW SIM!! ALSO SEE REPORT FILE OF FLUENT!!
-mass_end = 1.3527841 # kg
+"""
+mass_end = 1.3189063 # kg
 h_hot = 265038.54 # J/kg (enthalpy at T_m)
-H_end = 70626.203 # J
+H_end = 143020.12 # J
 H_ini = -18108.53 # J
+"""
 
 dH = H_end - H_ini
 H_out = (mass_ini - mass_end) * h_hot

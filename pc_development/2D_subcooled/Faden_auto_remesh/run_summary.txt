@@ -3,4 +3,6 @@ Runs:
     - run 2: 7200 time steps: solid quads + liquid remesh
     - run 3: 7200 time steps: solid quads + liquid remesh
     - run 4: 7200 time steps: solid quads + liquid remesh
-    - run 5: 7200 time steps: solid tri's + liquid remesh
+    - run 5: 7200 time steps: solid quads + liquid remesh
+    - run 6: 7200 time steps: solid tri's + liquid remesh
+    - run 7: 7200 time steps: solid tri's + liquid remesh

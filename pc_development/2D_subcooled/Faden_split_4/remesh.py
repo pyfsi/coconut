@@ -8,7 +8,7 @@ import subprocess
 # Settings
 # ----------------------
 tri_run_num = 4 # From which run to enable tri cells in solid
-smooth_run_num = 5 # From which run to disable remeshing (only smoothing) in liquid
+smooth_run_num = 6 # From which run to disable remeshing (only smoothing) in liquid
 
 def run_cfd_workflow():
     """
