@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pyfsi.github.io/coconut/solver_wrappers.html">
+        <link rel="canonical" href="https://pyfsi.github.io/coconut/tube_fluent2d_abaquscse2d.html">
       
       
-        <link rel="prev" href="predictors.html">
+        <link rel="prev" href="tube_fluent2d_abaqus2d.html">
       
       
-        <link rel="next" href="abaqus.html">
+        <link rel="next" href="tube_fluent2d_abaqus2d_steady.html">
       
       
       <link rel="icon" href="assets/images/favicon.ico">
@@ -24,7 +24,7 @@
     
     
       
-        <title>General - CoCoNuT</title>
+        <title>Fluent 2D - AbaqusCSE 2D - CoCoNuT</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#solver-wrappers" class="md-skip">
+        <a href="#tube-case-with-fluent2d-and-abaquscse2d" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              General
+              Fluent 2D - AbaqusCSE 2D
             
           </span>
         </div>
@@ -227,12 +227,10 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="coupling_components.html" class="md-tabs__link">
           
   
@@ -281,10 +279,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="examples.html" class="md-tabs__link">
           
   
@@ -389,28 +389,25 @@
       
   
   
-    
   
   
-  
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -421,7 +418,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Coupling components
@@ -606,8 +603,6 @@
                 
   
   
-    
-  
   
   
     
@@ -617,11 +612,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
         
           
           <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
@@ -635,7 +632,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_6">
             <span class="md-nav__icon md-icon"></span>
             Solver wrappers
@@ -646,30 +643,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    General
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="solver_wrappers.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="solver_wrappers.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -678,35 +655,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#available-solver-wrappers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Available solver wrappers
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -897,25 +845,28 @@
       
   
   
+    
   
   
+  
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -926,7 +877,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Examples
@@ -1159,8 +1110,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -1168,13 +1121,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
@@ -1188,7 +1139,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5_5">
             <span class="md-nav__icon md-icon"></span>
             Tube
@@ -1346,10 +1297,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="tube_fluent2d_abaquscse2d.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Fluent 2D - AbaqusCSE 2D
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="tube_fluent2d_abaquscse2d.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1358,6 +1329,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#coupling-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Coupling algorithm
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Predictor
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergence-criterion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Convergence criterion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solvers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solvers
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1713,45 +1740,46 @@
                   
 
 
-<h1 id="solver-wrappers">Solver wrappers</h1>
-<p>The goal of solver wrappers is to provide communication with the solvers. This means that a solver wrapper must
-implement a way to communicate input to the solver (at the fluid-structure interface), run the solver with the provided
-input and obtain the solution from the solver (at the fluid-structure interface).</p>
-<p><strong>Important</strong>: To avoid conflicts, each solver is run in its own environment. These environments are established on
-runtime, but the actions required to do so can differ between systems. Therefore, it is necessary to first check (and if
-needed adapt) the file <em><code>coconut/solver_modules.py</code></em> after installing or updating CoCoNuT, as described
-in <a href="https://pyfsi.github.io/coconut/#checking-the-solver-modules">the front documentation page</a>.</p>
-<p>As each solver is different, the solver wrappers are highly customized too. Nevertheless, they all inherit from
-the <code>SolverWrapper</code> class, which inherits from the <code>Component</code> class, and must all implement the following
-methods: <code>initialize</code>, <code>initialize_solution_step</code>, <code>solve_solution_step</code>, <code>finalize_solution_step</code>, 
-<code>output_solution_step</code> and <code>finalize</code>.</p>
-<p>Upon instantiation of the solver wrapper object, the solver wrapper has to create a <code>Model</code> containing one or
-more <code>ModelParts</code> which correspond to (a part of) the fluid-structure interface. The interface coordinates at time step
-0 should be stored in the <code>ModelPart</code>, even for a simulation that is restarted from a later time step, in order to have
-consistent <a href="https://pyfsi.github.io/coconut/mappers">mapping</a> over restarts.</p>
-<p>The <code>solve_solution_step</code> method is called in each coupling iteration by the coupled solver, which provides input data
-stored in an <code>Interface</code> object. The solver wrapper extracts the data and supplies it to the actual solver, starts the
-calculation and reads the output data when the solver has finished. The solver wrapper then returns this data to the
-coupled solver as an <code>Interface</code> object.</p>
-<h2 id="available-solver-wrappers">Available solver wrappers</h2>
-<p>There are currently two solver wrappers for computational fluid dynamics (CFD) packages:</p>
+<h1 id="tube-case-with-fluent2d-and-abaquscse2d">Tube case with Fluent2D and AbaqusCSE2D</h1>
+<p>This example calculates the flow inside and the deformation and stresses of a straight flexible tube, where a pressure pulse is applied at the inlet.
+This done by using Fluent and Abaqus, both on an axisymmetric case.</p>
+<h2 id="coupling-algorithm">Coupling algorithm</h2>
+<p>The coupling technique used is the <em>interface quasi-Newton algorithm with an approximation for the inverse of the Jacobian from a least-squares model</em> (IQN-ILS).</p>
+<h2 id="predictor">Predictor</h2>
+<p>The initial guess in every time step is done using the linear predictor.</p>
+<h2 id="convergence-criterion">Convergence criterion</h2>
+<p>Two convergence criteria have been specified:</p>
 <ul>
-<li><a href="https://pyfsi.github.io/coconut/fluent">ANSYS Fluent</a></li>
-<li><a href="https://pyfsi.github.io/coconut/openfoam">OpenFOAM</a></li>
+<li>The number of iterations in every time step is larger than 10.</li>
+<li>The residual norm on the displacement is a factor <span class="arithmatex"><span class="MathJax_Preview">10^{-4}</span><script type="math/tex">10^{-4}</script></span> lower than the initial value.</li>
 </ul>
-<p>There are currently also three solver wrappers for computational structural mechanics (CSM) packages :</p>
-<ul>
-<li><a href="https://pyfsi.github.io/coconut/abaqus">Abaqus</a></li>
-<li><a href="https://pyfsi.github.io/coconut/abaqus_cse">AbaqusCSE</a></li>
-<li><a href="https://pyfsi.github.io/coconut/kratos_structure">Kratos Multiphysics</a></li>
-</ul>
-<p>CoCoNuT also implements several 1D Python-based solver wrappers to provide a fast and easy way to test new algorithms
-and implementations. These are:</p>
-<ul>
-<li><a href="https://pyfsi.github.io/coconut/python#tube-flow-solver">Tube flow solver</a></li>
-<li><a href="https://pyfsi.github.io/coconut/python#tube-structure-solver">Tube structure solver</a></li>
-<li><a href="https://pyfsi.github.io/coconut/python#tube-ringmodel-solver">Tube ringmodel solver</a></li>
-</ul>
+<p>When either criterion is satisfied the simulation stops.</p>
+<h2 id="solvers">Solvers</h2>
+<p>The flow solver is Fluent, used to solve an axisymmetric representation of the tube,
+with 100 cells on the fluid-structure interface. 
+When setting up the case, the mesh is build based on the file <em><code>mesh.jou</code></em> using Gambit.
+The displacements are applied in the nodes, of which there are 101. 
+In contrast, the loads (pressure and traction) are calculated in the cell centers, of which there are 100.
+The axial direction is along the x-axis, the radial direction along the y-axis. 
+The setup script runs Fluent with the <em><code>case.jou</code></em> journal file to set up the case parameters, starting from the mesh file <em><code>mesh_tube2d.msh</code></em>.
+This case is written to the <em><code>case_tube2d.cas</code></em> file, which serves as input for CoCoNuT. 
+Additionally, a folder <em><code>create_mesh</code></em> is provided containing a script to create the mesh in Gambit using a journal file.
+The mesh can be created by running the script <em><code>create_mesh.sh</code></em>, given that Gambit v2.4.6 is available.</p>
+<p>The structural solver is AbaqusCSE, used to solve an axisymmetric representation of the tube,
+with 50 elements on the fluid-structure interface.
+The Abaqus case is built when setting up the case starting from the file <em><code>mesh_tube2d.inp</code></em> containing nodes and elements. 
+This is done by running Abaqus with the <em><code>make_inp.py</code></em> Python script to set all parameters, such as surface definitions, material parameters, boundary conditions and time step information.
+The result of the setup is a completed input file <em><code>case_tube2d.inp</code></em>.
+The Abaqus element type used is CAX8RH. These are continuum elements for axisymmetric calculations, for stress and displacement without twist. 
+They are: 8-node biquadratic, reduced integration, hybrid with linear pressure.
+See the <a href="http://130.149.89.49:2080/v6.14/books/usb/default.htm?startat=book01.html#usb">Abaqus documentation</a> for more information. 
+The loads are applied on the faces in three points per element, which means on 150 load points in total. 
+The displacement is calculated in the nodes. There are 101 nodes on the fluid-structure interface.
+The axial direction is along the y-axis, the radial direction along the x-axis.</p>
+<p>The difference in reference frames and number of cells on the fluid-structure interface requires the use of mappers.
+In the structural solver wrapper, a permutation mapper is introduced to match the coordinate frames, flipping the x- and y-axis of the input.
+Thereafter, a linear interpolation mapper is used to interpolate in the x- and y-direction from the 100 cell centers of Fluent to the 150 load points in Abaqus.
+For the output the same is done in the opposite order: first interpolating and then flipping the axes.</p>
 
 
 
