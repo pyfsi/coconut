@@ -23,7 +23,7 @@ class ModelAnalytical1D(Component):
         # add timestep_start and delta_t to solver_models settings
         for solver_model_parameters in self.settings['solver_models']:
             tools.pass_on_parameters(self.settings, solver_model_parameters['settings'],
-                                     ['timestep_start', 'delta_t', 'save_restart'])
+                                     ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
         # initialization
         self.solver_models = []

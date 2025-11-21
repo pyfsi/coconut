@@ -20,6 +20,10 @@ class SolverWrapperTubeFlow(SolverWrapper):
     au = 4  # number of terms above diagonal in matrix
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = ['displacement']
+    accepted_out_var = ['pressure', 'traction']
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)

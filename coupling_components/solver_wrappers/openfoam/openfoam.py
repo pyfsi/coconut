@@ -22,6 +22,10 @@ class SolverWrapperOpenFOAM(SolverWrapper):
     version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = ['displacement']
+    accepted_out_var = ['pressure', 'traction']
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -202,6 +206,9 @@ class SolverWrapperOpenFOAM(SolverWrapper):
             cmd = 'mpirun -np ' + str(self.cores) + ' ' + self.application + ' -parallel &> log.' + self.application
 
         self.openfoam_process = subprocess.Popen(cmd, cwd=self.working_directory, shell=True, env=self.env)
+
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.openfoam_process)
 
     def initialize_solution_step(self):
         super().initialize_solution_step()

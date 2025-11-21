@@ -70,7 +70,7 @@ class TestCoupledSolver(unittest.TestCase):
 
         with cd(self.working_dir):
             # adapt parameters, create coupled solver without restart
-            self.parameters['settings']['save_results'] = 4
+            self.parameters['settings']['write_results'] = 4
             self.parameters['settings']['case_name'] = 'no_restart'
             coupled_solver = create_instance(self.parameters)
             coupled_solver.initialize()
@@ -105,7 +105,7 @@ class TestCoupledSolver(unittest.TestCase):
 
             # adapt parameters, create coupled solver which restarts
             self.parameters['settings']['timestep_start'] = 2
-            self.parameters['settings']['save_results'] = 2
+            self.parameters['settings']['write_results'] = 2
             self.parameters['settings']['case_name'] = 'restart'
             self.remove_keys(('timestep_start', 'delta_t', 'save_restart',
                               'case_name'))  # remove keys to avoid warnings
@@ -156,7 +156,7 @@ class TestCoupledSolver(unittest.TestCase):
             # adapt parameters, create coupled solver which restarts
             omega_max_new = 0.6
             self.parameters['settings']['timestep_start'] = 2
-            self.parameters['settings']['save_results'] = 2
+            self.parameters['settings']['write_results'] = 2
             self.parameters['settings']['case_name'] = 'restart'
             self.remove_keys(('timestep_start', 'delta_t', 'save_restart',
                               'case_name'))  # remove keys to avoid warnings

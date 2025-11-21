@@ -18,6 +18,13 @@ class CoupledSolver(Component):
         self.settings = parameters['settings']
         self.start_init_time = time.time()  # start of initialization
 
+        # deprecated parameters
+        if 'save_results' in self.settings:
+            tools.print_info(f'WARNING: parameter "save_results" in {self.__class__.__name__} is deprecated,'
+                             f' use "write_results" instead', layout='warning')
+            if 'write_results' not in self.settings:
+                self.settings['write_results'] = self.settings['save_results']
+
         # read parameters
         self.case_name = self.settings.get('case_name', 'case')  # case name
         self.settings['case_name'] = self.case_name  # make sure a case name is present
@@ -26,7 +33,7 @@ class CoupledSolver(Component):
         self.restart = self.timestep_start_current != 0  # true if restart
         self.save_restart = self.settings.get('save_restart', -1)  # time step interval to save restart data
         self.settings['save_restart'] = self.save_restart  # in order to pass on default value
-        self.save_results = self.settings.get('save_results', 0)  # time step interval to save results
+        self.write_results = self.settings.get('write_results', 0)  # time step interval to write coupling results
         self.anonymous = self.settings.get('anonymous', False)  # disables saving 'info' in the pickle file
         self.time_step = self.timestep_start_current  # time step
         self.delta_t = self.settings['delta_t']  # time step size
@@ -40,8 +47,8 @@ class CoupledSolver(Component):
         for index in range(2):
             parameters = self.parameters['solver_wrappers'][index]
             # add timestep_start, delta_t and save_restart to solver_wrapper settings
-            tools.pass_on_parameters(self.settings, parameters['settings'], ['timestep_start', 'delta_t',
-                                                                             'save_restart'])
+            tools.pass_on_parameters(self.settings, parameters['settings'],
+                                     ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
             self.solver_wrappers.append(create_instance(parameters))
             # determine index of mapped solver if present
             if self.solver_wrappers[-1].mapped:
@@ -72,7 +79,7 @@ class CoupledSolver(Component):
             self.restart_predictor = None  # indicates if predictor has to be restarted
 
         # save results variables
-        if self.save_results:
+        if self.write_results:
             self.complete_solution_x = None
             self.complete_solution_y = None
             self.residual = []
@@ -119,7 +126,7 @@ class CoupledSolver(Component):
                 self.predictor.restart(self.restart_data['predictor'])
 
         # update save results
-        if self.save_results:
+        if self.write_results:
             results_data = None
             if self.restart:
                 results_data = self.load_results_data()
@@ -152,7 +159,7 @@ class CoupledSolver(Component):
             component.initialize_solution_step()
 
         # update save results
-        if self.save_results:
+        if self.write_results:
             self.residual.append([])
 
     def solve_solution_step(self):
@@ -167,7 +174,7 @@ class CoupledSolver(Component):
     @tools.time_save
     def output_iteration(self, r):
         # update save results
-        if self.save_results:
+        if self.write_results:
             self.residual[self.time_step - self.timestep_start_global - 1].append(r.norm())
             if self.debug:
                 self.complete_solution_x = np.hstack((self.complete_solution_x,
@@ -204,7 +211,7 @@ class CoupledSolver(Component):
 
         # update save results
         self.iterations.append(self.iteration)
-        if self.save_results:
+        if self.write_results:
             if not self.debug:
                 self.complete_solution_x = np.hstack((self.complete_solution_x,
                                                       self.x.get_interface_data().reshape(-1, 1)))
@@ -212,8 +219,8 @@ class CoupledSolver(Component):
                                                       self.y.get_interface_data().reshape(-1, 1)))
 
         # output save results
-        if self.save_results != 0 and (self.time_step % self.save_results == 0 or
-                                       (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
+        if self.write_results != 0 and (self.time_step % self.write_results == 0 or
+                                        (self.save_restart != 0 and self.time_step % self.save_restart == 0)):
             self.time_allocation.update(self.get_time_allocation())
             output = {'solution_x': self.complete_solution_x, 'solution_y': self.complete_solution_y,
                       'interface_x': self.x, 'interface_y': self.y, 'iterations': self.iterations,

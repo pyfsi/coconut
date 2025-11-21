@@ -87,7 +87,7 @@ class EvaluateExamples(unittest.TestCase):
         with open(join(tmp_example_path, parameter_file_name), 'r') as parameter_file:
             parameters = json.load(parameter_file)
         parameters['settings']['number_of_timesteps'] = cls.number_of_timesteps
-        parameters['coupled_solver']['settings']['save_results'] = True
+        parameters['coupled_solver']['settings']['write_results'] = True
         case_name = cls.example.replace('/', '_')
         parameters['coupled_solver']['settings']['case_name'] = case_name
 

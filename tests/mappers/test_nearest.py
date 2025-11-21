@@ -1,4 +1,4 @@
-from coconut.tests.mappers.test_interpolator import Case1D, Case2D, Case3DSphere, Case3DCylinder, Case3DSinc
+from coconut.tests.mappers.test_interpolator import Case1D, Case2DCircle, Case3DSphere, Case3DCylinder, Case3DSinc
 
 import unittest
 
@@ -37,7 +37,7 @@ class TestMapperNearest(unittest.TestCase):
             => max error = 0.55
         """
 
-        case = Case2D(n_from, n_to)
+        case = Case2DCircle(n_from, n_to)
         case.map(self.parameters)
         self.assertTrue(case.check(tolerance=1.))
         if self.gui:

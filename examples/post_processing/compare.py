@@ -7,7 +7,7 @@ import pickle
 # This script compares the average norm of the difference per time step between several cases,
 # as wel as the number of coupling iterations in each time step, under the assumption that the same solvers have been
 # used. Hence, it is mainly meant to compare the performance of coupling algorithms.
-# To generate a result file, include a non-zero int 'save_results' in the settings of the coupled solver.
+# To generate a result file, include a non-zero int 'write_results' in the settings of the coupled solver.
 # Give a name to the case by including the string {'case_name': 'a_name'} in the settings of the coupled solver.
 
 # different cases to be plotted

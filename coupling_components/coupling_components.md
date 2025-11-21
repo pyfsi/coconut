@@ -34,8 +34,18 @@ For these `Interface` objects (implemented in *`coconut/data_structure/interface
 The main coupling component in which all other coupling components are instantiated is the coupled solver.
 The coupled solver itself is created in the `Analysis` class (*`coconut/analysis.py`*), which is the starting point of the CoCoNuT calculation.
 Upon the start of CoCoNuT, an instance of `Analysis` is made and its method `run` is executed.
+It will read in parameters related to time incrementation which have to been defined in the top-level dictionary `settings`.
+These parameters are the following:
+
+|                          parameter | type  | description                                                                                                                                                                                                                                                                                                                                                          |
+|-----------------------------------:|:-----:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                          `delta_t` | float | Fixed time step size used in both solvers. For a steady simulation typically a value of `1` is taken.                                                                                                                                                                                                                                                                |
+| <nobr>`number_of_timesteps`</nobr> |  int  | The amount of time steps to run the calculation. For a steady calculation, the value should be `1`.                                                                                                                                                                                                                                                                  |
+|                     `save_restart` |  int  | (optional) Default: `-1`. Indicates the time step interval at which a restart pickle file has to be saved. A minus sign indicates only the file from the last interval is retained. A save of restart information also triggers [writing of the results](coupled_solvers/coupled_solvers.md#save-results), if `write_results` is non-zero.                           |
+|                  `time_step_start` |  int  | Time step number to (re)start a transient FSI calculation. If `0` is given, the simulation starts from scratch. Otherwise, the code looks for the relevant files to start from the corresponding time step. Not every solver wrapper implements restart, see the corresponding documentation for more information. For a steady simulation, the value should be `0`. |
+
 The coupled solver keeps track of all `Components` and runs the methods `initialize`, `finalize`, `initialize_solution_step`, `finalize_solution_step` and `output_solution_step`,
-when its respective methods are executed.
+for all components when its respective methods are called.
 
 ## End of the calculation
 

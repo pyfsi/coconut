@@ -49,11 +49,15 @@ def GetDimension(element):
         dimension = 2
     elif elementTypeText.find('CPE8') > -1:
         dimension = 2
+    elif elementTypeText.find('CPE4') > -1:
+        dimension = 2
     elif elementTypeText.find('CPS8') > -1:
         dimension = 2
     elif elementTypeText.find('C3D8') > -1:
         dimension = 3
     elif elementTypeText.find('C3D20') > -1:
+        dimension = 3
+    elif elementTypeText.find('C3D4') > -1:
         dimension = 3
     else:
         raise Exception('Unknown element type ', elementTypeText)
@@ -68,12 +72,16 @@ def GetNodesPerFace(element):
         nodesPerFace = 3
     elif elementTypeText.find('CPE8') > -1:
         nodesPerFace = 3
+    elif elementTypeText.find('CPE4') > -1:
+        nodesPerFace = 2
     elif elementTypeText.find('CPS8') > -1:
         nodesPerFace = 3
     elif elementTypeText.find('C3D8') > -1:
         nodesPerFace = 4
     elif elementTypeText.find('C3D20') > -1:
         nodesPerFace = 8
+    elif elementTypeText.find('C3D4') > -1:
+        nodesPerFace = 3
     else:
         raise Exception('Unknown element type ', elementTypeText)
     return nodesPerFace

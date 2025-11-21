@@ -20,7 +20,7 @@ class SolverWrapperMapped(SolverWrapper):
 
         # create solver
         tools.pass_on_parameters(self.settings, self.settings['solver_wrapper']['settings'],
-                                 ['timestep_start', 'delta_t', 'save_restart'])
+                                 ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
         self.solver_wrapper = create_instance(self.settings['solver_wrapper'])
 
         # check coupling convergence

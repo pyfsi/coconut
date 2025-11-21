@@ -54,8 +54,8 @@ class DummySolver1(SolverWrapper):
             self.mp_name_out_list.append(interface_settings['model_part'])
 
         # interfaces
-        self.interface_input = Interface(self.settings["interface_input"], self.model)
-        self.interface_output = Interface(self.settings["interface_output"], self.model)
+        self.interface_input = Interface(self.settings['interface_input'], self.model)
+        self.interface_output = Interface(self.settings['interface_output'], self.model)
 
     @tools.time_initialize
     def initialize(self):

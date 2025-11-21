@@ -1,15 +1,15 @@
-from coconut import solver_modules
-
-import time
-from contextlib import contextmanager
-import numpy as np
-import warnings
-import os
-from os.path import join
-import subprocess
-import pickle
 import importlib.util
+import os
+import pickle
 import shutil
+import subprocess
+import time
+import warnings
+from contextlib import contextmanager
+from os.path import join
+
+import numpy as np
+from coconut import solver_modules
 
 
 def create_instance(settings, if_not_defined=None):
@@ -25,31 +25,34 @@ def create_instance(settings, if_not_defined=None):
 
 class CocoMessages:
 
-    def __init__(self, working_directory, max_wait_time=9e4, timed_out_action=None, poll_time=60):
+    def __init__(self, working_directory, max_wait_time=1e4, timed_out_action=None, poll_time=0.1):
         self.working_directory = working_directory
         self.max_wait_time = max_wait_time  # in seconds
         self.timed_out_action = timed_out_action  # receives message as argument
         self.poll_time = poll_time  # in seconds
+        self.process = None  # process that will be polled
+
+    def set_process(self, process):
+        self.process = process
 
     def send_message(self, message):
         file = join(self.working_directory, message + '.coco')
         open(file, 'w').close()
         return
 
-    def wait_message(self, message, process=None):
+    def wait_message(self, message):
         cumul_time = 0
         polled = 0
         file = join(self.working_directory, message + '.coco')
         while not os.path.isfile(file):
             time.sleep(0.001)
             cumul_time += 0.001
-            # check if solver process is not terminated
-            if (cumul_time // self.poll_time) > polled:
+            if self.process is not None and (cumul_time // self.poll_time) > polled:
                 polled = cumul_time // self.poll_time
-                if process.poll() is not None:
-                    process_name = str(process.args).split(' ')[0]
-                    raise RuntimeError(f'CoCoNuT timed out, {process_name} process has terminated')
-            if cumul_time > self.max_wait_time:
+                if self.process.poll() is not None:  # process has terminated
+                    raise RuntimeError(f'Solver process "{self.process.args[:35]}..." '
+                                       f'has terminated unexpectedly while waiting for message: {message}.coco')
+            elif cumul_time > self.max_wait_time:
                 if self.timed_out_action is not None:
                     self.timed_out_action(message)
                 raise RuntimeError(f'CoCoNuT timed out, waiting for message: {message}.coco')
@@ -258,9 +261,12 @@ def time_save(output_solution_step):
 # pass on parameters
 def pass_on_parameters(settings_from, settings_to, keys):
     for key in keys:
-        if key in settings_to:
-            print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
-        settings_to[key] = settings_from[key]
+        if key not in settings_from:
+            print_info(f'WARNING: parameter "{key}" cannot be passed on because not defined', layout='warning')
+        else:
+            if key in settings_to:
+                print_info(f'WARNING: parameter "{key}" is defined multiple times in JSON file', layout='warning')
+            settings_to[key] = settings_from[key]
 
 
 # compare bounding box of ModelParts
@@ -391,12 +397,14 @@ def get_solver_env(solver_module_name, working_dir):
         solver_load_cmd = 'echo'
 
     # run the module load command and store the environment
+    log_file_name = join(working_dir, 'solver_load_cmd.log')
     try:
-        subprocess.check_call(
-            f'{solver_load_cmd} && python3 -c "from coconut import tools;tools.write_env()"',
-            shell=True, cwd=working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with open(log_file_name, 'w') as f:
+            subprocess.check_call(
+                f'{solver_load_cmd} && python3 -c "from coconut import tools ; tools.write_env()"',
+                shell=True, cwd=working_dir, stdout=f, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
-        raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed.')
+        raise RuntimeError(f'Module load command for solver wrapper {solver_name} failed, see {log_file_name}')
 
     # load the environment variables and return as python-dict
     env_filepath = join(working_dir, env_filename)
@@ -454,13 +462,15 @@ def rm_timed(path: str, sleep: float = 0.5, attempts: int = 100) -> None:
     """
     for i in range(attempts):
         try:
-            shutil.rmtree(path)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
             break
         except OSError:
             time.sleep(sleep)
     if os.path.exists(path):
         print_info(f'Timed out removing {path}', layout='warning')
-        shutil.rmtree(path)
 
 
 # remove a key in a nested dictionary/list

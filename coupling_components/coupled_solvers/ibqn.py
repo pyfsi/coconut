@@ -14,7 +14,7 @@ class CoupledSolverIBQN(CoupledSolver):
 
         for model in ('model_f', 'model_s'):
             tools.pass_on_parameters(self.settings, self.settings[model]['settings'],
-                                     ('timestep_start', 'delta_t', 'save_restart'))
+                                     ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
         self.model_f = tools.create_instance(self.parameters['settings']['model_f'])
         self.model_s = tools.create_instance(self.parameters['settings']['model_s'])

@@ -14,6 +14,10 @@ def create(parameters):
 class SolverWrapperTubeRingmodel(SolverWrapper):
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = ['pressure', 'traction']
+    accepted_out_var = ['displacement']
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)

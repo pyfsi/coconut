@@ -20,6 +20,10 @@ class SolverWrapperKratosStructure(SolverWrapper):
     version = None  # KratosMultiphysics version, set in subclass, for version 9.1 f. ex.: '91'
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
 
+    # define input and output variables
+    accepted_in_var = ['pressure', 'traction']
+    accepted_out_var = ['displacement']
+
     @tools.time_initialize
     def __init__(self, parameters):
         super().__init__(parameters)
@@ -68,6 +72,10 @@ class SolverWrapperKratosStructure(SolverWrapper):
 
         self.kratos_process = Popen(f'python3 {run_script_file} {input_file_name} &> kratos.log',
                                     shell=True, cwd=self.working_directory, env=self.env)
+
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.kratos_process)
+
         self.coco_messages.wait_message('start_ready')
 
         for mp_name in self.interface_sub_model_parts_list:

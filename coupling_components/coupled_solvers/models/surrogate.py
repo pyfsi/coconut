@@ -21,7 +21,7 @@ class ModelSurrogate(Component):
             self.parameters['coupled_solver']['settings']['case_name'] = f'{self.settings["case_name"]}_surrogate'
         # add timestep_start, delta_t and save_restart to surrogate settings
         tools.pass_on_parameters(self.settings, self.parameters['coupled_solver']['settings'],
-                                 ('timestep_start', 'delta_t', 'save_restart'))
+                                 ['timestep_start', 'number_of_timesteps', 'delta_t', 'save_restart'])
 
         self.coupled_solver = tools.create_instance(self.parameters['coupled_solver'])
         self.solver_level = None

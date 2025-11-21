@@ -29,13 +29,13 @@ These instructions describe the setup of CoCoNuT on Linux. The package has not b
 
 ### Requirements
 
--   `python>=3.6.8` 
--   `numpy>=1.19.5`
--   `scipy>=1.3.0`
--   `pandas>=1.0.0` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos_structure/kratos_structure.md))
--   `matplotlib=3.1.3` (recommended)
+-   `python>=3.11.5` 
+-   `numpy>=1.24.3`
+-   `scipy>=1.11.1`
+-   `pandas>=2.0.3` (required for [Kratos solver wrapper](coupling_components/solver_wrappers/kratos_structure/kratos_structure.md))
+-   `matplotlib>=3.7.2` (recommended)
 
-We recommend Anaconda 2019.07 or newer.
+We recommend Anaconda 2023.09 or newer. Older versions of the software might also work, but are not tested.
 
 
 ### Installation procedure
@@ -99,6 +99,7 @@ Since `machine_name` is set to `ugent_cluster_CO7`, this dictionary is used by d
 In case your system differs from the `ugent_cluster_CO7` settings, it is advised to add your own internal dictionary to `solver_load_cmd_dict` and provide this key to `machine_name`.
 If a solver module is not present on your system the key should be removed. If a solver module is always present, i.e. no module load command or similar action is needed, an empty string should be given as value.
 When CoCoNuT tries to use a solver module that is not present in the `solver_load_cmd_dict` or that has the wrong value, an error will be raised.
+The standard output and error are redirected to a file named *`solver_load_cmd.log`*.
 
 ### Quick test
 
@@ -180,7 +181,7 @@ Now try to change some settings in the JSON file, such as the mappers, the time 
 After a simulation is finished, it can be useful to inspect or visualize the output quantities (i.e. displacement, pressure and in general also shear).
 CoCoNuT has some built-in tools to do just that described in the [post-processing documentation](examples/post_processing/post_processing.md).
 For the FSI-simulation we have just performed, an example script is present in *`$COCO/coconut/examples/post_processing/`*.
-It requires the `save_results` setting in the `coupled_solver` part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
+It requires the `write_results` setting in the `coupled_solver` part of the JSON-file to be set on a non-zero integer, which is for all examples done by default.
 By running this example script *`animate_example.py`*, we will generate several animations:
 
 ```bash

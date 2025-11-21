@@ -16,18 +16,19 @@ class TestSolverWrapperFluentTube2D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        dimension = 2
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to fluent directory
-        cls.file_name = join(dir_name, f'test_v{cls.version}/tube2d/parameters.json')
-        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube2d/CFD')
+        cls.file_name = join(dir_name, f'test_v{cls.version}/tube{dimension}d/parameters.json')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube{dimension}d/CFD')
+        cls.setup_dir = join(dir_name, f'test_v{cls.version}/tube{dimension}d/setup_fluent')
 
         # setup
         if cls.setup_case:
             shutil.rmtree(cls.working_dir, ignore_errors=True)
-            dir_tmp = join(dir_name, f'test_v{cls.version}/tube2d')
+            shutil.copytree(cls.setup_dir, cls.working_dir)
             fluent_solver_module = f'fluent.v{cls.version}'
-            env = get_solver_env(fluent_solver_module, dir_tmp)
-            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
-            p.wait()
+            env = get_solver_env(fluent_solver_module, cls.working_dir)
+            subprocess.check_call(join(cls.working_dir, 'setup_fluent.sh'), shell=True, cwd=cls.working_dir, env=env)
 
     def setUp(self):
         with open(self.file_name) as parameter_file:
@@ -252,18 +253,19 @@ class TestSolverWrapperFluentTube3D(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        dimension = 3
         dir_name = os.path.realpath(os.path.dirname(__file__))  # path to fluent directory
-        cls.file_name = join(dir_name, f'test_v{cls.version}/tube3d/parameters.json')
-        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube3d/CFD')
+        cls.file_name = join(dir_name, f'test_v{cls.version}/tube{dimension}d/parameters.json')
+        cls.working_dir = join(dir_name, f'test_v{cls.version}/tube{dimension}d/CFD')
+        cls.setup_dir = join(dir_name, f'test_v{cls.version}/tube{dimension}d/setup_fluent')
 
         # setup
         if cls.setup_case:
             shutil.rmtree(cls.working_dir, ignore_errors=True)
-            dir_tmp = join(dir_name, f'test_v{cls.version}/tube3d')
+            shutil.copytree(cls.setup_dir, cls.working_dir)
             fluent_solver_module = f'fluent.v{cls.version}'
-            env = get_solver_env(fluent_solver_module, dir_tmp)
-            p = subprocess.Popen(join(dir_tmp, 'setup_fluent.sh'), cwd=dir_tmp, shell=True, env=env)
-            p.wait()
+            env = get_solver_env(fluent_solver_module, cls.working_dir)
+            subprocess.check_call(join(cls.working_dir, 'setup_fluent.sh'), shell=True, cwd=cls.working_dir, env=env)
 
     def setUp(self):
         with open(self.file_name) as parameter_file:

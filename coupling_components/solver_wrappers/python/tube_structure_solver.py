@@ -16,9 +16,13 @@ def create(parameters):
 
 
 class SolverWrapperTubeStructure(SolverWrapper):
-    al = 2  # Number of terms below diagonal in matrix
-    au = 2  # Number of terms above diagonal in matrix
+    al = 2  # number of terms below diagonal in matrix
+    au = 2  # number of terms above diagonal in matrix
     check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
+
+    # define input and output variables
+    accepted_in_var = ['pressure', 'traction']
+    accepted_out_var = ['displacement']
 
     @tools.time_initialize
     def __init__(self, parameters):
@@ -44,7 +48,7 @@ class SolverWrapperTubeStructure(SolverWrapper):
         if self.solver not in ('solve_banded', 'direct'):
             raise ValueError('The value of key "solver" must be "direct" or "solve_banded"')
         self.timestep_start = self.settings.get('timestep_start', 0)
-        self.save_restart = self.settings.get('save_restart', 0)  # eg to restart
+        self.save_restart = self.settings.get('save_restart', 0)  # to restart
 
         l = self.settings['l']  # length
         d = self.settings['d']  # diameter

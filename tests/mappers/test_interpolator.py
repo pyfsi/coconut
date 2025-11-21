@@ -105,14 +105,17 @@ class Case1D:
         criterion = (self.v_error < tolerance)
         return criterion.all()
 
-    def plot(self):
+    def plot(self, add_text=''):
         _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
         plt.title(f'max error = {self.v_error.max():.2g}')
-        plt.suptitle('1D case: square-root grid + linear function')
+        plt.suptitle(f'1D case: square-root grid + linear function ({add_text})')
 
         ax[0].plot(self.z_from, self.v_from, label='from', marker='o')
         ax[0].plot(self.z_to, self.v_to, label='to', marker='o')
         ax[1].plot(self.z_to, self.v_error, label='error', marker='o')
+        ax[1].text(0.99, 1.01, f'max error: {np.max(self.v_error):.1e}', horizontalalignment='right',
+                   transform=ax[1].transAxes)
+
         for a in ax:
             a.legend()
             a.set_xlabel('z')
@@ -126,7 +129,91 @@ class Case1D:
         return z / 10
 
 
-class Case2D:
+class Case2DLine:
+    # 2D case: line + linear function
+    def __init__(self, n_from, n_to):
+        self.n_from = n_from
+        self.n_to = n_to
+        self.var = 'pressure'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
+
+        self.model = data_structure.Model()
+
+        # Interface from
+        self.x_from = np.linspace(0, 10, self.n_from) ** .5
+        self.y_from = 3 * self.x_from + 2
+        self.v_from = self.fun(self.x_from, self.y_from)
+        self.model.create_model_part(self.mp_name_from, self.x_from, self.y_from,
+                                     np.zeros(self.n_from), np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        self.interface_from.set_interface_data(self.v_from)
+
+        # Interface to
+        self.x_to = np.linspace(0, 10, self.n_to) ** .5
+        self.y_to = 3 * self.x_to + 2
+        self.model.create_model_part(self.mp_name_to, self.x_to, self.y_to,
+                                     np.zeros(self.n_to), np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
+
+    def move_to_points_orthogonally(self):
+        # move to points orthogonal to line of from-points to check if value is constant
+        self.x_to += 3
+        self.y_to += -1
+        self.model._Model__model_parts[self.mp_name_to] = data_structure.ModelPart(self.mp_name_to, self.x_to,
+                                                                                   self.y_to, np.zeros(self.n_to),
+                                                                                   np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
+
+    def map(self, parameters):
+        mapper = create_instance(parameters)
+        mapper.initialize(self.model.get_model_part(self.mp_name_from),
+                          self.model.get_model_part(self.mp_name_to))
+
+        args_from = (self.interface_from, self.mp_name_from, self.var)
+        args_to = (self.interface_to, self.mp_name_to, self.var)
+        mapper(args_from, args_to)
+
+        self.v_to_fun = self.fun(self.x_to, self.y_to)
+        self.v_to = self.interface_to.get_variable_data(self.mp_name_to, self.var)
+
+        self.v_error = np.abs(self.v_to.flatten() - self.v_to_fun)
+
+    def check(self, tolerance):
+        criterion = (self.v_error < tolerance)
+        return criterion.all()
+
+    @staticmethod
+    def check_constant_value(a, b):
+        return np.allclose(a, b)
+
+    def plot(self, add_text=''):
+        _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
+        plt.suptitle(f'2D case: line + linear function ({add_text})')
+
+        ax[0].plot(self.x_from, self.v_from, label='from', marker='o')
+        ax[0].plot(self.x_to, self.v_to, label='to', marker='o')
+        ax[1].plot(self.x_to, self.v_error, label='error', marker='o')
+        ax[1].text(0.99, 1.01, f'max error: {np.max(self.v_error):.1e}', horizontalalignment='right',
+                   transform=ax[1].transAxes)
+
+        for a in ax:
+            a.legend()
+            a.set_xlabel(r'x')
+            a.set_ylabel(r'f(x)')
+
+        plt.tight_layout()
+        plt.show()
+        plt.close()
+
+    def fun(self, x, y):
+        return 2 * x + 3 * y + 10
+
+
+class Case2DCircle:
     # 2D case: circle + linear function
     def __init__(self, n_from, n_to):
         self.n_from = n_from
@@ -175,14 +262,15 @@ class Case2D:
         criterion = (self.v_error < tolerance)
         return criterion.all()
 
-    def plot(self):
+    def plot(self, add_text=''):
         _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
-        plt.suptitle('2D case: circle + linear function')
+        plt.suptitle(f'2D case: circle + linear function ({add_text})')
 
         ax[0].plot(self.theta_from * 180 / np.pi, self.v_from, label='from', marker='o')
         ax[0].plot(self.theta_to * 180 / np.pi, self.v_to, label='to', marker='o')
-
         ax[1].plot(self.theta_to * 180 / np.pi, self.v_error, label='error', marker='o')
+        ax[1].text(0.99, 1.01, f'max error: {np.max(self.v_error):.1e}', horizontalalignment='right',
+                   transform=ax[1].transAxes)
 
         for a in ax:
             a.legend()
@@ -194,13 +282,98 @@ class Case2D:
         plt.close()
 
     def fun(self, x, y):
-        return 2 * x + 3 * y
+        return 2 * x + 3 * y + 5
 
     def get_cartesian(self, theta):
         r = 2.
         x = r * np.cos(theta)
         y = r * np.sin(theta)
         return x, y
+
+
+class Case3DLine:
+    # 3D case: line + linear function
+    def __init__(self, n_from, n_to):
+        self.n_from = n_from
+        self.n_to = n_to
+        self.var = 'pressure'
+        self.mp_name_from = 'wall_from'
+        self.mp_name_to = 'wall_to'
+
+        self.model = data_structure.Model()
+
+        # Interface from
+        self.x_from = np.linspace(0, 10, self.n_from) ** .5
+        self.y_from = 3 * self.x_from - 1
+        self.z_from = 4 * self.x_from + 1
+        self.v_from = self.fun(self.x_from, self.y_from, self.z_from)
+        self.model.create_model_part(self.mp_name_from, self.x_from, self.y_from, self.z_from, np.arange(self.n_from))
+        parameters = [{'model_part': self.mp_name_from, 'variables': [self.var]}]
+        self.interface_from = data_structure.Interface(parameters, self.model)
+        self.interface_from.set_interface_data(self.v_from)
+
+        # Interface to
+        self.x_to = np.linspace(0, 10, self.n_to) ** .5
+        self.y_to = 3 * self.x_to - 1
+        self.z_to = 4 * self.x_to + 1
+        self.model.create_model_part(self.mp_name_to, self.x_to, self.y_to, self.z_to, np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
+
+    def move_to_points_orthogonally(self):
+        # move to points orthogonal to line of from-points to check if value is constant
+        self.x_to += -3 * np.arange(self.n_to) + 0 * np.arange(self.n_to, 0, -1)
+        self.y_to += 1 * np.arange(self.n_to) + -4 * np.arange(self.n_to, 0, -1)
+        self.z_to += 0 * np.arange(self.n_to) + 3 * np.arange(self.n_to, 0, -1)
+        self.model._Model__model_parts[self.mp_name_to] = data_structure.ModelPart(self.mp_name_to, self.x_to,
+                                                                                   self.y_to, self.z_to,
+                                                                                   np.arange(self.n_to))
+        parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
+        self.interface_to = data_structure.Interface(parameters, self.model)
+
+    def map(self, parameters):
+        mapper = create_instance(parameters)
+        mapper.initialize(self.model.get_model_part(self.mp_name_from),
+                          self.model.get_model_part(self.mp_name_to))
+
+        args_from = (self.interface_from, self.mp_name_from, self.var)
+        args_to = (self.interface_to, self.mp_name_to, self.var)
+        mapper(args_from, args_to)
+
+        self.v_to_fun = self.fun(self.x_to, self.y_to, self.z_to)
+        self.v_to = self.interface_to.get_variable_data(self.mp_name_to, self.var)
+
+        self.v_error = np.abs(self.v_to.flatten() - self.v_to_fun)
+
+    def check(self, tolerance):
+        criterion = (self.v_error < tolerance)
+        return criterion.all()
+
+    @staticmethod
+    def check_constant_value(a, b):
+        return np.allclose(a, b)
+
+    def plot(self, add_text=''):
+        _, ax = plt.subplots(ncols=2, sharex=True, figsize=(15, 6))
+        plt.suptitle(f'3D case: line + linear function ({add_text})')
+
+        ax[0].plot(self.x_from / np.pi, self.v_from, label='from', marker='o')
+        ax[0].plot(self.x_to / np.pi, self.v_to, label='to', marker='o')
+        ax[1].plot(self.x_to / np.pi, self.v_error, label='error', marker='o')
+        ax[1].text(0.99, 1.01, f'max error: {np.max(self.v_error):.1e}', horizontalalignment='right',
+                   transform=ax[1].transAxes)
+
+        for a in ax:
+            a.legend()
+            a.set_xlabel(r'x')
+            a.set_ylabel(r'f(x)')
+
+        plt.tight_layout()
+        plt.show()
+        plt.close()
+
+    def fun(self, x, y, z):
+        return 2 * x + 3 * y + z - 50
 
 
 class Case3DSphere:
@@ -263,7 +436,7 @@ class Case3DSphere:
         criterion = (self.v_error < tolerance)
         return criterion.all()
 
-    def plot(self):
+    def plot(self, add_text=''):
         v_min = min(self.v_from.min(), self.v_to.min())
         v_max = max(self.v_from.max(), self.v_to.max())
         c_from = cm.jet((self.v_from - v_min) / (v_max - v_min))
@@ -271,7 +444,7 @@ class Case3DSphere:
         c_error = cm.jet(self.v_error / self.v_error.max())
 
         fig = plt.figure(figsize=(18, 6))
-        plt.suptitle(f'3D case: sphere + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
+        plt.suptitle(f'3D case: sphere + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g}) ({add_text})')
 
         ax_from = fig.add_subplot(131, projection='3d')
         ax_from.set_title('from')
@@ -351,7 +524,7 @@ class Case3DCylinder(Case3DSphere):
         parameters = [{'model_part': self.mp_name_to, 'variables': [self.var]}]
         self.interface_to = data_structure.Interface(parameters, self.model)
 
-    def plot(self):
+    def plot(self, add_text=''):
         v_min = min(self.v_from.min(), self.v_to.min())
         v_max = max(self.v_from.max(), self.v_to.max())
         c_from = cm.jet((self.v_from - v_min) / (v_max - v_min))
@@ -359,7 +532,7 @@ class Case3DCylinder(Case3DSphere):
         c_error = cm.jet(self.v_error / self.v_error.max())
 
         fig = plt.figure(figsize=(18, 10))
-        plt.suptitle(f'3D case: cylinder + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g})')
+        plt.suptitle(f'3D case: cylinder + sine function | max error = {self.v_error.max():.2g}     ({v_min:.1f} < v < {v_max:.1g}) ({add_text})')
 
         # 2D plots
         ax_2dval = fig.add_subplot(221)
@@ -478,9 +651,9 @@ class Case3DSinc:
             out.append(criterion.all())
         return out
 
-    def plot(self):
+    def plot(self, add_text=''):
         fig = plt.figure(figsize=(18, 10))
-        plt.suptitle('3D case: sinc + linear vector function')
+        plt.suptitle(f'3D case: sinc + linear vector function ({add_text})')
 
         for j in range(3):
             v_min = min(self.v_from[j].min(), self.v_to[j].min())
