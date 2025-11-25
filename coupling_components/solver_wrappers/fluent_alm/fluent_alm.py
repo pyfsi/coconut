@@ -51,7 +51,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
-        self.save_results = self.settings.get('save_results', 1)
+        self.write_results = self.settings.get('write_results', 1)
         self.save_restart = self.settings['save_restart']
         self.iteration = None
         self.fluent_process = None
@@ -146,8 +146,11 @@ class SolverWrapperFluentALM(SolverWrapper):
             cmd = cmd1 + '-gu ' + cmd2 + cmd3
         self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cfd, env=self.env)
 
+        # pass on process to coco_messages for polling
+        self.coco_messages.set_process(self.fluent_process)
+
         # get general simulation info from  fluent.log and report.sum
-        self.coco_messages.wait_message('case_info_exported', self.fluent_process)
+        self.coco_messages.wait_message('case_info_exported')
 
         with open(log, 'r') as file:
             for line in file:
@@ -254,7 +257,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.timestep += 1
 
         self.coco_messages.send_message('next')
-        self.coco_messages.wait_message('next_ready', self.fluent_process)
+        self.coco_messages.wait_message('next_ready')
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
@@ -278,7 +281,7 @@ class SolverWrapperFluentALM(SolverWrapper):
 
         # let Fluent run, wait for data
         self.coco_messages.send_message('continue')
-        self.coco_messages.wait_message('continue_ready', self.fluent_process)
+        self.coco_messages.wait_message('continue_ready')
 
         if self.check_coupling_convergence:
             # check if Fluent converged after 1 iteration
@@ -333,22 +336,22 @@ class SolverWrapperFluentALM(SolverWrapper):
         super().output_solution_step()
 
         # save if required
-        if (self.save_results != 0 and self.timestep % self.save_results == 0) \
+        if (self.write_results != 0 and self.timestep % self.write_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.coco_messages.send_message('save')
-            self.coco_messages.wait_message('save_ready', self.fluent_process)
+            self.coco_messages.wait_message('save_ready')
 
         # remove unnecessary files
         if self.timestep - 1 > self.timestep_start:
             self.remove_dat_files(self.timestep - 1)
             if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
                     self.timestep % self.save_restart == 0 \
-                    and (self.save_results == 0 or (self.timestep + self.save_restart) % self.save_results != 0):
+                    and (self.write_results == 0 or (self.timestep + self.save_restart) % self.write_results != 0):
                 # new restart file is written (self.timestep % self.save_restart ==0),
                 # so previous one (at self.timestep + self.save_restart) can be deleted if:
                 # - save_restart is negative
                 # - files from a previous calculation are not touched
-                # - files are not kept for save_results
+                # - files are not kept for write_results
                 for extension in ('cas.h5', 'cas', 'dat.h5', 'dat'):
                     try:
                         os.remove(join(self.dir_cfd, f'case_timestep{self.timestep + self.save_restart}.{extension}'))
@@ -365,7 +368,7 @@ class SolverWrapperFluentALM(SolverWrapper):
     def finalize(self):
         super().finalize()
         self.coco_messages.send_message('stop')
-        self.coco_messages.wait_message('stop_ready', self.fluent_process)
+        self.coco_messages.wait_message('stop_ready')
         self.fluent_process.wait()
 
         # remove unnecessary files
@@ -378,7 +381,7 @@ class SolverWrapperFluentALM(SolverWrapper):
     def remove_dat_files(self, timestep):
         if not self.debug:
             if (self.save_restart == 0 or timestep % self.save_restart != 0) and \
-                    (self.save_results == 0 or timestep % self.save_results != 0):
+                    (self.write_results == 0 or timestep % self.write_results != 0):
                 try:
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'traction_timestep{timestep}.dat'))
@@ -430,7 +433,7 @@ class SolverWrapperFluentALM(SolverWrapper):
 
         # make Fluent store coordinates and ids
         self.coco_messages.send_message('store_grid')
-        self.coco_messages.wait_message('store_grid_ready', self.fluent_process)
+        self.coco_messages.wait_message('store_grid_ready')
 
         coord_data = {}
 

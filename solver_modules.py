@@ -9,9 +9,8 @@ machine_name = 'ugent_cluster_RHEL8'
 
 solver_load_cmd_dict = {
     'ugent_cluster_RHEL8': {
-        'fluent_alm.v2023R1': 'ml ANSYS_CFD/2023R1',
-        'fluent_alm.v2024R1': 'ml ANSYS_CFD/2024R1',
         'fluent_alm.v2024R2': 'ml ANSYS_CFD/2024R2',
+        'fluent_alm.v2025R2': 'ml ANSYS_CFD/2025R2',
         'fluent.v2023R1': 'ml ANSYS_CFD/2023R1',
         'fluent.v2024R1': 'ml ANSYS_CFD/2024R1',
         'fluent.v2024R2': 'ml ANSYS_CFD/2024R2',

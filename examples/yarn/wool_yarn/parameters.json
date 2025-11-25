@@ -1,14 +1,14 @@
 {
   "settings": {
-    "number_of_timesteps": 4000
+    "timestep_start": 0,
+    "number_of_timesteps": 4000,
+    "delta_t": 5e-6,
+    "save_restart": -250
   },
   "coupled_solver": {
     "type": "coupled_solvers.explicit",
     "settings": {
-      "delta_t": 5e-6,
-      "timestep_start": 0,
-      "save_results": 250,
-      "save_restart": -250
+      "write_results": 250
     },
     "predictor": {
       "type": "predictors.linear"
@@ -17,7 +17,7 @@
     },
     "solver_wrappers": [
       {
-        "type": "solver_wrappers.fluent_alm.v2024R2",
+        "type": "solver_wrappers.fluent_alm.v2025R2",
         "settings": {
           "working_directory": "CFD",
           "case_file": "main_nozzle.cas.h5",
@@ -45,13 +45,13 @@
           "fluent_gui": false,
           "flow_iterations": 50,
           "save_results": 250,
-	  "ALM": {
-	    "yarn_diameter": 3.5462e-4,
-	    "g_eps": 1.7731e-4,
-	    "n_circ_s": 5,
-	    "p_atm": 100000.0,
-	    "T_atm": 300.0
-	  }
+          "ALM": {
+            "yarn_diameter": 3.5462e-4,
+            "g_eps": 1.7731e-4,
+            "n_circ_s": 5,
+            "p_atm": 100000.0,
+            "T_atm": 300.0
+          }
         }
       },
       {
@@ -65,7 +65,7 @@
               "dimensions": 3,
               "arraysize": 1e6,
               "ramp": false,
-	      "save_results": 250,
+              "save_results": 250,
               "interface_input": [
                 {
                   "model_part": "ALL_ELEMENTS_load_points",
@@ -82,7 +82,7 @@
                   ]
                 }
               ],
-	      "line_load": true,
+              "line_load": true,
               "input_file": "Yarn.inp"
             }
           },
@@ -91,11 +91,11 @@
             "settings": {
               "type": "mappers.linear",
               "settings": {
-		"directions": [
-		  "x",
-		  "y",
-		  "z"
-		]
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+                ]
               }
             }
           },
@@ -104,11 +104,11 @@
             "settings": {
               "type": "mappers.linear",
               "settings": {
-		"directions": [
-		  "x",
-		  "y",
-		  "z"
-		]
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+                ]
               }
             }
           }

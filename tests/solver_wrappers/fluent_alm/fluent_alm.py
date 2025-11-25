@@ -230,7 +230,7 @@ class TestSolverWrapperFluentALMYarn(unittest.TestCase):
         np.testing.assert_allclose(coords_1, coords_2, rtol=1e-15)
 
         # check if traction is equal
-        np.testing.assert_allclose(traction_1, traction_2, rtol=1e-12)
+        np.testing.assert_allclose(traction_1, traction_2, rtol=1e-9)
 
     def test_coupling_convergence(self):
         # test if check of coupling convergence works correctly

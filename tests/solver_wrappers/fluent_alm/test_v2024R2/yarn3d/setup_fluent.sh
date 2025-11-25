@@ -9,7 +9,7 @@ then
 fi
 
 # create new CFD folder
-cp -r ./../../test_v2023R1/yarn3d/setup_fluent/ CFD
+cp -r ./../../test_v2025R2/yarn3d/setup_fluent/ CFD
 cd CFD
 gunzip mesh_yarn3d.msh.gz
 
