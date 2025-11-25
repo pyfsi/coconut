@@ -808,9 +808,11 @@ DEFINE_ON_DEMAND(store_velocities)
 /*-------------*/
 
 
-DEFINE_ADJUST(set_source, domain)
+DEFINE_ON_DEMAND(set_source, domain)
 {
 #if RP_NODE
+    Domain *domain;
+    domain = Get_Domain(1);
     Thread *cell_thread;
     cell_t cell;
     int point;

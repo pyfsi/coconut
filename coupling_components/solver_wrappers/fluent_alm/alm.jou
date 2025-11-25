@@ -66,7 +66,6 @@ report summary y "report.sum"
 ;   SETUP ALM FUNCTION HOOKS
 (if (= timestep_start 0)
     (begin
-        (ti-menu-load-string "define user-defined function-hooks adjust \"set_source::alm\"")
         ; !!! The number of sources changes when other turbulence models are used! (The following line works for the 2-eqn models). This makes everything very case-specific!
         ; Additionally, it is now mandatory that the fluid zone where the sources are defined is called "fluid"
         (ti-menu-load-string "define boundary-conditions fluid fluid no yes 0 1 no yes \"xmom_source::alm\" 1 no yes \"ymom_source::alm\" 1 no yes \"zmom_source::alm\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no")
@@ -100,6 +99,7 @@ report summary y "report.sum"
         (begin
             |END_OF_TIMESTEP_COMMANDS|
             (ti-menu-load-string "define user-defined execute-on-demand \"increase_time::alm\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"set_source::alm\"")
             (rpsetvar 'udf/iteration 0)
             (rpsetvar 'udf/timestep (+ (%rpgetvar 'udf/timestep) 1))
             (print-iter-info)
