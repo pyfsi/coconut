@@ -9,6 +9,7 @@ import subprocess
 import multiprocessing
 import numpy as np
 from scipy.interpolate import splprep, splev
+from decimal import *
 
 
 def create(parameters):
@@ -49,9 +50,15 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.unsteady = self.settings['unsteady']
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
+        self.delta_t_CFD = self.settings.get('delta_t_CFD', self.settings['delta_t'])
+        machine_precision = Decimal('1e-17')
+        if Decimal(self.delta_t_CFD).quantize(machine_precision) % Decimal(self.delta_t).quantize(machine_precision):
+            raise ValueError(
+                f'CFD timestep ({self.delta_t_CFD:.3e}) must be integer multiple of FSI timestep ({self.delta_t:.3e})!')
+        self.CFD_multiplier = int(self.delta_t_CFD / self.delta_t)
         self.timestep_start = self.settings['timestep_start']
         self.timestep = self.timestep_start
-        self.write_results = self.settings.get('write_results', 1)
+        self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
         self.iteration = None
         self.fluent_process = None
@@ -72,6 +79,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         self.n_circ_s = self.alm_settings.get('n_circ_s', 5)  # # circular sampling points for axial velocity sampling
         self.p_atm = self.alm_settings.get('p_atm', 1e5)
         self.T_atm = self.alm_settings.get('T_atm', 300.)
+        self.zone_names = self.alm_settings.get('zone_names', ['fluid'])
 
     @tools.time_initialize
     def initialize(self):
@@ -79,17 +87,22 @@ class SolverWrapperFluentALM(SolverWrapper):
 
         # prepare Fluent journal
         journal = f'alm.jou'
+        zone_names_str = ''
+        for zone_name in self.zone_names:
+            zone_names_str += ' "' + zone_name + '"'
         unsteady = '#t' if self.unsteady else '#f'
         check_coupling_convergence = '#t' if self.check_coupling_convergence else '#f'
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
                     line = line.replace('|CASE|', join(self.dir_cfd, self.case_file))
+                    line = line.replace('|ZONE_NAMES|', zone_names_str)
                     line = line.replace('|UNSTEADY|', unsteady)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|CHECK_COUPLING_CONVERGENCE|', check_coupling_convergence)
-                    line = line.replace('|DELTA_T|', str(self.delta_t))
+                    line = line.replace('|DELTA_T|', str(self.delta_t_CFD))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
+                    line = line.replace('|SOLVE_FLOW_EVERY|', str(self.CFD_multiplier))
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
                                                                                         '\n'))
                     outfile.write(line)
@@ -336,7 +349,7 @@ class SolverWrapperFluentALM(SolverWrapper):
         super().output_solution_step()
 
         # save if required
-        if (self.write_results != 0 and self.timestep % self.write_results == 0) \
+        if (self.save_results != 0 and self.timestep % self.save_results == 0) \
                 or (self.save_restart != 0 and self.timestep % self.save_restart == 0):
             self.coco_messages.send_message('save')
             self.coco_messages.wait_message('save_ready')
@@ -346,7 +359,7 @@ class SolverWrapperFluentALM(SolverWrapper):
             self.remove_dat_files(self.timestep - 1)
             if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start and \
                     self.timestep % self.save_restart == 0 \
-                    and (self.write_results == 0 or (self.timestep + self.save_restart) % self.write_results != 0):
+                    and (self.save_results == 0 or (self.timestep + self.save_restart) % self.save_results != 0):
                 # new restart file is written (self.timestep % self.save_restart ==0),
                 # so previous one (at self.timestep + self.save_restart) can be deleted if:
                 # - save_restart is negative
@@ -381,7 +394,7 @@ class SolverWrapperFluentALM(SolverWrapper):
     def remove_dat_files(self, timestep):
         if not self.debug:
             if (self.save_restart == 0 or timestep % self.save_restart != 0) and \
-                    (self.write_results == 0 or timestep % self.write_results != 0):
+                    (self.save_results == 0 or timestep % self.save_results != 0):
                 try:
                     os.remove(join(self.dir_cfd, f'coordinates_update_timestep{timestep}.dat'))
                     os.remove(join(self.dir_cfd, f'traction_timestep{timestep}.dat'))

@@ -5,7 +5,9 @@ file set-batch-options n n n
 (define flow_iterations |FLOW_ITERATIONS|)
 (define check_coupling_convergence |CHECK_COUPLING_CONVERGENCE|)
 (define delta_t |DELTA_T|)
+(define solve_flow_every |SOLVE_FLOW_EVERY|)
 (define timestep_start |TIMESTEP_START|)
+(define zone_names (list|ZONE_NAMES|))
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -67,12 +69,15 @@ report summary y "report.sum"
 (if (= timestep_start 0)
     (begin
         ; !!! The number of sources changes when other turbulence models are used! (The following line works for the 2-eqn models). This makes everything very case-specific!
-        ; Additionally, it is now mandatory that the fluid zone where the sources are defined is called "fluid"
-        (ti-menu-load-string "define boundary-conditions fluid fluid no yes 0 1 no yes \"xmom_source::alm\" 1 no yes \"ymom_source::alm\" 1 no yes \"zmom_source::alm\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no")
-        (ti-menu-load-string "solve report-definitions add f_x volume-integral report-type volume-integral field udm-1 zone-names fluid () average-over 1 per-zone? no quit")
-        (ti-menu-load-string "solve report-definitions add f_y volume-integral report-type volume-integral field udm-2 zone-names fluid () average-over 1 per-zone? no quit")
-        (ti-menu-load-string "solve report-definitions add f_z volume-integral report-type volume-integral field udm-3 zone-names fluid () average-over 1 per-zone? no quit")
-        (ti-menu-load-string "solve report-files add report_coconut active? yes file-name \"./report-coconut.out\" frequency 1 frequency-of iteration name \"report_coconut\" print? yes report-defs f_x f_y f_z () write-instantaneous-values? yes quit")
+        (define string-zones "")
+        (do ((k 0 (+ k 1))) ((>= k (length zone_names)))
+            (ti-menu-load-string (format #f "define boundary-conditions fluid ~a no yes 0 1 no yes \"xmom_source::alm\" 1 no yes \"ymom_source::alm\" 1 no yes \"zmom_source::alm\" 0 0 0 no no no 0 no 0 no 0 no 0 no 0 no 1 no no no no no no no\n" (list-ref zone_names k)))
+            (set! string-zones (string-append string-zones (format #f "~a " (list-ref zone_names k))))
+        )
+        (ti-menu-load-string (format #f "solve report-definitions add f_x volume-integral report-type volume-integral field udm-1 zone-names ~a() average-over 1 per-zone? no quit \n" string-zones))
+        (ti-menu-load-string (format #f "solve report-definitions add f_y volume-integral report-type volume-integral field udm-2 zone-names ~a() average-over 1 per-zone? no quit \n" string-zones))
+        (ti-menu-load-string (format #f "solve report-definitions add f_z volume-integral report-type volume-integral field udm-3 zone-names ~a() average-over 1 per-zone? no quit \n" string-zones))
+        (ti-menu-load-string "solve report-files add report_coconut active? yes file-name \"./report-coconut.out\" frequency 1 frequency-of iteration name \"report_coconut\" print? yes report-defs f_x f_y f_z () write-instantaneous-values? yes quit \n")
     )
 )
 ;
@@ -99,7 +104,6 @@ report summary y "report.sum"
         (begin
             |END_OF_TIMESTEP_COMMANDS|
             (ti-menu-load-string "define user-defined execute-on-demand \"increase_time::alm\"")
-            (ti-menu-load-string "define user-defined execute-on-demand \"set_source::alm\"")
             (rpsetvar 'udf/iteration 0)
             (rpsetvar 'udf/timestep (+ (%rpgetvar 'udf/timestep) 1))
             (print-iter-info)
@@ -110,14 +114,47 @@ report summary y "report.sum"
         (begin
             (rpsetvar 'udf/iteration (+ (%rpgetvar 'udf/iteration) 1))
             (ti-menu-load-string "define user-defined execute-on-demand \"read_coordinates::alm\"")
+            (ti-menu-load-string "define user-defined execute-on-demand \"set_source::alm\"")
             (print-iter-info)
-            (if check_coupling_convergence
-                (begin
-                    (ti-menu-load-string "solve set reporting-interval 1")
-                    (if unsteady
-                        (if (= (%rpgetvar 'udf/iteration) 1)
+            (if (= 0 (modulo (- (%rpgetvar 'udf/timestep) timestep_start) solve_flow_every))
+                (if check_coupling_convergence
+                    (begin
+                        (ti-menu-load-string "solve set reporting-interval 1")
+                        (if unsteady
+                            (if (= (%rpgetvar 'udf/iteration) 1)
+                                (begin
+                                    (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                    (ti-menu-load-string "solve iterate 1")
+                                    (if (%rpgetvar 'solution/converged?)
+                                        (begin
+                                            (newline)(display "Check convergence :: converged")(newline)
+                                            (send_message "solver_converged")
+                                        )
+                                        (begin
+                                            (newline)(display "Check convergence :: not converged")(newline)
+                                            (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                            (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                        )
+                                    )
+                                )
+                                (begin
+                                    (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                    (ti-menu-load-string "solve iterate 1")
+                                    (if (%rpgetvar 'solution/converged?)
+                                        (begin
+                                            (newline)(display "Check convergence :: converged")(newline)
+                                            (send_message "solver_converged")
+                                        )
+                                        (begin
+                                            (newline)(display "Check convergence :: not converged")(newline)
+                                            (ti-menu-load-string "solve set reporting-interval reporting_interval")
+                                            (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                            (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                        )
+                                    )
+                                )
+                            )
                             (begin
-                                (ti-menu-load-string "solve dual-time-iterate 1 0")
                                 (ti-menu-load-string "solve iterate 1")
                                 (if (%rpgetvar 'solution/converged?)
                                     (begin
@@ -129,57 +166,27 @@ report summary y "report.sum"
                                         (ti-menu-load-string "solve set reporting-interval reporting_interval")
                                         (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                                     )
-                                )
-                            )
-                            (begin
-                                (ti-menu-load-string "solve dual-time-iterate 0 1")
-                                (ti-menu-load-string "solve iterate 1")
-                                (if (%rpgetvar 'solution/converged?)
-                                    (begin
-                                        (newline)(display "Check convergence :: converged")(newline)
-                                        (send_message "solver_converged")
-                                    )
-                                    (begin
-                                        (newline)(display "Check convergence :: not converged")(newline)
-                                        (ti-menu-load-string "solve set reporting-interval reporting_interval")
-                                        (ti-menu-load-string "solve dual-time-iterate 0 0")
-                                        (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
-                                    )
-                                )
-                            )
-                        )
-                        (begin
-                            (ti-menu-load-string "solve iterate 1")
-                            (if (%rpgetvar 'solution/converged?)
-                                (begin
-                                    (newline)(display "Check convergence :: converged")(newline)
-                                    (send_message "solver_converged")
-                                )
-                                (begin
-                                    (newline)(display "Check convergence :: not converged")(newline)
-                                    (ti-menu-load-string "solve set reporting-interval reporting_interval")
-                                    (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                                 )
                             )
                         )
                     )
-                )
-                (begin
-                    (if unsteady
-                        (if (= (%rpgetvar 'udf/iteration) 1)
-                            (begin
-                                (ti-menu-load-string "solve dual-time-iterate 1 0")
-                                (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
+                    (begin
+                        (if unsteady
+                            (if (= (%rpgetvar 'udf/iteration) 1)
+                                (begin
+                                    (ti-menu-load-string "solve dual-time-iterate 1 0")
+                                    (ti-menu-load-string (format #f "solve iterate ~d" flow_iterations))
+                                )
+                                (begin
+                                    (ti-menu-load-string "solve dual-time-iterate 0 1")
+                                    (ti-menu-load-string "solve iterate 1")
+                                    (ti-menu-load-string "solve dual-time-iterate 0 0")
+                                    (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                )
                             )
                             (begin
-                                (ti-menu-load-string "solve dual-time-iterate 0 1")
-                                (ti-menu-load-string "solve iterate 1")
-                                (ti-menu-load-string "solve dual-time-iterate 0 0")
-                                (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
+                                (ti-menu-load-string "solve iterate flow_iterations")
                             )
-                        )
-                        (begin
-                            (ti-menu-load-string "solve iterate flow_iterations")
                         )
                     )
                 )

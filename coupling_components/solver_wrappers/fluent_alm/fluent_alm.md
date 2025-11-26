@@ -1,6 +1,6 @@
 # The Actuator Line Method in Fluent
 
-This is the documentation for the adaptation of the Actuator Line Method (ALM) for textile yarns in air-jet weaving, incorporated in ANSYS Fluent [[1](#1)].
+This is the documentation for the adaptation of the Actuator Line Method (ALM) for textile yarns in air-jet weaving, incorporated in ANSYS Fluent [[1](#1), [2](#2)].
 
 
 ## Fluid-Structure Interaction with `fluent_alm`
@@ -21,7 +21,7 @@ as well as the removal of the check at lines 58-60 in the [solver wrapper](./flu
 
 * Only 3D cases are supported, even though a majority of the [UDF](./alm.c) uses the built-in `ND_ND` to allow for both 2D and 3D cases, the velocity sampling currently relies on the assumption of a fully 3D case.
 
-* The correlation between local relative Reynolds number, yarn orientation and aerodynamic forces is hardcoded in the [UDF](./alm.c) (function `initialize_force_coefficients` and lines 521 and 526 in the function `calculate_yarn_forces`) based on the correlations derived in Bral et al. [[2](#2)].
+* The correlation between local relative Reynolds number, yarn orientation and aerodynamic forces is hardcoded in the [UDF](./alm.c) (function `initialize_force_coefficients` and lines 521 and 526 in the function `calculate_yarn_forces`) based on the correlations derived in Bral et al. [[3](#3)].
 If one desires alternative relations, because e.g. another type of yarn is investigated, these lines of code should be adapted.
 
 * The aerodynamic forces that the yarn exerts on the flow are introduced in the flow domain by means of momentum source terms. These are defined automatically by CoCoNuT by means of the [journal file](./alm.jou), see line 72. 
@@ -49,18 +49,22 @@ The parameters don't differ much from the ones described in the [Fluent solver w
 * The keywords `max_nodes_per_face` and `multiphase` are removed. The former as no physical yarn surface mesh is present and thus this parameter becomes obsolete, the latter as multiphase is not allowed/supported.
 * The keyword `dimensions` is ignored and hardcoded to 3 as only 3D-cases are supported for the moment.
 * Regarding the model parts names (under `interface_input` and `interface_output`), the only requirement is that the string given at `thread_names` is a substring of the model part names. As variables, only `displacement` and `traction` should be selected.
+* An additional optional keyword `delta_t_CFD` (float) is created, which defaults to the FSI-timestep (`delta_t`). It must be an integer multiple of the FSI timestep and allows for the CFD simulation to use larger timesteps than the FSI simulation. Aerodynamic forces are computed every `delta_t` seconds using the updated actuator point coordinates, but the flow field itself is updated only every `delta_t_CFD` seconds.
 * Finally, a new subdictionary with keyword `ALM` should be provided, containing the following keywords:
 
-|       parameter | type  | description                                                                                                                                          |
-|----------------:|:-----:|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `yarn_diameter` | float | Diameter of the yarn or flexible object represented by the actuator line (in [m]).                                                                   |
-|         `g_eps` | float | Shape parameter of the Gaussian kernel (in [m]). This value is used both for velocity sampling (3D Gaussian) and force regularization (2D Gaussian). |
-|      `n_circ_s` |  int  | Number of circumferential velocity sampling points for the axial flow velocity sampling.                                                             |
+|       parameter | type  | description                                                                                                                                         |
+|----------------:|:-----:|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `yarn_diameter` | float | Diameter of the yarn or flexible object represented by the actuator line (in [m]).                                                                  |
+|         `g_eps` | float | Shape parameter of the Gaussian kernel (in [m]). This value is used both for velocity sampling (3D Gaussian) and force regularization (2D Gaussian).|
+|      `n_circ_s` |  int  | Number of circumferential velocity sampling points for the axial flow velocity sampling.                                                            |
+|         `p_atm` | float | (optional) Atmospheric pressure. Defaults to 1 bar.                                                                                                 |
+|         `T_atm` | float | (optional) Atmospheric temperature. Defaults to 300 K.                                                                                              |
+|    `zone_names` | list  | (optional) List of cell thread names to which the momentum sources should be applied. Defaults to `['fluid']`.                                      |
 
 
 ## Overview of operation
 
-The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2023R1"):
+The solver wrapper consists of 3 files (with X the Fluent version, e.g. "v2024R2"):
 
 -   *`X.py`*: defines the `SolverWrapperALMFluentX` class, 
 -   *`alm.jou`*: Fluent journal file to interactively run the FSI simulation, written in Scheme, 
@@ -85,7 +89,6 @@ Following items should be set up and saved in the Fluent case file (this list ma
 -   additional UDFs must be configured, 
 -   steady/unsteady (should match with the `unsteady` parameter),
 -   boundary conditions, material properties, numerical models, discretization schemes, operating conditions, turbulence modeling, convergence criteria.
--   it is important that the fluid zone where the ALM momentum sources are to be applied, has the name `fluid`! This is assumed in the [journal file](./alm.jou) on line 72, where the momentum sources are hooked to the flow equations.
 
 A data file should also be present with the fields either initialized or containing the results of a previous calculation.
 Finally, the user should create the file *`coordinates_timestep0.dat`* containing the initial position of the yarn.
@@ -100,22 +103,19 @@ Following items are taken care of by CoCoNuT, and must therefore not be included
 
 ## Version specific documentation
 
-### v2023R1 (23.1.0)
-
+### v2024R2 (24.2.0)
 Base version.
 
-### v2024R1 (24.1.0)
-
-No changes.
-
-### v2024R2 (24.2.0)
-
+### v2025R2 (25.2.0)
 No changes.
 
 
 ## References
 <a id="1">[1]</a> 
-[Bral A., Daelemans L. and Degroote J., "Towards an actuator line representation of the yarn insertion phase in air-jet weaving", 9th European Congress on Computational Methods in Applied Sciences and Engineering (ECCOMAS), Lisbon, Portugal, 3-7 june 2024.](https://www.researchgate.net/publication/381670235_Towards_an_actuator_line_representation_of_the_yarn_insertion_phase_in_air-jet_weaving)
+[Bral A., Peeters J., Daelemans L. and Degroote J., "Development and validation of an actuator line mehtod for fuzzy yarns in high-speed air flow", International Journal for Numerical Methods in Engineering, vol. 126 (16), pp. e70108, 2025.](http://doi.org/10.1002/nme.70108)
 
 <a id="2">[2]</a> 
-[Bral A., Daelemans L. and Degroote J., "A method to determine local aerodynamic force coefficients from fiber-resolved 3D flow simulations around a staple fiber yarn", Multibody System Dynamics, 2024.](https://doi.org/10.1007/s11044-024-09992-2)
+[Bral A., Daelemans L. and Degroote J., "Modeling the fluid‐structure interactions of a hairy yarn in air‐jet weaving : a multiscale approach", International Journal for Numerical Methods in Engineering, vol. 126 (18), pp. e70142, 2025.](http://doi.org/10.1002/nme.70142)
+
+<a id="3">[3]</a> 
+[Bral A., Daelemans L. and Degroote J., "A method to determine local aerodynamic force coefficients from fiber-resolved 3D flow simulations around a staple fiber yarn", Multibody System Dynamics, vol. 63 (4), pp. 511-535, 2025.](https://doi.org/10.1007/s11044-024-09992-2)

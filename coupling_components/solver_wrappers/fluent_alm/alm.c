@@ -808,7 +808,7 @@ DEFINE_ON_DEMAND(store_velocities)
 /*-------------*/
 
 
-DEFINE_ON_DEMAND(set_source, domain)
+DEFINE_ON_DEMAND(set_source)
 {
 #if RP_NODE
     Domain *domain;
