@@ -1,11 +1,16 @@
 {
   "settings": {
     "timestep_start": 0,
-    "number_of_timesteps": 1,
+    "number_of_timesteps": 5,
     "delta_t": 1.0
   },
   "coupled_solver": {
-    "type": "coupled_solvers.iqni",
+    "type": "coupled_solvers.test_single_solver",
+    "test_settings": {
+      "solver_index": 1,
+      "test_class": "TransientTest",
+      "delta_t": 0.0005
+    },
     "settings": {
       "write_results": 1,
       "omega": 0.05,
@@ -70,27 +75,31 @@
           "fluent_gui": false,
           "flow_iterations": 200,
           "save_results": 1,
-	  "ALM": {
-	    "yarn_diameter": 0.00035462,
-	    "g_eps": 0.00070924,
-	    "n_circ_s": 5
-	  }
+          "ALM": {
+            "yarn_diameter": 0.00035462,
+            "g_eps": 0.00070924,
+            "n_circ_s": 5
+          }
         }
       },
       {
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.abaqus.v2024",
+            "type": "solver_wrappers.abaqus_cse.v2025",
             "settings": {
               "working_directory": "CSM",
               "cores": 1,
               "dimensions": 3,
-              "arraysize": 1e5,
-              "ramp": true,
+              "disable_modification_of_input_file": false,
+              "save_results": 1,
+              "debug": true,
+              "surfaces": [
+                "ASSEMBLY-YARN_YARN_SURF"
+              ],
               "interface_input": [
                 {
-                  "model_part": "YARN_ELEMENTS_load_points",
+                  "model_part": "YARN_SURF_load_points",
                   "variables": [
                     "traction"
                   ]
@@ -98,13 +107,12 @@
               ],
               "interface_output": [
                 {
-                  "model_part": "YARN_NODES_nodes",
+                  "model_part": "YARN_SURF_nodes",
                   "variables": [
                     "displacement"
                   ]
                 }
               ],
-	      "line_load": true,
               "input_file": "yarn.inp"
             }
           },
@@ -113,11 +121,11 @@
             "settings": {
               "type": "mappers.linear",
               "settings": {
-		"directions": [
-		  "x",
-		  "y",
-		  "z"
-		]
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+                ]
               }
             }
           },
@@ -126,11 +134,11 @@
             "settings": {
               "type": "mappers.linear",
               "settings": {
-		"directions": [
-		  "x",
-		  "y",
-		  "z"
-		]
+                "directions": [
+                  "x",
+                  "y",
+                  "z"
+                ]
               }
             }
           }

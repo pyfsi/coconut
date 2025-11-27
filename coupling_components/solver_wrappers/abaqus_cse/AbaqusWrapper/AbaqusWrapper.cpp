@@ -22,8 +22,6 @@ void myMessageHandler(const SMACseMsgHandlerSeverity severity, const char* msg, 
 // Own functions
 void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts);
 void connectToCSE(void* userData, const string& port);
-int findIndex(const vector<unsigned int>& vec, unsigned int target);
-vector<double> getElemCentroidCoordinates(const vector<unsigned int>& nodeLabels, const vector<double>& nodeCoordinates, const vector<unsigned int>& connectivity, const unsigned int& nElems, const unsigned int& nodePerElem, const unsigned int& nDim);
 int writeRemoteMeshData(const char* localMeshName, unsigned int* nNodes, unsigned int* nElems, const unsigned int& modelPartID);
 void readData(const string& filename, vector<double>& values);
 template <typename T>
@@ -34,11 +32,10 @@ void sendMessage(const string& message);
 
 struct MeshInputData {
     string meshName;
-    vector<double>* pressure;
     vector<double>* traction;
     unsigned int modelPartID;
 
-    MeshInputData() : pressure(nullptr), traction(nullptr) {}
+    MeshInputData() : traction(nullptr) {}
 };
 
 int timeStepStart = -1; // Start time step of current CSE run
@@ -62,20 +59,18 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
     const string filenameInput = "AbaqusWrapper_input.txt";
     readInput(filenameInput, timeStepStart, dt, port, nDim, nModelParts); // Read input from CoCoNuT wrapper
 
-    const string filenamePressure = "../pressure_mp"; // To be appended with <modelPartID>.txt
     const string filenameTraction = "../traction_mp"; // To be appended with <modelPartID>.txt
     const string filenameDisplacement = "../displacement_mp"; // To be appended with <modelPartID>.txt
 
     SMACseSolutionStatus status; // Generic status for CSE
     SMACseGetFieldStatus gStatus; // GetField status
 
-    map<string, MeshInputData> meshInputDataMap; // Create a nested map with the structures containing vectors pressure and traction for each model part
-    void* const userData = &meshInputDataMap; // Opaque pointer to meshInputDataMap, used to store pressure and traction vectors for each model part accessed in putField
+    map<string, MeshInputData> meshInputDataMap; // Create a nested map with the structures containing vectors traction for each model part
+    void* const userData = &meshInputDataMap; // Opaque pointer to meshInputDataMap, used to store traction vectors for each model part accessed in putField
 
     SMACseInitialize(); // Initialize CSE
     connectToCSE(userData, port); // Establish connection with CSE
 
-    SMACseCreateFieldDefinition("pressure", SMACseFieldPos_atElemCentroid, SMACseFieldAlgType_Scalar, SMACseFieldDataType_Double); // Define field pressure
     SMACseFieldAlgebraicType vectorType;
     switch (nDim) {
         case 2:
@@ -88,7 +83,7 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
             cerr << "Unknown number of dimensions " << nDim << endl;
             exit(1);
     }
-    SMACseCreateFieldDefinition("traction_vector", SMACseFieldPos_atElemCentroid, vectorType, SMACseFieldDataType_Double); // Define field traction
+    SMACseCreateFieldDefinition("force", SMACseFieldPos_atNode, vectorType, SMACseFieldDataType_Double); // Define field traction
     SMACseCreateFieldDefinition("displacement", SMACseFieldPos_atNode, vectorType, SMACseFieldDataType_Double); // Define field displacement
 
     cout << "Fields created" << endl;
@@ -105,8 +100,7 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
         SMACseMesh* mesh = SMACseCreateMesh(meshName); // Create a NULL mesh
 
         // Register incoming and outgoing fields
-        SMACseRegisterOutgoingField("pressure", meshName); // To Abaqus
-        SMACseRegisterOutgoingField("traction_vector", meshName); // To Abaqus
+        SMACseRegisterOutgoingField("force", meshName); // To Abaqus
         SMACseRegisterIncomingField("displacement", meshName); // From Abaqus
     }
 
@@ -129,18 +123,15 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
 
     sendMessage("export_mesh_data_ready"); // Notify CoCoNuT mesh has been exported
 
-    vector<vector<double>> pressureArray(nModelParts); // Pressure vector for each model part
     vector<vector<double>> tractionArray(nModelParts); // Traction vector for each model part
     vector<vector<double>> displacementArray(nModelParts); // Displacement vector for each model part
 
     for (unsigned int i = 0; i < nModelParts; ++i) { // Loop over model parts
-        pressureArray[i] = vector<double>(nElemsArray[i]);
-        tractionArray[i] = vector<double>(nDim * nElemsArray[i]);
+        tractionArray[i] = vector<double>(nDim * nNodesArray[i]);
         displacementArray[i] = vector<double>(nDim * nNodesArray[i]);
 
         MeshInputData meshInputData;
         meshInputData.meshName = meshNameArray[i];
-        meshInputData.pressure = &pressureArray[i];
         meshInputData.traction = &tractionArray[i];
         meshInputData.modelPartID = i;
         meshInputDataMap[meshNameArray[i]] = meshInputData;
@@ -174,11 +165,9 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
 
             // Read data from CoCoNuT
             for (unsigned int i = 0; i < nModelParts; ++i) { // Loop over model parts
-                readData(filenamePressure + to_string(i) + extension, pressureArray[i]); // Read in pressure
                 readData(filenameTraction + to_string(i) + extension, tractionArray[i]); // Read in traction vector
                 if (debug) {
                     string extraInfo = + "_ts" + to_string(timeStep + timeStepStart) + "_it" + to_string(iteration);
-                    writeData(string("read_pressure_mp") + to_string(i) + extraInfo + extension, pressureArray[i], 1); // Write read pressure
                     writeData(string("read_traction_mp") + to_string(i) + extraInfo + extension, tractionArray[i], nDim); // Write read traction
                 }
             }
@@ -227,10 +216,7 @@ void putField(const char* fieldType, const char* meshName, const char* collectio
     map<string, MeshInputData> meshInputDataMap = *static_cast<map<string, MeshInputData>*>(userData); // Cast pointer to original type and dereference
 
     MeshInputData meshInputData = meshInputDataMap[string(meshName)];
-    if (strcmp(fieldType, "pressure") == 0) {
-        vector<double> pressure = *meshInputData.pressure;
-        copy(pressure.data(), pressure.data() + nMembers, target);
-    } else if (strcmp(fieldType, "traction_vector") == 0) {
+    if (strcmp(fieldType, "force") == 0) {
         vector<double> traction = *meshInputData.traction;
         copy(traction.data(), traction.data() + nDim * nMembers, target);
     }
@@ -345,48 +331,6 @@ void connectToCSE(void* userData, const string& port) {
     }
 }
 
-int findIndex(const vector<unsigned int>& vec, unsigned int target) {
-    // Use find to get an iterator to the target
-    auto it = find(vec.begin(), vec.end(), target);
-
-    // If the element is found, return the index
-    if (it != vec.end()) {
-        return distance(vec.begin(), it); // distance gives the index
-    } else {
-        return -1; // Return -1 if the element is not found
-    }
-}
-
-vector<double> getElemCentroidCoordinates(const vector<unsigned int>& nodeLabels, const vector<double>& nodeCoordinates, const vector<unsigned int>& connectivity, const unsigned int& nElems, const unsigned int& nodePerElem, const unsigned int& nDim) {
-    vector<double> elemCentroidCoordinates(nElems * nDim);
-    double xCoordinate;
-    double yCoordinate;
-    double zCoordinate;
-    unsigned int nodeLabel;
-    int nodeIndex;
-
-    for (unsigned int i = 0; i < nElems; ++i) { // Loop over elements
-        xCoordinate = 0;
-        yCoordinate = 0;
-        zCoordinate = 0;
-        for (unsigned int j = 0; j < nodePerElem; ++j) { // Loop over nodes of element i
-            nodeLabel = connectivity[i * nodePerElem + j];
-            nodeIndex = findIndex(nodeLabels, nodeLabel);
-            if (nodeIndex == -1) {
-                cerr << "No node with label " << nodeLabel << endl;
-            }
-            xCoordinate += nodeCoordinates[nodeIndex * nDim];
-            yCoordinate += nodeCoordinates[nodeIndex * nDim + 1];
-            zCoordinate += nodeCoordinates[nodeIndex * nDim + 2];
-        }
-        elemCentroidCoordinates[i * nDim] = xCoordinate / nodePerElem;
-        elemCentroidCoordinates[i * nDim + 1] = yCoordinate / nodePerElem;
-        elemCentroidCoordinates[i * nDim + 2] = zCoordinate / nodePerElem;
-    }
-
-    return elemCentroidCoordinates;
-}
-
 int writeRemoteMeshData(const char* localMeshName, unsigned int* nNodesPtr, unsigned int* nElemsPtr, const unsigned int& modelPartID) {
     cout << "Retrieving remote mesh data for mesh " << localMeshName << endl;
 
@@ -427,8 +371,6 @@ int writeRemoteMeshData(const char* localMeshName, unsigned int* nNodesPtr, unsi
     vector<unsigned int> connectivity(nElems * nodePerElem);
     SMACseGetElemCollection(remoteMesh, 0, (unsigned int*)elemLabels.data(), (unsigned int*)connectivity.data());
 
-    vector<double> elemCentroidCoordinates = getElemCentroidCoordinates(nodeLabels, nodeCoordinates, connectivity, nElems, nodePerElem, nDim);
-
     cout << "    number of dimensions " << nDimLocal << endl;
     cout << "    number of nodes " << nNodes << endl;
     cout << "    number of elements " << nElems << endl;
@@ -439,11 +381,10 @@ int writeRemoteMeshData(const char* localMeshName, unsigned int* nNodesPtr, unsi
     if (debug) {
         writeData("../node_labels_mp" + to_string(modelPartID) + extension, nodeLabels, 1);
         writeData("../element_labels_mp" + to_string(modelPartID) + extension, elemLabels, 1);
-        writeData("../connectivity_mp" + to_string(modelPartID) + extension, connectivity, nodePerElem);
     }
     if (timeStepStart == 0) {  // Not for restart
         writeData("../initial_node_coordinates_mp" + to_string(modelPartID) + extension, nodeCoordinates, nDim, nodeLabels);
-        writeData("../initial_element_centroid_coordinates_mp" + to_string(modelPartID) + extension, elemCentroidCoordinates, nDim, elemLabels);
+        writeData("../connectivity_mp" + to_string(modelPartID) + extension, connectivity, nodePerElem);
     }
 
     *nNodesPtr = nNodes;

@@ -29,7 +29,6 @@
             <componentInstance>AbaqusWrapper</componentInstance>
             <variables>
                 <output>
-                    <variable>pressure.wrapperMesh0</variable>
                     <variable>traction_vector.wrapperMesh0</variable>
                 </output>
             </variables>
@@ -54,7 +53,6 @@
             <componentInstance>Abaqus</componentInstance>
             <variables>
                 <input>
-                    <variable>pressure.|REGION|</variable>
                     <variable>traction_vector.|REGION|</variable>
                 </input>
             </variables>

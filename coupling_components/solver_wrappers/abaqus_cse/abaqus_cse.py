@@ -25,7 +25,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     # define input and output variables
-    accepted_in_var = ['pressure', 'traction']
+    accepted_in_var = ['traction']
     accepted_out_var = ['displacement']
 
     @tools.time_initialize
@@ -73,6 +73,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.model = None
         self.interface_input = None
         self.interface_output = None
+        self.element_lengths = {}
         self.number_of_mps = len(self.surfaces)
 
         # setting for compilation of solver
@@ -231,13 +232,16 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # create Model
         self.model = data_structure.Model()
 
-        # create input ModelParts (element centroids)
+        # create input ModelParts (nodes)
         for mp_id, mp_var in enumerate(self.settings['interface_input']):
-            ids_coords = np.loadtxt(join(self.dir_csm, f'initial_element_centroid_coordinates_mp{mp_id}.txt'),
+            ids_coords = np.loadtxt(join(self.dir_csm, f'initial_node_coordinates_mp{mp_id}.txt'),
                                     skiprows=2)
             ids_coords = np.hstack((ids_coords, np.zeros((ids_coords.shape[0], 4 - ids_coords.shape[1]))))
             ids, x0, y0, z0 = ids_coords.T
             self.model.create_model_part(mp_var['model_part'], x0, y0, z0, np.round(ids).astype(int))
+            self.element_lengths[mp_var['model_part']] = self.compute_element_lengths(mp_id, x0, y0, z0,
+                                                                                      np.round(ids).astype(
+                                                                                          int)).reshape(-1, 1)
 
         # create output ModelParts (nodes)
         for mp_id, mp_var in enumerate(self.settings['interface_output']):
@@ -274,14 +278,13 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 file_name = join(self.dir_csm, f'{var}_mp{mp_id}.txt')
                 cols = min(data_structure.variables_dimensions[var], self.dimensions)
                 data = self.interface_input.get_variable_data(mp_name, var)[:, :cols]
-                np.savetxt(file_name, data, header=f'mp{mp_id} {mp_name} {var}: timestep {self.timestep}, iteration '
-                                                   f'{self.iteration} #{self.model.get_model_part(mp_name).size}\n'
-                                                   f'{comps[cols]}')
+                np.savetxt(file_name, data * self.element_lengths[mp_name], header=f'mp{mp_id} {mp_name} {var}: '
+                                                                                   f'timestep {self.timestep}, iteration {self.iteration} '
+                                                                                   f'#{self.model.get_model_part(mp_name).size}\n{comps[cols]}')
 
         # copy input data for debugging
         if self.debug:
             for mp_id, mp_var in enumerate(self.settings['interface_input']):
-                self.copy_for_debugging(join(self.dir_csm, f'pressure_mp{mp_id}.txt'))
                 self.copy_for_debugging(join(self.dir_csm, f'traction_mp{mp_id}.txt'))
 
         # let AbaqusWrapper run, wait for data
@@ -487,7 +490,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
             for tag_instance in tag_instances:
                 tag_instance.text = tag_instance.text.replace(parameter, str(value))
 
-        load_vars = ['pressure', 'traction_vector']
+        load_vars = ['force']
         disp_vars = ['displacement']
 
         connectors_elem = root.find('.//connectors')
@@ -530,7 +533,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def prepare_input_file(self, template_input_file, input_file):
         # write cosimulation settings after step analysis definition
         export_lines = "\n".join([f'{surface}, U' for surface in self.surfaces])
-        import_lines = "\n".join([f'{surface}, P, TRVEC' for surface in self.surfaces])
+        import_lines = "\n".join([f'{surface}, CF' for surface in self.surfaces])
         cosimulation_settings = f'**\n' \
                                 f'** CO-SIMULATION SETTINGS\n' \
                                 f'**\n' \
@@ -574,6 +577,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                             warnings.warn(f'Expected *DYNAMIC or *STATIC instead of\n\t{line}\nCheck resulting input '
                                           f'file {input_file} to see if insertions were done correctly',
                                           category=UserWarning)
+                        elif not 'DIRECT' in line.upper():
+                            line += ',DIRECT'
                         analysis_seen = True
                     elif in_step and analysis_seen and not line.startswith('*') and not time_step_size_seen:
                         # on data line for time increment
@@ -627,3 +632,31 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
     def copy_for_debugging(self, path):
         new_path = f'{path[:-len(".txt")]}_ts{self.timestep}_it{self.iteration}.txt'
         shutil.copy2(path, new_path)
+
+    def compute_element_lengths(self, mp_id, x, y, z, ids):
+        file_name = join(self.dir_csm, f'connectivity_mp{mp_id}.txt')
+        data = np.loadtxt(file_name, skiprows=2, dtype=int)
+
+        # lookup dict for node labels
+        id_to_index = {node_id: idx for idx, node_id in enumerate(ids)}
+
+        # create all node pairs: they are neighbours (in both directions)
+        left_nodes = data[:, :-1].ravel()
+        right_nodes = data[:, 1:].ravel()
+        pairs = np.column_stack((left_nodes, right_nodes))
+        all_pairs = np.vstack((pairs, pairs[:, ::-1]))
+
+        coords = np.column_stack((x, y, z))
+
+        # map node IDs to indices
+        idx_nodes = np.array([id_to_index[n] for n in all_pairs[:, 0]])
+        idx_neighbours = np.array([id_to_index[n] for n in all_pairs[:, 1]])
+
+        # compute distances in node pairs
+        dists = np.linalg.norm(coords[idx_neighbours] - coords[idx_nodes], axis=1)
+
+        # add element lengths as half the node-pair distance
+        element_lengths = np.zeros(ids.shape)
+        np.add.at(element_lengths, idx_nodes, dists / 2.0)
+
+        return element_lengths
