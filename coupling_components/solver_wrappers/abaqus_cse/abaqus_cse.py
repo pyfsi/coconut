@@ -578,7 +578,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                                           f'file {input_file} to see if insertions were done correctly',
                                           category=UserWarning)
                         elif not 'DIRECT' in line.upper():
-                            line += ',DIRECT'
+                            line= line.rstrip() + ',DIRECT\n'
                         analysis_seen = True
                     elif in_step and analysis_seen and not line.startswith('*') and not time_step_size_seen:
                         # on data line for time increment
