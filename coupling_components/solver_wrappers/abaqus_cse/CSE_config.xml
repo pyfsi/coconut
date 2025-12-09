@@ -29,7 +29,7 @@
             <componentInstance>AbaqusWrapper</componentInstance>
             <variables>
                 <output>
-                    <variable>traction_vector.wrapperMesh0</variable>
+                    <variable>force.wrapperMesh0</variable>
                 </output>
             </variables>
         </connector>
@@ -53,7 +53,7 @@
             <componentInstance>Abaqus</componentInstance>
             <variables>
                 <input>
-                    <variable>traction_vector.|REGION|</variable>
+                    <variable>force.|REGION|</variable>
                 </input>
             </variables>
         </connector>
