@@ -5,11 +5,11 @@ file set-batch-options n n n
 ;file binary-files n
 (define unsteady |UNSTEADY|)
 (define multiphase |MULTIPHASE|)
+(define gap_wall |GAP_WALL|)
 (define flow_iterations |FLOW_ITERATIONS|)
 (define delta_t |DELTA_T|)
 (define timestep_start |TIMESTEP_START|)
 (define thermal_bc |THERMAL_BC|)
-(define turbulence |TURBULENCE|)
 ;
 ;   FUNCTION DEFINITIONS
 (define (send_message message)
@@ -51,10 +51,6 @@ file set-batch-options n n n
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
-        (if multiphase
-            (ti-menu-load-string "solve set expert y n y y y")
-            (ti-menu-load-string "solve set expert n y y y")
-        )
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
         (rp-var-define 'udf/rb_it 0 'int #f)
@@ -81,10 +77,10 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
             (ti-menu-load-string "define dynamic-mesh dynamic-mesh? yes no no yes no\n") ; 4th: Enable Implicit Update? Yes
         )
         (do ((k 0 (+ k 1))) ((>= k (length face_threads)))
-            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" yes no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in bc's? yes / Option[-3]: deform adjacent BL with zone? no -> change to yes in parameters if necessary
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_nodes::udf_thermal\" no no , constant 0 no no no\n"(list-ref face_threads k))) ; Option after UDF: exclude mesh motion in bc's? no / Option[-3]: deform adjacent BL with zone? no -> change to yes in parameters if necessary
         )
         (do ((k 0 (+ k 1))) ((>= k (length overset_threads)))
-            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_overset_boundary::udf_thermal\" yes no , constant 0 no no no\n"(list-ref overset_threads k)))
+            (ti-menu-load-string (format #f "define dynamic-mesh zones create ~a user-defined \"move_overset_boundary::udf_thermal\" no no , constant 0 no no no\n"(list-ref overset_threads k)))
         )
         (if unsteady
             (begin
@@ -100,6 +96,9 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "define user-defined execute-on-demand \"store_coordinates_id::udf_thermal\"")
+        (if gap_wall
+            (ti-menu-load-string "define user-defined execute-on-demand \"gap_wall_coords::udf_thermal\"")
+        )
         (send_message "nodes_and_faces_stored")
     )
 )
@@ -112,29 +111,108 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
 
-        (display (format #f ">>> Using turbulence model = ~a~%" turbulence))
-
-        (cond
-            ((equal? turbulence 'kw-sst)
-                (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
-                    (ti-menu-load-string
-                        (format #f
-                        "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n n"
-                        (list-ref domain_threads k))
+        (if multiphase
+            (cond
+                ((rp-kw?)
+                    (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
+                        (if (rp-3d?)
+                            (begin
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a mixture y 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 1 n y \"udf_zmom_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n n"
+                                    (list-ref domain_threads k))
+                                )
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a |MATERIAL| y 1 n y \"udf_mass_source::udf_thermal\" n n , n , n y n n"
+                                    (list-ref domain_threads k))
+                                )
+                            )
+                            (begin
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a mixture y 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n n"
+                                    (list-ref domain_threads k))
+                                )
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a |MATERIAL| y 1 n y \"udf_mass_source::udf_thermal\" n n , n , n y n n"
+                                    (list-ref domain_threads k))
+                                )
+                            )
+                        )
                     )
                 )
-            )
-            ((equal? turbulence 'laminar)
-                (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
-                    (ti-menu-load-string
-                        (format #f
-                        "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n"
-                        (list-ref domain_threads k))
+                ((rp-lam?)
+                    (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
+                        (if (rp-3d?)
+                            (begin
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a mixture y 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 1 n y \"udf_zmom_source::udf_thermal\" 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n"
+                                    (list-ref domain_threads k))
+                                )
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a |MATERIAL| y 1 n y \"udf_mass_source::udf_thermal\" n n , n , n y n"
+                                    (list-ref domain_threads k))
+                                )
+                            )
+                            (begin
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a mixture y 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n"
+                                    (list-ref domain_threads k))
+                                )
+                                (ti-menu-load-string
+                                    (format #f
+                                    "define boundary-conditions fluid ~a |MATERIAL| y 1 n y \"udf_mass_source::udf_thermal\" n n , n , n y n"
+                                    (list-ref domain_threads k))
+                                )
+                            )
+                        )
                     )
                 )
+                (else
+                    (error "NotImplementedError: turbulence model not supported")
+                )
             )
-            (else
-                (error "NotImplementedError: turbulence model not supported")
+            (cond
+                ((rp-kw?)
+                    (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
+                        (if (rp-3d?)
+                            (ti-menu-load-string
+                                (format #f
+                                "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 1 n y \"udf_zmom_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n n"
+                                (list-ref domain_threads k))
+                            )
+                            (ti-menu-load-string
+                                (format #f
+                                "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n n"
+                                (list-ref domain_threads k))
+                            )
+                        )
+                    )
+                )
+                ((rp-lam?)
+                    (do ((k 0 (+ k 1))) ((>= k (length domain_threads)))
+                        (if (rp-3d?)
+                            (ti-menu-load-string
+                                (format #f
+                                "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 1 n y \"udf_zmom_source::udf_thermal\" 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n"
+                                (list-ref domain_threads k))
+                            )
+                            (ti-menu-load-string
+                                (format #f
+                                "define boundary-conditions fluid ~a n y 1 n y \"udf_mass_source::udf_thermal\" 1 n y \"udf_xmom_source::udf_thermal\" 1 n y \"udf_ymom_source::udf_thermal\" 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n"
+                                (list-ref domain_threads k))
+                            )
+                        )
+                    )
+                )
+                (else
+                    (error "NotImplementedError: turbulence model not supported")
+                )
             )
         )
     )
@@ -199,6 +277,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                         (ti-menu-load-string "solve iterate 1")
                         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
                         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
+                        (ti-menu-load-string "define user-defined execute-on-demand \"set_momentum::udf_thermal\"")
                         (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                     )
                     (begin
@@ -206,6 +285,7 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
                         (ti-menu-load-string "solve iterate 1")
                         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
                         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"") ; updated each coupling iteration -> necessary for mass & energy source term
+                        (ti-menu-load-string "define user-defined execute-on-demand \"set_momentum::udf_thermal\"")
                         (ti-menu-load-string "solve dual-time-iterate 0 0")
                         (ti-menu-load-string (format #f "solve iterate ~d" (- flow_iterations 1)))
                     )
@@ -236,4 +316,3 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     )
 )
 exit y
-

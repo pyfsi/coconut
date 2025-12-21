@@ -254,6 +254,8 @@ class MapperLinearConservative(Component):
 
                     C = cell_vol/node_vol
                     C[~np.isfinite(C)] = 1.0
+                    # Clamp C to prevent explosions at corners (e.g., between 0.5 and 1.5)
+                    C = np.clip(C, 0.5, 1.5)
                     C = (1 - self.relax) * C + self.relax * C_prev
 
                 # print warning if C did not converge fast enough

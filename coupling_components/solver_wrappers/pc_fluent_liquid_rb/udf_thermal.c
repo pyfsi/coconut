@@ -70,6 +70,9 @@ for (_d = 0; _d < dim; _d++) {                                      \
 #define ADJ 0 // flag for cells adjacent to the interface
 #define D_VOL 1 // swept volume during move_nodes operation
 #define SIGN 2 // defines wether the cell is on the growing or shrinking side during phase change
+#define VEL_X 3 // stores the x-momentum of mass entering or leaving the liquid domain at the interface
+#define VEL_Y 4 // stores the y-momentum of mass entering or leaving the liquid domain at the interface
+#define VEL_Z 5 // stores the z-momentum of mass entering or leaving the liquid domain at the interface
 
 /* User defined node memory -- not available in 3D! */
 #define N_ID 0 // u-d node memory where initial node ids are saved
@@ -92,6 +95,7 @@ int _d; /* don't use in UDFs! (overwritten by functions above) */
 int n_threads, n_os_threads;
 DECLARE_MEMORY(thread_ids, int);
 DECLARE_MEMORY(overset_thread_ids, int);
+static int last_ts = -1; // Static variable to remember the last time step of pc node update
 int timestep = 0;
 int iteration = 0;
 int rb_it = 0;
@@ -120,10 +124,7 @@ DEFINE_ON_DEMAND(get_thread_ids) {
     fscanf(file2, "%i", &n_os_threads);
 
     if (n_threads != n_os_threads) {
-        Error("\nUDF-error: mismatch in number of boundary and overset threads (%i vs %i)\n", n_threads, n_os_threads);
-        fclose(file);
-        fclose(file2);
-        exit(1);
+        if (myid == 0) {printf("\nUDF-warning: mismatch in number of boundary and overset threads (%i vs %i)\n", n_threads, n_os_threads); fflush(stdout);}
     }
 #endif /* RP_HOST */
 
@@ -389,6 +390,178 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
     } /* close loop over threads */
 
     if (myid == 0) {printf("\nFinished UDF store_coordinates_id.\n"); fflush(stdout);}
+}
+
+
+  /*-----------------*/
+ /* gap_wall_coords */
+/*-----------------*/
+
+DEFINE_ON_DEMAND(gap_wall_coords)
+{
+    if (myid == 0) {printf("\nStarted UDF gap_wall_coords.\n"); fflush(stdout);}
+
+    /* declaring variables */
+    int target_thread_id;
+    char gap_name[128];
+    char output_filename[256];
+
+    int n_nodes, i_n, d, compute_node;
+    int num_walls = 0;
+    int k; /* Loop counter */
+
+    /* Variables for MPI communication */
+    DECLARE_MEMORY_N(node_coords, real, ND_ND);
+    DECLARE_MEMORY(node_ids, int);
+
+#if RP_HOST
+    FILE *fp_in;
+    FILE *fp_out;
+
+    /* --- STEP 1: OPEN INPUT FILE (HOST ONLY) --- */
+    fp_in = fopen("gap_wall.txt", "r");
+    if (fp_in == NULL) {
+        Error("\nUDF Error: Could not open 'gap_wall.txt'.\n");
+        exit(1);
+    }
+
+    /* Read number of walls from first line */
+    fscanf(fp_in, "%d", &num_walls);
+#endif
+
+    /* --- STEP 2: SYNC LOOP COUNT --- */
+    /* Broadcast number of walls to all nodes so they loop correctly */
+    host_to_node_int_1(num_walls);
+
+    /* --- MAIN LOOP OVER WALLS --- */
+    for (k = 0; k < num_walls; k++)
+    {
+        #if RP_HOST
+            /* Read specific wall info for this iteration */
+            fscanf(fp_in, "%s %d", gap_name, &target_thread_id);
+
+            /* Prepare Output Filename */
+            sprintf(output_filename, "nodes_%s.dat", gap_name);
+
+            /* Open Output File */
+            if (NULLP(fp_out = fopen(output_filename, "w"))) {
+                 Error("\nUDF Error: Unable to open %s for writing\n", output_filename);
+                 exit(1);
+            }
+
+            /* Write Header */
+            #if RP_2D
+                fprintf(fp_out, "%27s %27s %10s\n", "x-coordinate", "y-coordinate", "id");
+            #else
+                fprintf(fp_out, "%27s %27s %27s %10s\n", "x-coordinate", "y-coordinate", "z-coordinate", "id");
+            #endif
+        #endif /* RP_HOST */
+
+        /* --- STEP 3: BROADCAST CURRENT ID TO NODES --- */
+        host_to_node_int_1(target_thread_id);
+
+        /* --- STEP 4: COLLECT DATA (COMPUTE NODES) --- */
+        #if RP_NODE
+        Domain *domain = Get_Domain(1);
+        Thread *t = Lookup_Thread(domain, target_thread_id);
+        face_t f;
+        Node *node;
+        int n;
+
+        if (t == NULL) {
+            n_nodes = 0;
+        } else {
+            /* Calculate Nr. of nodes */
+            n_nodes = 0;
+            begin_f_loop(f, t) {
+                n_nodes += F_NNODES(f, t);
+            } end_f_loop(f, t)
+
+            /* Allocate Memory */
+            ASSIGN_MEMORY_N(node_coords, n_nodes, real, ND_ND);
+            ASSIGN_MEMORY(node_ids, n_nodes, int);
+
+            /* Fill Arrays */
+            i_n = 0;
+            begin_f_loop(f, t) {
+                f_node_loop(f, t, n) {
+                    if (i_n >= n_nodes) {Error("\nIndex %i >= array size %i.", i_n, n_nodes); exit(1);}
+                    node = F_NODE(f, t, n);
+                    /* Store Coordinates */
+                    for (d = 0; d < ND_ND; d++) {
+                        node_coords[d][i_n] = NODE_COORD(node)[d];
+                    }
+                    /* Store ID */
+                    node_ids[i_n] = NODE_DM_ID(node);
+                    i_n++;
+                }
+            } end_f_loop(f, t)
+        }
+
+        /* --- STEP 5: SEND TO NODE 0 / HOST --- */
+        compute_node = (I_AM_NODE_ZERO_P) ? node_host : node_zero;
+
+        PRF_CSEND_INT(compute_node, &n_nodes, 1, myid);
+        PRF_CSEND_REAL_N(compute_node, node_coords, n_nodes, myid, ND_ND);
+        PRF_CSEND_INT(compute_node, node_ids, n_nodes, myid);
+
+        RELEASE_MEMORY_N(node_coords, ND_ND);
+        RELEASE_MEMORY(node_ids);
+
+        /* Node 0 collects from others and sends to Host */
+        if (I_AM_NODE_ZERO_P) {
+            compute_node_loop_not_zero(compute_node) {
+                PRF_CRECV_INT(compute_node, &n_nodes, 1, compute_node);
+
+                ASSIGN_MEMORY_N(node_coords, n_nodes, real, ND_ND);
+                ASSIGN_MEMORY(node_ids, n_nodes, int);
+
+                PRF_CRECV_REAL_N(compute_node, node_coords, n_nodes, compute_node, ND_ND);
+                PRF_CRECV_INT(compute_node, node_ids, n_nodes, compute_node);
+
+                /* Send to Host */
+                PRF_CSEND_INT(node_host, &n_nodes, 1, compute_node);
+                PRF_CSEND_REAL_N(node_host, node_coords, n_nodes, compute_node, ND_ND);
+                PRF_CSEND_INT(node_host, node_ids, n_nodes, compute_node);
+
+                RELEASE_MEMORY_N(node_coords, ND_ND);
+                RELEASE_MEMORY(node_ids);
+            }
+        }
+        #endif /* RP_NODE */
+
+        /* --- STEP 6: WRITE TO FILE (HOST) --- */
+        #if RP_HOST
+        compute_node_loop(compute_node) {
+            PRF_CRECV_INT(node_zero, &n_nodes, 1, compute_node);
+
+            ASSIGN_MEMORY_N(node_coords, n_nodes, real, ND_ND);
+            ASSIGN_MEMORY(node_ids, n_nodes, int);
+
+            PRF_CRECV_REAL_N(node_zero, node_coords, n_nodes, compute_node, ND_ND);
+            PRF_CRECV_INT(node_zero, node_ids, n_nodes, compute_node);
+
+            for (i_n = 0; i_n < n_nodes; i_n++) {
+                for (d = 0; d < ND_ND; d++) {
+                    fprintf(fp_out, "%27.17e ", node_coords[d][i_n]);
+                }
+                fprintf(fp_out, "%10d\n", node_ids[i_n]);
+            }
+
+            RELEASE_MEMORY_N(node_coords, ND_ND);
+            RELEASE_MEMORY(node_ids);
+        }
+
+        fclose(fp_out); /* Close specific wall file */
+        printf("Written: %s\n", output_filename);
+        #endif /* RP_HOST */
+    } /* End Loop */
+
+#if RP_HOST
+    fclose(fp_in); /* Close input config file */
+#endif
+
+    if (myid == 0) {printf("\nFinished UDF gap_wall_coords.\n"); fflush(stdout);}
 }
 
 
@@ -1080,11 +1253,12 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     char file_name_2[256];
     Thread *face_thread = DT_THREAD(dynamic_thread); /* face_thread to which UDF is assigned in Fluent */
     int thread_id = THREAD_ID(face_thread);
+    int update_pr_new = 0; // flag to check if prvious node positions need to be updated when the UDF is called twice
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
     Node *node;
-    int i, d, n, n_pc, node_number;
+    int i, d, n, n_pc, node_number, cnt;
     DECLARE_MEMORY_N(coords, real, ND_ND);
     DECLARE_MEMORY(ids, int);
     DECLARE_MEMORY_N(coords_pc, real, ND_ND);
@@ -1102,6 +1276,17 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
     host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
     host_to_node_int_1(rb_it); /* host process shares rb_it variable with nodes */
+
+    /* Check if this is a new time step */
+    if (timestep != last_ts)
+    {
+        last_ts = timestep;    /* Update memory */
+        update_pr_new = 1;     /* TRUE: Run the update */
+    }
+    else
+    {
+        update_pr_new = 0;     /* FALSE: Skip the update */
+    }
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
     /* File with real node locations */
@@ -1187,6 +1372,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
         }
     }
 
+    cnt = 0;
     begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
         f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
             node = F_NODE(face, face_thread, node_number); /* get global face ndoe index from local node index */
@@ -1194,16 +1380,17 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                 int found_node = 0;
                 for (i=0; i < n; i++) { /* loop over all lines to find the correct node */
                     if (N_UDMI(node,N_ID) == ids[i]) { /* correct node has the same dynamic mesh node id */
+                        cnt ++;
                         for (d = 0; d < ND_ND; d++) {
                             NODE_COORD(node)[d] = coords[d][i]; /* modify node coordinates */
                             /* Update melting only node locations */
                             if (d == 0) {
-                                if ((iteration == 1) && (rb_it == 1)) {
+                                if ((update_pr_new == 1) && (iteration == 1) && (rb_it == 1)) {
                                     N_UDMI(node,PR_X) = N_UDMI(node,NEW_X); /* Update previous node position only when new time step occurs */
                                 }
                                 N_UDMI(node,NEW_X) = coords_pc[d][i];
                             } else if (d == 1) {
-                                if ((iteration == 1) && (rb_it == 1)) {
+                                if ((update_pr_new == 1) && (iteration == 1) && (rb_it == 1)) {
                                     N_UDMI(node,PR_Y) = N_UDMI(node,NEW_Y); /* Update previous node position only when new time step occurs */
                                 }
                                 N_UDMI(node,NEW_Y) = coords_pc[d][i];
@@ -1247,23 +1434,23 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 /*-----------------------*/
 
 DEFINE_GRID_MOTION(move_overset_boundary, domain, dynamic_thread, time, dtime) {
-    /* UDF that can be assigned to the overset boundary in a component mesh in Fluent.
+    /* WARNING: UDF seems to move all nodes to (0, 0, 0) on t = 0!!!
+    UDF that can be assigned to the overset boundary in a component mesh in Fluent.
     It will read the updated (translational and rotational) bulk velocity and update the nodes accordingly. */
     if (myid == 0) {printf("\nStarted UDF move_overset_boundary.\n"); fflush(stdout);}
     char file_name[256];
     Thread *face_thread = DT_THREAD(dynamic_thread); /* face_thread to which UDF is assigned in Fluent */
-    int thread_id = THREAD_ID(face_thread);
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
     Node *node;
     int i, d, n, node_number;
-    DECLARE_MEMORY(v_trans, real);    /* Translational velocity */
-    DECLARE_MEMORY(v_rot, real);      /* Rotational velocity */
-    DECLARE_MEMORY(com, real);        /* Center of mass */
-    DECLARE_MEMORY(r_new, real);      /* New node coordinates */
-    DECLARE_MEMORY(r_prev, real);      /* New node coordinates */
-    real disp[3], cross[3], r_rel[3]; /* helper arrays */
+    DECLARE_MEMORY(v_trans, real);      /* Translational velocity */
+    DECLARE_MEMORY(v_rot, real);        /* Rotational velocity */
+    DECLARE_MEMORY(com, real);          /* Center of mass */
+    DECLARE_MEMORY(r_new, real);        /* New node coordinates */
+    DECLARE_MEMORY(r_prev, real);       /* Old node coordinates */
+    real disp[3], cross[3], r_rel[3];   /* helper arrays */
     FILE *file = NULL;
     int skip_motion = 0;   /* flag to skip node update */
 #endif /* RP_NODE */
@@ -1279,8 +1466,8 @@ DEFINE_GRID_MOTION(move_overset_boundary, domain, dynamic_thread, time, dtime) {
     host_to_node_int_1(rb_it); /* host process shares rb_it variable with nodes */
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
-    sprintf(file_name, "RB_update_timestep%i_thread%i.dat",
-            timestep, thread_id);
+    sprintf(file_name, "RB_update_timestep%i.dat",
+            timestep);
     host_to_node_sync_file(file_name); /* send file to the compute nodes */
 #else
     struct stat st = {0};
@@ -1288,8 +1475,8 @@ DEFINE_GRID_MOTION(move_overset_boundary, domain, dynamic_thread, time, dtime) {
     if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
         mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
-    sprintf(file_name, "|TMP_DIRECTORY_NAME|/RB_update_timestep%i_thread%i.dat",
-            timestep, thread_id);
+    sprintf(file_name, "|TMP_DIRECTORY_NAME|/RB_update_timestep%i.dat",
+            timestep);
     host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
 #endif /* RP_HOST */
 
@@ -1346,25 +1533,12 @@ DEFINE_GRID_MOTION(move_overset_boundary, domain, dynamic_thread, time, dtime) {
 
                     /* rigid body kinematics */
                     NV_VV(r_rel, =, r_prev, -, com);
-                    NV_CROSS(cross, v_rot, r_rel);
+                    // NV_CROSS(cross, v_rot, r_rel); --> doesn't work
+                    // Only 2D implementation:
+                    cross[0] = -v_rot[2] * r_rel[1];
+                    cross[1] = v_rot[2] * r_rel[0];
                     NV_VS_VS(disp, =, v_trans, *, dt, +, cross, *, dt);
                     NV_VV(r_new, =, r_prev, +, disp);
-
-                    /*
-                    if ((NODE_COORD(node)[0] < 0.00001) && (NODE_COORD(node)[0] > -0.00001)) {
-                        if (NODE_COORD(node)[1] > 0.04) {
-                            for (d = 0; d < 3; d++) {
-                                printf("\nr_rel[%i] = %lf\n", d, r_rel[d]); fflush(stdout);
-                                printf("\nr_new[%i] = %lf\n", d, r_new[d]); fflush(stdout);
-                                printf("\ndisp[%i] = %lf\n", d, disp[d]); fflush(stdout);
-                                printf("\ncross[%i] = %lf\n", d, cross[d]); fflush(stdout);
-                                printf("\ncom[%i] = %lf\n", d, com[d]); fflush(stdout);
-                                printf("\nv_rot[%i] = %lf\n", d, v_rot[d]); fflush(stdout);
-                                printf("\nv_trans[%i] = %lf\n", d, v_trans[d]); fflush(stdout);
-                            }
-                        }
-                    }
-                    */
 
                     for (d = 0; d < ND_ND; d++) {
                         NODE_COORD(node)[d] = r_new[d]; /* update node coordinates */
@@ -1381,10 +1555,6 @@ DEFINE_GRID_MOTION(move_overset_boundary, domain, dynamic_thread, time, dtime) {
     RELEASE_MEMORY(v_rot);
     RELEASE_MEMORY(com);
 
-    if (myid == 0) {
-        sprintf(file_name, "|TMP_DIRECTORY_NAME|/RB_update_timestep%i_thread%i.dat",
-                timestep-1, thread_id);
-        remove(file_name);}
 #endif /* RP_NODE */
 
     if (myid == 0) {printf("\nFinished UDF move_overset_boundary.\n"); fflush(stdout);}
@@ -1463,7 +1633,7 @@ DEFINE_ON_DEMAND(calc_volume_change)
         begin_c_loop(cell,cell_thread) //loop over all cells
         {
             zero_vol = false;
-            if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
+            if (C_UDMI(cell,cell_thread,ADJ) == 1.0) { // cells adjacent to the interface
                 c_face_loop(cell,cell_thread,face_number)
                     {
                         face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
@@ -1484,6 +1654,7 @@ DEFINE_ON_DEMAND(calc_volume_change)
                                     vertices[0][i+2] = N_UDMI(node,NEW_X);
                                     vertices[1][i] = N_UDMI(node,PR_Y);
                                     vertices[1][i+2] = N_UDMI(node,NEW_Y);
+
                                     i ++;
                                 }
                             }
@@ -1502,6 +1673,7 @@ DEFINE_ON_DEMAND(calc_volume_change)
                     }
                 }
 
+                // printf("\ncnt = %i\n", cnt);
                 if (zero_vol) {
                     C_UDMI(cell,cell_thread,D_VOL) = 0.0;
                 }
@@ -1544,6 +1716,140 @@ DEFINE_ON_DEMAND(calc_volume_change)
 }
 
 
+  /*--------------*/
+ /* set_momentum */
+/*--------------*/
+
+DEFINE_ON_DEMAND(set_momentum)
+/* WARNING: only 2D compatibility, no 3D */
+{
+    if (myid == 0) {printf("\nStarted UDF set_momentum.\n"); fflush(stdout);}
+    char file_name[256];
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    Domain *domain;
+    Thread *cell_thread, *face_thread;
+    cell_t cell;
+    face_t face;
+    Node *node;
+    int i, d;
+    int face_number, node_number, surface;
+    DECLARE_MEMORY(v_trans, real);      /* Translational velocity */
+    DECLARE_MEMORY(v_rot, real);        /* Rotational velocity */
+    DECLARE_MEMORY(com, real);          /* Center of mass */
+    DECLARE_MEMORY(r_prev, real);       /* Old node coordinates */
+    real vel[3], cross[3], r_rel[3];    /* helper arrays */
+    FILE *file = NULL;
+#endif /* RP_NODE */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+    timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
+#endif /* RP_HOST */
+
+    host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
+
+#if RP_HOST /* only host process is involved, code not compiled for node */
+    sprintf(file_name, "RB_update_timestep%i.dat",
+            timestep);
+    host_to_node_sync_file(file_name); /* send file to the compute nodes */
+#else
+    struct stat st = {0};
+    /* create a temporary directory if it does not exist yet, this is needed as multiple machines can be involved */
+    if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
+        mkdir("|TMP_DIRECTORY_NAME|", 0700);
+    }
+    sprintf(file_name, "|TMP_DIRECTORY_NAME|/RB_update_timestep%i.dat",
+            timestep);
+    host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
+#endif /* RP_HOST */
+
+#if RP_NODE /* only compute nodes are involved, code not compiled for host */
+    if (NULLP(file = fopen(file_name, "r"))) {
+        Error("\nUDF-error: Unable to open %s for reading\n", file_name);
+        exit(1);
+    }
+
+    ASSIGN_MEMORY(v_trans, 3, real);
+    ASSIGN_MEMORY(v_rot, 3, real);
+    ASSIGN_MEMORY(com, 3, real);
+
+     /* read from file */
+    for (d = 0; d < 3; d++) {fscanf(file, "%lf", &v_trans[d]);}
+    for (d = 0; d < 3; d++) {fscanf(file, "%lf", &v_rot[d]);}
+    for (d = 0; d < 3; d++) {fscanf(file, "%lf", &com[d]);}
+    fclose(file);
+
+    ASSIGN_MEMORY(r_prev, 3, real);
+    domain = Get_Domain(1);
+    thread_loop_c(cell_thread,domain) {
+        begin_c_loop(cell,cell_thread) {
+            if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
+                if (C_UDMI(cell,cell_thread,D_VOL) == 0.0) {
+                    C_UDMI(cell,cell_thread,VEL_X) = 0.0;
+                    C_UDMI(cell,cell_thread,VEL_Y) = 0.0;
+                    C_UDMI(cell,cell_thread,VEL_Z) = 0.0;
+                } else {
+                    c_face_loop(cell,cell_thread,face_number) {
+                        face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
+                        for (surface = 0; surface < n_threads; surface++) {
+                            if (THREAD_ID(face_thread) == thread_ids[surface]) {
+                                face = C_FACE(cell,cell_thread,face_number);
+                                /* Initialise vectors */
+                                for (d = 0; d < 3; d++) {
+                                    cross[d] = 0.0;
+                                    r_rel[d] = 0.0;
+                                    r_prev[d] = 0.0;
+                                }
+                                
+                                i = 0;
+                                f_node_loop(face, face_thread, node_number) {
+                                    if (i > 1) {
+                                        Error("\nUDF-error: A face with more than two nodes is impossible in 2D\n");
+                                        exit(1);
+                                    }
+                                    
+                                    node = F_NODE(face, face_thread, node_number);
+                                    r_prev[0] += N_UDMI(node, PR_X);
+                                    r_prev[1] += N_UDMI(node, PR_Y);
+                                }
+                                
+                                /* Face center is average of node locations */
+                                r_prev[0] /= 2.0;
+                                r_prev[1] /= 2.0;
+
+                                /* rigid body kinematics */
+                                NV_VV(r_rel, =, r_prev, -, com);
+                                // NV_CROSS(cross, v_rot, r_rel); --> doesn't work
+                                // Only 2D implementation:
+                                cross[0] = -v_rot[2] * r_rel[1];
+                                cross[1] = v_rot[2] * r_rel[0];
+                                NV_VV(vel, =, v_trans, +, cross);
+                            }
+                        }
+                    }
+                    C_UDMI(cell,cell_thread,VEL_X) = vel[0];
+                    C_UDMI(cell,cell_thread,VEL_Y) = vel[1];
+                    C_UDMI(cell,cell_thread,VEL_Z) = 0.0;
+                }
+            }
+        } end_c_loop(cell,cell_thread)
+    }
+    
+    RELEASE_MEMORY(r_prev);
+    RELEASE_MEMORY(v_trans);
+    RELEASE_MEMORY(v_rot);
+    RELEASE_MEMORY(com);
+
+    if (myid == 0) {
+        sprintf(file_name, "|TMP_DIRECTORY_NAME|/RB_update_timestep%i.dat",
+                timestep-1);
+        remove(file_name);}
+#endif /* RP_NODE */
+
+    if (myid == 0) {printf("\nFinished UDF set_momentum.\n"); fflush(stdout);}
+}
+
+
   /*---------*/
  /* ini_udm */
 /*---------*/
@@ -1558,6 +1864,9 @@ DEFINE_ON_DEMAND(ini_udm)
     thread_loop_c(t,d) {
         begin_c_loop(c,t) { // loop over all cells
             C_UDMI(c,t,SIGN) = 1.0; // currently only melting assumed
+            C_UDMI(c,t,VEL_X) = 0.0;
+            C_UDMI(c,t,VEL_Y) = 0.0;
+            C_UDMI(c,t,VEL_Z) = 0.0;
         } end_c_loop(c,t)
     }
 #endif /* RP_NODE */
@@ -1607,6 +1916,72 @@ if (HM != 0.0) {
 } else {
     source = (C_UDMI(c,t,ADJ)*C_UDMI(c,t,SIGN)*rho*C_CP(c,t)*(TM - 298.15)*C_UDMI(c,t,D_VOL))/(C_VOLUME(c,t)*dt);
 }
+dS[eqn] = 0.0;
+
+return source;
+}
+
+
+  /*-----------------*/
+ /* udf_xmom_source */
+/*-----------------*/
+
+DEFINE_SOURCE(udf_xmom_source,c,t,dS,eqn)
+{
+/*Source term for x-momentum equation, to compensate momentum loss or gain during rigid body motion.*/
+real source, rho;
+
+if (rho_s == 0.0) {
+    rho = C_R(c,t);
+} else {
+    rho = rho_s;
+}
+
+source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*rho*C_UDMI(c,t,D_VOL)*C_UDMI(c,t,VEL_X)/(C_VOLUME(c,t)*dt);
+dS[eqn] = 0.0;
+
+return source;
+}
+
+
+  /*-----------------*/
+ /* udf_ymom_source */
+/*-----------------*/
+
+DEFINE_SOURCE(udf_ymom_source,c,t,dS,eqn)
+{
+/*Source term for y-momentum equation, to compensate momentum loss or gain during rigid body motion.*/
+real source, rho;
+
+if (rho_s == 0.0) {
+    rho = C_R(c,t);
+} else {
+    rho = rho_s;
+}
+
+source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*rho*C_UDMI(c,t,D_VOL)*C_UDMI(c,t,VEL_Y)/(C_VOLUME(c,t)*dt);
+dS[eqn] = 0.0;
+
+return source;
+}
+
+
+  /*-----------------*/
+ /* udf_zmom_source */
+/*-----------------*/
+
+DEFINE_SOURCE(udf_zmom_source,c,t,dS,eqn)
+{
+/*Source term for z-momentum equation, to compensate momentum loss or gain during rigid body motion.*/
+real source, rho;
+
+if (rho_s == 0.0) {
+    rho = C_R(c,t);
+} else {
+    rho = rho_s;
+}
+
+source = C_UDMI(c,t,SIGN)*C_UDMI(c,t,ADJ)*rho*C_UDMI(c,t,D_VOL)*C_UDMI(c,t,VEL_Z)/(C_VOLUME(c,t)*dt);
 dS[eqn] = 0.0;
 
 return source;

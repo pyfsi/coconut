@@ -27,11 +27,18 @@ def smooth_signal(signal, window=51, polyorder=3):
 # ----------------------
 # File paths
 # ----------------------
+# Validation data
 GLOW_YCO_PATH = "./post_processing/glowinski_data/y_co.csv"
 GLOW_YVEL_PATH = "./post_processing/glowinski_data/y_vel.csv"
-FLUENT_PATH = "./post_processing/report-file-fluent.out"
-SIM_PATH = "./Glowinski_4/CFD_2/rigid-body-report-file.out"
-SIM_FLUENT_PATH = "./Glowinski_4/CFD_2/report-file.out"
+
+# Fluent Simulation
+FLUENT_PATH = "/cfdfile1/data/fm/victor/Documents/PC_wp2_dev/Terminal_1/report-file.out" # "./post_processing/report-file-fluent.out"
+FLUENT_RB_PATH = "/cfdfile1/data/fm/victor/Documents/PC_wp2_dev/Terminal_1/disk_motion_disk.6dof"
+
+# Partitioned simulation
+SIM_PATH = "./Terminal_1/CFD_2/rigid-body-report-file.out"
+SIM_FLUENT_PATH = "./Terminal_1/CFD_2/report-file.out"
+
 FIG_DIR = "./post_processing/figures"
 
 # ----------------------
@@ -73,11 +80,22 @@ def load_partitioned_data(file_path):
     # Skip comment lines starting with "#"
     data = np.loadtxt(file_path, comments="#")
 
+    time = data[:, 0]       # time
+    y = data[:, 2]          # CG_Y
+    vel_y = data[:, 4]      # V_Y
+    force_y = data[:, 7]    # F_Y
+
+    return time, y, vel_y, force_y
+
+def load_fluent_rb_data(file_path):
+    """Parser for *.6dof file created by Fluent"""
+    # Skip comment lines starting with "#"
+    data = np.loadtxt(file_path, comments="#")
+
     time = data[:, 0]    # time
     y = data[:, 2]       # CG_Y
-    vel_y = data[:, 4]   # V_Y
 
-    return time, y, vel_y
+    return time, y
 
 # ----------------------
 # Prepare output folder
@@ -90,11 +108,13 @@ os.makedirs(FIG_DIR, exist_ok=True)
 glow_time, glow_y, glow_time_vel, glow_vel = load_glowinski_data(GLOW_YCO_PATH, GLOW_YVEL_PATH)
 glow_y -= (glow_y[0] - 40) # Recalibrate the curve
 
-fluent_time, fluent_y, fluent_vel, fluent_force = load_fluent_data(FLUENT_PATH)
-sim_force_time, _, _, sim_force = load_fluent_data(SIM_FLUENT_PATH)
+fluent_time, fluent_y, fluent_vel, fluent_force = load_fluent_data(FLUENT_PATH) # Fluent
+fluent_rb_time, fluent_rb_y = load_fluent_rb_data(FLUENT_RB_PATH)
 
-sim_time, sim_y, sim_vel = load_partitioned_data(SIM_PATH)
+sim_force_time, _, _, sim_force = load_fluent_data(SIM_FLUENT_PATH) # Partitioned
+sim_time, sim_y, sim_vel, sim_force_coco = load_partitioned_data(SIM_PATH)
 sim_y[0] = 0.04 # m, set initial condition, otherwise 0
+
 if smoothing_on:
     sim_vel_smooth = smooth_signal(sim_vel, window=21, polyorder=3) # Smooth Partitioned velocity
 else:
@@ -105,7 +125,7 @@ else:
 # ----------------------
 plt.figure()
 plt.plot(glow_time, glow_y/10, label='Glowinski', linestyle='--')
-plt.plot(fluent_time, fluent_y*100, label='Fluent', linestyle='-')
+plt.plot(fluent_rb_time, fluent_rb_y*100, label='Fluent', linestyle='-')
 plt.plot(sim_time, sim_y*100, label='Partitioned', linestyle='-')
 plt.xlabel('Time [s]')
 plt.ylabel('Y-coordinate [cm]')
@@ -135,7 +155,7 @@ plt.show()
 # ----------------------
 plt.figure()
 plt.plot(fluent_time, fluent_force, label='Fluent', linestyle='-')
-plt.plot(sim_force_time, sim_force, label='Partitioned', linestyle='-')
+plt.plot(sim_time, sim_force_coco, label='Partitioned', linestyle='-')
 plt.xlabel('Time [s]')
 plt.ylabel('Y-Force integral [N]')
 plt.legend()

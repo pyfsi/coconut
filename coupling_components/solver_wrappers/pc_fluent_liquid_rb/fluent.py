@@ -10,10 +10,13 @@ import subprocess
 import multiprocessing
 import numpy as np
 import math as m
+import pandas as pd
+from scipy.spatial import cKDTree
 import hashlib
 from getpass import getuser
 import shutil
-
+import pickle
+import csv
 
 def create(parameters):
     return SolverWrapperPCFluentLiquidRB(parameters)
@@ -59,9 +62,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
         self.multiphase = self.settings.get('multiphase', False)
-        self.turb_model = self.settings.get('turbulence', 'laminar')
-        if self.turb_model != 'laminar' and self.turb_model != 'kw-sst':
-            raise ValueError('Only supported turbulence models are "laminar" and "kw-sst".')
         self.flow_iterations = self.settings['flow_iterations']
         self.delta_t = self.settings['delta_t']
         self.timestep_start = self.settings['timestep_start']
@@ -80,8 +80,12 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.model = None
         self.outer_inner_surf_dict = self.settings['overset_boundaries']
         self.overset_thread_ids = {}
-        for thread_name in self.outer_inner_surf_dict.values():
-            self.overset_thread_ids[thread_name] = None
+        self.define_os = True
+        if len(self.outer_inner_surf_dict) == 0:
+            self.define_os = False
+        else:
+            for thread_name in self.outer_inner_surf_dict.values():
+                self.overset_thread_ids[thread_name] = None
 
         # Input variables
         f_n = 0
@@ -137,6 +141,11 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
         # Phase change specific settings
         self.pc_settings = self.settings['PC']
+        self.pcm_name = self.pc_settings.get('pcm_name', None)
+        if self.pcm_name is None and self.multiphase:
+            raise ValueError('PCM name in Fluent should be included in the json file in case of a multiphase simulation.')
+        elif self.pcm_name is None and not self.multiphase:
+            self.pcm_name = 'pcm'
         self.ini_condition = self.pc_settings.get('ini_condition', None)  # initial condition for outgoing variables
         self.melt_temp = self.pc_settings.get('melt_temp', None)
         if self.melt_temp is None:
@@ -144,37 +153,117 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.melt_enthalpy = self.pc_settings.get('melt_enthalpy', 0.0)
         if self.melt_enthalpy == 0.0:
             tools.print_info('No melting enthalpy is given: constant cp assumed for liquid solver.', layout='warning')
+        self.volume_change = self.pc_settings.get('volume_change', True) # Account for volume change during melting
+        if self.volume_change:
+            tools.print_info('Density difference between solid and liquid accounted for during melting and rigid body motion.', layout='info')
+        else:
+            tools.print_info('Density difference between solid and liquid accounted for rigid body motion, not during melting.', layout='info')
         self.liquid_density = self.pc_settings.get('liquid_density', None)  # Give zero option and assume rho_s == rho_l
         if self.liquid_density is None:
-            raise ValueError('Liquid density should be provided in the json file in case of unconstrained phase change problems')
+            raise ValueError('Liquid density should be provided in the json file in case of unconstrained phase change problems.')
         self.solid_density = self.pc_settings.get('solid_density', 0.0) # Give zero option and assume rho_s == rho_l
         if self.solid_density == 0.0:
-            self.solid_density == self.liquid_density
-            tools.print_info('Equal density for solid and liquid is assumed', layout='warning')
+            self.solid_density == self.liquid_density.copy()
+            tools.print_info('Equal density for solid and liquid is assumed.', layout='warning')
         
         # Rigid body motion specific settings
         self.rb_settings = self.settings['RB']
+        self.restart_rb_only = self.rb_settings.get('restart_rb', 0)
+        if self.restart_rb_only != 0 and self.restart:
+            self.restart_rb_only = 0
+            tools.print_info('Rigid body only restart overruled by general restart.', layout='warning')
         self.rb_tol = self.rb_settings.get('tolerance', 1E-6)
+        self.rb_iter_min = self.rb_settings.get('iteration_min', 1)
         self.rb_iter_max = self.rb_settings.get('iteration_max', 10)
-        self.rb_relax = self.rb_settings.get('relaxation', 1.0) # default no relaxation
-        self.rot_update = self.rb_settings.get('rotational_update', 'explicit') # or 'algo_c2'
-        self.rb_predictor = self.rb_settings.get('predictor', 'constant')  # or 'linear'
+        if self.rb_iter_min > self.rb_iter_max:
+            self.rb_iter_min = 1
+            tools.print_info('rb_iter_min is set larger than rb_iter_max, rb_iter_min has been reset to 1.', layout='warning')
+        self.rb_relax = self.rb_settings.get('relaxation', 1.0)  # default no relaxation
+        self.fict_coeff = self.rb_settings.get('fict_coeff', 0.0)  # default no fictitious impedance
+        self.multiplier = self.rb_settings.get('fict_multiplier', 1.0)  # default no multiplier for first timestep
+        self.dyn_visc = self.rb_settings.get('liquid_dyn_visc', 0.0)  # Dynamic viscosity of liquid PCM
+        gap_walls = self.rb_settings.get('gap_walls', [])  # List of heated walls to calculate the gap from
+        self.gap_ids = {}  # thread IDs corresponding to close contact walls
+        self.gap_trees = {}  # thread IDs corresponding to close contact walls
+        for gap_name in gap_walls:
+            self.gap_ids[gap_name] = None
+            self.gap_trees[gap_name] = None
+        self.fm_wall = self.rb_settings.get('fm_wall', None)
+        if self.gap_ids:
+            if self.fm_wall is None:
+                raise ValueError('One wall from gap walls must be chosen as wall to calculate fictitious mass from.')
+            elif self.fm_wall not in self.gap_ids:
+                raise ValueError('Given wall to calculate fictitious mass from must be present within gap walls.')
+        else:
+            if self.fm_wall:
+                raise ValueError('Wall given to calculate fictitious mass from but gap walls is empty.')
 
-        if self.restart:
+        if self.fict_coeff != 0.0 and not self.gap_ids:
+            self.fict_coeff = 0.0
+            tools.print_info('No gap wall given to calculate liquid layer thickness. Disabling fictitious impedance method.', layout='warning')
+        if self.fict_coeff != 0.0 and self.dyn_visc == 0.0:
+            raise ValueError('Liquid dyn. viscosity should be provided in the json file in case of fictitious damping.')
+
+        self.rb_relax_method = self.rb_settings.get('relaxation_method', 'static') # or 'aitken'
+        self.relax_first_ts =self.rb_settings.get('relax_first_ts', False)
+        self.rot_update = self.rb_settings.get('rotational_update', 'quaternion') # 'off', 'rot_mat' or 'quaternion'
+        self.rb_predictor = self.rb_settings.get('predictor', 'constant')  # or 'linear'
+        self.buoyancy = self.rb_settings.get('buoyancy', True)
+        self.weight_ramp = self.rb_settings.get('weight_ramp', 0)  # Nr. of time steps over which the full weight will be added
+        if self.restart_rb_only != 0:
+            self.weight_ramp = 0
+            tools.print_info('Weight ramp disabled due to rigid body only restart.', layout='warning')
+        self.include_contact_force = self.rb_settings.get('contact_force', False)
+        if self.include_contact_force:
+            tools.print_info('Make sure to adapt the calc_contact_force function in fluent.py to your specific case.', layout='warning')
+
+        if self.restart or self.restart_rb_only != 0:
             self.load_restart_rb_data()
         else:
             # Initialise rigid body motion kinematics
             self.v_trans_prev = np.zeros(3) # last time step translational velocity
             self.v_trans = np.zeros(3) # current translational velocity
-            self.omega_z_prev = 0.0 # last time step rotational velocity
-            self.omega_z = 0.0 # current rotational velocity
-            self.config_prev = np.identity(3) # previous time step rotational configuration matrix
-            self.config_new = np.identity(3) # new time step rotational configuration matrix
-            self.a_rot_z_prev = 0.0 # last time step rotational acceleration
-            self.a_rot_z = 0.0  # current time step rotational acceleration
+            self.omega_prev = np.zeros(3) # last time step rotational velocity
+            self.omega = np.zeros(3) # current rotational velocity
+            self.a_trans_prev = np.zeros(3)  # last time step translational acceleration
+            self.a_trans = np.zeros(3)  # current translational acceleration
+            self.a_rot_prev = np.zeros(3)  # last time step rotational acceleration
+            self.a_rot = np.zeros(3)  # current rotational acceleration
+            if self.rot_update == 'rot_mat':
+                self.orientation_prev = np.identity(3) # previous time step orientation matrix
+                self.orientation = np.identity(3) # new time step orientation matrix
+            else:
+                self.orientation_prev = np.array([1.0, 0.0, 0.0, 0.0]) # previous time step orientation quaternion
+                self.orientation = np.array([1.0, 0.0, 0.0, 0.0]) # new time step orientation quaternion
             self.com = np.zeros(3) # last time step center of mass
             self.com_prev = np.zeros(3) # current time step center of mass
-        
+            self.force_pr_it = np.zeros(3)
+            self.moment_pr_it = np.zeros(3)
+
+        # Initialise other variables
+        self.volume = 0.0
+        self.M_sys = 0.0
+        self.a_trans_prev_it = np.zeros(3)
+        self.force_int = np.zeros(3)
+        self.moment_int = np.zeros(3)
+        self.avg_v_trans = np.zeros(3)
+        self.avg_omega = np.zeros(3)
+
+        # Minimum wall gap
+        self.h_min = 0.0
+        self.h_ul = 0.2 * 1e-3  # [m] Upper limit
+        self.h_ll = 0.1 * 1e-3  # [m] Lower limit
+        self.normal = None
+
+        # Aitken relaxation state variables
+        if self.rb_relax_method == 'aitken':
+            self.force_res_prev = np.zeros(3)
+            self.moment_res_prev = np.zeros(3)
+            self.aitken_relax_factor_force = self.rb_relax
+            self.aitken_relax_factor_moment = self.rb_relax
+
+        self.cnt = 0
+
     @tools.time_initialize
     def initialize(self):
         super().initialize()
@@ -202,10 +291,11 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                     line = line.replace('|THREAD_NAMES|', thread_names_str)
                     line = line.replace('|OVERSET_THREAD_NAMES|', overset_thread_names_str)
                     line = line.replace('|THREAD_DOMAINS|', thread_domains_str)
+                    line = line.replace('|GAP_WALL|', '#t' if self.gap_ids else '#f')
                     line = line.replace('|UNSTEADY|', '#t' if self.unsteady else '#f')
                     line = line.replace('|MULTIPHASE|', '#t' if self.multiphase else '#f')
                     line = line.replace('|THERMAL_BC|', thermal_bc)
-                    line = line.replace('|TURBULENCE|', "'" + str(self.turb_model))
+                    line = line.replace('|MATERIAL|', self.pcm_name)
                     line = line.replace('|FLOW_ITERATIONS|', str(self.flow_iterations))
                     line = line.replace('|DELTA_T|', str(self.delta_t))
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
@@ -214,6 +304,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                     outfile.write(line)
 
         # prepare Fluent UDF
+        if self.volume_change and self.solid_density != self.liquid_density:
+            solid_density = self.solid_density
+        else:
+            solid_density = 0.0
         udf = 'udf_thermal.c'
         with open(join(self.dir_src, udf)) as infile:
             with open(join(self.dir_cfd, udf), 'w') as outfile:
@@ -309,6 +403,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         check = 0
         names_found = []
         overset_names_found = []
+        gap_walls_found = []
         with open(report, 'r') as file:
             for line in file:
                 if check == 3 and line.islower():
@@ -325,6 +420,9 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                     elif name in self.overset_thread_ids and name not in overset_names_found:
                         self.overset_thread_ids[name] = thread_id
                         overset_names_found.append(name)
+                    elif name in self.gap_ids and name not in gap_walls_found:
+                        self.gap_ids[name] = thread_id
+                        gap_walls_found.append(name)
                 if check == 3 and not line.islower():
                     break
                 if check == 2:  # skip 1 line
@@ -340,6 +438,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         with open(join(self.dir_cfd, 'bcs_overset.txt'), 'w') as file:
             file.write(f'{len(overset_names_found)}\n')
             for name, id in self.overset_thread_ids.items():
+                file.write(f'{name} {id}\n')
+        with open(join(self.dir_cfd, 'gap_wall.txt'), 'w') as file:
+            file.write(f'{len(gap_walls_found)}\n')
+            for name, id in self.gap_ids.items():
                 file.write(f'{name} {id}\n')
         self.coco_messages.send_message('thread_ids_written_to_file')
 
@@ -478,10 +580,52 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             if not self.interface_input.has_same_model_parts(self.interface_rb):
                 raise ValueError('Restart not possible because model parts in reloaded rigid body interface do not match those of the new input interface.')
 
+        if self.gap_ids:
+            for wall_name in self.gap_ids:
+                try:
+                    gap_file = join(self.dir_cfd, f'nodes_{wall_name}.dat')
+                    df = pd.read_csv(gap_file, delim_whitespace=True, skiprows=1, header=None)
+
+                    # Extract coords (2D or 3D) and remove duplicates
+                    raw = df.iloc[:, 0:2].values if df.shape[1] == 3 else df.iloc[:, 0:3].values
+                    coords = np.unique(raw, axis=0)
+
+                    wall_tree = cKDTree(coords)
+                    print(f"KD-Tree initialized with {len(coords)} nodes for wall {wall_name}.")
+                    self.gap_trees[wall_name] = wall_tree
+
+                    # --- Calculate Length of Correct Wall (Greedy Walk) ---
+                    if wall_name == self.fm_wall:
+                        curr_idx = np.argmin(coords[:, 0])  # Start at min X
+                        visited = {curr_idx}
+                        l_current = 0.0
+
+                        while len(visited) < len(coords):
+                            # Query neighbors (k=10 buffer for visited nodes)
+                            dists, idxs = wall_tree.query(coords[curr_idx], k=10)
+
+                            # Find nearest unvisited neighbor
+                            next_step = next(((d, i) for d, i in zip(dists, idxs) if i not in visited), None)
+
+                            if next_step:
+                                dist, idx = next_step
+                                l_current += dist
+                                visited.add(idx)
+                                curr_idx = idx
+                            else:
+                                print(f"Warning: Discontinuity in wall {wall_name}")
+                                break
+
+                        self.wall_length = l_current
+                        print(f"Wall Length: {self.wall_length:.6f} [m]")
+
+                except Exception as e:
+                    print(f"Error loading wall nodes: {e}")
+
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        # update a report-file each timestep wuth the RB values
+        # update a report-file each timestep with the RB values
         self.update_report_file()
 
         self.iteration = 0
@@ -489,20 +633,31 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
         # save for linear predictor
         if self.rb_predictor == 'linear':
-            v_trans_prev2 = self.v_trans_prev
-            omega_z_prev2 = self.omega_z_prev
+            v_trans_prev2 = self.v_trans_prev.copy()
+            omega_prev2 = self.omega_prev.copy()
 
         # update rigid body kinematics
-        self.v_trans_prev = self.v_trans
-        self.omega_z_prev = self.omega_z
-        self.a_rot_z_prev = self.a_rot_z
-        self.config_prev = self.config_new
-        self.com_prev = self.com
+        self.v_trans_prev = self.v_trans.copy()
+        self.omega_prev = self.omega.copy()
+        self.a_trans_prev = self.a_trans.copy()
+        self.a_rot_prev = self.a_rot.copy()
+        self.orientation_prev = self.orientation.copy()
+        self.com_prev = self.com.copy()
 
-        # linear predictor step for v_trans & omega_z ---> reduces convergence...
-        if self.rb_predictor == 'linear':
+        # Reset Aitken relaxation residuals for the new time step
+        if self.rb_relax_method == 'aitken':
+            self.force_res_prev = np.zeros(3)
+            self.moment_res_prev = np.zeros(3)
+            self.aitken_relax_factor_force = np.clip(self.aitken_relax_factor_force, 0.01, self.rb_relax)
+            self.aitken_relax_factor_moment = np.clip(self.aitken_relax_factor_moment, 0.01, self.rb_relax)
+
+        # linear predictor step for v_trans & omega_z
+        if self.rb_predictor == 'linear' and self.timestep > 1:
             self.v_trans = 2 * self.v_trans_prev - v_trans_prev2
-            self.omega_z = 2 * self.omega_z_prev - omega_z_prev2
+            self.omega = 2 * self.omega_prev - omega_prev2
+            # Make accelerations consistent
+            self.a_trans = 2 * (self.v_trans - self.v_trans_prev) / self.delta_t - self.a_trans_prev
+            self.a_rot = 2 * (self.omega - self.omega_prev) / self.delta_t - self.a_rot_prev
 
         # Update previous displacement
         for item in self.settings['interface_input']:
@@ -549,14 +704,14 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.print_rb_header()
 
         # Rigid body motion iterations
-        while not check_tolerance and self.rb_iter < self.rb_iter_max:
+        while (not check_tolerance or self.rb_iter < self.rb_iter_min) and self.rb_iter < self.rb_iter_max:
             self.rb_iter += 1
 
             self.update_nodal_positions()
-            self.update_overset_rb_motion()
+            self.update_file_rb_motion()  # necessary for momentum source term and overset boundary motion
 
-            v_trans_last_it = self.v_trans
-            omega_last_it = self.omega_z
+            force_last_it = self.force_int
+            moment_last_it = self.moment_int
 
             # let Fluent run
             self.coco_messages.send_message('rigidbody')
@@ -567,35 +722,33 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                 dst = f'rigid_body_timestep{self.timestep}_Iter{self.iteration}.dat'
                 cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
-                src = f'RB_update_timestep{self.timestep}.dat'
-                dst = f'RB_update_timestep{self.timestep}_Iter{self.iteration}.dat'
-                cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
-                os.system(cmd)
-            
+
             # Read new rigid body displacement
             self.rigid_body_motion()
 
             # check convergence of translational and rotational velocity
-            res_v = np.linalg.norm(self.v_trans - v_trans_last_it)
-            res_omega = np.linalg.norm(self.omega_z - omega_last_it)
-            check_tolerance = (res_v <= self.rb_tol) and (res_omega <= self.rb_tol)
+            res_f = np.linalg.norm(self.force_int - force_last_it)
+            res_m = np.linalg.norm(self.moment_int - moment_last_it)
+            check_tolerance = (res_f <= self.rb_tol) and (res_m <= self.rb_tol)
 
             # print rigid body iteration information to terminal
-            self.print_rb_iteration_info(res_v, res_omega)
+            self.print_rb_iteration_info(res_f, res_m)
 
-            # only one iteration for the 1st time step --> avoids divergence
-            if self.timestep == 1:
+            # only one iteration for the 1st coupling iteration --> avoids divergence
+            if not self.relax_first_ts and self.timestep == 1 and self.iteration == 1:
                 break
+
+        self.cnt += self.rb_iter
 
         # print warning when tolerance not reached within maximum number of iterations
         if self.rb_iter_max == 1:
             tools.print_info('Explicit rigid body update: no iterations until convergence.')
         if self.rb_iter >= self.rb_iter_max and self.rb_iter_max > 1:
-            if np.linalg.norm(self.v_trans - v_trans_last_it) > self.rb_tol:
-                warning_text = f'Rigid body iterations did not converge below tolerance for translational velocity: {np.linalg.norm(self.v_trans - v_trans_last_it)} > {self.rb_tol}.'
+            if np.linalg.norm(self.force_int - force_last_it) > self.rb_tol:
+                warning_text = f'Rigid body iterations did not converge below tolerance for force vector: {np.linalg.norm(self.force_int - force_last_it)} > {self.rb_tol}.'
                 tools.print_info(warning_text, layout='warning')
-            if np.linalg.norm(self.omega_z - omega_last_it) > self.rb_tol:
-                warning_text = f'Rigid body iterations did not converge below tolerance for rotational velocity: {np.linalg.norm(self.omega_z - omega_last_it)} > {self.rb_tol}.'
+            if np.linalg.norm(self.moment_int - moment_last_it) > self.rb_tol:
+                warning_text = f'Rigid body iterations did not converge below tolerance for moment: {np.linalg.norm(self.moment_int - moment_last_it)} > {self.rb_tol}.'
                 tools.print_info(warning_text, layout='warning')
 
         # process output interface data once rigid body iterations are converged
@@ -702,11 +855,11 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         super().output_solution_step()
 
         # save data for restart
-        if self.save_restart != 0 and self.time_step % self.save_restart == 0:
+        if self.save_restart != 0 and self.timestep % self.save_restart == 0:
             self.save_restart_rb_data()
-            if self.save_restart < 0 and self.time_step + self.save_restart > self.timestep_start_current:
+            if self.save_restart < 0 and self.timestep + self.save_restart > self.timestep_start_current:
                 try:
-                    os.remove(self.case_name + f'_restart_ts{self.time_step + self.save_restart}.pickle')
+                    os.remove(self.case_name + f'_restart_ts{self.timestep + self.save_restart}.pickle')
                 except OSError:
                     pass
 
@@ -734,6 +887,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                         continue
 
     def finalize(self):
+        print(f"Average nr. of RB iterations = {self.cnt/self.timestep}")
         super().finalize()
         shutil.rmtree(self.tmp_dir_unique, ignore_errors=True)
         self.coco_messages.send_message('stop')
@@ -770,11 +924,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                         os.remove(join(self.dir_cfd, accepted_variables_pc_liquid_rb['in'][var][0] + f'_timestep{timestep}_thread{thread_id}.dat'))
                     except OSError:
                         pass
-            for thread_id in self.overset_thread_ids.values():
-                try:
-                    os.remove(join(self.dir_cfd, f'RB_update_timestep{self.timestep}_thread{thread_id}.dat'))
-                except OSError:
-                    pass
+            try:
+                os.remove(join(self.dir_cfd, f'RB_update_timestep{self.timestep}.dat'))
+            except OSError:
+                pass
 
     def check_software(self):
         # Fluent version: see set_fluent_version
@@ -844,66 +997,79 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                     np.savetxt(file_name, prof, fmt=fmt, header='temperature unique-ids', comments='')
 
     def update_nodal_positions(self):
-        for dct in self.interface_input.parameters:
-            mp_name = dct['model_part']
-            if 'nodes' in mp_name:
-                thread_id = self.model_part_thread_ids[mp_name]
-                model_part = self.model.get_model_part(mp_name)
-                last_full_disp = self.interface_rb.get_variable_data(mp_name, 'prev_disp')
-                disp_step_melting = self.interface_rb.get_variable_data(mp_name, 'disp_step_melting')
-                x_prev = model_part.x0 + last_full_disp[:, 0]
-                y_prev = model_part.y0 + last_full_disp[:, 1]
-                z_prev = model_part.z0 + last_full_disp[:, 2]
-                r_prev = np.column_stack((x_prev, y_prev, z_prev))
+        if len(self.interface_input.parameters) > 1:
+            if self.timestep == 1 and self.iteration == 1 and self.rb_iter == 1:
+                tools.print_info('Solver wrapper currently only supports one rigid body. Only one model part will receive nodal updates by update_nodal_positions().', layout='warning')
+        for j, dct in enumerate(self.interface_input.parameters):
+            if j == 0:
+                mp_name = dct['model_part']
+                if 'nodes' in mp_name:
+                    thread_id = self.model_part_thread_ids[mp_name]
+                    model_part = self.model.get_model_part(mp_name)
+                    last_full_disp = self.interface_rb.get_variable_data(mp_name, 'prev_disp')
+                    disp_step_melting = self.interface_rb.get_variable_data(mp_name, 'disp_step_melting')
+                    x_prev = model_part.x0 + last_full_disp[:, 0]
+                    y_prev = model_part.y0 + last_full_disp[:, 1]
+                    z_prev = model_part.z0 + last_full_disp[:, 2]
+                    r_prev = np.column_stack((x_prev, y_prev, z_prev))
 
-                # update r_prev with the melting displacement, rotated to the global frame (liquid domain)
-                r_temp = r_prev + disp_step_melting
+                    # update r_prev with the melting displacement, rotated to the global frame (liquid domain)
+                    r_temp = r_prev + disp_step_melting
 
-                omega_array = np.zeros(np.shape(r_prev))
-                omega_array[:, 2] = self.omega_z
-                disp_step_rb = (self.v_trans + np.cross(omega_array, (r_temp - self.com_prev))) * self.delta_t
+                    # Crank-Nicolson (trapezoidal) integration
+                    # Use the average velocity over the time step for a second-order accurate position update
+                    self.avg_v_trans = 0.5 * (self.v_trans_prev + self.v_trans)
+                    self.avg_omega = 0.5 * (self.omega_prev + self.omega)
 
-                self.interface_rb.set_variable_data(mp_name, 'new_disp', last_full_disp + disp_step_melting + disp_step_rb)
+                    omega_array = np.zeros(np.shape(r_prev))
+                    omega_array[:, 2] = self.avg_omega[2]
+                    disp_step_rb = (self.avg_v_trans + np.cross(omega_array, (r_temp - self.com_prev))) * self.delta_t
 
-                r_new = r_temp + disp_step_rb
-                x = r_new[:, 0]
-                y = r_new[:, 1]
-                z = r_new[:, 2]
+                    self.interface_rb.set_variable_data(mp_name, 'new_disp', last_full_disp + disp_step_melting + disp_step_rb)
 
-                if self.dimensions == 2:
-                    data = np.rec.fromarrays([x, y, model_part.id])
-                    fmt = '%27.17e%27.17e%27d'
-                else:
-                    data = np.rec.fromarrays([x, y, z, model_part.id])
-                    fmt = '%27.17e%27.17e%27.17e%27d'
-                tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
-                file_name = join(self.dir_cfd, tmp)
-                np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
+                    r_new = r_temp + disp_step_rb
+                    x = r_new[:, 0]
+                    y = r_new[:, 1]
+                    z = r_new[:, 2]
 
-    def update_overset_rb_motion(self):
-        for dct in self.interface_input.parameters:
-            mp_name = dct['model_part']
-            overset_boundary_name = None
-            if 'nodes' in mp_name:
-                for key, value in self.outer_inner_surf_dict.items():
-                    if key in mp_name:  # check substring match
-                        overset_boundary_name = value
-                        break  # stop at the first match
+                    if self.dimensions == 2:
+                        data = np.rec.fromarrays([x, y, model_part.id])
+                        fmt = '%27.17e%27.17e%27d'
+                    else:
+                        data = np.rec.fromarrays([x, y, z, model_part.id])
+                        fmt = '%27.17e%27.17e%27.17e%27d'
+                    tmp = f'nodes_update_timestep{self.timestep}_thread{thread_id}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+                    np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-                if overset_boundary_name is None:
-                    raise ValueError(f"No overset boundary mapping found for model part '{mp_name}'")
+    def update_file_rb_motion(self):
+        if len(self.interface_input.parameters) > 1:
+            if self.timestep == 1 and self.iteration == 1 and self.rb_iter == 1:
+                tools.print_info('Solver wrapper currently only supports one rigid body. Only one "RB_update" file will be written by update_file_rb_motion().', layout='warning')
+        for j, dct in enumerate(self.interface_input.parameters):
+            if j == 0:
+                mp_name = dct['model_part']
+                overset_boundary_name = None
+                if 'nodes' in mp_name:
+                    for key, value in self.outer_inner_surf_dict.items():
+                        if key in mp_name:  # check substring match
+                            overset_boundary_name = value
+                            break  # stop at the first match
 
-                thread_id = self.overset_thread_ids[overset_boundary_name]
-                omega = np.zeros(3)
-                omega[2] = self.omega_z
+                    if overset_boundary_name is None and self.define_os:
+                        raise ValueError(f"No overset boundary mapping found for model part '{mp_name}'")
 
-                tmp = f'RB_update_timestep{self.timestep}_thread{thread_id}.dat'
-                file_name = join(self.dir_cfd, tmp)
+                    # thread_id = self.overset_thread_ids[overset_boundary_name]
+                    omega = np.zeros(3)
+                    omega[2] = self.avg_omega[2]
 
-                with open(file_name, "w") as f:
-                    f.write(" ".join(f"{d:.16e}" for d in self.v_trans) + "\n")
-                    f.write(" ".join(f"{d:.16e}" for d in omega) + "\n")
-                    f.write(" ".join(f"{d:.16e}" for d in self.com_prev) + "\n")
+                    tmp = f'RB_update_timestep{self.timestep}.dat'
+                    file_name = join(self.dir_cfd, tmp)
+
+                    with open(file_name, "w") as f:
+                        f.write(" ".join(f"{d:.16e}" for d in self.avg_v_trans) + "\n")
+                        f.write(" ".join(f"{d:.16e}" for d in omega) + "\n")
+                        f.write(" ".join(f"{d:.16e}" for d in self.com_prev) + "\n")
 
     def melting_displacement(self):
         for dct in self.interface_input.parameters:
@@ -932,8 +1098,12 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                 file_name = join(self.dir_cfd, tmp)
                 np.savetxt(file_name, data, fmt=fmt, header=f'{model_part.size}', comments='')
 
-                # Convert from the local frame (solid) to the global frame of the rigid body in the liquid domain
-                disp_step_melting_global = np.dot(disp_step_melting, self.config_prev.T)
+                if self.rot_update == 'rot_mat':
+                    # Convert from the local frame (solid) to the global frame of the rigid body in the liquid domain
+                    disp_step_melting_global = np.dot(disp_step_melting, self.orientation_prev.T)
+                else:
+                    # Use the quaternion from the start of the step to rotate the displacement vectors
+                    disp_step_melting_global = quat_rotate_vector_array(self.orientation_prev, disp_step_melting)
 
                 self.interface_rb.set_variable_data(mp_name, 'disp_step_melting', disp_step_melting_global)
 
@@ -942,56 +1112,176 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         file_name = join(self.dir_cfd, tmp)
         with open(file_name, 'r') as f:
             lines = [line.strip() for line in f if line.strip()]  # remove blank lines
-    
+
         # Skip the header line
-        volume = float(lines[1])
+        self.volume = float(lines[1])
 
         self.com = np.array(lines[2].split(), dtype=float)
+        if self.timestep == 1 and self.iteration == 1:
+            self.com_prev = self.com
+
         moi = np.array(lines[3].split(), dtype=float)
-        force_int = np.array(lines[4].split(), dtype=float)
-        moment_int = np.array(lines[5].split(), dtype=float)
+        # fluid-integrated forces read from CFD (these are the ones we will relax)
+        self.force_int = np.array(lines[4].split(), dtype=float)
+        self.moment_int = np.array(lines[5].split(), dtype=float)
 
-        # Calculate translational and rotational accelerations and velocities
-        g = np.array([0, -9.81, 0]) # gravitational acceleration
-        a_trans = (force_int + (self.solid_density - self.liquid_density) * g * volume) / (self.solid_density * volume)
-        a_rot_z = moment_int[2] / moi[2]
+        # Keep a copy of the raw fluid force and moment read from file (before contact)
+        force_raw = self.force_int.copy()
+        moment_raw = self.moment_int.copy()
 
-        # store previous iteration values for relaxation
-        v_trans_pr_it = self.v_trans
+        print(f'force_raw_x = {force_raw[0]} N')
+        print(f'force_raw_y = {force_raw[1]} N')
 
-        # 1st order explicit update of translational velocity with relaxation
-        if (self.timestep == 1) and (self.iteration == 1):
-            self.v_trans = self.v_trans_prev + self.delta_t * a_trans # avoids damping the initial condition
+        # --- FORCE RELAXATION (static or aitken) ---
+        # Option to skip relaxation on the very first timestep and iteration
+        if not self.relax_first_ts and self.timestep == 1 and self.iteration == 1:
+            force_relaxed = force_raw.copy()
         else:
-            self.v_trans = (self.v_trans_prev + self.delta_t * a_trans) * self.rb_relax + v_trans_pr_it * (1 - self.rb_relax)
-
-        if self.rot_update == 'explicit':
-            # store previous iteration values for relaxation
-            omega_pr_it = self.omega_z
-
-            # 1st order explicit updates of rotational velocity with relaxation
-            if (self.timestep == 1) and (self.iteration == 1):
-                self.omega_z = self.omega_z_prev + self.delta_t * a_rot_z
+            if self.rb_relax_method == 'static':
+                # simple under-relaxation on forces
+                force_relaxed = self.force_pr_it + self.rb_relax * (force_raw - self.force_pr_it)
+            elif self.rb_relax_method == 'aitken':
+                # Aitken on the force residuals
+                self.aitken_relax_factor_force = self.calc_aitken(
+                    force_raw, self.force_pr_it, self.force_res_prev, self.aitken_relax_factor_force
+                )
+                # update previous residual for next aitken step
+                self.force_res_prev = force_raw - self.force_pr_it
+                force_relaxed = self.force_pr_it + self.aitken_relax_factor_force * (force_raw - self.force_pr_it)
             else:
-                self.omega_z = (self.omega_z_prev + self.delta_t * a_rot_z) * self.rb_relax + omega_pr_it * (1 - self.rb_relax)
+                # fallback: no relaxation
+                force_relaxed = force_raw.copy()
 
-            # Update rotational acceleration
-            self.a_rot_z = a_rot_z
+        # store relaxed force as "previous" for next iteration
+        self.force_pr_it = force_relaxed.copy()
 
-            # Update rotation matrix
-            theta = np.array([0, 0, self.delta_t * self.omega_z])
-            self.config_new = self.config_prev @ exp_map(theta)
+        # --- MOMENT RELAXATION (static or aitken) ---
+        # Option to skip relaxation on the very first timestep and iteration
+        if not self.relax_first_ts and self.timestep == 1 and self.iteration == 1:
+            moment_relaxed = moment_raw.copy()
+        else:
+            if self.rb_relax_method == 'static':
+                # simple under-relaxation on moments
+                moment_relaxed = self.moment_pr_it + self.rb_relax * (moment_raw - self.moment_pr_it)
+            elif self.rb_relax_method == 'aitken':
+                # Aitken on the moment residuals
+                self.aitken_relax_factor_moment = self.calc_aitken(
+                    moment_raw, self.moment_pr_it, self.moment_res_prev, self.aitken_relax_factor_moment
+                )
+                # update previous residual for next aitken step
+                self.moment_res_prev = moment_raw - self.moment_pr_it
+                moment_relaxed = self.moment_pr_it + self.aitken_relax_factor_moment * (moment_raw - self.moment_pr_it)
+            else:
+                # fallback: no relaxation
+                moment_relaxed = moment_raw.copy()
 
-            # Re-orthonormalize if drift exceeds tolerance
-            if np.linalg.norm(self.config_new.T @ self.config_new - np.identity(3)) > 1e-8:
-                U, _, Vt = np.linalg.svd(self.config_new)
-                self.config_new = U @ Vt
+        # store relaxed moment as "previous" for next iteration
+        self.moment_pr_it = moment_relaxed.copy()
 
-        elif self.rot_update == 'algo_c2':
-            # ALGO_C2 is second-order accurate and momentum-consistent
-            self.config_new, omega_new, A_new = self.algo_c2(moi[2], moment_int[2])  # explicit ALGO_C2 (Simo & Wong) algorithm
-            self.omega_z = omega_new[2]
-            self.a_rot_z = A_new[2]
+        # Calculate fraction of weight that is accounted for
+        self.weight_factor = self.timestep / self.weight_ramp if self.timestep < self.weight_ramp else 1
+
+        # --- TRANSLATIONAL UPDATE ---
+        g = np.array([0, -9.81, 0])  # gravitational acceleration
+        mass_solid = self.solid_density * self.volume
+
+        # Fictitious Mass / Damping method to anticipate high added mass & viscous damping in fluid solver
+        if self.gap_ids:
+            h_used, self.h_min, self.normal, pinch_point = self.calculate_h_min()
+
+            # Fictitious mass components are always calculated at the chosen wall
+            epsilon = 1e-4 * self.wall_length
+            h_eff = max(h_used, epsilon)  # Singularity protection
+            depth = 1.0 # in 2D
+
+            fict_mass = self.liquid_density * (self.wall_length ** 3) * depth / h_eff
+            fict_damping = depth * (self.wall_length ** 3) * (self.solid_density / self.liquid_density) * self.dyn_visc / (h_eff ** 3)
+        else:
+            fict_mass = 0
+            fict_damping = 0
+
+        self.a_trans_prev_it = self.a_trans.copy()
+
+        if self.buoyancy:
+            F_net = force_relaxed + self.weight_factor * (self.solid_density - self.liquid_density) * g * self.volume
+        else:
+            F_net = force_relaxed + self.weight_factor * mass_solid * g
+
+        # Add the contact force to the net sum of forces
+        if self.include_contact_force:
+            contact_force = self.calc_contact_force()
+            F_net += contact_force
+
+        # We add (M_sys * a_prev_iter) to the forces
+        # This dampens the acceleration update significantly without altering the final converged physics.
+        self.M_sys = fict_mass + self.delta_t * fict_damping / 2
+        M_sys_raw = self.M_sys.copy()
+        self.M_sys *= self.fict_coeff
+        if self.rb_iter == 1:
+            self.M_sys *= self.multiplier
+        F_tot = F_net + self.M_sys * self.a_trans_prev_it
+
+        # Update velocity with Crank-Nicolson integration (2nd order)
+        self.a_trans = F_tot / (mass_solid + self.M_sys)
+        self.v_trans = self.v_trans_prev +  0.5 * (self.a_trans_prev + self.a_trans) * self.delta_t
+
+        if self.h_min < self.h_ul and self.normal is not None:
+            if np.dot(self.v_trans, self.normal) < 0:
+                print(f"--- Wall Guard Activated ---")
+                rejected = np.dot(self.v_trans, self.normal) * self.normal
+                trans_braking = 1.0 if self.h_min <= self.h_ll else (self.h_ul - self.h_min)/(self.h_ul - self.h_ll)
+                self.v_trans = self.v_trans - trans_braking * rejected
+
+                # Make acceleration consistent
+                self.a_trans = 2 * (self.v_trans - self.v_trans_prev) / self.delta_t - self.a_trans_prev
+
+        # --- ROTATIONAL UPDATE ---
+        if self.rot_update == 'off':
+            # Enforce zero rotation when turned off
+            self.a_rot = np.zeros(3)
+            self.omega = np.zeros(3)
+            self.orientation = np.array([1.0, 0.0, 0.0, 0.0]) # Identity quaternion
+        else:
+            # NOTE: This implementation assumes a DIAGONAL moment of inertia tensor,
+            # where the 'moi' vector represents [I_xx, I_yy, I_zz]. For a full
+            # 3x3 tensor, a matrix inversion would be required.
+            # Calculate raw rotational acceleration
+            fict_moi = (self.M_sys / (self.solid_density * self.volume)) * moi
+            moi_total = moi + fict_moi
+            a_rot_prev_it = self.a_rot.copy()
+            # moi is in this case a vector representing the diagonal elements of the otherwise empty moi matrix
+            moment_tot = moment_relaxed + fict_moi * a_rot_prev_it
+
+            self.a_rot = np.divide(moment_tot, moi_total, out=np.zeros_like(moment_tot), where=moi_total != 0)
+
+            # Update rotational velocity with Crank-Nicolson integration (2nd order)
+            self.omega = self.omega_prev + 0.5 * (self.a_rot_prev + self.a_rot) * self.delta_t
+
+            if self.h_min < self.h_ul and self.normal is not None:
+                rot_vel = np.cross(self.omega, (pinch_point - self.com))
+                if np.dot(rot_vel, self.normal) < 0:
+                    rot_braking = 0.0 if self.h_min <= self.h_ll else (self.h_min - self.h_ll) / (self.h_ul - self.h_ll)
+                    self.omega *= rot_braking
+
+                    # Make acceleration consistent
+                    self.a_rot = 2 * (self.omega - self.omega_prev) / self.delta_t - self.a_rot_prev
+
+            if self.rot_update == 'quaternion':
+                # Update orientation using quaternions for second-order accuracy
+                avg_omega = 0.5 * (self.omega_prev + self.omega)
+                delta_quat = quat_from_angular_velocity(avg_omega, self.delta_t)
+                self.orientation = quat_multiply(delta_quat, self.orientation_prev)
+                self.orientation = quat_normalize(self.orientation)
+            elif self.rot_update == 'rot_mat':
+                # Update rotation matrix
+                avg_omega = 0.5 * (self.omega_prev + self.omega)
+                theta = self.delta_t * avg_omega
+                self.orientation = self.orientation_prev @ exp_map(theta)  # Only rotation along z-axis assumed
+
+                # Re-orthonormalize if drift exceeds tolerance
+                if np.linalg.norm(self.orientation.T @ self.orientation - np.identity(3)) > 1e-8:
+                    U, _, Vt = np.linalg.svd(self.orientation)
+                    self.orientation = U @ Vt
     
     def read_output_file(self, prefix, thread_id=None):
         tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
@@ -1004,6 +1294,127 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             os.system(cmd)
         return data
 
+    def calc_contact_force(self):
+        # Parameters:
+        R = 0.00125 # (m) Radius of the disk
+        rho = 0.0001 # (m) Range of the force beyond contact --> 2.5 x cell size [Glowinski]
+        eps_w_prime = 1e-5 # Stiffness parameter for larger overlaps
+        eps_w = 1e-5 # Stiffness for initial contact [Glowinski]
+        wall_y = 0.0 # Y-coordinate of the horizontal lower wall
+        C = self.liquid_density * 9.81 * (np.pi * (R ** 2) * 1) # Scaling factor, chosen to be the buayant force [You et al.]
+
+        # Define the closest point on the wall to the particle center
+        wall_pos = self.com.copy()
+        wall_pos[1] = wall_y - R
+
+        # Calculate the distance vector and its magnitude
+        dist = self.com - wall_pos
+        dist_mag = np.linalg.norm(dist)
+
+        # Implement Eq. (5.2) [Glowinski] for Particle-Wall Collision and Eq. (20) [You et al.]
+        if dist_mag > (R + rho):
+            force_mag = 0.0
+        elif dist_mag > R:
+            force_mag = (C / eps_w) * ((2 * R + rho - dist_mag) / rho) ** 2
+        else:
+            force_mag = (C / eps_w_prime) # [Glowinski]
+
+        # Calculate the final force vector (F = mag * direction)
+        if dist_mag > 1e-12:
+            force_vec = force_mag * (dist / dist_mag)
+        else:
+            force_vec = np.zeros(np.shape(self.com))
+
+        if force_mag > 1e-12:
+            tools.print_info(f'Collision force is {force_mag} N/m')
+
+        return force_vec
+
+    def calculate_h_min(self):
+        """
+        Calculates the minimum gap (h_min) between the solid interface
+        (based on prev_disp) and the static heated wall using the KDTree.
+        """
+
+        r = None
+
+        # --- Extract Interface Node Coordinates ---
+        for dct in self.interface_input.parameters:
+            # We only care about the first valid node-based model part
+            mp_name = dct['model_part']
+            if 'nodes' in mp_name:
+                model_part = self.model.get_model_part(mp_name)
+
+                # Get displacement.
+                # NOTE: Using 'prev_disp' (start of timestep) is usually SAFER for
+                # Fictitious Mass than updating it every sub-iteration.
+                # It keeps the Mass Matrix constant during the loop.
+                last_full_disp = self.interface_rb.get_variable_data(mp_name, 'prev_disp')
+
+                # Calculate absolute coordinates
+                x = model_part.x0 + last_full_disp[:, 0]
+                y = model_part.y0 + last_full_disp[:, 1]
+
+                if self.dimensions == 3:
+                    z = model_part.z0 + last_full_disp[:, 2]
+                    r = np.column_stack((x, y, z))
+                else:
+                    r = np.column_stack((x, y))
+
+                # We found our interface, stop looking
+                break
+
+        # --- KDTree Query ---
+        h_used = None
+        min_dists = []
+        normals = []
+        p_itfs = []
+
+        for wall_name in self.gap_trees:
+            wall_tree = self.gap_trees[wall_name]
+
+            # Find nearest distance from any interface node to the wall
+            #    k=1 : Find just the 1 nearest neighbor
+            #    workers=-1 : Use all CPU cores
+            dists, wall_ids = wall_tree.query(r, k=1, workers=-1)
+
+            # Find the single absolute minimum gap across the whole interface
+            min_local_id = np.argmin(dists)
+            h_min = dists[min_local_id]
+            if wall_name == self.fm_wall:
+                h_used = h_min.copy()
+
+            p_itf = r[min_local_id]  # The moving node
+            id_wall_min = wall_ids[min_local_id]  # Index of the static wall node
+            p_wall = wall_tree.data[id_wall_min]  # The static wall node coords
+
+            # --- Calculate Normal (Approximation) ---
+            diff_vec = p_itf - p_wall
+
+            # Avoid division by zero if they are touching
+            dist = np.linalg.norm(diff_vec)
+            if dist > 1e-12:
+                normal = diff_vec / dist
+                # Ensure normal is always 3D compatible with self.v_trans
+                if self.dimensions == 2 and normal.shape[0] == 2:
+                    normal = np.append(normal, 0.0)
+                    p_itf = np.append(p_itf, 0.0)
+            else:
+                normal = None
+
+            min_dists.append(h_min)
+            normals.append(normal)
+            p_itfs.append(p_itf)
+
+        # Choose absolute minimum
+        min_global_id = np.argmin(min_dists)
+
+        h_min = min_dists[min_global_id]
+        normal = normals[min_global_id]
+        p_itf = p_itfs[min_global_id]
+
+        return h_used, h_min, normal, p_itf
+
     def update_report_file(self):
         """Create or update the rigid-body report file each timestep."""
 
@@ -1015,25 +1426,43 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             with open(file_name, "w") as f:
                 f.write("# CoCoNuT rigid body motion history\n")
                 f.write("#\n")
-                f.write("#  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}\n"
-                        .format("time", "CG_X", "CG_Y", "V_X", "V_Y", "THETA_Z"))
-                f.write("#  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}\n"
-                        .format("(s)", "(m)", "(m)", "(m/s)", "(m/s)", "(deg)"))
+                f.write("#  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}\n"
+                        .format("time", "CG_X", "CG_Y", "V_X", "V_Y", "THETA_Z", "F_X", "F_Y", "M_Z", "volume", "h_min"))
+                f.write("#  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}\n"
+                        .format("(s)", "(m)", "(m)", "(m/s)", "(m/s)", "(deg)", "(N)", "(N)", "(N*m)", "(m^3)", "(m)"))
                 f.write("#\n")
 
         # Always append the new line of data
         time = self.timestep * self.delta_t
+        volume = self.volume
         cg_x = self.com[0]
         cg_y = self.com[1]
         v_x = self.v_trans[0]
         v_y = self.v_trans[1]
-        R = self.config_new[:2, :2]  # take 2D rotation part if config_new is 3x3
-        theta_rad = np.arctan2(R[1, 0], R[0, 0])
+
+        if self.rot_update == 'rot_mat':
+            R = self.orientation[:2, :2]  # take 2D rotation part if orientation is 3x3
+            theta_rad = np.arctan2(R[1, 0], R[0, 0])
+        else:
+            # Extract the w and z components from the orientation quaternion
+            w = self.orientation[0]
+            z = self.orientation[3]
+
+            # The angle theta is 2 * arctan2(z, w)
+            theta_rad = 2 * np.arctan2(z, w)
+
+        # Convert to degrees for reporting
         theta_deg = np.degrees(theta_rad)
+
+        force_x = self.force_int[0]
+        force_y = self.force_int[1]
+        moment_z = self.moment_int[2]
+        h = self.h_min
 
         with open(file_name, "a") as f:
             f.write(f"{time:12.5e}  {cg_x:12.5e}  {cg_y:12.5e}  "
-                    f"{v_x:12.5e}  {v_y:12.5e}  {theta_deg:12.5e}\n")
+                    f"{v_x:12.5e}  {v_y:12.5e}  {theta_deg:12.5e}  "
+                    f"{force_x:12.5e}  {force_y:12.5e}  {moment_z:12.5e}  {volume:12.5e}  {h:12.5e}\n")
 
     def get_coordinates(self):
         """  # TODO: rewrite this + include input ModelParts for faces (only used in Fluent solver wrapper tests atm)
@@ -1098,31 +1527,57 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
         return coord_data
 
-    def algo_c2(self, I_zz, M_zz):
-        # ALGO_C2 is second-order accurate and momentum-consistent
-        # Previous state
-        omega_prev = np.array([0, 0, self.omega_z_prev])
-        A_prev = np.array([0, 0, self.a_rot_z_prev])
-        M_prev = np.array([0, 0, M_zz])
+    def calc_aitken(self, q_raw, q_prev, res_prev, relax_factor):
+        """
+        Generic Aitken Δ² relaxation factor update.
+        Suitable for forces, moments, accelerations, or any vector residual.
 
-        # Inertia matrix
-        I = np.zeros((3, 3))
-        I[2, 2] = I_zz
+        Args:
+            q_raw       : Current unrelaxed vector (e.g. fluid force).
+            q_prev      : Previous relaxed vector.
+            res_prev    : Previous residual (q_raw_prev - q_prev_prev).
+            relax_factor: Current relaxation factor.
 
-        # step 1
-        theta = self.delta_t * omega_prev + self.delta_t**2 * A_prev / 2
+        Returns:
+            new_relax_factor (float): Updated and clamped Aitken relaxation factor.
+        """
 
-        # step 2
-        config_new = self.config_prev @ exp_map(theta)
+        # --- 1. STARTUP STABILIZATION ---
+        if self.rb_iter <= 2:
+            return relax_factor
 
-        # step 3
-        omega_new = np.linalg.inv(I) @ (exp_map(-theta) @ ((I @ omega_prev.T) + self.delta_t * (config_new.T @ M_prev.T)))
+        # --- 2. RAW AITKEN CALCULATION ---
+        # Current residual
+        res = q_raw - q_prev
 
-        # step 4
-        A_new = (omega_new - omega_prev) / self.delta_t
+        # Change in residual
+        res_diff = res - res_prev
 
-        return config_new, omega_new.T, A_new.T
+        # Compute denominator
+        denom = np.dot(res_diff, res_diff)
 
+        # Default to current factor if denominator is too small
+        raw_relax = relax_factor
+
+        # Update relaxation factor (only if safe)
+        if denom > 1e-14:
+            num = np.dot(res_prev, res_diff)
+            raw_relax = - relax_factor * num / denom
+
+        # --- 3. SMOOTHING (Slew Rate Limiter) ---
+        # Limit the change in relaxation factor to avoid shocks (e.g. +/- 0.2 max change)
+        max_change = 0.2
+
+        change = raw_relax - relax_factor
+        change = np.clip(change, -max_change, max_change)
+
+        new_relax_factor = relax_factor + change
+
+        # --- 4. SAFETY CLAMPING ---
+        new_relax_factor = np.clip(new_relax_factor, 0.01, 0.99)
+
+        return new_relax_factor
+    
     def backup_fluent_log(self):
         file = join(self.dir_cfd, 'fluent.log')
         file_backup = join(self.dir_cfd, 'fluent_backup.log')
@@ -1131,19 +1586,19 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         if os.path.isfile(file):
             os.rename(file, file_backup)
 
-    def print_rb_iteration_info(self, v_res, omega_res):
+    def print_rb_iteration_info(self, F_res, M_res):
         """
         Print residual info for rigid body iterations inside a coupling iteration.
         """
 
-        info = f'   [Rigid body] {self.rb_iter:<18d}{v_res:<28.17e}{omega_res:<28.17e}'
+        info = f'   [Rigid body] {self.rb_iter:<18d}{F_res:<28.17e}{M_res:<28.17e}'
         tools.print_info(info, flush=True)
 
     def print_rb_header(self):
         """
         Print header for rigid body iterations inside a coupling iteration.
         """
-        header = f'   {"RB Iteration":<18}{"Trans. vel. residual":<28}{"Rot. vel. residual":<28}'
+        header = f'   {"RB Iteration":<18}{"Force residual":<28}{"Moment residual":<28}'
         tools.print_info(header, flush=True)
 
     def save_restart_rb_data(self):
@@ -1151,25 +1606,33 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         state = {
             'v_trans_prev': self.v_trans_prev,
             'v_trans': self.v_trans,
-            'omega_z_prev': self.omega_z_prev,
-            'omega_z': self.omega_z,
-            'config_prev': self.config_prev,
-            'config_new': self.config_new,
-            'a_rot_z_prev': self.a_rot_z_prev,
-            'a_rot_z': self.a_rot_z,
+            'omega_prev': self.omega_prev,
+            'omega': self.omega,
+            'a_trans_prev': self.a_trans_prev,
+            'a_trans': self.a_trans,
+            'a_rot_prev': self.a_rot_prev,
+            'a_rot': self.a_rot,
+            'orientation_prev': self.orientation_prev,
+            'orientation': self.orientation,
             'com': self.com,
             'com_prev': self.com_prev,
-            'interface_rb': self.interface_rb
+            'interface_rb': self.interface_rb,
+            'force_pr_it': self.force_pr_it,
+            'moment_pr_it': self.moment_pr_it
         }
 
         tmp = f'restart_rb_timestep{self.timestep}.pickle'
         file_name = join(self.dir_cfd, tmp)
+
         with open(file_name, 'wb') as f:
             pickle.dump(state, f)
 
     def load_restart_rb_data(self):
         """Load rigid body motion state from a pickle file."""
-        tmp = f'restart_rb_timestep{self.timestep_start}.pickle'
+        if self.restart:
+            tmp = f'restart_rb_timestep{self.timestep_start}.pickle'
+        elif self.restart_rb_only != 0:
+            tmp = f'restart_rb_timestep{self.restart_rb_only}.pickle'
         file_name = join(self.dir_cfd, tmp)
 
         if not os.path.exists(file_name):
@@ -1180,17 +1643,58 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
         self.v_trans_prev = state['v_trans_prev']
         self.v_trans = state['v_trans']
-        self.omega_z_prev = state['omega_z_prev']
-        self.omega_z = state['omega_z']
-        self.config_prev = state['config_prev']
-        self.config_new = state['config_new']
-        self.a_rot_z_prev = state['a_rot_z_prev']
-        self.a_rot_z = state['a_rot_z']
+        self.omega_prev = state['omega_prev']
+        self.omega = state['omega']
+        self.a_trans_prev = state['a_trans_prev']
+        self.a_trans = state['a_trans']
+        self.a_rot_prev = state['a_rot_prev']
+        self.a_rot = state['a_rot']
+        self.orientation_prev = state['orientation_prev']
+        self.orientation = state['orientation']
         self.com = state['com']
         self.com_prev = state['com_prev']
         self.interface_rb = state['interface_rb']
+        self.force_pr_it = state['force_pr_it']
+        self.moment_pr_it = state['moment_pr_it']
+
+        tools.print_info('Rigid body restart data successfuly loaded.', layout='info')
 
 # Helper functions
+def quat_multiply(q1, q2):
+    """Multiplies two quaternions."""
+    w1, x1, y1, z1 = q1
+    w2, x2, y2, z2 = q2
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+    return np.array([w, x, y, z])
+
+def quat_normalize(q):
+    """Normalizes a quaternion to unit length to prevent numerical drift."""
+    norm = np.linalg.norm(q)
+    if norm == 0:
+        return np.array([1.0, 0.0, 0.0, 0.0]) # Return identity quaternion
+    return q / norm
+
+def quat_from_angular_velocity(omega_vec, dt):
+    """Creates a rotation quaternion from an angular velocity vector and timestep."""
+    angle = np.linalg.norm(omega_vec) * dt
+    if angle < 1e-12: # Avoid division by zero for very small rotations
+        return np.array([1.0, 0.0, 0.0, 0.0])
+    axis = omega_vec / (angle / dt)
+    half_angle = angle / 2.0
+    w = np.cos(half_angle)
+    x, y, z = axis * np.sin(half_angle)
+    return np.array([w, x, y, z])
+
+def quat_rotate_vector_array(q, v_array):
+    """Efficiently rotates an array of 3D vectors by a unit quaternion q."""
+    q_w, q_vec = q[0], q[1:]
+    # This is a fast, vectorized formula for quaternion rotation
+    # Source: https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation?utm_source=chatgpt.com#Used_methods --> point 2
+    return v_array + 2 * np.cross(q_vec, np.cross(q_vec, v_array) + q_w * v_array)
+
 def skew(v):
     return np.array([[0, -v[2], v[1]],
                      [v[2], 0, -v[0]],

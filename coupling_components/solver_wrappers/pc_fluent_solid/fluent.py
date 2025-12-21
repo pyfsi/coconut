@@ -419,7 +419,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             # create initial conditions at output interface
             if self.ini_condition is not None:
                 if "faces" in mp_name:
-                    self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1))*self.ini_condition
+                    self.output_ini_cond[mp_name] = np.ones((data.shape[0], 1)) * self.ini_condition
 
         # create interfaces
         self.interface_input = data_structure.Interface(self.settings['interface_input'], self.model)

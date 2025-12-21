@@ -1,0 +1,113 @@
+/ --- BACKGROUND MESH - FINAL FACE DEFINITION CORRECTION
+/ ---
+/ --- Parameters (meters)
+$W_bg = 0.4
+$H_bg = 0.6
+$W_ref = 0.2
+$H_ref = 0.4
+
+/ --- Pre-calculated coordinate values
+$W_bg_half = $W_bg / 2
+$W_bg_neg = -$W_bg / 2
+$H_bg_half = $H_bg / 2
+$H_bg_neg = -$H_bg / 2
+$W_ref_half = $W_ref / 2
+$W_ref_neg = -$W_ref / 2
+$H_ref_half = $H_ref / 2
+$H_ref_neg = -$H_ref / 2
+
+/ --- Cell counts
+$Nx_ref = 400
+$Ny_ref = 800
+$Nx_coarse = 30
+$Ny_coarse = 30
+
+/ ---
+/CODE
+save name "background.dbs"
+solver select "FLUENT 5/6"
+
+/ --- Create ALL 16 vertices for a partitioned grid
+vertex create "bg_bl" coordinates $W_bg_neg $H_bg_neg 0
+vertex create "bg_br" coordinates $W_bg_half $H_bg_neg 0
+vertex create "bg_tr" coordinates $W_bg_half $H_bg_half 0
+vertex create "bg_tl" coordinates $W_bg_neg $H_bg_half 0
+vertex create "ref_bl" coordinates $W_ref_neg $H_ref_neg 0
+vertex create "ref_br" coordinates $W_ref_half $H_ref_neg 0
+vertex create "ref_tr" coordinates $W_ref_half $H_ref_half 0
+vertex create "ref_tl" coordinates $W_ref_neg $H_ref_half 0
+vertex create "p_b_l" coordinates $W_ref_neg $H_bg_neg 0
+vertex create "p_b_r" coordinates $W_ref_half $H_bg_neg 0
+vertex create "p_t_r" coordinates $W_ref_half $H_bg_half 0
+vertex create "p_t_l" coordinates $W_ref_neg $H_bg_half 0
+vertex create "p_l_b" coordinates $W_bg_neg $H_ref_neg 0
+vertex create "p_l_t" coordinates $W_bg_neg $H_ref_half 0
+vertex create "p_r_t" coordinates $W_bg_half $H_ref_half 0
+vertex create "p_r_b" coordinates $W_bg_half $H_ref_neg 0
+
+/ --- Create Original Edges
+edge create "ref_bottom" straight "ref_bl" "ref_br"
+edge create "ref_top"    straight "ref_tl" "ref_tr"
+edge create "ref_left"   straight "ref_bl" "ref_tl"
+edge create "ref_right"  straight "ref_br" "ref_tr"
+
+edge create "side_b_mid" straight "p_b_l" "p_b_r"
+edge create "side_t_mid" straight "p_t_l" "p_t_r"
+edge create "side_l_mid" straight "p_l_b" "p_l_t"
+edge create "side_r_mid" straight "p_r_b" "p_r_t"
+
+edge create "side_b_left" straight "bg_bl" "p_b_l"
+edge create "side_b_right" straight "p_b_r" "bg_br"
+edge create "side_t_left" straight "bg_tl" "p_t_l"
+edge create "side_t_right" straight "bg_tr" "p_t_r"
+
+edge create "side_l_bot" straight "bg_bl" "p_l_b"
+edge create "side_l_top" straight "p_l_t" "bg_tl"
+edge create "side_r_bot" straight "bg_br" "p_r_b"
+edge create "side_r_top" straight "p_r_t" "bg_tr"
+
+edge create "con_bl_v" straight "p_b_l" "ref_bl"
+edge create "con_br_v" straight "p_b_r" "ref_br"
+edge create "con_tl_v" straight "p_t_l" "ref_tl"
+edge create "con_tr_v" straight "p_t_r" "ref_tr"
+
+edge create "con_bl_h" straight "p_l_b" "ref_bl"
+edge create "con_br_h" straight "p_r_b" "ref_br"
+edge create "con_tl_h" straight "p_l_t" "ref_tl"
+edge create "con_tr_h" straight "p_r_t" "ref_tr"
+
+/ --- Create nine faces using  edge loops
+face create "f_center" wireframe "ref_bottom" "ref_right" "ref_top" "ref_left"
+face create "f_bottom" wireframe "side_b_mid" "con_br_v" "ref_bottom" "con_bl_v"
+face create "f_top"    wireframe "side_t_mid" "con_tr_v" "ref_top" "con_tl_v"
+face create "f_left"   wireframe "side_l_mid" "con_tl_h" "ref_left" "con_bl_h"
+face create "f_right"  wireframe "side_r_mid" "con_tr_h" "ref_right" "con_br_h"
+face create "f_bl_c"   wireframe "side_b_left" "con_bl_v" "con_bl_h" "side_l_bot"
+face create "f_br_c"   wireframe "side_b_right" "side_r_bot" "con_br_h" "con_br_v"
+face create "f_tr_c"   wireframe "side_t_right" "side_r_top" "con_tr_h" "con_tr_v"
+face create "f_tl_c"   wireframe "side_t_left" "side_l_top" "con_tl_h" "con_tl_v"
+
+/ --- Mesh edges
+edge mesh "ref_bottom" "ref_top" "side_b_mid" "side_t_mid" intervals $Nx_ref
+edge mesh "ref_left" "ref_right" "side_l_mid" "side_r_mid" intervals $Ny_ref
+
+edge mesh "con_bl_v" "con_br_v" "con_tr_v" "con_tl_v" "side_l_bot" "side_r_bot" intervals $Ny_coarse firstlength ratio1 0.0012 reverse
+edge mesh "side_l_top" "side_r_top" intervals $Ny_coarse firstlength ratio1 0.0006
+
+edge mesh "con_bl_h" "con_br_h" "con_tr_h" "con_tl_h" "side_t_left" "side_b_left" "side_t_right" intervals $Nx_coarse firstlength ratio1 0.0012 reverse
+edge mesh "side_b_right" intervals $Nx_coarse firstlength ratio1 0.0006
+
+/ --- Mesh all nine faces
+face mesh "f_center" "f_bottom" "f_top" "f_left" "f_right" "f_bl_c" "f_br_c" "f_tr_c" "f_tl_c" submap
+
+/ --- Define physics zones
+physics create "bottom" btype "WALL" edge "side_b_left" "side_b_right" "side_b_mid"
+physics create "sides" btype "WALL" edge "side_l_bot" "side_l_top" "side_l_mid" "side_r_bot" "side_r_top" "side_r_mid"
+physics create "top" btype "WALL" edge  "side_t_left" "side_t_right" "side_t_mid"
+physics create "fluid.bg" ctype "FLUID" face "f_center" "f_bottom" "f_top" "f_left" "f_right" "f_bl_c" "f_br_c" "f_tr_c" "f_tl_c"
+
+/ --- Export mesh
+export fluent5 "background.msh" nozval
+
+save
+end

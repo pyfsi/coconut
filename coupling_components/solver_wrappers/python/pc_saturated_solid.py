@@ -7,8 +7,10 @@ import numpy as np
 import os
 from os.path import join
 from scipy.linalg import solve_banded
+from scipy.spatial import cKDTree
 import json
 import pickle
+import pandas as pd
 
 
 def create(parameters):
@@ -19,7 +21,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
     check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     # define input and output variables
-    accepted_in_var = ['heat_flux']
+    accepted_in_var = ['displacement', 'heat_flux']
     accepted_out_var = ['displacement']
 
     @tools.time_initialize
@@ -49,14 +51,15 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.material_properties = self.settings['material_properties']
         self.mapper_settings = self.settings['conservative_mapper']
 
-        self.x0 = self.interface_settings['x0']
-        self.y0 = self.interface_settings['y0']
-        self.x1 = self.interface_settings['x1']
-        self.y1 = self.interface_settings['y1']
-        self.n = self.interface_settings['faces']
         self.mov_dir = self.interface_settings['movement_direction']
-        self.mov_dir = np.array((self.mov_dir))
-        
+        # Check for string-based direction ('inward'/'outward') or legacy vector
+        if isinstance(self.mov_dir, str):
+            if self.mov_dir not in ['inward', 'outward']:
+                raise ValueError(f"Invalid 'movement_direction': '{self.mov_dir}'. Must be 'inward' or 'outward'.")
+        else:
+            self.mov_dir = np.array(self.mov_dir)
+        self.closed = self.interface_settings.get('closed', False)
+
         self.rho = self.material_properties['rho']
         self.L = self.material_properties['latent']
 
@@ -69,53 +72,149 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.mapper_projection = self.mapper_settings.get('projection_order', 1) # 0: no projection, 1: 1st order upwind projection, 2: 2nd order upwind
 
         # initialization
+        interface_file = self.interface_settings.get('interface_file')
         if self.timestep_start == 0:  # no restart
-            x = np.linspace(self.x0, self.x1, self.n + 1)
-            y = np.linspace(self.y0, self.y1, self.n + 1)
-            ini_coord_faces = []
-            for i in range(self.n):
-                ini_coord_faces.append([(x[i] + x[i+1]) / 2, (y[i] + y[i+1]) / 2, 0])
-            self.ini_coord_faces = np.array(ini_coord_faces) # initial face coordinates
+            if interface_file is not None:
+                interface_path = join(self.working_directory, interface_file)
+                try:
+                    df_interface = pd.read_csv(interface_path)
+                except FileNotFoundError:
+                    raise FileNotFoundError(f"The specified interface file was not found: {interface_path}")
 
-            x = np.reshape(x, (self.n + 1, 1))
-            y = np.reshape(y, (self.n + 1, 1))
-            z = np.zeros((self.n + 1, 1))
-            self.ini_coord_nodes = np.concatenate((x, y), axis=1)
-            self.ini_coord_nodes = np.concatenate((self.ini_coord_nodes, z), axis=1) # initial node coordinates
+                raw_x = df_interface['x-coordinate'].values
+                raw_y = df_interface['y-coordinate'].values
+                points = np.column_stack((raw_x, raw_y))
 
-            self.prev_face_disp = np.zeros((self.n, 3))  # previous total face displacement
-            self.prev_disp = np.zeros((self.n + 1, 3))  # previous total node displacement
+                # --- OPTIMIZED SORTING (KD-Tree) ---
+                if len(points) > 1:
+                    # 1. Build the KD-Tree (Very fast spatial index)
+                    tree = cKDTree(points)
 
-            self.face_dx = np.zeros((self.n, 3))  # latest time step face displacement
-            self.dx = np.zeros((self.n + 1, 3))  # latest time step node displacement
+                    # 2. Pick a starting point.
+                    current_idx = np.argmin(points[:, 0])
+
+                    sorted_indices = [current_idx]
+                    visited = set([current_idx])
+
+                    # 3. Traverse the chain
+                    for _ in range(len(points) - 1):
+                        # Query k=2 nearest neighbors (1st is the point itself, 2nd is the neighbor)
+                        # We query k=5 just in case the immediate neighbors are already visited
+                        dists, indices = tree.query(points[current_idx], k=min(10, len(points)))
+
+                        found_next = False
+                        for neighbor_idx in indices:
+                            if neighbor_idx not in visited:
+                                visited.add(neighbor_idx)
+                                sorted_indices.append(neighbor_idx)
+                                current_idx = neighbor_idx
+                                found_next = True
+                                break
+
+                        if not found_next:
+                            # This happens if the surface is disjoint or you hit a dead end
+                            # but unvisited points remain elsewhere.
+                            break
+
+                    # Apply the sort
+                    points = points[sorted_indices]
+
+                x_nodes = points[:, 0]
+                y_nodes = points[:, 1]
+
+                self.nn = len(x_nodes)
+                self.nf = self.nn if self.closed else self.nn - 1
+
+                print(f'Solid nodes: {self.nn}')
+                print(f'Solid faces: {self.nf}')
+
+                z_nodes = np.zeros(self.nn)
+                self.ini_coord_nodes = np.vstack((x_nodes, y_nodes, z_nodes)).T
+
+                # Calculate initial face coordinates as midpoints of the nodes
+                self.ini_coord_faces = (self.ini_coord_nodes + np.roll(self.ini_coord_nodes, -1, axis=0)) / 2
+                if not self.closed:
+                    self.ini_coord_faces = self.ini_coord_faces[:-1]
+            else:  # Fallback to original straight line logic if file is not provided
+                if not self.closed:
+                    self.x0 = self.interface_settings['x0']
+                    self.y0 = self.interface_settings['y0']
+                    self.x1 = self.interface_settings['x1']
+                    self.y1 = self.interface_settings['y1']
+                    self.nf = self.interface_settings['faces']
+    
+                    x = np.linspace(self.x0, self.x1, self.nn)
+                    y = np.linspace(self.y0, self.y1, self.nn)
+                    ini_coord_faces = []
+                    for i in range(self.nf):
+                        ini_coord_faces.append([(x[i] + x[i+1]) / 2, (y[i] + y[i+1]) / 2, 0])
+                    self.ini_coord_faces = np.array(ini_coord_faces) # initial face coordinates
+    
+                    x = np.reshape(x, (self.nn, 1))
+                    y = np.reshape(y, (self.nn, 1))
+                    z = np.zeros((self.nn, 1))
+                    self.ini_coord_nodes = np.concatenate((x, y, z), axis=1)
+
+            self.prev_face_disp = np.zeros((self.nf, 3))  # previous total face displacement
+            self.prev_disp = np.zeros((self.nn, 3))  # previous total node displacement
+
+            self.face_dx = np.zeros((self.nf, 3))  # latest time step face displacement
+            self.dx = np.zeros((self.nn, 3))  # latest time step node displacement
         else: # restart
             file_name = join(self.working_directory, f'case_timestep{self.timestep_start}.pickle')
             with open(file_name, 'rb') as file:
                 data = pickle.load(file)
             self.ini_coord_nodes = data['ini_nodes'] # initial node coordinates
             self.ini_coord_faces = data['ini_faces'] # initial face coordinates
+            self.nf = self.ini_coord_faces.shape[0]
             self.prev_disp = data['prev_nodes'] # previous total node displacement
             self.prev_face_disp = data['prev_faces'] # previous total face displacement
             self.dx = data['dx_nodes'] # latest time step node displacement
             self.face_dx = data['dx_faces'] # latest time step face displacement
 
-        self.area = self.area_calc(self.ini_coord_nodes + self.prev_disp)
-        self.heat_flux = np.zeros((self.n,1)) # heat flux [W/m^2]
+        self.heat_flux = np.zeros((self.nf, 1)) # heat flux [W/m^2]
 
         # create input & output ModelParts
         self.model = Model()
 
-        self.input_mp_name = self.settings['interface_input'][0]['model_part']
-        self.output_mp_name = self.settings['interface_output'][0]['model_part']
+        flag_nodes = False
+        flag_faces = False
+        for item in (self.settings['interface_input']):
+            mp_name = item['model_part']
+            if 'nodes' in mp_name:
+                if flag_nodes:
+                    raise ValueError('Only a single input model part for both nodes and faces is allowed for this Python solver.')
+                else:
+                    flag_nodes = True
+                    self.input_nodes_mp_name = mp_name
+                    self.model.create_model_part(self.input_nodes_mp_name, self.ini_coord_nodes[:, 0].flatten(),
+                                                 self.ini_coord_nodes[:, 1].flatten(), np.zeros(self.nn),
+                                                 np.arange(self.nn))
+            elif 'faces' in mp_name:
+                if flag_faces:
+                    raise ValueError('Only a single input model part for both nodes and faces is allowed for this Python solver.')
+                else:
+                    flag_faces = True
+                    self.input_faces_mp_name = mp_name
+                    self.model.create_model_part(self.input_faces_mp_name, self.ini_coord_faces[:, 0].flatten(),
+                                                 self.ini_coord_faces[:, 1].flatten(), np.zeros(self.nf), np.arange(self.nf))
+            else:
+                raise ValueError('Given model parts should contain "nodes" or "faces" indicating to which the variable is applied.')
 
-        self.model.create_model_part(self.input_mp_name, self.ini_coord_faces[:,0].flatten(),
-                                               self.ini_coord_faces[:,1].flatten(), np.zeros(self.n), np.arange(self.n))
-        self.model.create_model_part(self.output_mp_name, self.ini_coord_nodes[:,0].flatten(),
-                                               self.ini_coord_nodes[:,1].flatten(), np.zeros(self.n + 1), np.arange(self.n + 1))
+        if not (flag_nodes and flag_faces):
+            raise ValueError('One (and only one) "faces" model part (heat flux) and one "nodes" model part (displacement) is required as input for this Python solver.')
+
+        if len(self.settings['interface_output']) == 1:
+            self.output_mp_name = self.settings['interface_output'][0]['model_part']
+            self.model.create_model_part(self.output_mp_name, self.ini_coord_nodes[:, 0].flatten(),
+                                                   self.ini_coord_nodes[:, 1].flatten(), np.zeros(self.nn), np.arange(self.nn))
+        else:
+            raise ValueError('Only a single output model part for nodes (displacement) is allowed for this Python solver.')
 
         # input & output interfaces
         self.interface_input = Interface(self.settings['interface_input'], self.model)
-        self.interface_input.set_variable_data(self.input_mp_name, 'heat_flux', self.heat_flux)
+        self.interface_input.set_variable_data(self.input_faces_mp_name, 'heat_flux', self.heat_flux)
+        self.interface_input.set_variable_data(self.input_nodes_mp_name, 'displacement', self.prev_disp + self.dx)
 
         self.interface_output = Interface(self.settings['interface_output'], self.model)
         self.interface_output.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
@@ -126,7 +225,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.internal_node_settings = [{"model_part": self.output_mp_name, "variables": ["displacement", "1ts_disp", "prev_disp"]}]
 
         self.internal_model.create_model_part(self.output_mp_name, self.ini_coord_faces[:, 0].flatten(),
-                                     self.ini_coord_faces[:, 1].flatten(), np.zeros(self.n), np.arange(self.n))
+                                     self.ini_coord_faces[:, 1].flatten(), np.zeros(self.nf), np.arange(self.nf))
 
         self.interface_internal_faces = Interface(self.internal_face_settings, self.internal_model)
         self.interface_internal_nodes = Interface(self.internal_node_settings, self.model)
@@ -160,34 +259,113 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
 
     def initialize_solution_step(self):
         super().initialize_solution_step()
-
         self.timestep += 1
-        self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal_faces)
-
-        self.prev_disp += self.dx
-        self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'prev_disp', self.prev_disp)
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
-        # input
-        self.interface_input = interface_input.copy()
-        self.heat_flux = interface_input.get_variable_data(self.input_mp_name, 'heat_flux') # [W/m^2]
-        self.heat_flux = -1*self.heat_flux # negative heat flux for liquid domain is positive for solid domain
-        
+        # process input interface data
+        # store incoming variables
+        self.interface_input.set_interface_data(interface_input.get_interface_data())
+
+        self.heat_flux = self.interface_input.get_variable_data(self.input_faces_mp_name, 'heat_flux') # [W/m^2]
+        self.heat_flux = -1 * self.heat_flux # negative heat flux for liquid domain is positive for solid domain
+
+        # Shouldn't this be in initialize_solution_step??
+        self.prev_disp = self.interface_input.get_variable_data(self.input_nodes_mp_name, 'displacement')
+        self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'prev_disp', self.prev_disp)
+
+        print('\n')
+        print(f'solve_solution_step - before n2f:')
+        print(
+            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
+
+        # map previous node displacement to previous face displacement
+        self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal_faces)
+
+        print('\n')
+        print(f'solve_solution_step - after n2f:')
+        print(
+            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
+
         disp_magn = (self.heat_flux * self.dt) / (self.rho * self.L) # Stefan condition
         self.area, normal_array = self.area_calc(self.ini_coord_nodes + self.prev_disp)
 
-        self.face_dx = disp_magn*normal_array
+        self.face_dx = disp_magn * normal_array
 
         self.interface_internal_faces.set_variable_data(self.output_mp_name, '1ts_disp', self.face_dx)
         self.interface_internal_faces.set_variable_data(self.output_mp_name, 'area', self.area)
+
+        print('\n')
+        print(f'solve_solution_step - after calc, before f2n:')
+        print(
+            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
 
         # map face displacement to node displacement
         self.mapper_f2n.map_f2n(self.interface_internal_faces, self.interface_internal_nodes)
         
         self.dx = self.interface_internal_nodes.get_variable_data(self.output_mp_name, '1ts_disp')
+
+        print('\n')
+        print(f'solve_solution_step - after calc, after f2n:')
+        print(
+            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
+        print(
+            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
+
         self.interface_output.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
-        self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
+
+        print('\n')
+        print(f'solve_solution_step - output:')
+        print(
+            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
+        print(
+            f'Norm interface_output.get_variable_data("displacement") = {np.linalg.norm(self.interface_output.get_variable_data(self.output_mp_name, "displacement"))}')
 
         # output
         return self.interface_output
@@ -216,24 +394,81 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
 
     def finalize(self):
         super().finalize()
-    
+
     def area_calc(self, nodes):
         """
-        Receives: array with ordered (n+1) node coordinates
-        Returns: array with ordered (n) face areas bounded by given nodes
+        Receives: array with ordered nodes (N, 3)
+        Returns: array with ordered face areas (nf, 1) and their normals (nf, 3).
         """
 
-        nf = np.shape(nodes)[0] - 1
-        area = np.zeros(nf)
+        # 1. Define P1 (Start) and P2 (End) for all faces at once
+        # Shift nodes by -1 so row 'i' aligns with row 'i+1'
+        nodes_next = np.roll(nodes, -1, axis=0)
+
+        if self.closed:
+            # Closed: Use ALL points. Last point connects to First point (handled by roll).
+            p1 = nodes
+            p2 = nodes_next
+        else:
+            # Open: Exclude the last point from starts, and the wrapped point from ends.
+            p1 = nodes[:-1]
+            p2 = nodes_next[:-1]
+
+        # 2. Vectorized Geometry Calculation
+        # Calculate vector for every face (dx, dy, dz)
+        diff = p2 - p1
+
+        # Calculate lengths (Area) for all faces
+        # We use norm of X and Y only (assuming 2D interface in 3D space)
+        area = np.linalg.norm(diff[:, :2], axis=1)
+
+        nf = len(area)
         normal_array = np.zeros((nf, 3))
 
-        for i in range(nf):
-            area[i] = np.sqrt((nodes[i+1][0] - nodes[i][0])**2 + (nodes[i+1][1] - nodes[i][1])**2)
-            nx = (nodes[i+1][0] - nodes[i][0]) / area[i]
-            ny = (nodes[i + 1][1] - nodes[i][1]) / area[i]
-            normal = np.array([ny, -1*nx])
-            if np.dot(self.mov_dir, normal) < 0:
-                normal = -1*normal
-            normal_array[i, 0:2] = normal
+        # 3. Calculate Normals (dy, -dx)
+        # Create a mask to avoid division by zero
+        valid_mask = area > 1e-15
+
+        if np.any(valid_mask):
+            dx = diff[valid_mask, 0]
+            dy = diff[valid_mask, 1]
+            lengths = area[valid_mask]
+
+            # Standard normal: (dy, -dx) normalized
+            normal_array[valid_mask, 0] = dy / lengths
+            normal_array[valid_mask, 1] = -dx / lengths
+            # Z stays 0
+
+        # 4. Vectorized Direction Logic
+        if isinstance(self.mov_dir, str):
+            # Calculate Centroid and Face Centers
+            centroid = np.mean(nodes, axis=0)
+            face_centers = (p1 + p2) / 2
+            vec_to_centroid = centroid - face_centers
+
+            # Calculate Dot Product for all faces at once using einsum
+            # (row-wise dot product of normal_array and vec_to_centroid)
+            dot_products = np.einsum('ij,ij->i', normal_array, vec_to_centroid)
+
+            if self.mov_dir == 'inward':
+                # Flip if pointing away (dot < 0)
+                flip_mask = dot_products < 0
+                normal_array[flip_mask] *= -1
+
+            elif self.mov_dir == 'outward':
+                # Flip if pointing inward (dot > 0)
+                flip_mask = dot_products > 0
+                normal_array[flip_mask] *= -1
+
+        else:
+            # Vector-based direction (e.g., self.mov_dir = [0, 1])
+            mov_dir_arr = np.array(self.mov_dir[:2])  # Ensure 2D
+
+            # Matrix multiplication to get dot products for all faces
+            dots = np.dot(normal_array[:, :2], mov_dir_arr)
+
+            # Flip if opposed to movement direction
+            flip_mask = dots < 0
+            normal_array[flip_mask] *= -1
 
         return np.reshape(area, (nf, 1)), normal_array
