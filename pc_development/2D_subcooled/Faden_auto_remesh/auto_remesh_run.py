@@ -7,7 +7,7 @@ simulation_machine = 'cfdclu33'  # Machine for setup and simulations
 remesh_machine = 'cfdclu13'      # Machine for remeshing
 num_runs = 9                     # Total number of runs
 run_of_tri = 6                   # Run number for switch to tri cells in solid
-run_of_smooth = 8                # Run number for switch to non-remeshing in liquid
+run_of_smooth = 10                # Run number for switch to non-remeshing in liquid --> not activated here
 
 # Paths to clean
 folders_to_clean = ["./CFD_1", "./CFD_2"]
@@ -64,7 +64,7 @@ def main():
     # run_remote("run_simulation.py", simulation_machine) # 14000 time steps
 
     # Loop over runs (except last one) --> CHANGE BACK, REMOVE THE 1 IN RANGE!!!
-    for i in range(5, num_runs - 1):
+    for i in range(7, num_runs - 1):
         # Step 3: Remesh (on cfdclu13)
         run_remote(f"remesh.py {run_of_tri} {run_of_smooth}", remesh_machine) # PASS HERE THE TWO PARAMETERS
 

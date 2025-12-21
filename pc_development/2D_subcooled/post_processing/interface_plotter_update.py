@@ -5,7 +5,7 @@ from scipy.signal import savgol_filter
 from coconut.examples.post_processing.post_processing import PostProcess
 
 # ---------------- Settings ----------------
-run = 'split_4'  # 'coarse', 'rerun', 'auto' or 'split_4
+run = 'rerun'  # 'coarse', 'rerun', 'auto' or 'split_4
 
 # Initial delay due to starting with LF < 0.02
 t_001 = 12.5  # s
@@ -32,7 +32,7 @@ elif run == 'split_4':
     common_path = '../Faden_split_4/'
 
 # Time instances to plot
-t_sims = [3600.0]  # seconds
+t_sims = [3600.0, 7200.0]  # seconds
 
 # Partitioned simulation settings
 dt = 0.1
@@ -135,7 +135,7 @@ if plot_Faden:
     # Faden exp (first Faden exp line)
     legend_handles.append(lines[k])
 
-plt.legend(legend_handles, ['Partitioned', 'Fluent', 'Faden num', 'Faden exp'], fontsize=14)
+plt.legend(legend_handles, ['Partitioned', 'Fixed grid', 'Faden num', 'Faden exp'], fontsize=14)
 
 plt.tight_layout()
 plt.savefig('interface_figures/interfaces_multiple_times.png', dpi=150)

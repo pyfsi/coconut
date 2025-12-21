@@ -1,7 +1,7 @@
 {
   "settings": {
     "timestep_start": 0,
-    "number_of_timesteps": 43200,
+    "number_of_timesteps": 18000,
     "delta_t": 0.1,
     "save_restart": 3600
   },
@@ -54,7 +54,7 @@
         "type": "solver_wrappers.pc_fluent_liquid.v2024R2",
         "settings": {
           "working_directory": "CFD_2",
-          "case_file": "case_restart28800.cas.h5",
+          "case_file": "2D_fluid.cas.h5",
           "dimensions": 2,
           "unsteady": true,
           "multiphase": false,
@@ -106,7 +106,7 @@
             "type": "solver_wrappers.pc_fluent_solid.v2024R2",
             "settings": {
               "working_directory": "CFD_1",
-              "case_file": "case_restart28800.cas.h5",
+              "case_file": "2D_solid.cas.h5",
               "dimensions": 2,
               "unsteady": true,
               "debug": false,
