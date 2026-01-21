@@ -466,10 +466,10 @@ void calculate_air_velocity_density_yarn_orientation()
             // Inverse distance interpolation: owner cell
             air_values[point][SCALAR_R] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_R(cell, cell_thread);
             air_values[point][SCALAR_MU] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_MU_L(cell, cell_thread);
-            air_values[point][SCALAR_PX] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(cell, cell_thread)[0];
-            air_values[point][SCALAR_PY] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(cell, cell_thread)[1];
+            air_values[point][SCALAR_PX] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_RG(cell, cell_thread)[0];
+            air_values[point][SCALAR_PY] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_RG(cell, cell_thread)[1];
 #if RP_3D
-            air_values[point][SCALAR_PZ] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(cell, cell_thread)[2];
+            air_values[point][SCALAR_PZ] = yarn_points[point].inv_dist / yarn_points[point].inv_dist_sum * C_P_RG(cell, cell_thread)[2];
 #endif /* RP_3D */
             // Inverse distance interpolation: neighbour cells
             for (n = 0; n < 6; n++)
@@ -478,10 +478,10 @@ void calculate_air_velocity_density_yarn_orientation()
                 {
                     air_values[point][SCALAR_R] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_R(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
                     air_values[point][SCALAR_MU] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_MU_L(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread);
-                    air_values[point][SCALAR_PX] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[0];
-                    air_values[point][SCALAR_PY] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[1];
+                    air_values[point][SCALAR_PX] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_RG(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[0];
+                    air_values[point][SCALAR_PY] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_RG(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[1];
 #if RP_3D
-                    air_values[point][SCALAR_PZ] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_G(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[2];
+                    air_values[point][SCALAR_PZ] += yarn_points[point].neighbours[n].inv_dist / yarn_points[point].inv_dist_sum * C_P_RG(yarn_points[point].neighbours[n].cell, yarn_points[point].neighbours[n].cell_thread)[2];
 #endif /* RP_3D */
                 }
             }
@@ -657,6 +657,8 @@ void calculate_yarn_forces()
 #endif /* RP_3D */
 
             NV_V_VS(f_pres, =, grad_p, -, yarn_tangent[point], *, NV_DOT(yarn_tangent[point], grad_p));
+            NV_VS(f_pres, +=, f_drag, *, 1/(SQR(G_EPS)*M_PI));
+            NV_S(f_pres, *=, 1.0/(1.0 + pow(YARN_DIAMETER/(2.0*G_EPS), 2.0)));
             vol = -M_PI * pow(YARN_DIAMETER, 2)/4.0;
             NV_S(f_pres, *=, vol);
 

@@ -90,6 +90,11 @@ report summary y "report.sum"
     (ti-menu-load-string (format #f "solve set time-step ~a" delta_t))
 )
 ;
+;   ITERATE TO ACTIVATE C_P_R
+(ti-menu-load-string "solve set expert no yes yes no")
+(ti-menu-load-string "solve dual-time-iterate 0 1")
+(ti-menu-load-string "solve iterate 1")
+;
 ;   FSI LOOP
 (do ((j 0 j)) ((= j 1))
     (system "sleep 0.1")
