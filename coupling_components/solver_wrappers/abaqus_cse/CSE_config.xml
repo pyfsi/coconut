@@ -77,8 +77,8 @@
         <compositeActors>
             <compositeActor name="twoCodeContinuousTime">
                 <actors>
-                    <atomicActor>AbaqusWrapper</atomicActor>
                     <atomicActor>Abaqus</atomicActor>
+                    <atomicActor>AbaqusWrapper</atomicActor>
                 </actors>
                 <modelOfComputation>
                     <continuousTime>
