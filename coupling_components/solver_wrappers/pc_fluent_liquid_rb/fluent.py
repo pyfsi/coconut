@@ -165,7 +165,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         if self.solid_density == 0.0:
             self.solid_density == self.liquid_density.copy()
             tools.print_info('Equal density for solid and liquid is assumed.', layout='warning')
-        
+
         # Rigid body motion specific settings
         self.rb_settings = self.settings['RB']
         self.restart_rb_only = self.rb_settings.get('restart_rb', 0)
@@ -182,13 +182,35 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.fict_coeff = self.rb_settings.get('fict_coeff', 0.0)  # default no fictitious impedance
         self.multiplier = self.rb_settings.get('fict_multiplier', 1.0)  # default no multiplier for first timestep
         self.dyn_visc = self.rb_settings.get('liquid_dyn_visc', 0.0)  # Dynamic viscosity of liquid PCM
-        gap_walls = self.rb_settings.get('gap_walls', [])  # List of heated walls to calculate the gap from
+        self.fm_wall = self.rb_settings.get('fm_wall', None)
+        if self.fict_coeff != 0.0 and self.dyn_visc == 0.0:
+            raise ValueError('Liquid dyn. viscosity should be provided in the json file in case of fictitious damping.')
+        self.rb_relax_method = self.rb_settings.get('relaxation_method', 'static') # or 'aitken'
+        self.relax_first_ts =self.rb_settings.get('relax_first_ts', False)
+        self.rot_update = self.rb_settings.get('rotational_update', 'quaternion') # 'off', 'rot_mat' or 'quaternion'
+        self.rb_predictor = self.rb_settings.get('predictor', 'constant')  # or 'linear'
+        self.buoyancy = self.rb_settings.get('buoyancy', True)
+        self.weight_ramp = self.rb_settings.get('weight_ramp', 0)  # Nr. of time steps over which the full weight will be added
+        self.gravity = self.rb_settings.get('gravity', [0, -9.81, 0])
+        if self.restart_rb_only != 0:
+            self.weight_ramp = 0
+            tools.print_info('Weight ramp disabled due to rigid body only restart.', layout='warning')
+
+        # contact model specific settings
+        self.contact_settings = self.settings['contact_model']
+        self.include_contact_force = self.contact_settings.get('contact_force', False)
+        self.h_ul = self.contact_settings.get('upper_limit', 2e-4)  # [m] Upper limit
+        self.h_ll = self.contact_settings.get('lower_limit', 2e-4)  # [m] Lower limit
+        self.damping_ratio = self.contact_settings.get('damping_ratio', 1.2)
+        self.k_mass = self.contact_settings.get('k_mass', 5.0)
+        gap_walls = self.contact_settings.get('gap_walls', [])  # List of heated walls to calculate the gap from
         self.gap_ids = {}  # thread IDs corresponding to close contact walls
         self.gap_trees = {}  # thread IDs corresponding to close contact walls
         for gap_name in gap_walls:
             self.gap_ids[gap_name] = None
             self.gap_trees[gap_name] = None
-        self.fm_wall = self.rb_settings.get('fm_wall', None)
+
+        # Consistency checks
         if self.gap_ids:
             if self.fm_wall is None:
                 raise ValueError('One wall from gap walls must be chosen as wall to calculate fictitious mass from.')
@@ -197,26 +219,11 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         else:
             if self.fm_wall:
                 raise ValueError('Wall given to calculate fictitious mass from but gap walls is empty.')
-
         if self.fict_coeff != 0.0 and not self.gap_ids:
             self.fict_coeff = 0.0
             tools.print_info('No gap wall given to calculate liquid layer thickness. Disabling fictitious impedance method.', layout='warning')
-        if self.fict_coeff != 0.0 and self.dyn_visc == 0.0:
-            raise ValueError('Liquid dyn. viscosity should be provided in the json file in case of fictitious damping.')
 
-        self.rb_relax_method = self.rb_settings.get('relaxation_method', 'static') # or 'aitken'
-        self.relax_first_ts =self.rb_settings.get('relax_first_ts', False)
-        self.rot_update = self.rb_settings.get('rotational_update', 'quaternion') # 'off', 'rot_mat' or 'quaternion'
-        self.rb_predictor = self.rb_settings.get('predictor', 'constant')  # or 'linear'
-        self.buoyancy = self.rb_settings.get('buoyancy', True)
-        self.weight_ramp = self.rb_settings.get('weight_ramp', 0)  # Nr. of time steps over which the full weight will be added
-        if self.restart_rb_only != 0:
-            self.weight_ramp = 0
-            tools.print_info('Weight ramp disabled due to rigid body only restart.', layout='warning')
-        self.include_contact_force = self.rb_settings.get('contact_force', False)
-        if self.include_contact_force:
-            tools.print_info('Make sure to adapt the calc_contact_force function in fluent.py to your specific case.', layout='warning')
-
+        # Initialise (with or without restart)
         if self.restart or self.restart_rb_only != 0:
             self.load_restart_rb_data()
         else:
@@ -229,16 +236,20 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             self.a_trans = np.zeros(3)  # current translational acceleration
             self.a_rot_prev = np.zeros(3)  # last time step rotational acceleration
             self.a_rot = np.zeros(3)  # current rotational acceleration
+            self.com = np.zeros(3) # last time step center of mass
+            self.com_prev = np.zeros(3) # current time step center of mass
+            self.prev_patches = []
+            self.new_patches = []
+            self.force_pr_it = np.zeros(3)
+            self.moment_pr_it = np.zeros(3)
+
+        if not self.restart:
             if self.rot_update == 'rot_mat':
                 self.orientation_prev = np.identity(3) # previous time step orientation matrix
                 self.orientation = np.identity(3) # new time step orientation matrix
             else:
                 self.orientation_prev = np.array([1.0, 0.0, 0.0, 0.0]) # previous time step orientation quaternion
                 self.orientation = np.array([1.0, 0.0, 0.0, 0.0]) # new time step orientation quaternion
-            self.com = np.zeros(3) # last time step center of mass
-            self.com_prev = np.zeros(3) # current time step center of mass
-            self.force_pr_it = np.zeros(3)
-            self.moment_pr_it = np.zeros(3)
 
         # Initialise other variables
         self.volume = 0.0
@@ -248,12 +259,8 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.moment_int = np.zeros(3)
         self.avg_v_trans = np.zeros(3)
         self.avg_omega = np.zeros(3)
-
-        # Minimum wall gap
         self.h_min = 0.0
-        self.h_ul = 0.2 * 1e-3  # [m] Upper limit
-        self.h_ll = 0.1 * 1e-3  # [m] Lower limit
-        self.normal = None
+        self.contact_patches = []
 
         # Aitken relaxation state variables
         if self.rb_relax_method == 'aitken':
@@ -317,7 +324,8 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                     line = line.replace('|TIME_STEP_SIZE|', str(self.delta_t))
                     line = line.replace('|MELT_TEMP|', str(self.melt_temp))
                     line = line.replace('|MELT_ENTHALPY|', str(self.melt_enthalpy))
-                    line = line.replace('|SOLID_DENSITY|', str(self.solid_density))
+                    line = line.replace('|SOLID_DENSITY|', str(solid_density))
+                    line = line.replace('|LIQUID_DENSITY|', str(self.liquid_density))
                     line = line.replace('|TIME_STEP_START|', str(self.timestep_start))
                     line = line.replace('|UNSTEADY|', 'true' if self.unsteady else 'false')
                     outfile.write(line)
@@ -625,9 +633,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
     def initialize_solution_step(self):
         super().initialize_solution_step()
 
-        # update a report-file each timestep with the RB values
-        self.update_report_file()
-
         self.iteration = 0
         self.timestep += 1
 
@@ -643,6 +648,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.a_rot_prev = self.a_rot.copy()
         self.orientation_prev = self.orientation.copy()
         self.com_prev = self.com.copy()
+        self.prev_patches = self.new_patches.copy()
 
         # Reset Aitken relaxation residuals for the new time step
         if self.rb_relax_method == 'aitken':
@@ -849,6 +855,9 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+        # update a report-file each timestep with the RB values
+        self.update_report_file()
 
     @tools.time_save
     def output_solution_step(self):
@@ -1115,7 +1124,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
 
         # Skip the header line
         self.volume = float(lines[1])
-
         self.com = np.array(lines[2].split(), dtype=float)
         if self.timestep == 1 and self.iteration == 1:
             self.com_prev = self.com
@@ -1128,9 +1136,6 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         # Keep a copy of the raw fluid force and moment read from file (before contact)
         force_raw = self.force_int.copy()
         moment_raw = self.moment_int.copy()
-
-        print(f'force_raw_x = {force_raw[0]} N')
-        print(f'force_raw_y = {force_raw[1]} N')
 
         # --- FORCE RELAXATION (static or aitken) ---
         # Option to skip relaxation on the very first timestep and iteration
@@ -1182,12 +1187,16 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.weight_factor = self.timestep / self.weight_ramp if self.timestep < self.weight_ramp else 1
 
         # --- TRANSLATIONAL UPDATE ---
-        g = np.array([0, -9.81, 0])  # gravitational acceleration
+        g = np.array(self.gravity)  # gravitational acceleration
         mass_solid = self.solid_density * self.volume
 
         # Fictitious Mass / Damping method to anticipate high added mass & viscous damping in fluid solver
         if self.gap_ids:
-            h_used, self.h_min, self.normal, pinch_point = self.calculate_h_min()
+            h_used, self.h_min = self.calculate_h_min()
+
+            print("\n")
+            print(f'Min. gap width = {self.h_min * 1000} mm')
+            print(f'Number of active contact patches = {len(self.contact_patches)}')
 
             # Fictitious mass components are always calculated at the chosen wall
             epsilon = 1e-4 * self.wall_length
@@ -1207,10 +1216,15 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         else:
             F_net = force_relaxed + self.weight_factor * mass_solid * g
 
-        # Add the contact force to the net sum of forces
-        if self.include_contact_force:
-            contact_force = self.calc_contact_force()
-            F_net += contact_force
+        # --- PREPARE CONTACT FORCES ---
+        contact_F = np.zeros(3)
+        contact_M = np.zeros(3)
+
+        if self.include_contact_force and self.gap_ids:
+            contact_F, contact_M = self.calc_contact_force_and_moment()
+
+        # Add to Net Force
+        F_net += contact_F
 
         # We add (M_sys * a_prev_iter) to the forces
         # This dampens the acceleration update significantly without altering the final converged physics.
@@ -1225,14 +1239,14 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.a_trans = F_tot / (mass_solid + self.M_sys)
         self.v_trans = self.v_trans_prev +  0.5 * (self.a_trans_prev + self.a_trans) * self.delta_t
 
-        if self.h_min < self.h_ul and self.normal is not None:
-            if np.dot(self.v_trans, self.normal) < 0:
-                print(f"--- Wall Guard Activated ---")
-                rejected = np.dot(self.v_trans, self.normal) * self.normal
-                trans_braking = 1.0 if self.h_min <= self.h_ll else (self.h_ul - self.h_min)/(self.h_ul - self.h_ll)
-                self.v_trans = self.v_trans - trans_braking * rejected
-
-                # Make acceleration consistent
+        # --- TRANSLATIONAL WALL GUARD (FAILSAFE) ---
+        if self.h_min < self.h_ll and self.contact_patches:
+            deepest_contact = self.contact_patches[0][0]
+            normal = deepest_contact['normal']
+            if np.dot(self.v_trans, normal) < 0:
+                print(f"--- HARD STOP ACTIVATED ---")
+                rejected = np.dot(self.v_trans, normal) * normal
+                self.v_trans = self.v_trans - rejected
                 self.a_trans = 2 * (self.v_trans - self.v_trans_prev) / self.delta_t - self.a_trans_prev
 
         # --- ROTATIONAL UPDATE ---
@@ -1250,19 +1264,20 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             moi_total = moi + fict_moi
             a_rot_prev_it = self.a_rot.copy()
             # moi is in this case a vector representing the diagonal elements of the otherwise empty moi matrix
-            moment_tot = moment_relaxed + fict_moi * a_rot_prev_it
+            moment_tot = moment_relaxed + contact_M + fict_moi * a_rot_prev_it
 
             self.a_rot = np.divide(moment_tot, moi_total, out=np.zeros_like(moment_tot), where=moi_total != 0)
 
             # Update rotational velocity with Crank-Nicolson integration (2nd order)
             self.omega = self.omega_prev + 0.5 * (self.a_rot_prev + self.a_rot) * self.delta_t
 
-            if self.h_min < self.h_ul and self.normal is not None:
+            if self.h_min < self.h_ll and self.contact_patches:
+                deepest_contact = self.contact_patches[0][0]
+                normal = deepest_contact['normal']
+                pinch_point = deepest_contact['point']
                 rot_vel = np.cross(self.omega, (pinch_point - self.com))
-                if np.dot(rot_vel, self.normal) < 0:
-                    rot_braking = 0.0 if self.h_min <= self.h_ll else (self.h_min - self.h_ll) / (self.h_ul - self.h_ll)
-                    self.omega *= rot_braking
-
+                if np.dot(rot_vel, normal) < 0:
+                    self.omega = np.zeros_like(self.omega)
                     # Make acceleration consistent
                     self.a_rot = 2 * (self.omega - self.omega_prev) / self.delta_t - self.a_rot_prev
 
@@ -1294,126 +1309,242 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             os.system(cmd)
         return data
 
-    def calc_contact_force(self):
-        # Parameters:
-        R = 0.00125 # (m) Radius of the disk
-        rho = 0.0001 # (m) Range of the force beyond contact --> 2.5 x cell size [Glowinski]
-        eps_w_prime = 1e-5 # Stiffness parameter for larger overlaps
-        eps_w = 1e-5 # Stiffness for initial contact [Glowinski]
-        wall_y = 0.0 # Y-coordinate of the horizontal lower wall
-        C = self.liquid_density * 9.81 * (np.pi * (R ** 2) * 1) # Scaling factor, chosen to be the buayant force [You et al.]
-
-        # Define the closest point on the wall to the particle center
-        wall_pos = self.com.copy()
-        wall_pos[1] = wall_y - R
-
-        # Calculate the distance vector and its magnitude
-        dist = self.com - wall_pos
-        dist_mag = np.linalg.norm(dist)
-
-        # Implement Eq. (5.2) [Glowinski] for Particle-Wall Collision and Eq. (20) [You et al.]
-        if dist_mag > (R + rho):
-            force_mag = 0.0
-        elif dist_mag > R:
-            force_mag = (C / eps_w) * ((2 * R + rho - dist_mag) / rho) ** 2
-        else:
-            force_mag = (C / eps_w_prime) # [Glowinski]
-
-        # Calculate the final force vector (F = mag * direction)
-        if dist_mag > 1e-12:
-            force_vec = force_mag * (dist / dist_mag)
-        else:
-            force_vec = np.zeros(np.shape(self.com))
-
-        if force_mag > 1e-12:
-            tools.print_info(f'Collision force is {force_mag} N/m')
-
-        return force_vec
-
     def calculate_h_min(self):
         """
-        Calculates the minimum gap (h_min) between the solid interface
-        (based on prev_disp) and the static heated wall using the KDTree.
+        Groups contact nodes into spatially distinct 'Patches'.
+        Returns a list of patches, where each patch is a list of candidate dictionaries.
         """
-
         r = None
-
-        # --- Extract Interface Node Coordinates ---
+        # --- 1. Extract Interface Node Coordinates (Unchanged) ---
         for dct in self.interface_input.parameters:
-            # We only care about the first valid node-based model part
             mp_name = dct['model_part']
             if 'nodes' in mp_name:
                 model_part = self.model.get_model_part(mp_name)
-
-                # Get displacement.
-                # NOTE: Using 'prev_disp' (start of timestep) is usually SAFER for
-                # Fictitious Mass than updating it every sub-iteration.
-                # It keeps the Mass Matrix constant during the loop.
                 last_full_disp = self.interface_rb.get_variable_data(mp_name, 'prev_disp')
-
-                # Calculate absolute coordinates
                 x = model_part.x0 + last_full_disp[:, 0]
                 y = model_part.y0 + last_full_disp[:, 1]
-
                 if self.dimensions == 3:
                     z = model_part.z0 + last_full_disp[:, 2]
                     r = np.column_stack((x, y, z))
                 else:
                     r = np.column_stack((x, y))
-
-                # We found our interface, stop looking
                 break
 
-        # --- KDTree Query ---
+        if r is None:
+            return None, None
+
+        # --- 2. KDTree Query & Danger Zone Detection ---
         h_used = None
-        min_dists = []
-        normals = []
-        p_itfs = []
+        h_min = None
+
+        # We will collect ALL candidates from ALL walls first
+        # Format: (distance, normal_vector, contact_point_coords)
+        candidates = []
 
         for wall_name in self.gap_trees:
             wall_tree = self.gap_trees[wall_name]
 
             # Find nearest distance from any interface node to the wall
-            #    k=1 : Find just the 1 nearest neighbor
-            #    workers=-1 : Use all CPU cores
             dists, wall_ids = wall_tree.query(r, k=1, workers=-1)
 
-            # Find the single absolute minimum gap across the whole interface
-            min_local_id = np.argmin(dists)
-            h_min = dists[min_local_id]
+            h = np.min(dists)
+            h_min = min(h_min, h) if h_min is not None else h
+
+            # Save h_used for Fictitious Mass (specific to fm_wall)
             if wall_name == self.fm_wall:
-                h_used = h_min.copy()
+                h_used = h
 
-            p_itf = r[min_local_id]  # The moving node
-            id_wall_min = wall_ids[min_local_id]  # Index of the static wall node
-            p_wall = wall_tree.data[id_wall_min]  # The static wall node coords
+            # Identify nodes inside the Danger Zone
+            danger_mask = dists < self.h_ul
+            danger_indices = np.where(danger_mask)[0]
 
-            # --- Calculate Normal (Approximation) ---
-            diff_vec = p_itf - p_wall
+            if len(danger_indices) > 0:
+                close_dists = dists[danger_indices]
+                close_ids_wall = wall_ids[danger_indices]
+                close_p_itf = r[danger_indices]
+                close_p_wall = wall_tree.data[close_ids_wall]
 
-            # Avoid division by zero if they are touching
-            dist = np.linalg.norm(diff_vec)
-            if dist > 1e-12:
-                normal = diff_vec / dist
-                # Ensure normal is always 3D compatible with self.v_trans
-                if self.dimensions == 2 and normal.shape[0] == 2:
-                    normal = np.append(normal, 0.0)
-                    p_itf = np.append(p_itf, 0.0)
-            else:
-                normal = None
+                # Calculate normals for these points
+                diff_vecs = close_p_itf - close_p_wall
+                norms = np.linalg.norm(diff_vecs, axis=1)
+                norms[norms < 1e-12] = 1.0
+                close_normals = diff_vecs / norms[:, None]
 
-            min_dists.append(h_min)
-            normals.append(normal)
-            p_itfs.append(p_itf)
+                # Handle 2D -> 3D conversion for normals/points if needed
+                if self.dimensions == 2:
+                    z_col = np.zeros((len(danger_indices), 1))
+                    close_normals = np.hstack((close_normals, z_col))
+                    close_p_itf = np.hstack((close_p_itf, z_col))
 
-        # Choose absolute minimum
-        min_global_id = np.argmin(min_dists)
+                for j in range(len(danger_indices)):
+                    candidates.append({
+                        'h': close_dists[j],
+                        'normal': close_normals[j],
+                        'point': close_p_itf[j],
+                        'id': danger_indices[j]  # nice for debugging
+                    })
 
-        h_min = min_dists[min_global_id]
-        normal = normals[min_global_id]
-        p_itf = p_itfs[min_global_id]
+        # --- 3. CLUSTERING (True Chaining / Flood Fill) ---
+        candidates.sort(key=lambda x: x['h'])  # Deepest first
 
-        return h_used, h_min, normal, p_itf
+        self.contact_patches = []
+        processed_indices = set()
+
+        sep_tol = 2 * self.h_ul
+
+        for cand in candidates:
+            # If this node is already part of a chain, skip it
+            if cand['id'] in processed_indices:
+                continue
+
+            # Start a NEW patch with this deepest node
+            current_patch = [cand]
+            processed_indices.add(cand['id'])
+
+            # Initialize the search queue with the leader
+            search_queue = [cand]
+
+            # --- FLOOD FILL LOOP ---
+            # Keep searching until we run out of connected neighbors
+            while len(search_queue) > 0:
+                # Pop the next node to expand from
+                expansion_node = search_queue.pop(0)
+                expansion_point = expansion_node['point']
+
+                # Check ALL candidates to see if they are neighbors of 'expansion_node'
+                for potential_neighbor in candidates:
+                    # Skip if already processed
+                    if potential_neighbor['id'] in processed_indices:
+                        continue
+
+                    # Calculate distance to the CURRENT expansion node (not just the leader)
+                    dist = np.linalg.norm(potential_neighbor['point'] - expansion_point)
+
+                    # If connected, add to patch AND to queue (to extend the chain further)
+                    if dist < sep_tol:
+                        processed_indices.add(potential_neighbor['id'])
+                        current_patch.append(potential_neighbor)
+                        search_queue.append(potential_neighbor)
+
+            # The chain is exhausted, save the patch
+            self.contact_patches.append(current_patch)
+
+        if len(self.contact_patches) > 0:
+            print(f"CONTACT: Found {len(self.contact_patches)} patch(es).")
+            for idx, patch in enumerate(self.contact_patches):
+                print(f"  Patch {idx}: {len(patch)} nodes")
+
+        return h_used, h_min
+
+    def calc_contact_force_and_moment(self):
+        """
+        Calculates repulsive force using Normalized Weighted Average (NWA)
+        to smooth transitions between nodes.
+        """
+        total_force = np.zeros(3)
+        total_moment = np.zeros(3)
+
+        # 1. Define Stiffness (k) and Damping (c)
+        # We want the "collision" to be resolved over roughly 10 timesteps.
+
+        # Based on harmonic oscillator period T = 2*pi*sqrt(m/k)
+        # We want a half-period (impact) to match impact_duration.
+        # k = m * (pi / impact_duration)^2
+        mass = self.k_mass * self.solid_density * self.volume
+        resolution_steps = 10
+        k_stiff = mass * (np.pi / (resolution_steps * self.delta_t)) ** 2
+
+        # c_crit = 2 * sqrt(m * k)
+        c_damp = self.damping_ratio * 2 * np.sqrt(mass * k_stiff)
+
+        # 2. Prepare storage for NEXT step
+        # We store: {'p_eff': vector, 'h_eff': float}
+        available_prev = list(self.prev_patches)
+        self.new_patches = []
+
+        # Define a spatial tolerance to recognize "the same patch"
+        match_tolerance = 2.0 * self.h_ul
+
+        # 3. Loop over Patches
+        for patch in self.contact_patches:
+
+            # --- A. Accumulate Weighted Averages ---
+            w_sum = 0.0
+            weighted_normal = np.zeros(3)
+            weighted_point = np.zeros(3)
+            weighted_h = 0.0
+
+            for node in patch:
+                h_i = node['h']
+
+                # Weight Function: Linear kernel
+                w_i = max(0.0, self.h_ul - h_i) / self.h_ul
+
+                w_sum += w_i
+                weighted_normal += w_i * node['normal']
+                weighted_point += w_i * node['point']
+                weighted_h += w_i * h_i
+
+            if w_sum <= 1e-12:
+                continue
+
+            # --- B. Normalize ---
+            # 1. Average Normal (Direction)
+            n_eff = weighted_normal / w_sum
+            n_eff = n_eff / np.linalg.norm(n_eff)  # Re-normalize to unit vector
+
+            # 2. Average Position (Center of Pressure)
+            p_eff = weighted_point / w_sum
+
+            # 3. Average Gap (Penetration Depth)
+            h_eff = weighted_h / w_sum
+
+            # --- C. TRACKING: Find the closest previous patch ---
+            v_eff = 0.0
+
+            # Check history if it exists
+            if available_prev:
+                best_dist = float('inf')
+                best_index = -1
+
+                # Search for the spatially closest patch in the available pool
+                for i, prev in enumerate(available_prev):
+                    dist = np.linalg.norm(p_eff - prev['p_eff'])
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_index = i
+
+                # If the closest patch is valid, pop it
+                if best_dist < match_tolerance and best_index != -1:
+                    matched_patch = available_prev.pop(best_index)
+
+                    # Calculate velocity
+                    v_eff = (h_eff - matched_patch['h_eff']) / self.delta_t
+
+            # Save current data for next step
+            self.new_patches.append({'p_eff': p_eff, 'h_eff': h_eff})
+
+            # --- D. Calculate Force on this Effective Contact ---
+            # 1. Spring Force: Linear (n=1) or Hertzian (n=1.5)
+            penetration = max(0.0, self.h_ul - h_eff)
+            f_spring_mag = k_stiff * penetration
+            print(f'Spring force = {f_spring_mag} N')
+
+            # 2. Hunt-Crossley Damping
+            f_damp_mag = -c_damp * 2 * (penetration / (self.h_ul - self.h_ll)) * v_eff
+            print(f'v_eff = {v_eff * 1e6} µm/s')
+            print(f'Damper force = {f_damp_mag} N')
+
+            # 3. Total Patch Force
+            f_mag = max(0.0, f_spring_mag + f_damp_mag)
+            f_vec = f_mag * n_eff
+
+            # 4. Add to Body Sums
+            total_force += f_vec
+            r_vec = p_eff - self.com
+            total_moment += np.cross(r_vec, f_vec)
+
+        return total_force, total_moment
 
     def update_report_file(self):
         """Create or update the rigid-body report file each timestep."""
@@ -1422,7 +1553,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         file_name = join(self.dir_cfd, tmp)
 
         # If first timestep: create file and write header
-        if self.timestep == 0:
+        if self.timestep == 1:
             with open(file_name, "w") as f:
                 f.write("# CoCoNuT rigid body motion history\n")
                 f.write("#\n")
@@ -1616,6 +1747,8 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             'orientation': self.orientation,
             'com': self.com,
             'com_prev': self.com_prev,
+            'prev_patches': self.prev_patches,
+            'new_patches': self.new_patches,
             'interface_rb': self.interface_rb,
             'force_pr_it': self.force_pr_it,
             'moment_pr_it': self.moment_pr_it
@@ -1649,13 +1782,16 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.a_trans = state['a_trans']
         self.a_rot_prev = state['a_rot_prev']
         self.a_rot = state['a_rot']
-        self.orientation_prev = state['orientation_prev']
-        self.orientation = state['orientation']
         self.com = state['com']
         self.com_prev = state['com_prev']
-        self.interface_rb = state['interface_rb']
+        self.prev_patches = state['prev_patches']
+        self.new_patches = state['new_patches']
         self.force_pr_it = state['force_pr_it']
         self.moment_pr_it = state['moment_pr_it']
+        if self.restart:
+            self.interface_rb = state['interface_rb']
+            self.orientation_prev = state['orientation_prev']
+            self.orientation = state['orientation']
 
         tools.print_info('Rigid body restart data successfuly loaded.', layout='info')
 

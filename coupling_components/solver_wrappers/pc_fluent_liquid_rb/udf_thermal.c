@@ -89,6 +89,7 @@ real dt = |TIME_STEP_SIZE|;
 real TM = |MELT_TEMP|;
 real HM = |MELT_ENTHALPY|;
 real rho_s = |SOLID_DENSITY|;
+real rho_l = |LIQUID_DENSITY|;
 int TS_START = |TIME_STEP_START|;
 bool unsteady = |UNSTEADY|;
 int _d; /* don't use in UDFs! (overwritten by functions above) */
@@ -586,6 +587,13 @@ DEFINE_ON_DEMAND(store_rigid_body) {
     DECLARE_MEMORY(F_node, real);
     DECLARE_MEMORY(M_node, real);
 
+    real rho;
+    if (rho_s == 0.0) {
+        rho = rho_l;
+    } else {
+        rho = rho_s;
+    }
+
 #if RP_HOST /* only host process is involved, code not compiled for node */
     char file_name[256];
     FILE *file = NULL;
@@ -657,7 +665,7 @@ DEFINE_ON_DEMAND(store_rigid_body) {
             com[1] += 0.5 * y * y * ny * face_area;
 
             // Numerator for Moment of Inertia about Z-axis (about origin)
-            moi[2] += (rho_s * ( (1.0/3.0) * x * x * x * nx + (1.0/3.0) * y * y * y * ny ) * face_area);
+            moi[2] += (rho * ( (1.0/3.0) * x * x * x * nx + (1.0/3.0) * y * y * y * ny ) * face_area);
 
             i++;
         } end_f_loop(face, face_thread);
@@ -749,7 +757,7 @@ DEFINE_ON_DEMAND(store_rigid_body) {
         COM[0] = COM[0] / volume;
         COM[1] = COM[1] / volume;
         // Apply Parallel Axis Theorem for moment of inertia through center of mass
-        MOI[2] = MOI[2] - rho_s * volume * (COM[0] * COM[0] + COM[1] * COM[1]);
+        MOI[2] = MOI[2] - rho * volume * (COM[0] * COM[0] + COM[1] * COM[1]);
     } else {
         printf("HOST_UDF_WARNING: Total volume is near zero, COM and MOI about COM might be inaccurate.\n"); fflush(stdout);
     }

@@ -263,6 +263,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
 
     @tools.time_solve_solution_step
     def solve_solution_step(self, interface_input):
+
         # process input interface data
         # store incoming variables
         self.interface_input.set_interface_data(interface_input.get_interface_data())
@@ -274,42 +275,8 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.prev_disp = self.interface_input.get_variable_data(self.input_nodes_mp_name, 'displacement')
         self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'prev_disp', self.prev_disp)
 
-        print('\n')
-        print(f'solve_solution_step - before n2f:')
-        print(
-            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
-
         # map previous node displacement to previous face displacement
         self.mapper_n2f.map_n2f(self.interface_internal_nodes, self.interface_internal_faces)
-
-        print('\n')
-        print(f'solve_solution_step - after n2f:')
-        print(
-            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
 
         disp_magn = (self.heat_flux * self.dt) / (self.rho * self.L) # Stefan condition
         self.area, normal_array = self.area_calc(self.ini_coord_nodes + self.prev_disp)
@@ -319,53 +286,12 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.interface_internal_faces.set_variable_data(self.output_mp_name, '1ts_disp', self.face_dx)
         self.interface_internal_faces.set_variable_data(self.output_mp_name, 'area', self.area)
 
-        print('\n')
-        print(f'solve_solution_step - after calc, before f2n:')
-        print(
-            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
-
         # map face displacement to node displacement
         self.mapper_f2n.map_f2n(self.interface_internal_faces, self.interface_internal_nodes)
         
         self.dx = self.interface_internal_nodes.get_variable_data(self.output_mp_name, '1ts_disp')
 
-        print('\n')
-        print(f'solve_solution_step - after calc, after f2n:')
-        print(
-            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_nodes.get_variable_data("displacement") = {np.linalg.norm(self.interface_internal_nodes.get_variable_data(self.output_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("prev_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "prev_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("1ts_disp") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "1ts_disp"))}')
-        print(
-            f'Norm interface_internal_faces.get_variable_data("area") = {np.linalg.norm(self.interface_internal_faces.get_variable_data(self.output_mp_name, "area"))}')
-
         self.interface_output.set_variable_data(self.output_mp_name, 'displacement', self.prev_disp + self.dx)
-
-        print('\n')
-        print(f'solve_solution_step - output:')
-        print(
-            f'Norm interface_input.get_variable_data("displacement") = {np.linalg.norm(self.interface_input.get_variable_data(self.input_nodes_mp_name, "displacement"))}')
-        print(
-            f'Norm interface_output.get_variable_data("displacement") = {np.linalg.norm(self.interface_output.get_variable_data(self.output_mp_name, "displacement"))}')
 
         # output
         return self.interface_output
