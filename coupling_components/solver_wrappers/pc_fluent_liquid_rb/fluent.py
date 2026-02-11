@@ -201,8 +201,8 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.include_contact_force = self.contact_settings.get('contact_force', False)
         self.h_ul = self.contact_settings.get('upper_limit', 2e-4)  # [m] Upper limit
         self.h_ll = self.contact_settings.get('lower_limit', 2e-4)  # [m] Lower limit
-        self.damping_ratio = self.contact_settings.get('damping_ratio', 1.2)
-        self.k_mass = self.contact_settings.get('k_mass', 5.0)
+        self.damping_ratio = self.contact_settings.get('damping_ratio', 1.0)
+        self.k_mass = self.contact_settings.get('k_mass', 1.0)
         gap_walls = self.contact_settings.get('gap_walls', [])  # List of heated walls to calculate the gap from
         self.gap_ids = {}  # thread IDs corresponding to close contact walls
         self.gap_trees = {}  # thread IDs corresponding to close contact walls
@@ -1320,7 +1320,8 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             mp_name = dct['model_part']
             if 'nodes' in mp_name:
                 model_part = self.model.get_model_part(mp_name)
-                last_full_disp = self.interface_rb.get_variable_data(mp_name, 'prev_disp')
+                # Work with new displacement to update each coupling iteration!
+                last_full_disp = self.interface_rb.get_variable_data(mp_name, 'new_disp')
                 x = model_part.x0 + last_full_disp[:, 0]
                 y = model_part.y0 + last_full_disp[:, 1]
                 if self.dimensions == 3:
