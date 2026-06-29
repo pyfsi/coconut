@@ -142,7 +142,6 @@ int main(int argc, char *argv[])
         {
             waitForSync("next"); // Keep the sync at the beginning of the block
 
-            Info << "runtime.run()" << nl << endl;
             runTime.run();
 
             if (LTS)
@@ -153,21 +152,13 @@ int main(int argc, char *argv[])
                 #include "setDeltaT.H"
             }            
 
-            // TODO
-            // Info << "fvModels.preUpdateMesh()" << nl << endl;
-            // fvModels.preUpdateMesh();
-
             // // Update the mesh for topology change, mesh to mesh mapping
             // mesh.update();
-
-            // TODO HERE. ERROR ??
-            // mesh.controlledUpdate();
 
             runTime++;
             iteration = 0;
 
             Info << "Time = " << runTime.timeName() << nl << endl;
-            Info << "FINISHED NEXT.COCO" << nl << endl;
         }
 
         if (exists("continue.coco"))
@@ -232,19 +223,16 @@ int main(int argc, char *argv[])
 
                 if (pimple.turbCorr())
                 {
-                    // TODO viscosity->correct();
                     laminarTransport.correct();
                     turbulence->correct();
                 }
 
-                // Check coupling convergence
+                // Check coupling convergence if first iteration
                 if (checkCouplingConvergence && pimple.firstIter())
                 {
                     #include "checkCouplingConvergence.H"
                 }
             }
-
-            Info << "END PIMPLE LOOP" << nl << endl;
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
                 << "  ClockTime = " << runTime.elapsedClockTime() << " s"
@@ -254,7 +242,6 @@ int main(int argc, char *argv[])
             #include "executeCoconutFunctionObjects.H"
 
             Info << "Coupling iteration " << iteration << " end" << nl << endl;
-            Info << "FINISHED CONTINUE.COCO" << nl << endl;
         }
 
         if (exists("save.coco"))

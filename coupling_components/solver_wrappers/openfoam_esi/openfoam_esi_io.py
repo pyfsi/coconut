@@ -3,8 +3,6 @@ import numpy as np
 import os
 from collections import OrderedDict
 
-# TODO check validity
-
 float_pattern = r'[+-]?\d*\.?\d*[eE]?[+-]?\d*'
 int_pattern = r'[+-]?\d+'
 delimiter = r'[\s\n]+'
