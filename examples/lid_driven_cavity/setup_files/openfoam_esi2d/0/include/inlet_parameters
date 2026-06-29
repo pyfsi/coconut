@@ -1,3 +1,0 @@
-
-scalar t_ramp = 0.0;
-bool unsteady_flag = true;

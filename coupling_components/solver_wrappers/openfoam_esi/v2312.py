@@ -21,7 +21,7 @@ class SolverWrapperOpenFOAM2312(SolverWrapperOpenFoamESI):
         self.check_software()
 
         # raw format
-        self.fext = '.xy'  # file extension
+        self.fext = '.raw'  # file extension
         self.nheaderfooter = 1  # number of header and footer lines
 
     def read_face_centres(self, boundary_name, nfaces):

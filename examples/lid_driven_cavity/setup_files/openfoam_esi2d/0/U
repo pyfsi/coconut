@@ -35,14 +35,15 @@ boundaryField
         type            codedFixedValue;
         value           uniform (0 0 0);
         name            timeSpaceVarying;
-        codeOptions
-        #{
-
-            -I$(FOAM_CASE)/0/include
-        #};
+        // codeOptions
+        // #{
+        //     -I$(FOAM_CASE)/0/include
+        // #};
         code
         #{
-            #include "inlet_parameters"
+            // #include "inlet_parameters"
+            scalar t_ramp = 0.0;
+            bool unsteady_flag = true;
             const scalar t =  this->db().time().value();
             scalar ramp_factor = (t < t_ramp) ? t/t_ramp : 1.0;
             scalar u_t = ramp_factor*(1.0-unsteady_flag*cos(0.4*M_PI*t));
@@ -60,14 +61,16 @@ boundaryField
         type            codedFixedValue;
         value           uniform (0 0 0);
         name            timeVarying;
-        codeOptions
-        #{
+        // codeOptions
+        // #{
 
-            -I$(FOAM_CASE)/0/include
-        #};
+        //     -I$(FOAM_CASE)/0/include
+        // #};
         code            
         #{ 
-            #include "inlet_parameters"
+            // #include "inlet_parameters"
+            scalar t_ramp = 0.0;
+            bool unsteady_flag = true;
             const scalar t =  this->db().time().value();
             scalar ramp_factor = (t < t_ramp) ? t/t_ramp : 1.0;
             scalar u_t = ramp_factor*(1.0-unsteady_flag*cos(0.4*M_PI*t));
