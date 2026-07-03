@@ -25,7 +25,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    coconut_pimpleFoam.C
+    coconutPimpleFoam.C
 
 Description
     Transient solver for incompressible, turbulent flow of Newtonian fluids 
@@ -77,6 +77,7 @@ Note
 #include "turbulentTransportModel.H"
 
 #include "pimpleControl.H"
+#include "coconutPimpleControl.C"
 // #include "pressureReference.H"
 #include "CorrectPhi.H"
 // #include "fvModels.H"
@@ -113,17 +114,10 @@ int main(int argc, char *argv[])
     #include "createDyMControls.H"
     #include "createFields.H"
     #include "createUfIfPresent.H"
-    // why this necessary (?). choose this or the one inside !LTS
     #include "CourantNo.H"
     #include "setInitialDeltaT.H"
 
     turbulence->validate();
-
-    if (!LTS)
-    {
-        #include "CourantNo.H"
-        #include "setInitialDeltaT.H"
-    }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -134,6 +128,9 @@ int main(int argc, char *argv[])
 
     Info << "Starting loop" << nl << endl;
 
+    // if check coupling convergence, use coconut pimple control
+    coconutPimpleControl cocoPimple(mesh);
+    
     while (true)
     {
         usleep(1000); // Expressed in microseconds

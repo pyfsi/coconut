@@ -80,17 +80,12 @@ class SolverWrapperOpenFOAM2312(SolverWrapperOpenFoamESI):
         # typically: incompressible solver, pressure and wallShearStress are kinematic -> multiply with fluid density
         #            compressible solver, pressure and wallShearStress are not kinematic -> do nothing
         kinematic_conversion_dict = {
-            'coconut_cavitatingFoam': {
+            'coconutInterFoam': {
                 'wall_shear_stress_variable': 'rhoWallShearStress',
                 'density_correction_for_pressure': 1,
                 'density_correction_for_traction': 1
             },
-            'coconut_interFoam': {
-                'wall_shear_stress_variable': 'rhoWallShearStress',
-                'density_correction_for_pressure': 1,
-                'density_correction_for_traction': 1
-            },
-            'coconut_pimpleFoam': {
+            'coconutPimpleFoam': {
                 'wall_shear_stress_variable': 'wallShearStress',
                 'density_correction_for_pressure': self.settings['density'],
                 'density_correction_for_traction': self.settings['density']
