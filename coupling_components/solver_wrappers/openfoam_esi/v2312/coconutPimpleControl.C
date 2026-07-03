@@ -41,9 +41,6 @@ Description
 
 #include "pimpleControl.H"
 
-//- Declare that pimpleControl will be used
-// #define PIMPLE_CONTROL
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -53,76 +50,21 @@ namespace Foam
                         Class coconutPimpleControl Declaration
 \*---------------------------------------------------------------------------*/
 
-class coconutPimpleControl
-:
-    public pimpleControl
+class coconutPimpleControl: public pimpleControl
 {
     // Private member functions
+private:
+    //- No copy construct
+    coconutPimpleControl(const coconutPimpleControl&) = delete;
 
-        //- No copy construct
-        coconutPimpleControl(const coconutPimpleControl&) = delete;
-
-        //- No copy assignment
-        void operator=(const coconutPimpleControl&) = delete;
-
-// protected:
-
-    // Protected data
-
-        // Solution controls
-
-            // //- Flag to indicate whether to solve for the flow
-            // bool solveFlow_;
-
-            // //- Maximum number of PIMPLE correctors
-            // label nCorrPIMPLE_;
-
-            // //- Maximum number of PISO correctors
-            // label nCorrPISO_;
-
-            // //- Current PISO corrector
-            // label corrPISO_;
-
-            // //- Flag to indicate whether to update density in SIMPLE
-            // //- rather than PISO mode
-            // bool SIMPLErho_;
-
-            // //- Flag to indicate whether to only solve turbulence on final iter
-            // bool turbOnFinalIterOnly_;
-
-            // //- Flag to indicate wheter the final solver is used only on the
-            // //- final pimple iter
-            // bool finalOnLastPimpleIterOnly_;
-
-            // //- Flag to indicate that ddtCorr should be applied; default = yes
-            // bool ddtCorr_;
-
-            // //- Converged flag
-            // bool converged_;
-
-
-    // Protected Member Functions
-
-        // //- Read controls from fvSolution dictionary
-        // virtual bool read();
-
-        // //- Return true if all convergence checks are satisfied
-        // virtual bool criteriaSatisfied();
-
-        // //- Set the firstIteration flag on the mesh data dictionary
-        // virtual void setFirstIterFlag
-        // (
-        //     const bool check = true,
-        //     const bool force = false
-        // );
+    //- No copy assignment
+    void operator=(const coconutPimpleControl&) = delete;
 
 public:
-
     using pimpleControl::pimpleControl;
-    using pimpleControl::criteriaSatisfied;
 
     bool callCriteriaSatisfied() {
-        // return pimpleControl::criteriaSatisfied(); // PROBLEM: always skips first iter
+        // modified version of pimpleControl::criteriaSatisfied()
         // no checks on first iteration - nothing has been calculated yet
         // if ((corr_ == 1) || residualControl_.empty() || finalIter())
         // {
@@ -187,21 +129,9 @@ public:
         return checked && achieved;
     }
 
-    // Static Data Members
-
-        //- Run-time type information
-        // TypeName("coconutPimpleControl");
-
-
     // Constructors
-
-        //- Construct from mesh and the name of control sub-dictionary
-        coconutPimpleControl
-        (
-            fvMesh& mesh
-        ) :
-            pimpleControl(mesh, "PIMPLE", true)
-        {};
+    //- Construct from mesh and the name of control sub-dictionary
+    coconutPimpleControl(fvMesh& mesh): pimpleControl(mesh, "PIMPLE", true) {};
 
     //- Destructor
     virtual ~coconutPimpleControl() = default;
