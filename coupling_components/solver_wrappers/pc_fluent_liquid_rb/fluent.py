@@ -190,6 +190,9 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         self.rot_update = self.rb_settings.get('rotational_update', 'quaternion') # 'off', 'rot_mat' or 'quaternion'
         self.rb_predictor = self.rb_settings.get('predictor', 'constant')  # or 'linear'
         self.buoyancy = self.rb_settings.get('buoyancy', True)
+        self.x_motion = self.rb_settings.get('x_motion', True)
+        if not self.x_motion:
+            tools.print_info('X motion disabled.', layout='warning')
         self.weight_ramp = self.rb_settings.get('weight_ramp', 0)  # Nr. of time steps over which the full weight will be added
         self.gravity = self.rb_settings.get('gravity', [0, -9.81, 0])
         if self.restart_rb_only != 0:
@@ -1238,6 +1241,9 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
         # Update velocity with Crank-Nicolson integration (2nd order)
         self.a_trans = F_tot / (mass_solid + self.M_sys)
         self.v_trans = self.v_trans_prev +  0.5 * (self.a_trans_prev + self.a_trans) * self.delta_t
+
+        if not self.x_motion:
+            self.v_trans[0] = 0.0
 
         # --- TRANSLATIONAL WALL GUARD (FAILSAFE) ---
         if self.h_min < self.h_ll and self.contact_patches:
