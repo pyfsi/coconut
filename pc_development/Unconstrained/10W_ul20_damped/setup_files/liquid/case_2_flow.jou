@@ -1,0 +1,216 @@
+file set-batch-options n n n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+
+file read-case background_v4.msh
+define boundary-conditions zone-name solid-part-surface_body fluid.bg
+mesh modify-zones zone-type fluid.bg fluid
+define boundary-conditions modify-zones append-mesh "component_v10.msh"
+define boundary-conditions zone-name fluid-surface_body fluid.com
+mesh modify-zones zone-type fluid.com fluid
+
+define boundary-conditions modify-zones zone-type outer overset
+define overset-interfaces create overset-interface fluid.bg () fluid.com () n
+define overset-interfaces options expert y
+define overset-interfaces options render-receptor-cells? y
+; Cell Volume based (0) - Distance based (1)
+define overset-interfaces options donor-priority-method 0
+define overset-interfaces options transient-caching y y y
+define overset-interfaces options modified-donor-search? n
+
+define overset-interfaces options verbosity 1
+
+define user-defined user-defined-memory 6
+define user-defined user-defined-node-memory 7
+
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+
+define materials data-base database-type user-defined "eicosane"
+define materials copy fluid pcm
+
+; First initialising step: steady-state conduction simulation
+solve set equations flow n
+
+define models multiphase model "vof"
+define models steady? y
+; Fluent changes the volume fraction formulation to Implicit.
+define models multiphase number-of-phases 2
+define phases set-domain-properties change-phases-names? pcm air
+define phases set-domain-properties phase-domains air material y air
+define phases set-domain-properties phase-domains pcm material y pcm
+
+define boundary-conditions fluid fluid.bg mixture n n n n , n , n y n
+define boundary-conditions fluid fluid.com mixture n n n n , n , n y n
+; Wall heat fluw of 10 W converted to W/m2
+define boundary-conditions wall heat_wall1 mixture n 0 n 0 n y heat-flux n 8000.0 n n n ,
+define boundary-conditions wall heat_wall2 mixture n 0 n 0 n y heat-flux n 8000.0 n n n ,
+define boundary-conditions wall arc_wall mixture n 0 n 0 n y temperature n 311.35 n n n ,
+
+; Melting interface at melting temperature
+define boundary-conditions wall inner mixture n 0 n 0 n y temperature n 309.85 n n n ,
+
+; 2-phase: air at 311.35 in neck!
+define boundary-conditions wall neck mixture n 0 n 0 n y temperature n 311.35 n n n ,
+
+; Outlet for volume change due to phase change
+define boundary-conditions zone-type outlet pressure-outlet
+define boundary-conditions pressure-outlet outlet mixture y n 0 n 311.35 n y y
+
+define operating-conditions operating-pressure 0
+define operating-conditions gravity n
+
+solve monitors residual check-convergence y y
+solve monitors residual convergence-criteria 1e-12 1e-3
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+; Implicit VOF --> Compressive scheme
+solve set discretization-scheme mp 28
+; 13: body force weighted, 14: PRESTO!, 18: modified body force weighted
+solve set discretization-scheme pressure 14
+solve set gradient-scheme n y
+; SIMPLE (20) - PISO (22) - coupled (24)
+solve set p-v-coupling 24 n
+
+mesh adapt cell-registers add "molten"
+type hexahedron
+inside? y
+min-point 0 0.0525
+max-point 0.01 0.0818
+q
+q
+
+solve initialize set-defaults pcm mp 1
+solve initialize set-defaults mixture temperature 309.85
+solve initialize set-defaults mixture pressure 0
+solve initialize set-defaults mixture x-velocity 0
+solve initialize set-defaults mixture y-velocity 0
+solve initialize initialize-flow
+
+solve patch pcm () molten () mp 0
+solve patch mixture () molten () temperature 311.35
+
+solve iterate 100
+
+; Second initialising step: now switch to transient simulation with convection
+
+solve set equations flow y
+define models unsteady-1st-order y
+define operating-conditions gravity y 0 -9.81
+define operating-conditions reference-pressure-location 0.005 0.08082558
+
+; Allows the build-up of hydrostatic pressure in the heaviest phase (not in air) --> disable bouyancy in solver wrapper!
+define operating-conditions operating-density set-operating-density "minimum-phase-averaged"
+
+; Implicit VOF with implicit body force formulation
+define models multiphase volume-fraction-parameters formulation implicit
+define models multiphase body-force-formulation y
+
+; Insulated neck
+define boundary-conditions wall neck mixture n 0 n 0 n y heat-flux n 0 n n n ,
+
+solve monitors residual check-convergence y y y y n
+solve monitors residual convergence-criteria 1e-3 1e-4 1e-4 1e-8
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+; SIMPLE (20) - PISO (22) - coupled (24)
+; Coupled volume fraction: y
+solve set p-v-coupling 24 y
+; Compressive
+solve set discretization-scheme mp 28
+; 13: body force weighted, 14: PRESTO!, 18: modified body force weighted
+solve set discretization-scheme pressure 13
+solve set gradient-scheme n y
+
+solve set under-relaxation density 0.5
+solve set under-relaxation body-force 0.5
+solve set under-relaxation temperature 0.8
+solve set p-v-controls 200 200 0.5 0.5 0.5
+
+file write-case-data pc_fluid.cas.h5
+
+; Setup a transient calculation with flow time 1 s
+solve set transient-controls time-step-size 1e-4
+solve dual-time-iterate 10 80
+
+solve set transient-controls time-step-size 1e-3
+solve dual-time-iterate 9 80
+
+define models unsteady-2nd-order y
+solve dual-time-iterate 990 80
+
+solve monitors residual convergence-criteria 1e-4 1e-6 1e-6 1e-6
+
+; Reset time
+file interpolate zone-selection fluid.com fluid.bg ()
+file interpolate write-data sol_dat.ip y y
+solve initialize initialize-flow
+file interpolate read-data sol_dat.ip
+
+define dynamic-mesh dynamic-mesh y n n n n
+define dynamic-mesh controls smoothing y
+define dynamic-mesh controls smoothing-parameters smoothing-method radial
+define dynamic-mesh controls smoothing-parameters local-smoothing? n
+define dynamic-mesh controls smoothing-parameters smooth-boundary-layers-with-adjacent-zone? y
+define dynamic-mesh controls layering n
+define dynamic-mesh controls remeshing n
+
+define dynamic-mesh zones create fluid.com deforming y n y
+define dynamic-mesh zones create outer deforming unspecified n y n y n y
+; MAYBE SET ON AGAIN
+; define overset-interfaces options dead-cell-update? y -1 n
+
+; Report definitions and report file
+solve report-definitions add vmax volume-max
+field mixture velocity-magnitude
+zone-names fluid.bg fluid.com ()
+per-zone? no
+q
+
+solve report-definitions add vol-air volume-integral
+field air vof
+zone-names fluid.bg ()
+per-zone? no
+q
+
+solve report-definitions add htr-vert surface-integral
+field mixture heat-flux
+surface-names heat_wall1 ()
+per-surface? no
+q
+
+solve report-definitions add htr-bottom surface-integral
+field mixture heat-flux
+surface-names heat_wall2 ()
+per-surface? no
+q
+
+solve report-definitions add htr-arc surface-integral
+field mixture heat-flux
+surface-names arc_wall ()
+per-surface? no
+q
+
+solve report-definitions add htr-int surface-integral
+field mixture heat-flux
+surface-names inner ()
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs vmax htr-vert htr-bottom htr-arc htr-int vol-air ()
+file-name "./report-file.out"
+active? yes
+q
+
+file export ascii node_coords_inner inner () n
+x-coordinate
+y-coordinate
+q
+n
+
+file write-case-data pc_fluid.cas.h5
+exit
