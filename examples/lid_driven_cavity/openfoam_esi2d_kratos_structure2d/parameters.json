@@ -49,7 +49,7 @@
             "type": "solver_wrappers.openfoam_esi.v2312",
             "settings": {
               "working_directory": "CFD",
-              "application": "coconut_pimpleFoam",
+              "application": "coconutPimpleFoam",
               "boundary_names": [
                 "bottom"
               ],
@@ -72,7 +72,7 @@
               ],
               "density": 1,
               "time_precision": 2,
-              "parallel": false,
+              "parallel": true,
               "residual_variables": [
                 "Ux",
                 "Uy",

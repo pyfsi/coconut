@@ -50,8 +50,8 @@ solvers
 
 PIMPLE
 { 
-    nOuterCorrectors    100;
-    nNonOrthogonalCorrectors 0;
+    nOuterCorrectors    50;
+    nNonOrthogonalCorrectors 8;
     nCorrectors         3;
     residualControl
     {

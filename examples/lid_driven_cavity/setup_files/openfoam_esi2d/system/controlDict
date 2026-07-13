@@ -14,7 +14,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     coconut_pimpleFoam;
+application     coconutPimpleFoam;
 
 //solver          incompressibleFluid;
 
