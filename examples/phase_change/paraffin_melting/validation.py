@@ -95,7 +95,7 @@ def process_faden_itf(filepath, window=11, poly=2):
 # Load report files
 data_solid = np.loadtxt(f'{SIM_DIR}CFD_1/report-file.out', skiprows=3)
 data_liquid = np.loadtxt(f'{SIM_DIR}CFD_2/report-file.out', skiprows=3)
-data_fluent = np.loadtxt(f'{VAL_DIR}report-file-new.out', skiprows=3)
+data_fluent = np.loadtxt(f'{VAL_DIR}report-file.out', skiprows=3)
 
 # Align arrays to the shortest simulation time
 i_end = min(len(data_solid), len(data_liquid))
