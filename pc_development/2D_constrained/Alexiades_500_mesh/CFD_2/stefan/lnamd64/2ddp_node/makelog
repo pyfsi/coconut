@@ -1,4 +1,0 @@
-# Generating udf_names.c because of makefile stefan.c
-# Compiling udf_names.o because of udf_names.c
-# Compiling stefan.o because of stefan.c
-# Linking libudf.so because of makefile user.udf udf_names.c udf_names.o stefan.o

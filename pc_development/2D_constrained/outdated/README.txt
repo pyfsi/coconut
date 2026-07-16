@@ -1,1 +1,0 @@
-These cases are not maintained and are not guaranteed (and will probably not) to work with the newest distribution.

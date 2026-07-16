@@ -1,5 +1,0 @@
-save name "identified_edges.dbs"
-import uns "case_restart.cas" d2
-edge summarize
-save
-end

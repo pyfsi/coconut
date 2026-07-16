@@ -43,4 +43,9 @@ SunOS*Gcc*/
 *.pyc
 __pycache__
 
+cht_development/
+pc_development/
+coupling_components/solver_wrappers/pc_fluent/
+
 # end-of-file
+

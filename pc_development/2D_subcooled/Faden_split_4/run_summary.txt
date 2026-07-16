@@ -1,7 +1,0 @@
-Runs:
-    - run 1: 14400 time steps: solid quads + liquid remesh
-    - run 2: 12600 time steps: solid quads + liquid remesh
-    - run 3: 9000 time steps: solid quads + liquid remesh
-    - run 4: 14400 time steps: solid tri's + liquid remesh
-    - run 5: 10800 time steps: solid tri's + liquid remesh
-    - run 6: 10800 time steps: to be run
