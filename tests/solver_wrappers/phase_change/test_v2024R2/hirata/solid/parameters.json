@@ -1,0 +1,29 @@
+{
+  "type": "solver_wrappers.python.pc_saturated_solid",
+  "settings": {
+    "working_directory": "this is changed upon running the test",
+    "input_file": "solver_parameters.json",
+    "interface_input": [
+      {
+        "model_part": "inner_in_faces",
+        "variables": [
+          "heat_flux"
+        ]
+      },
+      {
+        "model_part": "inner_in_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "inner_out_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ]
+  }
+}

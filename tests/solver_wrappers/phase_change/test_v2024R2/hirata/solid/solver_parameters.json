@@ -1,0 +1,23 @@
+{
+  "timestep_size": 0.01,
+  "timestep_start": 0,
+  "save_restart": 1,
+  "interface": {
+    "interface_file": "interface_nodes.csv",
+    "movement_direction": "inward",
+    "closed": true
+  },
+  "material_properties": {
+    "rho": 775.13,
+    "latent": 248000
+  },
+  "conservative_mapper": {
+    "mapping_domain": "rectangular",
+    "mapping_limits": [0, 0, 1, 1],
+    "mapping_conservative": true,
+    "volume_tolerance": 1e-13,
+    "mapper_iterations": 100,
+    "mapper_relaxation": 0.4,
+    "projection_order": 0
+  }
+}

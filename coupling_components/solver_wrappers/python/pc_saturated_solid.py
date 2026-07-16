@@ -167,6 +167,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
             self.ini_coord_nodes = data['ini_nodes'] # initial node coordinates
             self.ini_coord_faces = data['ini_faces'] # initial face coordinates
             self.nf = self.ini_coord_faces.shape[0]
+            self.nn = self.ini_coord_nodes.shape[0] # NEW
             self.prev_disp = data['prev_nodes'] # previous total node displacement
             self.prev_face_disp = data['prev_faces'] # previous total face displacement
             self.dx = data['dx_nodes'] # latest time step node displacement

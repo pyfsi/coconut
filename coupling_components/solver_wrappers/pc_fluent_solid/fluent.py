@@ -43,17 +43,21 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         self.coco_messages = tools.CocoMessages(self.dir_cfd)
         self.coco_messages.remove_all_messages()
         self.backup_fluent_log()
+
         self.dir_src = os.path.realpath(os.path.dirname(__file__))
         self.tmp_dir = os.environ.get('TMPDIR', '/tmp')  # dir for host-node communication
         self.tmp_dir_unique = os.path.join(self.tmp_dir, f'coconut_{getuser()}_{os.getpid()}_fluent')
+
         self.cores = self.settings['cores']
         self.hosts_file = self.settings.get('hosts_file')
         self.case_file = self.settings['case_file']
         self.data_file = self.case_file.replace('.cas', '.dat', 1)
+
         if not os.path.exists(os.path.join(self.dir_cfd, self.case_file)):
             raise FileNotFoundError(f'Case file {self.case_file} not found in working directory {self.dir_cfd}')
         elif not os.path.exists(os.path.join(self.dir_cfd, self.data_file)):
             raise FileNotFoundError(f'Data file {self.data_file} not found in working directory {self.dir_cfd}')
+
         self.mnpf = self.settings['max_nodes_per_face']
         self.dimensions = self.settings['dimensions']
         self.unsteady = self.settings['unsteady']
@@ -64,8 +68,10 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         self.timestep = self.timestep_start
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
+
         self.iteration = None
         self.fluent_process = None
+
         self.thread_ids = {}  # thread IDs corresponding to thread names
         for thread_name in self.settings['thread_names']:
             self.thread_ids[thread_name] = None
@@ -127,6 +133,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
 
         # Phase change specific settings
         self.pc_settings = self.settings['PC']
+
         self.ini_condition = self.pc_settings.get('ini_condition', None)  # initial condition for outgoing variables
         self.latent_heat = self.pc_settings.get('latent', None)
         if self.latent_heat is None:
@@ -134,6 +141,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         self.melt_temp = self.pc_settings.get('melt_temp', None)
         if self.melt_temp is None:
             raise ValueError('Melt temperature should be provided in the json file in case of phase change problems')
+
         self.melt_enthalpy = self.pc_settings.get('melt_enthalpy', 0.0)
         if self.melt_enthalpy == 0.0:
             tools.print_info('No melting enthalpy is given: constant cp assumed for solid solver.', layout='warning')
@@ -141,6 +149,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         # Face-to-node mapping settings for solid domain
         if "displacement" in self.output_variables:
             self.f2n_settings = self.pc_settings['f2n_mapping']
+
             self.mapping_domain = self.f2n_settings.get('mapping_domain', None)
             self.mapping_limits = self.f2n_settings.get('mapping_limits', None)
             self.conservative = self.f2n_settings.get('mapping_conservative', False)
@@ -163,6 +172,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             thermal_bc = str(1)
         elif self.thermal_bc == 'temperature':
             thermal_bc = str(0)
+
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -199,6 +209,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                 max_cores = len(fp.readlines())
         else:
             max_cores = multiprocessing.cpu_count()
+
         if self.cores < 1 or self.cores > max_cores:
             warning = f'Number of cores incorrect, changed from {self.cores} to {max_cores}'
             if self.hosts_file is None:
@@ -224,13 +235,13 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             cmd = cmd1 + cmd2 + cmd3
         else:
             cmd = cmd1 + '-gu ' + cmd2 + cmd3
-        self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash',
-                                               shell=True, cwd=self.dir_cfd, env=self.env)
+
+        self.fluent_process = subprocess.Popen(cmd, executable='/bin/bash', shell=True, cwd=self.dir_cfd, env=self.env)
 
         # pass on process to coco_messages for polling
         self.coco_messages.set_process(self.fluent_process)
 
-        # get general simulation info from  fluent.log and report.sum
+        # get general simulation info from fluent.log and report.sum
         self.coco_messages.wait_message('case_info_exported')
 
         with open(log, 'r') as file:
@@ -261,8 +272,9 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                     if 'Volume Fraction' in line and 'yes' in line:
                         raise ValueError('Multiphase in Fluent is impossible with solid solver for phase change simulations')
 
+        # delete log file (fluent.log is sufficient)
         if os.path.isfile(join(self.dir_cfd, 'log')):
-            os.unlink(join(self.dir_cfd, 'log'))  # delete log file (fluent.log is sufficient)
+            os.unlink(join(self.dir_cfd, 'log'))
 
         # get surface thread ID's from report.sum and write them to bcs.txt
         check = 0
@@ -288,14 +300,15 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                     check = 2
                 if 'Boundary Conditions' in line:
                     check = 1
+
         with open(join(self.dir_cfd, 'bcs.txt'), 'w') as file:
             file.write(f'{len(names_found)}\n')
             for name, id in self.thread_ids.items():
                 file.write(f'{name} {id}\n')
+
         self.coco_messages.send_message('thread_ids_written_to_file')
 
-        # remove "report.sum" because the batch options to overwrite report files and case files conflict in some
-        # versions of Fluent (2023R1)
+        # remove "report.sum" because the batch options to overwrite report files and case files conflict in some versions of Fluent
         os.unlink(report)
 
         # import node and face information if no restart
@@ -320,8 +333,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                 if thread_name in mp_name:
                     self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
             if mp_name not in self.model_part_thread_ids:
-                raise AttributeError('Could not find thread name corresponding ' +
-                                     f'to ModelPart {mp_name}')
+                raise AttributeError('Could not find thread name corresponding ' + f'to ModelPart {mp_name}')
 
             # read in datafile
             thread_id = self.model_part_thread_ids[mp_name]
@@ -364,8 +376,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
                 if thread_name in mp_name:
                     self.model_part_thread_ids[mp_name] = self.thread_ids[thread_name]
             if mp_name not in self.model_part_thread_ids:
-                raise AttributeError('Could not find thread name corresponding ' +
-                                     f'to ModelPart {mp_name}')
+                raise AttributeError('Could not find thread name corresponding ' + f'to ModelPart {mp_name}')
 
             # read in datafile
             thread_id = self.model_part_thread_ids[mp_name]
@@ -524,6 +535,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             # read in datafile
             for var in dct['variables']:
                 prefix = accepted_variables_pc_solid['out'][var][0]
+
                 # Avoid repeat of commands in case variables are stored in the same file
                 if prefix != 'skip':
                     data = self.read_output_file(prefix, thread_id)
@@ -689,7 +701,6 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             raise RuntimeError(f'ANSYS Fluent version {self.version} ({self.version_bis}) is required. Check if '
                                f'the solver load commands for the "machine_name" are correct in solver_modules.py.')
 
-    # noinspection PyMethodMayBeStatic
     def get_unique_face_ids(self, data):
         """
         Construct unique face IDs based on the face's node IDs.
@@ -706,9 +717,9 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         # *** NEW: store the unique string alongside the hash value to enable reconstruction
         """
         data = data.astype(int)
-        # ids = np.zeros(data.shape[0], dtype='U256')  # array is flattened
         ids = np.zeros(data.shape[0], dtype=int)
         face_ids = {}  # Dictionary to store face IDs and corresponding unique strings
+
         for i in range(ids.size):
             tmp = np.unique(data[i, :])
             if tmp[0] == -1:
@@ -717,6 +728,7 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
             hash_id = hashlib.sha1(str.encode(unique_string))
             ids[i] = int(hash_id.hexdigest(), 16) % (10 ** 16)
             face_ids[ids[i]] = unique_string
+
         return ids, face_ids
 
     def reverse_face_ids(self, id, mp_name):
@@ -808,11 +820,13 @@ class SolverWrapperPCFluentSolid(SolverWrapper):
         tmp = prefix + f'_timestep{self.timestep}_thread{thread_id}.dat'
         file_name = join(self.dir_cfd, tmp)
         data = np.loadtxt(file_name, skiprows=1, ndmin=2)
+
         # copy output data for debugging
         if self.debug:
             dst = prefix + f'_timestep{self.timestep}_thread{thread_id}_it{self.iteration}.dat'
             cmd = f'cp {file_name} {join(self.dir_cfd, dst)}'
             os.system(cmd)
+
         return data
 
     def get_coordinates(self):

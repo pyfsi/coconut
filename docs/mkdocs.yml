@@ -60,7 +60,9 @@ nav:
           - abaqus_cse.md
           - fluent.md
           - cht_fluent.md
-          - pc_fluent.md
+          - pc_fluent_liquid.md
+          - pc_fluent_liquid_rb.md
+          - pc_fluent_solid.md
           - kratos_structure.md
           - openfoam.md
           - python.md

@@ -1,0 +1,24 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                                                              ;;;
+;;;             Fluent USER DEFINED MATERIAL DATABASE            ;;;
+;;;                                                              ;;;
+;;; (name type[fluid/solid] (chemical-formula . formula)         ;;;
+;;;             (prop1 (method1a . data1a) (method1b . data1b))  ;;;
+;;;            (prop2 (method2a . data2a) (method2b . data2b)))  ;;;
+;;;                                                              ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(
+	(pcm fluid
+		(chemical-formula . pcm)
+		(density (polynomial 979.826 -0.674))
+		(specific-heat (polynomial 3247. -8.861 0.01821))
+		(thermal-conductivity (polynomial 0.246 -0.0003121))
+		(viscosity (expression . "1e-3[kg m^-1 s^-1]*exp(-5.353 + 2026.013[K]/StaticTemperature)"))
+		(molecular-weight (constant . 28.966))
+		(therm-exp-coeff (constant . 0))
+		(reference-temperature (constant . 298.15))
+		(speed-of-sound (none . #f))
+	)
+
+)

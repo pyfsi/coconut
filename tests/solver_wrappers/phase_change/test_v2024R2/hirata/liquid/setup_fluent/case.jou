@@ -1,0 +1,154 @@
+file set-batch-options n n n
+(enable-dynamic-mesh-node-ids #t)
+;file start "transcript_setup.txt"
+
+file read-case background_v2.msh
+mesh modify-zones zone-type fluid.bg fluid
+define boundary-conditions modify-zones append-mesh "component_v4.msh"
+define boundary-conditions zone-name fluid-surface_body fluid.com
+mesh modify-zones zone-type fluid.com fluid
+
+define boundary-conditions modify-zones zone-type outer overset
+define overset-interfaces create overset-interface fluid.bg () fluid.com () n
+define overset-interfaces options expert y
+define overset-interfaces options render-receptor-cells? y
+define overset-interfaces options donor-priority-method 0
+define overset-interfaces options transient-caching y y y
+define overset-interfaces options modified-donor-search? n
+
+define overset-interfaces options verbosity 1
+
+define user-defined user-defined-memory 6
+define user-defined user-defined-node-memory 7
+
+define models viscous laminar y
+define models solver pressure-based y
+define models energy y n n n y
+
+define materials copy fluid air pcm
+define materials change-create pcm , yes boussinesq 775.13 yes constant 2400 yes constant 0.15 yes constant 0.00401 no yes 8.61e-4 no
+
+; First initialising step: steady-state conduction simulation
+solve set equations flow n
+
+define boundary-conditions fluid fluid.bg y pcm n n n n , n , n y n
+define boundary-conditions fluid fluid.com y pcm n n n n , n , n y n
+define boundary-conditions wall top n 0 n 0 n y temperature n 329.85 n n n ,
+define boundary-conditions wall bottom n 0 n 0 n y temperature n 329.85 n n n ,
+define boundary-conditions wall side n 0 n 0 n y temperature n 329.85 n n n ,
+
+; Melting interface at melting temperature
+define boundary-conditions wall inner n 0 n 0 n y temperature n 309.85 n n n ,
+
+define operating-conditions operating-pressure 0
+define operating-conditions gravity n
+
+solve monitors residual check-convergence y
+solve monitors residual convergence-criteria 1e-7
+
+solve set discretization-scheme temperature 1
+solve set discretization-scheme mom 1
+; 14: PRESTO!
+solve set discretization-scheme pressure 14
+solve set gradient-scheme n y
+; SIMPLE (20) - PISO (22) - coupled (24)
+solve set p-v-coupling 24
+
+solve initialize set-defaults temperature 309.85
+solve initialize set-defaults pressure 0
+solve initialize set-defaults x-velocity 0
+solve initialize set-defaults y-velocity 0
+solve initialize initialize-flow
+
+solve iterate 30
+
+; Second initialising step: now switch to transient simulation with convection
+
+solve set equations flow y
+define models unsteady-1st-order y
+define operating-conditions gravity y 0 -9.81
+
+solve monitors residual check-convergence y y y y
+solve monitors residual convergence-criteria 1e-3 1e-3 1e-3 1e-7
+
+solve set p-v-coupling 24
+solve set under-relaxation density 0.3
+solve set under-relaxation body-force 0.5
+solve set under-relaxation temperature 0.5
+solve set p-v-controls 200 0.25 0.25
+
+file write-case-data pc_fluid.cas.h5
+
+; Setup a transient calculation with flow time 1 s
+solve set transient-controls time-step-size 1e-4
+solve dual-time-iterate 10 80
+
+solve set transient-controls time-step-size 1e-3
+solve dual-time-iterate 9 80
+
+define models unsteady-2nd-order y
+solve monitors residual convergence-criteria 1e-3 1e-5 1e-5 1e-7
+solve dual-time-iterate 990 80
+
+; Reset time
+file interpolate zone-selection fluid.com fluid.bg ()
+file interpolate write-data sol_dat.ip y y
+solve initialize initialize-flow
+file interpolate read-data sol_dat.ip
+
+define dynamic-mesh dynamic-mesh y n n n n
+define dynamic-mesh controls smoothing y
+define dynamic-mesh controls smoothing-parameters smoothing-method radial
+define dynamic-mesh controls smoothing-parameters local-smoothing? n
+define dynamic-mesh controls smoothing-parameters smooth-boundary-layers-with-adjacent-zone? y
+define dynamic-mesh controls layering n
+define dynamic-mesh controls remeshing n
+
+define dynamic-mesh zones create fluid.com deforming y n y
+define dynamic-mesh zones create outer deforming unspecified n y n y n y
+
+; Report definitions and report file
+solve report-definitions add vmax volume-max
+field velocity-magnitude
+zone-names fluid.bg fluid.com ()
+per-zone? no
+q
+
+solve report-definitions add htr-side surface-integral
+field heat-flux
+surface-names side ()
+per-surface? no
+q
+
+solve report-definitions add htr-bottom surface-integral
+field heat-flux
+surface-names bottom ()
+per-surface? no
+q
+
+solve report-definitions add htr-top surface-integral
+field heat-flux
+surface-names top ()
+per-surface? no
+q
+
+solve report-definitions add htr-int surface-integral
+field heat-flux
+surface-names inner ()
+per-surface? no
+q
+
+solve report-files add report-file
+report-defs vmax htr-side htr-bottom htr-top htr-int ()
+file-name "./report-file.out"
+active? yes
+q
+
+file export ascii node_coords_inner inner () n
+x-coordinate
+y-coordinate
+q
+n
+
+file write-case-data pc_fluid.cas.h5
+exit

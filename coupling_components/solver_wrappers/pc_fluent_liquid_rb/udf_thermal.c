@@ -1261,12 +1261,12 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     char file_name_2[256];
     Thread *face_thread = DT_THREAD(dynamic_thread); /* face_thread to which UDF is assigned in Fluent */
     int thread_id = THREAD_ID(face_thread);
-    int update_pr_new = 0; // flag to check if prvious node positions need to be updated when the UDF is called twice
+    int update_pr_new = 0; // flag to check if previous node positions need to be updated when the UDF is called twice
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
     Node *node;
-    int i, d, n, n_pc, node_number, cnt;
+    int i, d, n, n_pc, node_number;
     DECLARE_MEMORY_N(coords, real, ND_ND);
     DECLARE_MEMORY(ids, int);
     DECLARE_MEMORY_N(coords_pc, real, ND_ND);
@@ -1380,15 +1380,13 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
         }
     }
 
-    cnt = 0;
     begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
         f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
-            node = F_NODE(face, face_thread, node_number); /* get global face ndoe index from local node index */
+            node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
             if NODE_POS_NEED_UPDATE(node) { /* only execute if position has not been updated yet (efficiency) */
                 int found_node = 0;
                 for (i=0; i < n; i++) { /* loop over all lines to find the correct node */
                     if (N_UDMI(node,N_ID) == ids[i]) { /* correct node has the same dynamic mesh node id */
-                        cnt ++;
                         for (d = 0; d < ND_ND; d++) {
                             NODE_COORD(node)[d] = coords[d][i]; /* modify node coordinates */
                             /* Update melting only node locations */
@@ -1681,7 +1679,6 @@ DEFINE_ON_DEMAND(calc_volume_change)
                     }
                 }
 
-                // printf("\ncnt = %i\n", cnt);
                 if (zero_vol) {
                     C_UDMI(cell,cell_thread,D_VOL) = 0.0;
                 }

@@ -1,0 +1,88 @@
+{
+  "type": "solver_wrappers.pc_fluent_liquid_rb.v2024R2",
+  "settings": {
+    "working_directory": "this is changed upon running the test",
+    "case_file": "pc_fluid.cas.h5",
+    "dimensions": 2,
+    "unsteady": true,
+    "multiphase": false,
+    "debug": false,
+    "delta_t": 0.01,
+    "timestep_start": 0,
+    "save_restart": 1,
+    "PC": {
+      "pcm_name": "pcm",
+      "latent": 248000,
+      "melt_temp": 309.85,
+      "volume_change": false,
+      "solid_density": 856.0,
+      "liquid_density": 775.13,
+      "ini_condition": 0
+    },
+    "RB": {
+      "iteration_min": 1,
+      "iteration_max": 2,
+      "restart_rb": 0,
+      "tolerance": 1e-3,
+      "relaxation": 1.0,
+      "fict_coeff": 8.0,
+      "fict_multiplier": 1.0,
+      "liquid_dyn_visc": 0.00401,
+      "fm_wall": "bottom",
+      "relaxation_method": "static",
+      "relax_first_ts": true,
+      "rotational_update": "off",
+      "x_motion": false,
+      "predictor": "linear",
+      "weight_ramp": 0,
+      "buoyancy": true,
+      "gravity": [0, -9.81, 0]
+    },
+    "contact_model": {
+      "contact_force": true,
+      "gap_walls": [
+        "bottom",
+        "top",
+        "side"
+      ],
+      "upper_limit": 1.5e-4,
+      "lower_limit": 7.5e-5,
+      "k_mass": 9.0,
+      "damping_ratio": 10.0
+    },
+    "thread_names": [
+      "inner"
+    ],
+    "overset_boundaries": {},
+    "thread_domains": [
+      "fluid.com"
+    ],
+    "interface_input": [
+      {
+        "model_part": "inner_in_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "inner_out_faces",
+        "variables": [
+          "heat_flux"
+        ]
+      },
+      {
+        "model_part": "inner_out_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "cores": 4,
+    "fluent_gui": false,
+    "max_nodes_per_face": 2,
+    "flow_iterations": 1,
+    "save_results": 1
+  }
+}

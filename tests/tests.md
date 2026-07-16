@@ -39,6 +39,11 @@ python3 run_tests.py fluent abaqus
 will run all tests that have the `fluent` or `abaqus` in its path: for example
 `coconut.tests.solver_wrappers.fluent.test_v2023R1.test_move_nodes`.
 
+Similarly, the phase change solver wrappers can be tested using their specific keywords. For example, to run all tests related to phase change (including the Fluent wrappers for melting and rigid body motion, as well as the custom Python saturated solid solver), use:
+```bash
+python3 run_tests.py phase_change
+```
+
 Starting from Anaconda 2023.09, to run a specific test, it is sufficient to provide the full path, for example
 ```bash
 python3 run_tests.py solver_wrappers.fluent.test_v2023R1.TestSolverWrapperFluent2023R1Tube3D.test_partitioning

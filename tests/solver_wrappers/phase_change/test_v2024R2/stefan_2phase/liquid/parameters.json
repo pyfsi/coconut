@@ -1,0 +1,50 @@
+{
+  "type": "solver_wrappers.pc_fluent_liquid.v2024R2",
+  "settings": {
+    "working_directory": "this is changed upon running the test",
+    "case_file": "pc_fluid.cas.h5",
+    "dimensions": 2,
+    "unsteady": true,
+    "multiphase": false,
+    "debug": false,
+    "delta_t": 0.1,
+    "timestep_start": 0,
+    "save_restart": 1,
+    "PC": {
+      "latent": 179000,
+      "melt_temp": 299.15,
+      "ini_condition": 0,
+      "end_of_setup_commands": "(ti-menu-load-string \"define dynamic-mesh zones create boundary user-defined \\\"move_nodes::udf_thermal\\\" yes no , constant 0.001 no no no\")"
+    },
+    "thread_names": [
+      "boundary"
+    ],
+    "interface_input": [
+      {
+        "model_part": "boundary_in_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "interface_output": [
+      {
+        "model_part": "boundary_out_faces",
+        "variables": [
+          "heat_flux"
+        ]
+      },
+      {
+        "model_part": "boundary_out_nodes",
+        "variables": [
+          "displacement"
+        ]
+      }
+    ],
+    "cores": 4,
+    "fluent_gui": false,
+    "max_nodes_per_face": 2,
+    "flow_iterations": 1,
+    "save_results": 1
+  }
+}

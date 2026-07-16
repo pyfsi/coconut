@@ -258,35 +258,54 @@ Therefore, a solver tolerance `residual_atol` has to be defined for these solver
 ## Phase change: saturated solid
 
 Solver for the solid domain during a one-phase melting simulation with a saturated solid.
-In such a case, the solid is at melting temperature and no temperature gradients are present in the solid.
-Consequently, no govering equations need to be solved in the domain. Only the Stefan condition needs to be enforced at the interface:
+In such a case, the solid is at the melting temperature and no temperature gradients are present in the solid.
+Consequently, no governing equations need to be solved in the domain. Only the Stefan condition needs to be enforced at the interface.
 Without any heat flux in the solid domain, the Stefan condition takes the following form:
 $$
 \rho \cdot L \cdot v_{itf} = -k_L \nabla T |^L
 $$
 with $\rho$ the density of the PCM, $L$ the latent heat and $-k_L \nabla T|^L$ the interface heat flux at the liquid side.
-This solver expects (incoming or outgoing) heat flux at the interface as input variable and returns interface displacement as output variable,
-which follows from the interface velocity $v_{itf}$.
+This solver expects the heat flux at the interface as an input variable and returns the interface displacement as an output variable, which follows from the interface velocity $v_{itf}$.
 
-Currently, this solver only works in 2D cases with a straight initial interface shape with equidistant discretisation.
+### Capabilities and geometric features
+
+Unlike earlier versions that were restricted to straight, equidistant lines, this updated solver supports arbitrary 2D interface shapes. 
+The initial interface morphology can be dynamically loaded from a CSV file, and the solver utilises a KD-tree algorithm to automatically sort and link the unordered nodes.
+It supports both open and closed curve topologies. Furthermore, the solver incorporates an internal face-to-node mapper to convert the calculated face regressions into nodal displacements.
+This allows for conservative mapping to explicitly preserve volume during complex grid deformations.
 
 ### Solver parameters
 
 The following parameters need to be specified in a dedicated JSON file located in the `working_directory`.
 The name of this JSON file should be specified next to the key *`input_file`* in the parameters.json file of the simulation.
 
-|            parameter |  type  | description                                                                                                          |
-|---------------------:|:------:|----------------------------------------------------------------------------------------------------------------------|
-|      `timestep_size` | double | Time step size of the simulation.                                                                                    |
-|     `timestep_start` |  int   | Time step at which simulation is started.                                                                            |
-|                 `x0` | double | x-coordinate of the first node of the interface. Specified in subdictionary with key `interface`.                    |
-|                 `y0` | double | y-coordinate of the first node of the interface. Specified in subdictionary with key `interface`.                    |
-|                 `x1` | double | x-coordinate of the last node of the interface. Specified in subdictionary with key `interface`.                     |
-|                 `y1` | double | y-coordinate of the last node of the interface. Specified in subdictionary with key `interface`.                     |
-|              `faces` |  int   | Number of cell faces at the interface. Specified in subdictionary with key `interface`.                              |
-| `movement_direction` |  list  | General direction of interface movement, specified as \[$x$, $y$\]. Specified in subdictionary with key `interface`. |
-|                `rho` | double | Density of the PCM. Specified in subdictionary with key `material_properties`.                                       |
-|             `latent` | double | Latent heat of the PCM. Specified in subdictionary with key `material_properties`.                                   |
+|              parameter |   type   | description                                                                                                                                                                             |
+|-----------------------:|:--------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|        `timestep_size` |  double  | Time step size of the simulation.                                                                                                                                                       |
+|       `timestep_start` |   int    | (optional) Default: **0**. Time step at which simulation is started or restarted.                                                                                                       |
+|         `save_restart` |   int    | (optional) Default: **0**. The interval at which the exact kinematic and geometric state is saved to a pickle file for restart capabilities.                                            |
+|       `interface_file` |   str    | (optional) Name of a CSV file containing `x-coordinate` and `y-coordinate` columns for the initial nodes. Specified in subdictionary with key `interface`.                              |
+|               `closed` |   bool   | (optional) Default: `false`. Indicates if the boundary geometry forms a closed loop. Specified in subdictionary with key `interface`.                                                   |
+| `x0`, `y0`, `x1`, `y1` |  double  | (optional) Coordinates to define a straight line interface. Used as a fallback if `interface_file` is not provided. Specified in subdictionary with key `interface`.                    |
+|                `faces` |   int    | (optional) Number of cell faces used to discretise the straight line fallback interface. Specified in subdictionary with key `interface`.                                               |
+|   `movement_direction` | str/list | General direction of interface movement. Can be defined geometrically as strings **"inward"** or **"outward"**, or as a specific vector **[$x$, $y$]**. Specified in subdictionary with key `interface`. |
+|                  `rho` |  double  | Density of the PCM. Specified in subdictionary with key `material_properties`.                                                                                                          |
+|               `latent` |  double  | Latent heat of the PCM. Specified in subdictionary with key `material_properties`.                                                                                                      |
+|  `conservative_mapper` |   dict   | Settings for the internal face-to-node displacement mapper.                                                                                                                             |
+
+### Conservative Mapper (`conservative_mapper`) Settings
+
+The `conservative_mapper` dictionary configures the internal mapping from the face-calculated Stefan displacement to the required node displacements.
+
+|                 parameter |   type   | description                                                                                                                          |
+|--------------------------:|:--------:|--------------------------------------------------------------------------------------------------------------------------------------|
+|        `mapping_domain`   |   str    | The domain over which the mapping is solved.                                                                                         |
+|        `mapping_limits`   |   list   | The boundary limits for the mapping operation.                                                                                       |
+|  `mapping_conservative`   |   bool   | (optional) Default: `false`. If `true`, enables iterative scaling to ensure strict volume conservation during the mapping operation. |
+|      `volume_tolerance`   |  double  | (optional) Default: **1e-14**. The absolute volume conservation tolerance used to terminate the conservative mapping iterations.     |
+|     `mapper_iterations`   |   int    | (optional) Default: **20**. The maximum number of conservative mapping iterations allowed per time step.                             |
+|     `mapper_relaxation`   |  double  | (optional) Default: **0.4**. The relaxation factor applied during the iterative conservative mapping steps.                          |
+|      `projection_order`   |   int    | (optional) Default: **1**. Options: **0** (none), **1** (1st order upwind), or **2** (2nd order upwind).                             |
 
 ## References
 <a id="1">[1]</a> 

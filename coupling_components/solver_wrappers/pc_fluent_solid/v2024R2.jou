@@ -50,7 +50,6 @@ file set-batch-options n n n
 (if (= timestep_start 0)
     (begin
         (ti-menu-load-string "file read-case-data |CASE|")
-        (ti-menu-load-string "solve set expert n y y y")
         (rp-var-define 'udf/timestep 0 'int #f)
         (rp-var-define 'udf/iteration 0 'int #f)
         (ti-menu-load-string "define user-defined compiled-functions compile \"udf_thermal\" y \"udf_thermal.c\" \"\" \"\"")
@@ -101,7 +100,11 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
         (ti-menu-load-string "define user-defined execute-on-demand \"ini_udm::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"set_adjacent::udf_thermal\"")
         (ti-menu-load-string "define user-defined execute-on-demand \"calc_volume_change::udf_thermal\"")
-        (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n") ; mass and energy source term for both solid and liquid solver
+
+        (if (rp-3d?)
+            (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n")
+            (ti-menu-load-string "define boundary-conditions fluid , n y 1 n y \"udf_mass_source::udf_thermal\" 0 0 1 n y \"udf_energy_source::udf_thermal\" n n n , n , n y n")
+        )
     )
 )
 ;
@@ -199,4 +202,3 @@ define user-defined execute-on-demand "get_thread_ids::udf_thermal"
     )
 )
 exit y
-

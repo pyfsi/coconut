@@ -67,19 +67,15 @@ for (_d = 0; _d < dim; _d++) {                                      \
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 /* User defined memory -- not available in 3D! */
-#define PR_1_X 0 // previous x-coordinate of first node in face
-#define PR_1_Y 1 // previous y-coordinate of first node in face
-#define PR_2_X 2 // previous x-coordinate of second node in face
-#define PR_2_Y 3 // previous y-coordinate of second node in face
-#define NEW_1_X 4 // new x-coordinate of first node in face
-#define NEW_1_Y 5 // new y-coordinate of first node in face
-#define NEW_2_X 6 // new x-coordinate of second node in face
-#define NEW_2_Y 7 // new y-coordinate of second node in face
-#define ADJ 8 // flag for cells adjacent to the interface
-#define D_VOL 9 // swept volume during move_nodes operation
-#define SIGN 10 // defines wether the cell is on the growing or shrinking side during phase change
-#define QL 11 // incoming liquid heat flux into the solid domain
+#define ADJ 0 // flag for cells adjacent to the interface
+#define D_VOL 1 // swept volume during move_nodes operation
+#define SIGN 2 // defines wether the cell is on the growing or shrinking side during phase change
+#define QL 3 // incoming liquid heat flux into the solid domain
+
+/* User defined node memory -- not available in 3D! */
 #define N_ID 0 // u-d node memory where initial node ids are saved
+#define PR_X 1 // previous x-coordinate of first node in face
+#define PR_Y 2 // previous y-coordinate of first node in face
 
 /* global variables */
 #define mnpf |MAX_NODES_PER_FACE|
@@ -92,6 +88,7 @@ bool unsteady = |UNSTEADY|;
 int _d; /* don't use in UDFs! (overwritten by functions above) */
 int n_threads;
 DECLARE_MEMORY(thread_ids, int);
+static int last_ts = -1; // Static variable to remember the last time step of pc node update
 int timestep = 0;
 int iteration = 0;
 
@@ -237,9 +234,12 @@ DEFINE_ON_DEMAND(store_coordinates_id) {
                 node_ids[i_n] = NODE_DM_ID(node); /* store dynamic mesh node id of current node */
                 if (timestep == TS_START) {
                     N_UDMI(node,N_ID) = NODE_DM_ID(node); /* store initial dynamic mesh node id in a node UDM */
-                }
-                for (d = 0; d < ND_ND; d++) {
-                    node_coords[d][i_n] = NODE_COORD(node)[d];
+                    for (d = 0; d < ND_ND; d++) {
+                        node_coords[d][i_n] = NODE_COORD(node)[d];
+                        /* initialise node UDM's with melting only node locations */
+                        N_UDMI(node,PR_X) = NODE_X(node);
+                        N_UDMI(node,PR_Y) = NODE_Y(node);
+                    }
                 }
                 i_n++;
             }
@@ -843,11 +843,14 @@ DEFINE_ON_DEMAND(read_liquid_hf) {
 DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     /* UDF that can be assigned to a deformable wall in Fluent. It will read the updated positions of the mesh nodes
     (vertices) and apply them. As only the compute nodes have access to their own partition of the mesh, each one is
-    responsible for reading the file containing the updated coordinates and selecting the correct row. */
+    responsible for reading the file containing the updated coordinates and selecting the correct row. Furthermore,
+    the node coordinates in the solid domain, which result from phase change only, are written to node UDM's to allow
+    calculation of volume change due to phase change */
     if (myid == 0) {printf("\nStarted UDF move_nodes.\n"); fflush(stdout);}
     char file_name[256];
     Thread *face_thread = DT_THREAD(dynamic_thread); /* face_thread to which UDF is assigned in Fluent */
     int thread_id = THREAD_ID(face_thread);
+    int update_pr_new = 0; // flag to check if previous node positions need to be updated when the UDF is called twice
 
 #if RP_NODE /* only compute nodes are involved, code not compiled for host */
     face_t face;
@@ -860,9 +863,22 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
     timestep = RP_Get_Integer("udf/timestep"); /* host process reads "udf/timestep" from Fluent (nodes cannot) */
+    iteration = RP_Get_Integer("udf/iteration"); /* host process reads "udf/iteration" from Fluent (nodes cannot) */
 #endif /* RP_HOST */
 
     host_to_node_int_1(timestep); /* host process shares timestep variable with nodes */
+    host_to_node_int_1(iteration); /* host process shares iteration variable with nodes */
+
+    /* Check if this is a new time step */
+    if (timestep != last_ts)
+    {
+        last_ts = timestep;    /* Update memory */
+        update_pr_new = 1;     /* TRUE: Run the update */
+    }
+    else
+    {
+        update_pr_new = 0;     /* FALSE: Skip the update */
+    }
 
 #if RP_HOST /* only host process is involved, code not compiled for node */
     sprintf(file_name, "nodes_update_timestep%i_thread%i.dat",
@@ -874,6 +890,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     if (stat("|TMP_DIRECTORY_NAME|", &st) == -1) {
         mkdir("|TMP_DIRECTORY_NAME|", 0700);
     }
+
     sprintf(file_name, "|TMP_DIRECTORY_NAME|/nodes_update_timestep%i_thread%i.dat",
             timestep, thread_id);
     host_to_node_sync_file("|TMP_DIRECTORY_NAME|");  /* receive file on compute nodes and store in a temporary folder */
@@ -901,12 +918,22 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
 
     begin_f_loop(face, face_thread) { /* loop over all faces in face_thread */
         f_node_loop(face, face_thread, node_number) { /* loop over all nodes in current face */
-            node = F_NODE(face, face_thread, node_number); /* get global face ndoe index from local node index */
+            node = F_NODE(face, face_thread, node_number); /* get global face node index from local node index */
             if NODE_POS_NEED_UPDATE(node) { /* only execute if position has not been updated yet (efficiency) */
                 int found_node = 0;
                 for (i=0; i < n; i++) { /* loop over all lines to find the correct node */
                     if (N_UDMI(node,N_ID) == ids[i]) { /* correct node has the same dynamic mesh node id */
                         for (d = 0; d < ND_ND; d++) {
+                            /* Update previous node position only when new time step occurs */
+                            if (d == 0) {
+                                if ((update_pr_new == 1) && (iteration == 1) {
+                                    N_UDMI(node,PR_X) = NODE_COORD(node)[d];
+                                }
+                            } else if (d == 1) {
+                                if ((update_pr_new == 1) && (iteration == 1) {
+                                    N_UDMI(node,PR_Y) = NODE_COORD(node)[d];
+                                }
+                            }
                             NODE_COORD(node)[d] = coords[d][i]; /* modify node coordinates */
                         }
                         NODE_POS_UPDATED(node); /* flag node as updated */
@@ -935,6 +962,7 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
     if (myid == 0) {printf("\nFinished UDF move_nodes.\n"); fflush(stdout);}
 }
 
+
   /*--------------*/
  /* set_adjacent */
 /*--------------*/
@@ -952,9 +980,7 @@ DEFINE_ON_DEMAND(set_adjacent) {
     Domain *domain;
     Thread *cell_thread, *face_thread;
     cell_t cell;
-    face_t face;
-    Node *node;
-    int face_number, node_number, surface, i;
+    int face_number, node_number, surface;
 
     domain = Get_Domain(1);
     thread_loop_c(cell_thread,domain)
@@ -971,63 +997,6 @@ DEFINE_ON_DEMAND(set_adjacent) {
                     if (THREAD_ID(face_thread) == thread_ids[surface])
                     {
                         C_UDMI(cell,cell_thread,ADJ) = 1.0;
-                        face = C_FACE(cell,cell_thread,face_number);
-                        i = 0;
-                        f_node_loop(face, face_thread, node_number) {
-                            node = F_NODE(face, face_thread, node_number);
-                            if (iteration == 0) { // only executed once at start of journal file
-                                if (i==0) {
-                                    C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
-                                    C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
-                                    C_UDMI(cell,cell_thread,PR_1_X) = NODE_X(node);
-                                    C_UDMI(cell,cell_thread,PR_1_Y) = NODE_Y(node);
-                                    i ++;
-                                }
-                                else {
-                                    if (i==1) {
-                                        C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
-                                        C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
-                                        C_UDMI(cell,cell_thread,PR_2_X) = NODE_X(node);
-                                        C_UDMI(cell,cell_thread,PR_2_Y) = NODE_Y(node);
-                                        i --;
-                                    }
-                                }
-                            }
-                            else { // iteration != 0
-                                if (iteration == 1) {
-                                    if (i==0) {
-                                        C_UDMI(cell,cell_thread,PR_1_X) = C_UDMI(cell,cell_thread,NEW_1_X);
-                                        C_UDMI(cell,cell_thread,PR_1_Y) = C_UDMI(cell,cell_thread,NEW_1_Y);
-                                        C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
-                                        C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
-                                        i ++;
-                                    }
-                                    else {
-                                        if (i==1) {
-                                            C_UDMI(cell,cell_thread,PR_2_X) = C_UDMI(cell,cell_thread,NEW_2_X);
-                                            C_UDMI(cell,cell_thread,PR_2_Y) = C_UDMI(cell,cell_thread,NEW_2_Y);
-                                            C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
-                                            C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
-                                            i --;
-                                        }
-                                    }
-                                }
-                                else { // iteration != 0 & 1
-                                    if (i==0) {
-                                        C_UDMI(cell,cell_thread,NEW_1_X) = NODE_X(node);
-                                        C_UDMI(cell,cell_thread,NEW_1_Y) = NODE_Y(node);
-                                        i ++;
-                                    }
-                                    else {
-                                        if (i==1) {
-                                            C_UDMI(cell,cell_thread,NEW_2_X) = NODE_X(node);
-                                            C_UDMI(cell,cell_thread,NEW_2_Y) = NODE_Y(node);
-                                            i --;
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -1049,9 +1018,11 @@ DEFINE_ON_DEMAND(calc_volume_change)
 
 #if RP_NODE
     Domain *domain;
-    domain = Get_Domain(1);
-    Thread *cell_thread;
+    Thread *cell_thread, *face_thread;
     cell_t cell;
+    face_t face;
+    Node *node;
+    int face_number, node_number, surface;
     real x_ref, y_ref, dummy;
     int i, j, d, dum_i;
     DECLARE_MEMORY(theta, real); // will be sorted
@@ -1064,20 +1035,39 @@ DEFINE_ON_DEMAND(calc_volume_change)
     ASSIGN_MEMORY_N(sort_vert, 4, real, ND_ND);
     ASSIGN_MEMORY(index, 4, int);
 
+    domain = Get_Domain(1);
     thread_loop_c(cell_thread,domain)
     {
         begin_c_loop(cell,cell_thread) //loop over all cells
         {
             zero_vol = false;
-            if (C_UDMI(cell,cell_thread,ADJ) == 1.0) {
-                vertices[0][0] = C_UDMI(cell,cell_thread,PR_1_X);
-                vertices[0][1] = C_UDMI(cell,cell_thread,PR_2_X);
-                vertices[0][2] = C_UDMI(cell,cell_thread,NEW_1_X);
-                vertices[0][3] = C_UDMI(cell,cell_thread,NEW_2_X);
-                vertices[1][0] = C_UDMI(cell,cell_thread,PR_1_Y);
-                vertices[1][1] = C_UDMI(cell,cell_thread,PR_2_Y);
-                vertices[1][2] = C_UDMI(cell,cell_thread,NEW_1_Y);
-                vertices[1][3] = C_UDMI(cell,cell_thread,NEW_2_Y);
+            if (C_UDMI(cell,cell_thread,ADJ) == 1.0) { // cells adjacent to the interface
+                c_face_loop(cell,cell_thread,face_number)
+                    {
+                        face_thread = C_FACE_THREAD(cell,cell_thread,face_number);
+                        for (surface = 0; surface < n_threads; surface++)
+                        {
+                            if (THREAD_ID(face_thread) == thread_ids[surface])
+                            {
+                                face = C_FACE(cell,cell_thread,face_number);
+                                i = 0;
+                                f_node_loop(face, face_thread, node_number) {
+                                    if (i > 1) {
+                                        Error("\nUDF-error: A face with more than two nodes is impossible in 2D\n");
+                                        exit(1);
+                                    }
+
+                                    node = F_NODE(face, face_thread, node_number);
+                                    vertices[0][i] = N_UDMI(node,PR_X);
+                                    vertices[0][i+2] = NODE_COORD(node)[0]
+                                    vertices[1][i] = N_UDMI(node,PR_Y);
+                                    vertices[1][i+2] = NODE_COORD(node)[1];
+
+                                    i ++;
+                                }
+                            }
+                        }
+                    }
 
                 // No volume change when nodes don't move
                 if ((vertices[0][0] == vertices[0][2]) && (vertices[1][0] == vertices[1][2])) {
