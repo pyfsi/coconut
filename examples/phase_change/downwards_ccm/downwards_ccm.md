@@ -69,6 +69,9 @@ If the automated remeshing fails or generates an overly distorted mesh, the simu
 3. Manual Injection: The user selects to pause and wait for a manual remesh. They generate a high-quality mesh in Workbench, save it as a `.msh` file in the `manual_interventions` folder, and press ENTER.
 4. Resume: The orchestrator bypasses the automated Gambit scripting, injects the user's manual mesh directly into the workflow, interpolates the data, and resumes the coupled simulation loop perfectly from where it left off.
 
+## 6. Starting the simulation
+Navigate to the folder containing the `orchestrator.py` script on the login node and run it. The script will manage the cluster assignment for each step in the remeshing procedure.
+
 ---
 
 ## References

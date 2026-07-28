@@ -77,6 +77,9 @@ If the automated remeshing generates an overly distorted mesh, or if the Fluent 
 3. **Manual Injection:** The user selects to pause and wait for a manual remesh. The user can then generate a high-quality, stable mesh manually in Workbench, save it as a `.msh` file in the `manual_interventions` folder, and press ENTER.
 4. **Resume:** The orchestrator bypasses the automated Gambit scripting, injects the user's manual mesh directly into the workflow, interpolates the data, and resumes the coupled simulation loop seamlessly.
 
+## 6. Starting the simulation
+Navigate to the folder containing the `orchestrator.py` script on the login node and run it. The script will manage the cluster assignment for each step in the remeshing procedure.
+
 ---
 
 ## References
