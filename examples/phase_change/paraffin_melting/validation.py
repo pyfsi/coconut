@@ -9,7 +9,7 @@ from coconut.examples.post_processing.post_processing import PostProcess
 # 1. SETTINGS & CONFIGURATION
 # =============================================================================
 # Directories
-SIM_DIR = '../fluent_fluent/'
+SIM_DIR = './fluent_fluent/'
 VAL_DIR = './validation/'
 
 # Toggles
@@ -120,22 +120,6 @@ v_max_fl = data_fluent[:, 3]
 q_heat_fl = AREA * data_fluent[:, 4]
 q_cool_fl = -AREA * data_fluent[:, 5]
 temp_fl = data_fluent[:, 6:11]
-
-# Energy Balance
-net_heat_flux = AREA_2D * (data_fluent[:, 4] + data_fluent[:, 5])
-heat_flux_int = np.trapz(net_heat_flux, x=time_fl)
-
-mass_end, h_hot = 1.3157895, 265038.54
-dH = 149636.7 - (-18108.53)
-H_out = (MASS_INI - mass_end) * h_hot
-heat_net_in = heat_flux_int - H_out
-
-print("\n--- ENERGY BALANCE ---")
-print(f"Total heat transfer at walls: {heat_flux_int:.3f} J")
-print(f"Total energy lost at outlet:  {H_out:.3f} J")
-print(f"Net added energy:             {heat_net_in:.3f} J")
-print(f"Enthalpy increase:            {dH:.3f} J")
-print(f"Energy deficit:               {(abs(heat_net_in - dH) / dH) * 100:.3f} %\n")
 
 # --- SCALAR PLOTTING ---
 ts_0, ts_0_fl = math.ceil(1.0 / DT), 118

@@ -13,19 +13,17 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = './'
-#case_paths = ['mesh_2/case_results.pickle', 'mesh_5/case_results.pickle', 'mesh_10_v2/case_results.pickle', 'mesh_10_v3/case_results.pickle']
-#legend_entries = ['Partitioned - mesh 5*10^-4', 'Partitioned - mesh 2*10^-4', 'Partitioned - mesh 10^-4', 'Partitioned - mesh 10^-4 - v3']
-case_paths = ['mesh_5/case_results.pickle']
-legend_entries = ['Partitioned - mesh 2*10^-4']
+case_paths = ['fluent_fluent/case_results.pickle', 'fluent_python/case_results.pickle']
+legend_entries = ['Partitioned - Fluent solid solver', 'Partitioned - Python solid solver']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_full_coarse.out', 'lf_1_to_99.out']
 fluent_legend = ['Fixed grid - coarse mesh', 'Fixed grid - fine mesh']
 
-itf_faces = [10,10,10,10]
+itf_faces = [10, 10]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction
-fluent_val = True # Is Fluent validation data available?
+fluent_val = False # Is Fluent validation data available?
 
 # load cases
 results = {}
@@ -188,7 +186,6 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.xlabel('Time [s]')
             plt.legend(handles=lines_lf)
             plt.tight_layout()
-            plt.savefig('legend_lf.png', dpi=150)
             plt.show()
             plt.close()
 
@@ -213,7 +210,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             dt = results[name]['delta_t']
             time_step_start = results[name]['timestep_start']
 
-            heat_flux = solution[-1,:]
+            heat_flux = np.average(solution[0:itf_faces[j],:], axis=0)
             time = time_step_start + dt * np.array(range(np.shape(solution)[1]))
             line, = plt.plot(time[1:-1], -heat_flux.flatten()[1:-1], line_styles[j], label=name)
             lines_heat_flux.append(line)
@@ -226,7 +223,6 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
         plt.ylabel('Heat flux [W/m^2]')
         plt.xlabel('Time [s]')
         plt.legend(handles=lines_heat_flux)
-        plt.savefig('legend_hf.png', dpi=150)
         plt.show()
         plt.close()
 

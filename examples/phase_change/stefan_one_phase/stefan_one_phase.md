@@ -24,8 +24,9 @@ The domain parameters are:
 - boundary temperature $T_L$: 309.15 K
 - phase change temperature $T_m$: 299.15 K
 
-The total simulated time is 36000 s (10 h) in time steps of 0.1 s.
+The original simulated time is 36000 s (10 h) in time steps of 0.1 s.
 Due to the slow physics of the problem, the example requires a lot of time steps and takes a very long time to run.
+As a result, a shorter simulation of 120 s is proposed here, but can be changed as the user whishes.
 
 The problem is initialized with the temperature profile of the analytical solution at a liquid fraction of 1 % and wil run
 to a liquid fraction of approximately 81 % in a simulation time of 10 h.

@@ -62,7 +62,7 @@ def plot_comparison(x_sim, y_sim, x_val, y_val, ylabel, xlabel='Time [s]', val_s
 
 # --- Interface Positions Processing ---
 if itf_pos:
-    pp = PostProcess('case_results.pickle')
+    pp = PostProcess('fluent_python/case_results.pickle')
     sx = pp.add_subset(interface='interface_x', model_part='boundary_in_nodes')
     sy = pp.add_subset(interface='interface_y', model_part='boundary_out_faces')
 
@@ -79,8 +79,14 @@ if itf_pos:
 
     for t, v_idx, s_idx, color in zip(times, val_indices, sim_indices, colors):
         x_val = itf_loc_val[:, v_idx]
-        x_sim = sx.get_values('coordinates', 'x')[s_idx, :].flatten()
-        y_sim = sx.get_values('coordinates', 'y')[s_idx, :].flatten()
+
+        # Error handling for incomplete simulations
+        try:
+            x_sim = sx.get_values('coordinates', 'x')[s_idx, :].flatten()
+            y_sim = sx.get_values('coordinates', 'y')[s_idx, :].flatten()
+        except IndexError:
+            print(f"Warning: CoCoNuT has not reached simulation time {t} s (index {s_idx}) yet.")
+            continue
 
         line_val, = plt.plot(x_val, y_val, f'*{color}', label=f'Validation {t} s')
         line_sim, = plt.plot(x_sim, y_sim, f'-{color}', label=f'Simulation {t} s')
@@ -91,12 +97,17 @@ if itf_pos:
     plt.ylabel('y-coordinate [m]')
     plt.xlabel('x-coordinate [m]')
     plt.xlim((0, 0.06))
-    plt.legend(handles=handles)
+
+    # Only draw legend if at least one plot was successful
+    if handles:
+        plt.legend(handles=handles)
+
     plt.tight_layout()
     plt.show()
     plt.close()
 
-    for t in times:
+    # Loop over norms.keys() to only print values that were successfully calculated
+    for t in norms.keys():
         print(f"Norm of difference at {t}s: {norms[t] * 100} %")
 
 # --- Load and Process Time-Series Data ---
@@ -159,11 +170,19 @@ plot_comparison(time_sim[t_slice], LF_sim[t_slice], time_val, LF_val, 'Liquid fr
 plot_comparison(time_sim[t_slice], Nu_sim[t_slice], time_val, Nu_val, 'Nusselt number [-]')
 
 # Print relative error in Nusselt number
-sim_indices_for_val = [math.ceil(t / dt) for t in time_val]
-rel_diff = np.sum(np.abs(Nu_val - Nu_sim[sim_indices_for_val]) / np.abs(Nu_val))
-rel_norm_Nu = rel_diff / len(time_val)
+max_sim_idx = len(Nu_sim) - 1
+valid_val_indices = [i for i, t in enumerate(time_val) if math.ceil(t / dt) <= max_sim_idx]
 
-print(f'Relative norm of Nusselt number: {rel_norm_Nu * 100} %')
+if valid_val_indices:
+    sim_indices_for_val = [math.ceil(time_val[i] / dt) for i in valid_val_indices]
+    Nu_val_filtered = Nu_val[valid_val_indices]
+
+    rel_diff = np.sum(np.abs(Nu_val_filtered - Nu_sim[sim_indices_for_val]) / np.abs(Nu_val_filtered))
+    rel_norm_Nu = rel_diff / len(valid_val_indices)
+
+    print(f'Relative norm of Nusselt number: {rel_norm_Nu * 100} %')
+else:
+    print("Warning: Simulation has not run long enough to calculate relative norm of Nusselt number.")
 
 plot_comparison(time_sim[t_slice], Nu_sim[t_slice], t_pd, Nu_pd, 'Nusselt number [-]', val_style='-*r',
                 val_label='Val. plot dig.')

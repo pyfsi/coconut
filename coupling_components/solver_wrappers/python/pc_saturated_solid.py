@@ -142,6 +142,7 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
                     self.x1 = self.interface_settings['x1']
                     self.y1 = self.interface_settings['y1']
                     self.nf = self.interface_settings['faces']
+                    self.nn = self.nf + 1
     
                     x = np.linspace(self.x0, self.x1, self.nn)
                     y = np.linspace(self.y0, self.y1, self.nn)
@@ -272,8 +273,6 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
         self.heat_flux = self.interface_input.get_variable_data(self.input_faces_mp_name, 'heat_flux') # [W/m^2]
         self.heat_flux = -1 * self.heat_flux # negative heat flux for liquid domain is positive for solid domain
 
-        # Shouldn't this be in initialize_solution_step??
-        self.prev_disp = self.interface_input.get_variable_data(self.input_nodes_mp_name, 'displacement')
         self.interface_internal_nodes.set_variable_data(self.output_mp_name, 'prev_disp', self.prev_disp)
 
         # map previous node displacement to previous face displacement
@@ -299,6 +298,9 @@ class SolverWrapperSaturatedSolid(SolverWrapper):
 
     def finalize_solution_step(self):
         super().finalize_solution_step()
+
+        # Update previous displacement for next time step
+        self.prev_disp += self.dx
 
     @tools.time_save
     def output_solution_step(self):

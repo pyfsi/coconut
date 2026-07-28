@@ -926,11 +926,11 @@ DEFINE_GRID_MOTION(move_nodes, domain, dynamic_thread, time, dtime) {
                         for (d = 0; d < ND_ND; d++) {
                             /* Update previous node position only when new time step occurs */
                             if (d == 0) {
-                                if ((update_pr_new == 1) && (iteration == 1) {
+                                if ((update_pr_new == 1) && (iteration == 1)) {
                                     N_UDMI(node,PR_X) = NODE_COORD(node)[d];
                                 }
                             } else if (d == 1) {
-                                if ((update_pr_new == 1) && (iteration == 1) {
+                                if ((update_pr_new == 1) && (iteration == 1)) {
                                     N_UDMI(node,PR_Y) = NODE_COORD(node)[d];
                                 }
                             }
@@ -1059,7 +1059,7 @@ DEFINE_ON_DEMAND(calc_volume_change)
 
                                     node = F_NODE(face, face_thread, node_number);
                                     vertices[0][i] = N_UDMI(node,PR_X);
-                                    vertices[0][i+2] = NODE_COORD(node)[0]
+                                    vertices[0][i+2] = NODE_COORD(node)[0];
                                     vertices[1][i] = N_UDMI(node,PR_Y);
                                     vertices[1][i+2] = NODE_COORD(node)[1];
 

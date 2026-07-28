@@ -20,6 +20,6 @@
     "volume_tolerance": 1e-14,
     "mapper_iterations": 20,
     "mapper_relaxation": 0.4,
-    "projection_order": 1
+    "projection_order": 2
   }
 }

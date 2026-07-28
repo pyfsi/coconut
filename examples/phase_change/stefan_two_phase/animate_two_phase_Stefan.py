@@ -13,13 +13,13 @@ from scipy import integrate
 
 # different cases to be plotted
 common_path = './'
-case_paths = ['Fluent_v2024R2_split_smoothing/case_results.pickle']
-legend_entries = ['new']
+case_paths = ['Fluent_v2024R2_layering/case_results.pickle', 'Fluent_v2024R2_split_smoothing/case_results.pickle']
+legend_entries = ['Layering', 'Smoothing']
 fluent_dir = 'fluent_validation/'
 fluent_cases = ['lf_fine.out', 'lf_coarse.out']
 fluent_legend = ['Fluent - fine', 'Fluent - coarse']
 
-itf_faces = [10]
+itf_faces = [100, 10]
 
 # Settings
 disp_plots = False # plot displacement instead of liquid fraction
@@ -35,6 +35,7 @@ lines_disp = []
 lines_lf = []
 lines_heat_flux = []
 arrays = []
+time_arrays = []
 lines_error = []
 
 # make figures
@@ -103,6 +104,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
                 line, = plt.plot(time + t_ini, LF.flatten(), line_styles[j], label=name)
                 lines_lf.append(line)
                 arrays.append(LF.flatten())
+                time_arrays.append(time + t_ini)
 
         # Plot interface displacement in time
         if disp_plots:
@@ -189,16 +191,20 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             plt.ylabel('Liquid fraction')
             plt.xlabel('Time [s]')
             plt.legend(handles=lines_lf)
-            # plt.tight_layout()
-            # plt.savefig('legend_lf.png', dpi=150)
+            plt.tight_layout()
             plt.show()
             plt.close()
 
-            # calculate error of coconut simulations -> only works if all time step sizes are equal!
-            for i, lf_sim in enumerate(arrays):
-                min_index = max(end_index-start_index, min_index)
-                error = np.abs(LF_ana[start_index+1:end_index] - lf_sim[1:min_index])#/np.abs(LF_ana[start_index+1:end_index] - LF_ana[0])
-                line, = plt.plot(time_ana[start_index+1:end_index], error, line_styles[i], label=legend_entries[i])
+            # Calculate exact error of coconut simulations (now works for ANY time step size)
+            for i, (lf_sim, time_sim) in enumerate(zip(arrays, time_arrays)):
+                # Evaluate analytical solution precisely at the simulation's unique time steps
+                x_front_ana_exact = 2 * la * np.sqrt(alpha_l * time_sim)
+                LF_ana_exact = x_front_ana_exact / x_end
+
+                # Arrays are guaranteed to match in length
+                error = np.abs(LF_ana_exact[1:] - lf_sim[1:])
+
+                line, = plt.plot(time_sim[1:], error, line_styles[i], label=legend_entries[i])
                 lines_error.append(line)
 
             # Log-plot of simulation error
@@ -216,7 +222,7 @@ for sol, itf, var, uni in (('solution_x', 'interface_x', 'displacement', 'm'), (
             dt = results[name]['delta_t']
             time_step_start = results[name]['timestep_start']
 
-            heat_flux = solution[-1,:]
+            heat_flux = np.average(solution[0:itf_faces[j],:], axis=0)
             time = time_step_start + dt * np.array(range(np.shape(solution)[1]))
             line, = plt.plot(t_ini + time[1:-1], -heat_flux.flatten()[1:-1], line_styles[j], label=name)
             lines_heat_flux.append(line)

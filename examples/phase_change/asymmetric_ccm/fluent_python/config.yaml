@@ -1,0 +1,36 @@
+# config.yaml
+machines:
+  local_setup: 'cfdclu13'
+  local_process: 'cfdclu33'
+  remesh: 'cfdclu13'
+
+hpc:
+  enabled: false
+  user: 'vscXXXXX'
+  host: 'login.hpc.ugent.be'
+  module: 'cluster/shinx'
+  base_dir: '/scratch/gent/XXX/vscXXXXX/coconut/examples/asymmetric_ccm/fluent_python'
+  script_first: 'job_shinx.pbs'
+
+coconut:
+  base_parameter_file: 'parameters.json'
+  initial_run:
+    case_file: 'pc_fluid.cas.h5'
+    restart_rb: 0
+  restart_run:
+    case_file: 'case_restart.cas.h5'
+    restart_rb: 100
+
+directories:
+  base_dir: '.'
+  cfd1: 'CFD_1'
+  cfd2: 'CFD_2'
+  setup: 'setup_files'
+  manual_interventions: 'manual_interventions'
+
+sync:
+  folders: ['CFD_1', 'CFD_2']
+  critical_files: ['case_results.pickle', 'case_restart_ts100.pickle']
+
+simulation:
+  total_runs: 60
