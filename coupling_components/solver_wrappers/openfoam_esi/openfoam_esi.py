@@ -20,7 +20,7 @@ def create(parameters):
 
 class SolverWrapperOpenFoamESI(SolverWrapper):
     version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
-    check_coupling_convergence_possible = True  # can solver check convergence after 1 iteration?
+    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
 
     # define input and output variables
     accepted_in_var = ['displacement']
@@ -546,7 +546,7 @@ class SolverWrapperOpenFoamESI(SolverWrapper):
             tools.print_info(msg, layout='warning')
             control_dict = re.sub(r'timeFormat' + of_io.delimiter + r'\w+', f'timeFormat    fixed',
                                   control_dict)
-            
+
         control_dict = re.sub(r'application' + of_io.delimiter + r'\w+', f'{"application":<16}{self.application}',
                               control_dict)
         control_dict = re.sub(r'startTime' + of_io.delimiter + of_io.float_pattern,

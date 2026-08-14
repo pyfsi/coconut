@@ -1,5 +1,5 @@
 {
-    // if (pimple.finalInnerIter()) // should be pimple.criteriaSatisfied but its protected TODO make inhrtd class ??
+    // if (pimple.finalInnerIter()) // should be pimple.criteriaSatisfied but its protected
     if (cocoPimple.callCriteriaSatisfied())
     {
         Info<< "PIMPLE: Converged after one iteration" << endl;

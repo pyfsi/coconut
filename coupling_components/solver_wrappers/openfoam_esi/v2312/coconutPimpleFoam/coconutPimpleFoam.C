@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | 
+   \\    /   O peration     |
     \\  /    A nd           | www.openfoam.com
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
@@ -28,11 +28,11 @@ Application
     coconutPimpleFoam.C
 
 Description
-    Transient solver for incompressible, turbulent flow of Newtonian fluids 
+    Transient solver for incompressible, turbulent flow of Newtonian fluids
     on a moving mesh.
 
     \heading Solver details
-    The solver uses the PIMPLE (merged PISO-SIMPLE) algorithm to solve the 
+    The solver uses the PIMPLE (merged PISO-SIMPLE) algorithm to solve the
     continuity equation:
 
         \f[
@@ -78,11 +78,8 @@ Note
 
 #include "pimpleControl.H"
 #include "coconutPimpleControl.C"
-// #include "pressureReference.H"
 #include "CorrectPhi.H"
-// #include "fvModels.H"
 #include "fvOptions.H"
-// #include "fvConstraints.H"
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
 
@@ -108,7 +105,6 @@ int main(int argc, char *argv[])
     #include "addCheckCaseOptions.H"
     #include "setRootCaseLists.H"
     #include "createTime.H"
-    // #include "createMesh.H"
     #include "createDynamicFvMesh.H"
     #include "initContinuityErrs.H"
     #include "createDyMControls.H"
@@ -129,8 +125,8 @@ int main(int argc, char *argv[])
     Info << "Starting loop" << nl << endl;
 
     // if check coupling convergence, use coconut pimple control
-    coconutPimpleControl cocoPimple(mesh);
-    
+    // coconutPimpleControl cocoPimple(mesh);
+
     while (true)
     {
         usleep(1000); // Expressed in microseconds
@@ -141,16 +137,9 @@ int main(int argc, char *argv[])
 
             runTime.run();
 
-            if (LTS)
-            {
-                #include "readDyMControls.H"
-            } else {
-                #include "CourantNo.H"
-                #include "setDeltaT.H"
-            }            
-
-            // // Update the mesh for topology change, mesh to mesh mapping
-            // mesh.update();
+            #include "readDyMControls.H"
+            #include "CourantNo.H"
+            #include "setDeltaT.H"
 
             runTime++;
             iteration = 0;
@@ -177,16 +166,13 @@ int main(int argc, char *argv[])
             {
                 if (pimple.firstIter() || moveMeshOuterCorrectors)
                 {
-                    // TODO Calculate the mesh motion and update the mesh
-                    // mesh.move();
-
                     // Do any mesh changes
                     mesh.controlledUpdate();
 
                     if (mesh.changing())
                     {
                         Info << "Inside changing mesh" << nl << endl;
- 
+
                         MRF.update();
 
                         if (correctPhi)
@@ -208,8 +194,6 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                // TODO fvModels.correct();
-
                 #include "UEqn.H"
 
                 // --- Pressure corrector loop
@@ -225,10 +209,10 @@ int main(int argc, char *argv[])
                 }
 
                 // Check coupling convergence if first iteration
-                if (checkCouplingConvergence && pimple.firstIter())
-                {
-                    #include "checkCouplingConvergence.H"
-                }
+                // if (checkCouplingConvergence && pimple.firstIter())
+                // {
+                //     #include "checkCouplingConvergence.H"
+                // }
             }
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
