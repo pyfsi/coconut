@@ -70,6 +70,8 @@ class SolverWrapperFluent(SolverWrapper):
             self.thread_ids[thread_name] = None
         self.model_part_thread_ids = {}  # thread IDs corresponding to ModelParts
         self.model = None
+        self.moving_zones = self.settings.get('moving_zones','moving_zone')
+        self.rigid_body_motion_on = self.settings.get('rigid_body_motion',False)
 
     @tools.time_initialize
     def initialize(self):
@@ -80,9 +82,21 @@ class SolverWrapperFluent(SolverWrapper):
         thread_names_str = ''
         for thread_name in self.thread_ids:
             thread_names_str += ' "' + thread_name + '"'
+        moving_zones_str = ''
+        for moving_zone in self.moving_zones:
+            moving_zones_str += ' "' + moving_zone + '"'
+
         unsteady = '#t' if self.unsteady else '#f'
         multiphase = '#t' if self.multiphase else '#f'
         check_coupling_convergence = '#t' if self.check_coupling_convergence else '#f'
+
+        rigid_body_motion_on = '#f'
+        if self.rigid_body_motion_on:
+            rigid_body_motion_on = '#t' 
+        dimension_2D = '#f'
+        if self.dimensions == 2:
+            dimension_2D = '#t'
+
         with open(join(self.dir_src, journal)) as infile:
             with open(join(self.dir_cfd, journal), 'w') as outfile:
                 for line in infile:
@@ -96,6 +110,9 @@ class SolverWrapperFluent(SolverWrapper):
                     line = line.replace('|TIMESTEP_START|', str(self.timestep_start))
                     line = line.replace('|END_OF_TIMESTEP_COMMANDS|', self.settings.get('end_of_timestep_commands',
                                                                                         '\n'))
+                    line = line.replace('|MOVING_ZONES|', moving_zones_str)
+                    line = line.replace('|RIGID_BODY_MOTION|',rigid_body_motion_on)
+                    line = line.replace('|DIMENSION_2D|',dimension_2D)
                     outfile.write(line)
 
         # prepare Fluent UDF
@@ -325,7 +342,8 @@ class SolverWrapperFluent(SolverWrapper):
                 cmd = f'cp {join(self.dir_cfd, src)} {join(self.dir_cfd, dst)}'
                 os.system(cmd)
 
-        # let Fluent run, wait for data
+        # wait for AWEbox, let Fluent run, wait for data
+        self.coco_messages.wait_awebox(self.timestep)
         self.coco_messages.send_message('continue')
         self.coco_messages.wait_message('continue_ready')
 
@@ -355,7 +373,7 @@ class SolverWrapperFluent(SolverWrapper):
 
             # get face coordinates and ids
             traction_tmp = np.zeros((data.shape[0], 3)) * 0.
-            traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf]
+            #traction_tmp[:, :self.dimensions] = data[:, :-1 - self.mnpf] #Traction not used as CSM is not moving with CFD
             pressure_tmp = data[:, self.dimensions].reshape(-1, 1)
             ids_tmp = self.get_unique_face_ids(data[:, -self.mnpf:])
 
@@ -428,6 +446,13 @@ class SolverWrapperFluent(SolverWrapper):
                 try:
                     os.remove(join(self.dir_cfd, f'nodes_update_timestep{timestep}_thread{thread_id}.dat'))
                     os.remove(join(self.dir_cfd, f'pressure_traction_timestep{timestep}_thread{thread_id}.dat'))
+                    if (self.save_restart == 0 or timestep % self.save_restart != 0):
+                        os.remove(join(self.dir_cfd, f'move_zone_wing_update_timestep{timestep}.dat')) #TODO: aircraft components harcoded; take them from parameters.json
+                        os.remove(join(self.dir_cfd, f'move_zone_elevator_update_timestep{timestep}.dat'))
+                        os.remove(join(self.dir_cfd, f'move_zone_rudder_left_update_timestep{timestep}.dat'))
+                        os.remove(join(self.dir_cfd, f'move_zone_rudder_right_update_timestep{timestep}.dat'))
+                        os.remove(join(self.dir_cfd, f'move_zone_aileron_left_update_timestep{timestep}.dat'))
+                        os.remove(join(self.dir_cfd, f'move_zone_aileron_right_update_timestep{timestep}.dat'))
                 except OSError:
                     pass
 
