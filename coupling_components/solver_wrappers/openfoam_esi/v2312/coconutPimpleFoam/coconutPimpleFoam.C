@@ -91,7 +91,6 @@ Note
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 int main(int argc, char *argv[])
 {
     argList::addNote
@@ -121,11 +120,6 @@ int main(int argc, char *argv[])
     iteration = 0;
 
     #include "readCoconutControls.H"
-
-    Info << "Starting loop" << nl << endl;
-
-    // if check coupling convergence, use coconut pimple control
-    // coconutPimpleControl cocoPimple(mesh);
 
     while (true)
     {
@@ -208,11 +202,12 @@ int main(int argc, char *argv[])
                     turbulence->correct();
                 }
 
-                // Check coupling convergence if first iteration
-                // if (checkCouplingConvergence && pimple.firstIter())
-                // {
-                //     #include "checkCouplingConvergence.H"
-                // }
+                // Check coupling convergence if ouerIteration has converged in 3 iterations
+                // pimple.criteriaSatisfied() is checked after 3 iterations minimum
+                if (checkCouplingConvergence && (pimple.corr()==2))
+                {
+                    #include "checkCouplingConvergence.H"
+                }
             }
 
             Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

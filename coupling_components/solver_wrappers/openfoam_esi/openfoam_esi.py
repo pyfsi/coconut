@@ -20,7 +20,7 @@ def create(parameters):
 
 class SolverWrapperOpenFoamESI(SolverWrapper):
     version = None  # OpenFOAM version with dot, e.g. 8 , set in subclass
-    check_coupling_convergence_possible = False  # can solver check convergence after 1 iteration?
+    check_coupling_convergence_possible = True  # can solver check convergence early?
 
     # define input and output variables
     accepted_in_var = ['displacement']
@@ -270,7 +270,7 @@ class SolverWrapperOpenFoamESI(SolverWrapper):
         self.coco_messages.wait_message('continue_ready')
 
         if self.check_coupling_convergence:
-            # check if OpenFOAM converged after 1 iteration
+            # check if OpenFOAM ESI converged early
             self.coco_messages.wait_message('check_ready')
             self.coupling_convergence = self.coco_messages.check_message('solver_converged')
             if self.print_coupling_convergence and self.coupling_convergence:
@@ -335,12 +335,13 @@ class SolverWrapperOpenFoamESI(SolverWrapper):
         # compile openfoam adapted solver
         solver_dir = os.path.join(os.path.dirname(__file__), f'v{self.version.replace(".", "")}', self.application)
         try:
+            wmake_cmd = f"wmake {solver_dir} &> log.wmake"
             if self.compile_clean:
-                subprocess.check_call(f'wclean {solver_dir} && wmake {solver_dir} &> log.wmake',
+                subprocess.check_call(f'wclean {solver_dir} && {wmake_cmd}',
                                       cwd=self.working_directory, shell=True,
                                       env=self.env)
             else:
-                subprocess.check_call(f'wmake {solver_dir} &> log.wmake', cwd=self.working_directory, shell=True,
+                subprocess.check_call(wmake_cmd, cwd=self.working_directory, shell=True,
                                       env=self.env)
         except subprocess.CalledProcessError:
             raise RuntimeError(
