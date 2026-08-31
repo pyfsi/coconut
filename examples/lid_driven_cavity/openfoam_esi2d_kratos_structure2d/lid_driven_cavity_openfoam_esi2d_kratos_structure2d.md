@@ -1,17 +1,17 @@
 # Lid-driven cavity case with OpenFOAM2D and KratosStructure2D
 
-This case is an FSI-adaptation of the famous lid-driven cavity case, calculated using OpenFOAM and KratosMultiphysics StructuralMechanicsApplication.
+This case is an FSI-adaptation of the famous lid-driven cavity case, calculated using OpenFOAM ESI and KratosMultiphysics StructuralMechanicsApplication.
 For more information with respect to this case refer to [this example](../fluent2d_kratos_structure2d/lid_driven_cavity_fluent2d_kratos_structure2d.md).
 
 Reference solutions are available from Mok [[1](#1)] and Valdes [[2](#2)].
 The figure belows shows a comparison with the solution of the examples with Fluent and OpenFOAM.
 
-![comparison](images/lid_driven_cavity_comparison_openfoam.png "Comparison of y-displacement of the central point of the flexible bottom with the reference solutions")
+![comparison](../../images/lid_driven_cavity_comparison_openfoam.png "Comparison of y-displacement of the central point of the flexible bottom with the reference solutions")
 
 The following figures show contour plots of the pressure and velocity for this example (with Paraview).
 
-![velocity](images/lid_driven_cavity_velocity_openfoam.gif "Animation of velocity produced with Paraview")
-![pressure](images/lid_driven_cavity_pressure_openfoam.gif "Animation of pressure produced with Paraview")
+![velocity](../../images/lid_driven_cavity_velocity_openfoam.gif "Animation of velocity produced with Paraview")
+![pressure](../../images/lid_driven_cavity_pressure_openfoam.gif "Animation of pressure produced with Paraview")
 
 ## Coupling algorithm
 
@@ -33,7 +33,7 @@ When either criterion is satisfied the simulation stops.
 
 ## Solvers
 
-The flow solver is the OpenFOAM solver pimpleFOAM.
+The flow solver is the OpenFOAM ESI solver pimpleFOAM.
 A quadrilateral mesh is used with 32 cells on each side of the cavity, made with blockMesh.
 
 The structural solver is KratosMultiphysics StructuralMechanicsApplication (abbreviated KratosStructure).
@@ -41,11 +41,11 @@ The deformable bottom is meshed with 2 layers of 32 _TotalLagrangianElement2D4N_
 The movement of the left and right side is constrained.
 
 To exchange information between the solvers on the fluid-structure interface, the use of mappers is required.
-Because a two-dimensional calculation in OpenFOAM has one cell in the depth direction, the coordinates of the nodes are actually three-dimensional.
+Because a two-dimensional calculation in OpenFOAM ESI has one cell in the depth direction, the coordinates of the nodes are actually three-dimensional.
 Therefore, the displacement serving as input to the flow solver is first mapped using the mapper [MapperDepth2DTo3D](../../../coupling_components/mappers/mappers.md#mapperdepth2dto3d) and subsequently mapped using a radial basis mapper.
 The resulting pressure and traction forces are located on the face centers, which all lie in the same plane as where the forces are applied in the structural solver.
 This means no additional transformer is required and only a radial basis mapper has to be applied.
-Mapping the flow solver instead of the structural solver, means that the coupled solver will work with the interface containing the displacements stored in Kratos nodes and not the interface which has stored the displacements in twice as many OpenFOAM nodes.
+Mapping the flow solver instead of the structural solver, means that the coupled solver will work with the interface containing the displacements stored in Kratos nodes and not the interface which has stored the displacements in twice as many OpenFOAM ESI nodes.
 
 
 ## References
