@@ -18,7 +18,8 @@ solver_load_cmd_dict = {
         'openfoam.v11': 'ml OpenFOAM/11-foss-2023a && source $FOAM_BASH',
         'abaqus.v2023': 'ml intel/2022b && ml ABAQUS/2023',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024',
-        'abaqus_cse.v2025': 'ml ABAQUS/2025'
+        'abaqus_cse.v2025': 'ml ABAQUS/2025',
+        'abaqus_cse.v2026': 'ml ABAQUS/2026'
     },
     'ugent_hpc': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml iimpi/2023a ; unset SLURM_GTIDS '
