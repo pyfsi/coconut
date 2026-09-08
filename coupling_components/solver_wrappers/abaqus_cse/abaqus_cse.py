@@ -97,7 +97,7 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                              f'or omit parameter to let the OS choose a free port', layout='warning')
 
         # print warning related to traction
-        tools.print_info(f'WARNING: The solver wrapper {self.__class__.__name__} (version 2025) lags one timestep in '
+        tools.print_info(f'WARNING: The solver wrapper {self.__class__.__name__} lags one timestep in '
                          f'applying traction', layout='warning')
 
     @tools.time_initialize
