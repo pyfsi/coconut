@@ -16,6 +16,7 @@ solver_load_cmd_dict = {
         'kratos_structure.v94': 'ml Kratos/9.4.5-Anaconda3-2023.09-Python-3.11',
         'openfoam.v10': 'ml OpenFOAM/10-foss-2023a && source $FOAM_BASH',
         'openfoam.v11': 'ml OpenFOAM/11-foss-2023a && source $FOAM_BASH',
+        'openfoam_esi.v2312': 'ml OpenFOAM/v2312-foss-2023a && source $FOAM_BASH',
         'abaqus.v2023': 'ml intel/2022b && ml ABAQUS/2023',
         'abaqus.v2024': 'ml intel/2022b && ml ABAQUS/2024',
         'abaqus_cse.v2025': 'ml ABAQUS/2025'
@@ -33,7 +34,8 @@ solver_load_cmd_dict = {
         'abaqus.v2024': 'ml intel/2024a; ml ABAQUS/2024-hotfix-2405; unset SLURM_GTIDS',
         'kratos_structure.v94': 'export OMP_PROC_BIND=TRUE',  # needs to be FALSE in job script, but TRUE for Kratos
         'openfoam.v10': 'ml OpenFOAM/10-foss-2023a; source $FOAM_BASH',
-        'openfoam.v11': 'ml OpenFOAM/11-foss-2023a; source $FOAM_BASH'
+        'openfoam.v11': 'ml OpenFOAM/11-foss-2023a; source $FOAM_BASH',
+        'openfoam_esi.v2312': 'ml OpenFOAM/v2312-foss-2023a && source $FOAM_BASH',
     },
     'hortense': {
         'fluent.v2023R1': 'ml FLUENT/2023R1 ; ml intel/2021a '
