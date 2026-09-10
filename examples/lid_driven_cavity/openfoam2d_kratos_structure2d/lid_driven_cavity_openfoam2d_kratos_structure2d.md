@@ -6,12 +6,12 @@ For more information with respect to this case refer to [this example](../fluent
 Reference solutions are available from Mok [[1](#1)] and Valdes [[2](#2)].
 The figure belows shows a comparison with the solution of the examples with Fluent and OpenFOAM.
 
-![comparison](images/lid_driven_cavity_comparison_openfoam.png "Comparison of y-displacement of the central point of the flexible bottom with the reference solutions")
+![comparison](../../images/lid_driven_cavity_comparison_openfoam.png "Comparison of y-displacement of the central point of the flexible bottom with the reference solutions")
 
 The following figures show contour plots of the pressure and velocity for this example (with Paraview).
 
-![velocity](images/lid_driven_cavity_velocity_openfoam.gif "Animation of velocity produced with Paraview")
-![pressure](images/lid_driven_cavity_pressure_openfoam.gif "Animation of pressure produced with Paraview")
+![velocity](../../images/lid_driven_cavity_velocity_openfoam.gif "Animation of velocity produced with Paraview")
+![pressure](../../images/lid_driven_cavity_pressure_openfoam.gif "Animation of pressure produced with Paraview")
 
 ## Coupling algorithm
 

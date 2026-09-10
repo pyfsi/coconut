@@ -37,7 +37,7 @@ solvers
         tolerance       1e-12;
         relTol          0;
     }
-    
+
    cellDisplacement
     {
         solver          GAMG;
@@ -49,9 +49,9 @@ solvers
 }
 
 PIMPLE
-{ 
+{
     nOuterCorrectors    100;
-    nNonOrthogonalCorrectors 0;
+    nNonOrthogonalCorrectors 8;
     nCorrectors         3;
     outerCorrectorResidualControl
     {
