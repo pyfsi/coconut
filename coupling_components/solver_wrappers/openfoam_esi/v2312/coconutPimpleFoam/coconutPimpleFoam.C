@@ -77,7 +77,6 @@ Note
 #include "turbulentTransportModel.H"
 
 #include "pimpleControl.H"
-#include "coconutPimpleControl.C"
 #include "CorrectPhi.H"
 #include "fvOptions.H"
 #include "localEulerDdtScheme.H"
