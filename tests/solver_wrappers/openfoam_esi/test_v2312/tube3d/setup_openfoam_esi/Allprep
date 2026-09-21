@@ -1,0 +1,10 @@
+#!/bin/sh
+cd ${0%/*} || exit 1
+
+# Sorce tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# Get application directory
+application=`getApplication`
+
+runApplication blockMesh 1> /dev/null
