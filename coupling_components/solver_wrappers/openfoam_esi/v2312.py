@@ -34,7 +34,7 @@ class SolverWrapperOpenFOAM2312(SolverWrapperOpenFoamESI):
         z0 = of_io.get_boundary_field(file_name=filename_z, boundary_name=boundary_name, size=nfaces, is_scalar=True)
 
         return x0, y0 ,z0
-    
+
     def wall_shear_stress_dict(self):
         name = self.wall_shear_stress_variable
         dct = (f'    {name}\n'
@@ -47,9 +47,9 @@ class SolverWrapperOpenFOAM2312(SolverWrapperOpenFoamESI):
                f'        patches         $boundaryNames;\n'
                f'    }}\n'
                )
-        
+
         return dct, name
-    
+
     def pressure_and_traction_dict(self, boundary_name):
         name = f'coconut_{boundary_name}'
         dct = (f'    {name}\n'
@@ -74,7 +74,7 @@ class SolverWrapperOpenFOAM2312(SolverWrapperOpenFoamESI):
                f'        fields          (p {self.wall_shear_stress_variable});\n'
                f'    }}\n')
         return dct, name
-    
+
     def kinematic_conversion(self):
         # based on solver application, set conversion settings from kinematic to static pressure/shear stress
         # typically: incompressible solver, pressure and wallShearStress are kinematic -> multiply with fluid density
