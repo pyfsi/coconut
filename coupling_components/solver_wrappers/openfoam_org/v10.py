@@ -1,4 +1,4 @@
-from coconut.coupling_components.solver_wrappers.openfoam.openfoam_org import SolverWrapperOpenFoamORG
+from coconut.coupling_components.solver_wrappers.openfoam_org.openfoam_org import SolverWrapperOpenFoamORG
 from coconut import tools
 from coconut.coupling_components.solver_wrappers.openfoam_base import openfoam_base_io as of_io
 

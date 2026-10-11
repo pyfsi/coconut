@@ -46,7 +46,7 @@
         "type": "solver_wrappers.mapped",
         "settings": {
           "solver_wrapper": {
-            "type": "solver_wrappers.openfoam.v11",
+            "type": "solver_wrappers.openfoam_org.v11",
             "settings": {
               "working_directory": "CFD",
               "application": "coconut_foamRun",
