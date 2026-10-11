@@ -1,6 +1,6 @@
 from coconut.coupling_components.solver_wrappers.openfoam_esi.openfoam_esi import SolverWrapperOpenFoamESI
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.openfoam_esi import openfoam_esi_io as of_io
+from coconut.coupling_components.solver_wrappers.openfoam_base import openfoam_base_io as of_io
 import os
 
 def create(parameters):
