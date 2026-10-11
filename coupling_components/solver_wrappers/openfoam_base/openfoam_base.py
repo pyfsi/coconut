@@ -15,9 +15,9 @@ from subprocess import check_call
 
 
 def create(parameters):
-    return SolverWrapperOpenfoamBase(parameters)
+    return SolverWrapperOpenFoamBase(parameters)
 
-class SolverWrapperOpenfoamBase(SolverWrapper):
+class SolverWrapperOpenFoamBase(SolverWrapper):
     version = None  # OpenFOAM version
     check_coupling_convergence_possible = True  # can solver check convergence early?
 

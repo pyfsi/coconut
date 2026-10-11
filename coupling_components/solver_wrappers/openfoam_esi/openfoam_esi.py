@@ -1,5 +1,5 @@
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.openfoam_base.openfoam_base import SolverWrapperOpenfoamBase
+from coconut.coupling_components.solver_wrappers.openfoam_base.openfoam_base import SolverWrapperOpenFoamBase
 
 import os
 import subprocess
@@ -7,7 +7,7 @@ import subprocess
 def create(parameters):
     return SolverWrapperOpenFoamESI(parameters)
 
-class SolverWrapperOpenFoamESI(SolverWrapperOpenfoamBase):
+class SolverWrapperOpenFoamESI(SolverWrapperOpenFoamBase):
 
     @tools.time_initialize
     def __init__(self, parameters):
