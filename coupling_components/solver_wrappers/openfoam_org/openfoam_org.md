@@ -1,6 +1,6 @@
 # OpenFOAM
 
-This is the documentation for all OpenFOAM solver wrappers.
+This is the documentation for the solver wrappers for OpenFOAM Foundation version (ORG).
 Currently, the use as the flow solver in FSI simulations is supported, no other multiphysics problems.
 
 ## Parameters
@@ -68,7 +68,7 @@ OpenFOAM-directory:
 - For OpenFOAM 8, the applications like `pimpleFoam` need to be adapted to accommodate the communication with the solver wrapper during the FSI-simulation.
   These adapted versions have the same name as the original OpenFOAM-solver but with the prefix `coconut_`.
   If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also [this brief set of instructions](#adapting-a-new-application-to-be-used-in-coconut-openfoam-10).
-- For OpenFOAM 11, only `foamRun` has been adapted but this solver can work with many solver modules (see [OpenFOAM 11 documentation](https://doc.cfd.direct/openfoam/user-guide-v11/solvers-modules)). 
+- For OpenFOAM 11, only `foamRun` has been adapted but this solver can work with many solver modules (see [OpenFOAM 11 documentation](https://doc.cfd.direct/openfoam/user-guide-v11/solvers-modules)).
 
 ## Treatment of kinematic pressure and traction
 If the OpenFOAM application is intended for incompressible flows, e.g. `pimpleFoam` (v8) or `incompressibleFluid` (v11), it solves the incompressible Navier-Stokes equations.
@@ -128,10 +128,10 @@ This is also reflected in the case setup:
 
 ### Communication with OpenFOAM
 
-As with most other solver wrappers, the communication between the OpenFOAM code and the solver wrapper occurs 
+As with most other solver wrappers, the communication between the OpenFOAM code and the solver wrapper occurs
 through the use of (empty) files with extension `.coco`.
 The OpenFOAM code checks for these message files in an infinite loop.
-When such file is detected, for example _`continue.coco`_, 
+When such file is detected, for example _`continue.coco`_,
 the OpenFOAM code performs a certain action and creates a file _`continue_ready.coco`_.
 The solver wrapper is paused until it detects such a corresponding file.
 
@@ -139,15 +139,15 @@ The solver wrapper is paused until it detects such a corresponding file.
 
 The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the CoCoNuT-simulation.
 Exiting of the loop and closing of the program only occurs when the _`stop.coco`_ is received.
-If an unexpected crash occurs, it can occasionally occur that the OpenFOAM processes are not ended properly 
+If an unexpected crash occurs, it can occasionally occur that the OpenFOAM processes are not ended properly
 and that the user should take care to kill that OpenFOAM-loop manually (using `kill` or `pkill` in the Linux-terminal, e.g. `pkill coconut_*`).
 
 ### The `solve_solution_step` method
 
 This method is the core of the simulation passing on the interface displacement to OpenFOAM and receiving the resulting loads (pressure and traction).
 The interface displacement is converted into an OpenFOAM-readable format (with the method `write_node_input`),
-by storing it in a `pointDisplacementTmp` field, which is read in by OpenFOAM in every iteration 
-(this required some adaptation of the solver, see [next section](#adapting-a-new-application-to-be-used-in-coconut-openfoam-10)). 
+by storing it in a `pointDisplacementTmp` field, which is read in by OpenFOAM in every iteration
+(this required some adaptation of the solver, see [next section](#adapting-a-new-application-to-be-used-in-coconut-openfoam-10)).
 Subsequently, the mesh is updated in OpenFOAM and the flow equations are solved.
 The dynamic mesh motion is handled by OpenFOAM itself.
 Finally, the method `read_node_output` is called in the solver wrapper, which reads the interface loads from the directory *`postProcessing`* (more precisely from the subdirectories *`coconut_<boundary_name>`*).
@@ -171,8 +171,8 @@ In brief, the following steps should be undertaken:
 - Once such a message is received, the OpenFOAM code first executes a command to sync all processors (only important in a parallel run), for example `waitForSync("next")`.
   Details on this function are given [here](#the-waitforsync-command).
 - If the file *`next.coco`* exists, a new time step is started.
-  Due to the fact that the infinite loop is driven by `while(true)` and not the default OpenFOAM-expression `while(runTime.run())`, 
-  the statement `runTime.run();` has to be added. 
+  Due to the fact that the infinite loop is driven by `while(true)` and not the default OpenFOAM-expression `while(runTime.run())`,
+  the statement `runTime.run();` has to be added.
   This creates, initializes and calls the functionObjects in the *`controlDict`* file.
   Furthermore, as in the original application, the runTime-object should be incremented, increasing the time step.
 - If the file *`continue.coco`* exists, the interface has to be moved first, using the following lines:

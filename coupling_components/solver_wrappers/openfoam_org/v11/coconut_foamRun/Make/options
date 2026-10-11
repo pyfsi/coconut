@@ -1,6 +1,7 @@
 EXE_INC = \
     -I.. \
     -I../.. \
+    -I$(COCO)/coupling_components/solver_wrappers/openfoam_base \
     -I$(LIB_SRC)/finiteVolume/lnInclude
 
 EXE_LIBS = \

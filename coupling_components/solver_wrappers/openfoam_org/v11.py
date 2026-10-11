@@ -1,6 +1,6 @@
-from coconut.coupling_components.solver_wrappers.openfoam.openfoam import SolverWrapperOpenFOAM
+from coconut.coupling_components.solver_wrappers.openfoam_org.openfoam_org import SolverWrapperOpenFoamORG
 from coconut import tools
-from coconut.coupling_components.solver_wrappers.openfoam import openfoam_io as of_io
+from coconut.coupling_components.solver_wrappers.openfoam_base import openfoam_base_io as of_io
 
 from os.path import join
 
@@ -9,7 +9,7 @@ def create(parameters):
     return SolverWrapperOpenFOAM11(parameters)
 
 
-class SolverWrapperOpenFOAM11(SolverWrapperOpenFOAM):
+class SolverWrapperOpenFOAM11(SolverWrapperOpenFoamORG):
     version = '11'
 
     def __init__(self, parameters):
