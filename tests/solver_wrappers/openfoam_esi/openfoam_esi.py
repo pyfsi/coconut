@@ -1,5 +1,5 @@
 from coconut.tools import create_instance, get_solver_env
-import coconut.coupling_components.solver_wrappers.openfoam_esi.openfoam_esi_io as of_esi_io
+import coconut.coupling_components.solver_wrappers.openfoam_base.openfoam_base_io as of_io
 
 import unittest
 import numpy as np
@@ -98,7 +98,7 @@ class TestSolverWrapperOpenFoamESI(unittest.TestCase):
             decomposepardit_path = os.path.join(self.folder_path, "system", "decomposeParDict")
             with open(decomposepardit_path, "r") as f:
                 old_dict= f.read()
-            new_dict = re.sub(r"numberOfSubdomains[\s\n]"+of_esi_io.int_pattern,
+            new_dict = re.sub(r"numberOfSubdomains[\s\n]"+of_io.int_pattern,
                               f"numberOfSubdomains {cores}",
                               old_dict)
             with open(decomposepardit_path, "w") as f:
@@ -121,7 +121,7 @@ class TestSolverWrapperOpenFoamESI(unittest.TestCase):
                   f'    }}'
         with open(solution_file_name, 'r') as f:
             old_dict = f.read()
-        new_dict = re.sub(of_esi_io.get_nested_dict(old_dict, 'residualControl'), new_tol, old_dict)
+        new_dict = re.sub(of_io.get_nested_dict(old_dict, 'residualControl'), new_tol, old_dict)
         with open(solution_file_name, 'w') as f:
             f.write(new_dict)
 
@@ -202,7 +202,7 @@ class TestSolverWrapperOpenFoamESI(unittest.TestCase):
                 check_call(reconstruct_cmd, shell=True, stdout=DEVNULL, env=self.env)
 
             time_folder_name = f"{self.delta_t:.{solver.time_precision}f}"
-            _, node_pos = of_esi_io.get_boundary_points(solver.working_directory,
+            _, node_pos = of_io.get_boundary_points(solver.working_directory,
                                                            time_folder_name,
                                                            "mantle")
 
@@ -339,7 +339,7 @@ class TestSolverWrapperOpenFoamESI(unittest.TestCase):
 
             check_call(f'reconstructPar -latestTime -no-fields', shell=True, cwd=self.folder_path, stdout=DEVNULL,
                         env=self.env)
-            _, results_1["node_pos"] = of_esi_io.get_boundary_points(solver.working_directory,
+            _, results_1["node_pos"] = of_io.get_boundary_points(solver.working_directory,
                                                     f'{n_time_steps * self.delta_t:.{solver.time_precision}f}', 'mantle')
 
         # get data without restart
@@ -364,7 +364,7 @@ class TestSolverWrapperOpenFoamESI(unittest.TestCase):
 
             check_call(f'reconstructPar -latestTime -no-fields', shell=True, cwd=self.folder_path, stdout=DEVNULL,
                                     env=self.env)
-            _, results_2["node_pos"] = of_esi_io.get_boundary_points(solver.working_directory,
+            _, results_2["node_pos"] = of_io.get_boundary_points(solver.working_directory,
                                                     f'{n_time_steps * self.delta_t:.{solver.time_precision}f}', 'mantle')
 
         # get data from solver with restart

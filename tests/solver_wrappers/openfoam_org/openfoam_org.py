@@ -1,5 +1,5 @@
 from coconut.tools import create_instance, get_solver_env
-import coconut.coupling_components.solver_wrappers.openfoam.openfoam_io as of_io
+import coconut.coupling_components.solver_wrappers.openfoam_base.openfoam_base_io as of_io
 
 import unittest
 import numpy as np
@@ -13,8 +13,8 @@ import glob
 from subprocess import check_call, DEVNULL
 
 
-class TestSolverWrapperOpenFOAM(unittest.TestCase):
-    version = None  # OpenFOAM version without dot, e.g. 41 , set in sub-class
+class TestSolverWrapperOpenFoamORG(unittest.TestCase):
+    version = None  # OpenFoam ORG version without dot, e.g. 41 , set in sub-class
 
     @classmethod
     def setUpClass(cls):
