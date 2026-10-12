@@ -3,8 +3,8 @@
 As described in the [coupled solver documentation](../../coupling_components/coupled_solvers/coupled_solvers.md#save-results), a pickle file can be saved to store details on the computation.
 This includes
 
-- solution data on the interface, 
-- position of the data points on the interface, 
+- solution data on the interface,
+- position of the data points on the interface,
 - details on the convergence behaviour, such as number of coupling iterations and coupling residuals,
 - distribution of the elapsed simulation time,
 - and history of the simulation, such as restarts.
@@ -27,7 +27,7 @@ pp = PostProcess('case_results.pickle')
 
 !!! Info
 
-    The example code in this document has been created for the _`tube/openfoam3d_kratos_structure3d`_ example.
+    The example code in this document has been created for the _`tube/openfoam_org3d_kratos_structure3d`_ example.
 
 Printing this class provides an overview of the simulation, for example
 ```python
@@ -50,13 +50,13 @@ Coupling
 Among the methods of this class are:
 
 - The method `print_summary()` prints a summary of the elapsed simulation time and its distribution over the different components, similar to the summary outputted at the end of a simulation.
-	
+
     ```python
 	pp.print_summary()
 	```
-  
+
 - The method `print_info()` prints information on when the simulation was started and if it was restarted as well as on which machine it has been run.
-	
+
     ```python
 	pp.print_info()
 	```
@@ -85,7 +85,7 @@ sx = pp.add_subset(interface='interface_x')
 sy = pp.add_subset(interface='interface_y')
 ```
 `'interface_x'` and `'interface_y'` refer to the input and output interface of the first solver, respectively.
-The first solver is typically the flow solver such that `'interface_x'` contains displacement values 
+The first solver is typically the flow solver such that `'interface_x'` contains displacement values
 and `'interface_y'` contains pressure and traction values.
 
 !!! info "The interfaces of the second solver are not accessible, since they are not stored!"
@@ -312,7 +312,7 @@ For two-dimensional figures (`Figure2d`), there are two optional keyword argumen
 |----------------------------|-------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------|
 | <nobr>`x_component`</nobr> | `'x'`, `'y'`, `'z'`, `0`, `1` or `2` | Required if `x_variable` is not scalar. Selects the component of the variable that needs to be shown on the abscissa (x-axis). |
 | `y_component`              | `'x'`, `'y'`, `'z'`, `0`, `1` or `2` | Required if `y_variable` is not scalar. Selects the component of the variable that needs to be shown on the ordinate (y-axis). |
- 
+
 `0`, `1` and `2` correspond to  `'x'`, `'y'`and `'z'`, respectively.
 
 For three-dimensional figures (`Figure3d`), there are three optional keyword arguments.
@@ -332,7 +332,7 @@ For plots (`Plot`), there are two optional keyword arguments.
 
 Either `time_step` or `time` should be provided. If both are present, `time` is ignored.
 The `time_step` or `time` can be set using the methods `set_time_step(time_step)` or `set_time(time)`.
-For the former, also see [Adding multiple subsets](#adding-multiple-subsets) when subsets are added with multiple time step sizes. 
+For the former, also see [Adding multiple subsets](#adding-multiple-subsets) when subsets are added with multiple time step sizes.
 
 For animations (`Animation`), there is one optional keyword argument.
 
