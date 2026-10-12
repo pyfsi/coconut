@@ -20,10 +20,10 @@ Or just as a Python file.
 In order to exclude some examples from running, comment out the corresponding class in the tuple 'test_cases'.
 
 To include another example, create a new class analogous to the existing classes and add the class name to the tuple
-'test_cases'. The class variable 'example' is the folder name and the class variable 'number_of_timesteps' refers to the 
-number of time steps that the example should be run (the benchmark file should have run for at least this number of 
+'test_cases'. The class variable 'example' is the folder name and the class variable 'number_of_timesteps' refers to the
+number of time steps that the example should be run (the benchmark file should have run for at least this number of
 time steps).
-There are two other class variables; 'additional_files' is a list of additional files in the example required for the 
+There are two other class variables; 'additional_files' is a list of additional files in the example required for the
 simulation besides 'setup_case.py' and 'parameters.json', and 'compare_data' is a boolean which determines whether the
 comparison with a benchmark pickle file should be made.
 Once this class is made, you may need to create a benchmark file for this new example using the corresponding script.
@@ -142,8 +142,8 @@ class TestLidDrivenCavityFluent2DKratosStructure2D(EvaluateExamples):
     number_of_timesteps = 2
 
 
-class TestLidDrivenCavityOpenFOAM2DKratosStructure2D(EvaluateExamples):
-    example = 'lid_driven_cavity/openfoam2d_kratos_structure2d'
+class TestLidDrivenCavityOpenFoamORG2DKratosStructure2D(EvaluateExamples):
+    example = 'lid_driven_cavity/openfoam_org2d_kratos_structure2d'
     number_of_timesteps = 2
 
 
@@ -190,14 +190,14 @@ class TestTubeFluent3DKratosStructure3D(EvaluateExamples):
     number_of_timesteps = 2
 
 
-class TestTubeOpenFOAM3DAbaqus3D(EvaluateExamples):
-    example = 'tube/openfoam3d_abaqus3d'
+class TestTubeOpenFoamORG3DAbaqus3D(EvaluateExamples):
+    example = 'tube/openfoam_org3d_abaqus3d'
     number_of_timesteps = 2
     atol_solution_y = 3e-4
 
 
-class TestTubeOpenFOAM3DKratosStructure3D(EvaluateExamples):
-    example = 'tube/openfoam3d_kratos_structure3d'
+class TestTubeOpenFoamORG3DKratosStructure3D(EvaluateExamples):
+    example = 'tube/openfoam_org3d_kratos_structure3d'
     number_of_timesteps = 2
     atol_solution_y = 3e-4
 
@@ -261,8 +261,8 @@ class TestTurekFluent2DAbaqus2DSteady(EvaluateExamples):
     number_of_timesteps = 1
 
 
-class TestTurekOpenFOAM2DKratosStructure2D(EvaluateExamples):
-    example = 'turek/openfoam2d_kratos_structure2d'
+class TestTurekOpenFoamORG2DKratosStructure2D(EvaluateExamples):
+    example = 'turek/openfoam_org2d_kratos_structure2d'
     number_of_timesteps = 2
 
 
@@ -271,7 +271,7 @@ test_cases = (
     TestBreakingDamFluent2DAbaqus2D,
     TestBreakingDamFluent2DKratosStructure2D,
     TestLidDrivenCavityFluent2DKratosStructure2D,
-    TestLidDrivenCavityOpenFOAM2DKratosStructure2D,
+    TestLidDrivenCavityOpenFoamORG2DKratosStructure2D,
     TestTestSingleSolver,
     TestTubeFluent2DAbaqus2D,
     TestTubeFluent2DAbaqus2DSteady,
@@ -280,8 +280,8 @@ test_cases = (
     TestTubeFluent3DAbaqus2D,
     TestTubeFluent3DAbaqus3D,
     TestTubeFluent3DKratosStructure3D,
-    TestTubeOpenFOAM3DAbaqus3D,
-    TestTubeOpenFOAM3DKratosStructure3D,
+    TestTubeOpenFoamORG3DAbaqus3D,
+    TestTubeOpenFoamORG3DKratosStructure3D,
     TestTubeTubeFlowAbaqus2D,
     TestTubeTubeFlowTubeRingmodel,
     TestTubeTubeFlowTubeStructure,
@@ -289,7 +289,7 @@ test_cases = (
     TestTubeTubeFlowTubeStructureSurrogate,
     TestTurekFluent2DAbaqus2D,
     TestTurekFluent2DAbaqus2DSteady,
-    TestTurekOpenFOAM2DKratosStructure2D,
+    TestTurekOpenFoamORG2DKratosStructure2D,
 )
 
 
