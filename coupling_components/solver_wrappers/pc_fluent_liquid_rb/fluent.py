@@ -480,7 +480,7 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             if "nodes" in mp_name and not self.restart:
                 self.model_rb.create_model_part(mp_name, x0, y0, z0, ids)
                 self.rb_model_settings.append({"model_part": mp_name,
-                                               "variables": ["prev_disp", "prev_melting_disp", "new_disp", "disp_step","disp_step_melting"]})
+                                               "variables": ["prev_disp", "prev_melting_disp", "new_disp", "disp_step","disp_step_melting", "current_melting_disp"]})
 
         # create output ModelParts (nodes or faces)
         for j, item in enumerate(self.settings['interface_output']):
@@ -584,7 +584,14 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
             mp_name = item['model_part']
             if "nodes" in mp_name:
                 self.interface_rb.set_variable_data(mp_name, "prev_disp", self.interface_rb.get_variable_data(mp_name, "new_disp"))
-                self.interface_rb.set_variable_data(mp_name, "prev_melting_disp", self.interface_input.get_variable_data(mp_name, "displacement"))
+
+                # Protect prev_melting_disp during the first step of a restart
+                if self.restart and self.timestep == self.timestep_start + 1:
+                    prev_melt = self.interface_rb.get_variable_data(mp_name, "current_melting_disp")
+                    self.interface_rb.set_variable_data(mp_name, "prev_melting_disp", prev_melt)
+                else:
+                    self.interface_rb.set_variable_data(mp_name, "prev_melting_disp",
+                                                        self.interface_input.get_variable_data(mp_name, "displacement"))
 
         self.coco_messages.send_message('next')
         self.coco_messages.wait_message('next_ready')
@@ -1049,6 +1056,10 @@ class SolverWrapperPCFluentLiquidRB(SolverWrapper):
                 thread_id = self.model_part_thread_ids[mp_name]
                 model_part = self.model.get_model_part(mp_name)
                 total_melting_disp = self.interface_input.get_variable_data(mp_name, 'displacement')
+
+                # Save the total displacement so it gets pickled for restarts
+                self.interface_rb.set_variable_data(mp_name, "current_melting_disp", total_melting_disp)
+
                 prev_melting_disp = self.interface_rb.get_variable_data(mp_name, 'prev_melting_disp')
 
                 # Single time step displacement due to melting (in the frame of reference of the solid)

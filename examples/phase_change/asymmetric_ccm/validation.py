@@ -483,7 +483,7 @@ if __name__ == "__main__":
 
     print("\n=== Calculating Trajectories ===")
     # Setup parameters for trajectory mapping
-    trajectory_filename = '10W_ul20_damped/post_processing/rigid-body-report-file.out'
+    trajectory_filename = 'fluent_python/post_processing/rigid-body-report-file.out'
     DOMAIN_ROTATION = 0.0
     ENABLE_TRAJ_VALIDATION = True
     ENABLE_LINKS = False

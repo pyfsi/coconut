@@ -407,7 +407,13 @@ class RBMSolver:
             'new_patches': self.new_patches,
             'interface_rb': interface_rb,
             'force_pr_it': self.force_pr_it,
-            'moment_pr_it': self.moment_pr_it
+            'moment_pr_it': self.moment_pr_it,
+            'force_int': self.force_int,
+            'moment_int': self.moment_int,
+            'force_res_prev': getattr(self, 'force_res_prev', np.zeros(3)),
+            'moment_res_prev': getattr(self, 'moment_res_prev', np.zeros(3)),
+            'aitken_relax_factor_force': getattr(self, 'aitken_relax_factor_force', self.rb_relax),
+            'aitken_relax_factor_moment': getattr(self, 'aitken_relax_factor_moment', self.rb_relax)
         }
 
         tmp = f'restart_rb_timestep{timestep}.pickle'
@@ -445,6 +451,12 @@ class RBMSolver:
         self.new_patches = state['new_patches']
         self.force_pr_it = state['force_pr_it']
         self.moment_pr_it = state['moment_pr_it']
+        self.force_int = state.get('force_int', np.zeros(3))
+        self.moment_int = state.get('moment_int', np.zeros(3))
+        self.force_res_prev = state.get('force_res_prev', np.zeros(3))
+        self.moment_res_prev = state.get('moment_res_prev', np.zeros(3))
+        self.aitken_relax_factor_force = state.get('aitken_relax_factor_force', self.rb_relax)
+        self.aitken_relax_factor_moment = state.get('aitken_relax_factor_moment', self.rb_relax)
 
         if self.restart:
             self.orientation_prev = state['orientation_prev']

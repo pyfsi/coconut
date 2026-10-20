@@ -35,14 +35,14 @@
           {
             "type": "convergence_criteria.relative_norm",
             "settings": {
-              "tolerance": 1e-3,
+              "tolerance": 0.001,
               "order": 2
             }
           },
           {
             "type": "convergence_criteria.absolute_norm",
             "settings": {
-              "tolerance": 1e-8,
+              "tolerance": 1e-08,
               "order": 2
             }
           }
@@ -70,7 +70,7 @@
           "RB": {
             "iteration_min": 1,
             "iteration_max": 10,
-            "tolerance": 1e-3,
+            "tolerance": 0.001,
             "relaxation": 1.0,
             "fict_coeff": 8.0,
             "fict_multiplier": 1.0,
@@ -83,7 +83,12 @@
             "predictor": "linear",
             "weight_ramp": 0,
             "buoyancy": true,
-            "gravity": [0, -9.81, 0]
+            "gravity": [
+              0,
+              -9.81,
+              0
+            ],
+            "restart_rb": 100
           },
           "contact_model": {
             "contact_force": true,
@@ -91,17 +96,16 @@
               "bottom",
               "top",
               "side"
-              ],
-            "upper_limit": 1.5e-4,
-            "lower_limit": 7.5e-5,
+            ],
+            "upper_limit": 0.00015,
+            "lower_limit": 7.5e-05,
             "k_mass": 9.0,
             "damping_ratio": 10.0
           },
           "thread_names": [
             "inner"
           ],
-          "overset_boundaries": {
-          },
+          "overset_boundaries": {},
           "thread_domains": [
             "fluid.com"
           ],
@@ -131,7 +135,8 @@
           "fluent_gui": false,
           "max_nodes_per_face": 2,
           "flow_iterations": 80,
-          "save_results": 100
+          "save_results": 100,
+          "case_file": "case_restart.cas.h5"
         }
       },
       {

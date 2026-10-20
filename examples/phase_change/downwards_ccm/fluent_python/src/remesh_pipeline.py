@@ -50,8 +50,8 @@ def run_cfd_workflow(manual_mesh_path=None):
                 except OSError as e:
                     print(f"    Error removing {file_path}: {e}")
 
-    # --- Step 2: Determine run number and create 'run_x' folder ---
-    print("\nStep 2: Determining run number and creating archive folder...")
+    # --- Step 2: Determine run number and evaluate archive paths ---
+    print("\nStep 2: Determining run number and evaluating archive paths...")
     existing_run_folders = glob.glob(os.path.join(current_dir, 'run_*'))
     max_run_num = 0
     for folder in existing_run_folders:
@@ -59,39 +59,56 @@ def run_cfd_workflow(manual_mesh_path=None):
         if match:
             max_run_num = max(max_run_num, int(match.group(1)))
 
-    past_run_num = max_run_num + 1
-    previous_run_folder_name = f'run_{past_run_num}'
-    previous_run_folder_path = os.path.join(current_dir, previous_run_folder_name)
-    is_first_run = (past_run_num == 1)
+    if manual_mesh_path:
+        # In manual recovery mode, do not archive the crashed attempt into a new run folder.
+        # Instead, retrieve clean restart data from the last successfully completed run archive.
+        if max_run_num > 0:
+            search_dir = os.path.join(current_dir, f'run_{max_run_num}', 'CFD_2')
+            print(f"  [MANUAL MODE] Restoring from last completed archive: run_{max_run_num}")
+        else:
+            search_dir = cfd2_dir
+            print("  [MANUAL MODE] No previous run archives found, using active CFD_2 directory")
+        previous_run_folder_path = None
+        previous_run_folder_name = None
+        is_first_run = False
+    else:
+        past_run_num = max_run_num + 1
+        previous_run_folder_name = f'run_{past_run_num}'
+        previous_run_folder_path = os.path.join(current_dir, previous_run_folder_name)
+        is_first_run = (past_run_num == 1)
+        search_dir = cfd2_dir
 
-    try:
-        os.makedirs(previous_run_folder_path, exist_ok=True)
-        print(f"  Created run folder: {previous_run_folder_path}")
-    except OSError as e:
-        print(f"  Error creating folder {previous_run_folder_path}: {e}")
-        return
-
-    # --- Step 3: Copy CFD_1, CFD_2, and results files to the new archive folder ---
-    print(f"\nStep 3: Copying CFD folders and results to {previous_run_folder_name}...")
-    files_to_copy_to_run = ['case_results.pickle', 'case_restart*', 'restart_rb_*.pickle']
-
-    for src_cfd_dir in [cfd1_dir, cfd2_dir]:
-        dest_cfd_dir = os.path.join(previous_run_folder_path, os.path.basename(src_cfd_dir))
         try:
-            if os.path.exists(dest_cfd_dir):
-                shutil.rmtree(dest_cfd_dir)
-            shutil.copytree(src_cfd_dir, dest_cfd_dir)
-            print(f"  Copied '{os.path.basename(src_cfd_dir)}' to '{previous_run_folder_name}'")
-        except shutil.Error as e:
-            print(f"  Error copying directory {src_cfd_dir} to {dest_cfd_dir}: {e}")
+            os.makedirs(previous_run_folder_path, exist_ok=True)
+            print(f"  Created run folder: {previous_run_folder_path}")
+        except OSError as e:
+            print(f"  Error creating folder {previous_run_folder_path}: {e}")
+            return
 
-    for pattern in files_to_copy_to_run:
-        for file_path in glob.glob(os.path.join(current_dir, pattern)):
+    # --- Step 3: Copy CFD folders and results to the archive folder (Automated Mode only) ---
+    if not manual_mesh_path:
+        print(f"\nStep 3: Copying CFD folders and results to {previous_run_folder_name}...")
+        files_to_copy_to_run = ['case_results.pickle', 'case_restart*', 'restart_rb_*.pickle']
+
+        for src_cfd_dir in [cfd1_dir, cfd2_dir]:
+            dest_cfd_dir = os.path.join(previous_run_folder_path, os.path.basename(src_cfd_dir))
             try:
-                shutil.copy2(file_path, previous_run_folder_path)
-                print(f"  Copied '{os.path.basename(file_path)}' to '{previous_run_folder_name}'")
-            except Exception as e:
-                print(f"  Error copying {file_path}: {e}")
+                if os.path.exists(dest_cfd_dir):
+                    shutil.rmtree(dest_cfd_dir)
+                shutil.copytree(src_cfd_dir, dest_cfd_dir)
+                print(f"  Copied '{os.path.basename(src_cfd_dir)}' to '{previous_run_folder_name}'")
+            except shutil.Error as e:
+                print(f"  Error copying directory {src_cfd_dir} to {dest_cfd_dir}: {e}")
+
+        for pattern in files_to_copy_to_run:
+            for file_path in glob.glob(os.path.join(current_dir, pattern)):
+                try:
+                    shutil.copy2(file_path, previous_run_folder_path)
+                    print(f"  Copied '{os.path.basename(file_path)}' to '{previous_run_folder_name}'")
+                except Exception as e:
+                    print(f"  Error copying {file_path}: {e}")
+    else:
+        print("\nStep 3: Skipping archive creation (MANUAL MODE: preserving previous successful archive)...")
 
     # --- Step 4: Remove local results files (keeping restart_rb_*.pickle) ---
     print("\nStep 4: Removing local results files...")
@@ -103,6 +120,16 @@ def run_cfd_workflow(manual_mesh_path=None):
                 print(f"  Removed: {file_path}")
             except OSError as e:
                 print(f"  Error removing {file_path}: {e}")
+
+    # Remove report files from CFD_2 so they do not append indefinitely
+    files_to_remove_cfd2_reports = ['*report*.out']
+    for pattern in files_to_remove_cfd2_reports:
+        for file_path in glob.glob(os.path.join(cfd2_dir, pattern)):
+            try:
+                os.remove(file_path)
+                print(f"  Removed: {file_path}")
+            except OSError:
+                pass
 
     # --- Step 5 & 6: Copy 'step_1' and 'step_2' jou files ---
     print("\nStep 5 & 6: Copying Fluent journal files...")
@@ -150,30 +177,42 @@ def run_cfd_workflow(manual_mesh_path=None):
             print(f"  Error copying automated remesh files: {e}")
             return
 
-    # --- Step 9: Prepare for Fluent step_1 run ---
+    # --- Step 9: Prepare for Fluent step_1 run (copying latest timestep) ---
     print("\nStep 9: Preparing for Fluent step_1 run (copying latest timestep)...")
 
     def get_timestep_number(filepath):
         match = re.search(r'timestep(\d+)\.(cas|dat)\.h5$', os.path.basename(filepath))
         return int(match.group(1)) if match else -1
 
-    # In manual mode, the active CFD_2 folder might be corrupt, so we draw from the archive
-    search_dir = os.path.join(previous_run_folder_path, 'CFD_2') if manual_mesh_path else cfd2_dir
-    print(f"  Scanning for restart files in {search_dir}...")
+    # In manual mode, restore udf_thermal library and source from the archive if available
+    if manual_mesh_path and max_run_num > 0:
+        src_udf_dir = os.path.join(search_dir, 'udf_thermal')
+        dst_udf_dir = os.path.join(cfd2_dir, 'udf_thermal')
+        if os.path.exists(src_udf_dir):
+            if os.path.exists(dst_udf_dir):
+                shutil.rmtree(dst_udf_dir)
+            shutil.copytree(src_udf_dir, dst_udf_dir)
+            print(f"  [MANUAL MODE] Restored 'udf_thermal' library from {search_dir}")
+        src_udf_c = os.path.join(search_dir, 'udf_thermal.c')
+        if os.path.exists(src_udf_c):
+            shutil.copy2(src_udf_c, os.path.join(cfd2_dir, 'udf_thermal.c'))
+            print(f"  [MANUAL MODE] Restored 'udf_thermal.c' from {search_dir}")
 
+    print(f"  Scanning for restart files in {search_dir}...")
     case_files = glob.glob(os.path.join(search_dir, 'case_timestep*.cas.h5'))
     data_files = glob.glob(os.path.join(search_dir, 'case_timestep*.dat.h5'))
 
     highest_case_file = sorted(case_files, key=get_timestep_number, reverse=True)[0] if case_files else None
     highest_data_file = sorted(data_files, key=get_timestep_number, reverse=True)[0] if data_files else None
 
+    dest_case_restart = os.path.join(cfd2_dir, 'case_restart.cas.h5')
+    dest_data_restart = os.path.join(cfd2_dir, 'case_restart.dat.h5')
+
     if highest_case_file and highest_data_file:
-        dest_case_restart = os.path.join(cfd2_dir, 'case_restart.cas.h5')
-        dest_data_restart = os.path.join(cfd2_dir, 'case_restart.dat.h5')
         try:
             shutil.copy2(highest_case_file, dest_case_restart)
             shutil.copy2(highest_data_file, dest_data_restart)
-            print(f"  Copied latest timestep files to restart files in {cfd2_dir}")
+            print(f"  Copied latest timestep files ({os.path.basename(highest_case_file)}) to restart files in {cfd2_dir}")
 
             # Clean up older timestep files in the active directory if in automated mode
             if not manual_mesh_path:
@@ -184,7 +223,18 @@ def run_cfd_workflow(manual_mesh_path=None):
         except Exception as e:
             print(f"  Error handling restart files: {e}")
     else:
-        print(f"  Warning: Could not find previous case/data files in {search_dir}.")
+        # Fallback: check for consolidated case_restart files in search_dir
+        fallback_case = os.path.join(search_dir, 'case_restart.cas.h5')
+        fallback_data = os.path.join(search_dir, 'case_restart.dat.h5')
+        if os.path.exists(fallback_case) and os.path.exists(fallback_data):
+            try:
+                shutil.copy2(fallback_case, dest_case_restart)
+                shutil.copy2(fallback_data, dest_data_restart)
+                print(f"  Copied consolidated restart files from {search_dir} to {cfd2_dir}")
+            except Exception as e:
+                print(f"  Error copying fallback restart files: {e}")
+        else:
+            print(f"  Warning: Could not find previous case/data files in {search_dir}.")
 
     # --- Step 10: Run 'fluent' for 'step_1' ---
     print(f"\nStep 10: Running Fluent for 'step_1.jou'...")

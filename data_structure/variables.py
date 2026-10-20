@@ -5,6 +5,7 @@ variables_dimensions = {
                         'prev_disp': 3,
                         '1ts_disp': 3,
                         'prev_melting_disp': 3,
+                        'current_melting_disp': 3,
                         'new_disp': 3,
                         'disp_step': 3,
                         'disp_step_melting': 3,

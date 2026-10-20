@@ -1,6 +1,6 @@
 # config.yaml
 machines:
-  local_setup: 'cfdclu13'
+  local_setup: 'cfdclu33'
   local_process: 'cfdclu33'
   remesh: 'cfdclu13'
 
@@ -22,7 +22,7 @@ coconut:
     restart_rb: 100
 
 directories:
-  base_dir: '.'
+  base_dir: '/cfdfile1/data/fm/victor/Software/coconut/examples/phase_change/asymmetric_ccm/fluent_python'
   cfd1: 'CFD_1'
   cfd2: 'CFD_2'
   setup: 'setup_files'
