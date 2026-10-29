@@ -45,31 +45,20 @@ To handle the extensive rigid body translation and local melting deformations, a
 1. Shape Extraction: The initial interface morphology (liquid fraction of 0.5) is extracted from a preliminary enthalpy-porosity simulation at a flow time of 2.3 s (yielding a 0.25 mm bottom film).
 2. Field Initialisation: Hydrodynamic and thermal fields are initialised via a steady-state conduction calculation, followed by a 1 s transient flow simulation with solid kinematics locked. This ensures a fully developed pressure field before activating the rigid body solver.
 
-## 4. The Automated Remeshing Workflow
+## 4. Automated Remeshing Workflow and Manual Crash Recovery
+
 In a standard CoCoNuT simulation, the solver initialises once and runs continuously until the final time step is reached. However, due to the extreme deformations in close-contact melting, the conformal component mesh degrades. To maintain cell quality, the workflow must periodically halt, generate a completely new mesh, and interpolate the solution.
 
-To achieve this, the standard execution is replaced by a state-driven batch architecture managed by an `orchestrator.py` script.
+To achieve this, the standard execution is replaced by a state-driven batch architecture managed by an `orchestrator.py` script. The core principles behind this framework include:
 
-**How the Auto-Remesh Script Works:**
-* Centralised Configuration: A single `config.yaml` file controls cluster names, directory paths, sync targets, and parameter toggles. Users no longer need to edit Python or JSON files directly.
-* State Tracking: A `state.json` file tracks the current run number. If the simulation stops, it automatically resumes from the last successful batch.
-* Dynamic Parameter Injection: The orchestrator dynamically rewrites `parameters.json` before execution, injecting initial or restart configurations (like `case_restart.cas.h5`) based on the current loop phase.
-* The Loop Cycle: Every 100 time steps, the orchestrator triggers the following remote pipeline:
-    1. Collect Data: Consolidates and offsets `report-file.out` and rigid body data.
-    2. Remesh: Archives the old folders, triggers `remesh.sh` (Gambit/Python background meshing), and runs Fluent journal files to interpolate the fields onto the new grid.
-    3. Update Interface: Translates the new Fluent boundary nodes into a fresh `interface_nodes.csv` for the solid Python solver.
-    4. Restart: Launches CoCoNuT with the newly configured parameters.
+* **Chunked Batch Execution:** Rather than running as a single uninterrupted transient calculation, the simulation is partitioned into discrete, manageable batches. Each batch advances physical time by a specified interval before systematically pausing the solvers.
+* **Spatial Domain Renewal:** At the end of each batch, the deforming fluid domain is stripped and reconstructed with a fresh mesh topology to restore element quality, boundary layer resolution, and skewness. The physical fields (pressure, velocity, and temperature) are interpolated from the previous state to maintain temporal and physical continuity across restarts.
+* **Autonomous State Tracking:** A dedicated state tracker monitors the simulation lifecycle. It handles run increments, accumulates time-history outputs into continuous post-processing logs, and dynamically configures solver parameters between initial and restart modes.
+* **Human-in-the-Loop Fault Tolerance:** When extreme local topological shifts cause automated meshing or solver iterations to diverge, the orchestrator intercepts the failure and cleans active background processes. It automatically exports the current interface geometry for external CAD meshing, allowing a tailored, manually constructed mesh to be injected directly so the calculation can resume without loss of progress.
 
-## 5. Manual Crash Recovery
-If the automated remeshing fails or generates an overly distorted mesh, the simulation will crash (or generate unphysical results). The orchestrator is designed to handle these interruptions gracefully.
+*(For full technical specifications, script dependencies, HPC communication protocols, and step-by-step manual recovery instructions, please refer to the dedicated [Remeshing Workflow Documentation](remeshing_workflow.md).)*
 
-**The Recovery Process:**
-1. Catching the Interrupt: If the solver crashes remotely, or if the user spots a drop in accuracy and presses `Ctrl+C` locally, the orchestrator catches the exception.
-2. Safe Pause: It immediately logs into the cluster, kills any orphaned Fluent/API processes to save memory and licenses, and pauses the script with a prompt.
-3. Manual Injection: The user selects to pause and wait for a manual remesh. They generate a high-quality mesh in Workbench, save it as a `.msh` file in the `manual_interventions` folder, and press ENTER.
-4. Resume: The orchestrator bypasses the automated Gambit scripting, injects the user's manual mesh directly into the workflow, interpolates the data, and resumes the coupled simulation loop perfectly from where it left off.
-
-## 6. Starting the simulation
+## 5. Starting the simulation
 Navigate to the folder containing the `orchestrator.py` script on the login node and run it. The script will manage the cluster assignment for each step in the remeshing procedure.
 
 ---

@@ -51,33 +51,20 @@ To resolve the 3-DoF kinematics without severe cell distortion, the simulation r
 1. **Shape Extraction:** Rather than prescribing an analytical shape, a preliminary enthalpy-porosity simulation is run on a fixed grid until a flow time of 18 s. This produces a natural 0.5 mm liquid gap. The 0.5 liquid fraction iso-surface is extracted to define the starting overset component boundary.
 2. **Field Initialisation:** Hydrodynamic and thermal fields are initialised via a steady-state conduction calculation, followed by a 1 s transient flow simulation with the solid kinematics locked. This establishes the necessary physical pressure field beneath the solid before the rigid body solver takes over.
 
----
+## 4. Automated Remeshing Workflow and Manual Crash Recovery
 
-## 4. The Automated Remeshing Workflow
-Because the component mesh slowly degrades due to the unconstrained melting deformations, the simulation cannot run continuously. It must periodically halt, generate a new mesh, and interpolate the flow field. This is managed by a state-driven Python orchestration framework.
+In a standard CoCoNuT simulation, the solver initialises once and runs continuously until the final time step is reached. However, due to the extreme deformations in close-contact melting, the conformal component mesh degrades. To maintain cell quality, the workflow must periodically halt, generate a completely new mesh, and interpolate the solution.
 
-**How the Auto-Remesh Script Works:**
-* **Centralised Configuration:** A single `config.yaml` file controls cluster environments (including HPC toggles), directory paths, and parameter settings. 
-* **Dynamic Parameter Injection:** The orchestrator reads the base `parameters.json` file and dynamically injects the correct case files (`pc_fluid.cas.h5` vs `case_restart.cas.h5`) and restart values depending on whether it is initiating a new run or looping a restart.
-* **The Hybrid Loop Cycle:** Every 100 time steps, the orchestrator triggers the pipeline:
-    1. **Sync & Retrieve:** Automatically retrieves the latest rigid-body and Fluent report data from the HPC to the local processing node.
-    2. **Collect Data:** Consolidates and offsets the time series data for continuous post-processing.
-    3. **Remesh:** Archives the old output folders, executes `remesh.sh` (Gambit/Python background meshing), and uses Fluent journal files to interpolate the previous fields onto the updated grid.
-    4. **Update Interface:** Translates the newly generated Fluent boundary nodes into a fresh `interface_nodes.csv` for the solid Python solver.
-    5. **HPC Submission:** Syncs the fresh mesh back to the HPC, submits the restart PBS job, and monitors the queue.
+To achieve this, the standard execution is replaced by a state-driven batch architecture managed by an `orchestrator.py` script. The core principles behind this framework include:
 
----
+* **Chunked Batch Execution:** Rather than running as a single uninterrupted transient calculation, the simulation is partitioned into discrete, manageable batches. Each batch advances physical time by a specified interval before systematically pausing the solvers.
+* **Spatial Domain Renewal:** At the end of each batch, the deforming fluid domain is stripped and reconstructed with a fresh mesh topology to restore element quality, boundary layer resolution, and skewness. The physical fields (pressure, velocity, and temperature) are interpolated from the previous state to maintain temporal and physical continuity across restarts.
+* **Autonomous State Tracking:** A dedicated state tracker monitors the simulation lifecycle. It handles run increments, accumulates time-history outputs into continuous post-processing logs, and dynamically configures solver parameters between initial and restart modes.
+* **Human-in-the-Loop Fault Tolerance:** When extreme local topological shifts cause automated meshing or solver iterations to diverge, the orchestrator intercepts the failure and cleans active background processes. It automatically exports the current interface geometry for external CAD meshing, allowing a tailored, manually constructed mesh to be injected directly so the calculation can resume without loss of progress.
 
-## 5. Manual Crash Recovery
-If the automated remeshing generates an overly distorted mesh, or if the Fluent solver diverges due to complex asymmetric contact, the orchestrator is designed to handle the interruption gracefully without breaking the workflow loop.
+*(For full technical specifications, script dependencies, HPC communication protocols, and step-by-step manual recovery instructions, please refer to the dedicated [Remeshing Workflow Documentation](../downwards_ccm/remeshing_workflow.md).)*
 
-**The Recovery Process:**
-1. **Catching the Interrupt:** If the HPC job crashes, or if the user spots a drop in accuracy and presses `Ctrl+C` locally, the orchestrator catches the exception.
-2. **Safe Pause:** It immediately logs into the remote cluster, cancels any lingering PBS jobs (`qdel`), kills any orphaned Fluent/API processes to save memory and licensing tokens, and pauses the local script with a prompt.
-3. **Manual Injection:** The user selects to pause and wait for a manual remesh. The user can then generate a high-quality, stable mesh manually in Workbench, save it as a `.msh` file in the `manual_interventions` folder, and press ENTER.
-4. **Resume:** The orchestrator bypasses the automated Gambit scripting, injects the user's manual mesh directly into the workflow, interpolates the data, and resumes the coupled simulation loop seamlessly.
-
-## 6. Starting the simulation
+## 5. Starting the simulation
 Navigate to the folder containing the `orchestrator.py` script on the login node and run it. The script will manage the cluster assignment for each step in the remeshing procedure.
 
 ---
