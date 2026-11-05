@@ -1,0 +1,8 @@
+EXE_INC = \
+    -I.. \
+    -I../.. \
+    -I../../../openfoam_base \
+    -I$(LIB_SRC)/finiteVolume/lnInclude
+
+EXE_LIBS = \
+    -lfiniteVolume
