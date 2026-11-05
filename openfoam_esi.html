@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://pyfsi.github.io/coconut/openfoam_esi.html">
       
       
+        <link rel="prev" href="kratos_structure.html">
+      
+      
+        <link rel="next" href="openfoam_org.html">
       
       
       <link rel="icon" href="assets/images/favicon.ico">
@@ -20,7 +24,7 @@
     
     
       
-        <title>OpenFOAM - CoCoNuT</title>
+        <title>OpenFOAM (ESI) - CoCoNuT</title>
       
     
     
@@ -107,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              OpenFOAM
+              OpenFOAM (ESI)
             
           </span>
         </div>
@@ -223,10 +227,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="coupling_components.html" class="md-tabs__link">
           
   
@@ -383,25 +389,28 @@
       
   
   
+    
   
   
+  
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -412,7 +421,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Coupling components
@@ -597,8 +606,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -606,13 +617,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" checked>
         
           
           <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
@@ -626,7 +635,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_6">
             <span class="md-nav__icon md-icon"></span>
             Solver wrappers
@@ -742,14 +751,234 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="openfoam.md" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    OpenFOAM (ESI)
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="openfoam_esi.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    None
+    OpenFOAM (ESI)
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-a-new-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting up a new case
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up a new case">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comments
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#treatment-of-kinematic-pressure-and-traction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Treatment of kinematic pressure and traction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#solver-coupling-convergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solver coupling convergence
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-specific-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Version specific documentation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version specific documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v10-openfoam-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      v10 (OpenFOAM 10)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v11-openfoam-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      v11 (OpenFOAM 11)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#details-on-the-openfoam-solver-wrapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      Details on the OpenFOAM solver wrapper
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Details on the OpenFOAM solver wrapper">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#communication-with-openfoam" class="md-nav__link">
+    <span class="md-ellipsis">
+      Communication with OpenFOAM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clean-up-after-unexpected-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clean-up after unexpected stop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-solve_solution_step-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      The solve_solution_step method
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adapting a new application to be used in CoCoNuT (OpenFOAM 10)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adapting a new application to be used in CoCoNuT (OpenFOAM 10)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-waitforsync-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      The waitForSync command
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disclaimer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Disclaimer
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="openfoam_org.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM (ORG)
   </span>
   
 
@@ -1075,11 +1304,32 @@
   
   
     <li class="md-nav__item">
-      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.md" class="md-nav__link">
+      <a href="lid_driven_cavity_openfoam_esi2d_kratos_structure2d.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    OpenFOAM2D - KratosStructure 2D
+    OpenFOAM2D (ESI) - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_openfoam_org2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM2D (ORG) - KratosStructure 2D
   </span>
   
 
@@ -1291,6 +1541,27 @@
   
   
     <li class="md-nav__item">
+      <a href="tube_fluent2d_abaquscse2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - AbaqusCSE 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
         
   
@@ -1375,6 +1646,27 @@
   
   
     <li class="md-nav__item">
+      <a href="tube_fluent3d_abaquscse3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - AbaqusCSE 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
         
   
@@ -1396,11 +1688,11 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_openfoam3d_abaqus3d.md" class="md-nav__link">
+      <a href="tube_openfoam_org3d_abaqus3d.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    OpenFOAM 3D - Abaqus 3D
+    OpenFOAM 3D (ORG) - Abaqus 3D
   </span>
   
 
@@ -1417,11 +1709,32 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_openfoam3d_kratos_structure3d.md" class="md-nav__link">
+      <a href="tube_openfoam_esi3d_kratos_structure3d.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    OpenFOAM 3D - KratosStructure 3D
+    OpenFOAM 3D (ESI) - KratosStructure 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam_org3d_kratos_structure3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D (ORG) - KratosStructure 3D
   </span>
   
 
@@ -1528,11 +1841,11 @@
   
   
     <li class="md-nav__item">
-      <a href="turek_openfoam2d_kratos_structure2d.md" class="md-nav__link">
+      <a href="turek_openfoam_org2d_kratos_structure2d.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    OpenFOAM 2D - KratosStructure 2D
+    OpenFOAM 2D (ORG) - KratosStructure 2D
   </span>
   
 

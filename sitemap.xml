@@ -146,6 +146,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://pyfsi.github.io/coconut/tube_fluent2d_abaquscse2d.html</loc>
+         <lastmod>2026-11-05</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://pyfsi.github.io/coconut/tube_fluent2d_tube_structure.html</loc>
          <lastmod>2026-11-05</lastmod>
          <changefreq>daily</changefreq>
