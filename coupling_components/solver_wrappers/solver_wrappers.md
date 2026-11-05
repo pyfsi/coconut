@@ -26,10 +26,11 @@ coupled solver as an `Interface` object.
 
 ## Available solver wrappers
 
-There are currently two solver wrappers for computational fluid dynamics (CFD) packages:
+There are currently three solver wrappers for computational fluid dynamics (CFD) packages:
 
 - [ANSYS Fluent](fluent/fluent.md)
-- [OpenFOAM](openfoam/openfoam.md)
+- [OpenFOAM (ESI)](openfoam_esi/openfoam_esi.md)
+- [OpenFOAM (org)](openfoam_org/openfoam_org.md)
 
 There are currently also three solver wrappers for computational structural mechanics (CSM) packages :
 

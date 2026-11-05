@@ -60,7 +60,8 @@ nav:
           - abaqus_cse.md
           - fluent.md
           - kratos_structure.md
-          - openfoam.md
+          - OpenFOAM (ESI): openfoam_esi.md
+          - OpenFOAM (ORG): openfoam_org.md
           - python.md
   - Data structure: data_structure.md
   - Documentation: docs.md
@@ -72,7 +73,8 @@ nav:
           - Fluent 2D - KratosStructure 2D: breaking_dam_fluent2d_kratos_structure2d.md
       - Lid-driven cavity:
           - Fluent2D - KratosStructure 2D: lid_driven_cavity_fluent2d_kratos_structure2d.md
-          - OpenFOAM2D - KratosStructure 2D: lid_driven_cavity_openfoam2d_kratos_structure2d.md
+          - OpenFOAM2D (ESI) - KratosStructure 2D: lid_driven_cavity_openfoam_esi2d_kratos_structure2d.md
+          - OpenFOAM2D (ORG) - KratosStructure 2D: lid_driven_cavity_openfoam_org2d_kratos_structure2d.md
       - Tube:
           - Python TubeFlow - Python TubeRingmodel: tube_tube_flow_tube_ringmodel.md
           - Python TubeFlow - Python TubeStructure: tube_tube_flow_tube_structure.md
@@ -81,16 +83,19 @@ nav:
           - Python TubeFlow - Abaqus 2D: tube_tube_flow_abaqus2d.md
           - Fluent 2D - Python TubeStructure: tube_fluent2d_tube_structure.md
           - Fluent 2D - Abaqus 2D: tube_fluent2d_abaqus2d.md
+          - Fluent 2D - AbaqusCSE 2D: tube_fluent2d_abaquscse2d.md
           - Fluent 2D - Abaqus 2D - Steady: tube_fluent2d_abaqus2d_steady.md
           - Fluent 2D - Abaqus 2D - Surrogate: tube_fluent2d_abaqus2d_surrogate.md
           - Fluent 3D - Abaqus 2D: tube_fluent3d_abaqus2d.md
           - Fluent 3D - Abaqus 3D: tube_fluent3d_abaqus3d.md
+          - Fluent 3D - AbaqusCSE 3D: tube_fluent3d_abaquscse3d.md
           - Fluent 3D - KratosStructure 3D: tube_fluent3d_kratos_structure3d.md
-          - OpenFOAM 3D - Abaqus 3D: tube_openfoam3d_abaqus3d.md
-          - OpenFOAM 3D - KratosStructure 3D: tube_openfoam3d_kratos_structure3d.md
+          - OpenFOAM 3D (ORG) - Abaqus 3D: tube_openfoam_org3d_abaqus3d.md
+          - OpenFOAM 3D (ESI) - KratosStructure 3D: tube_openfoam_esi3d_kratos_structure3d.md
+          - OpenFOAM 3D (ORG) - KratosStructure 3D: tube_openfoam_org3d_kratos_structure3d.md
       - Turek benchmark:
           - Fluent 2D - Abaqus 2D: turek_fluent2d_abaqus2d.md
           - Fluent 2D - Abaqus 2D - Steady: turek_fluent2d_abaqus2d_steady.md
-          - OpenFOAM 2D - KratosStructure 2D: turek_openfoam2d_kratos_structure2d.md
+          - OpenFOAM 2D (ORG) - KratosStructure 2D: turek_openfoam_org2d_kratos_structure2d.md
       - Test single solver: test_single_solver.md
   - Tests: tests.md
