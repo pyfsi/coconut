@@ -842,6 +842,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#v2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      v2026
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -905,11 +914,11 @@
   
   
     <li class="md-nav__item">
-      <a href="openfoam.html" class="md-nav__link">
+      <a href="openfoam.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    OpenFOAM
+    None
   </span>
   
 
@@ -1235,7 +1244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1451,27 +1460,6 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_fluent2d_abaquscse2d.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Fluent 2D - AbaqusCSE 2D
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
         
   
@@ -1556,27 +1544,6 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_fluent3d_abaquscse3d.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Fluent 3D - AbaqusCSE 3D
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
         
   
@@ -1598,7 +1565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_openfoam3d_abaqus3d.html" class="md-nav__link">
+      <a href="tube_openfoam3d_abaqus3d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1619,7 +1586,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
+      <a href="tube_openfoam3d_kratos_structure3d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1730,7 +1697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="turek_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+      <a href="turek_openfoam2d_kratos_structure2d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2062,6 +2029,8 @@ Specifically, this is the step and increment from which the simulation is restar
 <h3 id="v2025">v2025</h3>
 <p>AbaqusCSE now supports traction for two-dimensional cases.
 During testing, it was found however that traction lags one timestep (for both 3D and 2D cases). In older versions, (2024 and 2023), traction is not applied correctly even for 3D cases. Results should therefore be interpreted with caution. If traction is an important contributor to the fluid forces at the FSI interface, consider using the <a href="https://pyfsi.github.io/coconut/abaqus">legacy Abaqus wrapper</a>. </p>
+<h3 id="v2026">v2026</h3>
+<p>No changes w.r.t. v2025, this means that the traction issue still persists.</p>
 
 
 

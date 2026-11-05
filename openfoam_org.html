@@ -1,0 +1,1975 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Coupling Code for Numerical Tools - aka 🥥 CoCoNuT is a Python tool for partitioned multiphysics simulations with a focus on fluid-structure interaction.">
+      
+      
+      
+        <link rel="canonical" href="https://pyfsi.github.io/coconut/openfoam_org.html">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+    
+    
+      
+        <title>OpenFOAM - CoCoNuT</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#openfoam" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="CoCoNuT" class="md-header__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoCoNuT
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              OpenFOAM
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pyfsi/coconut
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Introduction
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="coupling_components.html" class="md-tabs__link">
+          
+  
+  Coupling components
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="data_structure.html" class="md-tabs__link">
+        
+  
+    
+  
+  Data structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="docs.html" class="md-tabs__link">
+        
+  
+    
+  
+  Documentation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="examples.html" class="md-tabs__link">
+          
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="tests.html" class="md-tabs__link">
+        
+  
+    
+  
+  Tests
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="CoCoNuT" class="md-nav__button md-logo" aria-label="CoCoNuT" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    CoCoNuT
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pyfsi/coconut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pyfsi/coconut
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Coupling components
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Coupling components
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupling_components.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="convergence_criteria.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Convergence criteria
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Coupled solvers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Coupled solvers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="coupled_solvers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Coupled solvers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mappers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mappers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="predictors.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Predictors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Solver wrappers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            Solver wrappers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="solver_wrappers.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="abaqus.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abaqus
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="abaqus_cse.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AbaqusCSE
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fluent.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kratos_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    KratosStructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="openfoam.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    None
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="data_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="docs.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="post_processing.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Post-processing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Breaking dam
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Breaking dam
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="breaking_dam_fluent2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lid-driven cavity
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Lid-driven cavity
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_fluent2d_kratos_structure2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tube
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            Tube
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_ringmodel.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeRingmodel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure_analytical.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure - Analytical
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_tube_structure_surrogate.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Python TubeStructure - Surrogate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_tube_flow_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python TubeFlow - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_tube_structure.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Python TubeStructure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Steady
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent2d_abaqus2d_surrogate.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Surrogate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_abaqus3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - Abaqus 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 3D - KratosStructure 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_abaqus3d.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D - Abaqus 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tube_openfoam3d_kratos_structure3d.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 3D - KratosStructure 3D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Turek benchmark
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_6">
+            <span class="md-nav__icon md-icon"></span>
+            Turek benchmark
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_fluent2d_abaqus2d_steady.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Fluent 2D - Abaqus 2D - Steady
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="turek_openfoam2d_kratos_structure2d.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenFOAM 2D - KratosStructure 2D
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="test_single_solver.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Test single solver
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tests.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tests
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="openfoam">OpenFOAM</h1>
+<p>This is the documentation for the solver wrappers for OpenFOAM Foundation version (ORG).
+Currently, the use as the flow solver in FSI simulations is supported, no other multiphysics problems.</p>
+<h2 id="parameters">Parameters</h2>
+<p>This section describes the parameters in the JSON file, listed in alphabetical order.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>application</code></td>
+<td style="text-align: center;">str</td>
+<td>Name of the (adapted) OpenFOAM-solver to be used for the flow problem. This name should start with <code>coconut_</code>. For OpenFOAM 11, only <code>coconut_foamRun</code> is possible.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>boundary_names</code></td>
+<td style="text-align: center;">list</td>
+<td>List of names of the patches corresponding to the interface. These names should match the patch names defined in the OpenFOAM-case.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>compile_clean</code></td>
+<td style="text-align: center;">bool</td>
+<td>(optional) Default: <code>false</code>. If set to true, the adapted application will first clean and then compile.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>debug</code></td>
+<td style="text-align: center;">bool</td>
+<td>(optional) Default: <code>false</code>. For every iteration, additional files are saved containing information on the input and output data of the solver.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>density</code></td>
+<td style="text-align: center;">double</td>
+<td>(optional) Density of the fluid in an incompressible case. The density is multiplied with the kinematic pressure and traction. Required if an incompressible application is used, such as coconut_pimpleFoam. More information can be found <a href="#treatment-of-kinematic-pressure-and-traction">here</a>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>interface_input</code></td>
+<td style="text-align: center;">dict</td>
+<td>List of dictionaries that describes the input <code>Interface</code>. This provides the  interface boundary conditions for the OpenFOAM solver. Each entry in the list has two keys: <code>model_part</code> and <code>variables</code>, with values as name of the model part and list of input variables, respectively. The input variables in the list should be chosen from the  <code>variables_dimensions</code> <code>dict</code> in  the file <em><code>coconut/data_structure/variables.py</code></em>. The model part name must be the concatenation of an entry from <code>boundary_names</code> and the string <code>_input</code>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>interface_output</code></td>
+<td style="text-align: center;">dict</td>
+<td>Analogous to <code>interface_input</code>, but here the name must be the concatenation of an entry from <code>boundary_names</code> and the string <code>_output</code>. The entries in the list provides boundary conditions for the other solver(s) participating in the coupled simulation.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>parallel</code></td>
+<td style="text-align: center;">bool</td>
+<td>Set it to <code>true</code> if OpenFOAM solver is required to run in parallel. The required decomposition method and number of cores should be provided in the <em><code>&lt;case_directory&gt;/system/decomposeParDict</code></em> file.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><nobr><code>print_coupling_convergence</code></nobr></td>
+<td style="text-align: center;">bool</td>
+<td>(optional) Default <code>false</code>. If <code>true</code> and if the solver coupling convergence is checked, a statement is printed when the solver converges in the first solver iteration, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>residual_variables</code></td>
+<td style="text-align: center;">list</td>
+<td>(optional) A list containing OpenFOAM variables whose residuals you need to output. If provided, this will output the last initial residual of the pimple iterations for each FSI-coupling iteration in <em><code>&lt;case_directory&gt;/residuals.csv</code></em>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>time_precision</code></td>
+<td style="text-align: center;">int</td>
+<td>Number of digits after the decimal sign to be used in the name of the time step directories which are made during execution.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>working_directory</code></td>
+<td style="text-align: center;">str</td>
+<td>Directory where the OpenFOAM-case is defined (and which contains the JSON-file).</td>
+</tr>
+</tbody>
+</table>
+<p>The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing).
+If they are defined in both locations, a warning is printed and the top-level value is used.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">parameter</th>
+<th style="text-align: center;">type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>delta_t</code></td>
+<td style="text-align: center;">float</td>
+<td>Fixed time step size in flow solver.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>save_restart</code></td>
+<td style="text-align: center;">int</td>
+<td>Indicates the time step interval at which case and data files for restart have to be saved. A minus sign indicates only the files from the last interval are retained.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>timestep_start</code></td>
+<td style="text-align: center;">int</td>
+<td>Time step number to (re)start a transient FSI calculation. If <code>0</code> is given, the simulation starts from from t = 0, else the code looks for the relevant files.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="setting-up-a-new-case">Setting up a new case</h2>
+<p>Following items should be present in the OpenFOAM-directory prior to launching CoCoNuT:</p>
+<ul>
+<li>The entire framework of the CFD-case in OpenFOAM which is to be used in the CoCoNuT simulation (so it should contain
+  the <code>constant</code> and <code>system</code> directory as well as the <em><code>0</code></em> directory). The working directory should be defined as if
+  you would like to run it as a CFD case. This <code>working directory</code> is defined in the JSON-file.</li>
+<li>The necessary parameters in the JSON-file containing the settings stipulated above.</li>
+</ul>
+<p>Following files are modified or used as a reference to create files by CoCoNuT, and must be included in the original
+OpenFOAM-directory:</p>
+<ul>
+<li><em><code>system/controlDict</code></em> with compulsory arguments:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>writeControl</code></td>
+<td><code>timeStep</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>writeInterval</code></td>
+<td>required write interval</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>writeFormat</code></td>
+<td><code>ascii</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>timeFormat</code></td>
+<td><code>fixed</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>timePrecision</code></td>
+<td>required time precision based on <code>delta_t</code> (used in the names of time step folders)</td>
+</tr>
+<tr>
+<td style="text-align: right;"><nobr><code>runTimeModifiable</code></nobr></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>adjustTimeStep</code></td>
+<td><code>no</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><em><code>constant/dynamicMeshDict</code></em> which contains the settings for OpenFOAM's dynamic motion solver</li>
+<li><em><code>system/decomposeParDict</code></em> with the necessary decomposition of the fluid domain (if <code>cores</code>&gt;1)</li>
+<li><em><code>0/pointDisplacement</code></em> with all the boundary conditions, including <code>fixedValue</code> boundary condition for the FSI
+  boundaries. This is used as a template for the <em><code>pointDisplacementTmp</code></em> to supply displacement boundary condition (
+  from structural solver) for the FSI-interface.</li>
+</ul>
+<h3 id="comments">Comments</h3>
+<ul>
+<li>It is probably best to derive a new case from the directory containing an FSI simulation with OpenFOAM in <em><code>coconut/examples/</code></em> in order to copy its structure.</li>
+<li>For OpenFOAM 8, the applications like <code>pimpleFoam</code> need to be adapted to accommodate the communication with the solver wrapper during the FSI-simulation.
+  These adapted versions have the same name as the original OpenFOAM-solver but with the prefix <code>coconut_</code>.
+  If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself, see also <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-10">this brief set of instructions</a>.</li>
+<li>For OpenFOAM 11, only <code>foamRun</code> has been adapted but this solver can work with many solver modules (see <a href="https://doc.cfd.direct/openfoam/user-guide-v11/solvers-modules">OpenFOAM 11 documentation</a>).</li>
+</ul>
+<h2 id="treatment-of-kinematic-pressure-and-traction">Treatment of kinematic pressure and traction</h2>
+<p>If the OpenFOAM application is intended for incompressible flows, e.g. <code>pimpleFoam</code> (v8) or <code>incompressibleFluid</code> (v11), it solves the incompressible Navier-Stokes equations.
+As a consequence the pressure and traction (wallShearStress) values are kinematic and have the unit m²/s².
+In order to couple these solvers to a structural solver, the pressure and traction are required to be expressed in Pa (kg/ms²).</p>
+<p>For these solvers, the <code>density</code> parameter is required in the JSON file and will be used to calculate the actual values from the kinematic ones.
+In case the OpenFOAM application is compressible, this correction is not required and the actual values in Pa are obtained directly.</p>
+<p>There is a third possibility. In some cases, the application solves the compressible equations obtaining an actual pressure,
+but the used momentumTransportModel is incompressible.
+It is the type of momentumTransportModel that determines whether the wallShearStress functionObject returns the kinematic or actual traction.
+In these cases, the density is not fixed and cannot simply be multiplied with the obtained kinematic values.
+Therefore, a new functionObject, rhoWallShearStress, is available, which is a modified version of wallShearStress
+and returns the actual traction, even if the momentumTransportModel is incompressible.
+Note that is this new functionObject is version specific, but common for all applications of one version.
+Upon compilation of the coconut application this functionObject is included in the binary.
+This was the case for, for example, coconut_interFoam and coconut_cavitatingFoam (OpenFOAM 8).</p>
+<p>The behaviour of CoCoNuT for these different applications is implemented in the solver wrapper itself, namely in the <code>kinematic_conversion_dict</code>, located in the files <em><code>vX.py</code></em>, with <code>X</code>
+the identifier of the OpenFOAM-version (e.g. <em><code>v10.py</code></em> for OpenFOAM 10).
+This means that when a new application is added, the behaviour for this new application should be specified in that location.</p>
+<h2 id="solver-coupling-convergence">Solver coupling convergence</h2>
+<p>The convergence criterion <a href="https://pyfsi.github.io/coconut/convergence_criteria#solver-coupling-convergence">solver coupling convergence</a> has been implemented for the OpenFOAM solver wrapper.
+Instead of comparing the different residuals (U, p, ...) with their respective tolerances before the first iteration, they are checked after the first iteration due to implementation restrictions.
+Note that OpenFOAM will always execute a final solver iteration after convergence.
+Depending on the settings, this final iteration may have different or no relaxation factors.
+Calling the solver twice with the same interface displacement, will not necessarily mean that the second call immediately converges.
+This is due to a (weak) nonlinearity in the calculation of the mesh deformation as a result of the explicit non-orthogonality correction in the normal gradient calculation used in the Laplacian equation.
+Attempts to use the option moveMeshOuterCorrectors (recalculating mesh motion in every solver iteration) showed that there exist problems with this feature: it disturbs the convergence checks and, when used in parallel, even causes the code to crash.</p>
+<h2 id="version-specific-documentation">Version specific documentation</h2>
+<h3 id="v10-openfoam-10">v10 (OpenFOAM 10)</h3>
+<p>Base version.
+In this OpenFOAM version some changes were made with respect to OpenFOAM 8, and there are some changes in the case setup.
+The following list provides some but is not all extensive:</p>
+<ul>
+<li>The file <em><code>constant/transportProperties</code></em> has been renamed to <em><code>constant/physicalProperties</code></em>.</li>
+<li>The keyword <code>version</code> can be omitted from the header dictionary <code>FoamFile</code>.</li>
+<li>The dynamicMeshDict has been restructured, defining a <code>fvMeshMover</code> and removing the <code>dynamicFvMesh</code> class, see also the <a href="https://cfd.direct/openfoam/free-software/dynamic-meshes/">OpenFOAM documentation</a>.</li>
+</ul>
+<h3 id="v11-openfoam-11">v11 (OpenFOAM 11)</h3>
+<p>In this OpenFOAM version some changes were made with respect to OpenFOAM 10.
+The most prominent is the replacement of separate applications like <code>pimpleFoam</code> by a single solver <code>foamRun</code> which works with solver modules.
+The required changes for the OpenFOAM wrapper are visible in the version specific solver wrapper Python file <em><code>v11.py</code></em>.</p>
+<p>This is also reflected in the case setup:</p>
+<ul>
+<li>The application in <em><code>system/controlDict</code></em> is now foamRun and an additional keyword solver is required, such as <code>incompressibleFluid</code>.</li>
+</ul>
+<h2 id="details-on-the-openfoam-solver-wrapper">Details on the OpenFOAM solver wrapper</h2>
+<h3 id="communication-with-openfoam">Communication with OpenFOAM</h3>
+<p>As with most other solver wrappers, the communication between the OpenFOAM code and the solver wrapper occurs
+through the use of (empty) files with extension <code>.coco</code>.
+The OpenFOAM code checks for these message files in an infinite loop.
+When such file is detected, for example <em><code>continue.coco</code></em>,
+the OpenFOAM code performs a certain action and creates a file <em><code>continue_ready.coco</code></em>.
+The solver wrapper is paused until it detects such a corresponding file.</p>
+<h3 id="clean-up-after-unexpected-stop">Clean-up after unexpected stop</h3>
+<p>The aforementioned messaging procedure implies that OpenFOAM is constantly running during execution of the CoCoNuT-simulation.
+Exiting of the loop and closing of the program only occurs when the <em><code>stop.coco</code></em> is received.
+If an unexpected crash occurs, it can occasionally occur that the OpenFOAM processes are not ended properly
+and that the user should take care to kill that OpenFOAM-loop manually (using <code>kill</code> or <code>pkill</code> in the Linux-terminal, e.g. <code>pkill coconut_*</code>).</p>
+<h3 id="the-solve_solution_step-method">The <code>solve_solution_step</code> method</h3>
+<p>This method is the core of the simulation passing on the interface displacement to OpenFOAM and receiving the resulting loads (pressure and traction).
+The interface displacement is converted into an OpenFOAM-readable format (with the method <code>write_node_input</code>),
+by storing it in a <code>pointDisplacementTmp</code> field, which is read in by OpenFOAM in every iteration
+(this required some adaptation of the solver, see <a href="#adapting-a-new-application-to-be-used-in-coconut-openfoam-10">next section</a>).
+Subsequently, the mesh is updated in OpenFOAM and the flow equations are solved.
+The dynamic mesh motion is handled by OpenFOAM itself.
+Finally, the method <code>read_node_output</code> is called in the solver wrapper, which reads the interface loads from the directory <em><code>postProcessing</code></em> (more precisely from the subdirectories <em><code>coconut_&lt;boundary_name&gt;</code></em>).</p>
+<h2 id="adapting-a-new-application-to-be-used-in-coconut-openfoam-10">Adapting a new application to be used in CoCoNuT (OpenFOAM 10)</h2>
+<p>For OpenFOAM 10, the applications like <code>pimpleFoam</code> need to be adapted to accommodate the communications with the solver wrapper during the FSI-simulation.
+These adapted versions have the same name as the original OpenFOAM-solver but with the prefix <code>coconut_</code>.
+If you do not use an OpenFOAM-application which is already converted for operation in CoCoNuT, you will have to convert the application yourself.
+This can be done in a rather straightforward way by taking a look at already implemented application, for example <code>coconut_pimpleFoam</code>.
+In brief, the following steps should be undertaken:</p>
+<ul>
+<li>Some additional <code>include</code>-statements are needed: <em><code>fsiDisplacement.H</code></em>, <em><code>waitForSync.H</code></em> and <em><code>&lt;unistd.h&gt;</code></em>.
+  Also include <em><code>readCoconutControls.H</code></em> to create control variables used by CoCoNuT.</li>
+<li>Except for these initial <code>include</code>-statements, the entire solver code should be put in an <em>infinite</em> loop that starts
+  with <code>while (true)</code>. The code will stay in this loop and check with several conditional statements whether the solver wrapper in CoCoNuT has
+  sent a message to the OpenFOAM-solver.
+  These messages are sent by creating an empty file with a specific name in the OpenFOAM-directory.
+  The following file names should be checked by the OpenFOAM-solver: <em><code>next.coco</code></em>, <em><code>continue.coco</code></em>, <em><code>save.coco</code></em>, <em><code>stop.coco</code></em>.
+  To allow a pause of 1 ms between each loop the command usleep(1000) is used (which requires the line: <code>#include &lt;unistd.h&gt;</code> before the loop).</li>
+<li>Once such a message is received, the OpenFOAM code first executes a command to sync all processors (only important in a parallel run), for example <code>waitForSync("next")</code>.
+  Details on this function are given <a href="#the-waitforsync-command">here</a>.</li>
+<li>If the file <em><code>next.coco</code></em> exists, a new time step is started.
+  Due to the fact that the infinite loop is driven by <code>while(true)</code> and not the default OpenFOAM-expression <code>while(runTime.run())</code>,
+  the statement <code>runTime.run();</code> has to be added.
+  This creates, initializes and calls the functionObjects in the <em><code>controlDict</code></em> file.
+  Furthermore, as in the original application, the runTime-object should be incremented, increasing the time step.</li>
+<li>If the file <em><code>continue.coco</code></em> exists, the interface has to be moved first, using the following lines:
+  <div class="highlight"><pre><span></span><code><span class="n">forAll</span><span class="p">(</span><span class="n">boundaryNames</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">word</span><span class="w"> </span><span class="n">boundaryName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boundaryNames</span><span class="p">[</span><span class="n">s</span><span class="p">];</span>
+<span class="w">    </span><span class="n">ApplyFSIPointDisplacement</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">boundaryName</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+  Thereafter, the flow equations need to be solved. This <code>if</code>-statement consequently contains
+  most of the original solver definition, in which the flow equations are called in the same order as in the original
+  CFD solver. Additionally, at the end of the PIMPLE corrector loop, the coupling convergence is checked, see <a href="#solver-coupling-convergence">solver coupling convergence</a>.
+  Finally, at the end of this block the loads are written by calling the CoCoNuT functionObjects by including <em><code>executeCoconutFunctionObjects.H</code></em>.</li>
+<li>If the file <em><code>save.coco</code></em> exists, it is checked whether the flow fields should be stored in corresponding files according to the user-defined save interval by calling <em><code>runTime.write();</code></em>.</li>
+<li>If the file <em><code>stop.coco</code></em> exists, a <code>break</code>-statement should end the infinite loop and the OpenFOAM program terminates.</li>
+</ul>
+<p>The solver wrapper will automatically compile the adapted applications.
+This can also be done the default OpenFOAM-compilation method (loading the OpenFOAM-module and using <code>wmake</code> in the directory <em><code>solver_wrapper/coconut_&lt;solver_name&gt;</code></em>).
+To be able to compile the new application, the following files need to adapted.</p>
+<ul>
+<li>Update the file <em><code>Make/files</code></em> to have the correct application name and change the location of the executable to <code>$(FOAM_USER_APPBIN)</code>:
+  <div class="highlight"><pre><span></span><code><span class="n">coconut_pimpleFoam</span><span class="p">.</span><span class="n">C</span>
+
+<span class="n">EXE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">$</span><span class="p">(</span><span class="n">FOAM_USER_APPBIN</span><span class="p">)</span><span class="o">/</span><span class="n">coconut_pimpleFoam</span>
+</code></pre></div></li>
+<li>Update the file <em><code>Make/options</code></em> such that the CoCoNuT header files are found by adding the parent directory and its parent directory to the included files:
+  <div class="highlight"><pre><span></span><code><span class="n">EXE_INC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>\
+<span class="w">  </span><span class="o">-</span><span class="n">I</span><span class="p">..</span><span class="w"> </span>\
+<span class="w">  </span><span class="o">-</span><span class="n">I</span><span class="p">..</span><span class="o">/</span><span class="p">..</span><span class="w"> </span>\
+<span class="w">  </span><span class="o">-</span><span class="n">I</span><span class="o">&lt;</span><span class="n">INSERT</span><span class="w"> </span><span class="n">OTHER</span><span class="w"> </span><span class="n">LOCATIONS</span><span class="o">&gt;</span>
+</code></pre></div></li>
+</ul>
+<h3 id="the-waitforsync-command">The waitForSync command</h3>
+<p>This command, for example <code>waitForSync("next")</code>, is called at the start of every message block and is required to avoid that one processor goes through the block and already removes the message file before all others have seen it.
+This is achieved by gathering a label on all processors, effectively syncing them.
+After they are synced, the message file is removed and the corresponding <em>ready</em> message is written, for example <code>next_ready.coco</code>.
+Thereafter, they are synced once more.
+This avoids that while removing the file, one processor has left and again entered the same block.
+Note that the solver wrapper already receives the return message, for example <code>next_ready.coco</code>, before the completion of the block.
+This results in a speed-up, but requires the solver wrapper to check if, for example, the loads have been fully written before reading them.</p>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via www.openfoam.com, and owner of the OPENFOAM® and OpenCFD® trademarks,
+nor by OpenFOAM Foundation Limited, producer and distributor of the OpenFOAM software via www.openfoam.org.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.expand", "navigation.tracking", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.dd8806f2.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>

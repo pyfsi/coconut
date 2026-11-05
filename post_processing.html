@@ -751,11 +751,11 @@
   
   
     <li class="md-nav__item">
-      <a href="openfoam.html" class="md-nav__link">
+      <a href="openfoam.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    OpenFOAM
+    None
   </span>
   
 
@@ -1256,7 +1256,7 @@
   
   
     <li class="md-nav__item">
-      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+      <a href="lid_driven_cavity_openfoam2d_kratos_structure2d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1472,27 +1472,6 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_fluent2d_abaquscse2d.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Fluent 2D - AbaqusCSE 2D
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="tube_fluent2d_abaqus2d_steady.html" class="md-nav__link">
         
   
@@ -1577,27 +1556,6 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_fluent3d_abaquscse3d.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Fluent 3D - AbaqusCSE 3D
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="tube_fluent3d_kratos_structure3d.html" class="md-nav__link">
         
   
@@ -1619,7 +1577,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_openfoam3d_abaqus3d.html" class="md-nav__link">
+      <a href="tube_openfoam3d_abaqus3d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1640,7 +1598,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tube_openfoam3d_kratos_structure3d.html" class="md-nav__link">
+      <a href="tube_openfoam3d_kratos_structure3d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1751,7 +1709,7 @@
   
   
     <li class="md-nav__item">
-      <a href="turek_openfoam2d_kratos_structure2d.html" class="md-nav__link">
+      <a href="turek_openfoam2d_kratos_structure2d.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1840,8 +1798,8 @@
 <p>As described in the <a href="https://pyfsi.github.io/coconut/coupled_solvers#save-results">coupled solver documentation</a>, a pickle file can be saved to store details on the computation.
 This includes</p>
 <ul>
-<li>solution data on the interface, </li>
-<li>position of the data points on the interface, </li>
+<li>solution data on the interface,</li>
+<li>position of the data points on the interface,</li>
 <li>details on the convergence behaviour, such as number of coupling iterations and coupling residuals,</li>
 <li>distribution of the elapsed simulation time,</li>
 <li>and history of the simulation, such as restarts.</li>
@@ -1859,7 +1817,7 @@ This includes</p>
 </code></pre></div></p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>The example code in this document has been created for the <em><code>tube/openfoam3d_kratos_structure3d</code></em> example.</p>
+<p>The example code in this document has been created for the <em><code>tube/openfoam_org3d_kratos_structure3d</code></em> example.</p>
 </div>
 <p>Printing this class provides an overview of the simulation, for example
 <div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">pp</span><span class="p">)</span>
@@ -1914,7 +1872,7 @@ The selection of points thus needs to be within a single model part. If points f
 <span class="n">sy</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">add_subset</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s1">&#39;interface_y&#39;</span><span class="p">)</span>
 </code></pre></div>
 <code>'interface_x'</code> and <code>'interface_y'</code> refer to the input and output interface of the first solver, respectively.
-The first solver is typically the flow solver such that <code>'interface_x'</code> contains displacement values 
+The first solver is typically the flow solver such that <code>'interface_x'</code> contains displacement values
 and <code>'interface_y'</code> contains pressure and traction values.</p>
 <div class="admonition info">
 <p class="admonition-title">The interfaces of the second solver are not accessible, since they are not stored!</p>
@@ -2279,7 +2237,7 @@ in which several parameters are pre-set.</p>
 </table>
 <p>Either <code>time_step</code> or <code>time</code> should be provided. If both are present, <code>time</code> is ignored.
 The <code>time_step</code> or <code>time</code> can be set using the methods <code>set_time_step(time_step)</code> or <code>set_time(time)</code>.
-For the former, also see <a href="#adding-multiple-subsets">Adding multiple subsets</a> when subsets are added with multiple time step sizes. </p>
+For the former, also see <a href="#adding-multiple-subsets">Adding multiple subsets</a> when subsets are added with multiple time step sizes.</p>
 <p>For animations (<code>Animation</code>), there is one optional keyword argument.</p>
 <table>
 <thead>
