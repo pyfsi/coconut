@@ -44,6 +44,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         self.end_time = self.number_of_timesteps * self.delta_t
         self.save_results = self.settings.get('save_results', 1)
         self.save_restart = self.settings['save_restart']
+        if self.save_restart < 0:
+            tools.print_info('Older restart files are currently not overlaid in AbaqusCSE.', layout='info')
         self.input_file = self.settings['input_file']
         self.disable_modification_of_input_file = self.settings.get('disable_modification_of_input_file', False)
         self.cores = self.settings['cores']  # number of CPUs Abaqus has to use
@@ -127,14 +129,17 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         if self.timestep_start == 0:
             with open(join(self.dir_csm, 'restart.log'), 'w') as outfile:
                 outfile.write('#step number, timestep start\n')
-                outfile.write(f'1\t 0\n')
+                outfile.write(f'1\t 0\t\n')
         else:
             restart_log = np.loadtxt(join(self.dir_csm, 'restart.log'), skiprows=1, ndmin=2, dtype=int)
             # check if we can restart from last files
             if self.timestep_start > restart_log[-1, 1]:
                 # start timestep is within scope of last simulation
                 self.restart_step = restart_log[-1, 0]
-                self.restart_inc = self.timestep_start - restart_log[-1, 1]
+                self.restart_inc = self.get_increment_from_accumulated_time(join(self.dir_csm, 'Abaqus.sta'),
+                                                                            (self.timestep_start - restart_log[
+                                                                                -1, 1]) * self.delta_t)
+                print(self.restart_step, self.restart_inc)
                 # copy previous job files to the vault
                 for suffix in self.vault_suffixes:
                     from_file = join(self.dir_csm, f'Abaqus.{suffix}')
@@ -146,7 +151,10 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                 # restart from older files: find which one is the most recent to restart from
                 index = np.where(restart_log[:, 1] < self.timestep_start)[0][-1]
                 self.restart_step = restart_log[index, 0]
-                self.restart_inc = self.timestep_start - restart_log[index, 1]
+                self.restart_inc = self.get_increment_from_accumulated_time(
+                    join(self.dir_vault, f'Abaqus_Step-{self.restart_step}.sta'),
+                    (self.timestep_start - restart_log[index, 1]) * self.delta_t)
+                print(self.restart_step, self.restart_inc)
                 # clean up vault: remove newer files (but not from the last index, as they don't exist in the vault yet)
                 obsolete_steps = restart_log[index + 1:-1, 0]
                 for step in obsolete_steps:
@@ -182,8 +190,9 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
         # write input for solver AbaqusWrapper
         solver_input_file = join(self.dir_abqw, 'AbaqusWrapper_input.txt')
         with open(solver_input_file, 'w') as f:
-            out = f'timestep_start {self.timestep_start}\ndt {self.delta_t}\ndimensions {self.dimensions}\nnumber_of_model_parts ' \
-                  f'{len(self.settings["interface_output"])}\nport {self.port}\ndebug {int(self.debug)}\n'
+            out = f'timestep_start {self.timestep_start}\ndt {self.delta_t}\ndimensions {self.dimensions}\n' \
+                  f'number_of_model_parts {len(self.settings["interface_output"])}\nport {self.port}\n' \
+                  f'debug {int(self.debug)}\nsave_restart {abs(self.save_restart)}\n'
             f.write(out)
 
         # define command for debug mode
@@ -565,8 +574,8 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         if self.timestep_start > 0:
                             step_info = [p for p in step_info if 'NAME=' not in p.upper()]
                             step_info.append(f'NAME=Step-{self.restart_step + 1}')
-                        # set number of increments
-                        step_info.append(f'INC={self.number_of_timesteps}')
+                        # set number of increments to the highest possible value (remove Abaqus' default upper bound)
+                        step_info.append(f'INC=2147483647')
                         line = ', '.join(step_info) + '\n'
                         in_step = True
                     elif in_step and line[0] == '*' and line[1] != '*' and not analysis_seen:
@@ -590,21 +599,23 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         cosimulation_settings_found = True
                     elif in_step and line.upper().startswith('*OUTPUT'):
                         line_parts = line.strip().split(',')
-                        parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'TIME INTERVAL', 'TIME POINTS']
+                        parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'TIME INTERVAL', 'TIME POINTS', 'TIME MARKS']
                         # remove all parameters referring to when to store
                         line_parts = [p for p in line_parts if not any(param in p.upper() for param in parameters)]
-                        line_parts.append(f'FREQUENCY={self.save_results}')
+                        line_parts.append(f'TIME INTERVAL={self.save_results * self.delta_t}')
+                        line_parts.append('TIME MARKS=YES')
                         line = ', '.join(line_parts) + '\n'
                         output_found = True
                     elif in_step and line.upper().startswith('*RESTART'):
                         line_parts = line.strip().split(',')
                         if 'WRITE' in line_parts[1].upper():  # not a restart write command, so don't change
-                            parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'OVERLAY']
+                            parameters = ['FREQUENCY', 'NUMBER INTERVAL', 'OVERLAY', 'TIME MARKS']
                             # remove all parameters referring to when to store
                             line_parts = [p for p in line_parts if not any(param in p.upper() for param in parameters)]
-                            line_parts.append(f'FREQUENCY={abs(self.save_restart)}')
-                            if self.save_restart < 0:
-                                line_parts.append('OVERLAY')
+                            if self.save_restart:
+                                line_parts.append('NUMBER INTERVAL=1')
+                            else:
+                                line_parts.append('FREQUENCY=0')
                             line = ', '.join(line_parts) + '\n'
                             restart_found = True
                     elif line.upper().startswith('*END STEP'):
@@ -615,15 +626,40 @@ class SolverWrapperAbaqusCSE(SolverWrapper):
                         else:
                             out_file.write(cosimulation_settings)
                         if not output_found:
-                            out_file.write(f'*OUTPUT, FIELD, VARIABLE=PRESELECT, FREQUENCY={self.save_results}\n**\n')
+                            out_file.write(f'*OUTPUT, FIELD, VARIABLE=PRESELECT, TIME MARKS=YES, '
+                                           f'TIME INTERVAL={self.save_results * self.delta_t}\n**\n')
                         if not restart_found:
-                            out_file.write(f'*RESTART, WRITE, FREQUENCY={abs(self.save_restart)}')
-                            if self.save_restart < 0:
-                                out_file.write(', OVERLAY')
-                            out_file.write('\n**\n')
+                            out_file.write(f'*RESTART, WRITE, NUMBER INTERVAL=1\n**\n')
                     if (self.timestep_start == 0) or bool_restart:
                         out_file.write(line)
 
     def copy_for_debugging(self, path):
         new_path = f'{path[:-len(".txt")]}_ts{self.timestep}_it{self.iteration}.txt'
         shutil.copy2(path, new_path)
+
+    @staticmethod
+    def get_increment_from_accumulated_time(status_file, target_time, atol=1e-12):
+        accumulated_time = 0.0
+        with open(status_file, "r") as f:
+            for line in f:
+                if not re.match(r"^\s*\d+\s+\d+", line):  # Skip headers
+                    continue
+
+                fields = line.split()
+
+                inc = int(fields[1])
+                att = fields[2]
+
+                # Skip unsuccessful or special iterations
+                if "U" in att or "E" in att:
+                    continue
+
+                # Increment size of successful increment
+                dt = float(fields[-1])
+                accumulated_time += dt
+
+                # Check if step time at end of increment is equal to target_time
+                if abs(accumulated_time-target_time) < atol:
+                    return inc
+
+        raise ValueError(f"No increment found for accumulated time {target_time}")

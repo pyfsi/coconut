@@ -20,7 +20,7 @@ void putField(const char* fieldType, const char* meshName, const char* collectio
 void myMessageHandler(const SMACseMsgHandlerSeverity severity, const char* msg, const int numNodes, const int* nodes, const int numElements, const int* elements);
 
 // Own functions
-void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts);
+void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts, int& saveRestart);
 void connectToCSE(void* userData, const string& port);
 int findIndex(const vector<unsigned int>& vec, unsigned int target);
 vector<double> getElemCentroidCoordinates(const vector<unsigned int>& nodeLabels, const vector<double>& nodeCoordinates, const vector<unsigned int>& connectivity, const unsigned int& nElems, const unsigned int& nodePerElem, const unsigned int& nDim);
@@ -41,7 +41,9 @@ struct MeshInputData {
     MeshInputData() : pressure(nullptr), traction(nullptr) {}
 };
 
+int iocontrol = 0;
 int timeStepStart = -1; // Start time step of current CSE run
+int saveRestart = -1;
 unsigned int timeStep = 0; // Time step counter
 unsigned int iteration = 0; // Coupling iteration counter
 unsigned int debug = 0; // Debug boolean
@@ -60,7 +62,7 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
     string port; // Port for connection
     unsigned int nModelParts; // Number of model parts
     const string filenameInput = "AbaqusWrapper_input.txt";
-    readInput(filenameInput, timeStepStart, dt, port, nDim, nModelParts); // Read input from CoCoNuT wrapper
+    readInput(filenameInput, timeStepStart, dt, port, nDim, nModelParts, saveRestart); // Read input from CoCoNuT wrapper
 
     const string filenamePressure = "../pressure_mp"; // To be appended with <modelPartID>.txt
     const string filenameTraction = "../traction_mp"; // To be appended with <modelPartID>.txt
@@ -155,8 +157,9 @@ int ABQmain(int argc, char** argv){ // Instead of: int main(){ // To be able to 
             cout << "\n>> Timestep " << ++timeStep + timeStepStart << endl;
             endTime = timeStep * dt;
             iteration = 0;
+            iocontrol = (saveRestart > 0 && timeStep % saveRestart == 0) ? 1 : 0;
 
-            status = SMACseGetTargetTime(startTime, dt, &CSETargetTime, &CSEdt, &lockstep, NULL); // Gets the preferred time step size from CSE (here constant dt)
+            status = SMACseGetTargetTime(startTime, dt, &CSETargetTime, &CSEdt, &lockstep, &iocontrol); // Gets the preferred time step size from CSE (here constant dt)
 
             if (abs(endTime - CSETargetTime) > dt * 1e-8) {
                 cerr << "The time step size prescribed by the CoSimulation Engine ("
@@ -256,7 +259,7 @@ void myMessageHandler(const SMACseMsgHandlerSeverity severity, const char* msg, 
     }
 }
 
-void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts) {
+void readInput(const string filenameInput, int& timeStepStart, double& dt, string& port, unsigned int& nDim, unsigned int& nModelParts, int& saveRestart) {
     ifstream file(filenameInput);
 
     if (!file) {
@@ -279,6 +282,8 @@ void readInput(const string filenameInput, int& timeStepStart, double& dt, strin
             file >> port;
         } else if (keyword == "debug") {
             file >> debug;
+        } else if (keyword == "save_restart") {
+            file >> saveRestart;
         } else {
             cerr << "Warning: unknown keyword " << keyword << endl;
         }
@@ -306,6 +311,10 @@ void readInput(const string filenameInput, int& timeStepStart, double& dt, strin
         cerr << "Error: 'port' not read correctly from file" << endl;
         allValuesRead = false;
     }
+    if (saveRestart == -1) {
+        cerr << "Error: 'save_restart' not read correctly from file" << endl;
+        allValuesRead = false;
+    }
     if (!allValuesRead) {
         cerr << "Error: Some values were not read correctly. Please check the input file." << endl;
         exit(1);
@@ -319,6 +328,7 @@ void readInput(const string filenameInput, int& timeStepStart, double& dt, strin
     cout << "nModelParts: " << nModelParts << endl;
     cout << "port: " << port << endl;
     cout << "debug: " << debug << endl;
+    cout << "saveRestart: " << saveRestart << endl;
 }
 
 void connectToCSE(void* userData, const string& port) {

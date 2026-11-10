@@ -14,10 +14,6 @@ Currently, this wrapper only supports FSI simulations, no other multi-physics pr
     - An _increment_ in Abaqus is usually equal to the time step of Abaqus, unless subcycling is applied within the Abaqus solver. Then a time step can be subdivided in multiple increments.
     - In an implicit or strongly coupled FSI calculation, the structural solver is called multiple times per time step. A call of the the flow solver and subsequent call of the structural solver is called a _coupling iteration_. All coupling iterations are part of the same attempt of the same increment (unless subcycling is used).
 
-??? warning "Subcycling"
-
-    Subcycling has not been tested for this solver wrapper. Note that the maximum number of increments is now set to the number of time steps. In order to apply subcycling, this needs to be modified.
-
 ??? success "Licensing"
 
     If the **Abaqus license server** needs to be specified explicitly, it is advised to do this in the [solver modules file](../../../README.md#checking-the-solver-modules) by setting the variable _LM_LICENSE_FILE_.
@@ -53,12 +49,12 @@ It can be useful to have a look at a JSON file of one of the examples in the _`e
 The following parameters are usually defined in the top-level settings of the JSON file, but they can also be given directly as parameter of the solver wrapper (e.g. for standalone testing).
 If they are defined in both locations, a warning is printed and the top-level value is used.
 
-|                          parameter | type  | description                                                                                                                                              |
-|-----------------------------------:|:-----:|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-|                          `delta_t` | float | Size of the time step in Abaqus.                                                                                                                         |
-| <nobr>`number_of_timesteps`</nobr> |  int  | The amount of time steps to run the calculation. For a steady calculation, the value should be `1`.                                                      |
-|                     `save_restart` |  int  | Indicates the time step interval at which files for restart have to be saved. A minus sign indicates only the files from the last interval are retained. |
-|                   `timestep_start` |  int  | Time step to start from. Data should be available at this time step. For a new simulation this value will typically be `0`.                              |
+|                          parameter | type  | description                                                                                                                 |
+|-----------------------------------:|:-----:|-----------------------------------------------------------------------------------------------------------------------------|
+|                          `delta_t` | float | Size of the time step in Abaqus.                                                                                            |
+| <nobr>`number_of_timesteps`</nobr> |  int  | The amount of time steps to run the calculation. For a steady calculation, the value should be `1`.                         |
+|                     `save_restart` |  int  | Indicates the time step interval at which files for restart have to be saved. Negative values are currently ignored.        |
+|                   `timestep_start` |  int  | Time step to start from. Data should be available at this time step. For a new simulation this value will typically be `0`. |
 
 
 ## Overview of operation
